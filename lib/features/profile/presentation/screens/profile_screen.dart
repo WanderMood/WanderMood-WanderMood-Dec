@@ -11,6 +11,8 @@ import 'package:go_router/go_router.dart';
 import 'package:wandermood/features/profile/presentation/screens/language_settings_screen.dart';
 import 'package:wandermood/features/profile/presentation/screens/privacy_settings_screen.dart';
 import 'package:wandermood/features/profile/presentation/screens/theme_settings_screen.dart';
+import 'package:wandermood/features/profile/presentation/screens/notifications_screen.dart';
+import 'package:wandermood/features/profile/presentation/screens/help_support_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -385,7 +387,7 @@ class ProfileScreen extends ConsumerWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const PrivacySettingsScreen(),
+                                    builder: (context) => const NotificationsScreen(),
                                   ),
                                 );
                               },
@@ -438,14 +440,10 @@ class ProfileScreen extends ConsumerWidget {
                               title: 'Help & Support',
                               subtitle: 'Get assistance',
                               onTap: () {
-                                // TODO: Implement help & support screen
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Help & Support coming soon!',
-                                      style: GoogleFonts.poppins(),
-                                    ),
-                                    backgroundColor: const Color(0xFF4CAF50),
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const HelpSupportScreen(),
                                   ),
                                 );
                               },

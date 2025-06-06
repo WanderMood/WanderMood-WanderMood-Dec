@@ -7,6 +7,9 @@ import 'package:wandermood/features/mood/application/mood_service.dart';
 import 'package:wandermood/features/mood/domain/mood.dart';
 import 'package:wandermood/features/mood/presentation/screens/mood_history_screen.dart';
 import 'package:wandermood/features/mood/domain/models/mood_data.dart';
+import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
+import 'package:wandermood/features/weather/providers/weather_provider.dart';
+import 'package:wandermood/features/weather/presentation/screens/weather_detail_screen.dart';
 
 class MoodScreen extends ConsumerStatefulWidget {
   const MoodScreen({super.key});
@@ -66,20 +69,218 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                     color: const Color(0xFF4CAF50),
                   ),
                 ),
-                IconButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const MoodHistoryScreen(),
+                Row(
+                  children: [
+                    // Weather widget
+                    GestureDetector(
+                      onTap: () {
+                        // First give visual feedback
+                        Future.delayed(const Duration(milliseconds: 100), () {
+                          // Show a centered dialog
+                          showDialog(
+                            context: context,
+                            barrierDismissible: true,
+                            barrierColor: Colors.black.withOpacity(0.5),
+                            builder: (context) => Dialog(
+                              backgroundColor: Colors.transparent,
+                              elevation: 0,
+                              insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeOut,
+                                height: MediaQuery.of(context).size.height * 0.75,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(24),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 15,
+                                      spreadRadius: 5,
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: const WeatherDetailScreen(isModal: true),
+                                ),
+                              ),
+                            ),
+                          );
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                          border: Border.all(
+                            color: const Color(0xFF4CAF50).withOpacity(0.1),
+                            width: 1,
+                          ),
+                        ),
+                        child: Consumer(
+                          builder: (context, ref, child) {
+                            final locationData = ref.watch(locationNotifierProvider);
+                            
+                            return locationData.when(
+                              data: (location) {
+                                final weatherData = ref.watch(weatherProvider);
+                                
+                                return weatherData.when(
+                                  data: (weather) {
+                                    if (weather == null) {
+                                      return Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.wb_sunny_rounded,
+                                            color: Color(0xFFFFA000),
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '--°',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }
+                                    
+                                    // Extract icon code from the iconUrl
+                                    final iconCode = weather.iconUrl.split('/').last.replaceAll('@2x.png', '');
+                                    
+                                    return Row(
+                                      children: [
+                                        Image.network(
+                                          weather.iconUrl,
+                                          width: 24,
+                                          height: 24,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            // Select weather icon based on condition as fallback
+                                            IconData weatherIcon;
+                                            final condition = weather.condition.toLowerCase();
+                                            if (condition.contains('cloud')) {
+                                              weatherIcon = Icons.cloud;
+                                            } else if (condition.contains('rain')) {
+                                              weatherIcon = Icons.water_drop;
+                                            } else if (condition.contains('snow')) {
+                                              weatherIcon = Icons.ac_unit;
+                                            } else if (condition.contains('storm') || condition.contains('thunder')) {
+                                              weatherIcon = Icons.thunderstorm;
+                                            } else {
+                                              weatherIcon = Icons.wb_sunny_rounded;
+                                            }
+                                            
+                                            return Icon(
+                                              weatherIcon,
+                                              color: weatherIcon == Icons.wb_sunny_rounded 
+                                                ? const Color(0xFFFFA000) 
+                                                : weatherIcon == Icons.cloud 
+                                                  ? Colors.grey 
+                                                  : Colors.blue,
+                                              size: 20,
+                                            );
+                                          },
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '${weather.temperature.round()}°',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                  loading: () => const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                  error: (_, __) => Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.wb_sunny_rounded,
+                                        color: Color(0xFFFFA000),
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '--°',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              loading: () => const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              error: (_, __) => Row(
+                                children: [
+                                  const Icon(
+                                    Icons.wb_sunny_rounded,
+                                    color: Color(0xFFFFA000),
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '--°',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                    );
-                  },
-                  icon: const Icon(
-                    Icons.history,
-                    color: Color(0xFF4CAF50),
-                  ),
-                  tooltip: 'Stemmingsgeschiedenis',
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MoodHistoryScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.history,
+                        color: Color(0xFF4CAF50),
+                      ),
+                      tooltip: 'Stemmingsgeschiedenis',
+                    ),
+                  ],
                 ),
               ],
             ).animate().fadeIn(duration: 400.ms),

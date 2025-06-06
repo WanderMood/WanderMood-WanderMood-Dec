@@ -2,14 +2,22 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 class SwirlingGradientPainter extends CustomPainter {
+  final bool isDarkMode;
+  
+  SwirlingGradientPainter({this.isDarkMode = false});
+  
   @override
   void paint(Canvas canvas, Size size) {
-    // Create flowing wave gradients with maximum opacity
+    // Create flowing wave gradients with colors based on theme
     final Paint wavePaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [
+        colors: isDarkMode ? [
+          const Color(0xFF0D1117).withOpacity(0.95),  // Dark blue-gray
+          const Color(0xFF161B22).withOpacity(0.85),  // Lighter dark gray
+          const Color(0xFF21262D).withOpacity(0.75),  // Medium dark gray
+        ] : [
           const Color(0xFFFFFDF5).withOpacity(0.95),  // Warm cream yellow
           const Color(0xFFFFF3E0).withOpacity(0.85),  // Slightly darker warm yellow
           const Color(0xFFFFF9E8).withOpacity(0.75),  // Medium warm yellow
@@ -22,7 +30,11 @@ class SwirlingGradientPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topRight,
         end: Alignment.bottomLeft,
-        colors: [
+        colors: isDarkMode ? [
+          const Color(0xFF161B22).withOpacity(0.85),  // Lighter dark gray
+          const Color(0xFF21262D).withOpacity(0.75),  // Medium dark gray
+          const Color(0xFF0D1117).withOpacity(0.65),  // Dark blue-gray
+        ] : [
           const Color(0xFFFFF3E0).withOpacity(0.85),  // Slightly darker warm yellow
           const Color(0xFFFFF9E8).withOpacity(0.75),  // Medium warm yellow
           const Color(0xFFFFFDF5).withOpacity(0.65),  // Warm cream yellow
@@ -116,14 +128,20 @@ class SwirlBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final isDarkMode = brightness == Brightness.dark;
+    
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFFFFDF5), // Warm cream yellow
-            Color(0xFFFFF3E0), // Slightly darker warm yellow
+          colors: isDarkMode ? [
+            const Color(0xFF0D1117), // Very dark blue-gray
+            const Color(0xFF161B22), // Slightly lighter dark gray
+          ] : [
+            const Color(0xFFFFFDF5), // Warm cream yellow
+            const Color(0xFFFFF3E0), // Slightly darker warm yellow
           ],
         ),
       ),
@@ -132,7 +150,7 @@ class SwirlBackground extends StatelessWidget {
           // Background swirl effect
           Positioned.fill(
             child: CustomPaint(
-              painter: SwirlingGradientPainter(),
+              painter: SwirlingGradientPainter(isDarkMode: isDarkMode),
             ),
           ),
           // Main content

@@ -5,6 +5,8 @@ import 'package:wandermood/features/weather/application/weather_service.dart';
 import 'package:wandermood/features/auth/domain/providers/auth_provider.dart';
 import 'package:wandermood/features/auth/application/user_preferences_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/features/location/services/location_service.dart';
+import 'package:wandermood/features/weather/domain/models/weather_location.dart';
 
 part 'home_data_provider.g.dart';
 
@@ -55,7 +57,7 @@ class HomeDataNotifier extends _$HomeDataNotifier {
     _refreshTimer = Timer.periodic(const Duration(minutes: 15), (_) => refresh());
 
     // Watch required providers
-    final locationState = ref.watch(locationProvider);
+    final locationState = ref.watch(locationNotifierProvider);
     final userState = ref.watch(authStateProvider);
     final preferences = ref.watch(userPreferencesServiceProvider);
 
@@ -64,24 +66,22 @@ class HomeDataNotifier extends _$HomeDataNotifier {
         try {
           // Get weather data
           final weatherService = ref.read(weatherServiceProvider.notifier);
-          final weather = await weatherService.getCurrentWeather(
-            Location(
-              id: city?.toLowerCase() ?? 'unknown',
-              name: city ?? 'Unknown',
-              latitude: 0,
-              longitude: 0,
-            ),
+          
+          // Get coordinates for the city
+          final locationService = LocationService();
+          final coordinates = await LocationService.getCoordinatesForCity(city ?? 'Unknown');
+          
+          final location = Location(
+            id: city?.toLowerCase() ?? 'unknown',
+            name: city ?? 'Unknown',
+            latitude: coordinates.latitude,
+            longitude: coordinates.longitude,
           );
+          
+          final weather = await weatherService.getCurrentWeather(location);
 
-          // Get hourly forecast
-          final forecast = await weatherService.getWeatherForecast(
-            Location(
-              id: city?.toLowerCase() ?? 'unknown',
-              name: city ?? 'Unknown',
-              latitude: 0,
-              longitude: 0,
-            ),
-          );
+          // Get hourly forecast with the same coordinates
+          final forecast = await weatherService.getWeatherForecast(location);
 
           // Get user name from Supabase metadata
           String? userName;

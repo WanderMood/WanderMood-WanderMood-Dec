@@ -3,13 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
+import 'package:wandermood/core/presentation/providers/local_theme_provider.dart';
 
 class ThemeSettingsScreen extends ConsumerWidget {
   const ThemeSettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profileAsync = ref.watch(profileProvider);
+    final currentTheme = ref.watch(localThemeProvider);
+    final localThemeNotifier = ref.read(localThemeProvider.notifier);
+    final themeBrightness = Theme.of(context).brightness;
+    
+    print('🎨 ThemeSettingsScreen: currentTheme=$currentTheme, brightness=$themeBrightness');
 
     return SwirlBackground(
       child: Scaffold(
@@ -29,67 +34,94 @@ class ThemeSettingsScreen extends ConsumerWidget {
             onPressed: () => Navigator.pop(context),
           ),
         ),
-        body: profileAsync.when(
-          data: (profile) => ListView(
-            padding: const EdgeInsets.all(16.0),
-            children: [
-              Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
+        body: ListView(
+          padding: const EdgeInsets.all(16.0),
+          children: [
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children: [
+                  _buildThemeOption(
+                    context,
+                    ref,
+                    'System',
+                    'system',
+                    Icons.brightness_auto,
+                    'Follow system theme',
+                    localThemeNotifier.currentThemeString,
+                  ),
+                  const Divider(height: 1),
+                  _buildThemeOption(
+                    context,
+                    ref,
+                    'Light',
+                    'light',
+                    Icons.light_mode,
+                    'Light theme',
+                    localThemeNotifier.currentThemeString,
+                  ),
+                  const Divider(height: 1),
+                  _buildThemeOption(
+                    context,
+                    ref,
+                    'Dark',
+                    'dark',
+                    Icons.dark_mode,
+                    'Dark theme',
+                    localThemeNotifier.currentThemeString,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Choose your preferred theme for the app. You can follow your system settings or choose a specific theme.',
+              style: GoogleFonts.poppins(
+                color: Colors.grey[600],
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            // Debug info card
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildThemeOption(
-                      context,
-                      ref,
-                      'System',
-                      'system',
-                      Icons.brightness_auto,
-                      'Follow system theme',
-                      profile?.themePreference ?? 'system',
+                    Text(
+                      'Debug Info:',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                     ),
-                    const Divider(height: 1),
-                    _buildThemeOption(
-                      context,
-                      ref,
-                      'Light',
-                      'light',
-                      Icons.light_mode,
-                      'Light theme',
-                      profile?.themePreference ?? 'system',
+                    const SizedBox(height: 8),
+                    Text(
+                      'Local Theme: ${localThemeNotifier.currentThemeString}',
+                      style: GoogleFonts.poppins(fontSize: 12),
                     ),
-                    const Divider(height: 1),
-                    _buildThemeOption(
-                      context,
-                      ref,
-                      'Dark',
-                      'dark',
-                      Icons.dark_mode,
-                      'Dark theme',
-                      profile?.themePreference ?? 'system',
+                    Text(
+                      'App Theme Mode: $currentTheme',
+                      style: GoogleFonts.poppins(fontSize: 12),
+                    ),
+                    Text(
+                      'UI Brightness: $themeBrightness',
+                      style: GoogleFonts.poppins(fontSize: 12),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Choose your preferred theme for the app. You can follow your system settings or choose a specific theme.',
-                style: GoogleFonts.poppins(
-                  color: Colors.grey[600],
-                  fontSize: 14,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Center(
-            child: Text(
-              'Error loading theme settings',
-              style: GoogleFonts.poppins(color: Colors.red),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -129,9 +161,20 @@ class ThemeSettingsScreen extends ConsumerWidget {
           : null,
       onTap: () async {
         try {
-          await ref.read(profileProvider.notifier).updateProfile(
-            themePreference: value,
-          );
+          // Update local theme immediately (works offline)
+          await ref.read(localThemeProvider.notifier).setThemeFromString(value);
+          
+          // Try to sync with profile when network is available (optional)
+          try {
+            await ref.read(profileProvider.notifier).updateProfile(
+              themePreference: value,
+            );
+            print('🎨 Theme synced to profile successfully');
+          } catch (e) {
+            print('🎨 Could not sync theme to profile (offline): $e');
+            // Continue - local theme still works
+          }
+          
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

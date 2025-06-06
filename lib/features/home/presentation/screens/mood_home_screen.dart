@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'dart:ui';  // Add this import for ImageFilter
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/auth/providers/user_provider.dart';
@@ -11,6 +12,8 @@ import 'package:wandermood/features/plans/presentation/screens/plan_result_scree
 import 'package:wandermood/features/home/presentation/screens/moody_conversation_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/features/gamification/providers/gamification_provider.dart';
+import 'package:wandermood/features/weather/presentation/screens/weather_detail_screen.dart';
+import 'package:flutter/rendering.dart';
 
 class MoodHomeScreen extends ConsumerStatefulWidget {
   const MoodHomeScreen({super.key});
@@ -167,213 +170,40 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
 
   // Show weather details dialog
   void _showWeatherDetails(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      backgroundColor: Colors.white,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.6,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Handle bar
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            
-            // Location and date
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'San Francisco',
-                        style: GoogleFonts.poppins(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Today, ${DateTime.now().day} ${_getMonthName(DateTime.now().month)}',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                // Current weather
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '22°',
-                      style: GoogleFonts.poppins(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFFFFB300),
-                      ),
-                    ),
-                    Text(
-                      'Sunny',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
+    // First give visual feedback
+    Future.delayed(const Duration(milliseconds: 100), () {
+      // Show a centered dialog instead of bottom sheet
+      showDialog(
+        context: context,
+        barrierDismissible: true,
+        barrierColor: Colors.black.withOpacity(0.5),
+        builder: (context) => Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+            height: MediaQuery.of(context).size.height * 0.75,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 15,
+                  spreadRadius: 5,
                 ),
               ],
             ),
-            
-            const SizedBox(height: 24),
-            
-            // Hourly forecast
-            Text(
-              'Hourly Forecast',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: const WeatherDetailScreen(isModal: true),
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 100,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _buildHourlyWeather('Now', '22°', Icons.wb_sunny),
-                  _buildHourlyWeather('11 AM', '23°', Icons.wb_sunny),
-                  _buildHourlyWeather('12 PM', '24°', Icons.wb_sunny),
-                  _buildHourlyWeather('1 PM', '24°', Icons.wb_cloudy),
-                  _buildHourlyWeather('2 PM', '23°', Icons.wb_cloudy),
-                  _buildHourlyWeather('3 PM', '22°', Icons.wb_cloudy),
-                  _buildHourlyWeather('4 PM', '21°', Icons.wb_cloudy),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // Additional info
-            Text(
-              'Additional Information',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildWeatherInfo('Humidity', '68%', Icons.water_drop),
-                _buildWeatherInfo('Wind', '8 km/h', Icons.air),
-                _buildWeatherInfo('Feels Like', '23°', Icons.thermostat),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  // Helper function for month names
-  String _getMonthName(int month) {
-    const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June', 
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return monthNames[month - 1];
-  }
-  
-  // Build hourly weather widget
-  Widget _buildHourlyWeather(String time, String temp, IconData icon) {
-    return Container(
-      margin: const EdgeInsets.only(right: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            time,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Icon(
-            icon,
-            color: const Color(0xFFFFB300),
-            size: 24,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            temp,
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  // Build weather info widget
-  Widget _buildWeatherInfo(String label, String value, IconData icon) {
-    return Column(
-      children: [
-        Icon(
-          icon,
-          color: const Color(0xFF12B347),
-          size: 24,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
-      ],
-    );
+      );
+    });
   }
 
   // Show location selection dialog
@@ -469,9 +299,12 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
             const SizedBox(height: 8),
             
             // Location list
-            _buildLocationItem('San Francisco', Icons.location_city),
-            _buildLocationItem('New York', Icons.location_city),
-            _buildLocationItem('Los Angeles', Icons.location_city),
+            _buildLocationItem('Amsterdam', Icons.location_city),
+            _buildLocationItem('Rotterdam', Icons.location_city),
+            _buildLocationItem('Eindhoven', Icons.location_city),
+            _buildLocationItem('Utrecht', Icons.landscape),
+            _buildLocationItem('The Hague', Icons.beach_access),
+            _buildLocationItem('Delft', Icons.house),
             
             const Spacer(),
             
@@ -505,25 +338,35 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   }
   
   // Build location item widget
-  Widget _buildLocationItem(String name, IconData icon) {
-    return ListTile(
-      leading: Icon(icon, color: const Color(0xFF12B347)),
-      title: Text(
-        name,
-        style: GoogleFonts.poppins(
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      onTap: () {
-        Navigator.pop(context);
-        // Show selected location
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Selected location: $name'),
-            duration: const Duration(seconds: 2),
+  Widget _buildLocationItem(String city, IconData icon) {
+    return Container(
+      width: 120,
+      margin: const EdgeInsets.only(right: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.15),
+            blurRadius: 8,
+            spreadRadius: 1,
           ),
-        );
-      },
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: const Color(0xFF12B347), size: 28),
+          const SizedBox(height: 8),
+          Text(
+            city,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -609,7 +452,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'San Francisco',
+                                'Eindhoven',
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   color: Colors.black87,
@@ -632,26 +475,61 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                         // Show weather details dialog
                         _showWeatherDetails(context);
                       },
-                      borderRadius: BorderRadius.circular(8),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.wb_sunny,
-                              color: Color(0xFFFFB300),
-                              size: 20,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '22°',
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                color: Colors.black87,
-                                fontWeight: FontWeight.w500,
-                              ),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
                             ),
                           ],
+                        ),
+                        child: Consumer(
+                          builder: (context, ref, child) {
+                            final weatherAsync = ref.watch(weatherProvider);
+                            
+                            return weatherAsync.when(
+                              data: (weather) {
+                                if (weather == null) return _buildDefaultWeather();
+                                
+                                // Extract the icon code from the iconUrl
+                                final iconCode = weather.iconUrl.split('/').last.replaceAll('@2x.png', '');
+                                
+                                return Row(
+                                  children: [
+                                    Image.network(
+                                      weather.iconUrl,
+                                      width: 24,
+                                      height: 24,
+                                      errorBuilder: (context, error, stackTrace) => Icon(
+                                        _getWeatherIcon(weather.condition),
+                                        color: weather.condition.toLowerCase().contains('cloud') 
+                                            ? Colors.grey 
+                                            : const Color(0xFFFFB300),
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${weather.temperature.round()}°',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 16,
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                              loading: () => _buildDefaultWeather(),
+                              error: (_, __) => _buildDefaultWeather(),
+                            );
+                          },
                         ),
                       ),
                     ),
@@ -998,6 +876,46 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
           ),
       ],
     );
+  }
+
+  // Helper method to return default weather widget
+  Widget _buildDefaultWeather() {
+    return Row(
+      children: [
+        const Icon(
+          Icons.wb_sunny,
+          color: Color(0xFFFFB300),
+          size: 20,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '22°',
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            color: Colors.black87,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+  
+  // Helper method to determine weather icon based on condition
+  IconData _getWeatherIcon(String condition) {
+    final lowercaseCondition = condition.toLowerCase();
+    if (lowercaseCondition.contains('cloud')) {
+      return Icons.cloud;
+    } else if (lowercaseCondition.contains('rain') || lowercaseCondition.contains('drizzle')) {
+      return Icons.water_drop;
+    } else if (lowercaseCondition.contains('snow')) {
+      return Icons.ac_unit;
+    } else if (lowercaseCondition.contains('storm') || lowercaseCondition.contains('thunder')) {
+      return Icons.thunderstorm;
+    } else if (lowercaseCondition.contains('mist') || lowercaseCondition.contains('fog')) {
+      return Icons.water;
+    } else {
+      return Icons.wb_sunny;
+    }
   }
 }
 

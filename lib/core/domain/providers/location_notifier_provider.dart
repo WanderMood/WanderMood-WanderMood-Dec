@@ -25,14 +25,14 @@ class LocationNotifier extends AsyncNotifier<String?> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          debugPrint('Location permission denied, using Rotterdam as default');
+          debugPrint('Location permission denied, using Eindhoven as default');
           state = AsyncValue.data(LocationService.defaultLocation['name'] as String);
           return LocationService.defaultLocation['name'] as String;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        debugPrint('Location permission permanently denied, using Rotterdam as default');
+        debugPrint('Location permission permanently denied, using Eindhoven as default');
         state = AsyncValue.data(LocationService.defaultLocation['name'] as String);
         return LocationService.defaultLocation['name'] as String;
       }
@@ -42,9 +42,9 @@ class LocationNotifier extends AsyncNotifier<String?> {
       debugPrint('Got position: ${position.latitude}, ${position.longitude}');
       
       // For development/simulator: If the coordinates are in San Francisco (simulator default),
-      // use Rotterdam instead
+      // use Eindhoven instead
       if (_isSimulatorDefaultLocation(position.latitude, position.longitude)) {
-        debugPrint('Detected simulator default location, using Rotterdam instead');
+        debugPrint('Detected simulator default location, using Eindhoven instead');
         state = AsyncValue.data(LocationService.defaultLocation['name'] as String);
         return LocationService.defaultLocation['name'] as String;
       }
@@ -62,12 +62,12 @@ class LocationNotifier extends AsyncNotifier<String?> {
         state = AsyncValue.data(cityName);
         return cityName;
       } else {
-        debugPrint('Could not determine location name, using Rotterdam as default');
+        debugPrint('Could not determine location name, using Eindhoven as default');
         state = AsyncValue.data(LocationService.defaultLocation['name'] as String);
         return LocationService.defaultLocation['name'] as String;
       }
     } catch (e, stack) {
-      debugPrint('Error getting location: $e, using Rotterdam as default');
+      debugPrint('Error getting location: $e, using Eindhoven as default');
       state = AsyncValue.data(LocationService.defaultLocation['name'] as String);
       return LocationService.defaultLocation['name'] as String;
     }
@@ -84,8 +84,8 @@ class LocationNotifier extends AsyncNotifier<String?> {
     final bool isSF = (lat - sfLat).abs() < 1.0 && (lon - sfLon).abs() < 1.0;
     
     debugPrint('LOCATION CHECK: Current: (${lat}, ${lon}), SF default: ($sfLat, $sfLon)');
-    debugPrint('LOCATION MATCH: ${isSF ? "YES - using Rotterdam instead" : "NO - using actual location"}');
-    debugPrint('Rotterdam default: (${LocationService.defaultLocation['latitude']}, ${LocationService.defaultLocation['longitude']})');
+    debugPrint('LOCATION MATCH: ${isSF ? "YES - using Eindhoven instead" : "NO - using actual location"}');
+    debugPrint('Eindhoven default: (${LocationService.defaultLocation['latitude']}, ${LocationService.defaultLocation['longitude']})');
     
     return isSF;
   }

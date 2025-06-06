@@ -9,6 +9,8 @@ class WeatherForecast with _$WeatherForecast {
     required DateTime date,
     required double maxTemperature,
     required double minTemperature,
+    String? time,
+    double? temperature,
     required String conditions,
     required double precipitationProbability,
     @Default(0) double humidity,

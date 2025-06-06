@@ -43,66 +43,70 @@ class WeatherAlertCard extends StatelessWidget {
         return Icons.warning;
     }
   }
+  
+  Color _getAlertIconColor() {
+    switch (alert.type.toLowerCase()) {
+      case 'heat':
+        return const Color(0xFFFFD700); // Yellow sun for heat
+      default:
+        return _getSeverityColor();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      color: _getSeverityColor().withOpacity(0.1),
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    _getAlertIcon(),
-                    color: _getSeverityColor(),
-                    size: 24,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      alert.title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: _getSeverityColor(),
-                        fontWeight: FontWeight.bold,
+    return Dismissible(
+      key: Key(alert.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        color: Colors.red,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 16.0),
+        child: const Icon(Icons.delete, color: Colors.white),
+      ),
+      onDismissed: (_) {
+        if (onDismiss != null) onDismiss!();
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: _getSeverityColor().withOpacity(0.2),
+                  child: Icon(_getAlertIcon(), color: _getAlertIconColor()),
+                ),
+                const SizedBox(width: 16.0),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        alert.title,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 4.0),
+                      Text(
+                        '${alert.description.substring(0, alert.description.length > 100 ? 100 : alert.description.length)}${alert.description.length > 100 ? '...' : ''}',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 8.0),
+                      Text(
+                        'Valid until: ${DateFormat('dd MMM, HH:mm').format(alert.end)}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
                   ),
-                  if (onDismiss != null)
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: onDismiss,
-                    ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                alert.description,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(
-                    Icons.access_time,
-                    size: 16,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Van ${DateFormat('HH:mm').format(alert.startTime)} tot ${DateFormat('HH:mm').format(alert.endTime)}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

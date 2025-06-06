@@ -68,9 +68,19 @@ class LocationNotifier extends AutoDisposeAsyncNotifier<String?> {
   }
 
   // Method to manually set a city
-  void setCity(String cityName) {
+  Future<void> setCity(String cityName) async {
+    state = const AsyncValue.loading();
     debugPrint('Manually setting city to: $cityName');
-    state = AsyncValue.data(cityName);
+    
+    try {
+      // Get coordinates for the city
+      final position = await LocationService.getCoordinatesForCity(cityName);
+      debugPrint('Found coordinates for $cityName: ${position.latitude}, ${position.longitude}');
+      state = AsyncValue.data(cityName);
+    } catch (e) {
+      debugPrint('Error getting coordinates for $cityName: $e');
+      state = AsyncValue.data(cityName); // Still set the city even if coordinates lookup fails
+    }
   }
 
   // Method to retry getting location

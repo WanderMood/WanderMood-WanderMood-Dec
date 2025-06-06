@@ -110,22 +110,71 @@ class AppTheme {
     );
   }
 
-  static ThemeData darkTheme = ThemeData(
-    primaryColor: primary,
-    scaffoldBackgroundColor: const Color(0xFF121212),
-    colorScheme: ColorScheme.dark(
-      primary: primary,
-      secondary: secondary,
-      tertiary: accent,
-      background: const Color(0xFF121212),
-      error: error,
-      onPrimary: Colors.white,
-      onSecondary: Colors.white,
-      onBackground: Colors.white,
-    ),
-    textTheme: textTheme,
-    useMaterial3: true,
-  );
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color(0xFF4CAF50), // Green primary color for dark mode
+        brightness: Brightness.dark,
+      ),
+      scaffoldBackgroundColor: Colors.transparent,
+      textTheme: GoogleFonts.poppinsTextTheme(
+        ThemeData.dark().textTheme,
+      ).apply(
+        bodyColor: Colors.white,
+        displayColor: Colors.white,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      cardTheme: CardTheme(
+        color: const Color(0xFF1E1E1E),
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF4CAF50),
+          foregroundColor: Colors.white,
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: Color(0xFF1E1E1E),
+        selectedItemColor: Color(0xFF4CAF50),
+        unselectedItemColor: Colors.white54,
+        type: BottomNavigationBarType.fixed,
+        elevation: 8,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFF2C2C2C),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: const BorderSide(color: Color(0xFF4CAF50)),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: spacingMD,
+          vertical: spacingMD,
+        ),
+      ),
+    );
+  }
 
   static BoxDecoration get backgroundGradient {
     return const BoxDecoration(
@@ -138,5 +187,31 @@ class AppTheme {
         ],
       ),
     );
+  }
+
+  static BoxDecoration get darkBackgroundGradient {
+    return const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0xFF0D1117), // Very dark blue-gray
+          Color(0xFF161B22), // Slightly lighter dark gray
+        ],
+      ),
+    );
+  }
+
+  static BoxDecoration backgroundGradientForTheme(ThemeMode themeMode, Brightness platformBrightness) {
+    if (themeMode == ThemeMode.dark) {
+      return darkBackgroundGradient;
+    } else if (themeMode == ThemeMode.light) {
+      return backgroundGradient;
+    } else {
+      // System theme - check platform brightness
+      return platformBrightness == Brightness.dark 
+          ? darkBackgroundGradient 
+          : backgroundGradient;
+    }
   }
 } 

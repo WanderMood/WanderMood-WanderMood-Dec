@@ -37,13 +37,23 @@ class WeatherService extends _$WeatherService {
     return locationState.when(
       data: (location) async {
         if (location == null) return null;
-        final locationData = WeatherLocation(
-          id: location.toLowerCase(),
-          name: location,
-          latitude: 0,
-          longitude: 0,
-        );
-        return getCurrentWeather(locationData);
+        
+        try {
+          // Get coordinates for the location
+          final coordinates = await LocationService.getCoordinatesForCity(location);
+          
+          final locationData = WeatherLocation(
+            id: location.toLowerCase(),
+            name: location,
+            latitude: coordinates.latitude,
+            longitude: coordinates.longitude,
+          );
+          
+          return getCurrentWeather(locationData);
+        } catch (e) {
+          print('Error getting coordinates: $e');
+          return null;
+        }
       },
       loading: () => null,
       error: (_, __) => null,
@@ -56,6 +66,7 @@ class WeatherService extends _$WeatherService {
         throw Exception('OpenWeather API key is not configured');
       }
 
+      print('Getting weather for ${location.name} at ${location.latitude}, ${location.longitude}');
       final url = '$_baseUrl/weather?lat=${location.latitude}&lon=${location.longitude}&appid=$_apiKey&units=metric';
       print('Fetching weather from: $url');
       
@@ -64,6 +75,7 @@ class WeatherService extends _$WeatherService {
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print('Weather data received: ${data['main']['temp']}°C, ${data['weather'][0]['main']}');
         return Weather(
           temperature: data['main']['temp'].toDouble(),
           condition: data['weather'][0]['main'],
@@ -89,10 +101,8 @@ class WeatherService extends _$WeatherService {
     }
   }
 
-  Future<List<WeatherForecast>> getWeatherForecast(
-    WeatherLocation location, {
-    int days = 5,
-  }) async {
+  // Get hourly forecast for next 24 hours
+  Future<List<WeatherForecast>> getHourlyForecast(WeatherLocation location) async {
     try {
       if (_apiKey.isEmpty) {
         throw Exception('OpenWeather API key is not configured');
@@ -104,65 +114,270 @@ class WeatherService extends _$WeatherService {
         return cachedForecasts;
       }
 
+      print('Getting hourly forecast for ${location.name} at ${location.latitude}, ${location.longitude}');
       final url = '$_baseUrl/forecast?lat=${location.latitude}&lon=${location.longitude}&appid=$_apiKey&units=metric';
       print('Fetching forecast from: $url');
       
       final response = await http.get(Uri.parse(url));
-      print('Response status code: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
+      print('Forecast API response code: ${response.statusCode}');
+      
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final List<WeatherForecast> forecasts = [];
         
-        // Group forecasts by day
-        final Map<String, List<dynamic>> dailyForecasts = {};
-        for (var item in data['list']) {
+        // Extract the 3-hour interval forecasts
+        final List<dynamic> threeHourIntervalList = data['list'];
+        
+        // Get the current time and define the 24-hour range
+        final now = DateTime.now();
+        final todayMidnight = DateTime(now.year, now.month, now.day);
+        final tomorrowMidnight = todayMidnight.add(const Duration(days: 1));
+        
+        // Create a list for interpolated hourly forecasts
+        final List<WeatherForecast> hourlyForecasts = [];
+        
+        // Get API data points (limited to the next few forecast periods)
+        final apiDataPoints = threeHourIntervalList.take(9).map((item) {
           final date = DateTime.fromMillisecondsSinceEpoch(item['dt'] * 1000);
-          final dateKey = '${date.year}-${date.month}-${date.day}';
-          
-          if (!dailyForecasts.containsKey(dateKey)) {
-            dailyForecasts[dateKey] = [];
-          }
-          dailyForecasts[dateKey]!.add(item);
-        }
+          return {
+            'date': date,
+            'temp': (item['main']['temp'] as num).toDouble(),
+            'conditions': item['weather'][0]['main'] as String,
+            'icon': item['weather'][0]['icon'] as String,
+            'description': item['weather'][0]['description'] as String,
+            'pop': item['pop'] != null ? (item['pop'] as num).toDouble() * 100 : 0.0,
+            'humidity': (item['main']['humidity'] as num).toDouble(),
+            'min_temp': (item['main']['temp_min'] as num).toDouble(),
+            'max_temp': (item['main']['temp_max'] as num).toDouble(),
+            'precipitation': item['rain'] != null && item['rain']['3h'] != null 
+                ? (item['rain']['3h'] as num).toDouble() 
+                : 0.0,
+          };
+        }).toList();
         
-        // Process each day's forecasts
-        for (var entry in dailyForecasts.entries.take(days)) {
-          final forecasts = entry.value;
-          final dayData = forecasts[0]; // Use first forecast of the day
+        // Generate 24 hourly forecasts starting from the current hour
+        for (int i = 0; i < 24; i++) {
+          final forecastTime = DateTime(now.year, now.month, now.day, now.hour + i);
           
-          final temps = forecasts.map((f) => f['main']['temp'].toDouble()).toList();
-          final maxTemp = temps.reduce((a, b) => a > b ? a : b);
-          final minTemp = temps.reduce((a, b) => a < b ? a : b);
+          // Find surrounding data points from the API
+          Map<String, dynamic>? before;
+          Map<String, dynamic>? after;
           
-          forecasts.add(WeatherForecast(
-            date: DateTime.fromMillisecondsSinceEpoch(dayData['dt'] * 1000),
-            maxTemperature: maxTemp,
-            minTemperature: minTemp,
-            conditions: dayData['weather'][0]['main'],
-            precipitationProbability: (dayData['pop'] * 100).toDouble(),
-            humidity: dayData['main']['humidity'].toDouble(),
-            precipitation: dayData['rain']?['3h']?.toDouble() ?? 0.0,
-            sunrise: DateTime.now(), // Not available in free API
-            sunset: DateTime.now(), // Not available in free API
-            uvIndex: 0, // Not available in free API
-            description: dayData['weather'][0]['description'],
-            icon: dayData['weather'][0]['icon'],
+          for (int j = 0; j < apiDataPoints.length - 1; j++) {
+            final current = apiDataPoints[j];
+            final next = apiDataPoints[j + 1];
+            
+            if (forecastTime.isAfter(current['date'] as DateTime) && forecastTime.isBefore(next['date'] as DateTime)) {
+              before = current;
+              after = next;
+              break;
+            } else if (j == 0 && forecastTime.isBefore(current['date'] as DateTime)) {
+              // Before the first data point, use the first two
+              before = apiDataPoints[0];
+              after = apiDataPoints[1];
+              break;
+            } else if (j == apiDataPoints.length - 2 && forecastTime.isAfter(next['date'] as DateTime)) {
+              // After the last data point, use the last two
+              before = apiDataPoints[apiDataPoints.length - 2];
+              after = apiDataPoints[apiDataPoints.length - 1];
+              break;
+            }
+          }
+          
+          // If we don't have before/after (unusual case), use first two data points
+          if (before == null || after == null) {
+            if (apiDataPoints.length >= 2) {
+              before = apiDataPoints[0];
+              after = apiDataPoints[1]; 
+            } else if (apiDataPoints.isNotEmpty) {
+              // Only one data point available, use it for everything
+              before = after = apiDataPoints[0];
+            } else {
+              // No data available, skip this hour
+              continue;
+            }
+          }
+          
+          // Interpolate temperature based on time between data points
+          final beforeTime = before['date'] as DateTime;
+          final afterTime = after['date'] as DateTime;
+          final beforeTemp = before['temp'] as double;
+          final afterTemp = after['temp'] as double;
+          
+          double interpolatedTemp;
+          double interpolatedPop;
+          double interpolatedHumidity;
+          
+          if (beforeTime == afterTime) {
+            // Same time (edge case), no interpolation needed
+            interpolatedTemp = beforeTemp;
+            interpolatedPop = before['pop'] as double;
+            interpolatedHumidity = before['humidity'] as double;
+          } else {
+            // Calculate the ratio of time elapsed
+            final totalDuration = afterTime.difference(beforeTime).inMinutes;
+            final elapsedDuration = forecastTime.difference(beforeTime).inMinutes;
+            final ratio = totalDuration > 0 ? elapsedDuration / totalDuration : 0.0;
+            
+            // Linear interpolation: value = start + ratio * (end - start)
+            interpolatedTemp = beforeTemp + ratio * (afterTemp - beforeTemp);
+            interpolatedPop = (before['pop'] as double) + ratio * ((after['pop'] as double) - (before['pop'] as double));
+            interpolatedHumidity = (before['humidity'] as double) + ratio * ((after['humidity'] as double) - (before['humidity'] as double));
+          }
+          
+          // Format the hour string
+          final hour = forecastTime.hour;
+          final formattedHour = hour == 0 ? '12 AM' : hour == 12 ? '12 PM' : hour > 12 ? '${hour - 12} PM' : '$hour AM';
+          
+          // Use the weather condition from the closest data point
+          final beforeDiff = (forecastTime.difference(beforeTime).inMinutes).abs();
+          final afterDiff = (forecastTime.difference(afterTime).inMinutes).abs();
+          final closestPoint = beforeDiff <= afterDiff ? before : after;
+          
+          hourlyForecasts.add(WeatherForecast(
+            time: formattedHour,
+            date: forecastTime,
+            temperature: interpolatedTemp,
+            conditions: closestPoint['conditions'] as String,
+            icon: closestPoint['icon'] as String,
+            description: closestPoint['description'] as String,
+            precipitationProbability: interpolatedPop,
+            humidity: interpolatedHumidity,
+            maxTemperature: (closestPoint['max_temp'] as double),
+            minTemperature: (closestPoint['min_temp'] as double),
+            precipitation: (closestPoint['precipitation'] as double),
+            sunrise: DateTime.now(),
+            sunset: DateTime.now(),
+            uvIndex: 0,
           ));
         }
         
         // Cache the forecasts
-        await _cacheService.cacheForecasts(location, forecasts);
+        await _cacheService.cacheForecasts(location, hourlyForecasts);
         
-        return forecasts;
+        print('Generated ${hourlyForecasts.length} hourly forecasts');
+        return hourlyForecasts;
       } else {
         print('Error response: ${response.body}');
         throw Exception('Failed to load weather forecast: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching forecasts: $e');
+      print('Error fetching hourly forecasts: $e');
       return [];
+    }
+  }
+
+  // Get daily forecast for next 3 days
+  Future<List<WeatherForecast>> getDailyForecast(WeatherLocation location) async {
+    try {
+      if (_apiKey.isEmpty) {
+        throw Exception('OpenWeather API key is not configured');
+      }
+
+      print('Getting daily forecast for ${location.name} at ${location.latitude}, ${location.longitude}');
+      
+      // For daily forecasts, we need to use a different endpoint
+      final url = 'https://api.openweathermap.org/data/2.5/forecast/daily?lat=${location.latitude}&lon=${location.longitude}&cnt=3&appid=$_apiKey&units=metric';
+      
+      // Since free API doesn't have daily endpoint, we'll use the standard forecast and aggregate by day
+      final hourlyUrl = '$_baseUrl/forecast?lat=${location.latitude}&lon=${location.longitude}&appid=$_apiKey&units=metric';
+      print('Fetching daily forecast from: $hourlyUrl');
+      
+      final response = await http.get(Uri.parse(hourlyUrl));
+      print('Daily forecast API response code: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        
+        // Extract the hourly forecasts list
+        final List<dynamic> hourlyList = data['list'];
+        
+        // Group forecasts by day
+        final Map<String, List<dynamic>> forecastsByDay = {};
+        
+        for (var item in hourlyList) {
+          final date = DateTime.fromMillisecondsSinceEpoch(item['dt'] * 1000);
+          final dateKey = '${date.year}-${date.month}-${date.day}';
+          
+          if (!forecastsByDay.containsKey(dateKey)) {
+            forecastsByDay[dateKey] = [];
+          }
+          
+          forecastsByDay[dateKey]!.add(item);
+        }
+        
+        // Create daily forecasts (excluding today)
+        final List<WeatherForecast> dailyForecasts = [];
+        final now = DateTime.now();
+        final today = '${now.year}-${now.month}-${now.day}';
+        
+        // Sort days
+        final sortedDays = forecastsByDay.keys.toList()..sort();
+        
+        // Skip today and take next 3 days
+        for (final day in sortedDays.where((d) => d != today).take(3)) {
+          final forecasts = forecastsByDay[day]!;
+          
+          // Calculate max and min temperatures for the day
+          double maxTemp = -100;
+          double minTemp = 100;
+          String mostCommonCondition = '';
+          Map<String, int> conditionCounts = {};
+          String mostCommonIcon = '';
+          
+          for (final item in forecasts) {
+            final temp = item['main']['temp'].toDouble();
+            if (temp > maxTemp) maxTemp = temp;
+            if (temp < minTemp) minTemp = temp;
+            
+            final condition = item['weather'][0]['main'];
+            conditionCounts[condition] = (conditionCounts[condition] ?? 0) + 1;
+            
+            if (mostCommonCondition.isEmpty || 
+                (conditionCounts[condition] ?? 0) > (conditionCounts[mostCommonCondition] ?? 0)) {
+              mostCommonCondition = condition;
+              mostCommonIcon = item['weather'][0]['icon'];
+            }
+          }
+          
+          // Create forecast for this day
+          final dateTime = DateTime.parse(day);
+          final dayOfWeek = _getDayOfWeek(dateTime.weekday);
+          
+          dailyForecasts.add(WeatherForecast(
+            date: dateTime,
+            maxTemperature: maxTemp,
+            minTemperature: minTemp,
+            time: dayOfWeek,
+            conditions: mostCommonCondition,
+            icon: mostCommonIcon,
+            precipitationProbability: forecasts.fold(0.0, (sum, item) => sum + (item['pop'] * 100)) / forecasts.length,
+            humidity: forecasts.fold(0.0, (sum, item) => sum + item['main']['humidity']) / forecasts.length,
+            sunrise: DateTime.now(),
+            sunset: DateTime.now(),
+          ));
+        }
+        
+        return dailyForecasts;
+      } else {
+        print('Error response: ${response.body}');
+        throw Exception('Failed to load daily forecast: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching daily forecasts: $e');
+      return [];
+    }
+  }
+
+  String _getDayOfWeek(int day) {
+    switch (day) {
+      case 1: return 'Monday';
+      case 2: return 'Tuesday';
+      case 3: return 'Wednesday';
+      case 4: return 'Thursday';
+      case 5: return 'Friday';
+      case 6: return 'Saturday';
+      case 7: return 'Sunday';
+      default: return '';
     }
   }
 

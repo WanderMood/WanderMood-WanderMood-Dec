@@ -143,11 +143,14 @@ class HomeScreen extends ConsumerWidget {
                                           padding: const EdgeInsets.only(right: 16),
                                           child: Column(
                                             children: [
-                                              Text(forecast.time),
+                                              Text(forecast.time ?? ''),
                                               const SizedBox(height: 8),
-                                              const Icon(Icons.wb_sunny),
+                                              Icon(
+                                                _getWeatherIcon(forecast.conditions),
+                                                color: _getWeatherIconColor(forecast.conditions),
+                                              ),
                                               const SizedBox(height: 8),
-                                              Text('${forecast.temperature}°C'),
+                                              Text('${forecast.temperature?.toStringAsFixed(0) ?? forecast.maxTemperature.toStringAsFixed(0)}°C'),
                                             ],
                                           ),
                                         );
@@ -173,6 +176,53 @@ class HomeScreen extends ConsumerWidget {
         onRetry: () => ref.refresh(homeDataNotifierProvider),
       ),
     );
+  }
+
+  IconData _getWeatherIcon(String condition) {
+    switch (condition.toLowerCase()) {
+      case 'clear':
+        return Icons.wb_sunny;
+      case 'clouds':
+        return Icons.cloud;
+      case 'rain':
+        return Icons.grain;
+      case 'drizzle':
+        return Icons.grain;
+      case 'thunderstorm':
+        return Icons.flash_on;
+      case 'snow':
+        return Icons.ac_unit;
+      case 'mist':
+      case 'smoke':
+      case 'haze':
+      case 'fog':
+        return Icons.cloud;
+      default:
+        return Icons.wb_sunny;
+    }
+  }
+
+  Color _getWeatherIconColor(String condition) {
+    switch (condition.toLowerCase()) {
+      case 'clear':
+        return const Color(0xFFFFD700);
+      case 'clouds':
+        return Colors.grey;
+      case 'rain':
+      case 'drizzle':
+        return Colors.blue;
+      case 'thunderstorm':
+        return Colors.deepPurple;
+      case 'snow':
+        return Colors.lightBlue;
+      case 'mist':
+      case 'smoke':
+      case 'haze':
+      case 'fog':
+        return Colors.grey.shade400;
+      default:
+        return const Color(0xFFFFD700);
+    }
   }
 }
 
@@ -253,12 +303,14 @@ class LocationDialog extends ConsumerWidget {
     final result = await showDialog<String>(
       context: context,
       builder: (BuildContext context) {
+        final textController = TextEditingController();
         return AlertDialog(
           title: const Text('Search Location'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
+                controller: textController,
                 decoration: const InputDecoration(
                   hintText: 'Enter city name',
                   prefixIcon: Icon(Icons.search),
@@ -277,15 +329,9 @@ class LocationDialog extends ConsumerWidget {
             ),
             TextButton(
               onPressed: () {
-                final textField = context.findRenderObject() as RenderBox?;
-                if (textField != null) {
-                  final controller = textField.parent as RenderObject?;
-                  if (controller != null) {
-                    final text = (controller as dynamic).text as String?;
-                    if (text != null && text.isNotEmpty) {
-                      Navigator.of(context).pop(text);
-                    }
-                  }
+                final text = textController.text;
+                if (text.isNotEmpty) {
+                  Navigator.of(context).pop(text);
                 }
               },
               child: const Text('Search'),
@@ -296,7 +342,7 @@ class LocationDialog extends ConsumerWidget {
     );
 
     if (result != null && result.isNotEmpty) {
-      await ref.read(locationNotifierProvider.notifier).getCurrentLocation();
+      ref.read(locationNotifierProvider.notifier).setCity(result);
     }
   }
 } 

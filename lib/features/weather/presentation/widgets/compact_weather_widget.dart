@@ -9,13 +9,13 @@ class CompactWeatherWidget extends ConsumerWidget {
   Color _getWeatherColor(String condition) {
     switch (condition.toLowerCase()) {
       case 'clear':
-        return Colors.amber;
+        return const Color(0xFFFFD700);
       case 'clouds':
         return Colors.grey;
       case 'rain':
         return Colors.blueGrey;
       default:
-        return Colors.amber;
+        return const Color(0xFFFFD700);
     }
   }
 
