@@ -12,11 +12,13 @@ class LocationDropdown extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final locationAsync = ref.watch(locationNotifierProvider);
 
-    // Set Barendrecht as default location on widget build
+    // Set Barendrecht as default location after build cycle completes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (locationAsync.valueOrNull == null || locationAsync.value != 'Barendrecht') {
-        ref.read(locationNotifierProvider.notifier).setCity('Barendrecht');
-      }
+      Future.microtask(() {
+        if (locationAsync.valueOrNull == null || locationAsync.value != 'Barendrecht') {
+          ref.read(locationNotifierProvider.notifier).setCity('Barendrecht');
+        }
+      });
     });
 
     return locationAsync.when(

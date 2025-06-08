@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
+import 'package:wandermood/features/plans/widgets/activity_detail_screen.dart';
 
 class DailyScheduleScreen extends ConsumerStatefulWidget {
   const DailyScheduleScreen({Key? key}) : super(key: key);
@@ -100,30 +101,68 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1), // Light beige background
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+      body: Stack(
+        children: [
+          // Brown-beige gradient covering ENTIRE top area
+          Container(
+            height: 200, // Fixed height to cover top area
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF8B7355), Color(0xFFA0956B)], // Elegant brown-to-beige
+              ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+            ),
+          ),
+          
+          // 🎨 Add beautiful beige swirl background for content area only
+          Positioned(
+            top: 250, // Position much lower to avoid header interference
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: const SwirlBackground(
+              child: SizedBox.expand(),
+            ),
+          ),
+          
+          // Main content
+          SafeArea(
+            child: Column(
+              children: [
+                // Header content (over the gradient)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
+                      Expanded(
+                        child: Text(
           'Daily Schedule',
           style: GoogleFonts.museoModerno(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF12B347),
+                            color: Colors.white,
+                          ),
+                          textAlign: TextAlign.center,
           ),
         ),
-        actions: [
           IconButton(
-            icon: const Icon(Icons.calendar_month, color: Colors.black),
+                        icon: const Icon(Icons.calendar_month, color: Colors.white),
             onPressed: () => _selectDate(context),
           ),
         ],
       ),
-      body: Column(
-        children: [
+                ),
+                
+                const SizedBox(height: 16),
           // Date selector
           Container(
             margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -178,6 +217,9 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
                 : _scheduledActivities == null || _scheduledActivities!.isEmpty
                     ? _buildEmptyState()
                     : _buildScheduleList(),
+          ),
+                ],
+              ),
           ),
         ],
       ),
@@ -246,39 +288,104 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
   }
 
   Widget _buildScheduleList() {
-    // Group activities by time of day
-    final Map<String, List<Activity>> groupedActivities = {
-      'Morning': [],
-      'Afternoon': [],
-      'Evening': [],
-    };
-
-    // Sort activities by start time
-    final sortedActivities = List<Activity>.from(_scheduledActivities!)
-      ..sort((a, b) => a.startTime.compareTo(b.startTime));
-
-    // Group activities
-    for (final activity in sortedActivities) {
-      final hour = activity.startTime.hour;
-      if (hour >= 5 && hour < 12) {
-        groupedActivities['Morning']!.add(activity);
-      } else if (hour >= 12 && hour < 17) {
-        groupedActivities['Afternoon']!.add(activity);
+    final now = DateTime.now();
+    
+    // Separate upcoming and past activities
+    final upcomingActivities = <Activity>[];
+    final pastActivities = <Activity>[];
+    
+    for (final activity in _scheduledActivities!) {
+      final activityEnd = activity.startTime.add(Duration(minutes: activity.duration));
+      if (activityEnd.isBefore(now)) {
+        pastActivities.add(activity);
       } else {
-        groupedActivities['Evening']!.add(activity);
+        upcomingActivities.add(activity);
       }
     }
+    
+    // Sort activities
+    upcomingActivities.sort((a, b) => a.startTime.compareTo(b.startTime));
+    pastActivities.sort((a, b) => b.startTime.compareTo(a.startTime)); // Most recent first
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       children: [
-        if (groupedActivities['Morning']!.isNotEmpty)
-          _buildTimeSection('Morning', groupedActivities['Morning']!),
-        if (groupedActivities['Afternoon']!.isNotEmpty)
-          _buildTimeSection('Afternoon', groupedActivities['Afternoon']!),
-        if (groupedActivities['Evening']!.isNotEmpty)
-          _buildTimeSection('Evening', groupedActivities['Evening']!),
+        // Upcoming Activities Section
+        if (upcomingActivities.isNotEmpty) ...[
+          _buildSectionHeader('📅 Upcoming Activities', subtitle: '${upcomingActivities.length} activities planned'),
+          const SizedBox(height: 8),
+          ...upcomingActivities.map((activity) => _buildActivityCard(activity, isPast: false)).toList(),
+          const SizedBox(height: 24),
+        ],
+        
+        // Past Activities Section
+        if (pastActivities.isNotEmpty) ...[
+          _buildSectionHeader('✅ Completed Activities', subtitle: '${pastActivities.length} activities completed'),
+          const SizedBox(height: 8),
+          ...pastActivities.take(10).map((activity) => _buildActivityCard(activity, isPast: true)).toList(), // Limit to 10 past activities
+          const SizedBox(height: 24),
+        ],
+        
+        // Empty state for specific sections
+        if (upcomingActivities.isEmpty && pastActivities.isEmpty)
+          _buildEmptyScheduleState(),
       ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title, {String? subtitle}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.museoModerno(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF12B347),
+            ),
+          ),
+          if (subtitle != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyScheduleState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 48),
+        child: Column(
+          children: [
+            Icon(
+              Icons.event_available,
+              size: 64,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No activities scheduled for this date',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -326,22 +433,26 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
     );
   }
 
-  Widget _buildActivityCard(Activity activity) {
+  Widget _buildActivityCard(Activity activity, {bool isPast = false}) {
     final formattedTime = DateFormat('h:mm a').format(activity.startTime);
+    final formattedDate = DateFormat('MMM d').format(activity.startTime);
     
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isPast ? Colors.grey[50] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(isPast ? 0.03 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
         ],
       ),
+      child: InkWell(
+        onTap: () => _openActivityDetail(activity),
+        borderRadius: BorderRadius.circular(16),
       child: Row(
         children: [
           // Activity image
@@ -380,25 +491,27 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF12B347).withOpacity(0.1),
+                          color: isPast 
+                            ? Colors.grey.withOpacity(0.2)
+                            : const Color(0xFF12B347).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          'Confirmed',
+                          isPast ? 'Completed' : 'Confirmed',
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF12B347),
+                            color: isPast ? Colors.grey[600] : const Color(0xFF12B347),
                           ),
                         ),
                       ),
                       const Spacer(),
                       Text(
-                        formattedTime,
+                        isPast ? '$formattedDate • $formattedTime' : formattedTime,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: Colors.black54,
+                          color: isPast ? Colors.grey[500] : Colors.black54,
                         ),
                       ),
                     ],
@@ -451,6 +564,17 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
             ),
           ),
         ],
+        ),
+      ),
+    );
+  }
+
+  // Method to open activity detail screen
+  void _openActivityDetail(Activity activity) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ActivityDetailScreen(activity: activity),
       ),
     );
   }

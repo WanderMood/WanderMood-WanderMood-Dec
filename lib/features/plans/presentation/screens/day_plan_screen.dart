@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
@@ -6,9 +7,11 @@ import 'package:wandermood/features/home/presentation/widgets/moody_character.da
 import 'package:intl/intl.dart';
 import 'package:wandermood/features/plans/presentation/sheets/plan_summary_sheet.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/features/plans/widgets/activity_detail_screen.dart';
+import 'package:wandermood/features/plans/providers/selected_activities_provider.dart';
 import 'dart:math';
 
-class DayPlanScreen extends StatefulWidget {
+class DayPlanScreen extends ConsumerStatefulWidget {
   final List<Activity> activities;
 
   const DayPlanScreen({
@@ -17,11 +20,10 @@ class DayPlanScreen extends StatefulWidget {
   });
 
   @override
-  State<DayPlanScreen> createState() => _DayPlanScreenState();
+  ConsumerState<DayPlanScreen> createState() => _DayPlanScreenState();
 }
 
-class _DayPlanScreenState extends State<DayPlanScreen> {
-  final Set<Activity> _selectedActivities = {};
+class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
   String _selectedTimeSlot = 'Morning';
 
   String _getTimeBasedGreeting() {
@@ -44,13 +46,7 @@ class _DayPlanScreenState extends State<DayPlanScreen> {
   }
 
   void _toggleActivity(Activity activity) {
-    setState(() {
-      if (_selectedActivities.contains(activity)) {
-        _selectedActivities.remove(activity);
-      } else {
-        _selectedActivities.add(activity);
-    }
-    });
+    ref.read(selectedActivitiesProvider.notifier).toggleActivity(activity.id);
   }
 
   void _refreshActivity(Activity activity) {
@@ -59,12 +55,6 @@ class _DayPlanScreenState extends State<DayPlanScreen> {
       final refreshedActivity = activity.copyWith(
         refreshCount: activity.refreshCount + 1,
       );
-      
-      // If it was previously selected, replace it in the selection
-      if (_selectedActivities.contains(activity)) {
-        _selectedActivities.remove(activity);
-        _selectedActivities.add(refreshedActivity);
-      }
       
       // Replace the activity in the main list
       final index = widget.activities.indexOf(activity);
@@ -267,55 +257,66 @@ class _DayPlanScreenState extends State<DayPlanScreen> {
           ),
 
           // Review button at bottom
-          if (_selectedActivities.isNotEmpty)
-            Positioned(
-              bottom: 24,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  width: 220,
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                        spreadRadius: 0,
+          Consumer(
+            builder: (context, ref, child) {
+              final selectedActivityIds = ref.watch(selectedActivitiesProvider);
+              if (selectedActivityIds.isEmpty) return const SizedBox();
+              
+              // Get the actual activities from the selected IDs
+              final selectedActivities = widget.activities
+                  .where((activity) => selectedActivityIds.contains(activity.id))
+                  .toList();
+              
+              return Positioned(
+                bottom: 24,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    width: 220,
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                          spreadRadius: 0,
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        PlanSummarySheet.show(
+                          context,
+                          selectedActivities,
+                        );
+                    },
+                      icon: const Icon(
+                        Icons.check_circle_rounded,
+                        size: 20,
                       ),
-                    ],
+                      label: Text(
+                        'Review selected (${selectedActivityIds.length})',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4CAF50),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        elevation: 0,
+                      ),
+                    ),
                   ),
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      PlanSummarySheet.show(
-                        context,
-                        _selectedActivities.toList(),
-                      );
-                  },
-                    icon: const Icon(
-                      Icons.check_circle_rounded,
-                      size: 20,
-                    ),
-                    label: Text(
-                      'Review selected (${_selectedActivities.length})',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4CAF50),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      elevation: 0,
                 ),
-              ),
-                ),
+              );
+            },
           ),
-        ),
         ],
       ),
     );
@@ -371,12 +372,14 @@ class _DayPlanScreenState extends State<DayPlanScreen> {
   }
 
   Widget _buildActivityCard(Activity activity) {
-    final isSelected = _selectedActivities.contains(activity);
+    final isSelected = ref.watch(selectedActivitiesProvider).contains(activity.id);
     final startTime = activity.startTime;
     final endTime = startTime.add(Duration(minutes: activity.duration));
     final timeString = '${_formatTime(startTime)} - ${_formatTime(endTime)} (${activity.duration}min)';
 
-    return Column(
+    return GestureDetector(
+      onTap: () => _openActivityDetail(activity),
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Combined time header and card with proper rounded corners and floating effect
@@ -640,6 +643,16 @@ class _DayPlanScreenState extends State<DayPlanScreen> {
          .fade(duration: 400.ms, delay: 100.ms, curve: Curves.easeOut)
          .moveY(begin: 10, duration: 400.ms, delay: 100.ms, curve: Curves.easeOutQuad),
       ],
+    ),
+    );
+  }
+
+  void _openActivityDetail(Activity activity) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ActivityDetailScreen(activity: activity),
+      ),
     );
   }
 

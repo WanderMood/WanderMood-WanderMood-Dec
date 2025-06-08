@@ -26,6 +26,8 @@ import 'package:wandermood/features/gamification/providers/gamification_provider
 import 'package:wandermood/features/weather/presentation/screens/weather_detail_screen.dart';
 import 'package:wandermood/features/social/presentation/screens/social_hub_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/daily_schedule_screen.dart';
+import 'package:wandermood/features/plans/widgets/activity_detail_screen.dart';
+import 'package:wandermood/features/home/presentation/screens/free_time_activities_screen.dart';
 
 // Create a Provider for the tab controller
 final mainTabProvider = StateProvider<int>((ref) => 0);
@@ -277,7 +279,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
       final activityEnd = activity.startTime.add(Duration(minutes: activity.duration));
       if (now.isAfter(activity.startTime) && now.isBefore(activityEnd)) {
         return activity.location.toString().contains('LatLng') 
-            ? 'Eindhoven City Center' 
+            ? 'Rotterdam City Center' 
             : activity.location.toString();
       }
     }
@@ -290,7 +292,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
     
     if (upcomingActivities.isNotEmpty) {
       return upcomingActivities.first.location.toString().contains('LatLng') 
-          ? 'Eindhoven City Center' 
+          ? 'Rotterdam City Center' 
           : upcomingActivities.first.location.toString();
   }
   
@@ -303,7 +305,108 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
     return false;
   }
 
-  // Build an activity card
+  // Get the main planned activities (upcoming only, max 3 for main screen)
+  List<Activity> _getMainPlannedActivities() {
+    if (_scheduledActivities == null || _scheduledActivities!.isEmpty) {
+      return [];
+    }
+    
+    print('📋 Total activities loaded: ${_scheduledActivities!.length}');
+    
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    
+    // Filter activities that are UPCOMING (not past)
+    final upcomingActivities = _scheduledActivities!.where((activity) {
+      final activityDate = DateTime(activity.startTime.year, activity.startTime.month, activity.startTime.day);
+      final isToday = activityDate.isAtSameMomentAs(today);
+      final isFuture = activityDate.isAfter(today);
+      
+      // For today's activities, only include if they haven't started yet
+      if (isToday) {
+        return activity.startTime.isAfter(now);
+      }
+      
+      return isFuture;
+    }).toList();
+    
+    // Remove duplicates by name
+    final Map<String, Activity> uniqueActivities = {};
+    for (final activity in upcomingActivities) {
+      if (!uniqueActivities.containsKey(activity.name)) {
+        uniqueActivities[activity.name] = activity;
+      }
+    }
+    
+    // Convert back to list and sort by start time
+    final sortedActivities = uniqueActivities.values.toList()
+      ..sort((a, b) => a.startTime.compareTo(b.startTime));
+    
+    // Limit to 3 activities max for main screen
+    final limitedActivities = sortedActivities.take(3).toList();
+    
+    print('🎯 Found ${limitedActivities.length} UPCOMING activities for Daily Schedule:');
+    for (var activity in limitedActivities) {
+      print('   ✅ ${activity.name} at ${activity.startTime}');
+    }
+    
+    return limitedActivities;
+  }
+
+  // Get past activities (for "View All" section)
+  List<Activity> _getPastActivities() {
+    if (_scheduledActivities == null || _scheduledActivities!.isEmpty) {
+      return [];
+    }
+    
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    
+    // Filter activities that have already passed
+    final pastActivities = _scheduledActivities!.where((activity) {
+      final activityDate = DateTime(activity.startTime.year, activity.startTime.month, activity.startTime.day);
+      final isToday = activityDate.isAtSameMomentAs(today);
+      final isPast = activityDate.isBefore(today);
+      
+      // For today's activities, include if they have already started/ended
+      if (isToday) {
+        final activityEnd = activity.startTime.add(Duration(minutes: activity.duration));
+        return activityEnd.isBefore(now);
+      }
+      
+      return isPast;
+    }).toList();
+    
+    // Remove duplicates by name
+    final Map<String, Activity> uniqueActivities = {};
+    for (final activity in pastActivities) {
+      if (!uniqueActivities.containsKey(activity.name)) {
+        uniqueActivities[activity.name] = activity;
+      }
+    }
+    
+    // Convert back to list and sort by start time (most recent first)
+    final sortedActivities = uniqueActivities.values.toList()
+      ..sort((a, b) => b.startTime.compareTo(a.startTime));
+    
+    print('📅 Found ${sortedActivities.length} PAST activities');
+    
+    return sortedActivities;
+  }
+
+  // Get extra activities for free time (exclude main planned activities)  
+  List<Activity> _getExtraActivities() {
+    if (_scheduledActivities == null || _scheduledActivities!.isEmpty) {
+      return [];
+    }
+    
+    final mainActivities = _getMainPlannedActivities();
+    final mainActivityIds = mainActivities.map((a) => a.id).toSet();
+    
+    return _scheduledActivities!.where((activity) => !mainActivityIds.contains(activity.id)).toList();
+  }
+
+  // Build an activity card with background image and overlay
   Widget _buildActivityCard({
     required String time,
     required String title,
@@ -311,102 +414,190 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
     required String duration,
     required bool isConfirmed,
     required String imagePath,
+    Activity? activity, // Add the activity object for navigation
   }) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-      children: [
-          // Image
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-              bottomLeft: Radius.circular(16),
-            ),
-            child: Image.network(
-              imagePath,
-              width: 100,
-              height: 120,
-              fit: BoxFit.cover,
-              errorBuilder: (context, _, __) => Container(
-                width: 100,
-                height: 120,
-                color: Colors.grey[300],
-                child: const Icon(Icons.image_not_supported),
-            ),
+      height: 160,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+            spreadRadius: 2,
           ),
-        ),
-        
-          // Details
-        Expanded(
-          child: Padding(
-              padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      time,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        color: Colors.black87,
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: InkWell(
+          onTap: activity != null ? () => _openActivityDetail(activity) : null,
+          child: Stack(
+            children: [
+              // Background image
+              Positioned.fill(
+                child: Image.network(
+                  imagePath,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, _, __) => Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.grey[400]!,
+                          Colors.grey[600]!,
+                        ],
                       ),
                     ),
-                  ],
-                ),
-                  const SizedBox(height: 4),
-                  Text(
-                        title,
-                        style: GoogleFonts.poppins(
-                      fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    child: const Center(
+                      child: Icon(
+                        Icons.image_not_supported,
+                        size: 48,
+                        color: Colors.white,
                       ),
-                  const SizedBox(height: 4),
-                Row(
-                  children: [
-                      const Icon(Icons.location_on_outlined, size: 14, color: Colors.black54),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                          location.contains('LatLng') ? 'Eindhoven City Center' : location,
+                    ),
+                  ),
+                ),
+              ),
+              
+              // Dark overlay for text readability
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.3),
+                        Colors.black.withOpacity(0.7),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              
+              // Time indicator at top left
+              Positioned(
+                top: 16,
+                left: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.access_time, size: 12, color: Colors.black54),
+                      const SizedBox(width: 4),
+                      Text(
+                        time,
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          color: Colors.black54,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 4),
-                Row(
+              ),
+              
+              // Duration indicator at top right  
+              Positioned(
+                top: 16,
+                right: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF8B7355).withOpacity(0.9), // Brown theme
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    duration,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              
+              // Activity title and location at bottom
+              Positioned(
+                bottom: 16,
+                left: 16,
+                right: 16,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                      const Icon(Icons.timelapse, size: 14, color: Colors.black54),
-                    const SizedBox(width: 4),
                     Text(
-                      duration,
+                      title,
                       style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: Colors.black54,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            offset: const Offset(0, 1),
+                            blurRadius: 3,
+                            color: Colors.black.withOpacity(0.5),
+                          ),
+                        ],
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on_outlined, 
+                          size: 16, 
+                          color: Colors.white70,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            location.contains('LatLng') ? 'Rotterdam City Center' : location,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: Colors.white70,
+                              shadows: [
+                                Shadow(
+                                  offset: const Offset(0, 1),
+                                  blurRadius: 2,
+                                  color: Colors.black.withOpacity(0.5),
+                                ),
+                              ],
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
+    );
+  }
+
+  // Method to open activity detail screen
+  void _openActivityDetail(Activity activity) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ActivityDetailScreen(activity: activity),
       ),
     );
   }
@@ -783,7 +974,6 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                     height: 200,
                   margin: const EdgeInsets.fromLTRB(16, 24, 16, 16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
@@ -800,24 +990,56 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                       ),
                     ],
                   ),
-                  child: Row(
-                    children: [
-                        // Left green accent bar
-                      Container(
-                        width: 10,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF12B347),
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(24),
-                            bottomLeft: Radius.circular(24),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: Stack(
+                      children: [
+                        // Background image
+                        Positioned.fill(
+                          child: Image.network(
+                            'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=400&fit=crop',
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: const Color(0xFF12B347).withOpacity(0.1),
+                              );
+                            },
                           ),
                         ),
-                      ),
-                      // Content
-                      Expanded(
-                        child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                          child: Column(
+                        // Semi-transparent overlay for text readability
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.white.withOpacity(0.85),
+                                  Colors.white.withOpacity(0.90),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Content
+                        Row(
+                          children: [
+                            // Left green accent bar
+                            Container(
+                              width: 10,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF12B347),
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(24),
+                                  bottomLeft: Radius.circular(24),
+                                ),
+                              ),
+                            ),
+                            // Content
+                            Expanded(
+                              child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                                child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
@@ -908,12 +1130,113 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                           ),
                         ),
                       ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
               
-                // Nearby Places During Breaks
+                // Daily schedule header (moved up)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Daily Schedule',
+                          style: GoogleFonts.museoModerno(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const DailyScheduleScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'View All',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF12B347),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              
+              // No activities message
+                if (_getMainPlannedActivities().isEmpty)
+                SliverToBoxAdapter(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.event_note_outlined,
+                            size: 48,
+                            color: Colors.grey.shade400,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No activities scheduled yet',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Start exploring to find activities',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              
+              // Main planned activity cards (only user's selected activities)
+                if (_getMainPlannedActivities().isNotEmpty)
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final mainActivities = _getMainPlannedActivities();
+                      if (index >= mainActivities.length) return null;
+                      
+                      final activity = mainActivities[index];
+                      final formattedStartTime = _formatTime(activity.startTime);
+                      
+                      return _buildActivityCard(
+                        time: formattedStartTime,
+                        title: activity.name,
+                        location: activity.location.toString(),
+                        duration: '${activity.duration}min',
+                        isConfirmed: true,
+                        imagePath: activity.imageUrl,
+                        activity: activity, // Pass the activity object
+                      );
+                    },
+                    childCount: _getMainPlannedActivities().length,
+                  ),
+                ),
+
+                // Your Activities (for free time) - moved down
               SliverToBoxAdapter(
                 child: Padding(
                     padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
@@ -921,7 +1244,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                          'Your Activities',
+                          'Free Time Activities',
                         style: GoogleFonts.museoModerno(
                           fontSize: 22,
                           fontWeight: FontWeight.w600,
@@ -932,7 +1255,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                                builder: (context) => const DailyScheduleScreen(),
+                                builder: (context) => const FreeTimeActivitiesScreen(),
                             ),
                           );
                         },
@@ -950,11 +1273,11 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                 ),
               ),
               
-                // Activities Carousel
+                // Extra Activities Carousel (for free time)
                 SliverToBoxAdapter(
                   child: SizedBox(
                     height: 260,
-                    child: _scheduledActivities == null || _scheduledActivities!.isEmpty
+                    child: _getExtraActivities().isEmpty
                     ? Consumer(
                         builder: (context, ref, child) {
                           final nearbyPlacesAsync = ref.watch(nearbyPlacesProvider);
@@ -1003,108 +1326,12 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                     : ListView.builder(
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: _scheduledActivities!.length,
+                        itemCount: _getExtraActivities().length,
                         itemBuilder: (context, index) {
-                          final activity = _scheduledActivities![index];
+                          final activity = _getExtraActivities()[index];
                           return _buildActivityBreakCard(activity, context);
                         },
                       ),
-                  ),
-                ),
-                
-                // Daily schedule header
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Daily Schedule',
-                          style: GoogleFonts.museoModerno(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const DailyScheduleScreen(),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            'View All',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF12B347),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              
-              // No activities message
-                if (_scheduledActivities == null || _scheduledActivities!.isEmpty)
-                SliverToBoxAdapter(
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32.0),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.event_note_outlined,
-                            size: 48,
-                            color: Colors.grey.shade400,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No activities scheduled yet',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              color: Colors.grey.shade600,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Start exploring to find activities',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.grey.shade500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              
-              // Activity cards
-                if (_scheduledActivities != null && _scheduledActivities!.isNotEmpty)
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      if (index >= _scheduledActivities!.length) return null;
-                      
-                      final activity = _scheduledActivities![index];
-                      final formattedStartTime = _formatTime(activity.startTime);
-                      
-                      return _buildActivityCard(
-                        time: formattedStartTime,
-                        title: activity.name,
-                          location: activity.location.toString(),
-                        duration: '${activity.duration}min',
-                          isConfirmed: true,
-                        imagePath: activity.imageUrl,
-                      );
-                    },
-                    childCount: _scheduledActivities?.length ?? 0,
                   ),
                 ),
                 

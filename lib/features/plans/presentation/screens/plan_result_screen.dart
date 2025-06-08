@@ -85,6 +85,7 @@ class _PlanResultScreenState extends ConsumerState<PlanResultScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: "confirm_plan_fab",
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(

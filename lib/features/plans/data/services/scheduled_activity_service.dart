@@ -151,6 +151,7 @@ class ScheduledActivityService {
   /// Get all scheduled activities for the current user
   Future<List<Activity>> getScheduledActivities() async {
     try {
+      // 🚫 REMOVED: All hardcoded demo activities - now returns empty for development
       // First check if we have demo activities in memory
       if (_demoActivities.isNotEmpty) {
         print('ScheduledActivityService: Returning ${_demoActivities.length} in-memory activities');
@@ -160,26 +161,9 @@ class ScheduledActivityService {
       // Get current user id
       final userId = _client.auth.currentUser?.id;
       if (userId == null) {
-        print('ScheduledActivityService: User not logged in, using demo user ID');
-        // For demo purposes, return some dummy activities
-        final now = DateTime.now();
-        return [
-          Activity(
-            id: 'demo-activity-1',
-            name: 'Explore Golden Gate Park',
-            description: 'Walk through the beautiful Golden Gate Park and enjoy nature.',
-            imageUrl: 'https://images.unsplash.com/photo-1601395699995-282a6aec65be',
-            rating: 4.8,
-            startTime: now.add(const Duration(minutes: 30)),
-            duration: 90,
-            timeSlot: 'morning',
-            timeSlotEnum: TimeSlot.morning,
-            tags: ['Outdoor', 'Nature'],
-            isPaid: false,
-            paymentType: PaymentType.free,
-            location: const LatLng(37.7694, -122.4862), // Golden Gate Park coordinates
-          ),
-        ];
+        print('ScheduledActivityService: User not logged in - returning empty list for development');
+        // 🎯 DEVELOPMENT MODE: Return empty list instead of mock data
+        return <Activity>[];
       }
       
       print('ScheduledActivityService: Getting activities for user $userId');
@@ -253,25 +237,9 @@ class ScheduledActivityService {
       print('Error getting scheduled activities: $e');
       print('Stack trace: ${StackTrace.current}');
       
-      // If there's an error, return a demo activity for testing
-      final now = DateTime.now();
-      return [
-        Activity(
-          id: 'error-fallback-activity',
-          name: 'Explore Golden Gate Park',
-          description: 'Walk through the beautiful Golden Gate Park and enjoy nature.',
-          imageUrl: 'https://images.unsplash.com/photo-1601395699995-282a6aec65be',
-          rating: 4.8,
-          startTime: now.add(const Duration(minutes: 30)),
-          duration: 90,
-          timeSlot: 'morning',
-          timeSlotEnum: TimeSlot.morning,
-          tags: ['Outdoor', 'Nature'],
-          isPaid: false,
-          paymentType: PaymentType.free,
-          location: const LatLng(37.7694, -122.4862), // Golden Gate Park coordinates
-        ),
-      ];
+      // 🎯 DEVELOPMENT MODE: Return empty list instead of demo activities
+      print('ScheduledActivityService: Error loading activities - returning empty list for development');
+      return <Activity>[];
     }
   }
   

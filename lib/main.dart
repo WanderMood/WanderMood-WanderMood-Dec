@@ -12,6 +12,7 @@ import 'features/location/services/location_service.dart';
 import 'features/plans/data/services/schema_helper.dart';
 import 'features/settings/presentation/providers/user_preferences_provider.dart';
 import 'features/gamification/providers/gamification_provider.dart' as gamification;
+import 'package:wandermood/features/places/providers/explore_places_provider.dart';
 
 // Provider to initialize app data on startup
 final appInitializerProvider = FutureProvider<bool>((ref) async {
@@ -53,6 +54,9 @@ Future<void> main() async {
     
     // Initialize SharedPreferences
     final prefs = await SharedPreferences.getInstance();
+    
+    // 🧹 CLEANUP: Clear expired API cache on app start
+    ExplorePlaces.clearExpiredCache();
     
     debugPrint('App initialized with Rotterdam as default location: ${LocationService.defaultLocation}');
     

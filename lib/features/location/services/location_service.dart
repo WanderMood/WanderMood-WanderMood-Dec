@@ -18,9 +18,9 @@ class LocationResult {
 
 class LocationService {
   static const Map<String, dynamic> defaultLocation = {
-    'latitude': 51.4416,  // Eindhoven coordinates
-    'longitude': 5.4697,
-    'name': 'Eindhoven'
+    'latitude': 51.9225,  // Rotterdam coordinates
+    'longitude': 4.4792,
+    'name': 'Rotterdam'
   };
 
   static Future<Position> getCurrentLocation() async {

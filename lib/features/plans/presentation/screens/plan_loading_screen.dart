@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
+import 'package:wandermood/features/plans/services/activity_generator_service.dart';
+import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/features/plans/presentation/screens/day_plan_screen.dart';
 
-class PlanLoadingScreen extends StatefulWidget {
+class PlanLoadingScreen extends ConsumerStatefulWidget {
   final List<String> selectedMoods;
   final Function() onLoadingComplete;
 
@@ -19,10 +23,10 @@ class PlanLoadingScreen extends StatefulWidget {
   });
 
   @override
-  State<PlanLoadingScreen> createState() => _PlanLoadingScreenState();
+  ConsumerState<PlanLoadingScreen> createState() => _PlanLoadingScreenState();
 }
 
-class _PlanLoadingScreenState extends State<PlanLoadingScreen> with SingleTickerProviderStateMixin {
+class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   int _currentMessageIndex = 0;
   int _currentGradientIndex = 0;
@@ -66,7 +70,12 @@ class _PlanLoadingScreenState extends State<PlanLoadingScreen> with SingleTicker
     // Set the dynamic message
     _loadingMessages[3] = "Crafting the perfect plan for: ${widget.selectedMoods.join(", ")}! 🍔💖🎉";
 
-    // Change message every 2 seconds
+    // Start the UI animations and API call
+    _startLoadingProcess();
+  }
+
+  void _startLoadingProcess() {
+    // Start message and gradient animation
     Future.doWhile(() async {
       await Future.delayed(const Duration(seconds: 2));
       if (!mounted) return false;
@@ -77,70 +86,60 @@ class _PlanLoadingScreenState extends State<PlanLoadingScreen> with SingleTicker
       return true;
     });
 
-    // Complete loading after 10 seconds
-    Future.delayed(const Duration(seconds: 10), () {
-      if (mounted) {
-        // Generate some sample activities
-        final activities = [
-          Activity(
-            id: 'morning-yoga-001',
-            name: 'Morning Yoga in the Park',
-            description: 'Start your day with a refreshing yoga session in the beautiful city park. Perfect for all skill levels.',
-            startTime: DateTime(2025, 4, 20, 8, 30),
-            duration: 60,
-            imageUrl: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b',
-            tags: ['Wellness 🧘‍♀️', 'Outdoor 🌿', 'Active 💪'],
-            rating: 4.8,
-            timeSlot: 'morning',
-            timeSlotEnum: TimeSlot.morning,
-            location: const LatLng(52.3676, 4.9041), // Sample location in Amsterdam
-            paymentType: PaymentType.free,
-          ),
-          Activity(
-            id: 'breakfast-cafe-001',
-            name: 'Romantic Breakfast at Café Fleur',
-            description: 'Enjoy a delightful breakfast with fresh pastries and artisanal coffee.',
-            startTime: DateTime(2025, 4, 20, 10, 30),
-            duration: 60,
-            imageUrl: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085',
-            tags: ['Food 🍳', 'Romantic ❤️', 'Cozy ☕'],
-            rating: 4.6,
-            timeSlot: 'morning',
-            timeSlotEnum: TimeSlot.morning,
-            location: const LatLng(52.3676, 4.9041), // Sample location in Amsterdam
-            paymentType: PaymentType.reservation,
-          ),
-          Activity(
-            id: 'cooking-class-001',
-            name: "Couple's Cooking Class",
-            description: 'Learn to cook together in this fun and interactive cooking class.',
-            startTime: DateTime(2025, 4, 20, 15, 30),
-            duration: 120,
-            imageUrl: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d',
-            tags: ['Food 🍳', 'Learning 📚', 'Indoor 🏠'],
-            rating: 4.7,
-            timeSlot: 'afternoon',
-            timeSlotEnum: TimeSlot.afternoon,
-            location: const LatLng(52.3676, 4.9041), // Sample location in Amsterdam
-            paymentType: PaymentType.ticket,
-          ),
-          Activity(
-            id: 'jazz-cocktails-001',
-            name: 'Jazz & Cocktails Evening',
-            description: 'End your day with smooth jazz and expertly crafted cocktails.',
-            startTime: DateTime(2025, 4, 20, 21, 30),
-            duration: 90,
-            imageUrl: 'https://images.unsplash.com/photo-1545128485-c400e7702796',
-            tags: ['Music 🎷', 'Drinks 🍸', 'Night 🌙'],
-            rating: 4.9,
-            timeSlot: 'evening',
-            timeSlotEnum: TimeSlot.evening,
-            location: const LatLng(52.3676, 4.9041), // Sample location in Amsterdam
-            paymentType: PaymentType.reservation,
-          ),
-        ];
+    // Generate real activities from Google Places API
+    _generateRealActivities();
+  }
 
-        // Navigate to DayPlanScreen with the activities
+  Future<void> _generateRealActivities() async {
+    try {
+      debugPrint('🎯 Starting real activity generation for moods: ${widget.selectedMoods}');
+      
+      // Get user's current location using Future.microtask to avoid provider modification during build
+      String? userLocation;
+      double? lat;
+      double? lng;
+      
+      try {
+        // Delay the provider access to avoid build cycle conflicts
+        await Future.microtask(() {});
+        
+        // Try to get location from the location provider
+        final locationNotifier = ref.read(locationNotifierProvider.notifier);
+        userLocation = await locationNotifier.getCurrentLocation();
+        
+        // For coordinates, use Rotterdam as default (you can enhance this to get actual coordinates)
+        lat = 51.9225; // Rotterdam coordinates
+        lng = 4.4792;
+        
+        debugPrint('📍 Using location: $userLocation at ($lat, $lng)');
+      } catch (e) {
+        debugPrint('⚠️ Location error: $e, using default location');
+        userLocation = 'Rotterdam';
+        lat = 51.9225;
+        lng = 4.4792;
+      }
+
+      // Generate activities using the ActivityGeneratorService
+      debugPrint('🔍 Starting API calls to Google Places...');
+      final activities = await ActivityGeneratorService.generateActivities(
+        selectedMoods: widget.selectedMoods,
+        userLocation: userLocation,
+        lat: lat,
+        lng: lng,
+      );
+
+      debugPrint('✅ Generated ${activities.length} activities');
+      
+      // Log the activity names to see what we got
+      for (int i = 0; i < activities.length; i++) {
+        debugPrint('Activity ${i + 1}: ${activities[i].name} (${activities[i].rating} stars)');
+      }
+
+      // Wait for minimum loading time (6 seconds) for UX
+      await Future.delayed(const Duration(seconds: 6));
+
+      if (mounted) {
+        // Navigate to DayPlanScreen with the real activities
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => DayPlanScreen(
@@ -149,7 +148,51 @@ class _PlanLoadingScreenState extends State<PlanLoadingScreen> with SingleTicker
           ),
         );
       }
-    });
+    } catch (e) {
+      debugPrint('❌ Error generating activities: $e');
+      
+      // Fallback to sample activities if API fails
+      final fallbackActivities = [
+        Activity(
+          id: 'fallback-morning',
+          name: 'Local ${widget.selectedMoods.isNotEmpty ? widget.selectedMoods.first : "Adventure"} Morning',
+          description: 'Start your day with a ${widget.selectedMoods.join(" and ").toLowerCase()} experience in your area.',
+          startTime: DateTime.now().add(const Duration(hours: 1)),
+          duration: 60,
+          imageUrl: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b',
+          tags: ['Local 🏠', 'Morning 🌅', '${widget.selectedMoods.isNotEmpty ? widget.selectedMoods.first : "Adventure"} ✨'],
+          rating: 4.5,
+          timeSlot: 'morning',
+          timeSlotEnum: TimeSlot.morning,
+          location: const LatLng(51.9225, 4.4792),
+          paymentType: PaymentType.free,
+        ),
+        Activity(
+          id: 'fallback-afternoon',
+          name: 'Local ${widget.selectedMoods.isNotEmpty ? widget.selectedMoods.first : "Adventure"} Afternoon',
+          description: 'Continue your ${widget.selectedMoods.join(" and ").toLowerCase()} day with local discoveries.',
+          startTime: DateTime.now().add(const Duration(hours: 6)),
+          duration: 90,
+          imageUrl: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085',
+          tags: ['Local 🏠', 'Afternoon ☀️', '${widget.selectedMoods.isNotEmpty ? widget.selectedMoods.first : "Adventure"} ✨'],
+          rating: 4.3,
+          timeSlot: 'afternoon',
+          timeSlotEnum: TimeSlot.afternoon,
+          location: const LatLng(51.9225, 4.4792),
+          paymentType: PaymentType.reservation,
+        ),
+      ];
+
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => DayPlanScreen(
+              activities: fallbackActivities,
+            ),
+          ),
+        );
+      }
+    }
   }
 
   String _getCurrentMessage() {

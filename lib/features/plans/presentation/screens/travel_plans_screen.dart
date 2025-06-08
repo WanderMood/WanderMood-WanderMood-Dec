@@ -154,6 +154,7 @@ class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> with Sing
           ],
         ),
         floatingActionButton: FloatingActionButton(
+          heroTag: "create_travel_plan_fab",
           backgroundColor: const Color(0xFF12B347),
           child: const Icon(Icons.add),
           onPressed: () {

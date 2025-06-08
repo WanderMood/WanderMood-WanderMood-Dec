@@ -235,6 +235,7 @@ class _SavedPlacesScreenState extends ConsumerState<SavedPlacesScreen> {
           ],
         ),
         floatingActionButton: FloatingActionButton(
+          heroTag: "add_saved_place_fab",
           backgroundColor: const Color(0xFF12B347),
           child: const Icon(Icons.add),
           onPressed: () {

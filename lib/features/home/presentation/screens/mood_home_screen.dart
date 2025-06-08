@@ -216,7 +216,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       ),
       backgroundColor: Colors.white,
       builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.5,
+        height: MediaQuery.of(context).size.height * 0.25, // Reduced height to fix overflow
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,103 +272,33 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                   color: Colors.grey[600],
                 ),
               ),
-              onTap: () {
+              onTap: () async {
                 // Close the dialog
                 Navigator.pop(context);
-                // Show success message
+                // Show loading message
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Using current location'),
-                    duration: Duration(seconds: 2),
+                    content: Text('Getting your location...'),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+                // Trigger location update
+                final location = await ref.read(locationNotifierProvider.notifier).getCurrentLocation();
+                // Show result message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Location: ${location ?? "Could not get location"}'),
+                    duration: Duration(seconds: 3),
                   ),
                 );
               },
-            ),
-            
-            const Divider(height: 32),
-            
-            // Recent locations
-            Text(
-              'Recent Locations',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 8),
-            
-            // Location list
-            _buildLocationItem('Amsterdam', Icons.location_city),
-            _buildLocationItem('Rotterdam', Icons.location_city),
-            _buildLocationItem('Eindhoven', Icons.location_city),
-            _buildLocationItem('Utrecht', Icons.landscape),
-            _buildLocationItem('The Hague', Icons.beach_access),
-            _buildLocationItem('Delft', Icons.house),
-            
-            const Spacer(),
-            
-            // Add new location button
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                  // Show search dialog
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Search location feature coming soon'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.add),
-                label: const Text('Add New Location'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  side: BorderSide(color: const Color(0xFF12B347).withOpacity(0.5)),
-                  foregroundColor: const Color(0xFF12B347),
-                ),
-              ),
             ),
           ],
         ),
       ),
     );
   }
-  
-  // Build location item widget
-  Widget _buildLocationItem(String city, IconData icon) {
-    return Container(
-      width: 120,
-      margin: const EdgeInsets.only(right: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.15),
-            blurRadius: 8,
-            spreadRadius: 1,
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: const Color(0xFF12B347), size: 28),
-          const SizedBox(height: 8),
-          Text(
-            city,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   // Show dialog for talking to Moody
   void _showMoodyTalkDialog(BuildContext context) {
@@ -451,13 +381,36 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                 size: 20,
                               ),
                               const SizedBox(width: 4),
-                              Text(
-                                'Eindhoven',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                              Consumer(
+                                builder: (context, ref, child) {
+                                  final locationAsync = ref.watch(locationNotifierProvider);
+                                  return locationAsync.when(
+                                    data: (location) => Text(
+                                      location ?? 'Getting location...',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 16,
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    loading: () => Text(
+                                      'Getting location...',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 16,
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    error: (_, __) => Text(
+                                      'Location unavailable',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 16,
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                               const Icon(
                                 Icons.keyboard_arrow_down,
