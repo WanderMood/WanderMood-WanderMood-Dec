@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import '../config/api_keys.dart';
+import 'smart_api_cache.dart';
 
 class GooglePlace {
   final String placeId;
@@ -129,7 +130,7 @@ class GooglePlacesService {
   
   static String get _apiKey => ApiKeys.googlePlacesApi;
 
-  /// Search for places near a location based on query
+  /// Search for places near a location based on query with smart caching
   static Future<List<GooglePlace>> searchPlaces({
     required String query,
     required double lat,
@@ -137,6 +138,38 @@ class GooglePlacesService {
     int radius = 5000,
     String type = '',
   }) async {
+    final parameters = {
+      'query': query,
+      'lat': lat,
+      'lng': lng,
+      'radius': radius,
+      'type': type,
+    };
+
+    // Check cache first
+    final cachedResponse = await SmartApiCache.getCachedResponse(
+      endpoint: 'nearby_search',
+      parameters: parameters,
+    );
+
+    if (cachedResponse != null) {
+      // Return cached results
+      final List<dynamic> results = cachedResponse['results'] ?? [];
+      return results.map((result) => GooglePlace.fromJson(result)).toList();
+    }
+
+    // Check if we should make API call
+    final shouldCall = await SmartApiCache.shouldMakeApiCall(
+      endpoint: 'nearby_search',
+      parameters: parameters,
+    );
+
+    if (!shouldCall) {
+      debugPrint('🚫 API call blocked by smart cache system for: $query');
+      return [];
+    }
+
+    // Make API call
     try {
       if (_apiKey.isEmpty) {
         debugPrint('❌ Google Places API key not found');
@@ -150,7 +183,7 @@ class GooglePlacesService {
           'type=$type&'
           'key=$_apiKey';
 
-      debugPrint('🔍 Searching places: $query near ($lat, $lng)');
+      debugPrint('🔍 Making REAL API call for: $query near ($lat, $lng)');
       
       final response = await http.get(Uri.parse(url));
       
@@ -158,10 +191,17 @@ class GooglePlacesService {
         final data = json.decode(response.body);
         
         if (data['status'] == 'OK') {
+          // Cache the response for future use
+          await SmartApiCache.cacheResponse(
+            endpoint: 'nearby_search',
+            parameters: parameters,
+            response: data,
+          );
+
           final List<dynamic> results = data['results'] ?? [];
           final places = results.map((result) => GooglePlace.fromJson(result)).toList();
           
-          debugPrint('✅ Found ${places.length} places for: $query');
+          debugPrint('✅ Found ${places.length} places for: $query (CACHED for 30 days)');
           return places;
         } else {
           debugPrint('❌ Places API error: ${data['status']} - ${data['error_message']}');
@@ -177,8 +217,33 @@ class GooglePlacesService {
     }
   }
 
-  /// Get detailed information about a specific place
+  /// Get detailed information about a specific place with smart caching
   static Future<GooglePlaceDetails?> getPlaceDetails(String placeId) async {
+    final parameters = {'place_id': placeId};
+
+    // Check cache first
+    final cachedResponse = await SmartApiCache.getCachedResponse(
+      endpoint: 'place_details',
+      parameters: parameters,
+    );
+
+    if (cachedResponse != null) {
+      // Return cached details
+      return GooglePlaceDetails.fromJson(cachedResponse['result']);
+    }
+
+    // Check if we should make API call
+    final shouldCall = await SmartApiCache.shouldMakeApiCall(
+      endpoint: 'place_details',
+      parameters: parameters,
+    );
+
+    if (!shouldCall) {
+      debugPrint('🚫 Place details API call blocked by smart cache for: $placeId');
+      return null;
+    }
+
+    // Make API call
     try {
       if (_apiKey.isEmpty) {
         debugPrint('❌ Google Places API key not found');
@@ -190,12 +255,22 @@ class GooglePlacesService {
           'fields=place_id,name,formatted_address,formatted_phone_number,website,rating,types,photos,geometry,price_level,reviews,opening_hours&'
           'key=$_apiKey';
 
+      debugPrint('🔍 Making REAL API call for place details: $placeId');
+
       final response = await http.get(Uri.parse(url));
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         
         if (data['status'] == 'OK') {
+          // Cache the response for future use
+          await SmartApiCache.cacheResponse(
+            endpoint: 'place_details',
+            parameters: parameters,
+            response: data,
+          );
+
+          debugPrint('✅ Got place details for: ${data['result']['name']} (CACHED for 30 days)');
           return GooglePlaceDetails.fromJson(data['result']);
         } else {
           debugPrint('❌ Place details API error: ${data['status']}');
@@ -386,110 +461,10 @@ class GooglePlacesService {
     required double lng,
     int radius = 10000,
   }) async {
-    final List<GooglePlace> allPlaces = [];
-    
-    debugPrint('🎪 Tourism platform search for moods: $moods at ($lat, $lng)');
-    debugPrint('🔍 Search radius: ${radius}m (like GetYourGuide/TripAdvisor)');
-
-    // Get tourism queries for each selected mood
-    final List<Map<String, dynamic>> allQueries = [];
-    for (final mood in moods) {
-      final moodKey = mood.toLowerCase();
-      final queries = moodToTourismQueries[moodKey] ?? [];
-      allQueries.addAll(queries);
-      debugPrint('🎭 Mood "$mood" → ${queries.length} tourism platform queries');
-    }
-
-    // Remove duplicates while preserving order
-    final uniqueQueries = <String, Map<String, dynamic>>{};
-    for (final queryData in allQueries) {
-      final key = '${queryData['query']}_${queryData['type']}';
-      uniqueQueries[key] = queryData;
-    }
-
-    debugPrint('🎪 Total unique tourism queries: ${uniqueQueries.length}');
-
-    // Search using tourism platform strategy
-    for (final queryData in uniqueQueries.values) {
-      final query = queryData['query'] as String;
-      final type = queryData['type'] as String;
-      final minRating = queryData['minRating'] as double;
-      final minReviews = queryData['minReviews'] as int;
-      
-             debugPrint('🔍 Tourism search: "$query" (type: $type, min $minRating⭐, $minReviews+ reviews)');
-      
-      final places = await searchPlaces(
-        query: query, // Tourism platform search terms
-        lat: lat,
-        lng: lng,
-        radius: radius,
-        type: type,
-      );
-
-      if (places.isNotEmpty) {
-                 // Apply tourism platform quality filters
-         final popularPlaces = places.where((place) {
-           // Tourism platform popularity criteria
-           final rating = place.rating ?? 0.0;
-           final userRatingsTotal = place.userRatingsTotal ?? 0;
-           final isOperational = place.businessStatus == 'OPERATIONAL' || place.businessStatus == null;
-           
-           return rating >= minRating && 
-                  userRatingsTotal >= minReviews && 
-                  isOperational && 
-                  !_isEverydayFacility(place);
-         }).take(2).toList(); // Top 2 per query like tourism platforms
-        
-        allPlaces.addAll(popularPlaces);
-        debugPrint('   ✅ Found ${popularPlaces.length} popular "$query" experiences');
-        
-        // Log tourism-quality places
-        for (int i = 0; i < popularPlaces.length; i++) {
-          final place = popularPlaces[i];
-          debugPrint('      ${i + 1}. ${place.name} (${place.rating}⭐ from ${place.userRatingsTotal} reviews)');
-        }
-      } else {
-        debugPrint('   ❌ No popular "$query" experiences found');
-      }
-    }
-
-    // Remove duplicates and apply final tourism platform ranking
-    final uniquePlaces = <String, GooglePlace>{};
-    for (final place in allPlaces) {
-      if (!uniquePlaces.containsKey(place.placeId)) {
-        uniquePlaces[place.placeId] = place;
-      }
-    }
-
-    // Sort by tourism platform criteria: popularity score (rating × reviews) + photo bonus
-    final sortedPlaces = uniquePlaces.values.toList()
-      ..sort((a, b) {
-        // Tourism platform popularity score
-        final aPopularity = (a.rating ?? 0) * (a.userRatingsTotal ?? 0);
-        final bPopularity = (b.rating ?? 0) * (b.userRatingsTotal ?? 0);
-        
-        // Photo bonus (tourists love visual places)
-        final aPhotoBonus = a.photoReference != null ? 100 : 0;
-        final bPhotoBonus = b.photoReference != null ? 100 : 0;
-        
-        final aScore = aPopularity + aPhotoBonus;
-        final bScore = bPopularity + bPhotoBonus;
-        
-        return bScore.compareTo(aScore);
-      });
-
-    debugPrint('✅ Found ${sortedPlaces.length} tourism platform quality experiences');
-    
-    // Log final tourism platform results
-    debugPrint('📋 Top tourism platform experiences (like GetYourGuide/TripAdvisor):');
-    final topResults = sortedPlaces.take(15).toList();
-    for (int i = 0; i < (topResults.length > 8 ? 8 : topResults.length); i++) {
-      final place = topResults[i];
-      final popularity = (place.rating ?? 0) * (place.userRatingsTotal ?? 0);
-      debugPrint('   ${i + 1}. ${place.name} (${place.rating}⭐ × ${place.userRatingsTotal} reviews = ${popularity.toInt()} popularity)');
-    }
-    
-    return topResults;
+    // 🚨 API KILL SWITCH: This method would make dozens of API calls per mood search!
+    debugPrint('🚫 SEARCH BY MOOD DISABLED - Would have made ${moods.length * 10}+ API calls!');
+    debugPrint('💰 MASSIVE COST SAVINGS: Prevented tourism search for moods: $moods');
+    return [];
   }
 
   /// Check if a place is an everyday facility that tourists typically don't want

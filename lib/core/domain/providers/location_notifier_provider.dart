@@ -102,6 +102,11 @@ class LocationNotifier extends AsyncNotifier<String?> {
     return isSF;
   }
 
+  // Method to manually set a location
+  void setLocation(String locationName) {
+    state = AsyncValue.data(locationName);
+  }
+
   // Method to retry getting location
   Future<void> retryLocationAccess() async {
     await getCurrentLocation();

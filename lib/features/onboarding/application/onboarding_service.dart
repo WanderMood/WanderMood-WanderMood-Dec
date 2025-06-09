@@ -288,10 +288,9 @@ class OnboardingService extends _$OnboardingService {
     final locations = <Map<String, dynamic>>[];
     
     try {
-      if (_googlePlacesApiKey.isEmpty) {
-        print('Google Places API key is missing, using mock locations');
-        return _getMockLocations();
-      }
+      // Force using mock locations (Google Places API disabled)
+      print('🚫 Google Places API disabled - using mock locations');
+      return _getMockLocations();
     
       for (final location in analysis['recommendations'].split('\n')) {
         if (location.contains('destination')) {

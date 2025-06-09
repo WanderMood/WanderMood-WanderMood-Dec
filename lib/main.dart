@@ -100,6 +100,10 @@ class WanderMoodApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'WanderMood',
       debugShowCheckedModeBanner: false,
+      showPerformanceOverlay: false,
+      showSemanticsDebugger: false,
+      checkerboardRasterCacheImages: false,
+      checkerboardOffscreenLayers: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: userPrefs.getThemeMode(),

@@ -3,6 +3,12 @@ import 'package:flutter/foundation.dart';
 
 class ApiKeys {
   static String get googlePlacesApi {
+    // 🚫 HARD OVERRIDE: Always return empty to prevent ANY API usage
+    debugPrint('🚫 Google Places API permanently disabled to prevent costs');
+    return '';
+    
+    // DISABLED CODE (kept for reference but never executed):
+    /*
     try {
       // First try to get from .env file
       final envKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
@@ -28,5 +34,6 @@ class ApiKeys {
       debugPrint('❌ Error loading Google Maps API key: $e');
       return '';
     }
+    */
   }
 } 

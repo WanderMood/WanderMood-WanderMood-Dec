@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/places/models/place.dart';
+import 'package:wandermood/features/places/providers/saved_places_provider.dart';
+import 'package:wandermood/features/places/services/sharing_service.dart';
 import 'package:go_router/go_router.dart';
 
 class SavedPlacesScreen extends ConsumerStatefulWidget {
@@ -13,110 +15,86 @@ class SavedPlacesScreen extends ConsumerStatefulWidget {
 }
 
 class _SavedPlacesScreenState extends ConsumerState<SavedPlacesScreen> {
-  // Placeholder data for saved places
-  final List<Place> _savedPlaces = [
-    Place(
-      id: 'golden_gate',
-      name: 'Golden Gate Bridge',
-      address: 'Golden Gate Bridge, San Francisco, CA 94129',
-      rating: 4.8,
-      photos: ['assets/images/fallbacks/default.jpg'],
-      types: ['point_of_interest', 'tourist_attraction'],
-      location: const PlaceLocation(lat: 37.8199, lng: -122.4783),
-      description: 'Iconic suspension bridge spanning the Golden Gate Strait',
-      emoji: '🌉',
-      tag: 'Landmark',
-      isAsset: true,
-      activities: ['Sightseeing', 'Photography', 'Walking'],
-      dateAdded: DateTime.now().subtract(const Duration(days: 2)),
-    ),
-    Place(
-      id: 'fishermans_wharf',
-      name: 'Fisherman\'s Wharf',
-      address: 'Beach Street & The Embarcadero, San Francisco, CA',
-      rating: 4.5,
-      photos: ['assets/images/fallbacks/default.jpg'],
-      types: ['tourist_attraction', 'restaurant'],
-      location: const PlaceLocation(lat: 37.8080, lng: -122.4177),
-      description: 'Popular waterfront area with shopping, dining, and sea lions',
-      emoji: '🦭',
-      tag: 'Entertainment',
-      isAsset: true,
-      activities: ['Shopping', 'Dining', 'Sea Lion Watching'],
-      dateAdded: DateTime.now().subtract(const Duration(days: 5)),
-    ),
-    Place(
-      id: 'painted_ladies',
-      name: 'Painted Ladies',
-      address: 'Alamo Square, Hayes Valley, San Francisco, CA',
-      rating: 4.6,
-      photos: ['assets/images/fallbacks/default.jpg'],
-      types: ['tourist_attraction', 'landmark'],
-      location: const PlaceLocation(lat: 37.7764, lng: -122.4330),
-      description: 'Row of Victorian houses with a scenic backdrop of the city',
-      emoji: '🏠',
-      tag: 'Scenic',
-      isAsset: true,
-      activities: ['Photography', 'Sightseeing'],
-      dateAdded: DateTime.now().subtract(const Duration(days: 1)),
-    ),
-    Place(
-      id: 'lombard_street',
-      name: 'Lombard Street',
-      address: 'Lombard St, San Francisco, CA 94133',
-      rating: 4.4,
-      photos: ['assets/images/fallbacks/default.jpg'],
-      types: ['tourist_attraction', 'landmark'],
-      location: const PlaceLocation(lat: 37.8021, lng: -122.4186),
-      description: 'Famous winding street known as the "crookedest street in the world"',
-      emoji: '🛣️',
-      tag: 'Landmark',
-      isAsset: true,
-      activities: ['Photography', 'Walking'],
-      dateAdded: DateTime.now().subtract(const Duration(days: 3)),
-    ),
-    Place(
-      id: 'coit_tower',
-      name: 'Coit Tower',
-      address: '1 Telegraph Hill Blvd, San Francisco, CA 94133',
-      rating: 4.3,
-      photos: ['assets/images/fallbacks/default.jpg'],
-      types: ['tourist_attraction', 'landmark'],
-      location: const PlaceLocation(lat: 37.8025, lng: -122.4058),
-      description: 'Historic tower with panoramic views of the city and bay',
-      emoji: '🗼',
-      tag: 'Landmark',
-      isAsset: true,
-      activities: ['Sightseeing', 'Photography'],
-      dateAdded: DateTime.now().subtract(const Duration(days: 7)),
-    ),
-  ];
-
   // Filter state
   String _currentFilter = 'All';
   final List<String> _filterOptions = ['All', 'Landmarks', 'Food', 'Nature', 'Entertainment'];
 
   @override
   Widget build(BuildContext context) {
-    // Filter places if not 'All'
-    final filteredPlaces = _currentFilter == 'All'
-        ? _savedPlaces
-        : _savedPlaces.where((place) {
-            if (_currentFilter == 'Landmarks' && 
-                (place.types.contains('landmark') || place.tag == 'Landmark')) {
-              return true;
-            } else if (_currentFilter == 'Food' && 
-                (place.types.contains('restaurant') || place.types.contains('cafe'))) {
-              return true;
-            } else if (_currentFilter == 'Nature' && 
-                (place.types.contains('park') || place.tag == 'Nature')) {
-              return true;
-            } else if (_currentFilter == 'Entertainment' && 
-                (place.types.contains('entertainment') || place.tag == 'Entertainment')) {
-              return true;
-            }
-            return false;
-          }).toList();
+    final savedPlacesAsync = ref.watch(savedPlacesProvider);
+    
+    return savedPlacesAsync.when(
+      data: (savedPlaces) {
+        // Filter places if not 'All'
+        final filteredPlaces = _currentFilter == 'All'
+            ? savedPlaces
+            : savedPlaces.where((place) {
+                if (_currentFilter == 'Landmarks' && 
+                    (place.types.contains('landmark') || place.tag == 'Landmark')) {
+                  return true;
+                } else if (_currentFilter == 'Food' && 
+                    (place.types.contains('restaurant') || place.types.contains('cafe'))) {
+                  return true;
+                } else if (_currentFilter == 'Nature' && 
+                    (place.types.contains('park') || place.tag == 'Nature')) {
+                  return true;
+                } else if (_currentFilter == 'Entertainment' && 
+                    (place.types.contains('entertainment') || place.tag == 'Entertainment')) {
+                  return true;
+                }
+                return false;
+              }).toList();
+
+        return _buildScreenContent(context, filteredPlaces);
+      },
+      loading: () => Scaffold(
+        backgroundColor: Colors.grey[50],
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text(
+            'Saved Places',
+            style: GoogleFonts.museoModerno(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF12B347),
+            ),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+      error: (error, stack) => Scaffold(
+        backgroundColor: Colors.grey[50],
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text(
+            'Saved Places',
+            style: GoogleFonts.museoModerno(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF12B347),
+            ),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: Center(
+          child: Text('Error loading saved places: $error'),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScreenContent(BuildContext context, List<Place> filteredPlaces) {
 
     return SwirlBackground(
       child: Scaffold(
@@ -502,17 +480,30 @@ class _SavedPlacesScreenState extends ConsumerState<SavedPlacesScreen> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.share_outlined),
-                    onPressed: () {
-                      // Share place
+                    onPressed: () async {
+                      try {
+                        await SharingService.sharePlace(place);
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Failed to share place: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
                     },
                   ),
                   IconButton(
                     icon: const Icon(Icons.bookmark, color: Color(0xFF12B347)),
-                    onPressed: () {
-                      // Unsave place
-                      setState(() {
-                        _savedPlaces.removeWhere((p) => p.id == place.id);
-                      });
+                    onPressed: () async {
+                      await ref.read(savedPlacesProvider.notifier).removeSaved(place.id);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${place.name} removed from saved places'),
+                          backgroundColor: Colors.orange,
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
                     },
                   ),
                 ],

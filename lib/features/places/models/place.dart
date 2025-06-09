@@ -19,6 +19,11 @@ class Place with _$Place {
     @Default(false) bool isAsset,
     @Default([]) List<String> activities,
     DateTime? dateAdded,
+    PlaceOpeningHours? openingHours,
+    // New fields for enhanced place cards
+    @Default(0) int reviewCount,
+    @Default('Medium') String energyLevel, // Low, Medium, High
+    @Default(false) bool isIndoor,
   }) = _Place;
 
   factory Place.fromJson(Map<String, dynamic> json) => _$PlaceFromJson(json);
@@ -33,4 +38,30 @@ class PlaceLocation with _$PlaceLocation {
 
   factory PlaceLocation.fromJson(Map<String, dynamic> json) => 
       _$PlaceLocationFromJson(json);
+}
+
+@freezed
+class PlaceOpeningHours with _$PlaceOpeningHours {
+  const factory PlaceOpeningHours({
+    required bool isOpen,
+    String? currentStatus,
+    @Default([]) List<String> weekdayText,
+    DailyHours? todayHours,
+  }) = _PlaceOpeningHours;
+
+  factory PlaceOpeningHours.fromJson(Map<String, dynamic> json) => 
+      _$PlaceOpeningHoursFromJson(json);
+}
+
+@freezed
+class DailyHours with _$DailyHours {
+  const factory DailyHours({
+    required String openTime,
+    required String closeTime,
+    @Default(false) bool isOpenAllDay,
+    @Default(false) bool isClosed,
+  }) = _DailyHours;
+
+  factory DailyHours.fromJson(Map<String, dynamic> json) => 
+      _$DailyHoursFromJson(json);
 } 

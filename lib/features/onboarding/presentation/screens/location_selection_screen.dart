@@ -121,7 +121,7 @@ class _LocationSelectionScreenState extends ConsumerState<LocationSelectionScree
                   ),
                   child: GooglePlaceAutoCompleteTextField(
                     textEditingController: _searchController,
-                    googleAPIKey: dotenv.env['GOOGLE_PLACES_API_KEY'] ?? '',
+                    googleAPIKey: '', // Google Places API disabled
                     inputDecoration: InputDecoration(
                       hintText: 'Search location...',
                       hintStyle: GoogleFonts.poppins(

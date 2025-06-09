@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
@@ -6,9 +7,10 @@ import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/home/presentation/screens/main_home_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/mood_home_screen.dart';
 import 'package:wandermood/features/plans/presentation/widgets/plan_loading_overlay.dart';
+import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:go_router/go_router.dart';
 
-class PlanConfirmationScreen extends StatelessWidget {
+class PlanConfirmationScreen extends ConsumerWidget {
   final List<Activity> activities;
 
   const PlanConfirmationScreen({
@@ -26,7 +28,7 @@ class PlanConfirmationScreen extends StatelessWidget {
   List<Activity> get paidActivities =>
       activities.where((activity) => activity.isPaid).toList();
 
-  void _navigateWithLoading(BuildContext context, String message, {String? destination}) {
+  void _navigateWithLoading(BuildContext context, WidgetRef ref, String message, {String? destination}) async {
     // Show loading overlay
     showDialog(
       context: context,
@@ -34,26 +36,91 @@ class PlanConfirmationScreen extends StatelessWidget {
       builder: (context) => PlanLoadingOverlay(message: message),
     );
 
-    // Wait for 2-3 seconds before navigating
-    Future.delayed(const Duration(seconds: 2), () {
-      // Close the loading overlay
-      Navigator.pop(context);
+    try {
+      // Get the scheduled activity service
+      final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
       
-      if (destination != null) {
-        // Navigate to the specified destination
-        context.go(destination);
-      } else {
-        // Default navigation to main screen
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const MainHomeScreen()),
-        (route) => false,
-      );
+      debugPrint('About to save ${activities.length} activities to Supabase');
+      
+      try {
+        // Save activities to Supabase
+        debugPrint('Activities to save: ${activities.map((a) => a.name).join(', ')}');
+        for (final activity in activities) {
+          debugPrint('Activity: ${activity.name}, StartTime: ${activity.startTime}, Type: ${activity.paymentType}');
+        }
+        await scheduledActivityService.saveScheduledActivities(activities, isConfirmed: true);
+        debugPrint('Activities saved successfully');
+        
+        // Force a reload of the activities in the MyDayScreen
+        ref.invalidate(scheduledActivityServiceProvider);
+      } catch (serviceError) {
+        debugPrint('Warning: Error saving activities: $serviceError');
+        debugPrint('Stack trace: ${StackTrace.current}');
+        // Continue with navigation despite service error
       }
-    });
+      
+      // Wait for 2 seconds before navigating
+      await Future.delayed(const Duration(seconds: 2));
+      
+      // Close the loading overlay
+      if (context.mounted) {
+        Navigator.pop(context);
+        
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Your activities have been saved successfully!',
+              style: GoogleFonts.poppins(),
+            ),
+            backgroundColor: const Color(0xFF12B347),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        
+        if (destination != null) {
+          // Navigate to the specified destination
+          context.go(destination);
+        } else {
+          // Default navigation to main screen
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const MainHomeScreen()),
+            (route) => false,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error in _navigateWithLoading: $e');
+      
+      // Close the loading overlay
+      if (context.mounted) {
+        Navigator.pop(context);
+        
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to save activities. Please try again.',
+              style: GoogleFonts.poppins(),
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -259,7 +326,7 @@ class PlanConfirmationScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ElevatedButton(
-          onPressed: () => _navigateWithLoading(context, 'Finalizing your bookings...'),
+          onPressed: () => _navigateWithLoading(context, ref, 'Finalizing your bookings...'),
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF12B347),
             foregroundColor: Colors.white,
@@ -282,7 +349,8 @@ class PlanConfirmationScreen extends StatelessWidget {
         const SizedBox(height: 12),
         OutlinedButton(
           onPressed: () => _navigateWithLoading(
-            context, 
+            context,
+            ref, 
             'Saving your plan for later...', 
             destination: '/explore'
           ),
@@ -306,7 +374,7 @@ class PlanConfirmationScreen extends StatelessWidget {
         const SizedBox(height: 16),
         Center(
           child: TextButton(
-            onPressed: () => _navigateWithLoading(context, 'Getting your free activities ready...'),
+            onPressed: () => _navigateWithLoading(context, ref, 'Getting your free activities ready...'),
             child: Text(
               'Start with Free Activities',
               style: GoogleFonts.poppins(

@@ -4,6 +4,7 @@ import 'package:flutter_google_maps_webservices/places.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter/foundation.dart';
 import '../models/place.dart';
+import 'opening_hours_service.dart';
 
 part 'places_service.g.dart';
 
@@ -24,7 +25,9 @@ class PlacesService extends _$PlacesService {
     debugPrint('📍 API Key from env: ${apiKey?.substring(0, min(8, apiKey?.length ?? 0))}...');
     
     if (apiKey == null || apiKey.isEmpty) {
-      throw Exception('Google Places API key not found in .env file');
+      debugPrint('🚫 Google Places API key disabled - using offline data only');
+      _isInitialized = true; // Still mark as initialized to continue with offline data
+      return;
     }
 
     _places = GoogleMapsPlaces(apiKey: apiKey);
@@ -34,15 +37,21 @@ class PlacesService extends _$PlacesService {
 
   int min(int a, int b) => a < b ? a : b;
 
-  /// Search for places based on a query string
+  /// Search for places based on a query string with smart caching
   Future<List<PlacesSearchResult>> searchPlaces(String query) async {
     if (!_isInitialized) {
       debugPrint('⚠️ Service not initialized, initializing now...');
       await _initializePlaces();
     }
     
+    // If Places API is disabled (no API key), return empty results
+    if (_places == null) {
+      debugPrint('🚫 Places API disabled - returning empty results for query: $query');
+      return [];
+    }
+    
     try {
-      debugPrint('🔍 Searching for places with query: $query');
+      debugPrint('🔍 Smart search for places with query: $query');
       
       // Add a timeout to prevent long-running API calls
       final response = await _places.searchByText(
@@ -79,11 +88,17 @@ class PlacesService extends _$PlacesService {
     }
   }
 
-  /// Get detailed place information by place ID
+  /// Get detailed place information by place ID with smart caching
   Future<Map<String, dynamic>> getPlaceDetails(String placeId) async {
     if (!_isInitialized) {
       debugPrint('⚠️ Places service not initialized, initializing now...');
-      await build();
+      await _initializePlaces();
+    }
+
+    // If Places API is disabled, return empty details
+    if (_places == null) {
+      debugPrint('🚫 Places API disabled - returning empty details for place: $placeId');
+      return {};
     }
 
     debugPrint('🏷️ Getting details for place: $placeId');
@@ -145,17 +160,19 @@ class PlacesService extends _$PlacesService {
         final googlePlaceId = placeId.substring('google_'.length);
         final details = await getPlaceDetails(googlePlaceId);
         
+        final placeTypes = List<String>.from(details['types'] ?? []);
         return Place(
           id: placeId,
           name: details['name'] ?? 'Unknown Place',
           address: details['address'] ?? 'No address',
           rating: details['rating'] ?? 0.0,
           photos: List<String>.from(details['photos'] ?? []),
-          types: List<String>.from(details['types'] ?? []),
+          types: placeTypes,
           location: PlaceLocation(
             lat: details['location']['lat'] ?? 0.0,
             lng: details['location']['lng'] ?? 0.0,
           ),
+          openingHours: OpeningHoursService.generateOpeningHours(placeTypes),
         );
       } else {
         // This is for our hardcoded places
@@ -188,7 +205,7 @@ class PlacesService extends _$PlacesService {
         name: 'Markthal Rotterdam',
         address: 'Dominee Jan Scharpstraat 298, 3011 GZ Rotterdam',
         rating: 4.6,
-        photos: ['assets/images/fallbacks/default.jpg'],
+        photos: ['assets/images/philipp-kammerer-6Mxb_mZ_Q8E-unsplash.jpg'],
         types: ['point_of_interest', 'food', 'establishment'],
         location: const PlaceLocation(lat: 51.920, lng: 4.487),
         description: 'Stunning market hall with food stalls and apartments',
@@ -196,13 +213,14 @@ class PlacesService extends _$PlacesService {
         tag: 'Food & Culture',
         isAsset: true,
         activities: ['Food Tour', 'Shopping', 'Architecture'],
+        openingHours: OpeningHoursService.generateOpeningHours(['food', 'establishment']),
       ),
       Place(
         id: 'fenixfood',
         name: 'Fenix Food Factory',
         address: 'Veerlaan 19D, 3072 AN Rotterdam',
         rating: 4.6,
-        photos: ['assets/images/fallbacks/default.jpg'],
+        photos: ['assets/images/tom-podmore-3mEK924ZuTs-unsplash.jpg'],
         types: ['point_of_interest', 'food', 'establishment'],
         location: const PlaceLocation(lat: 51.898, lng: 4.492),
         description: 'Trendy food hall in historic warehouse',
@@ -210,13 +228,14 @@ class PlacesService extends _$PlacesService {
         tag: 'Food & Drinks',
         isAsset: true,
         activities: ['Food Tasting', 'Craft Beer', 'Local Market'],
+        openingHours: OpeningHoursService.generateOpeningHours(['restaurant', 'food']),
       ),
       Place(
         id: 'euromast',
         name: 'Euromast Experience',
         address: 'Parkhaven 20, 3016 GM Rotterdam',
         rating: 4.7,
-        photos: ['assets/images/fallbacks/default.jpg'],
+        photos: ['assets/images/pietro-de-grandi-T7K4aEPoGGk-unsplash.jpg'],
         types: ['point_of_interest', 'tourist_attraction'],
         location: const PlaceLocation(lat: 51.905, lng: 4.467),
         description: 'Iconic tower with panoramic city views',
@@ -224,6 +243,7 @@ class PlacesService extends _$PlacesService {
         tag: 'Landmark',
         isAsset: true,
         activities: ['Observation', 'Fine Dining', 'Abseiling'],
+        openingHours: OpeningHoursService.generateOpeningHours(['tourist_attraction']),
       ),
     ];
   }
