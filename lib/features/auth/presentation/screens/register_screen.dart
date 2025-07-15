@@ -3,10 +3,12 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import '../../domain/providers/auth_provider.dart';
 import '../../application/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/config/supabase_config.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -37,7 +39,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _handleSignUp() async {
-    debugPrint('Sign up button pressed');
+    debugPrint('🔥 NEW CODE: Sign up button pressed - LATEST VERSION');
     if (!_formKey.currentState!.validate()) {
       debugPrint('Form validation failed');
       return;
@@ -69,35 +71,95 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       // Set authentication state
       await prefs.setBool('isAuthenticated', true);
       
-      // Perform signup
-      await ref.read(authStateProvider.notifier).signUp(
-        email: email,
-        password: password,
-        name: name,
-        onSuccess: () async {
-          debugPrint('Signup successful, navigating to welcome screen');
-          if (mounted) {
-            setState(() => _isLoading = false);
-            
-            // Store user state
-            await prefs.setBool('hasCompletedAuth', true);
-            await prefs.setBool('hasCompletedOnboarding', false);
-            await prefs.setBool('hasCompletedPreferences', false);
-            
-            // Navigate to welcome screen
-            context.go('/welcome');
+      // Perform proper Supabase signup with email verification
+      debugPrint('🔐 NEW CODE: Starting REAL Supabase signup with email verification - NO BYPASS!');
+      
+      try {
+        final response = await Supabase.instance.client.auth.signUp(
+          email: email,
+          password: password,
+          data: {'name': name},
+          emailRedirectTo: 'io.supabase.wandermood://auth-callback',
+        );
+        
+        debugPrint('📧 Signup response: ${response.user?.id}');
+        debugPrint('📧 Signup session: ${response.session?.user?.id}');
+        
+        if (response.user != null) {
+          debugPrint('✅ Signup successful! User ID: ${response.user!.id}');
+          
+          // FORCE EMAIL VERIFICATION FLOW FOR BETTER UX
+          // Even if Supabase auto-confirms, we want users to see the verification screen
+          debugPrint('🔄 Forcing email verification flow for better onboarding UX');
+          
+          // Sign out the auto-authenticated user to force email verification
+          if (response.session != null) {
+            debugPrint('🔒 Signing out auto-authenticated user to force email verification');
+            await Supabase.instance.client.auth.signOut();
           }
-        },
-        onError: (error) {
-          debugPrint('Signup error: $error');
+          
           if (mounted) {
             setState(() => _isLoading = false);
+            
+            // Show success message and navigate to email verification screen
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(error)),
+              SnackBar(
+                content: Text('Account created! Please check your email at $email to verify your account.'),
+                duration: const Duration(seconds: 5),
+                backgroundColor: Colors.green,
+              ),
+            );
+            
+            // Navigate to email verification screen
+            debugPrint('🚀 Navigating to email verification screen...');
+            context.go('/auth/verify-email?email=${Uri.encodeComponent(email)}');
+          }
+        } else {
+          throw Exception('Signup failed: No user returned');
+        }
+      } on AuthException catch (e) {
+        debugPrint('❌ Auth error: ${e.message}');
+        if (mounted) {
+          setState(() => _isLoading = false);
+          
+          // Handle "User already registered" case
+          if (e.message.contains('User already registered')) {
+            // Show more helpful message and redirect to login
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('This email is already registered. Please sign in instead.'),
+                backgroundColor: Colors.orange,
+                duration: Duration(seconds: 4),
+              ),
+            );
+            
+            // Redirect to login screen after a short delay
+            Future.delayed(const Duration(seconds: 2), () {
+              if (mounted) {
+                context.go('/login');
+              }
+            });
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Signup failed: ${e.message}'),
+                backgroundColor: Colors.red,
+              ),
             );
           }
-        },
-      );
+        }
+      } catch (e) {
+        debugPrint('❌ Unexpected error: $e');
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Signup failed: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     } catch (e) {
       debugPrint('Exception during signup: $e');
       if (mounted) {
@@ -353,7 +415,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ],
                   ),
                   
-                  const SizedBox(height: 24),
+                  // Add bottom padding to account for system navigation area
+                  SizedBox(height: MediaQuery.of(context).padding.bottom + 24),
                 ],
               ),
             ),

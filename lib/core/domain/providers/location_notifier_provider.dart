@@ -38,10 +38,10 @@ class LocationNotifier extends AsyncNotifier<String?> {
         return LocationService.defaultLocation['name'] as String;
       }
 
-      // Get current position with higher accuracy settings
+      // Get current position with faster timeout and lower accuracy settings  
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
+        desiredAccuracy: LocationAccuracy.low, // Changed from high to low for faster response
+        timeLimit: const Duration(seconds: 5), // Reduced from 10s to 5s
       );
       debugPrint('Got position: ${position.latitude}, ${position.longitude}');
       

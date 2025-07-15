@@ -767,7 +767,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
     // Format the location to be more readable
     String formattedLocation = location;
     if (location.contains('LatLng')) {
-      formattedLocation = 'Golden Gate Park, San Francisco';
+      formattedLocation = 'Vondelpark, Amsterdam';
     }
     
     // Determine activity type icon based on title or tags
@@ -1792,7 +1792,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     // Format the location to be more readable
     String formattedLocation = location;
     if (location.contains('LatLng')) {
-      formattedLocation = 'Golden Gate Park, San Francisco';
+      formattedLocation = 'Vondelpark, Amsterdam';
     }
     
     // Determine activity type icon based on title or tags

@@ -19,8 +19,8 @@ class ScheduledActivityService {
   final SupabaseClient _client;
   final SchemaHelper _schemaHelper;
   
-  // In-memory storage for activities when database operations fail
-  static final List<Activity> _demoActivities = [];
+  // In-memory fallback storage
+  static final List<Activity> _inMemoryActivities = [];
   
   ScheduledActivityService(this._client, this._schemaHelper);
   
@@ -29,27 +29,56 @@ class ScheduledActivityService {
     try {
       print('ScheduledActivityService: saveScheduledActivities called with ${activities.length} activities');
       
-      // First get the current user id
+      // Require authentication
       final userId = _client.auth.currentUser?.id;
       if (userId == null) {
-        print('ScheduledActivityService: User not logged in');
-        // For demo purposes, use a demo user ID
-        final demoUserId = 'demo-user-${DateTime.now().millisecondsSinceEpoch}';
-        print('ScheduledActivityService: Using demo user ID: $demoUserId');
-        
-        // Continue with demo user ID instead of throwing
-        final activityData = _prepareActivityData(activities, demoUserId, isConfirmed);
-        return _insertActivitiesWithFallback(activityData);
+        throw Exception('User must be authenticated to save scheduled activities');
       }
       
       print('ScheduledActivityService: User ID: $userId');
       final activityData = _prepareActivityData(activities, userId, isConfirmed);
-      return _insertActivitiesWithFallback(activityData);
+      await _insertActivities(activityData);
     } catch (e) {
-      print('ScheduledActivityService: Error saving scheduled activities: $e');
-      // Don't rethrow - let the app continue without disruption
-      // This is a demo app, so we'll just log the error
-      return;
+      print('ScheduledActivityService: Database save failed: $e');
+      print('ScheduledActivityService: Using in-memory fallback storage');
+      
+      // Fallback to in-memory storage
+      _inMemoryActivities.clear();
+      _inMemoryActivities.addAll(activities);
+      
+      print('ScheduledActivityService: Saved ${activities.length} activities to memory');
+      // Don't rethrow - we have a fallback solution
+    }
+  }
+  
+  /// Clear all scheduled activities for the current user (used when generating new mood-based plans)
+  Future<void> clearAllScheduledActivities() async {
+    try {
+      // Require authentication
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('User must be authenticated to clear scheduled activities');
+      }
+      
+      print('🧹 Clearing all scheduled activities for user $userId');
+      
+      await _client
+          .from('scheduled_activities')
+          .delete()
+          .eq('user_id', userId);
+      
+      print('✅ Successfully cleared all scheduled activities');
+      
+      // Also clear in-memory fallback storage
+      _inMemoryActivities.clear();
+      print('✅ Cleared in-memory fallback storage');
+      
+    } catch (e) {
+      print('❌ Error clearing scheduled activities: $e');
+      // Clear in-memory fallback even if database fails
+      _inMemoryActivities.clear();
+      print('✅ Cleared in-memory fallback storage (database failed)');
+      rethrow;
     }
   }
   
@@ -76,109 +105,57 @@ class ScheduledActivityService {
     }).toList();
   }
   
-  // Helper to insert activities with fallback
-  Future<void> _insertActivitiesWithFallback(List<Map<String, dynamic>> activityData) async {
+  // Helper to insert activities
+  Future<void> _insertActivities(List<Map<String, dynamic>> activityData) async {
     try {
-      // Insert into the scheduled_activities table
-      print('ScheduledActivityService: Inserting ${activityData.length} activities into Supabase');
+      print('ScheduledActivityService: Inserting ${activityData.length} activities');
+      
       await _client.from('scheduled_activities').insert(activityData);
       print('ScheduledActivityService: Activities inserted successfully');
     } catch (e) {
-      print('ScheduledActivityService: Warning: Failed to save activities to Supabase: $e');
+      print('ScheduledActivityService: Failed to save activities to Supabase: $e');
       
-      // Try to create the table if it doesn't exist - this is for development/demo only
+      // Try to create the table if it doesn't exist
       if (e.toString().contains('does not exist') || e.toString().contains('relation') || e.toString().contains('42P01')) {
         print('ScheduledActivityService: Table may not exist, attempting to create it...');
         try {
-          // Try to create the table using the schema helper
           await _schemaHelper.createScheduledActivitiesTable();
           print('ScheduledActivityService: Table created successfully, retrying insert');
           
-          // Retry the insert
           await _client.from('scheduled_activities').insert(activityData);
           print('ScheduledActivityService: Activities inserted successfully after table creation');
-          return;
         } catch (tableError) {
           print('ScheduledActivityService: Failed to create table: $tableError');
+          rethrow;
         }
+      } else {
+        rethrow;
       }
-      
-      // For demo purposes, save the data locally in memory
-      print('ScheduledActivityService: Storing activities in memory for demo purposes');
-      _demoActivities.clear();
-      
-      // Convert the map data back to Activity objects
-      for (final data in activityData) {
-        final tags = (data['tags'] as String).split(',');
-        final location = LatLng(
-          data['latitude'] as double, 
-          data['longitude'] as double
-        );
-        
-        // Parse payment type
-        final paymentTypeStr = data['payment_type'] as String;
-        final paymentType = PaymentType.values.firstWhere(
-          (e) => e.toString().split('.').last == paymentTypeStr,
-          orElse: () => PaymentType.free,
-        );
-        
-        // Create activity
-        final activity = Activity(
-          id: data['activity_id'],
-          name: data['name'],
-          description: data['description'],
-          imageUrl: data['image_url'],
-          startTime: DateTime.parse(data['start_time']),
-          duration: data['duration'],
-          timeSlot: 'all-day', // Placeholder
-          timeSlotEnum: TimeSlot.morning, // Placeholder
-          tags: tags,
-          location: location,
-          paymentType: paymentType,
-          rating: 4.5, // Default
-          isPaid: paymentType != PaymentType.free,
-        );
-        
-        _demoActivities.add(activity);
-      }
-      
-      print('ScheduledActivityService: Stored ${_demoActivities.length} activities in memory');
-      await Future.delayed(const Duration(milliseconds: 500)); // Simulate some processing time
-      return; // Return normally as if it succeeded
     }
   }
   
   /// Get all scheduled activities for the current user
   Future<List<Activity>> getScheduledActivities() async {
     try {
-      // 🚫 REMOVED: All hardcoded demo activities - now returns empty for development
-      // First check if we have demo activities in memory
-      if (_demoActivities.isNotEmpty) {
-        print('ScheduledActivityService: Returning ${_demoActivities.length} in-memory activities');
-        return List<Activity>.from(_demoActivities);
-      }
-      
-      // Get current user id
+      // Require authentication
       final userId = _client.auth.currentUser?.id;
       if (userId == null) {
-        print('ScheduledActivityService: User not logged in - returning empty list for development');
-        // 🎯 DEVELOPMENT MODE: Return empty list instead of mock data
-        return <Activity>[];
+        throw Exception('User must be authenticated to view scheduled activities');
       }
       
       print('ScheduledActivityService: Getting activities for user $userId');
       
-      // Query scheduled activities for this user, ordered by start time
+      // Query the scheduled_activities table
       final response = await _client
           .from('scheduled_activities')
           .select()
           .eq('user_id', userId)
-          .order('start_time');
+          .order('start_time', ascending: true);
       
-      print('ScheduledActivityService: Raw response length: ${(response as List).length}');
+      print('ScheduledActivityService: Raw response length: ${response.length}');
       
       // Convert response to Activity objects
-      final activities = (response as List).map((json) {
+      final activities = response.map((json) {
         print('ScheduledActivityService: Processing activity: ${json['name']}');
         
         // Parse tags and create a LatLng object
@@ -234,12 +211,21 @@ class ScheduledActivityService {
       print('ScheduledActivityService: Returning ${activities.length} activities');
       return activities;
     } catch (e) {
-      print('Error getting scheduled activities: $e');
-      print('Stack trace: ${StackTrace.current}');
+      print('ScheduledActivityService: Database query failed: $e');
+      print('ScheduledActivityService: Using in-memory fallback storage');
       
-      // 🎯 DEVELOPMENT MODE: Return empty list instead of demo activities
-      print('ScheduledActivityService: Error loading activities - returning empty list for development');
-      return <Activity>[];
+      // Return in-memory activities as fallback
+      final activities = _inMemoryActivities.where((activity) {
+        // Filter activities for today
+        final now = DateTime.now();
+        final activityDate = activity.startTime;
+        return activityDate.year == now.year &&
+               activityDate.month == now.month &&
+               activityDate.day == now.day;
+      }).toList();
+      
+      print('ScheduledActivityService: Returning ${activities.length} activities from memory');
+      return activities;
     }
   }
   
@@ -265,18 +251,47 @@ class ScheduledActivityService {
   /// Delete a scheduled activity
   Future<void> deleteScheduledActivity(String activityId) async {
     try {
+      // Require authentication
       final userId = _client.auth.currentUser?.id;
       if (userId == null) {
-        throw Exception('User not logged in');
+        throw Exception('User must be authenticated to delete scheduled activities');
       }
+      
+      print('ScheduledActivityService: Deleting activity $activityId for user $userId');
       
       await _client
           .from('scheduled_activities')
           .delete()
           .eq('user_id', userId)
           .eq('activity_id', activityId);
+      
+      print('ScheduledActivityService: Activity deleted successfully');
     } catch (e) {
-      print('Error deleting scheduled activity: $e');
+      print('ScheduledActivityService: Error deleting scheduled activity: $e');
+      rethrow;
+    }
+  }
+  
+  /// Update a scheduled activity
+  Future<void> updateScheduledActivity(String activityId, Map<String, dynamic> updates) async {
+    try {
+      // Require authentication
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('User must be authenticated to update scheduled activities');
+      }
+      
+      print('ScheduledActivityService: Updating activity $activityId for user $userId');
+      
+      await _client
+          .from('scheduled_activities')
+          .update(updates)
+          .eq('user_id', userId)
+          .eq('activity_id', activityId);
+      
+      print('ScheduledActivityService: Activity updated successfully');
+    } catch (e) {
+      print('ScheduledActivityService: Error updating scheduled activity: $e');
       rethrow;
     }
   }

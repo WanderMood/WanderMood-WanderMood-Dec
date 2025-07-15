@@ -15,7 +15,7 @@ class UserLocation extends _$UserLocation {
     return await getCurrentLocation();
   }
 
-  /// Get current user location with proper error handling
+  /// Get current user location with proper error handling and quick fallback
   Future<Position?> getCurrentLocation() async {
     try {
       // Check if we have a recent cached position
@@ -30,7 +30,7 @@ class UserLocation extends _$UserLocation {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         debugPrint('🚫 Location services are disabled');
-        return null;
+        return _getFallbackPosition();
       }
 
       // Check location permissions
@@ -39,40 +39,46 @@ class UserLocation extends _$UserLocation {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           debugPrint('🚫 Location permissions are denied');
-          return null;
+          return _getFallbackPosition();
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
         debugPrint('🚫 Location permissions are permanently denied');
-        return null;
+        return _getFallbackPosition();
       }
 
-      // Get current position with longer timeout and lower accuracy for better success rate
+      // Get current position with MUCH shorter timeout and lower accuracy for better success rate
       debugPrint('📍 Getting current location...');
       Position? position;
       
       try {
+        // Reduced timeout from 30s to 5s for much faster response
         position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.medium, // Changed from high to medium for better success rate
-          timeLimit: const Duration(seconds: 30), // Increased timeout
+          desiredAccuracy: LocationAccuracy.low, // Changed from medium to low for faster response
+          timeLimit: const Duration(seconds: 5), // Reduced from 30s to 5s
         );
+        debugPrint('✅ Got fresh location: ${position.latitude}, ${position.longitude}');
       } catch (e) {
-        debugPrint('⚠️ Current location failed, trying last known position: $e');
+        debugPrint('⚠️ Current location failed after 5s timeout: $e');
         try {
+          // Quick fallback to last known position
           position = await Geolocator.getLastKnownPosition();
           if (position != null) {
-            debugPrint('📍 Using last known position: ${position.latitude}, ${position.longitude}');
+            debugPrint('📍 Got last known position: ${position.latitude}, ${position.longitude}');
+          } else {
+            debugPrint('❌ No last known position available');
+            return _getFallbackPosition();
           }
         } catch (e2) {
           debugPrint('❌ Last known position also failed: $e2');
-          rethrow;
+          return _getFallbackPosition();
         }
       }
 
       if (position == null) {
-        debugPrint('❌ No position available');
-        return null;
+        debugPrint('❌ No position available, using fallback');
+        return _getFallbackPosition();
       }
 
       _cachedPosition = position;
@@ -83,28 +89,31 @@ class UserLocation extends _$UserLocation {
       
     } catch (e) {
       debugPrint('❌ Error getting location: $e');
-      
-      // For testing purposes, provide a fallback location (Rotterdam city center)
-      // In production, you might want to return null instead
-      final fallbackPosition = Position(
-        latitude: 51.9225, // Rotterdam city center
-        longitude: 4.4792,
-        timestamp: DateTime.now(),
-        accuracy: 100.0,
-        altitude: 0.0,
-        altitudeAccuracy: 0.0,
-        heading: 0.0,
-        headingAccuracy: 0.0,
-        speed: 0.0,
-        speedAccuracy: 0.0,
-        isMocked: true,
-      );
-      
-      debugPrint('🎯 Using fallback location for testing: Rotterdam (${fallbackPosition.latitude}, ${fallbackPosition.longitude})');
-      _cachedPosition = fallbackPosition;
-      _lastUpdate = DateTime.now();
-      return fallbackPosition;
+      return _getFallbackPosition(); // Always return fallback instead of null
     }
+  }
+
+  /// Create a fallback position for Rotterdam when GPS fails
+  Position _getFallbackPosition() {
+    debugPrint('🏭 Using Rotterdam fallback position');
+    final fallbackPosition = Position(
+      latitude: 51.9225, // Rotterdam coordinates
+      longitude: 4.4792,
+      timestamp: DateTime.now(),
+      accuracy: 1000, // 1km accuracy to indicate this is estimated
+      altitude: 0,
+      altitudeAccuracy: 0,
+      heading: 0,
+      headingAccuracy: 0,
+      speed: 0,
+      speedAccuracy: 0,
+      isMocked: true, // Mark as mocked so app knows it's fallback
+    );
+    
+    _cachedPosition = fallbackPosition;
+    _lastUpdate = DateTime.now();
+    
+    return fallbackPosition;
   }
 
   /// Force refresh location

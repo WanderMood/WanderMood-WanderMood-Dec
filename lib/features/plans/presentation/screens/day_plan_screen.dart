@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:intl/intl.dart';
@@ -9,7 +10,11 @@ import 'package:wandermood/features/plans/presentation/sheets/plan_summary_sheet
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/plans/widgets/activity_detail_screen.dart';
 import 'package:wandermood/features/plans/providers/selected_activities_provider.dart';
-import 'dart:math';
+import 'package:wandermood/features/plans/services/activity_generator_service.dart';
+import 'package:wandermood/core/services/wandermood_ai_service.dart' as ai_service;
+import 'package:wandermood/core/models/ai_recommendation.dart';
+import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
+import 'package:wandermood/core/extensions/string_extensions.dart';
 
 class DayPlanScreen extends ConsumerStatefulWidget {
   final List<Activity> activities;
@@ -49,32 +54,231 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
     ref.read(selectedActivitiesProvider.notifier).toggleActivity(activity.id);
   }
 
-  void _refreshActivity(Activity activity) {
-    setState(() {
-      // Increment refresh count on the activity
-      final refreshedActivity = activity.copyWith(
-        refreshCount: activity.refreshCount + 1,
+  void _refreshActivity(Activity activity) async {
+    // Check if user has reached the limit
+    if (activity.refreshCount >= 3) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'You\'ve used all 3 alternative options for this activity!',
+            style: GoogleFonts.poppins(),
+          ),
+          backgroundColor: Colors.orange.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
       );
+      return;
+    }
+
+    try {
+      // Show loading feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Finding new options for ${activity.name}...',
+                style: GoogleFonts.poppins(),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.green.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      // 🤖 USE MOODY AI FOR ALTERNATIVE GENERATION
+      debugPrint('🤖 Asking Moody AI for alternative activity for ${activity.name}...');
       
-      // Replace the activity in the main list
-      final index = widget.activities.indexOf(activity);
-      if (index >= 0) {
-        widget.activities[index] = refreshedActivity;
+      // Extract mood from activity tags or use default
+      final moods = activity.tags.where((tag) => 
+        ['Foody', 'Adventurous', 'Relaxed', 'Cultural', 'Social', 'Active', 'Creative', 'Romantic'].contains(tag)
+      ).toList();
+      final selectedMoods = moods.isNotEmpty ? moods : ['Foody'];
+      
+      // 🤖 GET AI RECOMMENDATION FOR ALTERNATIVE
+      final aiResponse = await ai_service.WanderMoodAIService.getRecommendations(
+        moods: selectedMoods,
+        latitude: activity.location.latitude,
+        longitude: activity.location.longitude,
+        city: 'Rotterdam',
+        preferences: {
+          'timeSlot': activity.timeSlot,
+          'groupSize': 1,
+          'budget': 100,
+        },
+      );
+
+      Activity? replacementActivity;
+      if (aiResponse.recommendations.isNotEmpty) {
+        // Find a recommendation different from the current activity
+        final alternatives = aiResponse.recommendations.where((rec) => 
+          rec.name != activity.name
+        ).toList();
+        
+        if (alternatives.isNotEmpty) {
+          final selectedRec = alternatives.first;
+          replacementActivity = Activity(
+            id: 'ai_alt_${DateTime.now().millisecondsSinceEpoch}_${selectedRec.name?.hashCode ?? 0}',
+            name: selectedRec.name ?? 'AI Alternative',
+            description: selectedRec.description ?? 'Alternative recommended by Moody AI',
+            timeSlot: activity.timeSlot, // Keep same time slot
+            timeSlotEnum: activity.timeSlotEnum,
+            duration: activity.duration, // Keep same duration
+            location: _extractLocationFromRecommendation(selectedRec, activity.location.latitude, activity.location.longitude),
+            paymentType: _parsePaymentType(selectedRec.cost ?? '€€'),
+            imageUrl: selectedRec.imageUrl ?? _getFallbackImageForType(selectedRec.type ?? ''),
+            rating: selectedRec.rating ?? 4.5,
+                         tags: [
+              ...selectedMoods.map((mood) => mood),
+              selectedRec.type ?? 'Restaurant',
+              'Premium Choice ⭐',
+            ],
+            startTime: activity.startTime, // Keep same start time
+            priceLevel: _parsePriceLevel(selectedRec.cost ?? '€€'),
+            refreshCount: 0, // Reset for new activity
+          );
+        }
       }
-    });
+      
+      if (replacementActivity != null) {
+        debugPrint('✅ Generated AI alternative activity: ${replacementActivity.name}');
+        debugPrint('   Rating: ${replacementActivity.rating}');
+        
+        setState(() {
+          // Create updated activity with preserved timing and incremented refresh count
+          final updatedActivity = replacementActivity!.copyWith(
+            startTime: activity.startTime,
+            duration: activity.duration,
+            refreshCount: activity.refreshCount + 1,
+          );
+          
+          // Replace the activity in the main list
+          final index = widget.activities.indexOf(activity);
+          if (index >= 0) {
+            widget.activities[index] = updatedActivity;
+          }
+        });
+        
+        // Show success feedback
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '✨ Found a new AI option: ${replacementActivity.name}! (${3 - (activity.refreshCount + 1)} more changes available)',
+              style: GoogleFonts.poppins(),
+            ),
+            backgroundColor: Colors.green.shade600,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      } else {
+        // No alternative found
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'No other options found for this time slot. Try a different mood!',
+              style: GoogleFonts.poppins(),
+            ),
+            backgroundColor: Colors.orange.shade600,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Error refreshing activity: $e');
+      
+      // Show error feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Failed to find new options. Please try again later.',
+            style: GoogleFonts.poppins(),
+          ),
+          backgroundColor: Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildRefreshButton(Activity activity) {
+    final remainingRefreshes = 3 - activity.refreshCount;
+    final isDisabled = remainingRefreshes <= 0;
     
-    // Show a snackbar to indicate refreshing action
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Finding new options for ${activity.name}...',
-          style: GoogleFonts.poppins(),
+    if (isDisabled) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(16),
         ),
-        backgroundColor: Colors.green.shade600,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.check_circle,
+              size: 14,
+              color: Colors.grey.shade500,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              'All options used',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade500,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
+      );
+    }
+
+    return TextButton.icon(
+      onPressed: () => _refreshActivity(activity),
+      icon: const Icon(
+        Icons.refresh_rounded,
+        size: 16,
+        color: Color(0xFF4CAF50),
+      ),
+      label: Text(
+        remainingRefreshes == 3 
+          ? 'Not feeling this?' 
+          : 'Try again? ($remainingRefreshes left)',
+        style: const TextStyle(
+          fontSize: 14,
+          color: Color(0xFF4CAF50),
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
     );
   }
@@ -91,6 +295,57 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
     }
     
     return result;
+  }
+
+  // Helper methods for AI recommendation conversion
+  PaymentType _parsePaymentType(String costString) {
+    if (costString.toLowerCase().contains('free') || costString == '€') {
+      return PaymentType.free;
+    } else if (costString.contains('€€€') || costString.toLowerCase().contains('expensive')) {
+      return PaymentType.reservation;
+    } else {
+      return PaymentType.reservation;
+    }
+  }
+
+  String _parsePriceLevel(String costString) {
+    if (costString.toLowerCase().contains('free') || costString == '€') {
+      return '0';
+    } else if (costString.contains('€€€')) {
+      return '3';
+    } else if (costString.contains('€€')) {
+      return '2';
+    } else {
+      return '1';
+    }
+  }
+
+  LatLng _extractLocationFromRecommendation(AIRecommendation rec, double fallbackLat, double fallbackLng) {
+    // If the recommendation has location data, use it
+    if (rec.location != null) {
+      final lat = rec.location!['latitude'] as double?;
+      final lng = rec.location!['longitude'] as double?;
+      if (lat != null && lng != null) {
+        return LatLng(lat, lng);
+      }
+    }
+    
+    // Fall back to provided coordinates
+    return LatLng(fallbackLat, fallbackLng);
+  }
+
+  String _getFallbackImageForType(String type) {
+    final imageMap = {
+      'restaurant': 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400',
+      'cafe': 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400',
+      'bar': 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400',
+      'museum': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400',
+      'park': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400',
+      'attraction': 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400',
+      'shopping': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400',
+    };
+    
+    return imageMap[type.toLowerCase()] ?? 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400';
   }
 
   @override
@@ -448,33 +703,16 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                       ),
                     ),
                     const Spacer(),
-                    TextButton.icon(
-                      onPressed: () => _refreshActivity(activity),
-                      icon: const Icon(
-                        Icons.refresh_rounded,
-                        size: 16,
-                        color: Color(0xFF4CAF50),
-                              ),
-                      label: const Text(
-                        'Not feeling this?',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF4CAF50),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                    ),
+                    _buildRefreshButton(activity),
                 ],
               ),
               ),
 
               // Activity image with no top rounding
               ClipRRect(
-                child: Image.network(
+                child: activity.imageUrl.isEmpty 
+                  ? _buildPhotoPlaceholder(activity.name)
+                  : Image.network(
                   activity.imageUrl,
                   height: 200,
                   width: double.infinity,
@@ -485,16 +723,17 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                       height: 200,
                       width: double.infinity,
                       color: Colors.grey[200],
-                      child: Center(
+                          child: const Center(
                         child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                              : null,
-                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
                         ),
                       ),
                     );
                   },
+                      errorBuilder: (context, error, stackTrace) {
+                        debugPrint('🖼️ Image failed to load: ${activity.imageUrl}');
+                        return _buildPhotoPlaceholder(activity.name);
+                      },
             ),
           ),
 
@@ -508,13 +747,35 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: Text(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
                         activity.name,
                         style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
                               color: Colors.black87,
                         ),
+                          ),
+                          if (activity.refreshCount > 0)
+                            Container(
+                              margin: const EdgeInsets.only(top: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade100,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '✨ Alternative option ${activity.refreshCount}',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: Colors.green.shade700,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                     Row(
@@ -1030,6 +1291,103 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
     return '$hour:$minute $period';
   }
 
+  String _getIntelligentFallbackImage(Activity activity) {
+    final nameLower = activity.name.toLowerCase();
+    final tags = activity.tags.map((t) => t.toLowerCase()).toList();
+    
+    // Spa/Wellness - luxury spa interiors
+    if (nameLower.contains('spa') || nameLower.contains('wellness') || 
+        nameLower.contains('massage') || nameLower.contains('relax') ||
+        tags.any((tag) => ['spa', 'wellness', 'massage', 'relaxation'].contains(tag))) {
+      return 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=500&h=400&fit=crop&auto=format'; // Luxury spa interior
+    }
+    
+    // Yoga/Fitness - serene yoga scenes
+    if (nameLower.contains('yoga') || nameLower.contains('pilates') || 
+        nameLower.contains('fitness') || nameLower.contains('zen') ||
+        tags.any((tag) => ['yoga', 'fitness', 'meditation', 'wellness'].contains(tag))) {
+      return 'https://images.unsplash.com/photo-1588286840104-8957b019727f?w=500&h=400&fit=crop&auto=format'; // Beautiful yoga studio
+    }
+    
+    // Bar/Nightlife - stylish cocktail bars
+    if (nameLower.contains('bar') || nameLower.contains('lounge') || 
+        nameLower.contains('cocktail') || nameLower.contains('drink') ||
+        tags.any((tag) => ['bar', 'nightlife', 'drinks'].contains(tag))) {
+      return 'https://images.unsplash.com/photo-1574391884720-bbc2f1831d92?w=500&h=400&fit=crop&auto=format'; // Stylish bar interior
+    }
+    
+    // Cafe - cozy coffee shops
+    if (nameLower.contains('cafe') || nameLower.contains('coffee') || 
+        nameLower.contains('espresso') ||
+        tags.any((tag) => ['cafe', 'coffee'].contains(tag))) {
+      return 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=500&h=400&fit=crop&auto=format'; // Cozy cafe interior
+    }
+    
+    // Fine dining - elegant restaurant interiors
+    if (nameLower.contains('fine') || nameLower.contains('luxury') || 
+        nameLower.contains('upscale') || nameLower.contains('romantic dining') ||
+        tags.any((tag) => ['fine dining', 'luxury', 'romantic'].contains(tag))) {
+      return 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=500&h=400&fit=crop&auto=format'; // Fine dining restaurant
+    }
+    
+    // Restaurant/Food - warm restaurant ambiance
+    if (nameLower.contains('restaurant') || nameLower.contains('bistro') || 
+        nameLower.contains('dining') || nameLower.contains('food') ||
+        tags.any((tag) => ['restaurant', 'food', 'dining'].contains(tag))) {
+      return 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&h=400&fit=crop&auto=format'; // Restaurant interior
+    }
+    
+    // Museums - grand museum halls
+    if (nameLower.contains('museum') || 
+        tags.any((tag) => ['museum', 'history'].contains(tag))) {
+      return 'https://images.unsplash.com/photo-1567213907515-1ea943549e0b?w=500&h=400&fit=crop&auto=format'; // Museum interior
+    }
+    
+    // Art galleries - contemporary art spaces
+    if (nameLower.contains('gallery') || nameLower.contains('art') ||
+        tags.any((tag) => ['art', 'gallery'].contains(tag))) {
+      return 'https://images.unsplash.com/photo-1578926078959-f25b3c9c7daa?w=500&h=400&fit=crop&auto=format'; // Art gallery
+    }
+    
+    // Parks/Gardens - beautiful nature scenes
+    if (nameLower.contains('park') || nameLower.contains('garden') || 
+        nameLower.contains('nature') ||
+        tags.any((tag) => ['park', 'nature', 'outdoor'].contains(tag))) {
+      return 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&h=400&fit=crop&auto=format'; // Beautiful park
+    }
+    
+    // Entertainment venues - modern entertainment spaces
+    if (nameLower.contains('theater') || nameLower.contains('cinema') || 
+        nameLower.contains('entertainment') ||
+        tags.any((tag) => ['entertainment', 'theater', 'cinema'].contains(tag))) {
+      return 'https://images.unsplash.com/photo-1489599735188-0fcfb87b50d4?w=500&h=400&fit=crop&auto=format'; // Entertainment venue
+    }
+    
+    // Shopping - beautiful shopping areas
+    if (nameLower.contains('shop') || nameLower.contains('mall') || 
+        nameLower.contains('market') ||
+        tags.any((tag) => ['shopping', 'market'].contains(tag))) {
+      return 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=500&h=400&fit=crop&auto=format'; // Shopping area
+    }
+    
+    // Churches/Religious sites - beautiful architecture
+    if (nameLower.contains('church') || nameLower.contains('cathedral') || 
+        nameLower.contains('temple') || nameLower.contains('mosque') ||
+        tags.any((tag) => ['religious', 'spiritual', 'church'].contains(tag))) {
+      return 'https://images.unsplash.com/photo-1520637836862-4d197d17c38a?w=500&h=400&fit=crop&auto=format'; // Beautiful church
+    }
+    
+    // Adventure activities - exciting outdoor scenes
+    if (nameLower.contains('adventure') || nameLower.contains('outdoor') || 
+        nameLower.contains('active') ||
+        tags.any((tag) => ['adventure', 'active', 'outdoor'].contains(tag))) {
+      return 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=500&h=400&fit=crop&auto=format'; // Adventure activity
+    }
+    
+    // Generic tourist attraction - iconic travel imagery
+    return 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=500&h=400&fit=crop&auto=format'; // Iconic landmark
+  }
+
   // Mock data for alternative activities (in a real app, this would come from a backend)
   final List<Map<String, dynamic>> _alternativeActivities = [
     {
@@ -1057,4 +1415,32 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
       'duration': 90,
     },
   ];
+
+  Widget _buildPhotoPlaceholder(String text) {
+    return Container(
+      height: 200,
+      width: double.infinity,
+      color: Colors.grey[200],
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.photo_camera_outlined,
+            size: 40,
+            color: Colors.grey,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 } 

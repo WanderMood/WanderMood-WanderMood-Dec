@@ -6,6 +6,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:math' as math;
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../auth/providers/auth_state_provider.dart';
+import '../../../../core/providers/preferences_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SwirlingGradientPainter extends CustomPainter {
   @override
@@ -132,14 +135,48 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
   }
 
   Future<void> _initializeApp() async {
-    await Future.delayed(const Duration(seconds: 3));
-    if (mounted) {
-      final currentUser = ref.read(authStateProvider).asData?.value;
-      if (currentUser != null) {
-        context.go('/home');
-      } else {
+    // Wait for the splash screen animation
+    await Future.delayed(const Duration(seconds: 2));
+    
+    if (!mounted) return;
+    
+    // Check current authentication and onboarding status
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+    final hasCompletedAuth = prefs.getBool('hasCompletedAuth') ?? false;
+    final hasCompletedPreferences = prefs.getBool('hasCompletedPreferences') ?? false;
+    final currentUser = Supabase.instance.client.auth.currentUser;
+    
+    debugPrint('🔍 App initialization state:');
+    debugPrint('   hasSeenOnboarding: $hasSeenOnboarding');
+    debugPrint('   hasCompletedAuth: $hasCompletedAuth');
+    debugPrint('   hasCompletedPreferences: $hasCompletedPreferences');
+    debugPrint('   currentUser: ${currentUser?.id}');
+    
+    // Wait for auth state to be available
+    final authState = ref.read(authStateProvider);
+    
+    // If auth state is still loading, wait a bit more
+    if (authState.isLoading) {
+      debugPrint('⏳ Waiting for auth state to load...');
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+    
+    if (!mounted) return;
+    
+    // Navigate based on current state
+    if (!hasSeenOnboarding) {
+      debugPrint('🚀 First time user - navigating to onboarding');
       context.go('/onboarding');
-      }
+    } else if (!hasCompletedAuth || currentUser == null) {
+      debugPrint('🚀 User needs authentication - navigating to login');
+      context.go('/login');
+    } else if (!hasCompletedPreferences) {
+      debugPrint('🚀 User needs to complete preferences - navigating to preferences');
+      context.go('/preferences/communication');
+    } else {
+      debugPrint('🚀 User is ready - navigating to standalone mood selection');
+      context.go('/home');
     }
   }
 

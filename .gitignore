@@ -37,7 +37,6 @@ migrate_working_dir/
 .fvm/
 
 # Web related
-lib/generated_plugin_registrant.dart
 
 # Symbolication related
 app.*.symbols
@@ -149,3 +148,4 @@ android/.gradle/
 # Generated files
 *.g.dart
 *.freezed.dart
+.env

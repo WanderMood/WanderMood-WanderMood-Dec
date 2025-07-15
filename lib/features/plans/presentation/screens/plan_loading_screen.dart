@@ -10,7 +10,16 @@ import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/features/plans/services/activity_generator_service.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
+import 'package:wandermood/core/services/wandermood_ai_service.dart' as ai_service;
+import 'package:wandermood/features/location/services/location_service.dart';
+import 'package:wandermood/core/models/ai_recommendation.dart';
 import 'package:wandermood/features/plans/presentation/screens/day_plan_screen.dart';
+import 'package:wandermood/core/extensions/string_extensions.dart';
+import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
+import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:convert';
 
 class PlanLoadingScreen extends ConsumerStatefulWidget {
   final List<String> selectedMoods;
@@ -86,112 +95,217 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
       return true;
     });
 
-    // Generate real activities from Google Places API
-    _generateRealActivities();
+    // Generate activities with guaranteed 6-8 second experience
+    _generateActivitiesWithProperLoading();
   }
 
-  Future<void> _generateRealActivities() async {
-    try {
-      debugPrint('🎯 Starting real activity generation for moods: ${widget.selectedMoods}');
+  Future<void> _generateActivitiesWithProperLoading() async {
+    debugPrint('🚀 Starting activity generation using Supabase Edge Function for moods: ${widget.selectedMoods}');
       
-      // Get user's current location using Future.microtask to avoid provider modification during build
-      String? userLocation;
-      double? lat;
-      double? lng;
+    // Start the minimum loading timer (6-8 seconds)
+    final minimumLoadingDuration = const Duration(seconds: 6);
+    final loadingStartTime = DateTime.now();
+    
+    List<Activity> activities = [];
       
       try {
-        // Delay the provider access to avoid build cycle conflicts
-        await Future.microtask(() {});
-        
-        // Try to get location from the location provider
-        final locationNotifier = ref.read(locationNotifierProvider.notifier);
-        userLocation = await locationNotifier.getCurrentLocation();
-        
-        // For coordinates, use Rotterdam as default (you can enhance this to get actual coordinates)
-        lat = 51.9225; // Rotterdam coordinates
-        lng = 4.4792;
-        
-        debugPrint('📍 Using location: $userLocation at ($lat, $lng)');
-      } catch (e) {
-        debugPrint('⚠️ Location error: $e, using default location');
-        userLocation = 'Rotterdam';
-        lat = 51.9225;
-        lng = 4.4792;
+      // Get current user ID
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
       }
 
-      // Generate activities using the ActivityGeneratorService
-      debugPrint('🔍 Starting API calls to Google Places...');
+      debugPrint('🔗 Calling generate-mood-activities Edge Function...');
+      
+      // Call the Supabase Edge Function for reliable Rotterdam activity generation
+      final response = await Supabase.instance.client.functions.invoke(
+        'generate-mood-activities',
+        body: {
+          'moods': widget.selectedMoods,
+          'userId': user.id,
+        },
+      );
+        
+      debugPrint('📡 Edge Function response status: ${response.status}');
+      
+      if (response.status != 200) {
+        throw Exception('Edge Function returned status ${response.status}: ${response.data}');
+      }
+
+      final responseData = response.data as Map<String, dynamic>;
+      
+      if (!responseData['success']) {
+        throw Exception('Edge Function failed: ${responseData['error']}');
+      }
+
+      final activitiesData = responseData['activities'] as List<dynamic>;
+      final locationData = responseData['location'] as Map<String, dynamic>;
+      
+      debugPrint('✅ Edge Function generated ${activitiesData.length} Rotterdam activities');
+      debugPrint('📍 Location confirmed: ${locationData['city']} (${locationData['latitude']}, ${locationData['longitude']})');
+
+      // 🔄 CRITICAL: Invalidate providers so My Day shows the new mood-generated activities
+      debugPrint('🔄 Invalidating providers for mood-generated activities to appear in My Day...');
+      ref.invalidate(scheduledActivityServiceProvider);
+      ref.invalidate(cachedActivitySuggestionsProvider);
+      debugPrint('✅ Providers invalidated - My Day will now show mood-generated activities');
+
+      // Convert the activities from the Edge Function response
+      activities = activitiesData.map((activityJson) {
+        final activity = activityJson as Map<String, dynamic>;
+        
+        // 🔧 CRITICAL FIX: Override Edge Function dates to use TODAY instead of July 14, 2025
+        final originalStartTime = DateTime.parse(activity['startTime'] as String);
+        final today = DateTime.now();
+        final todayStartTime = DateTime(
+          today.year, 
+          today.month, 
+          today.day, 
+          originalStartTime.hour, 
+          originalStartTime.minute
+        );
+        
+        debugPrint('📅 Edge Function Fix: ${activity['name']} changed from ${originalStartTime.day}/${originalStartTime.month}/${originalStartTime.year} to ${todayStartTime.day}/${todayStartTime.month}/${todayStartTime.year}');
+        
+        return Activity(
+          id: activity['id'] as String,
+          name: activity['name'] as String,
+          description: activity['description'] as String,
+          timeSlot: activity['timeSlot'] as String,
+          timeSlotEnum: _parseTimeSlot(activity['timeSlot'] as String),
+          duration: activity['duration'] as int,
+          location: LatLng(
+            activity['location']['latitude'] as double,
+            activity['location']['longitude'] as double,
+          ),
+          paymentType: _parsePaymentType(activity['paymentType'] as String),
+          imageUrl: activity['imageUrl'] as String,
+          rating: (activity['rating'] as num).toDouble(),
+          tags: List<String>.from(activity['tags'] as List),
+          startTime: todayStartTime, // 🔧 Use today's date instead of Edge Function date
+          priceLevel: activity['priceLevel'] as String,
+        refreshCount: 0,
+        );
+      }).toList();
+
+      debugPrint('✅ Successfully converted ${activities.length} activities from Edge Function');
+      
+      // Show some activity names for verification
+      for (final activity in activities.take(3)) {
+        debugPrint('   🎯 Generated: ${activity.name} (${activity.timeSlot})');
+      }
+
+    } catch (e) {
+      debugPrint('❌ Edge Function failed: $e');
+      debugPrint('🔄 Falling back to local generation...');
+      
+      // Fallback to local generation if Edge Function fails
+      try {
+        activities = await _generateDynamicActivities();
+        debugPrint('✅ Fallback generation produced ${activities.length} activities');
+      } catch (fallbackError) {
+        debugPrint('❌ CRITICAL: All activity generation methods failed');
+        await _showErrorState('Unable to generate activities. Please check your internet connection and try again.');
+        return;
+      }
+    }
+
+    // If we still have no activities, show error state
+    if (activities.isEmpty) {
+      debugPrint('❌ CRITICAL: No activities generated at all');
+      await _showErrorState('Unable to generate activities. Please check your internet connection and try again.');
+      return;
+    }
+
+    // Wait for the remaining loading time to ensure 6-8 second experience
+    final elapsed = DateTime.now().difference(loadingStartTime);
+    final remainingTime = minimumLoadingDuration - elapsed;
+    
+    if (remainingTime > Duration.zero) {
+      debugPrint('⏳ Waiting ${remainingTime.inSeconds} more seconds for proper loading experience...');
+      await Future.delayed(remainingTime);
+    }
+
+    debugPrint('✅ Loading complete! Navigating to day plan with ${activities.length} activities');
+    
+    // Navigate to the day plan screen to let user select activities
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => DayPlanScreen(
+            activities: activities,
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _showErrorState(String message) async {
+    if (!mounted) return;
+    
+    // Show error dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Oops! Something went wrong'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close dialog
+              Navigator.of(context).pop(); // Go back to mood selection
+            },
+            child: const Text('Try Again'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<List<Activity>> _generateDynamicActivities() async {
+    debugPrint('🔄 Generating dynamic activities using Google Places API...');
+    
+    try {
+      // Force Rotterdam coordinates for mood-based activity generation
+      final lat = 51.9225; // Rotterdam coordinates
+      final lng = 4.4792;
+      
+      debugPrint('📍 Using Rotterdam location for dynamic activities: ($lat, $lng)');
+      
+      // Use the improved ActivityGeneratorService to get REAL activities
       final activities = await ActivityGeneratorService.generateActivities(
         selectedMoods: widget.selectedMoods,
-        userLocation: userLocation,
+        userLocation: 'Rotterdam',
         lat: lat,
         lng: lng,
       );
-
-      debugPrint('✅ Generated ${activities.length} activities');
       
-      // Log the activity names to see what we got
-      for (int i = 0; i < activities.length; i++) {
-        debugPrint('Activity ${i + 1}: ${activities[i].name} (${activities[i].rating} stars)');
+      debugPrint('✅ Generated ${activities.length} dynamic activities');
+      
+      if (activities.isEmpty) {
+        debugPrint('❌ No activities generated - this should not happen with proper API integration');
+        throw Exception('No activities found for selected moods');
       }
-
-      // Wait for minimum loading time (6 seconds) for UX
-      await Future.delayed(const Duration(seconds: 6));
-
-      if (mounted) {
-        // Navigate to DayPlanScreen with the real activities
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => DayPlanScreen(
-              activities: activities,
-            ),
-          ),
-        );
-      }
+      
+      return activities;
     } catch (e) {
-      debugPrint('❌ Error generating activities: $e');
-      
-      // Fallback to sample activities if API fails
-      final fallbackActivities = [
-        Activity(
-          id: 'fallback-morning',
-          name: 'Local ${widget.selectedMoods.isNotEmpty ? widget.selectedMoods.first : "Adventure"} Morning',
-          description: 'Start your day with a ${widget.selectedMoods.join(" and ").toLowerCase()} experience in your area.',
-          startTime: DateTime.now().add(const Duration(hours: 1)),
-          duration: 60,
-          imageUrl: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b',
-          tags: ['Local 🏠', 'Morning 🌅', '${widget.selectedMoods.isNotEmpty ? widget.selectedMoods.first : "Adventure"} ✨'],
-          rating: 4.5,
-          timeSlot: 'morning',
-          timeSlotEnum: TimeSlot.morning,
-          location: const LatLng(51.9225, 4.4792),
-          paymentType: PaymentType.free,
-        ),
-        Activity(
-          id: 'fallback-afternoon',
-          name: 'Local ${widget.selectedMoods.isNotEmpty ? widget.selectedMoods.first : "Adventure"} Afternoon',
-          description: 'Continue your ${widget.selectedMoods.join(" and ").toLowerCase()} day with local discoveries.',
-          startTime: DateTime.now().add(const Duration(hours: 6)),
-          duration: 90,
-          imageUrl: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085',
-          tags: ['Local 🏠', 'Afternoon ☀️', '${widget.selectedMoods.isNotEmpty ? widget.selectedMoods.first : "Adventure"} ✨'],
-          rating: 4.3,
-          timeSlot: 'afternoon',
-          timeSlotEnum: TimeSlot.afternoon,
-          location: const LatLng(51.9225, 4.4792),
-          paymentType: PaymentType.reservation,
-        ),
-      ];
-
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => DayPlanScreen(
-              activities: fallbackActivities,
-            ),
-          ),
-        );
-      }
+      debugPrint('❌ Error generating dynamic activities: $e');
+      // Instead of fallback, show error state to user
+      throw Exception('Unable to generate activities. Please check your internet connection and try again.');
+    }
+  }
+  
+  String _getTimeEmoji(TimeSlot timeSlot) {
+    switch (timeSlot) {
+      case TimeSlot.morning:
+        return '🌅';
+      case TimeSlot.afternoon:
+        return '☀️';
+      case TimeSlot.evening:
+        return '🌆';
+      case TimeSlot.night:
+        return '🌙';
     }
   }
 
@@ -200,6 +314,102 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
       return "Crafting the perfect plan for: ${widget.selectedMoods.join(", ")}! 🍔💖🎉";
     }
     return _loadingMessages[_currentMessageIndex];
+  }
+
+  // Helper methods for AI recommendation conversion
+  String _getTimeSlot() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'morning';
+    if (hour < 17) return 'afternoon';
+    return 'evening';
+  }
+
+  LatLng _extractLocationFromRecommendation(AIRecommendation rec, double fallbackLat, double fallbackLng) {
+    // If the recommendation has location data, use it
+    if (rec.location != null) {
+      final lat = rec.location!['latitude'] as double?;
+      final lng = rec.location!['longitude'] as double?;
+      if (lat != null && lng != null) {
+        return LatLng(lat, lng);
+      }
+    }
+    
+    // Fall back to user location
+    return LatLng(fallbackLat, fallbackLng);
+  }
+
+  String _getFallbackImageForType(String type) {
+    final imageMap = {
+      'restaurant': 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400',
+      'cafe': 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400',
+      'bar': 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400',
+      'museum': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400',
+      'park': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400',
+      'attraction': 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400',
+      'shopping': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400',
+    };
+    
+    return imageMap[type.toLowerCase()] ?? 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400';
+  }
+
+  TimeSlot _parseTimeSlot(String timeSlotString) {
+    switch (timeSlotString.toLowerCase()) {
+      case 'morning':
+        return TimeSlot.morning;
+      case 'afternoon':
+        return TimeSlot.afternoon;
+      case 'evening':
+        return TimeSlot.evening;
+      case 'night':
+        return TimeSlot.night;
+      default:
+        return TimeSlot.afternoon;
+    }
+  }
+
+  int _parseDuration(String durationString) {
+    // Extract numbers from duration string (e.g., "90 minutes" -> 90)
+    final regex = RegExp(r'\d+');
+    final match = regex.firstMatch(durationString);
+    return match != null ? int.parse(match.group(0)!) : 90;
+  }
+
+  PaymentType _parsePaymentType(String costString) {
+    if (costString.toLowerCase().contains('free') || costString == '€') {
+      return PaymentType.free;
+    } else if (costString.contains('€€€') || costString.toLowerCase().contains('expensive')) {
+      return PaymentType.reservation;
+    } else {
+      return PaymentType.reservation;
+    }
+  }
+
+  DateTime _getStartTimeForSlot(TimeSlot timeSlot) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    
+    switch (timeSlot) {
+      case TimeSlot.morning:
+        return today.add(const Duration(hours: 9));
+      case TimeSlot.afternoon:
+        return today.add(const Duration(hours: 14));
+      case TimeSlot.evening:
+        return today.add(const Duration(hours: 19));
+      case TimeSlot.night:
+        return today.add(const Duration(hours: 22));
+    }
+  }
+
+  String _parsePriceLevel(String costString) {
+    if (costString.toLowerCase().contains('free') || costString == '€') {
+      return '0';
+    } else if (costString.contains('€€€')) {
+      return '3';
+    } else if (costString.contains('€€')) {
+      return '2';
+    } else {
+      return '1';
+    }
   }
 
   @override

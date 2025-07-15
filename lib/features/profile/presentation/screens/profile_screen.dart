@@ -14,6 +14,7 @@ import 'package:wandermood/features/profile/presentation/screens/theme_settings_
 import 'package:wandermood/features/profile/presentation/screens/notifications_screen.dart';
 import 'package:wandermood/features/profile/presentation/screens/help_support_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/core/extensions/string_extensions.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -448,6 +449,7 @@ class ProfileScreen extends ConsumerWidget {
                                 );
                               },
                             ),
+
                             const Divider(height: 1),
                             _buildSettingItem(
                               icon: Icons.logout,
@@ -611,8 +613,4 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-extension StringExtension on String {
-  String capitalize() {
-    return "${this[0].toUpperCase()}${substring(1)}";
-  }
-} 
+ 

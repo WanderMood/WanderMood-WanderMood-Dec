@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:wandermood/features/auth/domain/providers/auth_provider.dart';
 import 'package:wandermood/features/mood/application/mood_service.dart';
 import 'package:wandermood/features/mood/domain/models/mood.dart';
+import 'package:wandermood/features/mood/domain/models/mood_data.dart';
 
 class MoodHistoryWidget extends ConsumerWidget {
   const MoodHistoryWidget({
@@ -15,8 +16,10 @@ class MoodHistoryWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authStateProvider);
+    final userAsyncValue = ref.watch(authStateProvider);
     
+    return userAsyncValue.when(
+      data: (user) {
     if (user == null) {
       return const Center(
         child: Text('Je moet ingelogd zijn om je stemmingsgeschiedenis te zien'),
@@ -24,6 +27,16 @@ class MoodHistoryWidget extends ConsumerWidget {
     }
     
     final moodsAsyncValue = ref.watch(userMoodsProvider(user.id));
+        return _buildMoodHistory(moodsAsyncValue);
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) => Center(
+        child: Text('Fout bij ophalen gebruiker: $error'),
+      ),
+    );
+  }
+  
+  Widget _buildMoodHistory(AsyncValue<List<MoodData>> moodsAsyncValue) {
     
     return moodsAsyncValue.when(
       data: (moods) {

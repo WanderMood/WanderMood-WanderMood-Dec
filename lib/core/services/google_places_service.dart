@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
-import '../config/api_keys.dart';
 import 'smart_api_cache.dart';
+import '../config/api_config.dart';
+import '../constants/api_keys.dart';
 
 class GooglePlace {
   final String placeId;
@@ -18,6 +19,9 @@ class GooglePlace {
   final int? priceLevel;
   final bool? openNow;
   final String? businessStatus;
+  final String? formattedAddress;
+  final String? phoneNumber;
+  final String? website;
 
   GooglePlace({
     required this.placeId,
@@ -33,43 +37,136 @@ class GooglePlace {
     this.priceLevel,
     this.openNow,
     this.businessStatus,
+    this.formattedAddress,
+    this.phoneNumber,
+    this.website,
   });
 
-  factory GooglePlace.fromJson(Map<String, dynamic> json) {
+  factory GooglePlace.fromNewApiJson(Map<String, dynamic> json) {
     final List<String> allPhotoRefs = [];
     if (json['photos'] != null) {
       for (final photo in json['photos']) {
-        if (photo['photo_reference'] != null) {
-          allPhotoRefs.add(photo['photo_reference']);
+        if (photo['name'] != null) {
+          allPhotoRefs.add(photo['name']);
         }
       }
     }
 
     return GooglePlace(
-      placeId: json['place_id'] ?? '',
-      name: json['name'] ?? 'Unknown Place',
-      vicinity: json['vicinity'],
+      placeId: json['id'] ?? '',
+      name: json['displayName']?['text'] ?? 'Unknown Place',
+      vicinity: json['shortFormattedAddress'],
       rating: (json['rating'] as num?)?.toDouble(),
-      userRatingsTotal: json['user_ratings_total'],
+      userRatingsTotal: json['userRatingCount'],
       types: List<String>.from(json['types'] ?? []),
       photoReference: allPhotoRefs.isNotEmpty ? allPhotoRefs.first : null,
       photoReferences: allPhotoRefs,
-      lat: json['geometry']?['location']?['lat']?.toDouble(),
-      lng: json['geometry']?['location']?['lng']?.toDouble(),
-      priceLevel: json['price_level'],
-      openNow: json['opening_hours']?['open_now'],
-      businessStatus: json['business_status'],
+      lat: json['location']?['latitude']?.toDouble(),
+      lng: json['location']?['longitude']?.toDouble(),
+      priceLevel: json['priceLevel'] != null ? _parsePriceLevel(json['priceLevel']) : null,
+      openNow: json['currentOpeningHours']?['openNow'],
+      businessStatus: json['businessStatus'],
+      formattedAddress: json['formattedAddress'],
+      phoneNumber: json['nationalPhoneNumber'],
+      website: json['websiteUri'],
     );
   }
 
-  /// Get the best available photo URL for this place
-  String getBestPhotoUrl({int maxWidth = 800}) {
-    return GooglePlacesService.getBestPhotoUrl(photoReference, types);
+  static int _parsePriceLevel(String priceLevel) {
+    switch (priceLevel) {
+      case 'PRICE_LEVEL_FREE':
+        return 0;
+      case 'PRICE_LEVEL_INEXPENSIVE':
+        return 1;
+      case 'PRICE_LEVEL_MODERATE':
+        return 2;
+      case 'PRICE_LEVEL_EXPENSIVE':
+        return 3;
+      case 'PRICE_LEVEL_VERY_EXPENSIVE':
+        return 4;
+      default:
+        return 0;
+    }
+  }
+
+  /// Get the best available photo URL for this place using Legacy API (WORKING!)
+  /// Returns only Google Places API photos - NO fallbacks
+  static String getBestPhotoUrl(
+    String? photoReference, 
+    List<String> placeTypes, {
+    String? placeName,
+    String? placeId,
+  }) {
+    debugPrint('🔍 getBestPhotoUrl called with:');
+    debugPrint('   📷 photoReference: ${photoReference ?? "null"}');
+    debugPrint('   🏷️ placeTypes: $placeTypes');
+    debugPrint('   🏢 placeName: ${placeName ?? "not provided"}');
+    debugPrint('   🆔 placeId: ${placeId ?? "not provided"}');
+    
+    // Return Google Places API photo URL ONLY if photo reference exists
+    if (photoReference != null && photoReference.isNotEmpty) {
+      // Check if this is a NEW API photo reference (starts with "places/")
+      if (photoReference.startsWith('places/')) {
+        debugPrint('🔄 NEW API photo reference detected, conversion to Legacy needed');
+        // For NEW API references, we need async conversion to Legacy format
+        // Return placeholder for now - this will be handled by async methods
+        return '';
+      } else {
+        // This is already a Legacy API photo reference - use it directly
+        final photoUrl = GooglePlacesService.getPhotoUrl(photoReference, 800, 600, placeId);
+        debugPrint('✅ Using Legacy Google Places API photo: $photoUrl');
+        return photoUrl;
+      }
+    }
+    
+    // No photo reference available - return empty string
+    debugPrint('❌ No photo reference available');
+    return '';
+  }
+
+  /// Get the best available photo URL for this place (ASYNC - handles NEW API conversion)
+  /// This method can convert NEW API photo references to Legacy API format
+  static Future<String> getBestPhotoUrlAsync(
+    String? photoReference, 
+    List<String> placeTypes, {
+    String? placeName,
+    String? placeId,
+  }) async {
+    debugPrint('🔍 getBestPhotoUrlAsync called with:');
+    debugPrint('   📷 photoReference: ${photoReference ?? "null"}');
+    debugPrint('   🆔 placeId: ${placeId ?? "not provided"}');
+    
+    // Return Google Places API photo URL ONLY if photo reference exists
+    if (photoReference != null && photoReference.isNotEmpty) {
+      // Check if this is a NEW API photo reference (starts with "places/")
+      if (photoReference.startsWith('places/') && placeId != null && placeId.isNotEmpty) {
+        debugPrint('🔄 NEW API photo reference detected, converting to Legacy format');
+        // Get Legacy photo reference for this place
+        final legacyPhotoRef = await GooglePlacesService.getLegacyPhotoReference(placeId);
+        if (legacyPhotoRef != null) {
+          final photoUrl = GooglePlacesService.getPhotoUrl(legacyPhotoRef, 800, 600, placeId);
+          debugPrint('✅ Using converted Legacy Google Places API photo: $photoUrl');
+          return photoUrl;
+        } else {
+          debugPrint('❌ Could not get Legacy photo reference for place: $placeId');
+          return '';
+        }
+      } else {
+        // This is already a Legacy API photo reference - use it directly
+        final photoUrl = GooglePlacesService.getPhotoUrl(photoReference, 800, 600, placeId);
+        debugPrint('✅ Using Legacy Google Places API photo: $photoUrl');
+        return photoUrl;
+      }
+    }
+    
+    // No photo reference available - return empty string
+    debugPrint('❌ No photo reference available');
+    return '';
   }
 
   /// Get multiple photo URLs for this place
   List<String> getAllPhotoUrls({int maxWidth = 600, int maxPhotos = 3}) {
-    return GooglePlacesService.getPhotoUrls(photoReferences, maxWidth: maxWidth, maxPhotos: maxPhotos);
+    return GooglePlacesService.getPhotoUrls(photoReferences, maxWidth: maxWidth, maxPhotos: maxPhotos, placeId: placeId);
   }
 }
 
@@ -77,7 +174,7 @@ class GooglePlaceDetails {
   final String placeId;
   final String name;
   final String? formattedAddress;
-  final String? formattedPhoneNumber;
+  final String? phoneNumber;
   final String? website;
   final double? rating;
   final List<String> types;
@@ -85,14 +182,13 @@ class GooglePlaceDetails {
   final double? lat;
   final double? lng;
   final int? priceLevel;
-  final List<Map<String, dynamic>> reviews;
   final Map<String, dynamic>? openingHours;
 
   GooglePlaceDetails({
     required this.placeId,
     required this.name,
     this.formattedAddress,
-    this.formattedPhoneNumber,
+    this.phoneNumber,
     this.website,
     this.rating,
     this.types = const [],
@@ -100,37 +196,41 @@ class GooglePlaceDetails {
     this.lat,
     this.lng,
     this.priceLevel,
-    this.reviews = const [],
     this.openingHours,
   });
 
-  factory GooglePlaceDetails.fromJson(Map<String, dynamic> json) {
+  factory GooglePlaceDetails.fromNewApiJson(Map<String, dynamic> json) {
+    final List<String> allPhotoRefs = [];
+    if (json['photos'] != null) {
+      for (final photo in json['photos']) {
+        if (photo['name'] != null) {
+          allPhotoRefs.add(photo['name']);
+        }
+      }
+    }
+
     return GooglePlaceDetails(
-      placeId: json['place_id'] ?? '',
-      name: json['name'] ?? 'Unknown Place',
-      formattedAddress: json['formatted_address'],
-      formattedPhoneNumber: json['formatted_phone_number'],
-      website: json['website'],
+      placeId: json['id'] ?? '',
+      name: json['displayName']?['text'] ?? 'Unknown Place',
+      formattedAddress: json['formattedAddress'],
+      phoneNumber: json['nationalPhoneNumber'],
+      website: json['websiteUri'],
       rating: (json['rating'] as num?)?.toDouble(),
       types: List<String>.from(json['types'] ?? []),
-      photoReferences: (json['photos'] as List<dynamic>?)
-          ?.map((photo) => photo['photo_reference'] as String)
-          .toList() ?? [],
-      lat: json['geometry']?['location']?['lat']?.toDouble(),
-      lng: json['geometry']?['location']?['lng']?.toDouble(),
-      priceLevel: json['price_level'],
-      reviews: List<Map<String, dynamic>>.from(json['reviews'] ?? []),
-      openingHours: json['opening_hours'],
+      photoReferences: allPhotoRefs,
+      lat: json['location']?['latitude']?.toDouble(),
+      lng: json['location']?['longitude']?.toDouble(),
+      priceLevel: json['priceLevel'] != null ? GooglePlace._parsePriceLevel(json['priceLevel']) : null,
+      openingHours: json['currentOpeningHours'],
     );
   }
 }
 
 class GooglePlacesService {
-  static const String _baseUrl = 'https://maps.googleapis.com/maps/api/place';
+  static const String _baseUrl = 'https://places.googleapis.com/v1/places';
+  static String get _apiKey => ApiKeys.googlePlacesKey;
   
-  static String get _apiKey => ApiKeys.googlePlacesApi;
-
-  /// Search for places near a location based on query with smart caching
+  /// Search for places near a location using NEW Places API with smart caching
   static Future<List<GooglePlace>> searchPlaces({
     required String query,
     required double lat,
@@ -148,350 +248,744 @@ class GooglePlacesService {
 
     // Check cache first
     final cachedResponse = await SmartApiCache.getCachedResponse(
-      endpoint: 'nearby_search',
+      endpoint: 'nearby_search_new',
       parameters: parameters,
     );
 
     if (cachedResponse != null) {
-      // Return cached results
-      final List<dynamic> results = cachedResponse['results'] ?? [];
-      return results.map((result) => GooglePlace.fromJson(result)).toList();
+      final List<dynamic> results = cachedResponse['places'] ?? [];
+      return results.map((result) => GooglePlace.fromNewApiJson(result)).toList();
     }
 
     // Check if we should make API call
     final shouldCall = await SmartApiCache.shouldMakeApiCall(
-      endpoint: 'nearby_search',
+      endpoint: 'nearby_search_new',
       parameters: parameters,
     );
 
     if (!shouldCall) {
-      debugPrint('🚫 API call blocked by smart cache system for: $query');
+      debugPrint('🚫 NEW API call blocked by smart cache system for: $query');
       return [];
     }
 
-    // Make API call
     try {
-      if (_apiKey.isEmpty) {
-        debugPrint('❌ Google Places API key not found');
+      // Check if API is enabled in configuration
+      if (!ApiConfig.shouldUseApi) {
+        debugPrint('🚫 Google Places API disabled by configuration');
         return [];
       }
 
-      final String url = '$_baseUrl/nearbysearch/json?'
-          'location=$lat,$lng&'
-          'radius=$radius&'
-          'keyword=$query&'
-          'type=$type&'
-          'key=$_apiKey';
+      if (_apiKey.isEmpty || _apiKey == 'YOUR_GOOGLE_PLACES_API_KEY_HERE') {
+        debugPrint('❌ Google Places API key not configured!');
+        debugPrint('🔧 Please update lib/core/constants/api_keys.dart with your Google Places API key');
+        debugPrint('📖 Instructions: https://console.cloud.google.com/');
+        return [];
+      }
 
-      debugPrint('🔍 Making REAL API call for: $query near ($lat, $lng)');
+      debugPrint('🔍 Making NEW Places API call for: $query near ($lat, $lng)');
+
+      final headers = {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': _apiKey,
+        'X-Goog-FieldMask': 'places.id,places.displayName,places.shortFormattedAddress,places.rating,places.userRatingCount,places.types,places.photos,places.location,places.priceLevel,places.currentOpeningHours,places.businessStatus,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri',
+      };
+
+      final body = jsonEncode({
+        'textQuery': '$query near ${lat.toStringAsFixed(6)},${lng.toStringAsFixed(6)}',
+        'locationBias': {
+          'circle': {
+            'center': {
+              'latitude': lat,
+              'longitude': lng,
+            },
+            'radius': radius.toDouble(),
+          }
+        },
+        'maxResultCount': 20,
+        'includedType': type.isNotEmpty ? type : null,
+      });
       
-      final response = await http.get(Uri.parse(url));
+      final response = await http.post(
+        Uri.parse('$_baseUrl:searchText'),
+        headers: headers,
+        body: body,
+      );
+
+      debugPrint('🔍 NEW API Response Status: ${response.statusCode}');
+      debugPrint('🔍 NEW API Response Body: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}...');
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         
-        if (data['status'] == 'OK') {
           // Cache the response for future use
           await SmartApiCache.cacheResponse(
-            endpoint: 'nearby_search',
+          endpoint: 'nearby_search_new',
             parameters: parameters,
             response: data,
           );
 
-          final List<dynamic> results = data['results'] ?? [];
-          final places = results.map((result) => GooglePlace.fromJson(result)).toList();
+        final List<dynamic> results = data['places'] ?? [];
+        final places = results.map((result) => GooglePlace.fromNewApiJson(result)).toList();
           
-          debugPrint('✅ Found ${places.length} places for: $query (CACHED for 30 days)');
-          return places;
-        } else {
-          debugPrint('❌ Places API error: ${data['status']} - ${data['error_message']}');
-          return [];
+        debugPrint('✅ Found ${places.length} places for: $query (NEW API - CACHED for 30 days)');
+        for (final place in places.take(3)) {
+          debugPrint('   📍 ${place.name} - Photo: ${place.photoReference != null ? "✅" : "❌"}');
         }
+        return places;
       } else {
-        debugPrint('❌ HTTP error: ${response.statusCode}');
+        debugPrint('❌ NEW API HTTP error: ${response.statusCode} - ${response.body}');
         return [];
       }
     } catch (e) {
-      debugPrint('❌ Error searching places: $e');
+      debugPrint('❌ Error with NEW Places API: $e');
       return [];
     }
   }
 
-  /// Get detailed information about a specific place with smart caching
+  /// Get detailed information about a specific place using NEW API with smart caching
   static Future<GooglePlaceDetails?> getPlaceDetails(String placeId) async {
     final parameters = {'place_id': placeId};
 
     // Check cache first
     final cachedResponse = await SmartApiCache.getCachedResponse(
-      endpoint: 'place_details',
+      endpoint: 'place_details_new',
       parameters: parameters,
     );
 
     if (cachedResponse != null) {
-      // Return cached details
-      return GooglePlaceDetails.fromJson(cachedResponse['result']);
+      return GooglePlaceDetails.fromNewApiJson(cachedResponse);
     }
 
     // Check if we should make API call
     final shouldCall = await SmartApiCache.shouldMakeApiCall(
-      endpoint: 'place_details',
+      endpoint: 'place_details_new',
       parameters: parameters,
     );
 
     if (!shouldCall) {
-      debugPrint('🚫 Place details API call blocked by smart cache for: $placeId');
+      debugPrint('🚫 NEW API place details call blocked by smart cache for: $placeId');
       return null;
     }
 
-    // Make API call
     try {
       if (_apiKey.isEmpty) {
-        debugPrint('❌ Google Places API key not found');
+        debugPrint('❌ Google Places NEW API key not found');
         return null;
       }
 
-      final String url = '$_baseUrl/details/json?'
-          'place_id=$placeId&'
-          'fields=place_id,name,formatted_address,formatted_phone_number,website,rating,types,photos,geometry,price_level,reviews,opening_hours&'
-          'key=$_apiKey';
+      debugPrint('🔍 Making NEW Places API call for place details: $placeId');
 
-      debugPrint('🔍 Making REAL API call for place details: $placeId');
+      final headers = {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': _apiKey,
+        'X-Goog-FieldMask': 'id,displayName,formattedAddress,nationalPhoneNumber,websiteUri,rating,types,photos,location,priceLevel,currentOpeningHours',
+      };
 
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(
+        Uri.parse('$_baseUrl/$placeId'),
+        headers: headers,
+      );
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         
-        if (data['status'] == 'OK') {
           // Cache the response for future use
           await SmartApiCache.cacheResponse(
-            endpoint: 'place_details',
+          endpoint: 'place_details_new',
             parameters: parameters,
             response: data,
           );
 
-          debugPrint('✅ Got place details for: ${data['result']['name']} (CACHED for 30 days)');
-          return GooglePlaceDetails.fromJson(data['result']);
-        } else {
-          debugPrint('❌ Place details API error: ${data['status']}');
-          return null;
-        }
+        debugPrint('✅ Got place details for: ${data['displayName']?['text']} (NEW API - CACHED for 30 days)');
+        return GooglePlaceDetails.fromNewApiJson(data);
       } else {
-        debugPrint('❌ HTTP error: ${response.statusCode}');
+        debugPrint('❌ NEW API place details error: ${response.statusCode} - ${response.body}');
         return null;
       }
     } catch (e) {
-      debugPrint('❌ Error getting place details: $e');
+      debugPrint('❌ Error getting place details with NEW API: $e');
       return null;
     }
   }
 
-  /// Get photo URL from photo reference with enhanced quality options
-  static String getPhotoUrl(String photoReference, {int maxWidth = 800}) {
-    if (_apiKey.isEmpty || photoReference.isEmpty) {
-      return 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b'; // Fallback image
+  /// Search for places using nearby search with NEW API
+  static Future<List<GooglePlace>> nearbySearch({
+    required double lat,
+    required double lng,
+    int radius = 5000,
+    List<String> includedTypes = const [],
+    int maxResults = 20,
+  }) async {
+    final parameters = {
+      'lat': lat,
+      'lng': lng,
+      'radius': radius,
+      'types': includedTypes,
+      'maxResults': maxResults,
+    };
+
+    // Check cache first
+    final cachedResponse = await SmartApiCache.getCachedResponse(
+      endpoint: 'nearby_search_new',
+      parameters: parameters,
+    );
+
+    if (cachedResponse != null) {
+      final List<dynamic> results = cachedResponse['places'] ?? [];
+      return results.map((result) => GooglePlace.fromNewApiJson(result)).toList();
     }
-    
-    // Use higher resolution for better quality
-    return '$_baseUrl/photo?maxwidth=$maxWidth&photo_reference=$photoReference&key=$_apiKey';
+
+    // Check if we should make API call
+    final shouldCall = await SmartApiCache.shouldMakeApiCall(
+      endpoint: 'nearby_search_new',
+      parameters: parameters,
+    );
+
+    if (!shouldCall) {
+      debugPrint('🚫 NEW API nearby search blocked by smart cache');
+      return [];
+    }
+
+    try {
+      if (_apiKey.isEmpty) {
+        debugPrint('❌ Google Places NEW API key not found');
+        return [];
+      }
+
+      debugPrint('🔍 Making NEW Places API nearby search at ($lat, $lng)');
+
+      final headers = {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': _apiKey,
+        'X-Goog-FieldMask': 'places.id,places.displayName,places.shortFormattedAddress,places.rating,places.userRatingCount,places.types,places.photos,places.location,places.priceLevel,places.currentOpeningHours,places.businessStatus',
+      };
+
+      final body = jsonEncode({
+        'locationRestriction': {
+          'circle': {
+            'center': {
+              'latitude': lat,
+              'longitude': lng,
+            },
+            'radius': radius.toDouble(),
+          }
+        },
+        'includedTypes': includedTypes.isNotEmpty ? includedTypes : null,
+        'maxResultCount': maxResults,
+      });
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl:searchNearby'),
+        headers: headers,
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        
+        // Cache the response for future use
+        await SmartApiCache.cacheResponse(
+          endpoint: 'nearby_search_new',
+          parameters: parameters,
+          response: data,
+        );
+
+        final List<dynamic> results = data['places'] ?? [];
+        final places = results.map((result) => GooglePlace.fromNewApiJson(result)).toList();
+        
+        debugPrint('✅ Found ${places.length} nearby places (NEW API - CACHED for 30 days)');
+        return places;
+      } else {
+        debugPrint('❌ NEW API nearby search error: ${response.statusCode} - ${response.body}');
+        return [];
+      }
+    } catch (e) {
+      debugPrint('❌ Error with NEW Places API nearby search: $e');
+      return [];
+    }
   }
 
-  /// Get multiple photo URLs for a place (for variety)
-  static List<String> getPhotoUrls(List<String> photoReferences, {int maxWidth = 600, int maxPhotos = 3}) {
-    if (_apiKey.isEmpty || photoReferences.isEmpty) {
-      return ['https://images.unsplash.com/photo-1544367567-0f2fcb009e0b'];
+  /// Get place photo URL using Legacy Places API - WORKING with current API key!
+  /// 
+  /// ✅ WORKING: Legacy Places API photos work with current billing tier
+  /// This method now uses the Legacy API format that successfully returns photos
+  /// 
+  /// For NEW API photos (Enterprise tier required):
+  /// - Contact Google Cloud Sales to enable Enterprise tier + "Place Details Photos" SKU
+  /// 
+  /// For now, using Legacy API which works perfectly with current setup
+  static String getPhotoUrl(String photoReference, [int? maxWidth, int? maxHeight, String? placeId]) {
+    // Handle legacy call format: getPhotoUrl(photoReference, width)
+    if (maxHeight == null && maxWidth != null) {
+      maxHeight = maxWidth;
     }
     
+    // Set defaults
+    maxWidth ??= 800;
+    maxHeight ??= 600;
+    
+    if (photoReference.isEmpty || _apiKey.isEmpty) {
+      debugPrint('❌ Missing photo reference or API key');
+      return '';
+    }
+    
+    // Check if this is a NEW API photo reference format (starts with "places/")
+    if (photoReference.startsWith('places/')) {
+      debugPrint('🔄 NEW API photo reference detected, need to get Legacy reference for place: $placeId');
+      // For NEW API references, we need to get the Legacy photo reference
+      // This will be handled by a separate method
+      return '';
+  }
+
+    // Use Legacy Places API format (WORKING!)
+    // Format: https://maps.googleapis.com/maps/api/place/photo?photoreference={PHOTO_REFERENCE}&key={API_KEY}&maxheight={HEIGHT}
+    final photoUrl = 'https://maps.googleapis.com/maps/api/place/photo?photoreference=$photoReference&key=$_apiKey&maxheight=$maxHeight';
+    
+    debugPrint('🔗 Using Legacy API photo URL: $photoUrl');
+    return photoUrl;
+  }
+
+  /// Get Legacy photo reference for a place (WORKING with current API key)
+  static Future<String?> getLegacyPhotoReference(String placeId) async {
+    try {
+      debugPrint('🔍 Getting Legacy photo reference for place: $placeId');
+      
+      final response = await http.get(
+        Uri.parse('https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=photos&key=$_apiKey'),
+      );
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final photos = data['result']?['photos'];
+        
+        if (photos != null && photos.isNotEmpty) {
+          final photoReference = photos[0]['photo_reference'];
+          debugPrint('✅ Got Legacy photo reference: ${photoReference.substring(0, 50)}...');
+          return photoReference;
+        }
+      }
+      
+      debugPrint('❌ No Legacy photo reference found for place: $placeId');
+      return null;
+    } catch (e) {
+      debugPrint('❌ Error getting Legacy photo reference: $e');
+      return null;
+    }
+  }
+
+  /// Get best photo URL for backward compatibility with existing code
+  static String getBestPhotoUrl(String? photoReference, List<String> placeTypes, {String? placeName, String? placeId}) {
+    return GooglePlace.getBestPhotoUrl(photoReference, placeTypes, placeName: placeName, placeId: placeId);
+  }
+
+  /// Get multiple photo URLs for a place (for variety) - NEW API version
+  static List<String> getPhotoUrls(List<String> photoReferences, {int maxWidth = 600, int maxPhotos = 3, String? placeId}) {
+    if (placeId == null || placeId.isEmpty) {
+      debugPrint('❌ Missing place ID for photo URLs construction');
+      return [];
+    }
+    
+    // Return only Google Places API photos
     return photoReferences
         .take(maxPhotos)
-        .map((ref) => '$_baseUrl/photo?maxwidth=$maxWidth&photo_reference=$ref&key=$_apiKey')
+        .map((ref) => getPhotoUrl(ref, maxWidth, maxWidth, placeId))
+        .where((url) => url.isNotEmpty)
         .toList();
   }
 
-  /// Get best quality photo URL for a place  
-  static String getBestPhotoUrl(String? photoReference, List<String> placeTypes) {
-    // Prioritize actual Google Places photos over generic fallbacks
-    if (photoReference != null && photoReference.isNotEmpty && _apiKey.isNotEmpty) {
-      debugPrint('📸 Using actual Google Places photo: ${photoReference.substring(0, photoReference.length > 10 ? 10 : photoReference.length)}...');
-      // Use high resolution for main images
-      return '$_baseUrl/photo?maxwidth=1200&photo_reference=$photoReference&key=$_apiKey';
-    }
-    
-    debugPrint('⚠️ No photo reference available, using enhanced fallback for types: $placeTypes');
-    // Enhanced fallback images based on place type
-    return _getEnhancedFallbackImage(placeTypes);
-  }
-
-  /// Get enhanced fallback images based on place types
-  static String _getEnhancedFallbackImage(List<String> types) {
-    // High-quality Unsplash images for different venue types
-    if (types.contains('restaurant') || types.contains('food')) {
-      return 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80'; // Restaurant interior
-    } else if (types.contains('museum') || types.contains('art_gallery')) {
-      return 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&q=80'; // Museum interior
-    } else if (types.contains('park')) {
-      return 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80'; // Beautiful park
-    } else if (types.contains('gym') || types.contains('health')) {
-      return 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80'; // Modern gym
-    } else if (types.contains('spa')) {
-      return 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80'; // Spa/wellness
-    } else if (types.contains('cafe') || types.contains('bakery')) {
-      return 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80'; // Cozy cafe
-    } else if (types.contains('bar') || types.contains('night_club')) {
-      return 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&q=80'; // Stylish bar
-    } else if (types.contains('tourist_attraction')) {
-      return 'https://images.unsplash.com/photo-1539650116574-75c0c6d73c6e?w=800&q=80'; // Tourist attraction
-    } else if (types.contains('shopping_mall') || types.contains('store')) {
-      return 'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=800&q=80'; // Shopping center
-    } else if (types.contains('zoo') || types.contains('amusement_park')) {
-      return 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80'; // Family fun
-    }
-    
-    // Default high-quality city/venue image
-    return 'https://images.unsplash.com/photo-1444653389962-8149286c578a?w=800&q=80';
-  }
-
-  // Tourism platform search strategy - like GetYourGuide/TripAdvisor
+  // Enhanced tourism-focused search strategy with GetYourGuide-style queries
   static const Map<String, List<Map<String, dynamic>>> moodToTourismQueries = {
     'adventure': [
-      {'query': 'adventure activities', 'type': 'tourist_attraction', 'minRating': 4.0, 'minReviews': 20},
-      {'query': 'outdoor adventures', 'type': 'tourist_attraction', 'minRating': 4.0, 'minReviews': 15},
-      {'query': 'things to do adventure', 'type': 'tourist_attraction', 'minRating': 3.8, 'minReviews': 10},
-      {'query': 'popular attractions active', 'type': 'amusement_park', 'minRating': 4.0, 'minReviews': 25},
+      {'query': 'outdoor activities Rotterdam', 'types': ['tourist_attraction'], 'minRating': 4.0, 'minReviews': 25},
+      {'query': 'adventure tours Rotterdam', 'types': ['tourist_attraction'], 'minRating': 4.1, 'minReviews': 20},
+      {'query': 'sports activities Rotterdam', 'types': ['amusement_park'], 'minRating': 4.0, 'minReviews': 30},
+      {'query': 'active attractions Rotterdam', 'types': ['tourist_attraction'], 'minRating': 4.0, 'minReviews': 15},
+      {'query': 'adventure experiences Rotterdam', 'types': ['tourist_attraction'], 'minRating': 4.0, 'minReviews': 10},
     ],
     'relaxed': [
-      {'query': 'peaceful places', 'type': 'tourist_attraction', 'minRating': 4.0, 'minReviews': 15},
-      {'query': 'relaxing spots', 'type': 'park', 'minRating': 3.8, 'minReviews': 10},
-      {'query': 'tranquil attractions', 'type': 'tourist_attraction', 'minRating': 4.0, 'minReviews': 20},
-      {'query': 'best cafes scenic', 'type': 'cafe', 'minRating': 4.2, 'minReviews': 30},
+      {'query': 'luxury spa experiences', 'types': ['spa', 'tourist_attraction'], 'minRating': 4.3, 'minReviews': 40},
+      {'query': 'beautiful parks gardens', 'types': ['park', 'tourist_attraction'], 'minRating': 4.0, 'minReviews': 30},
+      {'query': 'peaceful tourist attractions', 'types': ['tourist_attraction', 'museum'], 'minRating': 4.2, 'minReviews': 25},
+      {'query': 'scenic peaceful places', 'types': ['park', 'tourist_attraction'], 'minRating': 4.1, 'minReviews': 20},
+      {'query': 'relaxing experiences', 'types': ['spa', 'park'], 'minRating': 4.0, 'minReviews': 15},
     ],
     'romantic': [
-      {'query': 'romantic places', 'type': 'tourist_attraction', 'minRating': 4.2, 'minReviews': 25},
-      {'query': 'romantic restaurants', 'type': 'restaurant', 'minRating': 4.3, 'minReviews': 50},
-      {'query': 'sunset viewpoints', 'type': 'tourist_attraction', 'minRating': 4.0, 'minReviews': 15},
-      {'query': 'romantic dinner spots', 'type': 'restaurant', 'minRating': 4.4, 'minReviews': 40},
+      {'query': 'romantic restaurants Rotterdam', 'types': ['restaurant'], 'minRating': 4.3, 'minReviews': 50},
+      {'query': 'couples activities Rotterdam', 'types': ['tourist_attraction'], 'minRating': 4.2, 'minReviews': 25},
+      {'query': 'romantic bars Rotterdam', 'types': ['bar'], 'minRating': 4.1, 'minReviews': 30},
+      {'query': 'scenic viewpoints Rotterdam', 'types': ['tourist_attraction'], 'minRating': 4.0, 'minReviews': 20},
+      {'query': 'romantic parks Rotterdam', 'types': ['park'], 'minRating': 4.0, 'minReviews': 15},
     ],
     'energetic': [
-      {'query': 'active things to do', 'type': 'tourist_attraction', 'minRating': 4.0, 'minReviews': 20},
-      {'query': 'popular activities energetic', 'type': 'tourist_attraction', 'minRating': 3.9, 'minReviews': 15},
-      {'query': 'fun activities', 'type': 'amusement_park', 'minRating': 4.1, 'minReviews': 30},
-      {'query': 'active attractions', 'type': 'tourist_attraction', 'minRating': 4.0, 'minReviews': 25},
+      {'query': 'exciting tourist attractions', 'types': ['tourist_attraction', 'amusement_park'], 'minRating': 4.2, 'minReviews': 40},
+      {'query': 'fun entertainment venues', 'types': ['amusement_park', 'tourist_attraction'], 'minRating': 4.1, 'minReviews': 35},
+      {'query': 'active fun experiences', 'types': ['tourist_attraction', 'amusement_park'], 'minRating': 4.0, 'minReviews': 25},
+      {'query': 'energetic attractions', 'types': ['amusement_park', 'bowling_alley'], 'minRating': 4.0, 'minReviews': 30},
     ],
     'excited': [
-      {'query': 'top attractions', 'type': 'tourist_attraction', 'minRating': 4.2, 'minReviews': 50},
-      {'query': 'must see places', 'type': 'tourist_attraction', 'minRating': 4.3, 'minReviews': 75},
-      {'query': 'popular tourist spots', 'type': 'tourist_attraction', 'minRating': 4.1, 'minReviews': 40},
-      {'query': 'famous attractions', 'type': 'tourist_attraction', 'minRating': 4.2, 'minReviews': 60},
+      {'query': 'top tourist attractions', 'types': ['tourist_attraction', 'museum'], 'minRating': 4.3, 'minReviews': 100},
+      {'query': 'must visit attractions', 'types': ['tourist_attraction', 'museum'], 'minRating': 4.4, 'minReviews': 150},
+      {'query': 'famous landmarks sights', 'types': ['tourist_attraction', 'park'], 'minRating': 4.2, 'minReviews': 75},
+      {'query': 'popular tourist destinations', 'types': ['tourist_attraction', 'amusement_park'], 'minRating': 4.3, 'minReviews': 80},
+      {'query': 'iconic attractions', 'types': ['tourist_attraction', 'museum'], 'minRating': 4.2, 'minReviews': 60},
     ],
     'surprise': [
-      {'query': 'hidden gems', 'type': 'tourist_attraction', 'minRating': 4.3, 'minReviews': 15},
-      {'query': 'unique places', 'type': 'tourist_attraction', 'minRating': 4.1, 'minReviews': 12},
-      {'query': 'unusual attractions', 'type': 'museum', 'minRating': 4.0, 'minReviews': 20},
-      {'query': 'off beaten path', 'type': 'tourist_attraction', 'minRating': 4.2, 'minReviews': 10},
+      {'query': 'hidden gem attractions', 'types': ['tourist_attraction', 'museum'], 'minRating': 4.4, 'minReviews': 20},
+      {'query': 'unique tourist experiences', 'types': ['tourist_attraction', 'art_gallery'], 'minRating': 4.2, 'minReviews': 15},
+      {'query': 'unusual attractions', 'types': ['museum', 'tourist_attraction'], 'minRating': 4.1, 'minReviews': 25},
+      {'query': 'secret spots attractions', 'types': ['tourist_attraction', 'park'], 'minRating': 4.3, 'minReviews': 12},
+      {'query': 'off beaten path experiences', 'types': ['tourist_attraction', 'art_gallery'], 'minRating': 4.0, 'minReviews': 18},
     ],
     'foody': [
-      // High-end dining (afternoon/evening perfect)
-      {'query': 'best restaurants', 'type': 'restaurant', 'minRating': 4.3, 'minReviews': 100},
-      {'query': 'popular restaurants', 'type': 'restaurant', 'minRating': 4.2, 'minReviews': 75},
-      {'query': 'top rated dining', 'type': 'restaurant', 'minRating': 4.4, 'minReviews': 60},
+      // High-end culinary experiences
+      {'query': 'restaurants Rotterdam', 'types': ['restaurant'], 'minRating': 4.3, 'minReviews': 100},
+      {'query': 'local cuisine Rotterdam', 'types': ['restaurant'], 'minRating': 4.2, 'minReviews': 75},
+      {'query': 'food markets Rotterdam', 'types': ['tourist_attraction'], 'minRating': 4.0, 'minReviews': 30},
       
-      // Local cuisine & experiences (perfect for tourists)
-      {'query': 'local cuisine', 'type': 'restaurant', 'minRating': 4.1, 'minReviews': 50},
-      {'query': 'food experiences', 'type': 'restaurant', 'minRating': 4.2, 'minReviews': 40},
-      {'query': 'must try restaurants', 'type': 'restaurant', 'minRating': 4.0, 'minReviews': 35},
+      // Food experiences
+      {'query': 'cooking classes Rotterdam', 'types': ['tourist_attraction'], 'minRating': 4.2, 'minReviews': 15},
+      {'query': 'food tours Rotterdam', 'types': ['tourist_attraction'], 'minRating': 4.1, 'minReviews': 20},
       
-      // Afternoon dining options
-      {'query': 'lunch spots', 'type': 'restaurant', 'minRating': 4.0, 'minReviews': 30},
-      {'query': 'casual dining', 'type': 'restaurant', 'minRating': 3.9, 'minReviews': 25},
-      {'query': 'bistro restaurants', 'type': 'restaurant', 'minRating': 4.1, 'minReviews': 20},
-      
-      // Morning options
-      {'query': 'famous bakeries', 'type': 'bakery', 'minRating': 4.0, 'minReviews': 30},
-      {'query': 'breakfast spots', 'type': 'cafe', 'minRating': 4.1, 'minReviews': 25},
-      {'query': 'coffee culture', 'type': 'cafe', 'minRating': 4.0, 'minReviews': 20},
-      
-      // Food tourism experiences
-      {'query': 'cooking workshops', 'type': 'tourist_attraction', 'minRating': 4.3, 'minReviews': 15},
-      {'query': 'food tours', 'type': 'tourist_attraction', 'minRating': 4.2, 'minReviews': 20},
-      {'query': 'food markets', 'type': 'tourist_attraction', 'minRating': 4.0, 'minReviews': 15},
+      // Popular dining spots
+      {'query': 'cafes Rotterdam', 'types': ['cafe'], 'minRating': 4.1, 'minReviews': 40},
+      {'query': 'bakeries Rotterdam', 'types': ['bakery'], 'minRating': 4.0, 'minReviews': 30},
+      {'query': 'coffee shops Rotterdam', 'types': ['cafe'], 'minRating': 4.0, 'minReviews': 25},
     ],
     'festive': [
-      {'query': 'nightlife spots', 'type': 'tourist_attraction', 'minRating': 4.0, 'minReviews': 30},
-      {'query': 'entertainment venues', 'type': 'tourist_attraction', 'minRating': 4.1, 'minReviews': 25},
-      {'query': 'popular bars', 'type': 'bar', 'minRating': 4.2, 'minReviews': 40},
-      {'query': 'lively restaurants', 'type': 'restaurant', 'minRating': 4.0, 'minReviews': 50},
+      {'query': 'popular nightlife bars', 'types': ['bar', 'night_club'], 'minRating': 4.1, 'minReviews': 50},
+      {'query': 'entertainment attractions', 'types': ['tourist_attraction', 'amusement_park'], 'minRating': 4.2, 'minReviews': 40},
+      {'query': 'lively venues restaurants', 'types': ['restaurant', 'bar'], 'minRating': 4.1, 'minReviews': 60},
+      {'query': 'fun nightlife experiences', 'types': ['bar', 'night_club'], 'minRating': 4.0, 'minReviews': 35},
+      {'query': 'party entertainment venues', 'types': ['night_club', 'bar'], 'minRating': 4.0, 'minReviews': 25},
     ],
     'mindful': [
-      {'query': 'peaceful attractions', 'type': 'tourist_attraction', 'minRating': 4.2, 'minReviews': 20},
-      {'query': 'art museums', 'type': 'museum', 'minRating': 4.1, 'minReviews': 30},
-      {'query': 'spiritual places', 'type': 'tourist_attraction', 'minRating': 4.0, 'minReviews': 15},
-      {'query': 'contemplative spots', 'type': 'park', 'minRating': 3.9, 'minReviews': 12},
+      {'query': 'peaceful tourist attractions', 'types': ['tourist_attraction', 'park'], 'minRating': 4.3, 'minReviews': 30},
+      {'query': 'art museums galleries', 'types': ['museum', 'art_gallery'], 'minRating': 4.2, 'minReviews': 50},
+      {'query': 'spiritual cultural sites', 'types': ['church', 'tourist_attraction'], 'minRating': 4.1, 'minReviews': 25},
+      {'query': 'meditation peaceful places', 'types': ['park', 'tourist_attraction'], 'minRating': 4.2, 'minReviews': 20},
+      {'query': 'cultural heritage sites', 'types': ['museum', 'tourist_attraction'], 'minRating': 4.3, 'minReviews': 40},
     ],
     'family fun': [
-      {'query': 'family attractions', 'type': 'tourist_attraction', 'minRating': 4.0, 'minReviews': 40},
-      {'query': 'kid friendly places', 'type': 'zoo', 'minRating': 4.1, 'minReviews': 50},
-      {'query': 'family activities', 'type': 'amusement_park', 'minRating': 4.2, 'minReviews': 60},
-      {'query': 'children attractions', 'type': 'aquarium', 'minRating': 4.0, 'minReviews': 35},
+      {'query': 'family tourist attractions', 'types': ['tourist_attraction', 'amusement_park'], 'minRating': 4.2, 'minReviews': 75},
+      {'query': 'kids family activities', 'types': ['amusement_park', 'zoo'], 'minRating': 4.1, 'minReviews': 100},
+      {'query': 'family entertainment venues', 'types': ['amusement_park', 'aquarium'], 'minRating': 4.3, 'minReviews': 80},
+      {'query': 'children attractions', 'types': ['zoo', 'amusement_park'], 'minRating': 4.2, 'minReviews': 60},
+      {'query': 'family friendly experiences', 'types': ['tourist_attraction', 'museum'], 'minRating': 4.1, 'minReviews': 50},
     ],
     'creative': [
-      {'query': 'art galleries', 'type': 'art_gallery', 'minRating': 4.0, 'minReviews': 20},
-      {'query': 'creative attractions', 'type': 'tourist_attraction', 'minRating': 4.1, 'minReviews': 15},
-      {'query': 'art museums', 'type': 'museum', 'minRating': 4.2, 'minReviews': 30},
-      {'query': 'artistic places', 'type': 'tourist_attraction', 'minRating': 4.0, 'minReviews': 12},
+      {'query': 'art galleries museums', 'types': ['art_gallery', 'museum'], 'minRating': 4.2, 'minReviews': 40},
+      {'query': 'creative cultural attractions', 'types': ['museum', 'tourist_attraction'], 'minRating': 4.1, 'minReviews': 30},
+      {'query': 'artistic experiences', 'types': ['art_gallery', 'tourist_attraction'], 'minRating': 4.2, 'minReviews': 25},
+      {'query': 'cultural art venues', 'types': ['museum', 'art_gallery'], 'minRating': 4.3, 'minReviews': 35},
+      {'query': 'design creative spaces', 'types': ['art_gallery', 'museum'], 'minRating': 4.0, 'minReviews': 20},
     ],
     'luxurious': [
-      {'query': 'luxury restaurants', 'type': 'restaurant', 'minRating': 4.4, 'minReviews': 75},
-      {'query': 'premium experiences', 'type': 'tourist_attraction', 'minRating': 4.3, 'minReviews': 30},
-      {'query': 'upscale dining', 'type': 'restaurant', 'minRating': 4.5, 'minReviews': 50},
-      {'query': 'luxury attractions', 'type': 'spa', 'minRating': 4.2, 'minReviews': 25},
+      {'query': 'luxury fine dining', 'types': ['restaurant'], 'minRating': 4.5, 'minReviews': 100},
+      {'query': 'premium spa experiences', 'types': ['spa'], 'minRating': 4.4, 'minReviews': 50},
+      {'query': 'upscale luxury venues', 'types': ['restaurant', 'bar'], 'minRating': 4.5, 'minReviews': 75},
+      {'query': 'exclusive experiences', 'types': ['tourist_attraction', 'spa'], 'minRating': 4.4, 'minReviews': 40},
+      {'query': 'high end attractions', 'types': ['tourist_attraction', 'restaurant'], 'minRating': 4.4, 'minReviews': 60},
     ],
     'freactives': [
-      {'query': 'fun activities', 'type': 'amusement_park', 'minRating': 4.0, 'minReviews': 30},
-      {'query': 'entertainment centers', 'type': 'tourist_attraction', 'minRating': 3.9, 'minReviews': 25},
-      {'query': 'activity venues', 'type': 'bowling_alley', 'minRating': 3.8, 'minReviews': 20},
-      {'query': 'recreational spots', 'type': 'amusement_park', 'minRating': 4.1, 'minReviews': 35},
+      {'query': 'entertainment activity venues', 'types': ['amusement_park', 'tourist_attraction'], 'minRating': 4.1, 'minReviews': 40},
+      {'query': 'fun activity centers', 'types': ['bowling_alley', 'amusement_park'], 'minRating': 4.0, 'minReviews': 35},
+      {'query': 'recreational attractions', 'types': ['tourist_attraction', 'amusement_park'], 'minRating': 4.0, 'minReviews': 30},
+      {'query': 'active fun experiences', 'types': ['amusement_park', 'bowling_alley'], 'minRating': 3.9, 'minReviews': 25},
     ],
   };
 
-  /// Search like tourism platforms (GetYourGuide/TripAdvisor) with popularity filtering
-  /// Returns POPULAR tourist experiences that tourists actually book and recommend
+  /// Search like GetYourGuide/TripAdvisor with enhanced tourism filtering
+  /// Returns ONLY high-quality tourist experiences that tourists actually book
+  /// Cost-optimized with smart API usage limits + ENHANCED VARIETY
   static Future<List<GooglePlace>> searchByMood({
     required List<String> moods,
     required double lat,
     required double lng,
-    int radius = 10000,
+    int radius = 8000, // Reduced for better local results
+    String cityName = 'Rotterdam', // Default city
   }) async {
-    // 🚨 API KILL SWITCH: This method would make dozens of API calls per mood search!
-    debugPrint('🚫 SEARCH BY MOOD DISABLED - Would have made ${moods.length * 10}+ API calls!');
-    debugPrint('💰 MASSIVE COST SAVINGS: Prevented tourism search for moods: $moods');
+    // Check if API is enabled in configuration
+    if (!ApiConfig.shouldUseApi) {
+      debugPrint('🚫 Google Places API disabled by configuration for mood search');
     return [];
   }
 
-  /// Check if a place is an everyday facility that tourists typically don't want
-  static bool _isEverydayFacility(GooglePlace place) {
-    final everydayTypes = {
-      'gas_station', 'car_repair', 'laundry', 'pharmacy', 'bank', 
-      'atm', 'post_office', 'dentist', 'doctor', 'veterinary_care',
-      'car_wash', 'storage', 'locksmith', 'plumber', 'electrician'
-    };
+    debugPrint('🎯 TOURISM SEARCH: Finding diverse GetYourGuide-style experiences for: $moods in $cityName');
     
-    final everydayKeywords = {
-      'chain gym', 'basic-fit', 'anytime fitness', 'planet fitness',
-      'mcdonalds', 'burger king', 'subway', 'starbucks chain',
-      'grocery store', 'supermarket', 'convenience store'
-    };
+    final allPlaces = <GooglePlace>[];
+    final seenPlaceIds = <String>{};
+    int apiCallCount = 0;
+    const maxApiCalls = 8; // Increased for more variety
     
-    // Filter out everyday facility types
-    if (place.types.any((type) => everydayTypes.contains(type))) {
-      return true;
+    // Add time-based rotation to prevent same results
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final rotationOffset = (timestamp ~/ (1000 * 60 * 60)) % 10; // Changes every hour
+    
+    // Process only the first mood for focused results
+    for (final mood in moods.take(1)) {
+      final queries = moodToTourismQueries[mood.toLowerCase()] ?? [];
+      
+      // ENHANCED VARIETY: Rotate through queries based on time + shuffle
+      final shuffledQueries = List.from(queries);
+      shuffledQueries.shuffle();
+      
+      // Use different queries each time with rotation
+      final startIndex = rotationOffset % queries.length;
+      final rotatedQueries = [
+        ...queries.skip(startIndex),
+        ...queries.take(startIndex),
+      ];
+      
+      // Use best 3 queries per mood for more variety
+      for (final queryConfig in rotatedQueries.take(3)) {
+        if (apiCallCount >= maxApiCalls) break;
+        
+        try {
+          final types = List<String>.from(queryConfig['types'] ?? []);
+          
+          // Search with the primary type only for focused results
+          for (final placeType in types.take(1)) {
+            if (apiCallCount >= maxApiCalls) break;
+            
+            // Replace "Rotterdam" in query with actual city name
+            String searchQuery = (queryConfig['query'] as String).replaceAll('Rotterdam', cityName);
+            
+            debugPrint('🔍 TOURISM API: Searching "$searchQuery" type:"$placeType"');
+            
+            // Add radius variation for more diverse results
+            final searchRadius = radius + (rotationOffset * 1000); // Vary search radius
+            
+            final places = await searchPlaces(
+              query: searchQuery,
+              lat: lat,
+              lng: lng,
+              radius: searchRadius,
+              type: placeType,
+            );
+            
+            apiCallCount++;
+            
+            // Apply STRICT tourism filtering
+            for (final place in places) {
+              if (seenPlaceIds.contains(place.placeId)) continue;
+              
+              // Enhanced quality filters for tourism
+              final minRating = queryConfig['minRating'] as double? ?? 4.0;
+              final minReviews = queryConfig['minReviews'] as int? ?? 20;
+              
+              if ((place.rating ?? 0) >= minRating && 
+                  (place.userRatingsTotal ?? 0) >= minReviews &&
+                  _isTouristRelevant(place)) {
+                
+                final touristScore = _calculateTouristScore(place);
+                debugPrint('✅ TOURIST EXPERIENCE: ${place.name}');
+                debugPrint('   🏆 Tourist Score: $touristScore/10');
+                debugPrint('   📷 Has photo: ${place.photoReference != null}');
+                debugPrint('   🌟 Rating: ${place.rating} (${place.userRatingsTotal} reviews)');
+                debugPrint('   🏷️ Types: ${place.types.take(3).join(", ")}');
+                
+                allPlaces.add(place);
+                seenPlaceIds.add(place.placeId);
+              } else {
+                debugPrint('❌ FILTERED OUT: ${place.name} (Rating: ${place.rating}, Reviews: ${place.userRatingsTotal})');
+              }
+            }
+          }
+          
+          // Controlled delay between requests
+          await Future.delayed(const Duration(milliseconds: 500));
+          
+          // Stop if we have enough high-quality tourism results
+          if (allPlaces.length >= 10) break;
+          
+        } catch (e) {
+          debugPrint('❌ Tourism search error "${queryConfig['query']}": $e');
+        }
+      }
+      
+      if (allPlaces.length >= 10) break;
     }
     
-    // Filter out everyday facility names
+    // Sort by tourist relevance score (highest first) AND rating
+    allPlaces.sort((a, b) {
+      final scoreA = _calculateTouristScore(a);
+      final scoreB = _calculateTouristScore(b);
+      
+      // Primary sort: tourist score
+      final scoreComparison = scoreB.compareTo(scoreA);
+      if (scoreComparison != 0) return scoreComparison;
+      
+      // Secondary sort: rating (higher is better)
+      final ratingA = a.rating ?? 0.0;
+      final ratingB = b.rating ?? 0.0;
+      return ratingB.compareTo(ratingA);
+    });
+    
+    debugPrint('✅ TOURISM RESULTS: Found ${allPlaces.length} high-quality tourist experiences in $cityName');
+    debugPrint('📊 API calls used: $apiCallCount/$maxApiCalls');
+    
+    return allPlaces.take(10).toList(); // Return top 10 tourist experiences
+  }
+
+  /// Enhanced filter for tourist-relevant places only - GetYourGuide style
+  static bool _isTouristRelevant(GooglePlace place) {
+    // HIGH-PRIORITY tourist place types (what tourists actually want)
+    final touristTypes = {
+      'tourist_attraction', 'museum', 'art_gallery', 'amusement_park',
+      'aquarium', 'zoo', 'park', 'restaurant', 'cafe', 'bar',
+      'night_club', 'movie_theater', 'casino', 'bowling_alley', 
+      'travel_agency', 'lodging', 'bakery', 'shopping_mall',
+      'church', 'synagogue', 'hindu_temple', 'mosque', 'library'
+    };
+    
+    // ABSOLUTELY EXCLUDE these everyday/personal services
+    final excludeTypes = {
+      'gas_station', 'atm', 'bank', 'pharmacy', 'hospital', 'dentist',
+      'veterinary_care', 'car_repair', 'car_wash', 'parking',
+      'post_office', 'local_government_office', 'embassy', 'storage',
+      'funeral_home', 'cemetery', 'laundry', 'hair_care', 'beauty_salon',
+      'real_estate_agency', 'insurance_agency', 'accounting',
+      'lawyer', 'physiotherapist', 'doctor', 'locksmith', 'plumber',
+      'electrician', 'roofing_contractor', 'moving_company',
+      'fire_station', 'police', 'gym', 'health', // Added gym and health
+    };
+    
+    // COMPREHENSIVE EXCLUDE list for business names (personal care, medical, services)
+    final excludeKeywords = {
+      // Personal care & body services
+      'bodycare', 'body care', 'men\'s bodycare', 'massage therapy', 
+      'physiotherapy', 'physical therapy', 'yoga school', 'yogaschool',
+      'fitness center', 'fitness centre', 'personal trainer', 'gym',
+      'pilates studio', 'pilates', 'crossfit', 'bootcamp',
+      
+      // Medical & health services  
+      'dental clinic', 'medical center', 'pharmacy', 'optician', 
+      'clinic', 'medical', 'therapy', 'rehabilitation', 'health center',
+      'treatment center', 'care center', 'diagnostic', 'surgical',
+      'zwanger', 'pregnancy', 'maternity', 'wellness center',
+      
+      // Beauty & personal services
+      'hair salon', 'nail salon', 'beauty salon', 'dry cleaning',
+      'barbershop', 'barber shop', 'nail bar', 'manicure', 'pedicure',
+      
+      // Professional services
+      'tax service', 'insurance office', 'auto repair', 'tire shop',
+      'law office', 'legal services', 'accounting', 'bookkeeping',
+      
+      // Automotive & technical
+      'car wash', 'auto service', 'repair shop', 'mechanic',
+      'tire center', 'oil change', 'brake service',
+      
+      // Personal services
+      'cleaning service', 'laundromat', 'dry cleaner', 'tailor',
+      'alterations', 'shoe repair', 'locksmith', 'plumber',
+      
+      // Dutch/Local specific exclusions
+      'zorgcentrum', 'medisch centrum', 'tandarts', 'apotheek',
+      'fysiotherapie', 'behandeling', 'verzorging', 'gezondheid',
+    };
+    
+    // REQUIRE tourism keywords for spas/wellness (to avoid medical services)
+    final touristSpaKeywords = {
+      'luxury spa', 'resort spa', 'day spa', 'spa hotel', 'thermal spa',
+      'wellness retreat', 'relaxation spa', 'beauty spa', 'spa experience',
+      'hotel spa', 'destination spa', 'retreat center'
+    };
+    
     final nameLower = place.name.toLowerCase();
-    if (everydayKeywords.any((keyword) => nameLower.contains(keyword))) {
-      return true;
+    
+    // Check place types - EXCLUDE if has any excluded type
+    final hasExcludedType = place.types.any((type) => excludeTypes.contains(type));
+    if (hasExcludedType) {
+      debugPrint('🚫 Excluded by type: ${place.name} (types: ${place.types})');
+      return false;
     }
     
-    return false;
+    // Check business name for exclusions - STRICT filtering
+    final hasExcludedKeyword = excludeKeywords.any((keyword) => nameLower.contains(keyword));
+    if (hasExcludedKeyword) {
+      debugPrint('🚫 Excluded by keyword: ${place.name}');
+      return false;
+    }
+    
+    // Special handling for spas/wellness - must have tourist keywords to be included
+    final isSpaOrWellness = place.types.any((type) => ['spa', 'gym', 'health'].contains(type));
+    if (isSpaOrWellness) {
+      final hasTouristSpaKeywords = touristSpaKeywords.any((keyword) => nameLower.contains(keyword));
+      if (!hasTouristSpaKeywords) {
+        debugPrint('🚫 Excluded wellness/spa without tourist keywords: ${place.name}');
+        return false;
+      }
+    }
+    
+    // Check if has relevant tourist type
+    final hasRelevantType = place.types.any((type) => touristTypes.contains(type));
+    if (!hasRelevantType) {
+      debugPrint('🚫 Excluded - no tourist relevant type: ${place.name} (types: ${place.types})');
+      return false;
+    }
+    
+    // Additional tourist-relevance scoring
+    final touristScore = _calculateTouristScore(place);
+    if (touristScore < 3) {
+      debugPrint('🚫 Excluded - low tourist score ($touristScore): ${place.name}');
+      return false;
+    }
+    
+    debugPrint('✅ TOURIST APPROVED: ${place.name} (score: $touristScore, types: ${place.types.take(3).join(", ")})');
+    return true;
+  }
+  
+  /// Calculate tourist relevance score (1-10)
+  static int _calculateTouristScore(GooglePlace place) {
+    final nameLower = place.name.toLowerCase();
+    int score = 0;
+    
+    // High tourist keywords (+3 points each)
+    final highTouristKeywords = {
+      'attraction', 'museum', 'gallery', 'tour', 'experience', 'adventure',
+      'heritage', 'historic', 'landmark', 'scenic', 'viewpoint', 'park',
+      'entertainment', 'show', 'theater', 'cultural', 'art', 'exhibition'
+    };
+    
+    // Medium tourist keywords (+2 points each)
+    final mediumTouristKeywords = {
+      'restaurant', 'cafe', 'bar', 'dining', 'cuisine', 'food', 'drink',
+      'shopping', 'market', 'boutique', 'souvenir', 'gift'
+    };
+    
+    // Tourism-positive place types (+2 points each)
+    final positiveTypes = {
+      'tourist_attraction', 'museum', 'art_gallery', 'amusement_park',
+      'zoo', 'aquarium', 'park', 'restaurant', 'bar', 'cafe'
+    };
+    
+    // Check for high tourist keywords
+    for (final keyword in highTouristKeywords) {
+      if (nameLower.contains(keyword)) score += 3;
+    }
+    
+    // Check for medium tourist keywords
+    for (final keyword in mediumTouristKeywords) {
+      if (nameLower.contains(keyword)) score += 2;
+    }
+    
+    // Check for positive place types
+    for (final type in positiveTypes) {
+      if (place.types.contains(type)) score += 2;
+    }
+    
+    // High rating bonus (+1 point)
+    if ((place.rating ?? 0) >= 4.2) score += 1;
+    
+    // Popular place bonus (+1 point)
+    if ((place.userRatingsTotal ?? 0) >= 100) score += 1;
+    
+    return score;
+    }
+    
+  /// Test method to check tourist filtering logic
+  static bool testTouristFiltering(GooglePlace place) {
+    return _isTouristRelevant(place);
   }
 } 

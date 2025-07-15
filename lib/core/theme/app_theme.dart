@@ -7,6 +7,7 @@ class AppTheme {
   static const Color secondary = Color(0xFF81C784);
   static const Color accent = Color(0xFFFFB74D);
   static const Color background = Color(0xFFFFFFFF);
+  static const Color cream = Color(0xFFFFFDF5); // Warm cream background
   static const Color text = Color(0xFF333333);
   static const Color error = Color(0xFFFF5252);
   static const Color success = Color(0xFF4CAF50);

@@ -1,119 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/features/places/providers/bookings_provider.dart';
+import 'package:wandermood/features/places/providers/explore_places_provider.dart';
+import 'package:wandermood/features/places/models/booking.dart';
+import 'package:wandermood/features/places/models/place.dart';
+import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:intl/intl.dart';
 
-// Sample plan data model
-class TravelPlan {
-  final String id;
-  final String title;
-  final String destination;
-  final DateTime startDate;
-  final DateTime endDate;
-  final String imageUrl;
-  final List<String> activities;
-  final bool isCompleted;
-  final bool isFavorite;
-
-  TravelPlan({
-    required this.id,
-    required this.title,
-    required this.destination,
-    required this.startDate,
-    required this.endDate,
-    required this.imageUrl,
-    required this.activities,
-    this.isCompleted = false,
-    this.isFavorite = false,
-  });
-}
-
 class TravelPlansScreen extends ConsumerStatefulWidget {
-  const TravelPlansScreen({Key? key}) : super(key: key);
+  const TravelPlansScreen({super.key});
 
   @override
   ConsumerState<TravelPlansScreen> createState() => _TravelPlansScreenState();
 }
 
-class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  
-  // Sample travel plans data
-  final List<TravelPlan> _travelPlans = [
-    TravelPlan(
-      id: '1',
-      title: 'San Francisco Adventure',
-      destination: 'San Francisco, CA',
-      startDate: DateTime.now().add(const Duration(days: 15)),
-      endDate: DateTime.now().add(const Duration(days: 20)),
-      imageUrl: 'assets/images/fallbacks/default.jpg',
-      activities: ['Golden Gate Bridge', 'Alcatraz Island', 'Fisherman\'s Wharf', 'Union Square'],
-    ),
-    TravelPlan(
-      id: '2',
-      title: 'Weekend Getaway',
-      destination: 'Napa Valley, CA',
-      startDate: DateTime.now().add(const Duration(days: 3)),
-      endDate: DateTime.now().add(const Duration(days: 5)),
-      imageUrl: 'assets/images/fallbacks/default.jpg',
-      activities: ['Wine Tasting', 'Hot Air Balloon Ride', 'Spa Day', 'Fine Dining'],
-      isFavorite: true,
-    ),
-    TravelPlan(
-      id: '3',
-      title: 'Summer Beach Vacation',
-      destination: 'Santa Cruz, CA',
-      startDate: DateTime.now().add(const Duration(days: 45)),
-      endDate: DateTime.now().add(const Duration(days: 52)),
-      imageUrl: 'assets/images/fallbacks/default.jpg',
-      activities: ['Beach Day', 'Boardwalk', 'Surfing Lessons', 'Coastal Hiking'],
-    ),
-    TravelPlan(
-      id: '4',
-      title: 'City Exploration',
-      destination: 'San Francisco, CA',
-      startDate: DateTime.now().subtract(const Duration(days: 20)),
-      endDate: DateTime.now().subtract(const Duration(days: 15)),
-      imageUrl: 'assets/images/fallbacks/default.jpg',
-      activities: ['Museum Tour', 'Shopping', 'Ferry Building', 'Chinatown'],
-      isCompleted: true,
-    ),
-    TravelPlan(
-      id: '5',
-      title: 'Nature Retreat',
-      destination: 'Yosemite National Park, CA',
-      startDate: DateTime.now().subtract(const Duration(days: 60)),
-      endDate: DateTime.now().subtract(const Duration(days: 55)),
-      imageUrl: 'assets/images/fallbacks/default.jpg',
-      activities: ['Hiking', 'Photography', 'Camping', 'Stargazing'],
-      isCompleted: true,
-      isFavorite: true,
-    ),
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-  
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
+class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Filter plans by upcoming/past
-    final upcomingPlans = _travelPlans.where((plan) => !plan.isCompleted).toList();
-    final pastPlans = _travelPlans.where((plan) => plan.isCompleted).toList();
-    
-    // Sort by date
-    upcomingPlans.sort((a, b) => a.startDate.compareTo(b.startDate));
-    pastPlans.sort((a, b) => b.endDate.compareTo(a.endDate)); // Past plans in reverse chronological
-
     return SwirlBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -121,7 +29,7 @@ class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> with Sing
           backgroundColor: Colors.transparent,
           elevation: 0,
           title: Text(
-            'Travel Plans',
+            'My Bookings',
             style: GoogleFonts.museoModerno(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -130,376 +38,780 @@ class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> with Sing
           ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () => Navigator.pop(context),
-          ),
-          bottom: TabBar(
-            controller: _tabController,
-            labelColor: const Color(0xFF12B347),
-            unselectedLabelColor: Colors.black54,
-            indicatorColor: const Color(0xFF12B347),
-            tabs: const [
-              Tab(text: 'Upcoming'),
-              Tab(text: 'Past'),
-            ],
+            onPressed: () {
+              // Check if we can pop, otherwise go to main screen
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              } else {
+                context.go('/main');
+              }
+            },
           ),
         ),
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            // Upcoming plans tab
-            _buildPlansList(upcomingPlans, isUpcoming: true),
-            
-            // Past plans tab
-            _buildPlansList(pastPlans, isUpcoming: false),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          heroTag: "create_travel_plan_fab",
-          backgroundColor: const Color(0xFF12B347),
-          child: const Icon(Icons.add),
-          onPressed: () {
-            // Create new travel plan
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Create a new travel plan'),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          },
-        ),
+        body: _buildBookingsContent(),
       ),
     );
   }
   
-  // Build list of travel plans
-  Widget _buildPlansList(List<TravelPlan> plans, {required bool isUpcoming}) {
-    if (plans.isEmpty) {
-      return _buildEmptyState(isUpcoming);
-    }
+  Widget _buildBookingsContent() {
+    final bookingsAsync = ref.watch(bookingsProvider);
     
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: plans.length,
-      itemBuilder: (context, index) {
-        final plan = plans[index];
-        return _buildPlanCard(plan, isUpcoming);
+    return bookingsAsync.when(
+      loading: () => const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+        ),
+      ),
+      error: (error, stackTrace) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Colors.red[300],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Oops! Something went wrong',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.red[700],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Unable to load your bookings',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                ref.invalidate(bookingsProvider);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF12B347),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Try Again'),
+            ),
+          ],
+        ),
+      ),
+      data: (bookings) {
+        print('🔍 Loaded ${bookings.length} bookings from provider');
+        
+        if (bookings.isEmpty) {
+          print('🔍 No bookings found, showing empty state');
+          return _buildEnhancedEmptyState(context, ref);
+        } else {
+          return _buildBookingsList(bookings);
+        }
       },
     );
   }
-  
-  // Empty state widget
-  Widget _buildEmptyState(bool isUpcoming) {
+
+  Widget _buildBookingsList(List<Booking> bookings) {
+    // Group bookings by status
+    final upcomingBookings = bookings.where((booking) => 
+      booking.status == BookingStatus.confirmed && 
+      booking.date.isAfter(DateTime.now())
+    ).toList();
+    
+    final pastBookings = bookings.where((booking) => 
+      booking.date.isBefore(DateTime.now()) ||
+      booking.status == BookingStatus.completed
+    ).toList();
+    
+    final cancelledBookings = bookings.where((booking) => 
+      booking.status == BookingStatus.cancelled || 
+      booking.status == BookingStatus.noShow
+    ).toList();
+
+    // Sort by date
+    upcomingBookings.sort((a, b) => a.date.compareTo(b.date));
+    pastBookings.sort((a, b) => b.date.compareTo(a.date));
+    cancelledBookings.sort((a, b) => a.date.compareTo(b.date));
+
+         return ListView(
+       padding: const EdgeInsets.all(16),
+       children: [
+         // Cancelled Bookings
+         if (cancelledBookings.isNotEmpty) ...[
+           _buildSectionHeader('Cancelled', cancelledBookings.length, Colors.red),
+           const SizedBox(height: 12),
+           ...cancelledBookings.map((booking) => _buildBookingCard(booking)),
+           const SizedBox(height: 24),
+         ],
+        
+        // Upcoming Bookings
+        if (upcomingBookings.isNotEmpty) ...[
+          _buildSectionHeader('Upcoming', upcomingBookings.length, const Color(0xFF12B347)),
+          const SizedBox(height: 12),
+          ...upcomingBookings.map((booking) => _buildBookingCard(booking)),
+          const SizedBox(height: 24),
+        ],
+        
+        // Past Bookings
+        if (pastBookings.isNotEmpty) ...[
+          _buildSectionHeader('Past Experiences', pastBookings.length, Colors.grey),
+          const SizedBox(height: 12),
+          ...pastBookings.map((booking) => _buildBookingCard(booking)),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title, int count, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 4,
+          height: 20,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF2D3748),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            count.toString(),
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBookingCard(Booking booking) {
+    final place = booking.place;
+    final bookedDate = DateFormat('MMM d, yyyy').format(booking.date);
+    final timeString = booking.time;
+    
+    // Status styling
+    Color statusColor;
+    String statusText;
+    IconData statusIcon;
+    
+    switch (booking.status) {
+      case BookingStatus.confirmed:
+        statusColor = const Color(0xFF12B347);
+        statusText = 'Confirmed';
+        statusIcon = Icons.check_circle;
+        break;
+      case BookingStatus.completed:
+        statusColor = Colors.blue;
+        statusText = 'Completed';
+        statusIcon = Icons.done_all;
+        break;
+      case BookingStatus.cancelled:
+        statusColor = Colors.red;
+        statusText = 'Cancelled';
+        statusIcon = Icons.cancel;
+        break;
+      case BookingStatus.noShow:
+        statusColor = Colors.orange;
+        statusText = 'No Show';
+        statusIcon = Icons.warning;
+        break;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(
+          color: statusColor.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with place name and status
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    place.name,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF2D3748),
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(statusIcon, size: 12, color: statusColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        statusText,
+                        style: GoogleFonts.poppins(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: statusColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 8),
+            
+            // Date and location
+            Row(
+              children: [
+                Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
+                const SizedBox(width: 4),
+                Text(
+                  '$bookedDate at $timeString',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ],
+            ),
+            
+            if (place.address.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      place.address,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            
+            // Booking details
+            if (booking.guests > 1) ...[
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(Icons.people, size: 14, color: Colors.grey[600]),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${booking.guests} ${booking.guests == 1 ? 'person' : 'people'}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            
+            // Action buttons for upcoming bookings
+            if (booking.status == BookingStatus.confirmed && booking.date.isAfter(DateTime.now())) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        // Add to calendar
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Added to calendar'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF12B347),
+                        side: const BorderSide(color: Color(0xFF12B347)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.calendar_today, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Add to Calendar',
+                            style: GoogleFonts.poppins(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        // View details
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Viewing booking details'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.grey[700],
+                        side: BorderSide(color: Colors.grey[300]!),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.info_outline, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Details',
+                            style: GoogleFonts.poppins(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEnhancedEmptyState(BuildContext context, WidgetRef ref) {
+    final placesAsync = ref.watch(explorePlacesProvider(city: 'Rotterdam'));
+    
+    return placesAsync.when(
+      loading: () => const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+        ),
+      ),
+      error: (error, stackTrace) => _buildBasicEmptyState(),
+      data: (places) {
+        // Get top 3 most interesting places for preview
+        final previewPlaces = places.take(3).toList();
+        
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 40),
+              
+              // Hero Section with Moody and Gradient
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      const Color(0xFF667eea).withOpacity(0.1),
+                      const Color(0xFF764ba2).withOpacity(0.05),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: const Color(0xFF667eea).withOpacity(0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // Animated Floating Moody Character
+                    TweenAnimationBuilder(
+                      tween: Tween<double>(begin: 0, end: 1),
+                      duration: const Duration(milliseconds: 800),
+                      builder: (context, double value, child) {
+                        return Transform.scale(
+                          scale: value,
+                          child: const MoodyCharacter(
+                            size: 120,
+                            mood: 'happy',
+                          ),
+                        );
+                      },
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Main Headline
+                    Text(
+                      'Ready to book your first experience?',
+                      style: GoogleFonts.museoModerno(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF2D3748),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    
+                    const SizedBox(height: 12),
+                    
+                    // Subheadline with dynamic count
+                    Text(
+                      'I\'ve found ${places.length} amazing places in Rotterdam waiting for you! 🇳🇱',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: const Color(0xFF4A5568),
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 32),
+              
+              // Preview Cards Section
+              if (previewPlaces.isNotEmpty) ...[
+                Text(
+                  'Popular places to book',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF2D3748),
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Preview Cards
+                ...previewPlaces.map((place) => _buildPreviewCard(place)),
+                
+                const SizedBox(height: 24),
+              ],
+              
+              // Action Buttons
+              Column(
+                children: [
+                  // Primary CTA
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Navigate to Explore tab
+                        ref.read(mainTabProvider.notifier).state = 1;
+                        if (context.mounted) {
+                          context.goNamed('main', extra: {'tab': 1});
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF12B347),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.explore, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Explore & Book Places',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // Secondary CTA
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        // Navigate to Moody chat
+                        ref.read(mainTabProvider.notifier).state = 2;
+                        if (context.mounted) {
+                          context.goNamed('main', extra: {'tab': 2});
+                        }
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF667eea),
+                        side: const BorderSide(color: Color(0xFF667eea)),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.psychology, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Ask Moody for recommendations',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              
+              // Bottom padding to ensure content doesn't get cut off
+              const SizedBox(height: 24),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPreviewCard(Place place) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF667eea).withOpacity(0.1),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Icon based on place type
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: const Color(0xFF12B347).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              _getPlaceIcon(place),
+              color: const Color(0xFF12B347),
+              size: 24,
+            ),
+          ),
+          
+          const SizedBox(width: 16),
+          
+          // Place details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  place.name,
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF2D3748),
+                  ),
+                ),
+                
+                const SizedBox(height: 4),
+                
+                // Rating and review count
+                Row(
+                  children: [
+                    if (place.rating > 0) ...[
+                      Icon(
+                        Icons.star,
+                        size: 14,
+                        color: Colors.amber[600],
+                      ),
+                      const SizedBox(width: 2),
+                      Text(
+                        place.rating.toStringAsFixed(1),
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (place.reviewCount > 0) ...[
+                        const SizedBox(width: 2),
+                        Text(
+                          '(${place.reviewCount})',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                      const SizedBox(width: 8),
+                    ],
+                    Icon(
+                      Icons.location_on,
+                      size: 14,
+                      color: Colors.grey[600],
+                    ),
+                    const SizedBox(width: 2),
+                    Expanded(
+                      child: Text(
+                        'Rotterdam',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          
+          // Arrow icon
+          Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: Colors.grey[400],
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _getPlaceIcon(Place place) {
+    final types = place.types.map((t) => t.toLowerCase()).toList();
+    final typesString = types.join(' ');
+    
+    if (typesString.contains('restaurant') || typesString.contains('food')) {
+      return Icons.restaurant;
+    } else if (typesString.contains('bar') || typesString.contains('night')) {
+      return Icons.local_bar;
+    } else if (typesString.contains('museum') || typesString.contains('tourist')) {
+      return Icons.camera_alt;
+    } else if (typesString.contains('park') || typesString.contains('outdoor')) {
+      return Icons.park;
+    } else if (typesString.contains('lodging') || typesString.contains('hotel')) {
+      return Icons.hotel;
+    } else {
+      return Icons.place;
+    }
+  }
+
+  Widget _buildBasicEmptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            isUpcoming ? Icons.backpack_outlined : Icons.history_outlined,
-            size: 72,
-            color: Colors.grey[400],
+          const Icon(
+            Icons.bookmark_border,
+            size: 80,
+            color: Colors.grey,
           ),
           const SizedBox(height: 16),
           Text(
-            isUpcoming ? 'No upcoming travel plans' : 'No past travel plans',
+            'No bookings yet',
             style: GoogleFonts.poppins(
-              fontSize: 18,
+              fontSize: 24,
               fontWeight: FontWeight.w600,
               color: Colors.grey[700],
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            isUpcoming
-                ? 'Create a new plan to start your next adventure'
-                : 'Your completed travel plans will appear here',
+            'Your booked experiences will appear here',
             style: GoogleFonts.poppins(
-              fontSize: 14,
+              fontSize: 16,
               color: Colors.grey[600],
             ),
             textAlign: TextAlign.center,
           ),
-          if (isUpcoming) ...[
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {
-                // Create new plan
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF12B347),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              icon: const Icon(Icons.add),
-              label: Text(
-                'Create New Plan',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
+          const SizedBox(height: 32),
+          ElevatedButton(
+            onPressed: () {
+              // Navigate to Explore
+              ref.read(mainTabProvider.notifier).state = 1;
+              context.goNamed('main', extra: {'tab': 1});
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF12B347),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
               ),
             ),
-          ]
-        ],
-      ),
-    );
-  }
-  
-  // Travel plan card widget
-  Widget _buildPlanCard(TravelPlan plan, bool isUpcoming) {
-    final startDate = DateFormat('MMM d, yyyy').format(plan.startDate);
-    final endDate = DateFormat('MMM d, yyyy').format(plan.endDate);
-    
-    // Calculate days remaining or days since
-    final now = DateTime.now();
-    final difference = plan.startDate.difference(now).inDays;
-    
-    String timeIndicator;
-    Color timeColor;
-    
-    if (isUpcoming) {
-      if (difference == 0) {
-        timeIndicator = 'Today';
-        timeColor = Colors.orange;
-      } else if (difference == 1) {
-        timeIndicator = 'Tomorrow';
-        timeColor = Colors.orange;
-      } else {
-        timeIndicator = '$difference days to go';
-        timeColor = const Color(0xFF12B347);
-      }
-    } else {
-      final daysSince = now.difference(plan.endDate).inDays;
-      timeIndicator = '$daysSince days ago';
-      timeColor = Colors.grey;
-    }
-    
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      elevation: 2,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image section with badges
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                child: Image.asset(
-                  plan.imageUrl,
-                  height: 150,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    height: 150,
-                    width: double.infinity,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.image, color: Colors.white, size: 40),
-                  ),
-                ),
+            child: Text(
+              'Explore Places',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
               ),
-              
-              // Favorite indicator
-              if (plan.isFavorite)
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.favorite,
-                      color: Colors.red,
-                      size: 20,
-                    ),
-                  ),
-                ),
-              
-              // Destination badge
-              Positioned(
-                bottom: 12,
-                left: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.location_on,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        plan.destination,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          
-          // Content section
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Plan title and status indicator
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        plan.title,
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: timeColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        timeIndicator,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: timeColor,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 8),
-                
-                // Date range
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.date_range,
-                      size: 16,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$startDate - $endDate',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Activities list
-                Text(
-                  'Activities:',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: plan.activities.map((activity) {
-                    return Chip(
-                      label: Text(
-                        activity,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      backgroundColor: Colors.grey[200],
-                      padding: EdgeInsets.zero,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-          ),
-          
-          // Action buttons
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                if (isUpcoming)
-                  IconButton(
-                    icon: const Icon(Icons.edit_outlined),
-                    onPressed: () {
-                      // Edit plan
-                    },
-                  ),
-                IconButton(
-                  icon: Icon(
-                    plan.isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: plan.isFavorite ? Colors.red : null,
-                  ),
-                  onPressed: () {
-                    // Toggle favorite
-                    setState(() {
-                      final index = _travelPlans.indexWhere((p) => p.id == plan.id);
-                      if (index != -1) {
-                        final updatedPlan = TravelPlan(
-                          id: plan.id,
-                          title: plan.title,
-                          destination: plan.destination,
-                          startDate: plan.startDate,
-                          endDate: plan.endDate,
-                          imageUrl: plan.imageUrl,
-                          activities: plan.activities,
-                          isCompleted: plan.isCompleted,
-                          isFavorite: !plan.isFavorite,
-                        );
-                        _travelPlans[index] = updatedPlan;
-                      }
-                    });
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.share_outlined),
-                  onPressed: () {
-                    // Share plan
-                  },
-                ),
-                if (!isUpcoming)
-                  IconButton(
-                    icon: const Icon(Icons.photo_library_outlined),
-                    onPressed: () {
-                      // View memories
-                    },
-                  ),
-              ],
             ),
           ),
         ],

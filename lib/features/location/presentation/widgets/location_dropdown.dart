@@ -418,33 +418,35 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
               loading: () => Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                  ),
-                  const SizedBox(width: 8),
+                  const Icon(Icons.location_on, size: 16, color: Colors.white),
+                  const SizedBox(width: 6),
                   Text(
-                    'Getting location...',
-                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.white),
+                    'Rotterdam (edit)',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
                   ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.keyboard_arrow_down, size: 16, color: Colors.white),
                 ],
               ),
               error: (error, _) => Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.location_off, size: 16, color: Colors.red),
+                  const Icon(Icons.location_on, size: 16, color: Colors.white),
                   const SizedBox(width: 6),
                   Text(
-                    'Enable Location',
+                    'Your city',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: Colors.red,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(width: 4),
-                  const Icon(Icons.keyboard_arrow_down, size: 16, color: Colors.red),
+                  const Icon(Icons.keyboard_arrow_down, size: 16, color: Colors.white),
                 ],
               ),
             ),

@@ -274,7 +274,6 @@ class _SavedPlacesScreenState extends ConsumerState<SavedPlacesScreen> {
       elevation: 2,
       child: InkWell(
         onTap: () {
-          // Navigate to place details
           context.push('/place/${place.id}');
         },
         borderRadius: BorderRadius.circular(16),

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_tts/flutter_tts.dart';
+
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:math' as math;
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../../core/providers/preferences_provider.dart';
+import '../../../../core/providers/communication_style_provider.dart';
 
 class SwirlingGradientPainter extends CustomPainter {
   @override
@@ -123,7 +124,6 @@ class TravelInterestsScreen extends ConsumerStatefulWidget {
 class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> with TickerProviderStateMixin {
   late final AnimationController _moodyController;
   late final AnimationController _messageController;
-  late final FlutterTts _flutterTts;
   final Set<String> _selectedInterests = {};
   static const int maxInterestSelections = 3;
 
@@ -171,19 +171,7 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    _initializeTts();
     _startAnimation();
-  }
-
-  void _initializeTts() async {
-    try {
-      _flutterTts = FlutterTts();
-      await _flutterTts.setLanguage('en-US');
-      await _flutterTts.setSpeechRate(0.45);
-      await _flutterTts.setVolume(1.0);
-    } catch (e) {
-      debugPrint('TTS Initialization Error: $e');
-    }
   }
 
   Future<void> _startAnimation() async {
@@ -193,21 +181,7 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
       await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) {
         _messageController.forward();
-        _speakMessage();
       }
-    }
-  }
-
-  Future<void> _speakMessage() async {
-    try {
-      if (!mounted) return;
-      const message = "What interests you when traveling?";
-      final result = await _flutterTts.speak(message);
-      if (result != 1) {
-        debugPrint('TTS Speak Error: Failed to speak message');
-      }
-    } catch (e) {
-      debugPrint('TTS Speak Error: $e');
     }
   }
 
@@ -234,7 +208,6 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
   void dispose() {
     _moodyController.dispose();
     _messageController.dispose();
-    _flutterTts.stop();
     super.dispose();
   }
 
@@ -244,10 +217,11 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
     
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: InkWell(
+      child: GestureDetector(
         onTap: () => _toggleInterest(interest['name']),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
+          height: 100, // Fixed height to prevent expansion - increased to accommodate text
           decoration: BoxDecoration(
             color: isSelected 
               ? color
@@ -260,21 +234,24 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
               width: isSelected ? 2 : 1,
             ),
             boxShadow: [
+              // Main floating shadow - subtle per card
               BoxShadow(
                 color: isSelected
-                  ? color.withOpacity(0.4)
-                  : Colors.black.withOpacity(0.05),
-                blurRadius: 12,
-                spreadRadius: isSelected ? 2 : 0,
-                offset: Offset(0, isSelected ? 2 : 4),
+                  ? color.withOpacity(0.12)
+                  : const Color(0xFFE8E8E8).withOpacity(0.4),
+                blurRadius: isSelected ? 8 : 6,
+                spreadRadius: 0,
+                offset: const Offset(0, 2),
               ),
-              if (isSelected)
-                BoxShadow(
-                  color: color.withOpacity(0.2),
-                  blurRadius: 20,
-                  spreadRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
+              // Secondary depth shadow - very subtle
+              BoxShadow(
+                color: isSelected
+                  ? color.withOpacity(0.08)
+                  : const Color(0xFFD0D0D0).withOpacity(0.2),
+                blurRadius: isSelected ? 12 : 10,
+                spreadRadius: -1,
+                offset: const Offset(0, 4),
+              ),
             ],
           ),
           child: Padding(
@@ -301,6 +278,7 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         interest['name'],
@@ -324,19 +302,24 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                     ],
                   ),
                 ),
-                if (isSelected)
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.check,
-                      color: color,
-                      size: 16,
-                    ),
-                  ),
+                SizedBox(
+                  width: 32, // Fixed width to prevent layout shift
+                  child: isSelected
+                      ? Container(
+                          width: 24,
+                          height: 24,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.check,
+                            color: color,
+                            size: 16,
+                          ),
+                        )
+                      : null,
+                ),
               ],
             ),
           ),
@@ -377,34 +360,47 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    ...List.generate(2, (index) => Container(
-                      width: 40,
+                    ...List.generate(6, (index) => Container(
+                      width: 35,
                       height: 4,
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      margin: const EdgeInsets.symmetric(horizontal: 1.5),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF5BB32A),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    )),
-                    Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF5BB32A),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    ...List.generate(2, (index) => Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.3),
+                        color: index < 3 
+                          ? const Color(0xFF5BB32A)
+                          : Colors.grey.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     )),
                   ],
+                ),
+              ),
+
+              // Back button
+              Positioned(
+                top: 20,
+                left: 20,
+                child: GestureDetector(
+                  onTap: () => context.go('/preferences/mood'),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_ios_new,
+                      color: Color(0xFF5BB32A),
+                      size: 20,
+                    ),
+                  ),
                 ),
               ),
 
@@ -414,7 +410,7 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 80),
+                    const SizedBox(height: 60),
                     SlideTransition(
                       position: Tween<Offset>(
                         begin: const Offset(0, -0.2),
@@ -422,12 +418,22 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                       ).animate(_messageController),
                       child: FadeTransition(
                         opacity: _messageController,
-                        child: Text(
-                          'Now the fun part! ✨',
-                          style: GoogleFonts.museoModerno(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF5BB32A),
+                        child: Center(
+                          child: Consumer(
+                            builder: (context, ref, child) {
+                              final communicationState = ref.watch(communicationStyleProvider);
+                              final styleKey = communicationState.style.toString().split('.').last;
+                              final title = communicationState.texts['interests']?[styleKey] ?? 'Now the fun part! ✨';
+                              return Text(
+                                title,
+                                style: GoogleFonts.museoModerno(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF5BB32A),
+                                ),
+                                textAlign: TextAlign.center,
+                              );
+                            },
                           ),
                         ),
                       ),
@@ -440,11 +446,21 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                       ).animate(_messageController),
                       child: FadeTransition(
                         opacity: _messageController,
-                        child: Text(
-                          'What catches your eye?',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            color: Colors.black87,
+                        child: Center(
+                          child: Consumer(
+                            builder: (context, ref, child) {
+                              final communicationState = ref.watch(communicationStyleProvider);
+                              final styleKey = communicationState.style.toString().split('.').last;
+                              final subtitle = communicationState.texts['interests_subtitle']?[styleKey] ?? 'What catches your eye?';
+                              return Text(
+                                subtitle,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.center,
+                              );
+                            },
                           ),
                         ),
                       ),
@@ -462,11 +478,11 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _selectedInterests.length > 0 && _selectedInterests.length <= maxInterestSelections
-                          ? () => context.go('/preferences/budget')
+                        onPressed: _selectedInterests.isNotEmpty
+                          ? () => context.go('/preferences/social-vibe')
                           : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _selectedInterests.length > 0 && _selectedInterests.length <= maxInterestSelections
+                          backgroundColor: _selectedInterests.isNotEmpty
                             ? const Color(0xFF5BB32A)
                             : Colors.grey.withOpacity(0.3),
                           foregroundColor: Colors.white,
@@ -487,22 +503,41 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                         ),
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    Center(
+                      child:                       Consumer(
+                        builder: (context, ref, child) {
+                          final communicationState = ref.watch(communicationStyleProvider);
+                          final styleKey = communicationState.style.toString().split('.').last;
+                          final hintText = communicationState.texts['multiple_selection_hint']?[styleKey] ?? 'You can select multiple options ✨';
+                          return Text(
+                            hintText,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w400,
+                            ),
+                            textAlign: TextAlign.center,
+                          );
+                        },
+                      ),
+                    ),
                     const SizedBox(height: 20),
                   ],
                 ),
               ),
 
-              // Moody character
+              // Moody character - reduced size
               Positioned(
                 right: 20,
-                bottom: MediaQuery.of(context).size.height * 0.08,
+                bottom: MediaQuery.of(context).size.height * 0.08, // Moved down towards continue button
                 child: ScaleTransition(
                   scale: Tween<double>(
                     begin: 0.5,
                     end: 1.0,
                   ).animate(_moodyController),
-                  child: const MoodyCharacter(
-                    size: 120,
+                          child: const MoodyCharacter(
+          size: 70, // Reduced size
                   ),
                 ),
               ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_google_maps_webservices/places.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter/foundation.dart';
+import '../../../core/constants/api_keys.dart';
 import '../models/place.dart';
 import 'opening_hours_service.dart';
 
@@ -21,15 +21,9 @@ class PlacesService extends _$PlacesService {
   Future<void> _initializePlaces() async {
     if (_isInitialized) return;
 
-    final apiKey = dotenv.env['GOOGLE_PLACES_API_KEY'];
-    debugPrint('📍 API Key from env: ${apiKey?.substring(0, min(8, apiKey?.length ?? 0))}...');
+    final apiKey = ApiKeys.googlePlacesKey;
+    debugPrint('📍 Using Places API key: ${apiKey.substring(0, min(8, apiKey.length))}...');
     
-    if (apiKey == null || apiKey.isEmpty) {
-      debugPrint('🚫 Google Places API key disabled - using offline data only');
-      _isInitialized = true; // Still mark as initialized to continue with offline data
-      return;
-    }
-
     _places = GoogleMapsPlaces(apiKey: apiKey);
     _isInitialized = true;
     debugPrint('✅ Places service initialized with API key');

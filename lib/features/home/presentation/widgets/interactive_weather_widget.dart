@@ -1,271 +1,246 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/weather_provider.dart';
+import '../../../weather/domain/models/weather.dart';
 
-class DetailedHourlyWeather {
-  final int hour;
-  final double temperature;
-  final IconData icon;
-  final String description;
-
-  DetailedHourlyWeather({
-    required this.hour,
-    required this.temperature,
-    required this.icon,
-    required this.description,
-  });
-}
-
-class InteractiveWeatherWidget extends StatefulWidget {
+class InteractiveWeatherWidget extends ConsumerStatefulWidget {
   const InteractiveWeatherWidget({super.key});
 
   @override
-  State<InteractiveWeatherWidget> createState() => _InteractiveWeatherWidgetState();
+  ConsumerState<InteractiveWeatherWidget> createState() => _InteractiveWeatherWidgetState();
 }
 
-class _InteractiveWeatherWidgetState extends State<InteractiveWeatherWidget> {
+class _InteractiveWeatherWidgetState extends ConsumerState<InteractiveWeatherWidget> {
   bool _isDetailExpanded = false;
-
-  // Simulated hourly weather data
-  final List<DetailedHourlyWeather> hourlyWeatherData = List.generate(24, (index) {
-    return DetailedHourlyWeather(
-      hour: index,
-      temperature: _generateTemperature(index),
-      icon: _getWeatherIcon(index),
-      description: _getWeatherDescription(index),
-    );
-  });
-
-  // Generate daily forecast data
-  final List<DailyForecast> dailyForecastData = [
-    DailyForecast(day: 'Vandaag', high: 32, low: 24, condition: 'Zonnig', icon: Icons.wb_sunny),
-    DailyForecast(day: 'Morgen', high: 30, low: 22, condition: 'Meestal zonnig', icon: Icons.wb_sunny),
-    DailyForecast(day: 'Woensdag', high: 29, low: 23, condition: 'Gedeeltelijk bewolkt', icon: Icons.wb_cloudy),
-    DailyForecast(day: 'Donderdag', high: 31, low: 22, condition: 'Zonnig', icon: Icons.wb_sunny),
-    DailyForecast(day: 'Vrijdag', high: 28, low: 21, condition: 'Kans op regen', icon: Icons.beach_access),
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  static double _generateTemperature(int hour) {
-    if (hour >= 15 && hour <= 19) {
-      return 26.0 - (hour - 15);
-    }
-    return 27.0 + (hour % 5 * 0.5);
-  }
-
-  static IconData _getWeatherIcon(int hour) {
-    if (hour >= 6 && hour <= 18) {
-      return Icons.wb_sunny;
-    }
-    return Icons.nights_stay;
-  }
-
-  static String _getWeatherDescription(int hour) {
-    if (hour >= 6 && hour < 12) {
-      return 'Ochtend, mild en helder';
-    } else if (hour >= 12 && hour < 18) {
-      return 'Middag, warme zonneschijn';
-    } else {
-      return 'Avond, afkoelend';
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _isDetailExpanded = !_isDetailExpanded;
-        });
-      },
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: AnimatedContainer(
+    final currentWeather = ref.watch(weatherProvider);
+    final hourlyForecast = ref.watch(hourlyForecastProvider);
+    final dailyForecast = ref.watch(dailyForecastProvider);
+
+    return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.blue.shade100,
-                Colors.blue.shade200,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(15),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        ],
+      ),
+      child: Column(
+        children: [
+          // Current Weather
+          currentWeather.when(
+            data: (weather) => _buildCurrentWeather(weather),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (_, __) => const Center(child: Text('Failed to load weather')),
+            ),
+
+          // Hourly Forecast
+          if (_isDetailExpanded) ...[
+            const Divider(),
+            hourlyForecast.when(
+              data: (forecast) => _buildHourlyForecast(forecast),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, __) => const Center(child: Text('Failed to load forecast')),
+            ),
+
+            // Daily Forecast
+            const Divider(),
+            dailyForecast.when(
+              data: (forecast) => _buildDailyForecast(forecast),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, __) => const Center(child: Text('Failed to load forecast')),
+            ),
+          ],
+
+          // Expand/Collapse Button
+          InkWell(
+            onTap: () => setState(() => _isDetailExpanded = !_isDetailExpanded),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Washington DC, 32°',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                  Icon(
+                    _isDetailExpanded ? Icons.expand_less : Icons.expand_more,
+                    color: Colors.grey[600],
                   ),
-                  const Icon(
-                    Icons.wb_sunny,
-                    color: Colors.yellow,
-                    size: 40,
+                  const SizedBox(width: 4),
+                  Text(
+                    _isDetailExpanded ? 'Show Less' : 'Show More',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                ),
                   ),
                 ],
-              ).animate().fadeIn(duration: 300.ms),
-              
-              const SizedBox(height: 10),
-              
-              const Text(
-                'De rest van de dag zonnig. Windvlagen tot 19 km/u.',
-                style: TextStyle(
-                  color: Colors.white70,
-                ),
-              ).animate().fadeIn(delay: 100.ms, duration: 300.ms),
-              
-              const SizedBox(height: 10),
-              
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCurrentWeather(Weather? weather) {
+    if (weather == null) {
+      return const Center(child: Text('No weather data available'));
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
                 child: Row(
-                  children: hourlyWeatherData.map((hourly) => 
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${hourly.hour.toString().padLeft(2, '0')}:00',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
+                '${weather.temperature.round()}°',
+                style: GoogleFonts.poppins(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Icon(
-                            hourly.icon,
-                            color: Colors.yellow,
-                            size: 24,
-                          ),
                           Text(
-                            '${hourly.temperature.toStringAsFixed(1)}°',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                weather.description,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: Colors.grey[600],
                             ),
                           ),
                         ],
                       ),
-                    )
-                  ).toList(),
-                ),
-              ).animate().fadeIn(delay: 200.ms, duration: 300.ms),
-              
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: _isDetailExpanded
-                    ? Column(
-                        key: const ValueKey('expanded'),
-                        crossAxisAlignment: CrossAxisAlignment.start,
+          Icon(
+            _getWeatherIcon(weather.description),
+            size: 48,
+            color: _getWeatherColor(weather.description),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHourlyForecast(List<Weather> forecast) {
+    return SizedBox(
+      height: 100,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: forecast.length,
+        itemBuilder: (context, index) {
+          final hourlyWeather = forecast[index];
+          return Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 10),
-                          const Text(
-                            'Gedetailleerde Weersinformatie',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
+                Text(
+                  '${hourlyWeather.dateTime.hour}:00',
+                  style: GoogleFonts.poppins(fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                Icon(
+                  _getWeatherIcon(hourlyWeather.description),
+                  size: 24,
+                  color: _getWeatherColor(hourlyWeather.description),
                           ),
-                          const SizedBox(height: 10),
-                          Column(
-                            children: hourlyWeatherData.map((hourly) => 
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
+                const SizedBox(height: 4),
+                Text(
+                  '${hourlyWeather.temperature.round()}°',
+                  style: GoogleFonts.poppins(fontSize: 12),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildDailyForecast(List<Weather> forecast) {
+    return Column(
+      children: forecast.map((weather) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      '${hourly.hour.toString().padLeft(2, '0')}:00',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                      ),
+                _getDayName(weather.dateTime),
+                style: GoogleFonts.poppins(fontSize: 14),
                                     ),
                                     Row(
                                       children: [
                                         Icon(
-                                          hourly.icon,
-                                          color: Colors.yellow,
-                                          size: 16,
+                    _getWeatherIcon(weather.description),
+                    size: 20,
+                    color: _getWeatherColor(weather.description),
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
-                                          hourly.description,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      '${hourly.temperature.toStringAsFixed(1)}°',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
+                    '${weather.temperature.round()}°',
+                    style: GoogleFonts.poppins(fontSize: 14),
                                       ),
+                ],
                                     ),
                                   ],
                                 ),
-                              )
-                            ).toList(),
-                          ).animate().fadeIn(delay: 300.ms, duration: 300.ms),
-                        ],
-                      )
-                    : Container(
-                        key: const ValueKey('collapsed'),
-                      ),
-              ),
-              
-              Center(
-                child: Icon(
-                  _isDetailExpanded 
-                    ? Icons.keyboard_arrow_up 
-                    : Icons.keyboard_arrow_down,
-                  color: Colors.white,
-                ),
-              ).animate().fadeIn(delay: 300.ms, duration: 300.ms),
-            ],
-          ),
-        ),
-      ),
+        );
+      }).toList(),
     );
   }
-}
 
-// Model class to represent daily forecast
-class DailyForecast {
-  final String day;
-  final int high;
-  final int low;
-  final String condition;
-  final IconData icon;
+  IconData _getWeatherIcon(String description) {
+    description = description.toLowerCase();
+    if (description.contains('clear') || description.contains('sunny')) {
+      return Icons.wb_sunny;
+    } else if (description.contains('cloud')) {
+      return Icons.cloud;
+    } else if (description.contains('rain')) {
+      return Icons.beach_access;
+    } else if (description.contains('storm')) {
+      return Icons.thunderstorm;
+    } else if (description.contains('snow')) {
+      return Icons.ac_unit;
+    } else {
+      return Icons.wb_sunny_outlined;
+    }
+  }
 
-  DailyForecast({
-    required this.day,
-    required this.high,
-    required this.low,
-    required this.condition,
-    required this.icon,
-  });
+  Color _getWeatherColor(String description) {
+    description = description.toLowerCase();
+    if (description.contains('clear') || description.contains('sunny')) {
+      return Colors.orange;
+    } else if (description.contains('cloud')) {
+      return Colors.grey;
+    } else if (description.contains('rain')) {
+      return Colors.blue;
+    } else if (description.contains('storm')) {
+      return Colors.blueGrey;
+    } else if (description.contains('snow')) {
+      return Colors.lightBlue;
+    } else {
+      return Colors.orange;
+    }
+  }
+
+  String _getDayName(DateTime date) {
+    final now = DateTime.now();
+    if (date.year == now.year && date.month == now.month && date.day == now.day) {
+      return 'Today';
+    } else if (date.year == now.year && date.month == now.month && date.day == now.day + 1) {
+      return 'Tomorrow';
+    } else {
+      return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][date.weekday - 1];
+    }
+  }
 } 

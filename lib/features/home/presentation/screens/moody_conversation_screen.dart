@@ -457,7 +457,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
       } else if (_recentTopics.contains('outdoor') && _recentTopics.contains('relaxed')) {
         return "If you're looking for a relaxing outdoor experience, try the Japanese Tea Garden or a gentle stroll along Baker Beach at sunset.";
       } else if (_recentTopics.contains('indoor') && _recentTopics.contains('cultural')) {
-        return "For cultural indoor activities, the SF MOMA or Asian Art Museum would be perfect for your mood today.";
+        return "For cultural indoor activities, the Boijmans Van Beuningen Museum or Kunsthal Rotterdam would be perfect for your mood today.";
       } else if (_recentTopics.contains('social') && _detectedMoods.contains('Festive')) {
         return "For a festive time with friends, check out the live music venues in the Mission district or the weekend markets at the Ferry Building.";
       } else if (_recentTopics.contains('solo') && _detectedMoods.contains('Mindful')) {
@@ -682,7 +682,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
     if (lowercaseInput.contains('hello') || lowercaseInput.contains('hi')) {
       response = "Hello! How can I assist you with your travel plans today?";
     } else if (lowercaseInput.contains('weather')) {
-      response = "It's a beautiful day in San Francisco! Currently 22°C and sunny.";
+              response = "It's a beautiful day in Rotterdam! Currently 22°C and sunny.";
     } else if (lowercaseInput.contains('restaurant') || lowercaseInput.contains('food') || lowercaseInput.contains('eat')) {
       response = "I can suggest some great restaurants based on your mood! Are you looking for something romantic or adventurous?";
     } else if (lowercaseInput.contains('activity') || lowercaseInput.contains('do')) {

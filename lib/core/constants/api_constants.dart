@@ -1,4 +1,4 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'api_keys.dart';
 
 class ApiConstants {
   // Google Places API (DISABLED)
@@ -6,7 +6,7 @@ class ApiConstants {
   static const String placesBaseUrl = 'https://maps.googleapis.com/maps/api/place';
   
   // OpenAI API
-  static String get openAiApiKey => dotenv.env['OPENAI_API_KEY'] ?? '';
+  static String get openAiApiKey => ApiKeys.openAiKey;
   static const String openAiBaseUrl = 'https://api.openai.com/v1';
   
   // API Endpoints

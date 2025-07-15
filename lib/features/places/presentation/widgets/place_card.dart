@@ -19,6 +19,28 @@ class PlaceCard extends ConsumerWidget {
     this.userLocation,
   }) : super(key: key);
 
+  // Cache distance calculation to prevent spam
+  static final Map<String, String> _distanceCache = {};
+  static final Map<String, DateTime> _distanceCacheTime = {};
+  static const Duration _cacheValidDuration = Duration(minutes: 5);
+  
+  // Clean up expired cache entries
+  static void _cleanupCache() {
+    final now = DateTime.now();
+    final keysToRemove = <String>[];
+    
+    for (final entry in _distanceCacheTime.entries) {
+      if (now.difference(entry.value) > _cacheValidDuration) {
+        keysToRemove.add(entry.key);
+      }
+    }
+    
+    for (final key in keysToRemove) {
+      _distanceCache.remove(key);
+      _distanceCacheTime.remove(key);
+    }
+  }
+
   String _getPriceLevel(int? priceLevel) {
     if (priceLevel == null) return '';
     switch (priceLevel) {
@@ -53,31 +75,82 @@ class PlaceCard extends ConsumerWidget {
 
 
 
-  /// Calculate distance from user location to place
+  /// Calculate distance from user location to place with caching
   String? _calculateDistance() {
-    double userLat, userLng;
+    // Create cache key based on place ID and user location
+    final userLat = userLocation?.latitude ?? 51.9225;
+    final userLng = userLocation?.longitude ?? 4.4792;
+    final cacheKey = '${place.id}_${userLat.toStringAsFixed(4)}_${userLng.toStringAsFixed(4)}';
+    
+    // Clean up expired cache entries periodically
+    if (_distanceCache.length > 100) {
+      _cleanupCache();
+    }
+    
+    // Check cache first
+    if (_distanceCache.containsKey(cacheKey) && _distanceCacheTime.containsKey(cacheKey)) {
+      final cacheTime = _distanceCacheTime[cacheKey]!;
+      if (DateTime.now().difference(cacheTime) < _cacheValidDuration) {
+        return _distanceCache[cacheKey];
+      }
+    }
+    
+    double finalUserLat, finalUserLng;
     
     if (userLocation != null) {
-      // Use real user location when available
-      userLat = userLocation!.latitude;
-      userLng = userLocation!.longitude;
-      debugPrint('📍 Using real user location for distance calculation');
+      // Check if this is unrealistic coordinates (outside Netherlands bounds or SF simulator)
+      final lat = userLocation!.latitude;
+      final lng = userLocation!.longitude;
+      
+      // Check for San Francisco simulator coordinates (approximate)
+      final isSanFrancisco = (lat - 37.785834).abs() < 0.1 && (lng + 122.406417).abs() < 0.1;
+      
+      // Netherlands boundaries: lat 50.0-54.0, lng 3.0-8.0
+      final isWithinNetherlands = lat >= 50.0 && lat <= 54.0 && lng >= 3.0 && lng <= 8.0;
+      
+      if (!isSanFrancisco && isWithinNetherlands) {
+        finalUserLat = lat;
+        finalUserLng = lng;
+        // Only log once per cache refresh
+        if (!_distanceCache.containsKey(cacheKey)) {
+          debugPrint('📍 Using real user location for distance calculation: $lat, $lng');
+        }
+      } else {
+        // Use Rotterdam city center for unrealistic coordinates (like simulator SF coordinates)
+        finalUserLat = 51.9225;
+        finalUserLng = 4.4792;
+        // Only log once per cache refresh
+        if (!_distanceCache.containsKey(cacheKey)) {
+          debugPrint('📍 User location outside Netherlands bounds or SF simulator ($lat, $lng), using Rotterdam fallback');
+        }
+      }
     } else {
-      // Use Rotterdam city center as fallback (reasonable for Rotterdam places)
-      userLat = 51.9225; // Rotterdam Central Station area
-      userLng = 4.4792;
-      debugPrint('📍 Using Rotterdam city center as fallback for distance calculation');
+      // Use Rotterdam city center as fallback
+      finalUserLat = 51.9225;
+      finalUserLng = 4.4792;
+      // Only log once per cache refresh
+      if (!_distanceCache.containsKey(cacheKey)) {
+        debugPrint('📍 Using Rotterdam city center as fallback for distance calculation');
+      }
     }
     
     final distance = DistanceService.calculateDistance(
-      userLat,
-      userLng,
+      finalUserLat,
+      finalUserLng,
       place.location.lat,
       place.location.lng,
     );
     
     final formattedDistance = DistanceService.formatDistance(distance);
-    debugPrint('📏 Distance to ${place.name}: $formattedDistance (${distance.toStringAsFixed(2)}km)');
+    
+    // Only log once per cache refresh
+    if (!_distanceCache.containsKey(cacheKey)) {
+      debugPrint('📏 Distance to ${place.name}: $formattedDistance (${distance.toStringAsFixed(2)}km)');
+    }
+    
+    // Cache the result
+    _distanceCache[cacheKey] = formattedDistance;
+    _distanceCacheTime[cacheKey] = DateTime.now();
     
     return formattedDistance;
   }
@@ -129,7 +202,7 @@ class PlaceCard extends ConsumerWidget {
     
     // US cities  
     if (['new york', 'los angeles', 'chicago', 'houston', 'phoenix', 'philadelphia',
-         'san antonio', 'san diego', 'dallas', 'san jose', 'san francisco', 'boston',
+         'san antonio', 'san diego', 'dallas', 'san jose', 'boston',
          'seattle', 'denver', 'washington', 'nashville', 'oklahoma city', 'el paso',
          'las vegas', 'detroit', 'memphis', 'louisville', 'baltimore', 'milwaukee'].contains(city)) {
       return '🇺🇸';
@@ -566,15 +639,13 @@ class PlaceCard extends ConsumerWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              place.openingHours!.isOpen ? Icons.check_circle : Icons.access_time,
+                              place.openingHours!.isOpen ? Icons.check_circle : Icons.cancel,
                               color: Colors.white,
                               size: 16,
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              place.openingHours!.isOpen
-                                  ? '${place.openingHours!.todayHours!.openTime} – ${place.openingHours!.todayHours!.closeTime}'
-                                  : place.openingHours!.currentStatus ?? 'Closed',
+                              place.openingHours!.isOpen ? 'Open' : 'Closed',
                               style: GoogleFonts.poppins(
                                 color: Colors.white,
                                 fontSize: 12,

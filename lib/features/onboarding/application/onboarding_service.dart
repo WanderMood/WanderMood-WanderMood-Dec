@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../../core/config/supabase_config.dart';
+import '../../../../core/constants/api_keys.dart';
 import 'preferences_provider.dart';
 
 part 'onboarding_service.g.dart';
@@ -27,7 +28,7 @@ class OnboardingService extends _$OnboardingService {
       _googlePlacesApiKey = '';
       _openWeatherApiKey = '';
       
-      final openaiKey = dotenv.env['OPENAI_API_KEY'] ?? '';
+      final openaiKey = ApiKeys.openAiKey;
       _googlePlacesApiKey = dotenv.env['GOOGLE_PLACES_API_KEY'] ?? '';
       _openWeatherApiKey = dotenv.env['OPENWEATHER_API_KEY'] ?? '';
       

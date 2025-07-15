@@ -12,6 +12,8 @@ class WeatherData {
   final String condition;
   final String iconUrl;
   final Map<String, dynamic> details;
+  final double? latitude;
+  final double? longitude;
 
   WeatherData({
     required this.location,
@@ -19,6 +21,8 @@ class WeatherData {
     required this.condition,
     required this.iconUrl,
     required this.details,
+    this.latitude,
+    this.longitude,
   });
 
   factory WeatherData.fromJson(Map<String, dynamic> json, String location) {
@@ -40,6 +44,8 @@ class WeatherData {
   factory WeatherData.fromOpenWeatherMap(Map<String, dynamic> json, String location) {
     final main = json['main'] as Map<String, dynamic>;
     final weather = (json['weather'] as List).first as Map<String, dynamic>;
+    final coord = json['coord'] as Map<String, dynamic>?;
+    final sys = json['sys'] as Map<String, dynamic>?;
     
     return WeatherData(
       location: location,
@@ -52,7 +58,13 @@ class WeatherData {
         'windSpeed': json['wind']['speed'],
         'pressure': main['pressure'],
         'description': weather['description'],
+        'temp_min': main['temp_min'],
+        'temp_max': main['temp_max'],
+        'sunrise': sys?['sunrise'],
+        'sunset': sys?['sunset'],
       },
+      latitude: coord?['lat']?.toDouble(),
+      longitude: coord?['lon']?.toDouble(),
     );
   }
 }
@@ -70,7 +82,13 @@ WeatherData getMockWeatherData(String location) {
       'windSpeed': 5.2,
       'pressure': 1013,
       'description': 'clear sky',
+      'temp_min': 20,
+      'temp_max': 24,
+      'sunrise': DateTime.now().add(const Duration(hours: -6)).millisecondsSinceEpoch,
+      'sunset': DateTime.now().add(const Duration(hours: 6)).millisecondsSinceEpoch,
     },
+    latitude: 52.3676,
+    longitude: 4.9041,
   );
 }
 

@@ -1,6 +1,6 @@
 class ApiConfig {
   // Get a free API key from: https://home.openweathermap.org/api_keys
-  static const String openWeatherMapKey = 'e7f5d9e5c6c9c0c6c9c0c6c9c0c6c9c0'; // New API key
+  static const String openWeatherMapKey = 'd158323777e324a2537591bc7fa6ca17'; // Updated with user's key
   static const String openWeatherMapBaseUrl = 'https://api.openweathermap.org/data/2.5';
   
   // Weather API endpoints
@@ -14,7 +14,7 @@ class ApiConfig {
     'https://api.openweathermap.org/data/3.0/onecall?lat=$lat&lon=$lon&appid=$openWeatherMapKey&units=metric&exclude=minutely';
 
   // 🚨 GLOBAL API KILL SWITCH - Set to false to disable ALL Google Places API calls
-  static const bool enableGooglePlacesApi = false;
+  static const bool enableGooglePlacesApi = true; // ✅ ENABLED FOR NEW PLACES API
   
   // 💰 COST MONITORING
   static const double maxDailyCost = 10.0; // Maximum daily cost in USD
@@ -33,7 +33,7 @@ class ApiConfig {
   // 🔄 CACHE SETTINGS
   static const Duration cacheValidDuration = Duration(days: 7);
   static const bool enablePersistentCache = true;
-  static const bool enableOfflineMode = true;
+  static const bool enableOfflineMode = false; // ✅ DISABLED for real API usage
   
   // 📍 FALLBACK SETTINGS
   static const bool useFallbackData = true;

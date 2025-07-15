@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../features/adventure/presentation/screens/adventure_plan_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
-import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/home/presentation/screens/main_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 
@@ -13,10 +12,10 @@ part 'router.g.dart';
 @riverpod
 GoRouter router(RouterRef ref) {
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: '/splash',
     routes: [
       GoRoute(
-        path: '/',
+        path: '/splash',
         builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
@@ -29,34 +28,17 @@ GoRouter router(RouterRef ref) {
       ),
       GoRoute(
         path: '/home',
-        builder: (context, state) => const HomeScreen(),
-      ),
-      GoRoute(
-        path: '/adventure-plan',
-        builder: (context, state) => const AdventurePlanScreen(),
+        builder: (context, state) => const MainScreen(),
       ),
     ],
-    redirect: (context, state) async {
-      final currentUser = Supabase.instance.client.auth.currentUser;
-      final isAuthenticated = currentUser != null;
-      final isOnSplashScreen = state.matchedLocation == '/';
-      final isOnOnboardingScreen = state.matchedLocation == '/onboarding';
-      final isOnLoginScreen = state.matchedLocation == '/login';
-
-      if (isOnSplashScreen) {
-        return null; // Sta toegang tot splash screen toe
-      }
-
-      // Bescherm authenticatie-vereiste routes
-      if (!isAuthenticated && !isOnLoginScreen && !isOnOnboardingScreen) {
+    redirect: (context, state) {
+      final supabase = Supabase.instance.client;
+      final session = supabase.auth.currentSession;
+      
+      if (session == null && state.matchedLocation != '/login' && state.matchedLocation != '/onboarding') {
         return '/login';
       }
-
-      // Voorkom dat ingelogde gebruikers naar login/onboarding gaan
-      if (isAuthenticated && (isOnLoginScreen || isOnOnboardingScreen)) {
-        return '/home';
-      }
-
+      
       return null;
     },
   );

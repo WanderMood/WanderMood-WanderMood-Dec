@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wandermood/features/plans/presentation/screens/multi_activity_booking_screen.dart';
 
 class ConfirmPlanScreen extends ConsumerStatefulWidget {
   final List<Activity>? activities;
@@ -126,10 +127,18 @@ class _ConfirmPlanScreenState extends ConsumerState<ConfirmPlanScreen> {
                     children: [
                       SizedBox(
                         width: double.infinity,
-                        child: ElevatedButton(
+                        child:                         ElevatedButton(
                           onPressed: () {
-                            // Navigate to My Day screen using a single navigation call
-                            _navigateWithLoading(context, 'Booking your activities...', isConfirmed: true);
+                            // Navigate to comprehensive booking screen
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MultiActivityBookingScreen(
+                                  activities: activities,
+                                  bookingType: 'book_now',
+                                ),
+                              ),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF4CAF50),
@@ -152,10 +161,18 @@ class _ConfirmPlanScreenState extends ConsumerState<ConfirmPlanScreen> {
                       const SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
-                        child: OutlinedButton(
+                        child:                         OutlinedButton(
                           onPressed: () {
-                            // Navigate to My Day screen using a single navigation call
-                            _navigateWithLoading(context, 'Saving your plan...', isConfirmed: false);
+                            // Navigate to book later screen
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MultiActivityBookingScreen(
+                                  activities: activities,
+                                  bookingType: 'book_later',
+                                ),
+                              ),
+                            );
                           },
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFF4CAF50),
@@ -177,8 +194,16 @@ class _ConfirmPlanScreenState extends ConsumerState<ConfirmPlanScreen> {
                       const SizedBox(height: 12),
                       TextButton(
                         onPressed: () {
-                          // Navigate to My Day screen using a single navigation call
-                          _navigateWithLoading(context, 'Finding free activities...', onlyFree: true);
+                          // Navigate to free activities screen
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MultiActivityBookingScreen(
+                                activities: freeActivities,
+                                bookingType: 'free_only',
+                              ),
+                            ),
+                          );
                         },
                         child: Text(
                           'Start with Free Activities',
@@ -230,171 +255,7 @@ class _ConfirmPlanScreenState extends ConsumerState<ConfirmPlanScreen> {
     return '$formattedHour:$minute $period';
   }
 
-  // Helper method to show loading and navigate after delay
-  void _navigateWithLoading(BuildContext context, String loadingMessage, {bool isConfirmed = false, bool onlyFree = false}) async {
-    // Show loading dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return Dialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  loadingMessage,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-    
-    try {
-      debugPrint('Starting _navigateWithLoading process');
-      
-      // Get the scheduled activity service
-      final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
-      
-      // Filter activities if only free is selected
-      final activitiesToSave = onlyFree ? freeActivities : activities;
-      
-      debugPrint('About to save ${activitiesToSave.length} activities to Supabase');
-      
-      try {
-        // Save activities to Supabase
-        debugPrint('Activities to save: ${activitiesToSave.map((a) => a.name).join(', ')}');
-        for (final activity in activitiesToSave) {
-          debugPrint('Activity: ${activity.name}, StartTime: ${activity.startTime}, Type: ${activity.paymentType}');
-        }
-        await scheduledActivityService.saveScheduledActivities(activitiesToSave, isConfirmed: isConfirmed);
-        debugPrint('Activities saved successfully');
-        
-        // Force a reload of the activities in the MyDayScreen
-        ref.invalidate(scheduledActivityServiceProvider);
-      } catch (serviceError) {
-        debugPrint('Warning: Error saving activities: $serviceError');
-        debugPrint('Stack trace: ${StackTrace.current}');
-        // Continue with navigation despite service error
-      }
-      
-      // Delay for a bit to show the loading indicator
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // Handle navigation safely
-      if (!mounted) {
-        debugPrint('Widget is no longer mounted after delay');
-        return;
-      }
-      
-      // Close the dialog first using Navigator.pop if context is still valid
-      if (context.mounted) {
-        Navigator.pop(context); // Pop the dialog
-        
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Your activities have been saved successfully! Navigating to My Day...',
-              style: GoogleFonts.poppins(),
-            ),
-            backgroundColor: const Color(0xFF4CAF50),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-        
-        // IMPORTANT: Try different navigation approach for reliability
-        try {
-          // First try the GoRouter approach with the tab parameter
-          context.goNamed('main', queryParameters: {'tab': '0'});
-        } catch (navError) {
-          debugPrint('GoRouter navigation attempt failed: $navError');
-          
-          // Fallback to direct navigation method
-          try {
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                builder: (context) => const MainScreen(initialTabIndex: 0),
-              ),
-              (route) => false,
-            );
-          } catch (pushError) {
-            debugPrint('Fallback navigation attempt failed: $pushError');
-            
-            // Last resort - try simple push
-            if (context.mounted) {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const MainScreen(initialTabIndex: 0),
-                ),
-              );
-            }
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint('Outer error in _navigateWithLoading: $e');
-      
-      // Close the dialog first if it's showing
-      if (context.mounted) {
-        try {
-          Navigator.pop(context);
-        } catch (navError) {
-          debugPrint('Error popping dialog: $navError');
-        }
-      }
-      
-      // Show error dialog
-      if (context.mounted) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(
-              'Error',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            content: Text(
-              'Failed to save your activities. Please try again.\n\nError: ${e.toString()}',
-              style: GoogleFonts.poppins(),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'OK',
-                  style: GoogleFonts.poppins(
-                    color: const Color(0xFF4CAF50),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      }
-    }
-  }
+
 
   Widget _buildActivityCard(Activity activity) {
     final startTime = activity.startTime;

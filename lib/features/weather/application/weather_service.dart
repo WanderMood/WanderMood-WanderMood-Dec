@@ -28,7 +28,7 @@ class DateRange {
 class WeatherService extends _$WeatherService {
   final _cacheService = WeatherCacheService();
   static const String _baseUrl = 'https://api.openweathermap.org/data/2.5';
-  String get _apiKey => dotenv.env['OPENWEATHER_API_KEY'] ?? '';
+  String get _apiKey => ApiConfig.openWeatherMapKey;
 
   @override
   FutureOr<Weather?> build() async {

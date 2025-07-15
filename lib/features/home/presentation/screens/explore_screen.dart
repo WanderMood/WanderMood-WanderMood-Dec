@@ -18,6 +18,13 @@ import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:wandermood/core/services/wandermood_ai_service.dart';
+import '../widgets/conversational_explore_header.dart';
+import '../../application/intent_processor.dart';
+import '../../providers/smart_context_provider.dart';
+import '../../application/context_manager.dart';
+import '../../providers/dynamic_grouping_provider.dart';
+import '../widgets/dynamic_grouping_widget.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({Key? key}) : super(key: key);
@@ -33,6 +40,24 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   String _searchFilter = 'All';
   bool _isSearching = false;
   String _searchQuery = '';
+  
+  // Scroll detection for hiding/showing Moody button
+  bool _isMoodyButtonVisible = true;
+  bool _isScrolling = false;
+  double _lastScrollOffset = 0.0;
+  
+  // Conversational interface state
+  String _selectedIntent = '';
+  String _currentExplanation = '';
+  List<Place> _intentFilteredPlaces = [];
+
+  // AI Chat variables
+  final TextEditingController _chatController = TextEditingController();
+  bool _isAILoading = false;
+  final List<ChatMessage> _chatMessages = [];
+  String? _conversationId;
+  List<String> _aiRecommendedPlaceNames = []; // Track AI recommended places
+  bool _hasAIRecommendations = false; // Track if we have AI recommendations
 
   // Advanced filter settings - New Structure
   int _activeFiltersCount = 0;
@@ -131,6 +156,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
+    _scrollController.addListener(_onScrollChanged);
     
     // Initialize random Moody tip
     _selectedMoodyTip = _moodyTips[Random().nextInt(_moodyTips.length)];
@@ -151,6 +177,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _scrollController.dispose();
+    _chatController.dispose();
     super.dispose();
   }
 
@@ -159,6 +186,85 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       _searchQuery = _searchController.text;
       _isSearching = _searchQuery.isNotEmpty;
     });
+  }
+
+  void _onScrollChanged() {
+    final currentScrollOffset = _scrollController.offset;
+    final scrollDelta = currentScrollOffset - _lastScrollOffset;
+    
+    // Hide button when scrolling down fast, show when scrolling up or stopped
+    if (scrollDelta > 10 && !_isScrolling) {
+      setState(() {
+        _isMoodyButtonVisible = false;
+        _isScrolling = true;
+      });
+    } else if (scrollDelta < -5 || scrollDelta.abs() < 1) {
+      setState(() {
+        _isMoodyButtonVisible = true;
+        _isScrolling = false;
+      });
+    }
+    
+    _lastScrollOffset = currentScrollOffset;
+  }
+
+  void _onIntentSelected(String intent) {
+    setState(() {
+      _selectedIntent = intent;
+    });
+    
+    // Get smart context for enhanced processing
+    final smartContext = ref.read(smartContextProvider);
+    
+    // Process intent with current places and context
+    final explorePlacesAsync = ref.read(explorePlacesProvider(city: ref.read(locationNotifierProvider).value ?? 'Rotterdam'));
+    explorePlacesAsync.whenData((places) {
+      final result = IntentProcessor.processIntent(intent, places, context: smartContext);
+      final sortedPlaces = IntentProcessor.sortByPriority(
+        result['filteredPlaces'], 
+        result['priority']
+      );
+      
+      setState(() {
+        _intentFilteredPlaces = sortedPlaces;
+        _currentExplanation = result['explanation'];
+      });
+    });
+  }
+
+  void _onConversationalSearchChanged(String query) {
+    setState(() {
+      _searchQuery = query;
+      _isSearching = query.isNotEmpty;
+    });
+    
+    if (query.isNotEmpty) {
+      // Get smart context for enhanced search
+      final smartContext = ref.read(smartContextProvider);
+      
+      // Process natural language query with context
+      final explorePlacesAsync = ref.read(explorePlacesProvider(city: ref.read(locationNotifierProvider).value ?? 'Rotterdam'));
+      explorePlacesAsync.whenData((places) {
+        final result = IntentProcessor.processNaturalLanguage(query, places, context: smartContext);
+        final sortedPlaces = IntentProcessor.sortByPriority(
+          result['filteredPlaces'], 
+          result['priority']
+        );
+        
+        setState(() {
+          _intentFilteredPlaces = sortedPlaces;
+          _currentExplanation = result['explanation'];
+          _selectedIntent = ''; // Clear intent when searching
+        });
+      });
+    } else {
+      // Clear search
+      setState(() {
+        _intentFilteredPlaces = [];
+        _currentExplanation = '';
+        _selectedIntent = '';
+      });
+    }
   }
 
   void _clearSearch() {
@@ -338,48 +444,137 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   List<Place> _filterPlaces(List<Place> places) {
-    return places.where((place) {
+    var filteredPlaces = places.where((place) {
       // Filter by search query
       bool matchesSearch = _searchQuery.isEmpty ||
           place.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           (place.description?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
           place.address.toLowerCase().contains(_searchQuery.toLowerCase());
 
-      // Enhanced category filtering (use search filter if searching, otherwise use selected category)
-      final activeFilter = _isSearching ? _searchFilter : _selectedCategory;
-      bool matchesCategory = activeFilter == 'All' || _checkCategoryMatch(place, activeFilter);
-
-      // Apply advanced filters
+      // Apply advanced filters (mood, dietary, accessibility, etc.)
       bool matchesAdvancedFilters = _checkAdvancedFilters(place);
 
-      return matchesSearch && matchesCategory && matchesAdvancedFilters;
+      return matchesSearch && matchesAdvancedFilters;
     }).toList();
+
+    // Sort places to prioritize AI recommendations
+    if (_hasAIRecommendations && _aiRecommendedPlaceNames.isNotEmpty) {
+      filteredPlaces.sort((a, b) {
+        final aIsRecommended = _isPlaceRecommendedByAI(a);
+        final bIsRecommended = _isPlaceRecommendedByAI(b);
+        
+        // AI recommended places come first
+        if (aIsRecommended && !bIsRecommended) return -1;
+        if (!aIsRecommended && bIsRecommended) return 1;
+        
+        // Within the same group (recommended or not), sort by rating
+        return (b.rating ?? 0.0).compareTo(a.rating ?? 0.0);
+      });
+      
+      print('🤖 Sorted ${filteredPlaces.length} places, AI recommendations prioritized');
+    }
+
+    return filteredPlaces;
+  }
+
+  // Check if a place matches AI recommendations
+  bool _isPlaceRecommendedByAI(Place place) {
+    if (!_hasAIRecommendations || _aiRecommendedPlaceNames.isEmpty) return false;
+    
+    // Check for exact or partial matches with AI recommended place names
+    final placeName = place.name.toLowerCase();
+    
+    for (final recommendedName in _aiRecommendedPlaceNames) {
+      final recommended = recommendedName.toLowerCase();
+      
+      // Check for exact match or if the place name contains the recommended name
+      if (placeName.contains(recommended) || recommended.contains(placeName)) {
+        return true;
+      }
+      
+      // Check for keyword matches (e.g., "Markthal" should match "Markthal Rotterdam")
+      final recommendedWords = recommended.split(' ');
+      final placeWords = placeName.split(' ');
+      
+      for (final word in recommendedWords) {
+        if (word.length > 3 && placeWords.any((placeWord) => placeWord.contains(word))) {
+          return true;
+        }
+      }
+    }
+    
+    return false;
   }
 
   bool _checkAdvancedFilters(Place place) {
     // Mood filter
     if (_selectedMood != null && !_placeMatchesMood(place, _selectedMood!)) return false;
 
-    // Indoor only filter
+    // Indoor/Outdoor filters
     if (_indoorOnly && !_placeIsIndoor(place)) return false;
+    if (_outdoorOnly && _placeIsIndoor(place)) return false;
 
-    // Weather safe filter (indoor activities or places with weather protection)
+    // Weather safe filter
     if (_weatherSafe && !_placeIsWeatherSafe(place)) return false;
 
     // Availability filter
     if (_openNow && !_placeIsCurrentlyOpen(place)) return false;
 
-    // Dietary preferences
-    if (_halal && !_placeSupportsHalal(place)) return false;
-    if (_vegan && !_placeSupportsVeganVegetarian(place)) return false;
-    if (_vegetarian && !_placeSupportsVeganVegetarian(place)) return false;
-    if (_glutenFree && !_placeSupportsGlutenFree(place)) return false;
+    // Dietary preferences - using smart metadata matching
+    if (_vegan && !_matchesFilter(place, 'vegan')) return false;
+    if (_vegetarian && !_matchesFilter(place, 'vegetarian')) return false;
+    if (_halal && !_matchesFilter(place, 'halal')) return false;
+    if (_glutenFree && !_matchesFilter(place, 'gluten_free')) return false;
+    if (_pescatarian && !_placeSupportsVeganVegetarian(place)) return false; // Pescatarian matches vegetarian
 
-    // Accessibility
-    if (_wheelchairAccessible && !_placeIsAccessible(place)) return false;
-    if (_lgbtqFriendly && !_placeIsLGBTQFriendly(place)) return false;
+    // Accessibility & Inclusion - using smart metadata matching
+    if (_wheelchairAccessible && !_matchesFilter(place, 'wheelchair_accessible')) return false;
+    if (_lgbtqFriendly && !_matchesFilter(place, 'lgbtq_friendly')) return false;
+    if (_seniorFriendly && !_matchesFilter(place, 'senior_friendly')) return false;
+    if (_babyFriendly && !_matchesFilter(place, 'baby_friendly')) return false;
+    if (_blackOwned && !_matchesFilter(place, 'black_owned')) return false;
+
+    // Comfort & Convenience - using smart metadata matching
+    if (_wifiAvailable && !_matchesFilter(place, 'wifi_available')) return false;
+    if (_chargingPoints && !_matchesFilter(place, 'charging_points')) return false;
+    if (_parkingAvailable && !_matchesFilter(place, 'parking_available')) return false;
+    if (_creditCards && !_matchesFilter(place, 'credit_cards')) return false;
+
+    // Photo Options - using smart metadata matching
+    if (_instagrammable && !_matchesFilter(place, 'instagrammable')) return false;
+    if (_aestheticSpaces && !_matchesFilter(place, 'aesthetic_spaces')) return false;
+    if (_scenicViews && !_matchesFilter(place, 'scenic_views')) return false;
+    if (_bestAtSunset && !_matchesFilter(place, 'best_at_sunset')) return false;
 
     return true;
+  }
+
+  // Smart metadata matching method
+  bool _matchesFilter(Place place, String filterKey) {
+    // Get filter metadata from places provider
+    final exploreProvider = ref.read(explorePlacesProvider(city: 'Rotterdam').notifier);
+    final filterMeta = exploreProvider.getFilterMetadata(filterKey);
+    
+    if (filterMeta == null) return false;
+
+    // Check keywords in name and description
+    final keywords = List<String>.from(filterMeta['keywords'] ?? []);
+    final targetTypes = List<String>.from(filterMeta['types'] ?? []);
+    final ratingThreshold = filterMeta['rating_threshold'] as double?;
+    
+    // Check name and description for keywords
+    final searchText = '${place.name.toLowerCase()} ${place.description?.toLowerCase() ?? ''} ${place.address.toLowerCase()}';
+    
+    bool keywordMatch = keywords.any((keyword) => searchText.contains(keyword.toLowerCase()));
+    
+    // Check place types
+    bool typeMatch = targetTypes.isEmpty || place.types.any((type) => targetTypes.contains(type));
+    
+    // Check rating threshold if specified
+    bool ratingMatch = ratingThreshold == null || (place.rating ?? 0.0) >= ratingThreshold;
+    
+    // Combine all criteria
+    return (keywordMatch || typeMatch) && ratingMatch;
   }
 
   // Helper method for mood matching
@@ -506,20 +701,19 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     // Get the current location from the location provider
     final locationAsync = ref.watch(locationNotifierProvider);
     
-    // Get user's GPS location for distance calculation
-    final userLocationAsync = ref.watch(userLocationProvider);
+    // Get user's GPS location for distance calculation (cached to prevent excessive rebuilds)
+    final userLocationAsync = ref.read(userLocationProvider);
     
-    // Use the location to fetch places
-    final explorePlacesAsync = locationAsync.when(
-      data: (city) => ref.watch(explorePlacesProvider(city: city ?? 'Rotterdam')),
-      loading: () => ref.watch(explorePlacesProvider(city: 'Rotterdam')),
-      error: (_, __) => ref.watch(explorePlacesProvider(city: 'Rotterdam')),
-    );
+    // Use the location to fetch places - optimized to prevent excessive rebuilds
+    final city = locationAsync.value ?? 'Rotterdam';
+    final explorePlacesAsync = ref.watch(explorePlacesProvider(city: city));
 
     return SwirlBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         drawer: const ProfileDrawer(),
+        floatingActionButton: _buildFloatingMoodyButton(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         body: SafeArea(
           child: Column(
             children: [
@@ -601,168 +795,114 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 ),
               ),
               
-              // Search Bar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(25),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 5,
-                        spreadRadius: 1,
-                        offset: const Offset(0, 2),
+              // Conversational Explore Header
+              ConversationalExploreHeader(
+                onIntentSelected: _onIntentSelected,
+                onSearchChanged: _onConversationalSearchChanged,
+                selectedIntent: _selectedIntent,
+                onFilterTap: _showAdvancedFilters,
+                activeFiltersCount: _activeFiltersCount,
+              ),
+              
+              // Smart Context Banner
+              Consumer(
+                builder: (context, ref, child) {
+                  final hasContext = ref.watch(hasContextDataProvider);
+                  final contextSummary = ref.watch(contextualRecommendationsProvider);
+                  
+                  // Hide banner when user has selected an intent/vibe to save screen space
+                  if (!hasContext || _selectedIntent.isNotEmpty) return const SizedBox.shrink();
+                  
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: const Color(0xFF12B347).withOpacity(0.15),
+                        width: 1.5,
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.search,
-                        color: Color(0xFF12B347),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextField(
-                          controller: _searchController,
-                          decoration: InputDecoration(
-                            hintText: _searchFilter == 'All' 
-                              ? 'Find hidden gems, vibes & bites... ✨'
-                              : 'Search in ${_searchFilter.toLowerCase()}... ${_filterIcons[_searchFilter] ?? '✨'}',
-                            hintStyle: GoogleFonts.poppins(
-                              color: Colors.grey,
-                              fontSize: 14,
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                          ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF12B347).withOpacity(0.08),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
                         ),
-                      ),
-                      // Filter button
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF12B347),
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF12B347).withOpacity(0.3),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: GestureDetector(
-                          onTap: _showAdvancedFilters,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (_activeFiltersCount > 0) ...[
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Text(
-                                      '$_activeFiltersCount',
-                                      style: const TextStyle(
-                                        color: Color(0xFF12B347),
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                ],
-                                Icon(
-                                  Icons.tune,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                const Color(0xFF12B347),
+                                const Color(0xFF0A8F3A),
                               ],
                             ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.auto_awesome,
+                            color: Colors.white,
+                            size: 16,
                           ),
                         ),
-                      ),
-                      if (_isSearching)
-                        GestureDetector(
-                          onTap: _clearSearch,
-                          child: const Padding(
-                            padding: EdgeInsets.only(left: 8),
-                            child: Icon(
-                              Icons.close,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // Categories
-              SizedBox(
-                height: 40,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  itemCount: _categories.length,
-                  itemBuilder: (context, index) {
-                    final category = _categories[index];
-                    final isSelected = category == _selectedCategory;
-                    
-                    return GestureDetector(
-                      onTap: () => _onCategorySelected(category),
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 10),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isSelected 
-                            ? const Color(0xFF12B347)
-                            : Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: isSelected
-                            ? null
-                            : Border.all(color: Colors.grey.shade300),
-                          boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color: const Color(0xFF12B347).withOpacity(0.3),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 3),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Smart Context Active ✨',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF12B347),
                                 ),
-                              ]
-                            : null,
-                        ),
-                        child: Text(
-                          category,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                            color: isSelected ? Colors.white : Colors.black87,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                contextSummary,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                  height: 1.3,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                      ],
+                    ),
+                  ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.2, end: 0);
+                },
               ),
-              
-              const SizedBox(height: 16),
               
               // Places List
               Expanded(
                 child: explorePlacesAsync.when(
-                  data: (places) {
-                    final filteredPlaces = _filterPlaces(places);
+                  data: (allPlaces) {
+                    // Get city name for filtering
+                    final currentCity = locationAsync.value ?? 'Rotterdam';
+                    
+                    List<Place> filteredPlaces;
+                    
+                    // Use conversational filtering if active, otherwise use traditional filtering
+                    if (_intentFilteredPlaces.isNotEmpty || _selectedIntent.isNotEmpty || _searchQuery.isNotEmpty) {
+                      filteredPlaces = _intentFilteredPlaces;
+                    } else {
+                      // Use the traditional filtering method from provider
+                      final categoryFilteredPlaces = ref.read(explorePlacesProvider(city: currentCity).notifier)
+                          .filterPlacesByCategory(_selectedCategory, city: currentCity);
+                      
+                      // Apply additional search and advanced filters locally
+                      filteredPlaces = _filterPlaces(categoryFilteredPlaces);
+                    }
                     
                     if (filteredPlaces.isEmpty) {
                       return Center(
@@ -796,25 +936,174 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       );
                     }
                     
-                    return ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.only(bottom: 100),
-                      itemCount: filteredPlaces.length,
-                      itemBuilder: (context, index) {
-                        final place = filteredPlaces[index];
-                        final userLocation = userLocationAsync.value;
+                    return Column(
+                      children: [
+                        // Conversational Results Header
+                        if (_currentExplanation.isNotEmpty)
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF12B347).withOpacity(0.1),
+                                  const Color(0xFF12B347).withOpacity(0.05),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFF12B347).withOpacity(0.2),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF12B347),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Icon(
+                                    Icons.psychology_outlined,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _currentExplanation,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF12B347),
+                                        ),
+                                      ),
+                                      Text(
+                                        '${filteredPlaces.length} places found',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 14,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _currentExplanation = '';
+                                      _selectedIntent = '';
+                                      _intentFilteredPlaces = [];
+                                      _searchQuery = '';
+                                    });
+                                  },
+                                  icon: Icon(
+                                    Icons.close,
+                                    size: 20,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2, end: 0),
                         
-                        return PlaceCard(
-                          place: place,
-                          userLocation: userLocation,
-                          onTap: () {
-                            context.push('/place/${place.id}');
-                          },
-                        ).animate().fadeIn(
-                          duration: 300.ms,
-                          delay: Duration(milliseconds: index * 50),
-                        );
-                      },
+                        // AI Recommendations Banner
+                        if (_hasAIRecommendations && _aiRecommendedPlaceNames.isNotEmpty)
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF12B347).withOpacity(0.1),
+                                  const Color(0xFF12B347).withOpacity(0.05),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFF12B347).withOpacity(0.2),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF12B347),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const MoodyCharacter(size: 16),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'AI Recommendations Active',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: const Color(0xFF12B347),
+                                        ),
+                                      ),
+                                      Text(
+                                        'Places matching your chat with Moody are highlighted',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _hasAIRecommendations = false;
+                                      _aiRecommendedPlaceNames.clear();
+                                    });
+                                  },
+                                  icon: Icon(
+                                    Icons.close,
+                                    size: 20,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        
+                        // Places List
+                        Expanded(
+                          child: ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.only(bottom: 100),
+                            itemCount: filteredPlaces.length,
+                            itemBuilder: (context, index) {
+                              final place = filteredPlaces[index];
+                              final userLocation = userLocationAsync.value;
+                              
+                              return PlaceCard(
+                                place: place,
+                                userLocation: userLocation,
+                                onTap: () {
+                                  context.push('/place/${place.id}');
+                                },
+                              ).animate().fadeIn(
+                                duration: 300.ms,
+                                delay: Duration(milliseconds: index * 50),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     );
                   },
                   loading: () => const Center(
@@ -864,6 +1153,1023 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       ),
     );
   }
+
+  // Build floating Moody button with scroll hide/show animation and tap-hold
+  Widget _buildFloatingMoodyButton() {
+    return AnimatedSlide(
+      duration: const Duration(milliseconds: 200),
+      offset: _isMoodyButtonVisible ? Offset.zero : const Offset(0, 2),
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 200),
+        opacity: _isMoodyButtonVisible ? 1.0 : 0.0,
+        child: GestureDetector(
+          onTap: () {
+            print('🎯 Moody button tapped in explore screen!');
+            HapticFeedback.lightImpact();
+            _showMoodyTalkDialog();
+          },
+          onLongPress: () {
+            print('🎯 Moody button long pressed - showing quick mood prompts!');
+            HapticFeedback.mediumImpact();
+            _showQuickMoodPrompts();
+          },
+          child: Container(
+            width: 64,
+            height: 64,
+            child: const MoodyCharacter(size: 48),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Show quick mood prompts on long press
+  void _showQuickMoodPrompts() {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black26,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header with Moody character
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF12B347), Color(0xFF0A8F3A)],
+                        ),
+                      ),
+                      child: const Center(
+                        child: MoodyCharacter(size: 22),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Quick Mood Shortcuts',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF2D3748),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                
+                // Quick mood buttons
+                _buildQuickMoodButton(
+                  icon: '😴',
+                  title: "I'm bored",
+                  subtitle: 'Find something exciting nearby',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _selectIntentFromQuickMood('Adventure time');
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildQuickMoodButton(
+                  icon: '✨',
+                  title: 'Surprise me',
+                  subtitle: 'Random discovery based on my mood',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _selectIntentFromQuickMood('Perfect for now');
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildQuickMoodButton(
+                  icon: '😌',
+                  title: 'Chill mode',
+                  subtitle: 'Something peaceful and relaxing',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _selectIntentFromQuickMood('Chill vibes');
+                  },
+                ),
+                const SizedBox(height: 16),
+                
+                // Full chat button
+                Container(
+                  width: double.infinity,
+                  height: 48,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _showMoodyTalkDialog();
+                    },
+                    style: TextButton.styleFrom(
+                      backgroundColor: const Color(0xFF12B347).withOpacity(0.1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Open Full Chat',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF12B347),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildQuickMoodButton({
+    required String icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.grey.withOpacity(0.2),
+          ),
+        ),
+        child: Row(
+          children: [
+            Text(
+              icon,
+              style: const TextStyle(fontSize: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF2D3748),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              size: 14,
+              color: Colors.grey,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _selectIntentFromQuickMood(String intent) {
+    HapticFeedback.selectionClick();
+    _onIntentSelected(intent);
+  }
+
+  // Show dialog for talking to Moody
+  void _showMoodyTalkDialog() {
+    // Create conversation ID only if it doesn't exist (persistent conversation)
+    if (_conversationId == null) {
+      _conversationId = 'conv_${DateTime.now().millisecondsSinceEpoch}';
+    }
+    
+    // Get current location for dynamic text
+    final currentLocation = ref.read(locationNotifierProvider).value ?? 'your area';
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.9,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) {
+            return StatefulBuilder(
+              builder: (context, setModalState) {
+                return Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      // Enhanced header with friendly aesthetics
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF12B347).withOpacity(0.05),
+                              Colors.white,
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            // Handle bar
+                            Container(
+                              width: 40,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            
+                            // Header content
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              child: Row(
+                                children: [
+                                  // Enhanced Moody avatar with gradient and shadow
+                                  Container(
+                                    width: 50,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xFF12B347), Color(0xFF0A8F3A)],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF12B347).withOpacity(0.3),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Center(
+                                      child: MoodyCharacter(size: 28),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  
+                                  // Title and online status
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Chat with Moody',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold,
+                                            color: const Color(0xFF2D3748),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Container(
+                                              width: 8,
+                                              height: 8,
+                                              decoration: const BoxDecoration(
+                                                color: Color(0xFF10B149),
+                                                shape: BoxShape.circle,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              'Your AI explore buddy is online',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 13,
+                                                color: Colors.grey[600],
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  
+                                  // Enhanced close button
+                                  Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[100],
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: IconButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      icon: const Icon(
+                                        Icons.close_rounded,
+                                        color: Colors.grey,
+                                        size: 18,
+                                      ),
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      // Chat messages area
+                      Expanded(
+                        child: _chatMessages.isEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.all(32),
+                              child: Column(
+                                children: [
+                                  const Spacer(),
+                                  
+                                  // Large enhanced Moody character
+                                  Container(
+                                    width: 120,
+                                    height: 120,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          const Color(0xFF12B347).withOpacity(0.1),
+                                          const Color(0xFF12B347).withOpacity(0.05),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      border: Border.all(
+                                        color: const Color(0xFF12B347).withOpacity(0.2),
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: const Center(
+                                      child: MoodyCharacter(size: 60),
+                                    ),
+                                  ),
+                                  
+                                  const SizedBox(height: 24),
+                                  
+                                  Text(
+                                    'Hey there! 👋',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF2D3748),
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  
+                                  const SizedBox(height: 8),
+                                  
+                                  Text(
+                                    'I\'m Moody, your AI explore buddy!',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color(0xFF4A5568),
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  
+                                  const SizedBox(height: 16),
+                                  
+                                  Text(
+                                    'Ask me about $currentLocation\'s hidden gems,\nbest restaurants, or weekend adventures.',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 15,
+                                      color: Colors.grey[600],
+                                      height: 1.4,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  
+                                  const SizedBox(height: 32),
+                                  
+                                  // Quick suggestion chips
+                                  Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF12B347).withOpacity(0.05),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: const Color(0xFF12B347).withOpacity(0.1),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          'Try asking me about:',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: const Color(0xFF2D3748),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Wrap(
+                                          spacing: 8,
+                                          runSpacing: 8,
+                                          alignment: WrapAlignment.center,
+                                          children: [
+                                            _buildStaticSuggestionChip('🍕 Food spots'),
+                                            _buildStaticSuggestionChip('🎨 Art & Culture'),
+                                            _buildStaticSuggestionChip('🌆 Local hotspots'),
+                                            _buildStaticSuggestionChip('🌟 Hidden gems'),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  
+                                  const Spacer(),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              controller: scrollController,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              itemCount: _chatMessages.length + (_isAILoading ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                if (index < _chatMessages.length) {
+                                  return _buildMessageBubble(_chatMessages[index]);
+                                } else {
+                                  // Enhanced loading indicator
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 36,
+                                          height: 36,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            gradient: const LinearGradient(
+                                              colors: [Color(0xFF12B347), Color(0xFF0A8F3A)],
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: const Color(0xFF12B347).withOpacity(0.3),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          child: const Center(
+                                            child: MoodyCharacter(size: 20),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF5F7FA),
+                                            borderRadius: const BorderRadius.only(
+                                              topLeft: Radius.circular(20),
+                                              topRight: Radius.circular(20),
+                                              bottomRight: Radius.circular(20),
+                                              bottomLeft: Radius.circular(4),
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(0.08),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              SizedBox(
+                                                width: 16,
+                                                height: 16,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                                    Colors.grey[400]!,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                'Moody is thinking...',
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 14,
+                                                  color: Colors.grey[600],
+                                                  fontStyle: FontStyle.italic,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                      ),
+
+                      // Enhanced input area
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border(
+                            top: BorderSide(color: Colors.grey[200]!),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, -2),
+                            ),
+                          ],
+                        ),
+                        child: SafeArea(
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF8F9FA),
+                                    borderRadius: BorderRadius.circular(25),
+                                    border: Border.all(
+                                      color: const Color(0xFF12B347).withOpacity(0.1),
+                                    ),
+                                  ),
+                                  child: TextField(
+                                    controller: _chatController,
+                                    decoration: InputDecoration(
+                                      hintText: 'Ask me anything about $currentLocation...',
+                                      hintStyle: GoogleFonts.poppins(
+                                        color: Colors.grey[500],
+                                        fontSize: 14,
+                                      ),
+                                      border: InputBorder.none,
+                                      contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 16,
+                                      ),
+                                      prefixIcon: Icon(
+                                        Icons.chat_bubble_outline,
+                                        color: Colors.grey[400],
+                                        size: 20,
+                                      ),
+                                    ),
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 14,
+                                      color: const Color(0xFF2D3748),
+                                    ),
+                                    onSubmitted: (text) => _sendChatMessageInModal(text, setModalState),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              
+                              // Enhanced send button
+                              Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFF12B347), Color(0xFF0A8F3A)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(24),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF12B347).withOpacity(0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(24),
+                                    onTap: () => _sendChatMessageInModal(_chatController.text, setModalState),
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.send_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Send chat message in modal
+  Future<void> _sendChatMessageInModal(String message, StateSetter setModalState) async {
+    if (message.trim().isEmpty || _isAILoading) return;
+
+    // Get current location for context
+    final locationAsync = ref.read(locationNotifierProvider);
+    final city = locationAsync.valueOrNull ?? 'Rotterdam';
+
+    // Add user message
+    setModalState(() {
+      _chatMessages.add(ChatMessage(
+        message: message.trim(),
+        isUser: true,
+        timestamp: DateTime.now(),
+      ));
+      _isAILoading = true;
+    });
+
+    // Clear input
+    _chatController.clear();
+
+    try {
+      // Call AI service
+      final response = await WanderMoodAIService.chat(
+        message: message.trim(),
+        conversationId: _conversationId,
+        moods: [], // Empty moods for explore context
+        latitude: 51.9244, // Default Rotterdam coordinates
+        longitude: 4.4777,
+        city: city,
+      );
+
+      // Extract place recommendations from AI response
+      final placeNames = _extractPlaceNamesFromResponse(response.message);
+      
+      // Add AI response
+      setModalState(() {
+        _chatMessages.add(ChatMessage(
+          message: response.message,
+          isUser: false,
+          timestamp: DateTime.now(),
+        ));
+        _isAILoading = false;
+      });
+
+      // Update the main screen with AI recommendations
+      setState(() {
+        _aiRecommendedPlaceNames = placeNames;
+        _hasAIRecommendations = placeNames.isNotEmpty;
+      });
+
+      print('🤖 AI recommended places: $placeNames');
+      
+    } catch (e) {
+      print('🤖 Error getting AI response: $e');
+      setModalState(() {
+        _chatMessages.add(ChatMessage(
+          message: 'Sorry, I had trouble connecting. Please try again!',
+          isUser: false,
+          timestamp: DateTime.now(),
+        ));
+        _isAILoading = false;
+      });
+    }
+  }
+
+  // Extract place names from AI response text
+  List<String> _extractPlaceNamesFromResponse(String response) {
+    final List<String> placeNames = [];
+    
+    // Common place patterns to look for
+    final RegExp placePattern = RegExp(
+      r'(?:visit|try|check out|go to|recommend|suggest)\s+([A-Z][a-zA-Z\s&]+?)(?:\s|,|\.|\!|\?|$)',
+      caseSensitive: false,
+    );
+    
+    final matches = placePattern.allMatches(response);
+    for (final match in matches) {
+      final placeName = match.group(1)?.trim();
+      if (placeName != null && placeName.length > 2) {
+        placeNames.add(placeName);
+      }
+    }
+    
+    // Also look for specific Rotterdam landmarks mentioned
+    final rotterdamLandmarks = [
+      'Markthal', 'Euromast', 'Erasmus Bridge', 'Cube Houses', 'Fenix Food Factory',
+      'Kunsthal', 'Boijmans', 'Het Park', 'Witte de Withstraat', 'Oude Haven'
+    ];
+    
+    for (final landmark in rotterdamLandmarks) {
+      if (response.toLowerCase().contains(landmark.toLowerCase())) {
+        placeNames.add(landmark);
+      }
+    }
+    
+    return placeNames.toSet().toList(); // Remove duplicates
+  }
+
+  // Build message bubble widget with improved aesthetics
+  Widget _buildMessageBubble(ChatMessage message) {
+    final profileData = ref.watch(profileProvider);
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: Row(
+        mainAxisAlignment: message.isUser 
+          ? MainAxisAlignment.end 
+          : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!message.isUser) ...[
+            // Moody's Avatar with animation
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF12B347), Color(0xFF0A8F3A)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF12B347).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Center(
+                child: MoodyCharacter(size: 20),
+              ),
+            ),
+            const SizedBox(width: 12),
+          ],
+          
+          // Message bubble with improved styling
+          Flexible(
+            child: Column(
+              crossAxisAlignment: message.isUser 
+                ? CrossAxisAlignment.end 
+                : CrossAxisAlignment.start,
+              children: [
+                Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.7,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  decoration: BoxDecoration(
+                    gradient: message.isUser
+                      ? const LinearGradient(
+                          colors: [Color(0xFF12B347), Color(0xFF0A8F3A)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                    color: message.isUser ? null : const Color(0xFFF5F7FA),
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(20),
+                      topRight: const Radius.circular(20),
+                      bottomLeft: message.isUser 
+                        ? const Radius.circular(20) 
+                        : const Radius.circular(4),
+                      bottomRight: message.isUser 
+                        ? const Radius.circular(4) 
+                        : const Radius.circular(20),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: message.isUser 
+                          ? const Color(0xFF12B347).withOpacity(0.2)
+                          : Colors.black.withOpacity(0.08),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    message.message,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      height: 1.4,
+                      fontWeight: FontWeight.w500,
+                      color: message.isUser 
+                        ? Colors.white 
+                        : const Color(0xFF2D3748),
+                    ),
+                  ),
+                ),
+                
+                // Timestamp
+                Padding(
+                  padding: const EdgeInsets.only(top: 4, left: 4, right: 4),
+                  child: Text(
+                    _formatMessageTime(message.timestamp),
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      color: Colors.grey[500],
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          if (message.isUser) ...[
+            const SizedBox(width: 12),
+            // User's Profile Picture
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFF12B347).withOpacity(0.2),
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: profileData.when(
+                  data: (profile) {
+                    if (profile?.imageUrl != null) {
+                      return Image.network(
+                        profile!.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildDefaultUserAvatar(profile);
+                        },
+                      );
+                    } else {
+                      return _buildDefaultUserAvatar(profile);
+                    }
+                  },
+                  loading: () => _buildDefaultUserAvatar(null),
+                  error: (_, __) => _buildDefaultUserAvatar(null),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // Helper method to build default user avatar
+  Widget _buildDefaultUserAvatar(dynamic profile) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Center(
+        child: Text(
+          profile?.fullName?.substring(0, 1).toUpperCase() ?? 'U',
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+     // Helper method to format message timestamp
+   String _formatMessageTime(DateTime timestamp) {
+     final now = DateTime.now();
+     final difference = now.difference(timestamp);
+     
+     if (difference.inMinutes < 1) {
+       return 'Just now';
+     } else if (difference.inMinutes < 60) {
+       return '${difference.inMinutes}m ago';
+     } else if (difference.inHours < 24) {
+       return '${difference.inHours}h ago';
+     } else {
+       return '${timestamp.day}/${timestamp.month}';
+     }
+   }
+
+   // Helper method to build static suggestion chips
+   Widget _buildStaticSuggestionChip(String text) {
+     return Container(
+       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+       decoration: BoxDecoration(
+         color: Colors.white,
+         borderRadius: BorderRadius.circular(20),
+         border: Border.all(
+           color: const Color(0xFF12B347).withOpacity(0.2),
+         ),
+         boxShadow: [
+           BoxShadow(
+             color: Colors.black.withOpacity(0.05),
+             blurRadius: 4,
+             offset: const Offset(0, 2),
+           ),
+         ],
+       ),
+       child: Text(
+         text,
+         style: GoogleFonts.poppins(
+           fontSize: 12,
+           fontWeight: FontWeight.w500,
+           color: const Color(0xFF4A5568),
+         ),
+       ),
+     );
+   }
+
+   // Helper method to build quick suggestion buttons
+   Widget _buildQuickSuggestion(String text) {
+     return GestureDetector(
+       onTap: () {
+         // Find the modal state and send the suggestion as a message
+         _chatController.text = text.replaceAll(RegExp(r'[🍕☕🎨]'), '').trim();
+       },
+       child: Container(
+         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+         decoration: BoxDecoration(
+           color: const Color(0xFF12B347).withOpacity(0.1),
+           borderRadius: BorderRadius.circular(15),
+           border: Border.all(
+             color: const Color(0xFF12B347).withOpacity(0.2),
+           ),
+         ),
+         child: Text(
+           text,
+           style: GoogleFonts.poppins(
+             fontSize: 11,
+             fontWeight: FontWeight.w500,
+             color: const Color(0xFF12B347),
+           ),
+         ),
+       ),
+     );
+   }
 
   Widget _buildAdvancedFilterModal() {
     return StatefulBuilder(
@@ -2121,8 +3427,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 label,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   color: isSelected ? Colors.white : Colors.black87,
                 ),
               ),
@@ -2211,4 +3516,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       ),
     );
   }
+}
+
+class ChatMessage {
+  final String message;
+  final bool isUser;
+  final DateTime timestamp;
+
+  ChatMessage({
+    required this.message,
+    required this.isUser,
+    required this.timestamp,
+  });
 }

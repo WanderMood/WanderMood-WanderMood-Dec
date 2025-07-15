@@ -132,6 +132,8 @@ class SwirlBackground extends StatelessWidget {
     final isDarkMode = brightness == Brightness.dark;
     
     return Container(
+      width: double.infinity,
+      height: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,

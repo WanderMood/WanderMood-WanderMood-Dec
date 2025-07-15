@@ -3,10 +3,12 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../../core/providers/preferences_provider.dart';
-import '../../../../core/services/tts_service.dart';
+import '../../../../core/providers/communication_style_provider.dart';
+
 
 class SwirlingGradientPainter extends CustomPainter {
   @override
@@ -123,18 +125,10 @@ class MoodPreferenceScreen extends ConsumerStatefulWidget {
 class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> with TickerProviderStateMixin {
   late final AnimationController _moodyController;
   late final AnimationController _messageController;
-  final TTSService _ttsService = TTSService();
   final Set<String> _selectedMoods = {};
-  bool _hasSpokenFirstSelection = false;
   static const int maxMoodSelections = 3;
 
-  final Map<String, String> _moodResponses = {
-    'Adventurous': "Awesome! Let's find some thrilling experiences for you!",
-    'Peaceful': "Perfect! I'll help you find serene spots to unwind.",
-    'Social': "Great choice! We'll discover vibrant places to meet new people.",
-    'Cultural': "Excellent! Get ready to immerse yourself in local traditions.",
-    'Romantic': "Beautiful! I'll suggest some enchanting spots for you.",
-  };
+
 
   final List<Map<String, dynamic>> _moods = [
     {
@@ -156,11 +150,6 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
       'name': 'Cultural',
       'emoji': '🎭',
       'color': const Color(0xFFEC407A), // Softer Pink
-    },
-    {
-      'name': 'Romantic',
-      'emoji': '💑',
-      'color': const Color(0xFF9575CD), // Softer Purple
     },
     {
       'name': 'Foody',
@@ -187,12 +176,7 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    _initializeTts();
     _startAnimation();
-  }
-
-  void _initializeTts() async {
-    await _ttsService.initialize();
   }
 
   Future<void> _startAnimation() async {
@@ -200,12 +184,6 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
     _moodyController.forward();
     await Future.delayed(const Duration(milliseconds: 500));
     _messageController.forward();
-    _speakInitialMessage();
-  }
-
-  Future<void> _speakInitialMessage() async {
-    const message = "Hey there! Select up to three moods that inspire you to explore!";
-    await _ttsService.speak(message);
   }
 
   void _toggleMoodSelection(String mood) {
@@ -231,15 +209,7 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
           }
         });
         
-        // Play animation and speak response for first selection
-        if (!_hasSpokenFirstSelection) {
-          _moodyController.forward();
-          _messageController.forward();
-          _hasSpokenFirstSelection = true;
-          if (_moodResponses.containsKey(mood)) {
-            _ttsService.speak(_moodResponses[mood]!);
-          }
-        }
+
       }
     }
   }
@@ -248,7 +218,6 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
   void dispose() {
     _moodyController.dispose();
     _messageController.dispose();
-    _ttsService.dispose();
     super.dispose();
   }
 
@@ -288,34 +257,51 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      width: 40,
+                    ...List.generate(6, (index) => Container(
+                      width: 35,
                       height: 4,
+                      margin: const EdgeInsets.symmetric(horizontal: 1.5),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF5BB32A),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF5BB32A),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    ...List.generate(3, (index) => Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.3),
+                        color: index < 2 
+                          ? const Color(0xFF5BB32A)
+                          : Colors.grey.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     )),
                   ],
+                ),
+              ),
+
+              // Back button - positioned last to be on top
+              Positioned(
+                top: 20,
+                left: 20,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () {
+                    debugPrint('🔙 Back button tapped - navigating to communication preferences');
+                    context.go('/preferences/communication');
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(22),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_ios_new,
+                      color: Color(0xFF5BB32A),
+                      size: 20,
+                    ),
+                  ),
                 ),
               ),
 
@@ -325,7 +311,7 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 80),
+                    const SizedBox(height: 60),
                     SlideTransition(
                       position: Tween<Offset>(
                         begin: const Offset(0, -0.2),
@@ -333,13 +319,23 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
                       ).animate(_messageController),
                       child: FadeTransition(
                         opacity: _messageController,
-                        child: Text(
-                          'Let\'s sync our vibes! ✨',
-                          style: GoogleFonts.museoModerno(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF5BB32A),
-                          ),
+                        child: Center(
+                                                     child: Consumer(
+                             builder: (context, ref, child) {
+                               final communicationState = ref.watch(communicationStyleProvider);
+                               final styleKey = communicationState.style.toString().split('.').last;
+                               final title = communicationState.texts['mood']?[styleKey] ?? 'Let\'s sync our vibes! ✨';
+                               return Text(
+                                 title,
+                                 style: GoogleFonts.museoModerno(
+                                   fontSize: 32,
+                                   fontWeight: FontWeight.bold,
+                                   color: const Color(0xFF5BB32A),
+                                 ),
+                                 textAlign: TextAlign.center,
+                               );
+                             },
+                           ),
                         ),
                       ),
                     ),
@@ -351,28 +347,35 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
                       ).animate(_messageController),
                       child: FadeTransition(
                         opacity: _messageController,
-                        child: Text(
-                          'What moods inspire you to explore?',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            color: Colors.black87,
-                          ),
+                        child: Center(
+                                                     child: Consumer(
+                             builder: (context, ref, child) {
+                               final communicationState = ref.watch(communicationStyleProvider);
+                               final styleKey = communicationState.style.toString().split('.').last;
+                               final subtitle = communicationState.texts['mood_subtitle']?[styleKey] ?? 'What moods inspire you to explore?';
+                               return Text(
+                                 subtitle,
+                                 style: GoogleFonts.poppins(
+                                   fontSize: 16,
+                                   color: Colors.black87,
+                                 ),
+                                 textAlign: TextAlign.center,
+                               );
+                             },
+                           ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 40),
                     Expanded(
-                      child: GridView.builder(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 1.5,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                        ),
+                      child: ListView.builder(
                         itemCount: _moods.length,
                         itemBuilder: (context, index) {
                           final mood = _moods[index];
-                          return _buildMoodCard(mood);
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _buildMoodListItem(mood),
+                          );
                         },
                       ),
                     ),
@@ -380,11 +383,11 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _selectedMoods.length == maxMoodSelections
+                        onPressed: _selectedMoods.isNotEmpty
                           ? () => context.go('/preferences/interests')
                           : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _selectedMoods.length == maxMoodSelections
+                          backgroundColor: _selectedMoods.isNotEmpty
                             ? const Color(0xFF5BB32A)
                             : Colors.grey.withOpacity(0.3),
                           foregroundColor: Colors.white,
@@ -405,22 +408,41 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
                         ),
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    Center(
+                      child:                       Consumer(
+                        builder: (context, ref, child) {
+                          final communicationState = ref.watch(communicationStyleProvider);
+                          final styleKey = communicationState.style.toString().split('.').last;
+                          final hintText = communicationState.texts['multiple_selection_hint']?[styleKey] ?? 'You can select multiple options ✨';
+                          return Text(
+                            hintText,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w400,
+                            ),
+                            textAlign: TextAlign.center,
+                          );
+                        },
+                      ),
+                    ),
                     const SizedBox(height: 20),
                   ],
                 ),
               ),
 
-              // Moody character - adjusted position
+              // Moody character - reduced size
               Positioned(
                 right: 20,
-                bottom: MediaQuery.of(context).size.height * 0.12, // Moved up slightly
+                bottom: MediaQuery.of(context).size.height * 0.12,
                 child: ScaleTransition(
                   scale: Tween<double>(
                     begin: 0.5,
                     end: 1.0,
                   ).animate(_moodyController),
-                  child: const MoodyCharacter(
-                    size: 150,
+                          child: const MoodyCharacter(
+          size: 70, // Reduced from 150
                   ),
                 ),
               ),
@@ -431,7 +453,7 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
     );
   }
 
-  Widget _buildMoodCard(Map<String, dynamic> mood) {
+  Widget _buildMoodListItem(Map<String, dynamic> mood) {
     final bool isSelected = _selectedMoods.contains(mood['name']);
     final baseColor = mood['color'];
     
@@ -439,11 +461,12 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
       onTap: () => _toggleMoodSelection(mood['name']),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
+        height: 70,
         decoration: BoxDecoration(
           color: isSelected 
-            ? baseColor.withOpacity(0.85)
+            ? baseColor
             : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
               ? baseColor
@@ -451,76 +474,73 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
+            // Main floating shadow - subtle per card
             BoxShadow(
               color: isSelected
-                ? baseColor.withOpacity(0.4)
-                : Colors.black.withOpacity(0.05),
-              blurRadius: 12,
-              spreadRadius: isSelected ? 2 : 0,
-              offset: Offset(0, isSelected ? 2 : 4),
+                ? baseColor.withOpacity(0.12)
+                : const Color(0xFFE8E8E8).withOpacity(0.4),
+              blurRadius: isSelected ? 8 : 6,
+              spreadRadius: 0,
+              offset: const Offset(0, 2),
             ),
-            if (isSelected)
-              BoxShadow(
-                color: baseColor.withOpacity(0.2),
-                blurRadius: 20,
-                spreadRadius: 4,
-                offset: const Offset(0, 2),
-              ),
+            // Secondary depth shadow - very subtle
+            BoxShadow(
+              color: isSelected
+                ? baseColor.withOpacity(0.08)
+                : const Color(0xFFD0D0D0).withOpacity(0.2),
+              blurRadius: isSelected ? 12 : 10,
+              spreadRadius: -1,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
-        child: Stack(
-          children: [
-            Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                        ? Colors.white.withOpacity(0.2)
-                        : baseColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Center(
-                      child: Text(
-                        mood['emoji'],
-                        style: const TextStyle(fontSize: 28),
-                      ),
-                    ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: isSelected
+                    ? Colors.white.withOpacity(0.2)
+                    : baseColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Text(
+                    mood['emoji'],
+                    style: const TextStyle(fontSize: 20),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    mood['name'],
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : Colors.black87,
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-            if (isSelected)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  mood['name'],
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected ? Colors.white : Colors.black87,
+                  ),
+                ),
+              ),
+              if (isSelected)
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: const BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.check,
-                    color: baseColor,
                     size: 16,
+                    color: baseColor,
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

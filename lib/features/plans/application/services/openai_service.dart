@@ -1,17 +1,29 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dart_openai/dart_openai.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../../../../core/constants/api_keys.dart';
 import '../../domain/models/place.dart';
 
 final openAIServiceProvider = Provider((ref) => OpenAIService(
-  apiKey: dotenv.env['OPENAI_API_KEY'] ?? '',
+  apiKey: ApiKeys.openAiKey,
 ));
 
 class OpenAIService {
   final String apiKey;
+  late final OpenAI _openAI;
 
   OpenAIService({required this.apiKey}) {
     OpenAI.apiKey = apiKey;
+    _openAI = OpenAI.instance;
+  }
+
+  Future<OpenAIChatCompletionModel> chat({
+    required String model,
+    required List<OpenAIChatCompletionChoiceMessageModel> messages,
+  }) async {
+    return await _openAI.chat.create(
+      model: model,
+      messages: messages,
+    );
   }
 
   Future<List<Place>> analyzeMoodCompatibility({
@@ -34,7 +46,7 @@ class OpenAIService {
           ''';
 
           // Get completion from OpenAI
-          final completion = await OpenAI.instance.completion.create(
+          final completion = await _openAI.completion.create(
             model: 'gpt-3.5-turbo-instruct',
             prompt: prompt,
             maxTokens: 150,
@@ -90,7 +102,7 @@ class OpenAIService {
       ''';
 
       // Get completion from OpenAI
-      final completion = await OpenAI.instance.completion.create(
+      final completion = await _openAI.completion.create(
         model: 'gpt-3.5-turbo-instruct',
         prompt: prompt,
         maxTokens: 150,

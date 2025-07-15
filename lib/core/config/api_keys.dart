@@ -1,13 +1,15 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
+import '../constants/api_keys.dart';
 
 class ApiKeys {
   static String get googlePlacesApi {
-    // 🚫 HARD OVERRIDE: Always return empty to prevent ANY API usage
-    debugPrint('🚫 Google Places API permanently disabled to prevent costs');
-    return '';
+    // ✅ NEW Google Places API key for NEW Places API
+    const newApiKey = ApiKeys.googlePlacesKey;
+    debugPrint('📍 Using NEW Google Places API key');
+    return newApiKey;
     
-    // DISABLED CODE (kept for reference but never executed):
+    // Alternative fallback to environment variables if needed
     /*
     try {
       // First try to get from .env file

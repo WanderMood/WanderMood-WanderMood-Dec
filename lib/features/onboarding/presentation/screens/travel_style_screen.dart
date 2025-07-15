@@ -3,10 +3,12 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../../core/providers/preferences_provider.dart';
-import '../../../../core/services/tts_service.dart';
+import '../../../../core/providers/communication_style_provider.dart';
+
 
 class SwirlingGradientPainter extends CustomPainter {
   @override
@@ -123,7 +125,6 @@ class TravelStyleScreen extends ConsumerStatefulWidget {
 class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with TickerProviderStateMixin {
   late final AnimationController _moodyController;
   late final AnimationController _messageController;
-  final TTSService _ttsService = TTSService();
   final Set<String> _selectedStyles = {};
   static const int maxStyleSelections = 3;
 
@@ -171,12 +172,7 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    _initializeTts();
     _startAnimation();
-  }
-
-  void _initializeTts() async {
-    await _ttsService.initialize();
   }
 
   Future<void> _startAnimation() async {
@@ -184,12 +180,6 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
     _moodyController.forward();
     await Future.delayed(const Duration(milliseconds: 500));
     _messageController.forward();
-    _speakMessage();
-  }
-
-  Future<void> _speakMessage() async {
-    const message = "Last but not least, what's your travel style?";
-    await _ttsService.speak(message);
   }
 
   void _toggleStyle(String style) {
@@ -210,43 +200,12 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
       }
     });
     
-    _speakStyleMessage(style);
-  }
-
-  Future<void> _speakStyleMessage(String style) async {
-    String message;
-    switch (style) {
-      case 'Spontaneous':
-        message = "Love it! Let's keep things exciting and go where the wind takes us!";
-        break;
-      case 'Planned':
-        message = "Great choice! I'll help you create the perfect itinerary with all the details!";
-        break;
-      case 'Local Experience':
-        message = "Awesome! I know some amazing local spots that tourists rarely find!";
-        break;
-      case 'Tourist Highlights':
-        message = "Perfect! We'll make sure you don't miss any of the must-see attractions!";
-        break;
-      case 'Off the Beaten Path':
-        message = "Adventure awaits! Let's discover some hidden treasures together!";
-        break;
-      default:
-        return;
-    }
-    
-    if (_selectedStyles.length >= 2) {
-      message = "Nice mix! We'll create a perfect blend of experiences just for you!";
-    }
-    
-    await _ttsService.speak(message);
   }
 
   @override
   void dispose() {
     _moodyController.dispose();
     _messageController.dispose();
-    _ttsService.dispose();
     super.dispose();
   }
 
@@ -272,21 +231,24 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
               width: isSelected ? 2 : 1,
             ),
             boxShadow: [
+              // Main floating shadow - subtle per card
               BoxShadow(
                 color: isSelected
-                  ? color.withOpacity(0.4)
-                  : Colors.black.withOpacity(0.05),
-                blurRadius: 12,
-                spreadRadius: isSelected ? 2 : 0,
-                offset: Offset(0, isSelected ? 2 : 4),
+                  ? color.withOpacity(0.12)
+                  : const Color(0xFFE8E8E8).withOpacity(0.4),
+                blurRadius: isSelected ? 8 : 6,
+                spreadRadius: 0,
+                offset: const Offset(0, 2),
               ),
-              if (isSelected)
-                BoxShadow(
-                  color: color.withOpacity(0.2),
-                  blurRadius: 20,
-                  spreadRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
+              // Secondary depth shadow - very subtle
+              BoxShadow(
+                color: isSelected
+                  ? color.withOpacity(0.08)
+                  : const Color(0xFFD0D0D0).withOpacity(0.2),
+                blurRadius: isSelected ? 12 : 10,
+                spreadRadius: -1,
+                offset: const Offset(0, 4),
+              ),
             ],
           ),
           child: Padding(
@@ -389,24 +351,47 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    ...List.generate(4, (index) => Container(
-                      width: 40,
+                    ...List.generate(6, (index) => Container(
+                      width: 35,
                       height: 4,
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      margin: const EdgeInsets.symmetric(horizontal: 1.5),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF5BB32A),
+                        color: index < 6 
+                          ? const Color(0xFF5BB32A)
+                          : Colors.grey.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     )),
-                    Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
                   ],
+                ),
+              ),
+
+              // Back button
+              Positioned(
+                top: 20,
+                left: 20,
+                child: GestureDetector(
+                  onTap: () => context.go('/preferences/planning-pace'),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_ios_new,
+                      color: Color(0xFF5BB32A),
+                      size: 20,
+                    ),
+                  ),
                 ),
               ),
 
@@ -416,7 +401,7 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 80),
+                    const SizedBox(height: 60),
                     SlideTransition(
                       position: Tween<Offset>(
                         begin: const Offset(0, -0.2),
@@ -424,12 +409,22 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
                       ).animate(_messageController),
                       child: FadeTransition(
                         opacity: _messageController,
-                        child: Text(
-                          'Last but not least! ✨',
-                          style: GoogleFonts.museoModerno(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF5BB32A),
+                        child: Center(
+                          child: Consumer(
+                            builder: (context, ref, child) {
+                              final communicationState = ref.watch(communicationStyleProvider);
+                              final styleKey = communicationState.style.toString().split('.').last;
+                              final title = communicationState.texts['travel_style']?[styleKey] ?? 'Last but not least! ✨';
+                              return Text(
+                                title,
+                                style: GoogleFonts.museoModerno(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF5BB32A),
+                                ),
+                                textAlign: TextAlign.center,
+                              );
+                            },
                           ),
                         ),
                       ),
@@ -442,81 +437,116 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
                       ).animate(_messageController),
                       child: FadeTransition(
                         opacity: _messageController,
-                        child: Text(
-                          'What\'s your travel style?',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            color: Colors.black87,
+                        child: Center(
+                          child: Consumer(
+                            builder: (context, ref, child) {
+                              final communicationState = ref.watch(communicationStyleProvider);
+                              final styleKey = communicationState.style.toString().split('.').last;
+                              final subtitle = communicationState.texts['travel_style_subtitle']?[styleKey] ?? 'What\'s your travel style?';
+                              return Text(
+                                subtitle,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.center,
+                              );
+                            },
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 40),
+                    
                     Expanded(
                       child: ListView(
                         children: _travelStyles.map((style) => _buildStyleCard(style)).toList(),
                       ),
                     ),
                     const SizedBox(height: 16),
+                    // Continue button with text back at bottom
                     Padding(
                       padding: const EdgeInsets.only(bottom: 24),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: GestureDetector(
-                          onLongPress: _selectedStyles.isNotEmpty 
-                            ? () {
-                                // Development bypass - allow skipping API calls on long press
-                                print('⚠️ DEVELOPER MODE: Bypassing loading screen');
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('⚠️ Bypassing loading screen (developer mode)'),
-                                  ),
-                                );
-                                context.go('/preferences/summary');
-                              }
-                            : null,
-                          child: ElevatedButton(
-                            onPressed: _selectedStyles.isNotEmpty
-                              ? () {
-                                  context.go('/preferences/loading');
-                                }
-                              : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF5BB32A),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              elevation: 0,
+                      child: Column(
+                        children: [
+                          Text(
+                            'Almost there! 🎉',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
                             ),
-                            child: Text(
-                              'Continue',
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Select your travel style to unlock your personalized experience',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: Colors.black54,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _selectedStyles.isNotEmpty
+                                ? () async {
+                                    // Don't mark as complete yet - let the loading screen do that
+                                    if (mounted) {
+                                      context.go('/preferences/loading');
+                                    }
+                                  }
+                                : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: _selectedStyles.isNotEmpty
+                                  ? const Color(0xFF5BB32A)
+                                  : Colors.grey.withOpacity(0.3),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                elevation: _selectedStyles.isNotEmpty ? 4 : 0,
+                                shadowColor: _selectedStyles.isNotEmpty 
+                                  ? const Color(0xFF5BB32A).withOpacity(0.4)
+                                  : Colors.transparent,
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Start My Journey',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Icon(Icons.arrow_forward_rounded),
+                                ],
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
 
-              // Moody character
+              // Moody character - positioned just above subtitle, in front of everything
               Positioned(
-                right: 24,
-                top: 100,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(1, 0),
-                    end: Offset.zero,
+                right: 20,
+                bottom: MediaQuery.of(context).size.height * 0.15, // Positioned just above subtitle
+                child: ScaleTransition(
+                  scale: Tween<double>(
+                    begin: 0.5,
+                    end: 1.0,
                   ).animate(_moodyController),
-                  child: FadeTransition(
-                    opacity: _moodyController,
-                    child: const MoodyCharacter(),
+                  child: const MoodyCharacter(
+                    size: 70, // Reduced from 100 to 70
                   ),
                 ),
               ),

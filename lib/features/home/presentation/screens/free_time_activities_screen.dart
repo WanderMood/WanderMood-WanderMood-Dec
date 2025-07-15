@@ -931,7 +931,7 @@ class _FreeTimeActivitiesScreenState extends ConsumerState<FreeTimeActivitiesScr
     } else if (place.types.contains('tourist_attraction')) {
       return 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=600&fit=crop&auto=format'; // Attraction
     } else {
-      return 'https://images.unsplash.com/photo-1544967882-bc559c7eb3ce?w=800&h=600&fit=crop&auto=format'; // Default Rotterdam
+      return 'assets/images/fallbacks/default.jpg'; // Default fallback
     }
   }
 

@@ -316,7 +316,7 @@ class ProfileDrawer extends ConsumerWidget {
                     _buildDrawerItem(
                       context,
                       icon: Icons.map_outlined,
-                      title: 'Travel Plans',
+                      title: 'My Bookings',
                       onTap: () {
                         Navigator.pop(context);
                         context.push('/plans');

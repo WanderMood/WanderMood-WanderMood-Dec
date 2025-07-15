@@ -1,40 +1,45 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'env_config.dart';
 
 class SupabaseConfig {
-  static String get url => dotenv.env['SUPABASE_URL'] ?? '';
-  static String get anonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+  static String get url => EnvConfig.supabaseUrl;
+  static String get anonKey => EnvConfig.supabaseAnonKey;
   
   static Future<void> initialize() async {
+    debugPrint('🔧 Initializing Supabase with URL: $url');
+    debugPrint('🔧 Using key: ${anonKey.substring(0, 20)}...');
+    
     await Supabase.initialize(
       url: url,
       anonKey: anonKey,
-      debug: false, // Set to true for development
+      debug: !EnvConfig.isProduction,
       authOptions: const FlutterAuthClientOptions(
         authFlowType: AuthFlowType.pkce,
       ),
     );
+    
+    // Verify the client is using the correct URL
+    debugPrint('🔧 Final Supabase client initialized successfully');
+    debugPrint('🔧 Final Supabase auth initialized: ${Supabase.instance.client.auth != null}');
   }
   
   static SupabaseClient get client => Supabase.instance.client;
   static GoTrueClient get auth => client.auth;
   
   // Database references
-  static String get usersTable => 'users';
-  static String get moodsTable => 'moods';
-  static String get activitiesTable => 'activities';
-  static String get recommendationsTable => 'recommendations';
-  static String get weatherDataTable => 'weather_data';
+  static String get usersTable => EnvConfig.usersTable;
+  static String get moodsTable => EnvConfig.moodsTable;
+  static String get activitiesTable => EnvConfig.activitiesTable;
+  static String get userPreferencesTable => EnvConfig.userPreferencesTable;
+  static String get recommendationsTable => EnvConfig.recommendationsTable;
+  static String get weatherDataTable => EnvConfig.weatherDataTable;
   
   // Storage buckets
-  static String get profileImagesBucket => 'profile_images';
-  static String get activityImagesBucket => 'activity_images';
-  
-  // RLS Policies
-  static const String authenticatedUserPolicy = 'authenticated_user';
-  static const String ownerOnlyPolicy = 'owner_only';
+  static String get profileImagesBucket => EnvConfig.profileImagesBucket;
+  static String get activityImagesBucket => EnvConfig.activityImagesBucket;
   
   // Functions
-  static String get getCurrentWeatherFunction => 'get_current_weather';
-  static String get getRecommendationsFunction => 'get_recommendations';
+  static String get getCurrentWeatherFunction => EnvConfig.getCurrentWeatherFunction;
+  static String get getRecommendationsFunction => EnvConfig.getRecommendationsFunction;
 } 

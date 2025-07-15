@@ -49,5 +49,20 @@
 	<string>WanderMood needs access to location to find perfect spots near you and provide personalized recommendations.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>WanderMood needs access to location to find perfect spots near you and provide personalized recommendations.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>WanderMood needs access to camera to capture and share your travel moments.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>WanderMood needs access to photo library to share your existing travel photos.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>supabase-auth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>io.supabase.wandermood</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

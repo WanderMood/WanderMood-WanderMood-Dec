@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import '../../domain/models/weather_data.dart';
-import '../../domain/models/location.dart';
+import '../../domain/models/weather.dart';
+import '../../domain/models/weather_location.dart';
 
 part 'weather_state.freezed.dart';
 
@@ -11,9 +11,9 @@ class WeatherState with _$WeatherState {
   const factory WeatherState.loading() = _Loading;
   
   const factory WeatherState.loaded({
-    required WeatherData currentWeather,
-    required Location location,
-    List<WeatherData>? historicalWeather,
+    required Weather currentWeather,
+    required WeatherLocation location,
+    List<Weather>? historicalWeather,
   }) = _Loaded;
   
   const factory WeatherState.error(String message) = _Error;

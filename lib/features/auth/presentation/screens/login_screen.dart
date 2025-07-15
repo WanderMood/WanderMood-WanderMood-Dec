@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/auth/application/social_auth_service.dart';
 import 'package:wandermood/features/auth/domain/providers/auth_provider.dart';
@@ -11,6 +12,7 @@ import 'package:wandermood/features/auth/application/auth_service.dart';
 import 'package:wandermood/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:wandermood/features/auth/presentation/screens/register_screen.dart' as register;
 import 'package:wandermood/core/theme/app_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -68,9 +70,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         await ref.read(authStateProvider.notifier).signIn(
           email: _emailController.text.trim(),
           password: _passwordController.text,
-          onSuccess: () {
+          onSuccess: () async {
             if (mounted) {
-              context.go('/home');
+              // Set auth completion flag
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('hasCompletedAuth', true);
+              debugPrint('✅ Login successful, hasCompletedAuth flag set');
+              
+              // Let the router handle redirect logic instead of directly going to home
+              // The router will check preferences completion and redirect accordingly
+              context.go('/');
             }
           },
           onError: (error) {
@@ -89,18 +98,59 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  Future<void> _handleSocialSignIn(Future<void> Function() signInMethod) async {
+  Future<void> _handleSocialSignIn(Future<AuthResponse?> Function() signInMethod) async {
     setState(() => _isLoading = true);
     try {
-      await signInMethod();
-      if (mounted) context.go('/home');
+      print('🔍 Social Sign-In: Starting authentication...');
+      final result = await signInMethod();
+      
+      if (result != null && result.user != null) {
+        print('✅ Social Sign-In: Authentication successful');
+        if (mounted) {
+          // Set auth completion flag for social sign-in
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('hasCompletedAuth', true);
+          debugPrint('✅ Social login successful, hasCompletedAuth flag set');
+          
+          // Let the router handle redirect logic instead of directly going to home
+          context.go('/');
+        }
+      } else {
+        print('❌ Social Sign-In: Authentication failed - no user returned');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Sign-in was cancelled or failed. Please try again.'),
+              backgroundColor: Colors.orange.shade400,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
     } catch (e) {
+      print('❌ Social Sign-In Error: $e');
       if (mounted) {
+        String errorMessage = 'Sign-in failed. Please try again.';
+        
+        // Customize error message based on error type
+        if (e.toString().contains('not configured')) {
+          errorMessage = 'Social login is not configured yet. Please use email/password for now.';
+        } else if (e.toString().contains('cancelled')) {
+          errorMessage = 'Sign-in was cancelled.';
+        } else if (e.toString().contains('network')) {
+          errorMessage = 'Network error. Please check your internet connection.';
+        } else if (e.toString().contains('GoogleService-Info.plist')) {
+          errorMessage = 'Google Sign-In setup incomplete. Please use email/password for now.';
+        } else if (e.toString().contains('Facebook App ID')) {
+          errorMessage = 'Facebook Sign-In setup incomplete. Please use email/password for now.';
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
+            content: Text(errorMessage),
             backgroundColor: Colors.red.shade400,
             behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -152,11 +202,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: AppTheme.backgroundGradient,
-        width: double.infinity,
-        height: double.infinity,
+      body: SwirlBackground(
         child: SafeArea(
+          bottom: false,
           child: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -383,6 +431,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ],
                   ),
+                  
+                  SizedBox(height: MediaQuery.of(context).padding.bottom + 24),
                 ],
               ),
             ),

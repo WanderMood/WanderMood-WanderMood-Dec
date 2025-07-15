@@ -1,0 +1,750 @@
+# WanderMood Travel App - Cursor Rules
+
+## PROJECT OVERVIEW
+You are working on WanderMood, a Flutter travel app that creates personalized day plans based on user mood, weather, and location. The app includes social features for sharing travel experiences.
+
+## TECH STACK
+- Frontend: Flutter/Dart
+- Backend: Supabase (Auth, Database, Storage)
+- AI: OpenAI API for mood-based recommendations
+- State Management: Riverpod (flutter_riverpod) with StateNotifier
+- Navigation: go_router
+- Code Generation: Freezed for immutable classes
+- HTTP Client: Dio for API calls
+- Local Storage: SharedPreferences for user preferences
+
+## PROJECT STRUCTURE
+```
+lib/
+├── main.dart
+├── app.dart
+├── core/
+│   ├── constants/
+│   ├── providers/
+│   ├── router/
+│   ├── theme/
+│   ├── utils/
+│   ├── errors/
+│   └── network/
+├── features/
+│   ├── auth/
+│   │   ├── domain/
+│   │   ├── presentation/
+│   │   └── data/
+│   ├── mood/
+│   │   ├── domain/
+│   │   ├── presentation/
+│   │   └── data/
+│   ├── home/
+│   │   ├── domain/
+│   │   ├── presentation/
+│   │   └── providers/
+│   ├── chat/
+│   │   ├── models/
+│   │   ├── providers/
+│   │   └── services/
+│   └── [other_features]/
+└── admin/
+```
+
+## NAMING CONVENTIONS
+- Files: snake_case (auth_service.dart, user_profile.dart)
+- Classes: PascalCase (AuthService, UserProfile)
+- Variables/Methods: camelCase (getCurrentUser, isLoggedIn)
+- Constants: UPPER_SNAKE_CASE (API_BASE_URL)
+- Database tables: snake_case (user_profiles, travel_plans)
+
+## SUPABASE INTEGRATION RULES
+
+### Database Schema
+```sql
+-- Users table (handled by Supabase Auth)
+auth.users (id, email, created_at, etc.)
+
+-- User profiles
+user_profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id),
+  username TEXT UNIQUE NOT NULL,
+  full_name TEXT,
+  bio TEXT,
+  avatar_url TEXT,
+  mood_preferences JSONB,
+  travel_preferences JSONB,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Travel plans
+travel_plans (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id),
+  title TEXT NOT NULL,
+  description TEXT,
+  location TEXT NOT NULL,
+  mood_tag TEXT NOT NULL,
+  weather_condition TEXT,
+  plan_data JSONB NOT NULL,
+  is_public BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Social posts
+social_posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id),
+  travel_plan_id UUID REFERENCES travel_plans(id),
+  caption TEXT,
+  image_urls TEXT[] DEFAULT '{}',
+  location TEXT,
+  mood_tag TEXT,
+  likes_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Friendships
+friendships (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  requester_id UUID REFERENCES auth.users(id),
+  addressee_id UUID REFERENCES auth.users(id),
+  status friendship_status DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(requester_id, addressee_id)
+);
+
+-- Post likes
+post_likes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id),
+  post_id UUID REFERENCES social_posts(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, post_id)
+);
+```
+
+### RLS (Row Level Security) Policies
+- Always enable RLS on all tables
+- Users can only read/write their own profiles
+- Travel plans: users can read public plans and their own private plans
+- Social posts: users can read all posts, but only modify their own
+- Friendships: users can only see friendships they're part of
+
+### Supabase Client Setup
+```dart
+final supabase = Supabase.instance.client;
+```
+
+### Environment Variables
+```dart
+class AppConfig {
+  static const String supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+  static const String supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+  static const String openaiApiKey = String.fromEnvironment('OPENAI_API_KEY');
+  static const String weatherApiKey = String.fromEnvironment('WEATHER_API_KEY');
+}
+```
+
+## AUTHENTICATION RULES
+
+### Auth Service Pattern (Riverpod)
+```dart
+// Auth state provider
+final authStateProvider = StateNotifierProvider<AuthStateNotifier, User?>((ref) {
+  final authService = ref.watch(authServiceProvider);
+  return AuthStateNotifier(authService);
+});
+
+class AuthStateNotifier extends StateNotifier<User?> {
+  final AuthService _authService;
+  
+  AuthStateNotifier(this._authService) : super(_authService.currentUser) {
+    // Listen to auth state changes
+    Supabase.instance.client.auth.onAuthStateChange.listen((event) {
+      if (event.event == AuthChangeEvent.signedIn) {
+        state = event.session?.user;
+      } else if (event.event == AuthChangeEvent.signedOut) {
+        state = null;
+      }
+    });
+  }
+  
+  Future<void> signIn({
+    required String email,
+    required String password,
+    required Function(String) onError,
+    required Function() onSuccess,
+  }) async {
+    try {
+      final response = await _authService.signIn(email: email, password: password);
+      if (response.success) {
+        state = response.user;
+        onSuccess();
+      } else {
+        onError(response.message ?? 'Sign in failed');
+      }
+    } catch (e) {
+      onError('An unexpected error occurred');
+    }
+  }
+}
+```
+
+### Auth State Management
+- Use Riverpod StateNotifierProvider for auth state
+- Listen to auth state changes in StateNotifier
+- Implement proper session management with SharedPreferences
+- Handle token refresh automatically through Supabase
+- Redirect to login when session expires using go_router guards
+- Synchronize auth state between Supabase and local storage
+
+### User Profile Management
+- Create user profile after successful registration
+- Sync user data with Supabase profiles table
+- Handle profile image uploads to Supabase Storage
+- Implement profile update functionality
+
+## NAVIGATION RULES (go_router)
+
+### Router Configuration
+```dart
+final router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (context, state) => const SplashScreen(),
+    ),
+    GoRoute(
+      path: '/main',
+      builder: (context, state) => const MainScreen(),
+    ),
+    GoRoute(
+      path: '/auth',
+      builder: (context, state) => const AuthScreen(),
+    ),
+  ],
+  redirect: (context, state) {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null && state.location != '/auth') {
+      return '/auth';
+    }
+    return null;
+  },
+);
+```
+
+### Navigation Patterns
+- Use context.go() for navigation
+- Use context.push() for modal navigation
+- Use context.pop() to go back
+- Implement proper route guards for authentication
+- Use query parameters for state passing
+
+## API INTEGRATION RULES
+
+### HTTP Client Setup (Dio)
+```dart
+class ApiClient {
+  static final Dio _dio = Dio();
+  
+  static void setupInterceptors() {
+    _dio.interceptors.add(LogInterceptor());
+    _dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        // Add auth token to headers
+        final token = Supabase.instance.client.auth.currentSession?.accessToken;
+        if (token != null) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
+        handler.next(options);
+      },
+      onError: (error, handler) {
+        // Handle global errors
+        if (error.response?.statusCode == 401) {
+          // Handle unauthorized
+        }
+        handler.next(error);
+      },
+    ));
+  }
+}
+```
+
+### Error Handling Pattern
+```dart
+// Use AsyncValue for error handling with Riverpod
+final chatStateProvider = StateNotifierProvider<ChatNotifier, AsyncValue<List<ChatMessage>>>((ref) {
+  return ChatNotifier();
+});
+
+class ChatNotifier extends StateNotifier<AsyncValue<List<ChatMessage>>> {
+  ChatNotifier() : super(const AsyncValue.loading()) {
+    _loadMessages();
+  }
+
+  Future<void> _loadMessages() async {
+    try {
+      state = const AsyncValue.loading();
+      final messages = await ChatService.getChatMessages();
+      state = AsyncValue.data(messages);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+    }
+  }
+}
+
+// In UI - handle AsyncValue states
+ref.watch(chatStateProvider).when(
+  data: (messages) => MessagesList(messages: messages),
+  loading: () => const CircularProgressIndicator(),
+  error: (error, stack) => ErrorWidget(error: error),
+);
+```
+
+## OPENAI INTEGRATION RULES
+
+### AI Service for Travel Recommendations
+```dart
+class AIService {
+  final String _apiKey = AppConfig.openaiApiKey;
+  final Dio _dio = Dio();
+
+  Future<TravelRecommendation> generateTravelPlan({
+    required String location,
+    required String mood,
+    required String weather,
+    required Map<String, dynamic> preferences,
+  }) async {
+    final prompt = _buildPrompt(location, mood, weather, preferences);
+    
+    try {
+      final response = await _dio.post(
+        'https://api.openai.com/v1/chat/completions',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $_apiKey',
+            'Content-Type': 'application/json',
+          },
+        ),
+        data: {
+          'model': 'gpt-4',
+          'messages': [
+            {'role': 'system', 'content': 'You are a travel planning assistant...'},
+            {'role': 'user', 'content': prompt},
+          ],
+          'max_tokens': 1000,
+          'temperature': 0.7,
+        },
+      );
+      
+      return _parseResponse(response.data);
+    } catch (e) {
+      throw AIServiceException('Failed to generate travel plan: $e');
+    }
+  }
+}
+```
+
+### AI Prompt Engineering
+- Create detailed system prompts for travel planning
+- Include mood-to-activity mapping
+- Consider weather conditions in recommendations
+- Include user preferences and constraints
+- Format responses as structured JSON
+
+### AI Response Caching
+- Cache AI responses in local storage
+- Implement cache expiration (24 hours)
+- Use location + mood + weather as cache key
+- Reduce API costs with intelligent caching
+
+## MOOD SYSTEM RULES
+
+### Mood Categories
+```dart
+enum MoodType {
+  adventurous,
+  relaxed,
+  cultural,
+  romantic,
+  social,
+  contemplative,
+  energetic,
+  creative,
+}
+
+class MoodService {
+  static Map<MoodType, List<String>> moodToActivities = {
+    MoodType.adventurous: ['hiking', 'extreme sports', 'exploration'],
+    MoodType.relaxed: ['spa', 'beaches', 'cafes'],
+    MoodType.cultural: ['museums', 'historical sites', 'galleries'],
+    // ... etc
+  };
+}
+```
+
+### Mood Input Methods
+- Simple mood selection UI
+- Mood questionnaire for new users
+- Photo-based mood detection (optional)
+- Previous mood history tracking
+
+## WEATHER INTEGRATION RULES
+
+### Weather Service
+```dart
+class WeatherService {
+  final String _apiKey = AppConfig.weatherApiKey;
+  
+  Future<WeatherData> getCurrentWeather(String location) async {
+    // Use OpenWeatherMap API
+    final response = await _dio.get(
+      'https://api.openweathermap.org/data/2.5/weather',
+      queryParameters: {
+        'q': location,
+        'appid': _apiKey,
+        'units': 'metric',
+      },
+    );
+    
+    return WeatherData.fromJson(response.data);
+  }
+}
+```
+
+### Weather-Activity Mapping
+- Sunny: outdoor activities, sightseeing
+- Rainy: indoor activities, museums, shopping
+- Cloudy: walking tours, photography
+- Hot: water activities, air-conditioned venues
+- Cold: indoor activities, hot drinks, cozy places
+
+## SOCIAL FEATURES RULES
+
+### Social Post Management
+```dart
+class SocialService {
+  Future<void> createPost({
+    required String caption,
+    required List<String> imagePaths,
+    required String location,
+    required String moodTag,
+    String? travelPlanId,
+  }) async {
+    // Upload images to Supabase Storage
+    final imageUrls = await _uploadImages(imagePaths);
+    
+    // Create post in database
+    await supabase.from('social_posts').insert({
+      'user_id': supabase.auth.currentUser!.id,
+      'caption': caption,
+      'image_urls': imageUrls,
+      'location': location,
+      'mood_tag': moodTag,
+      'travel_plan_id': travelPlanId,
+    });
+  }
+}
+```
+
+### Friend System
+- Implement friend request system
+- Handle pending/accepted/rejected states
+- Show friends' posts in timeline
+- Implement friend search functionality
+
+### Image Upload Rules
+- Use Supabase Storage for image uploads
+- Implement image compression before upload
+- Create thumbnails for better performance
+- Organize images by user and post ID
+- Handle upload progress and errors
+
+## STATE MANAGEMENT RULES (Riverpod)
+
+### Riverpod Structure
+```dart
+// Main app with ProviderScope
+runApp(
+  ProviderScope(
+    overrides: [
+      sharedPreferencesProvider.overrideWithValue(prefs),
+    ],
+    child: const WanderMoodApp(),
+  ),
+);
+```
+
+### Provider Patterns
+- Use StateNotifierProvider for complex state management
+- Use FutureProvider for async data fetching
+- Use StreamProvider for real-time data streams
+- Use StateProvider for simple state
+- Implement proper error handling with AsyncValue
+
+### State Class Patterns with Freezed
+```dart
+@freezed
+class MoodState with _$MoodState {
+  const factory MoodState.initial() = _Initial;
+  const factory MoodState.loading() = _Loading;
+  const factory MoodState.loaded({
+    required List<Mood> moods,
+    @Default([]) List<Activity> activities,
+  }) = _Loaded;
+  const factory MoodState.error(String message) = _Error;
+}
+```
+
+### StateNotifier Pattern
+```dart
+class MoodNotifier extends StateNotifier<MoodState> {
+  late final MoodService _service;
+
+  MoodNotifier(this._service) : super(const MoodState.initial());
+
+  Future<void> getMoods() async {
+    state = const MoodState.loading();
+    try {
+      final moods = await _service.getMoods();
+      state = MoodState.loaded(moods: moods);
+    } catch (e) {
+      state = MoodState.error(e.toString());
+    }
+  }
+}
+
+// Provider definition
+final moodProvider = StateNotifierProvider<MoodNotifier, MoodState>((ref) {
+  return MoodNotifier(ref.watch(moodServiceProvider));
+});
+```
+
+### Consumer Usage
+```dart
+// In widgets, use Consumer or ref.watch
+Consumer(
+  builder: (context, ref, child) {
+    final moodState = ref.watch(moodProvider);
+    return moodState.when(
+      initial: () => const InitialWidget(),
+      loading: () => const LoadingWidget(),
+      loaded: (moods, activities) => LoadedWidget(moods: moods),
+      error: (message) => ErrorWidget(message: message),
+    );
+  },
+)
+```
+
+## UI/UX RULES
+
+### Screen Structure
+```dart
+class BaseScreen extends StatelessWidget {
+  final String title;
+  final Widget body;
+  final bool showAppBar;
+  final List<Widget>? actions;
+  
+  // Consistent screen structure
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: showAppBar ? AppBar(title: Text(title), actions: actions) : null,
+      body: SafeArea(child: body),
+    );
+  }
+}
+```
+
+### Loading States
+- Show loading indicators for all async operations
+- Implement skeleton screens for better UX
+- Handle empty states gracefully
+- Show appropriate error messages
+
+### Form Validation
+- Implement proper form validation
+- Show validation errors inline
+- Use TextFormField with validators
+- Handle form submission states
+
+## SECURITY RULES
+
+### Data Validation
+- Validate all user inputs
+- Sanitize data before database operations
+- Implement proper error handling
+- Use parameterized queries
+
+### API Security
+- Store API keys in environment variables
+- Implement proper authentication headers
+- Handle API rate limiting
+- Implement request timeouts
+
+### User Privacy
+- Implement proper privacy settings
+- Allow users to control post visibility
+- Handle data deletion requests
+- Implement secure image handling
+
+## TESTING RULES
+
+### Unit Testing
+- Test all service classes
+- Mock external dependencies
+- Test error handling scenarios
+- Maintain high code coverage
+
+### Widget Testing
+- Test all custom widgets
+- Test user interactions
+- Test state changes
+- Test navigation flows
+
+## PERFORMANCE RULES
+
+### Database Optimization
+- Use proper indexing on frequently queried fields
+- Implement pagination for large datasets
+- Use select() to limit returned columns
+- Implement proper caching strategies
+
+### Image Optimization
+- Compress images before upload
+- Use progressive loading for images
+- Implement lazy loading for lists
+- Cache images locally
+
+### Memory Management
+- Dispose controllers and listeners
+- Use const widgets where possible
+- Implement proper widget lifecycle
+- Handle large lists efficiently
+
+## CODE QUALITY RULES
+
+### Code Organization
+- Follow single responsibility principle
+- Use proper abstraction layers
+- Implement dependency injection
+- Keep functions small and focused
+
+### Documentation
+- Document all public APIs
+- Use meaningful variable names
+- Add comments for complex logic
+- Maintain README files
+
+### Error Handling
+- Use try-catch blocks for all async operations
+- Implement custom exception classes
+- Log errors appropriately
+- Show user-friendly error messages
+
+## DEPLOYMENT RULES
+
+### Environment Configuration
+- Use different configurations for dev/prod
+- Implement proper secret management
+- Use environment variables for sensitive data
+- Implement proper logging levels
+
+### Build Configuration
+- Configure proper build variants
+- Implement code obfuscation
+- Use proper signing configurations
+- Implement crash reporting
+
+## CODE GENERATION RULES (Freezed)
+
+### Freezed Data Classes
+```dart
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'user_model.freezed.dart';
+part 'user_model.g.dart';
+
+@freezed
+class User with _$User {
+  const factory User({
+    required String id,
+    required String email,
+    String? displayName,
+    @Default(false) bool isVerified,
+  }) = _User;
+
+  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+}
+```
+
+### Freezed State Classes
+```dart
+@freezed
+class WeatherState with _$WeatherState {
+  const factory WeatherState.initial() = _Initial;
+  const factory WeatherState.loading() = _Loading;
+  const factory WeatherState.loaded({
+    required WeatherData currentWeather,
+    required Location location,
+  }) = _Loaded;
+  const factory WeatherState.error(String message) = _Error;
+}
+```
+
+### Code Generation Commands
+```bash
+# Generate freezed files
+dart run build_runner build
+
+# Watch for changes
+dart run build_runner watch
+
+# Delete conflicting outputs
+dart run build_runner build --delete-conflicting-outputs
+```
+
+### Freezed Best Practices
+- Always use `const factory` constructors
+- Use `@Default()` for default values
+- Implement `fromJson` and `toJson` when needed
+- Use union types for state management
+- Keep data classes immutable
+
+## SPECIFIC IMPLEMENTATION NOTES
+
+### Always implement these patterns:
+1. Repository pattern for data access
+2. Result/Either pattern for error handling
+3. Dependency injection for services
+4. Proper lifecycle management
+5. Comprehensive error logging
+
+### Never do these:
+1. Hard-code API keys or sensitive data
+2. Skip error handling in async operations
+3. Ignore memory leaks (dispose properly)
+4. Use print() for logging in production
+5. Store sensitive data in SharedPreferences
+6. Use Provider pattern instead of Riverpod
+7. Create mutable state classes without Freezed
+8. Skip code generation for data classes
+9. Use setState() in complex state management
+10. Ignore AsyncValue error handling
+
+### Best Practices:
+1. Use const constructors where possible
+2. Implement proper null safety
+3. Use meaningful widget keys
+4. Handle device rotation and screen sizes
+5. Implement proper accessibility features
+6. Use Riverpod for all state management
+7. Generate code with Freezed for data classes
+8. Use AsyncValue for error handling
+9. Implement clean architecture with features
+10. Use go_router for navigation
+11. Always run code generation after model changes
+12. Use ref.watch() instead of Consumer when possible
+
+This comprehensive rule set should guide Cursor to generate consistent, high-quality code that follows best practices for your WanderMood travel app. 

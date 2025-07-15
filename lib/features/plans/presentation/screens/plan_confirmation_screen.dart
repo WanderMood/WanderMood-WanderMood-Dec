@@ -9,6 +9,8 @@ import 'package:wandermood/features/home/presentation/screens/mood_home_screen.d
 import 'package:wandermood/features/plans/presentation/widgets/plan_loading_overlay.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
+import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
 
 class PlanConfirmationScreen extends ConsumerWidget {
   final List<Activity> activities;
@@ -29,6 +31,9 @@ class PlanConfirmationScreen extends ConsumerWidget {
       activities.where((activity) => activity.isPaid).toList();
 
   void _navigateWithLoading(BuildContext context, WidgetRef ref, String message, {String? destination}) async {
+    debugPrint('🚀 _navigateWithLoading called with message: "$message"');
+    debugPrint('🎯 Target destination: ${destination ?? "My Day (default)"}');
+    
     // Show loading overlay
     showDialog(
       context: context,
@@ -43,16 +48,53 @@ class PlanConfirmationScreen extends ConsumerWidget {
       debugPrint('About to save ${activities.length} activities to Supabase');
       
       try {
+        // 🔧 CRITICAL FIX: Override activity dates to TODAY before saving
+        final today = DateTime.now();
+        final activitiesWithTodayDates = activities.map((activity) {
+          final todayStartTime = DateTime(
+            today.year, 
+            today.month, 
+            today.day, 
+            activity.startTime.hour, 
+            activity.startTime.minute
+          );
+          
+          debugPrint('📅 Book Now Fix: ${activity.name} changed from ${activity.startTime.day}/${activity.startTime.month}/${activity.startTime.year} to ${todayStartTime.day}/${todayStartTime.month}/${todayStartTime.year}');
+          
+          return Activity(
+            id: activity.id,
+            name: activity.name,
+            description: activity.description,
+            timeSlot: activity.timeSlot,
+            timeSlotEnum: activity.timeSlotEnum,
+            duration: activity.duration,
+            location: activity.location,
+            paymentType: activity.paymentType,
+            imageUrl: activity.imageUrl,
+            rating: activity.rating,
+            tags: activity.tags,
+            startTime: todayStartTime, // 🔧 Use today's date
+            priceLevel: activity.priceLevel,
+            refreshCount: activity.refreshCount,
+          );
+        }).toList();
+        
         // Save activities to Supabase
-        debugPrint('Activities to save: ${activities.map((a) => a.name).join(', ')}');
-        for (final activity in activities) {
+        debugPrint('Activities to save: ${activitiesWithTodayDates.map((a) => a.name).join(', ')}');
+        for (final activity in activitiesWithTodayDates) {
           debugPrint('Activity: ${activity.name}, StartTime: ${activity.startTime}, Type: ${activity.paymentType}');
         }
-        await scheduledActivityService.saveScheduledActivities(activities, isConfirmed: true);
+        await scheduledActivityService.saveScheduledActivities(activitiesWithTodayDates, isConfirmed: true);
         debugPrint('Activities saved successfully');
         
-        // Force a reload of the activities in the MyDayScreen
+        // CRITICAL: Invalidate providers in correct order to ensure fresh data
+        debugPrint('🔄 Invalidating providers for fresh My Day data...');
         ref.invalidate(scheduledActivityServiceProvider);
+        ref.invalidate(cachedActivitySuggestionsProvider);
+        debugPrint('✅ Providers invalidated - My Day will load fresh activities');
+        
+        // Providers will refresh automatically when My Day loads
+        debugPrint('✅ Ready for navigation - providers will refresh on My Day load');
       } catch (serviceError) {
         debugPrint('Warning: Error saving activities: $serviceError');
         debugPrint('Stack trace: ${StackTrace.current}');
@@ -78,23 +120,40 @@ class PlanConfirmationScreen extends ConsumerWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
-            duration: const Duration(seconds: 2),
+            duration: const Duration(seconds: 1), // Reduced from 2s to prevent conflicts
           ),
         );
         
         if (destination != null) {
           // Navigate to the specified destination
+          debugPrint('🧭 Navigating to specific destination: $destination');
           context.go(destination);
         } else {
-          // Default navigation to main screen
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const MainHomeScreen()),
-            (route) => false,
-          );
+          // 🔧 SIMPLE FIX: Use direct tab provider approach like the working backup
+          debugPrint('🧭 NAVIGATING TO MY DAY - Using direct tab provider approach');
+          debugPrint('🔍 Context mounted before navigation: ${context.mounted}');
+          // Set tab provider directly to My Day
+          try {
+            ref.read(mainTabProvider.notifier).state = 0;
+            debugPrint('✅ Tab provider set to My Day (index 0)');
+            debugPrint('✅ Current tab provider value: ${ref.read(mainTabProvider)}');
+          } catch (tabError) {
+            debugPrint('❌ Failed to set tab provider: $tabError');
+            debugPrint('❌ Tab provider error trace: ${StackTrace.current}');
+          }
+          // Set tab FIRST like other working screens
+          ref.read(mainTabProvider.notifier).state = 0;
+          // Then use goNamed with extra parameter
+          if (context.mounted) {
+            context.goNamed('main', extra: {'tab': 0});
+            debugPrint('✅ Navigation command completed using goNamed');
+          }
         }
       }
     } catch (e) {
-      debugPrint('Error in _navigateWithLoading: $e');
+      debugPrint('❌ ERROR in _navigateWithLoading: $e');
+      debugPrint('❌ ERROR stack trace: ${StackTrace.current}');
+      debugPrint('❌ This error prevented navigation to My Day!');
       
       // Close the loading overlay
       if (context.mounted) {
@@ -351,8 +410,7 @@ class PlanConfirmationScreen extends ConsumerWidget {
           onPressed: () => _navigateWithLoading(
             context,
             ref, 
-            'Saving your plan for later...', 
-            destination: '/explore'
+            'Saving your plan for later...'
           ),
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),

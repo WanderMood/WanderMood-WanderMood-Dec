@@ -80,8 +80,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SwirlBackground(
-        child: SingleChildScrollView(
-          child: SafeArea(
+        child: SafeArea(
+          bottom: false,
+          child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
@@ -114,7 +115,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   // Form card
                   _isSuccess ? _buildSuccessCard() : _buildPasswordResetForm(),
                   
-                  const SizedBox(height: 24),
+                  SizedBox(height: MediaQuery.of(context).padding.bottom + 24),
                 ],
               ),
             ),

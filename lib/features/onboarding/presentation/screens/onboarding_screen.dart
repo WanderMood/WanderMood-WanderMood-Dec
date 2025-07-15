@@ -7,6 +7,7 @@ import 'package:wandermood/features/splash/application/splash_service.dart';
 import 'package:go_router/go_router.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/providers/preferences_provider.dart';
 
 class OnboardingPage {
   final String title;
@@ -38,7 +39,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     OnboardingPage(
       title: 'Meet Moody 😄',
       subtitle: 'Your travel BFF 💬🌍',
-      description: 'Moody learns what makes you tick—your vibe, your energy, your kind of day. I use all of that to craft personalized plans, made just for you.\nThink of me as your fun, curious sidekick who\'s always down to explore 🗺️ 🎈',
+      description: 'Moody gets to know your vibe, your energy, and the kind of day you\'re having. With all that, I create personalized plans — made just for you. Think of me as your fun, curious bestie who\'s always down to explore 🌆🎈',
       backgroundColor: const Color(0xFFFFF4E0), // Cream color from image
     ),
     OnboardingPage(
@@ -48,15 +49,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       backgroundColor: const Color(0xFFFDE5F0), // Light pink from image
     ),
     OnboardingPage(
-      title: 'Your Day, Your Way ✨',
+      title: 'Your Day, Your Way 🫶🏾',
       subtitle: 'Sunrise to sunset, I\'ve got you ☀️🌙',
-      description: 'Your plan is broken into moments—morning, afternoon, evening, and night.\nChoose your vibe, pick your favorites, and I\'ll handle the magic. 🧭🎯\nAll based on location, time, weather & mood.',
+      description: 'Your plan is broken into moments—morning, afternoon, evening, and night. Choose your vibe, pick your favorites, and I\'ll handle the magic. 🧭🎯 All based on location, time, weather & mood.',
       backgroundColor: const Color(0xFFE7F0FF), // Light blue from image
     ),
     OnboardingPage(
       title: 'Every Day\'s a Mood 🎨',
-      subtitle: 'Discover something new—every day 🌍',
-      description: 'WanderMood makes every day feel like a new adventure.\nWake up, check your vibe, explore hand-picked activities 💡📍\nLet your mood lead the way—again and again.',
+      subtitle: 'Discover new places - every day🌍',
+      description: 'WanderMood makes every day feel like a new adventure. Wake up, check your vibe, explore hand-picked activities 💡📍 Let your mood lead the way—again and again.',
       backgroundColor: const Color(0xFFFFF4E0), // Cream color from image
     ),
   ];
@@ -69,11 +70,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       );
     } else {
       setState(() => _isLoading = true);
+      
+      // Only save to SharedPreferences during "Meet Moody" screens
+      // Don't save to database yet - user isn't authenticated
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('has_seen_onboarding', true);
+      
       await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) {
-        context.go('/login');
+        context.go('/auth/signup');
       }
     }
   }
@@ -99,7 +104,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             top: 48,
             right: 16,
             child: TextButton(
-              onPressed: () => context.go('/login'),
+              onPressed: () => context.go('/auth/signup'),
               child: Text(
                 'Skip',
                 style: GoogleFonts.poppins(
@@ -116,101 +121,160 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Widget _buildOnboardingPage(OnboardingPage page) {
     return Container(
+      width: double.infinity,
+      height: double.infinity,
       decoration: BoxDecoration(
         color: page.backgroundColor,
       ),
       child: SafeArea(
+        bottom: false,
         child: Column(
           children: [
-            // Future image area
-            const Spacer(),
+            // Add image for the first onboarding page
+            if (page.title == 'Meet Moody 😄') ...[
+              const Spacer(flex: 1),
+              Center(
+                child: Image.asset(
+                  'images/Onboarding_meetmoody.png',
+                  width: 320,
+                  height: 320,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const Spacer(flex: 1),
+            ] else if (page.title == 'Travel by Mood 🌈') ...[
+              const Spacer(flex: 1),
+              Center(
+                child: Image.asset(
+                  'images/Onboarding_travelbymood.png',
+                  width: 320,
+                  height: 320,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const Spacer(flex: 1),
+            ] else if (page.title == 'Your Day, Your Way 🫶🏾') ...[
+              const Spacer(flex: 1),
+              Center(
+                child: Image.asset(
+                  'images/Onboarding_yourdayyourway.png',
+                  width: 320,
+                  height: 320,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const Spacer(flex: 1),
+            ] else if (page.title == 'Every Day\'s a Mood 🎨') ...[
+              const Spacer(flex: 1),
+              Center(
+                child: Image.asset(
+                  'images/Onboarding_everydayisamood.png',
+                  width: 320,
+                  height: 320,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const Spacer(flex: 1),
+            ] else ...[
+              // Future image area
+              const Spacer(),
+            ],
             // Bottom content area with padding
-            Padding(
-              padding: const EdgeInsets.only(left: 32.0, right: 32.0, bottom: 48.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    page.title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                      height: 1.2,
-                    ),
-                  ).animate()
-                    .fadeIn(duration: 600.ms)
-                    .slideX(begin: -0.2, end: 0),
-                  const SizedBox(height: 12),
-                  Text(
-                    page.subtitle,
-                    style: GoogleFonts.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black54,
-                      height: 1.3,
-                    ),
-                  ).animate()
-                    .fadeIn(duration: 600.ms)
-                    .slideX(begin: -0.1, end: 0),
-                  const SizedBox(height: 24),
-                  Text(
-                    page.description,
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      color: Colors.black87.withOpacity(0.7),
-                      height: 1.6,
-                      letterSpacing: 0.3,
-                    ),
-                  ).animate()
-                    .fadeIn(duration: 600.ms),
-                  const SizedBox(height: 48),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Container(
+              width: double.infinity,
+              color: page.backgroundColor,
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 32.0, right: 32.0, bottom: 48.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
+                      Text(
+                        page.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.visible,
+                        style: GoogleFonts.poppins(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          height: 1.2,
+                        ),
+                      ).animate()
+                        .fadeIn(duration: 600.ms)
+                        .slideX(begin: -0.2, end: 0),
+                      const SizedBox(height: 12),
+                      Text(
+                        page.subtitle,
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black54,
+                          height: 1.3,
+                        ),
+                      ).animate()
+                        .fadeIn(duration: 600.ms)
+                        .slideX(begin: -0.1, end: 0),
+                      const SizedBox(height: 24),
+                      Text(
+                        page.description,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          color: Colors.black87.withOpacity(0.7),
+                          height: 1.6,
+                          letterSpacing: 0.3,
+                        ),
+                      ).animate()
+                        .fadeIn(duration: 600.ms),
+                      const SizedBox(height: 48),
                       Row(
-                        children: List.generate(
-                          pages.length,
-                          (index) => Container(
-                            width: 8,
-                            height: 8,
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: List.generate(
+                              pages.length,
+                              (index) => Container(
+                                width: 8,
+                                height: 8,
+                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _currentPage == index 
+                                    ? Colors.black.withOpacity(0.5)
+                                    : Colors.black.withOpacity(0.2),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: 60,
+                            height: 60,
                             decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _currentPage == index 
-                                ? Colors.black.withOpacity(0.5)
-                                : Colors.black.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(16),
+                              color: const Color(0xFFFF9800), // Orange color
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: IconButton(
+                              onPressed: _nextPage,
+                              icon: const Icon(
+                                Icons.arrow_forward,
+                                color: Colors.white,
+                                size: 24,
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          color: _getButtonColor(page.backgroundColor),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: IconButton(
-                          onPressed: _nextPage,
-                          icon: const Icon(
-                            Icons.arrow_forward,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ],

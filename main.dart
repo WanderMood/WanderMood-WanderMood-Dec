@@ -7,23 +7,42 @@ import 'features/recommendations/presentation/pages/recommendations_page.dart';
 import 'features/mood/presentation/pages/mood_page.dart';
 import 'features/weather/presentation/pages/weather_page.dart';
 import 'features/auth/application/auth_service.dart';
+import 'core/constants/supabase_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    // Load environment variables
+    // Try to load environment variables, but don't fail if .env doesn't exist
+    try {
     await dotenv.load(fileName: ".env");
+    } catch (e) {
+      debugPrint('No .env file found, using hardcoded constants: $e');
+    }
+
+    // Get Supabase credentials with fallback to constants
+    final supabaseUrl = dotenv.env['SUPABASE_URL']?.isNotEmpty == true 
+        ? dotenv.env['SUPABASE_URL']! 
+        : SupabaseConstants.supabaseUrl;
+    final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY']?.isNotEmpty == true 
+        ? dotenv.env['SUPABASE_ANON_KEY']! 
+        : SupabaseConstants.supabaseAnonKey;
+
+    debugPrint('🔧 Full Supabase URL: $supabaseUrl');
+    debugPrint('🔧 Supabase Key: ${supabaseAnonKey.substring(0, 20)}...');
 
     // Initialize Supabase with updated configuration
     await Supabase.initialize(
-      url: dotenv.env['SUPABASE_URL'] ?? '',
-      anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+      url: supabaseUrl,
+      anonKey: supabaseAnonKey,
       debug: true,
       authOptions: const FlutterAuthClientOptions(
         authFlowType: AuthFlowType.pkce,
       ),
     );
+
+    // Verify the client is using the correct URL
+    debugPrint('🔧 Supabase client URL after init: ${Supabase.instance.client.supabaseUrl}');
 
     // Ensure demo account exists
     final authService = AuthService();

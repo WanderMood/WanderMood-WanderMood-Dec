@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../application/weather_service.dart';
-import '../../domain/models/location.dart';
-import '../../domain/models/weather_data.dart';
+import '../../domain/models/weather_location.dart';
+import '../../domain/models/weather.dart';
 import 'weather_state.dart';
 
 part 'weather_notifier.g.dart';
@@ -10,7 +10,7 @@ part 'weather_notifier.g.dart';
 @riverpod
 class WeatherNotifier extends _$WeatherNotifier {
   late final WeatherService _weatherService;
-  StreamSubscription<WeatherData>? _weatherSubscription;
+  StreamSubscription<Weather>? _weatherSubscription;
 
   @override
   WeatherState build() {
@@ -18,13 +18,13 @@ class WeatherNotifier extends _$WeatherNotifier {
     return const WeatherState.initial();
   }
 
-  Future<void> getCurrentWeather(Location location) async {
+  Future<void> getCurrentWeather(WeatherLocation location) async {
     state = const WeatherState.loading();
 
     try {
-      final weatherData = await _weatherService.getCurrentWeather(location);
+      final weather = await _weatherService.getCurrentWeather(location);
       state = WeatherState.loaded(
-        currentWeather: weatherData,
+        currentWeather: weather,
         location: location,
       );
     } catch (e) {
@@ -33,65 +33,53 @@ class WeatherNotifier extends _$WeatherNotifier {
   }
 
   Future<void> getHistoricalWeather(
-    Location location,
+    WeatherLocation location,
     DateTime start,
     DateTime end,
   ) async {
-    state = const WeatherState.loading();
-
     try {
-      final range = DateRange(start: start, end: end);
       final historicalData = await _weatherService.getHistoricalWeather(
         location,
-        range,
+        start,
+        end,
       );
 
-      // Haal ook huidige weer op als we dat nog niet hebben
-      final currentWeather = state.maybeMap(
-        loaded: (s) => s.currentWeather,
-        orElse: () => null,
-      );
-
-      if (currentWeather == null) {
-        final current = await _weatherService.getCurrentWeather(location);
+      if (state is _Loaded) {
         state = WeatherState.loaded(
-          currentWeather: current,
-          location: location,
-          historicalWeather: historicalData,
-        );
-      } else {
-        state = WeatherState.loaded(
-          currentWeather: currentWeather,
+          currentWeather: (state as _Loaded).currentWeather,
           location: location,
           historicalWeather: historicalData,
         );
       }
     } catch (e) {
-      state = WeatherState.error(e.toString());
+      // Keep current weather but show error for historical
+      if (state is _Loaded) {
+        state = WeatherState.loaded(
+          currentWeather: (state as _Loaded).currentWeather,
+          location: location,
+        );
+      }
     }
   }
 
-  void startWatchingWeather(Location location) {
+  void startWeatherUpdates(WeatherLocation location) {
     _weatherSubscription?.cancel();
-    
     _weatherSubscription = _weatherService
         .watchWeatherUpdates(location)
-        .listen(
-          (weatherData) => state = WeatherState.loaded(
-            currentWeather: weatherData,
+        .listen((weather) {
+      if (state is _Loaded) {
+        state = WeatherState.loaded(
+          currentWeather: weather,
+          location: location,
+          historicalWeather: (state as _Loaded).historicalWeather,
+        );
+      } else {
+        state = WeatherState.loaded(
+          currentWeather: weather,
             location: location,
-            historicalWeather: state.maybeMap(
-              loaded: (s) => s.historicalWeather,
-              orElse: () => null,
-            ),
-          ),
-          onError: (e) => state = WeatherState.error(e.toString()),
         );
   }
-
-  void stopWatchingWeather() {
-    _weatherSubscription?.cancel();
-    _weatherSubscription = null;
+    });
   }
 
   @override

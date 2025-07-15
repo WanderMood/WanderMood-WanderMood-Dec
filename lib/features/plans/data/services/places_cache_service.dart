@@ -9,6 +9,63 @@ class PlacesCacheService {
   /// Cache duration in days
   static const int cacheDurationDays = 7;
   
+  /// Clear all cached places (for debugging)
+  static Future<void> clearAllCache() async {
+    try {
+      await _supabase
+          .from('places_cache')
+          .delete()
+          .neq('place_id', 'dummy'); // Delete all records
+      
+      debugPrint('🧹 Cleared ALL cache entries');
+    } catch (e) {
+      debugPrint('❌ Error clearing all cache: $e');
+    }
+  }
+
+  /// Clear cached places for specific location (within radius)
+  static Future<void> clearCacheForLocation({
+    required double lat,
+    required double lng,
+    double radiusKm = 50.0,
+  }) async {
+    try {
+      debugPrint('🧹 Clearing cache for location ($lat, $lng) within ${radiusKm}km');
+      
+      // Get all cached places
+      final response = await _supabase
+          .from('places_cache')
+          .select('place_id, latitude, longitude');
+      
+      final placesToDelete = <String>[];
+      
+      for (final item in response) {
+        final placeLat = item['latitude'] as double?;
+        final placeLng = item['longitude'] as double?;
+        
+        if (placeLat != null && placeLng != null) {
+          final distance = _calculateDistance(lat, lng, placeLat, placeLng);
+          
+          if (distance <= radiusKm) {
+            placesToDelete.add(item['place_id']);
+          }
+        }
+      }
+      
+      if (placesToDelete.isNotEmpty) {
+        await _supabase
+            .from('places_cache')
+            .delete()
+            .inFilter('place_id', placesToDelete);
+        
+        debugPrint('🧹 Cleared ${placesToDelete.length} cached places for location');
+      }
+      
+    } catch (e) {
+      debugPrint('❌ Error clearing cache for location: $e');
+    }
+  }
+
   /// Get cached places for specific moods and location
   static Future<List<GooglePlace>> getCachedPlaces({
     required List<String> moods,
@@ -34,7 +91,7 @@ class PlacesCacheService {
         return [];
       }
       
-      debugPrint('🎯 Found ${response.length} cached places');
+      debugPrint('🎯 Found ${response.length} cached places, filtering by distance...');
       
       // Filter by distance and convert to GooglePlace objects
       final places = <GooglePlace>[];
@@ -46,11 +103,15 @@ class PlacesCacheService {
         if (placeLat != null && placeLng != null) {
           final distance = _calculateDistance(lat, lng, placeLat, placeLng);
           
+          // STRICT distance filtering to prevent contamination
           if (distance <= radiusKm) {
             final place = _convertToGooglePlace(item);
             if (place != null) {
               places.add(place);
+              debugPrint('✅ Cached place: ${place.name} (${distance.toStringAsFixed(1)}km away)');
             }
+          } else {
+            debugPrint('❌ Filtered out distant place: ${item['name']} (${distance.toStringAsFixed(1)}km away)');
           }
         }
       }
