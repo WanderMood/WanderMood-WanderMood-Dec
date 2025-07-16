@@ -34,7 +34,6 @@ import '../../features/profile/presentation/screens/language_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/support/presentation/screens/support_screen.dart';
 import '../../features/home/presentation/screens/mood_home_screen.dart';
-import '../../features/mood/presentation/screens/standalone_mood_selection_screen.dart';  // Add standalone screen
 import '../../features/home/presentation/screens/main_screen.dart';
 import '../../features/home/presentation/screens/agenda_screen.dart';
 import '../../features/home/presentation/screens/view_receipt_screen.dart';
@@ -295,14 +294,14 @@ GoRouter router(RouterRef ref) {
       GoRoute(
         path: '/home',
         name: 'home',
-        builder: (context, state) => const StandaloneMoodSelectionScreen(),  // Use standalone version
+        builder: (context, state) => const MainScreen(),  // Fixed: Use MainScreen instead of standalone mood selection
       ),
       
       // Moody Experience (using standalone mood selection)
       GoRoute(
         path: '/moody',
         name: 'moody-standalone',
-        builder: (context, state) => const StandaloneMoodSelectionScreen(),
+        builder: (context, state) => const MoodHomeScreen(),
       ),
       GoRoute(
         path: '/profile',

@@ -7,7 +7,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
+import 'dart:convert';
 import 'dynamic_my_day_provider.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import '../../../profile/presentation/widgets/profile_drawer.dart';
@@ -18,6 +20,7 @@ import 'main_screen.dart';
 import 'package:wandermood/core/theme/time_based_theme.dart';
 import '../../providers/time_suggestion_provider.dart';
 import 'package:wandermood/core/presentation/painters/circle_pattern_painter.dart';
+import 'reservation_details_sheet.dart';
 
 class DynamicMyDayScreen extends ConsumerStatefulWidget {
   const DynamicMyDayScreen({super.key});
@@ -1259,6 +1262,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     String statusText;
     IconData statusIcon;
     
+    // Check payment status
+    final paymentType = activity.rawData['paymentType'] as String?;
+    final isBooked = paymentType?.toLowerCase() == 'paid' || paymentType?.toLowerCase() == 'reserved';
+    
     switch (activity.status) {
       case ActivityStatus.activeNow:
         statusColor = Colors.red;
@@ -1266,9 +1273,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         statusIcon = Icons.play_circle_filled;
         break;
       case ActivityStatus.upcoming:
-        statusColor = Colors.orange;
-        statusText = 'UPCOMING';
-        statusIcon = Icons.schedule;
+        statusColor = isBooked ? Colors.blue : Colors.orange;
+        statusText = isBooked ? 'BOOKED' : 'UPCOMING';
+        statusIcon = isBooked ? Icons.confirmation_number : Icons.schedule;
         break;
       case ActivityStatus.completed:
         statusColor = Colors.green;
@@ -1288,7 +1295,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        height: 140,
+        height: 160, // Increased height to accommodate booking status
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
@@ -1314,154 +1321,278 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
-          child: Stack(
+          child: Column(
             children: [
-              // Background Image with color filter for intensity
-              Positioned.fill(
-                child: ColorFiltered(
-                  colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.1),
-                    BlendMode.multiply,
-                  ),
-                  child: CachedNetworkImage(
-                    imageUrl: activity.rawData['imageUrl'] ?? '',
-                    fit: BoxFit.cover,
-                    color: Colors.transparent,
-                    colorBlendMode: BlendMode.multiply,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey[300],
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            statusColor.withOpacity(0.8),
-                            statusColor.withOpacity(0.6),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+              // Image section (top part)
+              Expanded(
+                flex: 3,
+                child: Stack(
+                  children: [
+                    // Background Image
+                    Positioned.fill(
+                      child: CachedNetworkImage(
+                        imageUrl: activity.rawData['imageUrl'] ?? '',
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: Colors.grey[300],
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                statusColor.withOpacity(0.8),
+                                statusColor.withOpacity(0.6),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(Icons.image, color: Colors.white, size: 40),
+                          ),
                         ),
                       ),
-                      child: const Center(
-                        child: Icon(Icons.image, color: Colors.white, size: 40),
+                    ),
+
+                    // Overlay gradient
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.black.withOpacity(0.1),
+                              Colors.black.withOpacity(0.6),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ),
 
-              // Intense overlay for dramatic effect
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.black.withOpacity(0.3),
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.8),
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      stops: const [0.0, 0.2, 1.0],
+                    // Content overlay
+                    Positioned.fill(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Top row - time and status
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // Time badge
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.6),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.schedule,
+                                        color: Colors.white,
+                                        size: 14,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${_formatTime(activity.startTime)} • ${activity.rawData['duration']}m',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 11,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                
+                                // Status badge
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: statusColor,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        statusIcon,
+                                        color: Colors.white,
+                                        size: 12,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        statusText,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            
+                            const Spacer(),
+                            
+                            // Activity title
+                            Text(
+                              activity.rawData['title'],
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withOpacity(0.8),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
-
-              // Content - simplified
-              Positioned.fill(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Top row - time and status
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              
+              // White section at the bottom
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Left side - booking status or description
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Time badge - no border
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
+                          if (isBooked) ...[
+                            Row(
                               children: [
                                 Icon(
-                                  Icons.schedule,
-                                  color: Colors.white,
-                                  size: 14,
+                                  paymentType?.toLowerCase() == 'paid' ? Icons.check_circle : Icons.schedule,
+                                  color: paymentType?.toLowerCase() == 'paid' ? Colors.green : Colors.orange,
+                                  size: 16,
                                 ),
-                                const SizedBox(width: 4),
+                                const SizedBox(width: 6),
                                 Text(
-                                  '${_formatTime(activity.startTime)} • ${activity.rawData['duration']}m',
+                                  paymentType?.toLowerCase() == 'paid' ? 'Confirmed' : 'Reserved',
                                   style: GoogleFonts.poppins(
-                                    fontSize: 11,
-                                    color: Colors.white,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.w600,
+                                    color: paymentType?.toLowerCase() == 'paid' ? Colors.green : Colors.orange,
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                          
-                          // Status badge - no border
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: statusColor,
-                              borderRadius: BorderRadius.circular(20),
+                            Text(
+                              paymentType?.toLowerCase() == 'paid' ? 'Ready to go!' : 'Payment pending',
+                              style: GoogleFonts.poppins(
+                                fontSize: 11,
+                                color: Colors.grey[600],
+                              ),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  statusIcon,
-                                  color: Colors.white,
-                                  size: 12,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  statusText,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
+                          ] else ...[
+                            Text(
+                              activity.rawData['category'] ?? 'Activity',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[700],
+                              ),
                             ),
-                          ),
+                            Text(
+                              'Tap to book',
+                              style: GoogleFonts.poppins(
+                                fontSize: 11,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
                         ],
                       ),
-                      
-                      const Spacer(),
-                      
-                      // Bottom content - just title, no container
-                      Text(
-                        activity.rawData['title'],
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withOpacity(0.8),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
+                    ),
+                    
+                    // Right side - button and menu
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Main action button
+                        Container(
+                          height: 32,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: isBooked ? Colors.blue : const Color(0xFF12B347),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                if (isBooked) {
+                                  _showDirectionsOptions(activity.rawData);
+                                } else {
+                                  _showBookingBottomSheet(activity.rawData);
+                                }
+                              },
+                              child: Center(
+                                child: Text(
+                                  isBooked ? 'Directions' : 'Book Now',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ],
+                          ),
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
+                        
+                        const SizedBox(width: 8),
+                        
+                        // Three dots menu
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _showActivityOptions(activity.rawData);
+                          },
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(
+                              Icons.more_vert,
+                              size: 16,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -1654,6 +1785,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   void _showActivityDetails(Map<String, dynamic> activity) {
+    final paymentType = activity['paymentType'] as String?;
+    final isBooked = paymentType?.toLowerCase() == 'paid' || paymentType?.toLowerCase() == 'reserved';
+    final isFree = (activity['price'] == 0 || (paymentType ?? '').toLowerCase() == 'free');
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1770,33 +1904,80 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                             
                             const SizedBox(height: 24),
                             
+                            // Show booking status if booked
+                            if (isBooked) ...[
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.green, width: 1),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      paymentType?.toLowerCase() == 'paid' ? Icons.check_circle : Icons.schedule,
+                                      color: Colors.green,
+                                      size: 24,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            paymentType?.toLowerCase() == 'paid' ? 'Booking Confirmed' : 'Reserved',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.green[700],
+                                            ),
+                                          ),
+                                          Text(
+                                            paymentType?.toLowerCase() == 'paid' 
+                                              ? 'Your booking is confirmed and ready!'
+                                              : 'Complete payment to confirm your booking',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              color: Colors.green[600],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                            ],
+                            
                             // Action buttons
                             Row(
                               children: [
                                 Expanded(
-                                  child: OutlinedButton.icon(
-                                    onPressed: () => Navigator.pop(context),
-                                    icon: const Icon(Icons.bookmark_outline),
-                                    label: const Text('Save for Later'),
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: const Color(0xFF12B347),
-                                      side: const BorderSide(color: Color(0xFF12B347)),
-                                      padding: const EdgeInsets.symmetric(vertical: 14),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
                                   child: ElevatedButton.icon(
                                     onPressed: () {
                                       Navigator.pop(context);
-                                      // TODO: Add navigation to maps or more details
+                                      if (isBooked) {
+                                        // Show reservation summary
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => ReservationDetailsSheet(activity: activity),
+                                          ),
+                                        );
+                                      } else if (isFree) {
+                                        _showDirectionsOptions(activity);
+                                      } else {
+                                        _showBookingBottomSheet(activity);
+                                      }
                                     },
-                                    icon: const Icon(Icons.directions),
-                                    label: const Text('Get Directions'),
+                                    icon: Icon(
+                                      isBooked ? Icons.receipt : (isFree ? Icons.directions : Icons.payment),
+                                    ),
+                                    label: Text(
+                                      isBooked ? 'View Reservation' : (isFree ? 'Get Directions' : 'Book Now'),
+                                    ),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF12B347),
                                       foregroundColor: Colors.white,
@@ -1807,6 +1988,26 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                                     ),
                                   ),
                                 ),
+                                if (isFree) ...[
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: () {
+                                        // Edit activity logic
+                                      },
+                                      icon: const Icon(Icons.edit),
+                                      label: const Text('Edit Activity'),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: const Color(0xFF12B347),
+                                        side: const BorderSide(color: Color(0xFF12B347)),
+                                        padding: const EdgeInsets.symmetric(vertical: 14),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                             
@@ -1821,6 +2022,189 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  void _showDirectionsOptions(Map<String, dynamic> activity) {
+    // Show directions modal for booked activities
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Get Directions',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Choose how you\'d like to get directions to ${activity['title']}',
+              style: GoogleFonts.poppins(fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.map),
+                    label: const Text('Google Maps'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF12B347),
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.navigation),
+                    label: const Text('Apple Maps'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF12B347),
+                      side: const BorderSide(color: Color(0xFF12B347)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showBookingBottomSheet(Map<String, dynamic> activity) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _ActivityBookingBottomSheet(activity: activity),
+    );
+  }
+
+  void _showActivityOptions(Map<String, dynamic> activity) {
+    final paymentType = activity['paymentType'] as String?;
+    final isBooked = paymentType?.toLowerCase() == 'paid' || paymentType?.toLowerCase() == 'reserved';
+    
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Activity Options',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 20),
+            
+            // View Details option
+            ListTile(
+              leading: const Icon(Icons.info_outline, color: Color(0xFF12B347)),
+              title: Text(
+                'View Details',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _showActivityDetails(activity);
+              },
+            ),
+            
+            // Save for Later option
+            ListTile(
+              leading: const Icon(Icons.bookmark_outline, color: Color(0xFF12B347)),
+              title: Text(
+                'Save for Later',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _saveActivity(activity);
+              },
+            ),
+            
+            // Share option
+            ListTile(
+              leading: const Icon(Icons.share, color: Color(0xFF12B347)),
+              title: Text(
+                'Share Activity',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                // TODO: Implement share functionality
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Share functionality coming soon!'),
+                    backgroundColor: const Color(0xFF12B347),
+                  ),
+                );
+              },
+            ),
+            
+            // Booking-specific options
+            if (isBooked) ...[
+              ListTile(
+                leading: const Icon(Icons.receipt, color: Color(0xFF12B347)),
+                title: Text(
+                  'View Booking',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  // TODO: Show booking details
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Booking details: ${activity['bookingReference'] ?? 'N/A'}'),
+                      backgroundColor: const Color(0xFF12B347),
+                    ),
+                  );
+                },
+              ),
+              if (paymentType?.toLowerCase() == 'reserved')
+                ListTile(
+                  leading: const Icon(Icons.payment, color: Colors.orange),
+                  title: Text(
+                    'Complete Payment',
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showBookingBottomSheet(activity);
+                  },
+                ),
+            ] else ...[
+              ListTile(
+                leading: const Icon(Icons.event_available, color: Color(0xFF12B347)),
+                title: Text(
+                  'Book This Activity',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showBookingBottomSheet(activity);
+                },
+              ),
+            ],
+            
+            const SizedBox(height: 16),
+          ],
         ),
       ),
     );
@@ -2760,4 +3144,1219 @@ class _PressableButtonState extends State<_PressableButton>
       ),
     );
   }
+}
+
+/// Booking bottom sheet for activity booking
+class _ActivityBookingBottomSheet extends StatefulWidget {
+  final Map<String, dynamic> activity;
+
+  const _ActivityBookingBottomSheet({required this.activity});
+
+  @override
+  State<_ActivityBookingBottomSheet> createState() => _ActivityBookingBottomSheetState();
+}
+
+class _ActivityBookingBottomSheetState extends State<_ActivityBookingBottomSheet> {
+  String selectedBookingType = 'Standard Visit';
+  int guests = 1;
+  DateTime selectedDate = DateTime.now();
+  String selectedTimeSlot = '9:00 AM';
+  
+  final Map<String, double> bookingTypes = {
+    'Standard Visit': 15.0,
+    'Guided Tour': 25.0,
+    'Premium Experience': 45.0,
+    'Group Booking': 12.0,
+  };
+  
+  final List<String> timeSlots = [
+    '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
+    '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'
+  ];
+
+  double get totalPrice => bookingTypes[selectedBookingType]! * guests;
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.8,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      builder: (context, scrollController) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(top: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            
+            // Title
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                'Book ${widget.activity['title']}',
+                style: GoogleFonts.museoModerno(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            
+            // Scrollable content
+            Expanded(
+              child: SingleChildScrollView(
+                controller: scrollController,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Booking type selection
+                    Text(
+                      'Select Experience',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...bookingTypes.entries.map((entry) => _buildBookingTypeCard(entry.key, entry.value)),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Guest selection
+                    Text(
+                      'Number of Guests',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: guests > 1 ? () => setState(() => guests--) : null,
+                          icon: const Icon(Icons.remove_circle_outline),
+                          color: guests > 1 ? const Color(0xFF12B347) : Colors.grey,
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: const Color(0xFF12B347)),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '$guests',
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: guests < 10 ? () => setState(() => guests++) : null,
+                          icon: const Icon(Icons.add_circle_outline),
+                          color: guests < 10 ? const Color(0xFF12B347) : Colors.grey,
+                        ),
+                        const Spacer(),
+                        Text(
+                          'Max 10 guests',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Date selection
+                    Text(
+                      'Select Date',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    GestureDetector(
+                      onTap: () async {
+                        final date = await showDatePicker(
+                          context: context,
+                          initialDate: selectedDate,
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime.now().add(const Duration(days: 90)),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: const ColorScheme.light(
+                                  primary: Color(0xFF12B347),
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (date != null) setState(() => selectedDate = date);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: const Color(0xFF12B347)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.calendar_today, color: Color(0xFF12B347)),
+                            const SizedBox(width: 12),
+                            Text(
+                              '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                              style: GoogleFonts.poppins(fontSize: 16),
+                            ),
+                            const Spacer(),
+                            const Icon(Icons.arrow_drop_down, color: Color(0xFF12B347)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Time slot selection
+                    Text(
+                      'Select Time',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: timeSlots.map((time) => _buildTimeSlotChip(time)).toList(),
+                    ),
+                    
+                    const SizedBox(height: 32),
+                    
+                    // Total price
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF12B347).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF12B347), width: 1),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Total',
+                            style: GoogleFonts.poppins(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            '€${totalPrice.toStringAsFixed(2)}',
+                            style: GoogleFonts.poppins(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF12B347),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ),
+            
+            // Continue button
+            Container(
+              padding: const EdgeInsets.all(24),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => _ActivityPaymentScreen(
+                          activity: widget.activity,
+                          bookingType: selectedBookingType,
+                          guests: guests,
+                          date: selectedDate,
+                          timeSlot: selectedTimeSlot,
+                          totalPrice: totalPrice,
+                        ),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF12B347),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Continue to Payment',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBookingTypeCard(String type, double price) {
+    final isSelected = selectedBookingType == type;
+    return GestureDetector(
+      onTap: () => setState(() => selectedBookingType = type),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF12B347).withOpacity(0.1) : Colors.white,
+          border: Border.all(
+            color: isSelected ? const Color(0xFF12B347) : Colors.grey[300]!,
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? const Color(0xFF12B347) : Colors.grey[400]!,
+                  width: 2,
+                ),
+                color: isSelected ? const Color(0xFF12B347) : Colors.transparent,
+              ),
+              child: isSelected
+                  ? const Icon(Icons.check, color: Colors.white, size: 12)
+                  : null,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                type,
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Text(
+              '€${price.toStringAsFixed(2)}',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF12B347),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimeSlotChip(String time) {
+    final isSelected = selectedTimeSlot == time;
+    return GestureDetector(
+      onTap: () => setState(() => selectedTimeSlot = time),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF12B347) : Colors.white,
+          border: Border.all(
+            color: isSelected ? const Color(0xFF12B347) : Colors.grey[300]!,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          time,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: isSelected ? Colors.white : Colors.black87,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Payment screen for activity booking
+class _ActivityPaymentScreen extends StatefulWidget {
+  final Map<String, dynamic> activity;
+  final String bookingType;
+  final int guests;
+  final DateTime date;
+  final String timeSlot;
+  final double totalPrice;
+
+  const _ActivityPaymentScreen({
+    required this.activity,
+    required this.bookingType,
+    required this.guests,
+    required this.date,
+    required this.timeSlot,
+    required this.totalPrice,
+  });
+
+  @override
+  State<_ActivityPaymentScreen> createState() => _ActivityPaymentScreenState();
+}
+
+class _ActivityPaymentScreenState extends State<_ActivityPaymentScreen> {
+  String selectedPaymentMethod = 'card';
+  String selectedBank = 'ABN AMRO';
+  bool isProcessing = false;
+  
+  final cardNumberController = TextEditingController();
+  final expiryController = TextEditingController();
+  final cvvController = TextEditingController();
+  final nameController = TextEditingController();
+
+  final List<String> idealBanks = [
+    'ABN AMRO', 'ING', 'Rabobank', 'SNS Bank', 'ASN Bank',
+    'Bunq', 'Knab', 'Moneyou', 'RegioBank', 'Triodos Bank'
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Text(
+          'Payment',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 0,
+      ),
+      body: Column(
+        children: [
+          // Booking summary
+          Container(
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Booking Summary',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(widget.activity['title']),
+                    Text('${widget.guests} guest${widget.guests > 1 ? 's' : ''}'),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(widget.bookingType),
+                    Text('${widget.date.day}/${widget.date.month}/${widget.date.year}'),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(widget.timeSlot),
+                    Text(
+                      '€${widget.totalPrice.toStringAsFixed(2)}',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF12B347),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          
+          // Payment methods
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Payment Method',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Payment method options
+                  _buildPaymentMethodOption('card', 'Credit/Debit Card', Icons.credit_card),
+                  _buildPaymentMethodOption('ideal', 'iDEAL', Icons.account_balance),
+                  _buildPaymentMethodOption('paypal', 'PayPal', Icons.payment),
+                  _buildPaymentMethodOption('apple', 'Apple Pay', Icons.phone_iphone),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Payment form based on selected method
+                  if (selectedPaymentMethod == 'card') _buildCardForm(),
+                  if (selectedPaymentMethod == 'ideal') _buildIdealForm(),
+                  if (selectedPaymentMethod == 'paypal') _buildPayPalForm(),
+                  if (selectedPaymentMethod == 'apple') _buildApplePayForm(),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Security notice
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.security, color: Colors.blue, size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Your payment information is encrypted and secure',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: Colors.blue[700],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          // Pay button
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: isProcessing ? null : _processPayment,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF12B347),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: isProcessing
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(
+                        'Pay €${widget.totalPrice.toStringAsFixed(2)}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentMethodOption(String value, String title, IconData icon) {
+    final isSelected = selectedPaymentMethod == value;
+    return GestureDetector(
+      onTap: () => setState(() => selectedPaymentMethod = value),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF12B347).withOpacity(0.1) : Colors.white,
+          border: Border.all(
+            color: isSelected ? const Color(0xFF12B347) : Colors.grey[300]!,
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: isSelected ? const Color(0xFF12B347) : Colors.grey[600]),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? const Color(0xFF12B347) : Colors.grey[400]!,
+                  width: 2,
+                ),
+                color: isSelected ? const Color(0xFF12B347) : Colors.transparent,
+              ),
+              child: isSelected
+                  ? const Icon(Icons.check, color: Colors.white, size: 12)
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCardForm() {
+    return Column(
+      children: [
+        TextField(
+          controller: cardNumberController,
+          decoration: InputDecoration(
+            labelText: 'Card Number',
+            hintText: '1234 5678 9012 3456',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFF12B347)),
+            ),
+          ),
+          keyboardType: TextInputType.number,
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: expiryController,
+                decoration: InputDecoration(
+                  labelText: 'MM/YY',
+                  hintText: '12/25',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF12B347)),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: TextField(
+                controller: cvvController,
+                decoration: InputDecoration(
+                  labelText: 'CVV',
+                  hintText: '123',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF12B347)),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+                obscureText: true,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: nameController,
+          decoration: InputDecoration(
+            labelText: 'Cardholder Name',
+            hintText: 'John Doe',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFF12B347)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIdealForm() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Select your bank',
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: selectedBank,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFF12B347)),
+            ),
+          ),
+          items: idealBanks.map((bank) => DropdownMenuItem(
+            value: bank,
+            child: Text(bank),
+          )).toList(),
+          onChanged: (value) => setState(() => selectedBank = value!),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPayPalForm() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.payment, size: 48, color: Colors.blue),
+          const SizedBox(height: 8),
+          Text(
+            'You will be redirected to PayPal to complete your payment',
+            style: GoogleFonts.poppins(fontSize: 14),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildApplePayForm() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.phone_iphone, size: 48, color: Colors.black),
+          const SizedBox(height: 8),
+          Text(
+            'Use Touch ID or Face ID to pay with Apple Pay',
+            style: GoogleFonts.poppins(fontSize: 14),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _processPayment() async {
+    setState(() => isProcessing = true);
+    
+    // Simulate payment processing with realistic timing
+    int processingTime;
+    switch (selectedPaymentMethod) {
+      case 'card':
+        processingTime = 3000;
+        break;
+      case 'ideal':
+        processingTime = 2000;
+        break;
+      case 'paypal':
+        processingTime = 4000;
+        break;
+      case 'apple':
+        processingTime = 1500;
+        break;
+      default:
+        processingTime = 3000;
+    }
+    
+    await Future.delayed(Duration(milliseconds: processingTime));
+    
+    if (mounted) {
+      setState(() => isProcessing = false);
+      
+      // Navigate to confirmation screen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => _ActivityBookingConfirmationScreen(
+            activity: widget.activity,
+            bookingType: widget.bookingType,
+            guests: widget.guests,
+            date: widget.date,
+            timeSlot: widget.timeSlot,
+            totalPrice: widget.totalPrice,
+            paymentMethod: selectedPaymentMethod,
+          ),
+        ),
+      );
+    }
+  }
+}
+
+/// Confirmation screen after successful booking
+class _ActivityBookingConfirmationScreen extends StatefulWidget {
+  final Map<String, dynamic> activity;
+  final String bookingType;
+  final int guests;
+  final DateTime date;
+  final String timeSlot;
+  final double totalPrice;
+  final String paymentMethod;
+
+  const _ActivityBookingConfirmationScreen({
+    required this.activity,
+    required this.bookingType,
+    required this.guests,
+    required this.date,
+    required this.timeSlot,
+    required this.totalPrice,
+    required this.paymentMethod,
+  });
+
+  @override
+  State<_ActivityBookingConfirmationScreen> createState() => _ActivityBookingConfirmationScreenState();
+}
+
+class _ActivityBookingConfirmationScreenState extends State<_ActivityBookingConfirmationScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _checkmarkController;
+  late Animation<double> _checkmarkAnimation;
+  late AnimationController _scaleController;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    _checkmarkController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _checkmarkAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _checkmarkController, curve: Curves.elasticOut),
+    );
+    
+    _scaleController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeOut),
+    );
+    
+    // Start animations
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _scaleController.forward();
+      _checkmarkController.forward();
+    });
+    
+    // Haptic feedback
+            HapticFeedback.lightImpact();
+  }
+
+  @override
+  void dispose() {
+    _checkmarkController.dispose();
+    _scaleController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 40),
+                    
+                    // Success animation
+                    AnimatedBuilder(
+                      animation: _scaleAnimation,
+                      builder: (context, child) {
+                        return Transform.scale(
+                          scale: _scaleAnimation.value,
+                          child: Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(0xFF4CAF50),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF4CAF50).withOpacity(0.3),
+                                  blurRadius: 20,
+                                  spreadRadius: 5,
+                                ),
+                              ],
+                            ),
+                            child: AnimatedBuilder(
+                              animation: _checkmarkAnimation,
+                              builder: (context, child) {
+                                return CustomPaint(
+                                  painter: _CheckmarkPainter(_checkmarkAnimation.value),
+                                  child: const SizedBox.expand(),
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    
+                    const SizedBox(height: 32),
+                    
+                    Text(
+                      'Booking Confirmed!',
+                      style: GoogleFonts.museoModerno(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF4CAF50),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 12),
+                    
+                    Text(
+                      'Your booking has been successfully confirmed. Get ready for an amazing experience!',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    
+                    const SizedBox(height: 32),
+                    
+                    // Booking details card
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey[200]!),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.receipt, color: Colors.grey[600], size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Booking Details',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          _buildDetailRow('Activity', widget.activity['title']),
+                          _buildDetailRow('Experience', widget.bookingType),
+                          _buildDetailRow('Guests', '${widget.guests}'),
+                          _buildDetailRow('Date', '${widget.date.day}/${widget.date.month}/${widget.date.year}'),
+                          _buildDetailRow('Time', widget.timeSlot),
+                          _buildDetailRow('Reference', 'WM${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}'),
+                          const Divider(height: 24),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Total Paid',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                '€${widget.totalPrice.toStringAsFixed(2)}',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF4CAF50),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Action buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              // TODO: Add to calendar functionality
+                            },
+                            icon: const Icon(Icons.calendar_today),
+                            label: const Text('Add to Calendar'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF12B347),
+                              side: const BorderSide(color: Color(0xFF12B347)),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              // TODO: Add share functionality
+                            },
+                            icon: const Icon(Icons.share),
+                            label: const Text('Share'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF12B347),
+                              side: const BorderSide(color: Color(0xFF12B347)),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            // Done button
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => _returnToMyDay(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4CAF50),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Done',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
+          ),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _returnToMyDay(BuildContext context) async {
+    // Update the activity status to 'paid' in the provider
+    final activityId = widget.activity['id'] as String? ?? widget.activity['title'] as String? ?? '';
+    
+    // For this demo, we'll update the activity data to include payment status
+    // In a real app, this would update the backend/database
+    final updatedActivity = Map<String, dynamic>.from(widget.activity);
+    updatedActivity['paymentType'] = 'paid';
+    updatedActivity['bookingReference'] = 'WM${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
+    updatedActivity['bookingDate'] = widget.date.toIso8601String();
+    updatedActivity['bookingTimeSlot'] = widget.timeSlot;
+    updatedActivity['guests'] = widget.guests;
+    updatedActivity['totalPaid'] = widget.totalPrice;
+    
+    // Update the cached activities with the new booking status
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final activitiesJson = prefs.getStringList('cached_activity_suggestions') ?? [];
+      
+      // Find and update the specific activity
+      final updatedActivitiesJson = activitiesJson.map((json) {
+        try {
+          final activity = jsonDecode(json) as Map<String, dynamic>;
+          final currentId = activity['id'] as String? ?? activity['title'] as String? ?? '';
+          if (currentId == activityId) {
+            // Update this activity with booking info
+            activity['paymentType'] = 'paid';
+            activity['bookingReference'] = updatedActivity['bookingReference'];
+            activity['bookingDate'] = updatedActivity['bookingDate'];
+            activity['bookingTimeSlot'] = updatedActivity['bookingTimeSlot'];
+            activity['guests'] = updatedActivity['guests'];
+            activity['totalPaid'] = updatedActivity['totalPaid'];
+          }
+          return jsonEncode(activity);
+        } catch (e) {
+          return json; // Return original if parsing fails
+        }
+      }).toList();
+      
+      // Save updated activities back to preferences
+      await prefs.setStringList('cached_activity_suggestions', updatedActivitiesJson);
+      
+      debugPrint('✅ Successfully updated activity booking status in cache');
+    } catch (e) {
+      debugPrint('❌ Error updating activity booking status: $e');
+    }
+    
+    // Navigate back to main screen and refresh My Day
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    
+    // Use context.go to navigate to main screen with My Day tab
+    if (context.mounted) {
+      context.go('/main', extra: {'tab': 0});
+    }
+  }
+}
+
+/// Custom painter for animated checkmark
+class _CheckmarkPainter extends CustomPainter {
+  final double progress;
+
+  _CheckmarkPainter(this.progress);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round;
+
+    final center = Offset(size.width / 2, size.height / 2);
+    final checkmarkPath = Path();
+    
+    // Define checkmark points
+    final startPoint = Offset(center.dx - 15, center.dy);
+    final middlePoint = Offset(center.dx - 5, center.dy + 10);
+    final endPoint = Offset(center.dx + 15, center.dy - 10);
+    
+    checkmarkPath.moveTo(startPoint.dx, startPoint.dy);
+    checkmarkPath.lineTo(middlePoint.dx, middlePoint.dy);
+    checkmarkPath.lineTo(endPoint.dx, endPoint.dy);
+    
+    final pathMetric = checkmarkPath.computeMetrics().first;
+    final extractedPath = pathMetric.extractPath(0, pathMetric.length * progress);
+    
+    canvas.drawPath(extractedPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

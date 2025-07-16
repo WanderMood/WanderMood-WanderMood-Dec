@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:wandermood/features/mood/presentation/screens/embedded_mood_selection_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/explore_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_screen.dart';
 import 'package:wandermood/features/plans/widgets/activity_detail_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/free_time_activities_screen.dart';
+import 'package:wandermood/features/home/presentation/screens/mood_home_screen.dart';
 
 // Create a Provider for the tab controller
 final mainTabProvider = StateProvider<int>((ref) => 0);
@@ -66,7 +66,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   final List<Widget> screens = [
     const DynamicMyDayScreen(),  // My Day is now first - using dynamic screen
     const ExploreScreen(),
-    const EmbeddedMoodSelectionScreen(),  // Moody tab now uses embedded version with exact same logic as standalone
+    const MoodHomeScreen(), // Moody tab now uses MoodHomeScreen
             const SizedBox.shrink(), // Placeholder - Feed is now a standalone route
             const SizedBox.shrink(), // Placeholder - Profile navigates directly to profile screen
   ];
