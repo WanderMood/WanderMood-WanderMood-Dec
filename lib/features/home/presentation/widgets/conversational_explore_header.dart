@@ -198,14 +198,23 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
 
   Widget _buildCompactSearchBar() {
     return Container(
-      height: 50,
+      height: 56, // Increased height for more prominence
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFF12B347).withOpacity(0.2),
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
+            color: const Color(0xFF12B347).withOpacity(0.12),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
@@ -217,24 +226,28 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
               controller: _searchController,
               onChanged: widget.onSearchChanged,
               style: GoogleFonts.poppins(
-                fontSize: 14,
+                fontSize: 15,
                 color: Colors.black87,
+                fontWeight: FontWeight.w500,
               ),
               decoration: InputDecoration(
-                hintText: "Search for a place or filter by name...",
+                hintText: "🔍 Search places, activities, or just tell me what you want...",
                 hintStyle: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.grey[500],
+                  fontSize: 15,
+                  color: Colors.grey[600],
                   fontWeight: FontWeight.w400,
                 ),
-                prefixIcon: Icon(
-                  Icons.psychology_outlined,
-                  color: const Color(0xFF12B347),
-                  size: 20,
+                prefixIcon: Container(
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(
+                    Icons.search,
+                    color: const Color(0xFF12B347),
+                    size: 24,
+                  ),
                 ),
                 suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
-                      icon: Icon(Icons.clear, color: Colors.grey[400], size: 18),
+                      icon: Icon(Icons.clear, color: Colors.grey[400], size: 20),
                       onPressed: () {
                         _searchController.clear();
                         widget.onSearchChanged('');
@@ -242,14 +255,21 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
                     )
                   : null,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide(
+                    color: const Color(0xFF12B347),
+                    width: 2,
+                  ),
                 ),
                 filled: true,
                 fillColor: Colors.white,
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+                  horizontal: 20,
+                  vertical: 16,
                 ),
               ),
             ),
@@ -257,15 +277,21 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
           // Filter icon with badge
           if (widget.onFilterTap != null)
             Container(
-              margin: const EdgeInsets.only(right: 8),
+              margin: const EdgeInsets.only(right: 12),
               child: Stack(
                 children: [
-                  IconButton(
-                    onPressed: widget.onFilterTap,
-                    icon: Icon(
-                      Icons.tune,
-                      color: const Color(0xFF12B347),
-                      size: 22,
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF12B347).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      onPressed: widget.onFilterTap,
+                      icon: Icon(
+                        Icons.tune,
+                        color: const Color(0xFF12B347),
+                        size: 24,
+                      ),
                     ),
                   ),
                   if (widget.activeFiltersCount > 0)
@@ -293,6 +319,9 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
             ),
         ],
       ),
-    ).animate().fadeIn(duration: 600.ms, delay: 300.ms);
+    ).animate().fadeIn(duration: 600.ms, delay: 300.ms).scale(
+      begin: const Offset(0.95, 0.95),
+      end: const Offset(1.0, 1.0),
+    );
   }
 } 
