@@ -101,6 +101,7 @@ class AIChatResponse {
   final String action;
   final String timestamp;
   final String message;
+  final String? conversationId;
   final Map<String, dynamic> contextUsed;
 
   AIChatResponse({
@@ -108,6 +109,7 @@ class AIChatResponse {
     required this.action,
     required this.timestamp,
     required this.message,
+    this.conversationId,
     required this.contextUsed,
   });
 
@@ -117,6 +119,7 @@ class AIChatResponse {
       action: json['action'] ?? '',
       timestamp: json['timestamp'] ?? '',
       message: json['message'] ?? '',
+      conversationId: json['conversationId'],
       contextUsed: json['contextUsed'] as Map<String, dynamic>? ?? {},
     );
   }
@@ -127,6 +130,7 @@ class AIChatResponse {
       'action': action,
       'timestamp': timestamp,
       'message': message,
+      'conversationId': conversationId,
       'contextUsed': contextUsed,
     };
   }

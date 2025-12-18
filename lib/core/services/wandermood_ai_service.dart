@@ -97,8 +97,46 @@ class WanderMoodAIService {
       return AIChatResponse.fromJson(data);
     } catch (e) {
       debugPrint('❌ Error in AI chat: $e');
+      
+      // Fallback response when edge function doesn't exist
+      if (e.toString().contains('404') || e.toString().contains('NOT_FOUND')) {
+        debugPrint('⚠️ Edge function not found, using fallback response');
+        return AIChatResponse(
+          success: true,
+          action: 'chat',
+          timestamp: DateTime.now().toIso8601String(),
+          message: _getFallbackResponse(message, moods?.first ?? 'exploring'),
+          conversationId: conversationId ?? _generateConversationId(),
+          contextUsed: {},
+        );
+      }
+      
       rethrow;
     }
+  }
+
+  /// Fallback response when AI service is unavailable
+  static String _getFallbackResponse(String userMessage, String mood) {
+    final lowerMessage = userMessage.toLowerCase();
+    
+    if (lowerMessage.contains('hi') || lowerMessage.contains('hello') || lowerMessage.contains('hey')) {
+      return "Hey there! 👋 I'm Moody, your travel companion! I'm here to help you discover amazing places based on your ${mood} mood. What would you like to explore today?";
+    }
+    
+    if (lowerMessage.contains('help') || lowerMessage.contains('what can you do')) {
+      return "I can help you find activities, restaurants, and places that match your mood! Just tell me what you're feeling, and I'll suggest the perfect spots. 🎯";
+    }
+    
+    if (lowerMessage.contains('food') || lowerMessage.contains('eat') || lowerMessage.contains('restaurant')) {
+      return "Great choice! 🍽️ Based on your ${mood} mood, I'd recommend checking out some local favorites. Want me to find specific restaurants or cafes?";
+    }
+    
+    if (lowerMessage.contains('activity') || lowerMessage.contains('do') || lowerMessage.contains('fun')) {
+      return "Let's find something fun! 🎉 For your ${mood} vibe, I suggest exploring local attractions, parks, or cultural spots. What type of activity interests you?";
+    }
+    
+    // Default response
+    return "I'm here to help you discover amazing places! 🌟 Tell me more about what you're looking for, and I'll suggest the perfect spots for your ${mood} mood.";
   }
 
   /// Create a complete day plan using AI with optional conversation context
@@ -330,7 +368,4 @@ class WanderMoodAIService {
   }
 }
 
-// Helper function for debug printing
-void debugPrint(String message) {
-  print('[WanderMoodAI] $message');
-} 
+// Removed custom debugPrint function - using Flutter's debugPrint from foundation.dart instead 

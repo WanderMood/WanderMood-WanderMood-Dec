@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import '../../../plans/data/services/scheduled_activity_service.dart';
+import '../../../features/plans/data/services/scheduled_activity_service.dart';
 import 'default_activities_provider.dart';
 
 // Enum for activity status
@@ -216,8 +216,7 @@ final currentActivityStatusProvider = FutureProvider.autoDispose<Map<String, dyn
       'title': '⏳ COMING UP',
       'subtitle': upcomingActivity.rawData['title'],
       'description': 'Starts in ${_formatDuration(upcomingActivity.timeRemaining!)} (${_formatTime(upcomingActivity.startTime)})',
-      'action1': 'View Details', 
-      'action2': 'Get Directions',
+      'action2': 'Get Ready',
       'activity': upcomingActivity.rawData,
     };
   }

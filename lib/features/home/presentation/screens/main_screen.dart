@@ -6,6 +6,8 @@ import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_scr
 import 'package:wandermood/features/plans/widgets/activity_detail_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/free_time_activities_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/mood_home_screen.dart';
+import 'package:wandermood/features/home/providers/dynamic_my_day_provider.dart';
+import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 
 // Create a Provider for the tab controller
 final mainTabProvider = StateProvider<int>((ref) => 0);
@@ -53,11 +55,18 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     // Update the tab provider if initialTabIndex changes or if we have new extra data
     Future.microtask(() {
       if (mounted) {
-    final tabFromExtra = widget.extra?['tab'] as int?;
-    if (oldWidget.initialTabIndex != widget.initialTabIndex || 
-        tabFromExtra != null) {
-      ref.read(mainTabProvider.notifier).state = tabFromExtra ?? widget.initialTabIndex;
-    }
+        final tabFromExtra = widget.extra?['tab'] as int?;
+        final shouldRefresh = widget.extra?['refresh'] as bool? ?? false;
+        
+        if (oldWidget.initialTabIndex != widget.initialTabIndex || tabFromExtra != null) {
+          ref.read(mainTabProvider.notifier).state = tabFromExtra ?? widget.initialTabIndex;
+        }
+        
+        // If refresh flag is set, invalidate providers to force refresh
+        if (shouldRefresh) {
+          ref.invalidate(cachedActivitySuggestionsProvider);
+          ref.invalidate(todayActivitiesProvider);
+        }
       }
     });
   }
@@ -74,13 +83,18 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final selectedIndex = ref.watch(mainTabProvider);
+    final dailyMoodState = ref.watch(dailyMoodStateNotifierProvider);
+    
+    // Hide bottom nav when on Moody tab (index 2) and user hasn't selected a mood yet
+    final shouldHideBottomNav = selectedIndex == 2 && !dailyMoodState.hasSelectedMoodToday;
     
     debugPrint('📱 MainScreen build: selectedIndex = $selectedIndex');
     debugPrint('📱 MainScreen build: showing screen ${screens[selectedIndex].runtimeType}');
+    debugPrint('📱 MainScreen build: shouldHideBottomNav = $shouldHideBottomNav');
     
     return Scaffold(
       body: screens[selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: shouldHideBottomNav ? null : BottomNavigationBar(
         currentIndex: selectedIndex,
         onTap: (index) {
                 // Handle special cases for Feed and Profile

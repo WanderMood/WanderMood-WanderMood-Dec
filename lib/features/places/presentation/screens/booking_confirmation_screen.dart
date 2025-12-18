@@ -6,9 +6,17 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'package:wandermood/core/theme/app_theme.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/providers/bookings_provider.dart';
+import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
+import 'package:wandermood/features/plans/domain/models/activity.dart';
+import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
+import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
+import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class BookingConfirmationScreen extends ConsumerStatefulWidget {
   final Place place;
@@ -66,6 +74,8 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
   Future<void> _saveBooking() async {
     try {
       print('📝 Attempting to save booking for ${widget.place.name}...');
+      
+      // 1. Save to bookings provider (for My Bookings screen)
       final bookingReference = await ref.read(bookingsProvider.notifier).addBooking(
         place: widget.place,
         bookingType: widget.bookingType,
@@ -75,23 +85,47 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
         totalPrice: widget.totalPrice,
       );
       
-      print('✅ Booking saved successfully with reference: $bookingReference');
+      print('✅ Booking saved to bookings provider with reference: $bookingReference');
       
       setState(() {
         _bookingReference = bookingReference;
       });
       
+      // 2. ALSO save to scheduled activities (for My Agenda screen)
+      await _saveToScheduledActivities();
+      
       // Show a quick success toast
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Booking saved successfully!',
-              style: GoogleFonts.poppins(),
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Booking saved! View in My Bookings',
+                    style: GoogleFonts.poppins(),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    context.go('/agenda');
+                  },
+                  child: Text(
+                    'View',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
             backgroundColor: const Color(0xFF12B347),
             behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 2),
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -116,6 +150,146 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
           ),
         );
       }
+    }
+  }
+  
+  /// Save the booking as a scheduled activity so it appears in My Agenda
+  Future<void> _saveToScheduledActivities() async {
+    try {
+      print('📅 Saving booking to scheduled activities for My Agenda...');
+      
+      // Parse the time string (e.g., "2:00 PM") to get hours and minutes
+      final timeParts = widget.time.split(' ');
+      final timeNumbers = timeParts[0].split(':');
+      var hour = int.parse(timeNumbers[0]);
+      final minute = int.parse(timeNumbers[1]);
+      final isPM = timeParts.length > 1 && timeParts[1].toUpperCase() == 'PM';
+      
+      if (isPM && hour != 12) {
+        hour += 12;
+      } else if (!isPM && hour == 12) {
+        hour = 0;
+      }
+      
+      // Create the start time with the booking date and parsed time
+      final startTime = DateTime(
+        widget.date.year,
+        widget.date.month,
+        widget.date.day,
+        hour,
+        minute,
+      );
+      
+      // Determine time slot based on hour
+      TimeSlot timeSlot;
+      if (hour < 12) {
+        timeSlot = TimeSlot.morning;
+      } else if (hour < 17) {
+        timeSlot = TimeSlot.afternoon;
+      } else {
+        timeSlot = TimeSlot.evening;
+      }
+      
+      // Get image URL with fallback
+      final imageUrl = widget.place.photos.isNotEmpty 
+          ? widget.place.photos.first 
+          : 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80';
+      
+      // Create an Activity object from the booking
+      final activity = Activity(
+        id: 'booking_${DateTime.now().millisecondsSinceEpoch}',
+        name: widget.place.name,
+        description: '${widget.bookingType} - ${widget.guests} guest${widget.guests > 1 ? 's' : ''}\n${widget.place.address}',
+        timeSlot: timeSlot.toString().split('.').last,
+        timeSlotEnum: timeSlot,
+        duration: 90, // Default 90 minutes for bookings
+        location: LatLng(widget.place.location.lat, widget.place.location.lng),
+        paymentType: PaymentType.reservation,
+        isPaid: true,
+        price: widget.totalPrice,
+        imageUrl: imageUrl,
+        rating: widget.place.rating,
+        tags: ['booking', widget.bookingType.toLowerCase().replaceAll(' ', '_')],
+        startTime: startTime,
+        priceLevel: widget.totalPrice > 0 ? '€${widget.totalPrice.toStringAsFixed(0)}' : 'Free',
+      );
+      
+      // Save to scheduled activity service (Supabase)
+      final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
+      print('📅 About to save activity: ${activity.name} on ${startTime.toString()}');
+      print('📅 Activity details: id=${activity.id}, location=${activity.location.latitude},${activity.location.longitude}');
+      print('📅 Activity startTime ISO: ${startTime.toIso8601String()}');
+      
+      try {
+        await scheduledActivityService.saveScheduledActivities([activity], isConfirmed: true);
+        print('✅ Booking saved to scheduled activities successfully');
+      } catch (supabaseError) {
+        print('⚠️ Supabase save failed: $supabaseError');
+        // Continue to SharedPreferences fallback
+      }
+      
+      // CRITICAL FALLBACK: Also save to SharedPreferences so it shows in Agenda even if Supabase fails
+      await _saveToSharedPreferences(activity, startTime);
+      
+      // CRITICAL: Invalidate providers in correct order to ensure fresh data
+      print('🔄 Invalidating providers for fresh My Agenda data...');
+      ref.invalidate(scheduledActivityServiceProvider);
+      ref.invalidate(cachedActivitySuggestionsProvider);
+      print('✅ Providers invalidated - My Agenda will load fresh activities');
+      
+    } catch (e, stackTrace) {
+      print('❌ ERROR: Could not save to scheduled activities: $e');
+      print('❌ Stack trace: $stackTrace');
+      // Show error to user so they know something went wrong
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Booking saved, but may not appear in Agenda. Error: ${e.toString()}',
+              style: GoogleFonts.poppins(),
+            ),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
+  
+  /// Save booking to SharedPreferences as fallback so it appears in Agenda
+  Future<void> _saveToSharedPreferences(Activity activity, DateTime startTime) async {
+    try {
+      print('💾 Saving booking to SharedPreferences as fallback...');
+      final prefs = await SharedPreferences.getInstance();
+      final existingJson = prefs.getStringList('cached_activity_suggestions') ?? [];
+      
+      // Create activity map in the format expected by cachedActivitySuggestionsProvider
+      final activityMap = {
+        'id': activity.id,
+        'title': activity.name,
+        'description': activity.description,
+        'category': activity.tags.isNotEmpty ? activity.tags.first : 'booking',
+        'timeOfDay': activity.timeSlot,
+        'duration': activity.duration,
+        'mood': 'relaxed',
+        'imageUrl': activity.imageUrl,
+        'isRecommended': true,
+        'isScheduled': true,
+        'startTime': startTime.toIso8601String(), // CRITICAL: This is what the agenda looks for!
+        'paymentType': activity.paymentType.toString(),
+        'location': '${activity.location.latitude},${activity.location.longitude}',
+        'price': activity.price ?? 0.0,
+      };
+      
+      // Add to existing activities
+      existingJson.add(jsonEncode(activityMap));
+      await prefs.setStringList('cached_activity_suggestions', existingJson);
+      
+      print('✅ Booking saved to SharedPreferences successfully');
+      print('✅ Activity will appear in Agenda with startTime: ${startTime.toIso8601String()}');
+    } catch (e) {
+      print('❌ Error saving to SharedPreferences: $e');
     }
   }
 

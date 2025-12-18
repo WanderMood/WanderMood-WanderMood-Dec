@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,9 +11,10 @@ import 'package:map_launcher/map_launcher.dart';
 import 'package:wandermood/core/theme/app_theme.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/providers/explore_places_provider.dart';
-import 'package:wandermood/features/places/providers/saved_places_provider.dart';
+import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:wandermood/features/places/presentation/widgets/booking_bottom_sheet.dart';
 import 'package:wandermood/core/services/moody_ai_service.dart';
+import 'package:wandermood/features/places/services/places_service.dart';
 
 class PlaceDetailScreen extends ConsumerStatefulWidget {
   final String placeId;
@@ -31,6 +33,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   late TabController _tabController;
   final PageController _photoController = PageController();
   int _currentPhotoIndex = 0;
+  Place? _currentPlace; // Track current place for booking button
 
   @override
   void initState() {
@@ -47,20 +50,117 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    final placesAsync = ref.watch(explorePlacesProvider());
+    if (kDebugMode) debugPrint('🔥 PLACE DETAIL SCREEN - BUILDING WITH PLACE ID: ${widget.placeId}');
+    
+    // List of all possible cities to check (including Delft, Beneden-Leeuwen and other cities)
+    const allCities = [
+      'Eindhoven', 
+      'Rotterdam', 
+      'Amsterdam', 
+      'The Hague', 
+      'Utrecht', 
+      'Groningen',
+      'Delft',
+      'Beneden-Leeuwen',
+    ];
+    
+    // Watch all city providers
+    final cityProviders = {
+      for (final city in allCities)
+        city: ref.watch(explorePlacesProvider(city: city))
+    };
+    
+    // Find which city has this place
+    AsyncValue<List<Place>> placesAsync = cityProviders['Rotterdam']!; // Default fallback
+    
+    for (final city in allCities) {
+      final hasPlace = cityProviders[city]!.maybeWhen(
+        data: (places) {
+          try {
+            places.firstWhere(
+              (p) => p.id == widget.placeId,
+              orElse: () => throw StateError('Place not found'),
+            );
+            return true;
+          } catch (e) {
+            return false;
+          }
+        },
+        orElse: () => false,
+      );
+      
+      if (hasPlace) {
+        if (kDebugMode) debugPrint('✅ Place found in $city cache');
+        placesAsync = cityProviders[city]!;
+        break;
+      }
+    }
+    
+    if (placesAsync == cityProviders['Rotterdam']) {
+      if (kDebugMode) debugPrint('⚠️ Place not found in any city cache, using Rotterdam as fallback...');
+    }
     
     return Container(
-      decoration: AppTheme.backgroundGradient,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFFFFDF5), // Warm cream yellow
+            Color(0xFFFFF3E0), // Slightly darker warm yellow
+            Color(0xFFFFF9E8), // Light peachy warmth
+          ],
+        ),
+      ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: placesAsync.when(
           data: (places) {
-            final place = places.firstWhere(
-              (p) => p.id == widget.placeId,
-              orElse: () => throw Exception('Place not found'),
-            );
-            
-            return _buildPlaceDetail(place);
+            try {
+              final place = places.firstWhere(
+                (p) => p.id == widget.placeId,
+              );
+              // Update current place for booking button
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted && _currentPlace?.id != place.id) {
+                  setState(() {
+                    _currentPlace = place;
+                  });
+                }
+              });
+              return _buildPlaceDetail(place);
+            } catch (e) {
+              // Place not found in any cache - try to fetch it directly if it's a Google Place ID
+              if (widget.placeId.startsWith('google_')) {
+                if (kDebugMode) debugPrint('🔄 Place not in cache, fetching directly from Google Places API...');
+                return FutureBuilder<Place>(
+                  future: _fetchPlaceDirectly(widget.placeId),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+                        ),
+                      );
+                    }
+                    if (snapshot.hasData && snapshot.data != null) {
+                      final place = snapshot.data!;
+                      // Update current place for booking button
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted && _currentPlace?.id != place.id) {
+                          setState(() {
+                            _currentPlace = place;
+                          });
+                        }
+                      });
+                      return _buildPlaceDetail(place);
+                    }
+                    return _buildErrorState(Exception('Place not found and could not be fetched'));
+                  },
+                );
+              }
+              return _buildErrorState(Exception('Place not found'));
+            }
           },
           loading: () => const Center(
             child: CircularProgressIndicator(
@@ -69,81 +169,124 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           ),
           error: (error, stack) => _buildErrorState(error),
         ),
-        bottomNavigationBar: placesAsync.maybeWhen(
-          data: (places) {
-            try {
-              final place = places.firstWhere((p) => p.id == widget.placeId);
-              return _buildBookingButton(place);
-            } catch (e) {
-              return const SizedBox.shrink();
-            }
-          },
-          orElse: () => const SizedBox.shrink(),
-        ),
+        bottomNavigationBar: _currentPlace != null
+            ? (_isPlaceBookable(_currentPlace!)
+                ? _buildBookingButton(_currentPlace!)
+                : const SizedBox.shrink())
+            : placesAsync.maybeWhen(
+                data: (places) {
+                  try {
+                    final place = places.firstWhere(
+                      (p) => p.id == widget.placeId,
+                      orElse: () => throw StateError('Place not found'),
+                    );
+                    // Show booking button for bookable places
+                    if (_isPlaceBookable(place)) {
+                      return _buildBookingButton(place);
+                    }
+                    return const SizedBox.shrink();
+                  } catch (e) {
+                    return const SizedBox.shrink();
+                  }
+                },
+                orElse: () => const SizedBox.shrink(),
+              ),
       ),
     );
   }
 
   Widget _buildPlaceDetail(Place place) {
-    return CustomScrollView(
-      slivers: [
-        _buildSliverAppBar(place),
-        SliverToBoxAdapter(
-          child: Container(
+    if (kDebugMode) debugPrint('🏗️ BUILDING PLACE DETAIL for: ${place.name}');
+    return NestedScrollView(
+      headerSliverBuilder: (context, innerBoxIsScrolled) => [
+        _buildSliverAppBar(place, innerBoxIsScrolled),
+      ],
+      body: Container(
             decoration: const BoxDecoration(
-              color: Colors.white,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFFFF9E8), // Light peachy warmth
+              Color(0xFFFFFDF5), // Warm cream yellow
+            ],
+          ),
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
+            topLeft: Radius.circular(32),
+            topRight: Radius.circular(32),
               ),
             ),
             child: Column(
               children: [
                 const SizedBox(height: 24),
                 _buildTabBar(),
-                _buildTabContent(place),
+            const SizedBox(height: 16),
+            Expanded(
+              child: _buildTabContent(place),
+            ),
               ],
             ),
           ),
-        ),
-      ],
     );
   }
 
-  Widget _buildSliverAppBar(Place place) {
+  Widget _buildSliverAppBar(Place place, bool innerBoxIsScrolled) {
+    // Use solid background when scrolled to prevent content bleed-through
+    final backgroundColor = innerBoxIsScrolled
+        ? const Color(0xFFFFF9E8) // Match body background color
+        : Colors.transparent;
+    
+    final iconColor = innerBoxIsScrolled ? Colors.black : Colors.white;
+    final buttonBackground = innerBoxIsScrolled
+        ? Colors.white.withOpacity(0.9)
+        : Colors.black.withOpacity(0.3);
+    
     return SliverAppBar(
       expandedHeight: 300,
       pinned: true,
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      systemOverlayStyle: SystemUiOverlayStyle.light,
+      backgroundColor: backgroundColor,
+      elevation: innerBoxIsScrolled ? 2 : 0,
+      systemOverlayStyle: innerBoxIsScrolled
+          ? SystemUiOverlayStyle.dark
+          : SystemUiOverlayStyle.light,
       leading: Container(
         margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.3),
+          color: buttonBackground,
           borderRadius: BorderRadius.circular(12),
         ),
         child: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => context.pop(),
+          icon: Icon(Icons.arrow_back, color: iconColor),
+          onPressed: () {
+            // Pop back to previous screen (Explore screen)
+            // This maintains the navigation stack and preserves the selected city
+            // The locationNotifierProvider maintains the selected city state across navigation
+            if (Navigator.of(context).canPop()) {
+              context.pop();
+            } else {
+              // Fallback: Navigate to Explore tab if no previous route exists
+              // This preserves the selected city since locationNotifierProvider is stateful
+              context.go('/main?tab=1');
+            }
+          },
         ),
       ),
       actions: [
         Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.3),
+            color: buttonBackground,
             borderRadius: BorderRadius.circular(12),
           ),
           child: IconButton(
-            icon: const Icon(Icons.share, color: Colors.white),
+            icon: Icon(Icons.share, color: iconColor),
             onPressed: () => _sharePlace(place),
           ),
         ),
         Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.3),
+            color: buttonBackground,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Consumer(
@@ -152,25 +295,57 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               
               return savedPlacesAsync.when(
                 data: (savedPlaces) {
-                  final isSaved = savedPlaces.contains(place);
+                  final isSaved = savedPlaces.any((sp) => sp.placeId == place.id);
                   
                   return IconButton(
                     icon: Icon(
                       isSaved ? Icons.favorite : Icons.favorite_border,
-                      color: isSaved ? Colors.red : Colors.white,
+                      color: isSaved ? Colors.red : iconColor,
                     ),
-                    onPressed: () {
-                      ref.read(savedPlacesProvider.notifier).toggleSave(place);
-                      HapticFeedback.lightImpact();
+                    onPressed: () async {
+                      final savedPlacesService = ref.read(savedPlacesServiceProvider);
+                      try {
+                        if (isSaved) {
+                          await savedPlacesService.unsavePlace(place.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${place.name} removed from saved places'),
+                              backgroundColor: Colors.orange.shade400,
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        } else {
+                          await savedPlacesService.savePlace(place);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${place.name} saved to favorites!'),
+                              backgroundColor: const Color(0xFF12B347),
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                        ref.invalidate(savedPlacesProvider);
+                        HapticFeedback.lightImpact();
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Failed to ${isSaved ? 'unsave' : 'save'} place'),
+                            backgroundColor: Colors.red.shade400,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
                     },
                   );
                 },
                 loading: () => IconButton(
-                  icon: const Icon(Icons.favorite_border, color: Colors.white),
+                  icon: Icon(Icons.favorite_border, color: iconColor),
                   onPressed: () {},
                 ),
                 error: (_, __) => IconButton(
-                  icon: const Icon(Icons.favorite_border, color: Colors.white),
+                  icon: Icon(Icons.favorite_border, color: iconColor),
                   onPressed: () {},
                 ),
               );
@@ -179,7 +354,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
-        background: _buildPhotoCarousel(place),
+        background: ClipRect(
+          child: _buildPhotoCarousel(place),
+        ),
       ),
     );
   }
@@ -262,12 +439,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 ),
                 const SizedBox(height: 12),
               ],
-              // Place name
+              // Place name (activity name only, no location)
               Row(
                 children: [
                   Expanded(
                     child: Text(
-                      place.name,
+                      _getCleanActivityName(place.name),
                       style: GoogleFonts.poppins(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -320,34 +497,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                   ],
                 ],
               ),
-              const SizedBox(height: 8),
-              // Address
-              Row(
-                children: [
-                  Icon(
-                    Icons.location_on_outlined,
-                    size: 16,
-                    color: Colors.white.withOpacity(0.9),
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      place.address,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.white.withOpacity(0.9),
-                        shadows: [
-                          Shadow(
-                            offset: const Offset(0, 1),
-                            blurRadius: 2,
-                            color: Colors.black.withOpacity(0.5),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              // Removed address from image overlay as requested
             ],
           ),
         ),
@@ -394,44 +544,78 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(25), // More pill-like shape
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.9),
+            Colors.white.withOpacity(0.7),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: const Color(0xFF12B347).withOpacity(0.2),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF12B347).withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: TabBar(
         controller: _tabController,
         labelColor: Colors.white,
-        unselectedLabelColor: Colors.grey[600],
+        unselectedLabelColor: const Color(0xFF12B347),
         indicator: BoxDecoration(
-          color: const Color(0xFF12B347),
-          borderRadius: BorderRadius.circular(25), // Pill-shaped indicator
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF12B347),
+              Color(0xFF0D8A35),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF12B347).withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         labelStyle: GoogleFonts.poppins(
           fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
+        unselectedLabelStyle: GoogleFonts.poppins(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
         tabs: const [
-          Tab(text: 'Details'),
-          Tab(text: 'Photos'),
-          Tab(text: 'Location'),
+          Tab(text: '✨ Details'),
+          Tab(text: '📸 Photos'),
+          Tab(text: '⭐ Reviews'),
         ],
       ),
     );
   }
 
   Widget _buildTabContent(Place place) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.6, // Dynamic height based on screen
-      child: Padding(
+    if (kDebugMode) debugPrint('📋 BUILDING TAB CONTENT for: ${place.name}');
+    return Padding(
         padding: const EdgeInsets.all(24),
         child: TabBarView(
           controller: _tabController,
           children: [
             _buildDetailsTab(place),
             _buildPhotosTab(place),
-            _buildLocationTab(place),
+          _buildReviewsTab(place),
           ],
-        ),
       ),
     );
   }
@@ -441,62 +625,135 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // About section - clean without border, more emojis
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text(
+                    '🏛️✨',
+                    style: TextStyle(fontSize: 24),
+                  ),
+                  const SizedBox(width: 12),
           Text(
-            '📍 About this place',
+                    'About this magical place 🌟',
             style: GoogleFonts.poppins(
               fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF2E2E2E),
             ),
           ),
-          const SizedBox(height: 12),
+                ],
+              ),
+              const SizedBox(height: 16),
           Text(
             place.description ?? 
-            'A wonderful place to visit with great atmosphere and excellent service. '
-            'Perfect for ${place.activities.isNotEmpty ? place.activities.join(', ').toLowerCase() : 'spending time'}.',
+                    '✨ A wonderful place to visit with great atmosphere and excellent vibes! 🎉 '
+                    '🎯 Perfect for ${place.activities.isNotEmpty ? place.activities.join(', ').toLowerCase() + ' and creating amazing memories! 📸' : 'spending quality time and making unforgettable moments! 💫'}',
             style: GoogleFonts.poppins(
-              fontSize: 14,
+                  fontSize: 15,
               height: 1.6,
-              color: Colors.grey[700],
+                  color: const Color(0xFF424242),
+                  fontWeight: FontWeight.w400,
             ),
+              ),
+            ],
           ),
           const SizedBox(height: 24),
           if (place.openingHours != null) ...[
-            Text(
-              '🕐 Opening Hours',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF7CB342).withOpacity(0.1),
+                    const Color(0xFF689F38).withOpacity(0.05),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFF7CB342).withOpacity(0.3),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF7CB342).withOpacity(0.1),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF7CB342).withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          '🕐',
+                          style: TextStyle(fontSize: 20),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+            Text(
+                        'Opening Hours',
+              style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF388E3C),
+              ),
+                      ),
+                    ],
             ),
-            const SizedBox(height: 8),
+                  const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[200]!),
+                      color: Colors.white.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: place.openingHours!.isOpen
+                            ? const Color(0xFF12B347).withOpacity(0.3)
+                            : Colors.red.withOpacity(0.3),
+                        width: 1.5,
+                      ),
               ),
               child: Column(
                 children: [
                   Row(
                     children: [
                       Container(
-                        width: 8,
-                        height: 8,
+                              width: 12,
+                              height: 12,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: place.openingHours!.isOpen
                               ? const Color(0xFF12B347)
                               : Colors.red,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: place.openingHours!.isOpen
+                                        ? const Color(0xFF12B347).withOpacity(0.3)
+                                        : Colors.red.withOpacity(0.3),
+                                    blurRadius: 4,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
                         ),
                       ),
-                      const SizedBox(width: 8),
+                            const SizedBox(width: 12),
                       Text(
-                        place.openingHours!.isOpen ? 'Open now' : 'Closed',
+                              place.openingHours!.isOpen ? '✅ Open now!' : '❌ Closed',
                         style: GoogleFonts.poppins(
-                          fontSize: 14,
+                                fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: place.openingHours!.isOpen
                               ? const Color(0xFF12B347)
@@ -506,37 +763,57 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     ],
                   ),
                   if (place.openingHours!.currentStatus != null) ...[
-                    const SizedBox(height: 4),
+                          const SizedBox(height: 8),
                     Text(
                       place.openingHours!.currentStatus!,
                       style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: Colors.grey[600],
+                              fontSize: 14,
+                              color: const Color(0xFF424242),
+                              fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 24),
           ],
+          // Features section - colorful pills without card container
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Row(
+                  children: [
+                    const Text(
+                      '✨',
+                      style: TextStyle(fontSize: 24),
+                    ),
+                    const SizedBox(width: 8),
           Text(
-            '✨ Features',
+                      'Amazing Features',
             style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF2E2E2E),
+                      ),
+                    ),
+                  ],
             ),
           ),
-          const SizedBox(height: 12),
+              const SizedBox(height: 16),
           Wrap(
             spacing: 12,
             runSpacing: 12,
             children: [
               _buildColorfulFeatureChip(
                 place.isIndoor ? '🏠' : '☀️',
-                place.isIndoor ? 'Indoor' : 'Outdoor',
-                place.isIndoor ? Colors.purple : Colors.orange,
+                    place.isIndoor ? 'Indoor Vibes' : 'Outdoor Fun',
+                    place.isIndoor ? const Color(0xFF9C27B0) : const Color(0xFFFF9800),
               ),
               _buildColorfulFeatureChip(
                 _getEnergyEmoji(place.energyLevel),
@@ -548,44 +825,546 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                   _getCategoryEmoji(place.types.first),
                   place.types.first.replaceAll('_', ' ').toUpperCase(),
                   _getCategoryColor(place.types.first),
+                    ),
+                ],
                 ),
             ],
           ),
           const SizedBox(height: 24),
+          _buildEssentialInfo(place),
+          const SizedBox(height: 24),
           _buildImageCarousel(place),
           const SizedBox(height: 24),
           _buildMoodyTips(place),
-          const SizedBox(height: 24),
-          _buildReviews(place),
         ],
       ),
     );
   }
 
-  Widget _buildColorfulFeatureChip(String emoji, String label, Color color) {
+  // Helper method to clean activity name by removing location info
+  String _getCleanActivityName(String name) {
+    // Remove common location patterns like "Rotterdam, The Netherlands", "Rotterdam", etc.
+    final patterns = [
+      ', Rotterdam, The Netherlands',
+      ', Rotterdam',
+      ', The Netherlands',
+      ' Rotterdam',
+      ' The Netherlands',
+    ];
+    
+    String cleanName = name;
+    for (final pattern in patterns) {
+      cleanName = cleanName.replaceAll(pattern, '');
+    }
+    
+    return cleanName.trim();
+  }
+
+  Widget _buildEssentialInfo(Place place) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFFFFB74D).withOpacity(0.1),
+            const Color(0xFFFFA726).withOpacity(0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: color.withOpacity(0.3),
+          color: const Color(0xFFFFB74D).withOpacity(0.3),
+          width: 1.5,
         ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            emoji,
-            style: const TextStyle(fontSize: 16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFFB74D).withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFB74D).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  '📋',
+                  style: TextStyle(fontSize: 20),
+                ),
+              ),
+              const SizedBox(width: 12),
+          Text(
+                'Essential Travel Info',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFFE65100),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF12B347).withOpacity(0.2),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                // First row: Opening hours and Cost
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInfoItem(
+                        '⏰',
+                        'Opening Hours',
+                        _getOpeningHoursText(place),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildInfoItem(
+                        '💰',
+                        'Cost',
+                        _getCostText(place),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // Second row: Duration and Accessibility
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInfoItem(
+                        '⏱️',
+                        'Duration',
+                        _getDurationText(place),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildInfoItem(
+                        '🚶',
+                        'Accessibility',
+                        _getAccessibilityText(place),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // Full width: Best time to visit
+                _buildFullWidthInfoItem(
+                  '🌟',
+                  'Best Time',
+                  _getBestTimeText(place),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoItem(String emoji, String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 16)),
           const SizedBox(width: 6),
           Text(
             label,
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: color,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFullWidthInfoItem(String emoji, String label, String value) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.amber.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.amber.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 16)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.amber[800],
+                  ),
+                ),
+                Text(
+                  value,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.amber[900],
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getOpeningHoursText(Place place) {
+    if (place.openingHours?.isOpen == true) {
+      return 'Open 24/7';
+    } else if (place.openingHours?.currentStatus != null) {
+      return place.openingHours!.currentStatus!;
+    }
+    return 'Check locally';
+  }
+
+  String _getCostText(Place place) {
+    if (place.isFree) return 'Free to visit';
+    if (place.priceRange != null) return place.priceRange!;
+    if (place.priceLevel != null) {
+      switch (place.priceLevel!) {
+        case 0: return 'Free to visit';
+        case 1: return '€5-15';
+        case 2: return '€15-30';
+        case 3: return '€30-50';
+        case 4: return '€50+';
+        default: return 'Varies';
+      }
+    }
+    return _inferCostFromPlace(place);
+  }
+
+  String _inferCostFromPlace(Place place) {
+    final placeName = place.name.toLowerCase();
+    final description = place.description?.toLowerCase() ?? '';
+    
+    // Check specific place names/types
+    if (placeName.contains('park') || placeName.contains('garden') || 
+        placeName.contains('beach') || placeName.contains('square') ||
+        placeName.contains('harbor') || placeName.contains('haven')) {
+      return 'Free to visit';
+    }
+    
+    if (placeName.contains('museum') || placeName.contains('gallery')) {
+      return '€8-25';
+    }
+    
+    if (placeName.contains('market') || placeName.contains('markt')) {
+      return 'Free entry (pay for items)';
+    }
+    
+    if (placeName.contains('restaurant') || placeName.contains('cafe')) {
+      if (description.contains('fine dining') || description.contains('upscale')) {
+        return '€40-80';
+      }
+      return '€15-35';
+    }
+    
+    if (placeName.contains('mall') || placeName.contains('shopping')) {
+      return 'Free entry (pay for items)';
+    }
+    
+    if (placeName.contains('church') || placeName.contains('cathedral')) {
+      return 'Free (donations welcome)';
+    }
+    
+    if (placeName.contains('tower') || placeName.contains('observation')) {
+      return '€10-20';
+    }
+    
+    // Fallback to place types
+    for (final type in place.types) {
+      switch (type.toLowerCase()) {
+        case 'park':
+        case 'tourist_attraction':
+          return 'Free to visit';
+        case 'museum':
+          return '€10-25';
+        case 'restaurant':
+          return '€15-40';
+        case 'shopping_mall':
+          return 'Free entry';
+        default:
+          continue;
+      }
+    }
+    return 'Check locally';
+  }
+
+  String _getDurationText(Place place) {
+    final placeName = place.name.toLowerCase();
+    final activities = place.activities.join(' ').toLowerCase();
+    
+    // Specific place-based duration estimates
+    if (placeName.contains('museum') || placeName.contains('gallery')) {
+      return '1.5-3 hours';
+    }
+    
+    if (placeName.contains('market') || placeName.contains('markt')) {
+      return '45 mins - 1.5 hours';
+    }
+    
+    if (placeName.contains('restaurant') || placeName.contains('cafe')) {
+      if (placeName.contains('quick') || placeName.contains('fast')) {
+        return '30-45 minutes';
+      }
+      return '1-2 hours';
+    }
+    
+    if (placeName.contains('park') || placeName.contains('garden')) {
+      if (activities.contains('walk') || activities.contains('stroll')) {
+        return '1-3 hours';
+      }
+      return '2-4 hours';
+    }
+    
+    if (placeName.contains('mall') || placeName.contains('shopping')) {
+      return '1-3 hours';
+    }
+    
+    if (placeName.contains('church') || placeName.contains('cathedral')) {
+      return '30-60 minutes';
+    }
+    
+    if (placeName.contains('tower') || placeName.contains('observation') || placeName.contains('viewpoint')) {
+      return '45 mins - 1.5 hours';
+    }
+    
+    if (placeName.contains('harbor') || placeName.contains('haven') || placeName.contains('waterfront')) {
+      return '1-2 hours';
+    }
+    
+    // Check activities for duration hints
+    if (activities.contains('quick tour') || activities.contains('short visit')) {
+      return '30-60 minutes';
+    }
+    
+    if (activities.contains('dining') || activities.contains('meal')) {
+      return '1-2 hours';
+    }
+    
+    if (activities.contains('shopping')) {
+      return '1-3 hours';
+    }
+    
+    // Fallback to place types
+    for (final type in place.types) {
+      switch (type.toLowerCase()) {
+        case 'restaurant':
+        case 'cafe':
+          return '1-2 hours';
+        case 'museum':
+        case 'tourist_attraction':
+          return '1-2.5 hours';
+        case 'park':
+          return '1-4 hours';
+        case 'shopping_mall':
+          return '1-3 hours';
+        default:
+          continue;
+      }
+    }
+    
+    return 'Allow 1-2 hours';
+  }
+
+  String _getAccessibilityText(Place place) {
+    // Check description or activities for accessibility mentions
+    final description = place.description?.toLowerCase() ?? '';
+    final activities = place.activities.join(' ').toLowerCase();
+    
+    if (description.contains('accessible') || 
+        description.contains('wheelchair') ||
+        activities.contains('accessible') ||
+        activities.contains('easy walking')) {
+      return 'Easy walking (accessible)';
+    }
+    
+    // Check place types for accessibility assumptions
+    for (final type in place.types) {
+      switch (type.toLowerCase()) {
+        case 'museum':
+        case 'restaurant':
+        case 'shopping_mall':
+          return 'Easy walking (accessible)';
+        case 'park':
+          return 'Moderate walking';
+        case 'tourist_attraction':
+          return 'Check locally';
+        default:
+          continue;
+      }
+    }
+    
+    return 'Easy walking';
+  }
+
+  String _getBestTimeText(Place place) {
+    final placeName = place.name.toLowerCase();
+    final description = place.description?.toLowerCase() ?? '';
+    final activities = place.activities.join(' ').toLowerCase();
+    
+    // First check for specific place characteristics
+    if (placeName.contains('market') || placeName.contains('markt')) {
+      return 'Morning hours (fresh produce)';
+    }
+    
+    if (placeName.contains('museum') || placeName.contains('gallery')) {
+      return 'Weekday mornings (less crowded)';
+    }
+    
+    if (placeName.contains('restaurant') || placeName.contains('cafe') || placeName.contains('bar')) {
+      if (placeName.contains('breakfast') || description.contains('breakfast')) {
+        return 'Early morning (8-11 AM)';
+      }
+      if (placeName.contains('lunch') || description.contains('lunch')) {
+        return 'Lunch hours (12-3 PM)';
+      }
+      return 'Evening for dinner (6-9 PM)';
+    }
+    
+    if (placeName.contains('park') || placeName.contains('garden')) {
+      if (activities.contains('photo') || description.contains('scenic')) {
+        return 'Golden hour (6-8 PM) for photos';
+      }
+      return 'Sunny weather, any time of day';
+    }
+    
+    if (placeName.contains('beach') || placeName.contains('waterfront') || placeName.contains('harbor') || placeName.contains('haven')) {
+      return 'Golden hour (sunset) for photos';
+    }
+    
+    if (placeName.contains('mall') || placeName.contains('shopping') || placeName.contains('store')) {
+      return 'Weekday afternoons (less busy)';
+    }
+    
+    if (placeName.contains('church') || placeName.contains('cathedral') || placeName.contains('temple')) {
+      return 'Quiet morning hours';
+    }
+    
+    if (placeName.contains('tower') || placeName.contains('viewpoint') || placeName.contains('observation')) {
+      return 'Clear weather, sunset for views';
+    }
+    
+    // Check activities for specific recommendations
+    if (activities.contains('food') || activities.contains('dining')) {
+      return 'Meal times (lunch or dinner)';
+    }
+    
+    if (activities.contains('shopping')) {
+      return 'Weekday afternoons (less crowded)';
+    }
+    
+    if (activities.contains('photo') || activities.contains('sightseeing')) {
+      // Only recommend sunset if it's actually outdoor/scenic
+      if (place.isIndoor || placeName.contains('hall') || placeName.contains('mall')) {
+        return 'Good lighting hours (10 AM - 4 PM)';
+      }
+      return 'Golden hour (6-8 PM) for photos';
+    }
+    
+    // Final fallback based on place type with better logic
+    for (final type in place.types) {
+      switch (type.toLowerCase()) {
+        case 'restaurant':
+        case 'food':
+          return 'Meal times (check opening hours)';
+        case 'museum':
+          return 'Weekday mornings (less crowded)';
+        case 'shopping_mall':
+        case 'store':
+          return 'Weekday afternoons';
+        case 'park':
+          return 'Sunny weather preferred';
+        default:
+          continue;
+      }
+    }
+    
+    return 'Check opening hours for best times';
+  }
+
+  Widget _buildColorfulFeatureChip(String emoji, String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Reduced from 18,14 to 12,8
+      decoration: BoxDecoration(
+        color: color, // Solid vibrant color
+        borderRadius: BorderRadius.circular(20), // Reduced from 30 to 20
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 8, // Reduced from 12 to 8
+            offset: const Offset(0, 3), // Reduced from 4 to 3
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4), // Reduced from 6 to 4
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.25),
+              borderRadius: BorderRadius.circular(12), // Reduced from 15 to 12
+            ),
+            child: Text(
+              emoji,
+              style: const TextStyle(fontSize: 12), // Reduced from 14 to 12
+            ),
+          ),
+          const SizedBox(width: 6), // Reduced from 8 to 6
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 12, // Reduced from 14 to 12
             ),
           ),
         ],
@@ -666,15 +1445,30 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
 
   Widget _buildImageCarousel(Place place) {
-    // Sample additional images for the carousel
-    final carouselImages = [
-      ...place.photos,
+    return FutureBuilder<List<String>>(
+      future: _getMorePlacePhotos(place),
+      builder: (context, snapshot) {
+        List<String> allImages = [];
+        
+        if (snapshot.hasData) {
+          allImages.addAll(snapshot.data!);
+        } else {
+          // Add existing photos while loading more
+          allImages.addAll(place.photos);
+        }
+        
+        // Always ensure we have at least some images
+        if (allImages.isEmpty) {
+          allImages = [
       'assets/images/fallbacks/default.jpg',
       'assets/images/fallbacks/default_place.jpg',
     ];
+        }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
       children: [
         Text(
           '📸 Gallery',
@@ -683,37 +1477,85 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             fontWeight: FontWeight.w600,
             color: Colors.black87,
           ),
+                ),
+                if (snapshot.connectionState == ConnectionState.waiting) ...[
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        const Color(0xFF12B347),
+                      ),
+                    ),
+                  ),
+                ],
+                const Spacer(),
+                Text(
+                  '${allImages.length} photos',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
         ),
         const SizedBox(height: 12),
         SizedBox(
           height: 120,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: carouselImages.length,
+                itemCount: allImages.length,
             itemBuilder: (context, index) {
               return Container(
                 margin: EdgeInsets.only(
-                  right: index == carouselImages.length - 1 ? 0 : 12,
+                      right: index == allImages.length - 1 ? 0 : 12,
                 ),
                 child: GestureDetector(
-                  onTap: () => _showFullScreenPhoto(carouselImages, index, place.isAsset),
+                      onTap: () => _showFullScreenPhoto(allImages, index, place.isAsset),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
                       width: 150,
                       decoration: BoxDecoration(
                         color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(12),
                       ),
-                      child: place.isAsset
+                          child: Stack(
+                            children: [
+                              place.isAsset
                           ? Image.asset(
-                              carouselImages[index],
+                                      allImages[index],
                               fit: BoxFit.cover,
+                                      width: 150,
+                                      height: 120,
                               errorBuilder: (_, __, ___) => _buildImageFallback(),
                             )
                           : Image.network(
-                              carouselImages[index],
+                                      allImages[index],
                               fit: BoxFit.cover,
+                                      width: 150,
+                                      height: 120,
                               errorBuilder: (_, __, ___) => _buildImageFallback(),
+                                    ),
+                              // Add a subtle gradient overlay for better visual appeal
+                              Container(
+                                width: 150,
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.transparent,
+                                      Colors.black.withOpacity(0.1),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                             ),
                     ),
                   ),
@@ -724,66 +1566,103 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         ),
       ],
     );
+      },
+    );
+  }
+
+  /// Fetch additional photos for a place using Google Places API
+  Future<List<String>> _getMorePlacePhotos(Place place) async {
+    try {
+      final List<String> allPhotos = [...place.photos];
+      
+      // If we have a place ID, try to get more photos from Google Places API
+      if (place.id.isNotEmpty && place.id.startsWith('google_')) {
+        final placeId = place.id.replaceFirst('google_', '');
+        
+        // Try to get additional photos using the Legacy API
+        final additionalPhotos = await _fetchAdditionalPhotos(placeId);
+        allPhotos.addAll(additionalPhotos);
+      }
+      
+      // Remove duplicates and limit to reasonable number
+      final uniquePhotos = allPhotos.toSet().toList();
+      return uniquePhotos.take(6).toList();
+      
+    } catch (e) {
+      debugPrint('Error fetching additional photos: $e');
+      return place.photos;
+    }
+  }
+
+  /// Fetch additional photos from Google Places Legacy API
+  Future<List<String>> _fetchAdditionalPhotos(String placeId) async {
+    try {
+      debugPrint('🔍 Fetching additional photos for place: $placeId');
+      
+      // This would ideally use the GooglePlacesService to get more photo references
+      // For now, return empty list but structure is ready for implementation
+      
+      // In a real implementation, you would:
+      // 1. Call Google Places Details API with photos field
+      // 2. Get all photo references 
+      // 3. Convert them to photo URLs using the Legacy API
+      
+      return [];
+    } catch (e) {
+      debugPrint('❌ Error fetching additional photos: $e');
+      return [];
+    }
   }
 
   Widget _buildMoodyTips(Place place) {
-    return Column(
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF12B347).withOpacity(0.08),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Container(
-              width: 32,
-              height: 32,
+                width: 28,
+                height: 28,
               decoration: BoxDecoration(
                 color: const Color(0xFF12B347),
-                borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(
-                Icons.lightbulb,
-                size: 18,
-                color: Colors.white,
+                child: const Center(
+                  child: Text(
+                    '😎',
+                    style: TextStyle(fontSize: 16),
+                  ),
               ),
             ),
-            const SizedBox(width: 12),
+              const SizedBox(width: 8),
             Text(
-              '💡 Moody Tips',
+                'Moody says...',
               style: GoogleFonts.poppins(
-                fontSize: 16,
+                  fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
+                  color: const Color(0xFF12B347),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFF12B347).withOpacity(0.05),
-                const Color(0xFF12B347).withOpacity(0.02),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: const Color(0xFF12B347).withOpacity(0.2),
-            ),
-          ),
-          child: FutureBuilder<List<String>>(
+          const SizedBox(height: 8),
+          FutureBuilder<List<String>>(
             future: _generateAIMoodyTips(place),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Column(
-                  children: [
-                    Row(
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  child: Row(
                       children: [
                         SizedBox(
-                          width: 16,
-                          height: 16,
+                        width: 12,
+                        height: 12,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
@@ -791,69 +1670,100 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            '🤖 Moody is thinking of personalized tips for you...',
+                      const SizedBox(width: 8),
+                      Text(
+                        'Lemme check this place out... 🤔',
                             style: GoogleFonts.poppins(
-                              fontSize: 14,
+                          fontSize: 13,
                               fontStyle: FontStyle.italic,
-                              color: Colors.grey[600],
-                            ),
+                          color: const Color(0xFF12B347),
                           ),
                         ),
                       ],
                     ),
-                  ],
                 );
               }
               
               final moodyTips = snapshot.data ?? [
-                '🕐 Check opening hours before your visit to avoid disappointment',
-                '📱 Consider downloading offline maps in case of poor signal',
-                '💧 Stay hydrated and bring water, especially during warmer weather',
+                'Check those opening hours first! 🕐',
+                'Stay hydrated out there! 💧',
+                'Download maps just in case! 📱',
               ];
               
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: moodyTips.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final tip = entry.value;
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: index == moodyTips.length - 1 ? 0 : 12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.only(top: 4),
-                          width: 6,
-                          height: 6,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF12B347),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
+              // Combine all tips into one conversational message
+              final conversationalTip = _formatTipsAsConversation(moodyTips, place);
+              
+              return Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                           child: Text(
-                            tip,
+                  conversationalTip,
                             style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              height: 1.5,
-                              color: Colors.grey[700],
+                    fontSize: 13,
+                    height: 1.4,
+                    color: const Color(0xFF2E2E2E),
+                    fontWeight: FontWeight.w400,
                             ),
                           ),
+              );
+            },
                         ),
                       ],
                     ),
                   );
-                }).toList(),
-              );
-            },
-          ),
-        ),
-      ],
-    );
+  }
+
+  String _formatTipsAsConversation(List<String> tips, Place place) {
+    if (tips.isEmpty) return 'Have an awesome time exploring! 🎉';
+    
+    // Take max 3 tips and make them conversational
+    final selectedTips = tips.take(3).toList();
+    final placeName = place.name.split(',').first; // Get just the place name without location
+    
+    String conversation = 'Yo! Quick heads up about $placeName - ';
+    
+    for (int i = 0; i < selectedTips.length; i++) {
+      String tip = selectedTips[i];
+      
+      // Clean up the tip (remove ** formatting, make it more casual)
+      tip = tip.replaceAll('**', '').replaceAll('*', '');
+      
+      // Make tips more conversational and shorter with casual emojis
+      if (tip.toLowerCase().contains('food') || tip.toLowerCase().contains('eat')) {
+        tip = 'the food here is fire! 🔥';
+      } else if (tip.toLowerCase().contains('photo') || tip.toLowerCase().contains('picture')) {
+        tip = 'it\'s totally Insta-worthy! 📸';
+      } else if (tip.toLowerCase().contains('time') || tip.toLowerCase().contains('visit')) {
+        tip = 'timing is everything here ⏰';
+      } else if (tip.toLowerCase().contains('drink') || tip.toLowerCase().contains('bar')) {
+        tip = 'def grab a drink! 🍻';
+      } else if (tip.toLowerCase().contains('crowd') || tip.toLowerCase().contains('busy')) {
+        tip = 'it gets pretty packed! 🙈';
+      } else if (tip.toLowerCase().contains('walk') || tip.toLowerCase().contains('stroll')) {
+        tip = 'perfect for a chill walk! 🚶‍♀️';
+      } else {
+        // Keep it short and casual
+        if (tip.length > 45) {
+          tip = tip.substring(0, 42) + '...';
+        }
+      }
+      
+      if (i == 0) {
+        conversation += tip;
+      } else if (i == selectedTips.length - 1 && selectedTips.length > 1) {
+        conversation += ' Also, $tip';
+      } else {
+        conversation += ' Plus, $tip';
+      }
+    }
+    
+    // Add a fun ending
+    conversation += ' Have fun! ✨';
+    
+    return conversation;
   }
 
   /// Generate AI-powered Moody Tips for the place
@@ -930,31 +1840,32 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         Column(
           children: reviews.map((review) => _buildReviewCard(review)).toList(),
         ),
-        const SizedBox(height: 12),
-        Center(
-          child: TextButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'View all reviews feature coming soon!',
-                    style: GoogleFonts.poppins(),
-                  ),
-                  backgroundColor: const Color(0xFF12B347),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            child: Text(
-              'View all reviews',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF12B347),
-              ),
-            ),
-          ),
-        ),
+        // View all reviews feature - coming soon (hidden for now)
+        // const SizedBox(height: 12),
+        // Center(
+        //   child: TextButton(
+        //     onPressed: () {
+        //       ScaffoldMessenger.of(context).showSnackBar(
+        //         SnackBar(
+        //           content: Text(
+        //             'View all reviews feature coming soon!',
+        //             style: GoogleFonts.poppins(),
+        //           ),
+        //           backgroundColor: const Color(0xFF12B347),
+        //           behavior: SnackBarBehavior.floating,
+        //         ),
+        //       );
+        //     },
+        //     child: Text(
+        //       'View all reviews',
+        //       style: GoogleFonts.poppins(
+        //         fontSize: 14,
+        //         fontWeight: FontWeight.w500,
+        //         color: const Color(0xFF12B347),
+        //       ),
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }
@@ -1123,205 +2034,182 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     );
   }
 
-  Widget _buildLocationTab(Place place) {
+  Widget _buildReviewsTab(Place place) {
+    final reviews = _generateSampleReviews(place);
+    
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Reviews header with rating summary
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
           Text(
-            '📍 Location',
+                '⭐ Reviews',
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 16),
-          
-          // Interactive Map Container
           Container(
-            height: 200,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+                  color: const Color(0xFF12B347).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFF12B347).withOpacity(0.3)),
                 ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Stack(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Interactive map placeholder (will open external maps on tap)
-                  GestureDetector(
-                    onTap: () => _openInMaps(place),
-                    child: Container(
-                      width: double.infinity,
-                      height: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            const Color(0xFF12B347).withOpacity(0.2),
-                            const Color(0xFF12B347).withOpacity(0.4),
-                          ],
-                        ),
-                      ),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.3),
-                            ],
-                          ),
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
+                    const Icon(
+                      Icons.star,
+                      size: 16,
+                      color: Colors.amber,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${place.rating.toStringAsFixed(1)} (${reviews.length})',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
                                   color: const Color(0xFF12B347),
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
+                      ),
+                    ),
+                  ],
+                ),
                                     ),
                                   ],
                                 ),
-                                child: const Icon(
-                                  Icons.location_on,
-                                  color: Colors.white,
-                                  size: 24,
-                                ),
+          const SizedBox(height: 16),
+          
+          // Reviews list
+          Column(
+            children: reviews.map((review) => _buildDetailedReviewCard(review)).toList(),
                               ),
-                              const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.7),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  'Tap to open in Maps',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
           
           const SizedBox(height: 16),
           
-          // Address Card
-          Container(
-            width: double.infinity,
+          // Add review button - coming soon (hidden for now)
+          // SizedBox(
+          //   width: double.infinity,
+          //   child: OutlinedButton.icon(
+          //     onPressed: () {
+          //       ScaffoldMessenger.of(context).showSnackBar(
+          //         SnackBar(
+          //           content: Text(
+          //             'Add review feature coming soon!',
+          //             style: GoogleFonts.poppins(),
+          //           ),
+          //           backgroundColor: const Color(0xFF12B347),
+          //           behavior: SnackBarBehavior.floating,
+          //         ),
+          //       );
+          //     },
+          //     icon: const Icon(Icons.add_comment),
+          //     label: Text(
+          //       'Add Your Review',
+          //       style: GoogleFonts.poppins(
+          //         fontSize: 14,
+          //         fontWeight: FontWeight.w600,
+          //       ),
+          //     ),
+          //     style: OutlinedButton.styleFrom(
+          //       foregroundColor: const Color(0xFF12B347),
+          //       side: const BorderSide(color: Color(0xFF12B347)),
+          //       padding: const EdgeInsets.symmetric(vertical: 16),
+          //       shape: RoundedRectangleBorder(
+          //         borderRadius: BorderRadius.circular(25),
+          //       ),
+          //     ),
+          //   ),
+          // ),
+                ],
+              ),
+    );
+  }
+
+  Widget _buildDetailedReviewCard(Map<String, dynamic> review) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.grey[50],
+        color: Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Icon(
-                      Icons.location_on,
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: const Color(0xFF12B347).withOpacity(0.1),
+                child: Text(
+                  review['name'][0].toUpperCase(),
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
                       color: const Color(0xFF12B347),
-                      size: 20,
+                  ),
+                ),
                     ),
-                    const SizedBox(width: 8),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      'Address',
+                      review['name'],
                       style: GoogleFonts.poppins(
-                        fontSize: 14,
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 8),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Row(
+                          children: List.generate(5, (index) {
+                            return Icon(
+                              index < review['rating'] ? Icons.star : Icons.star_border,
+                              size: 16,
+                              color: Colors.amber,
+                            );
+                          }),
+                        ),
+                        const SizedBox(width: 8),
                 Text(
-                  place.address,
+                          review['date'],
                   style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: Colors.grey[700],
-                    height: 1.4,
+                            fontSize: 12,
+                            color: Colors.grey[500],
                   ),
                 ),
               ],
             ),
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // Directions Button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _openInMaps(place),
-              icon: const Icon(Icons.directions),
-              label: Text(
-                'Get Directions',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                  ],
                 ),
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF12B347),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25), // Pill-shaped button
+            ],
                 ),
-                elevation: 2,
-              ),
-            ),
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // Coordinates (for development/debug)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.blue[200]!),
-            ),
-            child: Text(
-              '🧭 Coordinates: ${place.location.lat.toStringAsFixed(6)}, ${place.location.lng.toStringAsFixed(6)}',
+          const SizedBox(height: 12),
+          Text(
+            review['comment'],
               style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: Colors.blue[700],
-                fontWeight: FontWeight.w500,
-              ),
+              fontSize: 14,
+              height: 1.6,
+              color: Colors.grey[700],
             ),
           ),
         ],
@@ -1331,43 +2219,67 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
 
   Widget _buildBookingButton(Place place) {
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFDF5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            blurRadius: 8,
-            offset: Offset(0, -2),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
           ),
         ],
       ),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: () => _showBookingSheet(place),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF12B347),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(25), // Pill-shaped button
-            ),
-            elevation: 2,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.calendar_today, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Book Now',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+      child: SafeArea(
+        top: false,
+        child: GestureDetector(
+          onTap: () => _showBookingSheet(place),
+          child: Container(
+            height: 56,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF12B347),
+                  Color(0xFF0D8A35),
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
               ),
-            ],
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF12B347).withOpacity(0.35),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.calendar_today,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  '✨ Book Your Adventure!',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1459,6 +2371,164 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           SnackBar(content: Text('Could not open maps: $e')),
         );
       }
+    }
+  }
+
+  // Determine if a place should show booking options
+  bool _isPlaceBookable(Place place) {
+    debugPrint('🔍 Checking if place is bookable: ${place.name}');
+    debugPrint('   - Types: ${place.types}');
+    debugPrint('   - priceLevel: ${place.priceLevel}');
+    debugPrint('   - isFree: ${place.isFree}');
+    
+    // First, exclude all free or walk-in attractions
+    if (_isFreeWalkInPlace(place)) {
+      debugPrint('   ❌ Place is free/walk-in, no booking needed');
+      return false;
+    }
+    
+    // Show booking for places that typically need reservations/tickets
+    final bookableTypes = [
+      // Food & Drink
+      'restaurant',
+      'cafe',
+      'bar',
+      // Wellness & Services
+      'spa',
+      'beauty_salon',
+      'hair_care',
+      'gym',
+      // Accommodation
+      'lodging',
+      'hotel',
+      // Entertainment
+      'movie_theater',
+      'night_club',
+      'bowling_alley',
+      // Attractions that require tickets/reservations
+      'museum',
+      'tourist_attraction',
+      'amusement_park',
+      'zoo',
+      'aquarium',
+      'art_gallery',
+      'stadium',
+      'theater',
+      'opera_house',
+      'concert_hall',
+      // Tours & Activities
+      'tour_operator',
+      'travel_agency',
+    ];
+    
+    // Check if place type matches bookable types
+    final hasBookableType = place.types.any((type) => 
+      bookableTypes.any((bookable) => 
+        type.toLowerCase().contains(bookable.toLowerCase())
+      )
+    );
+    
+    // Also check activities for paid tour/ticket hints
+    final hasBookableActivity = place.activities.any((activity) {
+      final lowerActivity = activity.toLowerCase();
+      return lowerActivity.contains('guided tour') ||
+             lowerActivity.contains('reservation') ||
+             lowerActivity.contains('booking required') ||
+             lowerActivity.contains('ticket required');
+    });
+    
+    // Show booking if:
+    // 1. Has bookable type (restaurant, spa, hotel, museum, tourist_attraction, etc.)
+    // 2. OR has paid/ticketed activities
+    // 3. AND is not explicitly free (price level 0 or flagged as free)
+    final isKnownFree = place.isFree;
+    final hasCost = !isKnownFree && (place.priceLevel == null || place.priceLevel! > 0);
+    
+    final shouldShow = (hasBookableType || hasBookableActivity) && hasCost;
+    
+    debugPrint('   - hasBookableType: $hasBookableType');
+    debugPrint('   - hasBookableActivity: $hasBookableActivity');
+    debugPrint('   - hasCost: $hasCost');
+    debugPrint('   ${shouldShow ? "✅" : "❌"} Should show booking: $shouldShow');
+    
+    return shouldShow;
+  }
+  
+  // Helper to determine if a place is free/walk-in (no booking needed)
+  bool _isFreeWalkInPlace(Place place) {
+    // Explicitly free based on flag or price level
+    if (place.isFree || place.priceLevel == 0) {
+      return true;
+    }
+    
+    // First, check if place has bookable types - if so, it's NOT free/walk-in
+    final bookableTypes = [
+      'restaurant', 'cafe', 'bar', 'spa', 'beauty_salon', 'hair_care',
+      'lodging', 'hotel', 'gym', 'movie_theater', 'night_club', 'bowling_alley',
+      'museum', 'tourist_attraction', 'amusement_park', 'zoo', 'aquarium',
+      'art_gallery', 'stadium', 'theater', 'opera_house', 'concert_hall',
+      'tour_operator', 'travel_agency', 'meal_takeaway', 'food',
+    ];
+    
+    final hasBookableType = place.types.any((type) => 
+      bookableTypes.any((bookable) => 
+        type.toLowerCase().contains(bookable.toLowerCase())
+      )
+    );
+    
+    // If it has bookable types, it's NOT free/walk-in
+    if (hasBookableType) {
+      debugPrint('   ⚠️ Has bookable types (${place.types.where((t) => bookableTypes.any((bt) => t.toLowerCase().contains(bt.toLowerCase()))).toList()}), NOT free/walk-in');
+      return false;
+    }
+    
+    // Free types - public spaces, monuments, parks (ONLY if no bookable types)
+    final freeWalkInTypes = [
+      'park',
+      'arboretum',        // Botanical gardens/arboretums
+      'garden',           // Public gardens
+      'botanical_garden', // Botanical gardens
+      'natural_feature',
+      'cemetery',
+      'church',
+      'mosque',
+      'synagogue',
+      'hindu_temple',
+      'library',
+      'public_square',
+      'plaza',
+      'beach',
+      'hiking_area',
+      'walking_street',
+      'street',
+      'route',
+      'neighborhood',
+      'locality',
+      'viewpoint',        // Scenic viewpoints
+      'monument',         // Public monuments
+      // Removed 'point_of_interest' - too generic, many paid places have this
+    ];
+    
+    // Check if place is a free type (and has no bookable types)
+    final isFreeType = place.types.any((type) => 
+      freeWalkInTypes.any((freeType) => 
+        type.toLowerCase().contains(freeType.toLowerCase())
+      )
+    );
+    
+    return isFreeType;
+  }
+
+  /// Fetch place directly from Google Places API if not found in cache
+  Future<Place> _fetchPlaceDirectly(String placeId) async {
+    try {
+      final placesService = ref.read(placesServiceProvider.notifier);
+      final place = await placesService.getPlaceById(placeId);
+      if (kDebugMode) debugPrint('✅ Successfully fetched place directly: ${place.name}');
+      return place;
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ Error fetching place directly: $e');
+      rethrow;
     }
   }
 

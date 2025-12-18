@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/social/domain/models/social_post.dart';
 import 'package:wandermood/features/social/domain/providers/social_providers.dart';
@@ -52,21 +53,23 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
   
   void _toggleLike(SocialPost post) {
-    setState(() {
-      _isLiked = !_isLiked;
-      _likeCount = post.likes + (_isLiked ? 1 : -1);
-    });
+    // WanderFeed coming soon - interactions disabled
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('WanderFeed is coming soon! Social interactions will be available then. 🧳✨'),
+        duration: Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
   
   void _toggleBookmark() {
-    setState(() {
-      _isBookmarked = !_isBookmarked;
-    });
-    
+    // WanderFeed coming soon - interactions disabled
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(_isBookmarked ? 'Post saved' : 'Post unsaved'),
-        duration: const Duration(seconds: 1),
+      const SnackBar(
+        content: Text('WanderFeed is coming soon! Bookmarking will be available then. 🧳✨'),
+        duration: Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -74,11 +77,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   void _addComment() {
     if (_commentController.text.trim().isEmpty) return;
     
-    // This would normally send the comment to a backend
+    // WanderFeed coming soon - interactions disabled
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Comment added'),
-        duration: Duration(seconds: 1),
+        content: Text('WanderFeed is coming soon! Comments will be available then. 🧳✨'),
+        duration: Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
       ),
     );
     
@@ -86,13 +90,26 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     FocusScope.of(context).unfocus();
   }
   
-  void _sharePost() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Sharing post feature coming soon!'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+  void _sharePost() async {
+    try {
+      final posts = ref.read(socialPostsProvider);
+      final post = posts.firstWhere(
+        (p) => p.id == widget.postId,
+        orElse: () => posts.first,
+      );
+      
+      final message = 'Check out this post from ${post.userName} on WanderMood! 🧳✨\n\n${post.caption ?? ''}';
+      await Share.share(message);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to share post: $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
   
   void _showOptions() {
@@ -101,42 +118,43 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       builder: (context) => SafeArea(
         child: Wrap(
           children: [
-            ListTile(
-              leading: const Icon(Icons.report_outlined, color: Colors.orange),
-              title: Text(
-                'Report Post',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Report feature coming soon!'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.person_off_outlined, color: Colors.red),
-              title: Text(
-                'Block User',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Block feature coming soon!'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
-            ),
+            // Social actions temporarily hidden - not yet implemented
+            // ListTile(
+            //   leading: const Icon(Icons.report_outlined, color: Colors.orange),
+            //   title: Text(
+            //     'Report Post',
+            //     style: GoogleFonts.poppins(
+            //       fontWeight: FontWeight.w500,
+            //     ),
+            //   ),
+            //   onTap: () {
+            //     Navigator.pop(context);
+            //     ScaffoldMessenger.of(context).showSnackBar(
+            //       const SnackBar(
+            //         content: Text('Report feature coming soon!'),
+            //         duration: Duration(seconds: 2),
+            //       ),
+            //     );
+            //   },
+            // ),
+            // ListTile(
+            //   leading: const Icon(Icons.person_off_outlined, color: Colors.red),
+            //   title: Text(
+            //     'Block User',
+            //     style: GoogleFonts.poppins(
+            //       fontWeight: FontWeight.w500,
+            //     ),
+            //   ),
+            //   onTap: () {
+            //     Navigator.pop(context);
+            //     ScaffoldMessenger.of(context).showSnackBar(
+            //       const SnackBar(
+            //         content: Text('Block feature coming soon!'),
+            //         duration: Duration(seconds: 2),
+            //       ),
+            //     );
+            //   },
+            // ),
             ListTile(
               leading: const Icon(Icons.content_copy, color: Colors.blue),
               title: Text(

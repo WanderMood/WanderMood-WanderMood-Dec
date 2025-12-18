@@ -506,38 +506,39 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
       builder: (context) => SafeArea(
         child: Wrap(
           children: [
-            ListTile(
-              leading: const Icon(Icons.report_outlined, color: Colors.orange),
-              title: Text(
-                'Report Post',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Report feature coming soon!'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.person_off_outlined, color: Colors.red),
-              title: Text(
-                'Block User',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Block feature coming soon!'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
-            ),
+            // Social actions temporarily hidden - not yet implemented
+            // ListTile(
+            //   leading: const Icon(Icons.report_outlined, color: Colors.orange),
+            //   title: Text(
+            //     'Report Post',
+            //     style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+            //   ),
+            //   onTap: () {
+            //     Navigator.pop(context);
+            //     ScaffoldMessenger.of(context).showSnackBar(
+            //       const SnackBar(
+            //         content: Text('Report feature coming soon!'),
+            //         duration: Duration(seconds: 2),
+            //       ),
+            //     );
+            //   },
+            // ),
+            // ListTile(
+            //   leading: const Icon(Icons.person_off_outlined, color: Colors.red),
+            //   title: Text(
+            //     'Block User',
+            //     style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+            //   ),
+            //   onTap: () {
+            //     Navigator.pop(context);
+            //     ScaffoldMessenger.of(context).showSnackBar(
+            //       const SnackBar(
+            //         content: Text('Block feature coming soon!'),
+            //         duration: Duration(seconds: 2),
+            //       ),
+            //     );
+            //   },
+            // ),
             ListTile(
               leading: const Icon(Icons.content_copy, color: Colors.blue),
               title: Text(

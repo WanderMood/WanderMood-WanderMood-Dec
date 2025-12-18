@@ -389,6 +389,61 @@ class MoodService {
 - Photo-based mood detection (optional)
 - Previous mood history tracking
 
+## MOODY HUB DESIGN PHILOSOPHY
+
+### Core Principle
+**Moody Hub is not about moods. It's about what moods unlock.**
+
+If you design it that way:
+- It stays fresh
+- It feels alive
+- It doesn't compete with Explore or Agenda
+- It becomes the emotional hook of WanderMood
+
+### Decision Framework (USE THIS)
+Ask this for every element in Moody Hub:
+
+1. **Does this interpret the user?**
+   - Does it understand their current state, not just display data?
+   - Does it reflect their journey, not just their selection?
+
+2. **Does this surprise or guide them?**
+   - Does it offer unexpected insights or gentle nudges?
+   - Does it feel like a conversation, not a dashboard?
+
+3. **Would this still work without charts or labels?**
+   - Can the user understand it intuitively?
+   - Does it communicate through feeling, not just information?
+
+**If yes → it belongs in Moody Hub.**
+
+### Moody Hub Design Rules
+- **Emotional First**: Every element should connect emotionally, not just inform
+- **Interpretation Over Display**: Show what the mood means for their day, not just the mood itself
+- **Surprise and Delight**: Include unexpected moments that make users feel seen
+- **Conversational Tone**: Make it feel like talking to a friend, not using a tool
+- **Visual Storytelling**: Use visuals that tell a story, not just display data
+- **No Competing Features**: Don't duplicate Explore or Agenda functionality
+- **Fresh and Alive**: Content should feel dynamic and responsive to the user's journey
+- **Gamification That Feels Natural**: Streaks, achievements, and progress should feel organic, not forced
+
+### What Belongs in Moody Hub
+✅ Personalized greetings based on check-in history
+✅ Dynamic status cards that interpret the user's current vibe
+✅ "Your Day's Flow" - a visual timeline of their journey
+✅ Check-in streaks and natural gamification
+✅ Moody's suggestions that feel personal and contextual
+✅ Quick actions that feel like natural next steps
+✅ Visual storytelling elements (floating Moody character, time-of-day reactions)
+
+### What Does NOT Belong in Moody Hub
+❌ Detailed activity lists (that's for Explore)
+❌ Calendar/schedule views (that's for Agenda)
+❌ Generic charts or analytics
+❌ Static data displays
+❌ Features that compete with other screens
+❌ Boring insights or generic recommendations
+
 ## WEATHER INTEGRATION RULES
 
 ### Weather Service

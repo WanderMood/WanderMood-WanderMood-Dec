@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -224,7 +225,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
           setState(() {
             _isListening = false;
           });
-          print("Speech recognition error: $error");
+          if (kDebugMode) debugPrint("Speech recognition error: $error");
         },
       );
       
@@ -233,12 +234,12 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
       });
       
       if (available) {
-        print("Speech recognition initialized");
+        if (kDebugMode) debugPrint("Speech recognition initialized");
       } else {
-        print("Speech recognition not available");
+        if (kDebugMode) debugPrint("Speech recognition not available");
       }
     } else {
-      print("Microphone permission denied");
+      if (kDebugMode) debugPrint("Microphone permission denied");
     }
   }
   
@@ -318,7 +319,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
         localeId: "en_US",
       );
     } catch (e) {
-      print("Error starting speech recognition: $e");
+      if (kDebugMode) debugPrint("Error starting speech recognition: $e");
       setState(() {
         _isListening = false;
       });
@@ -1220,16 +1221,16 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                             const SizedBox(width: 8),
                             GestureDetector(
                               onTap: () {
-                                // Show contact sharing options
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Share conversation with friends feature coming soon',
-                                      style: GoogleFonts.poppins(),
-                                    ),
-                                    duration: const Duration(seconds: 2),
-                                  ),
-                                );
+                                // Share conversation feature - coming soon (hidden for now)
+                                // ScaffoldMessenger.of(context).showSnackBar(
+                                //   SnackBar(
+                                //     content: Text(
+                                //       'Share conversation with friends feature coming soon',
+                                //       style: GoogleFonts.poppins(),
+                                //     ),
+                                //     duration: const Duration(seconds: 2),
+                                //   ),
+                                // );
                               },
                               child: Container(
                                 width: 50,

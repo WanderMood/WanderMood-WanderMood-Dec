@@ -1,261 +1,441 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
-import 'package:wandermood/features/places/models/place.dart';
-import 'package:wandermood/features/places/providers/saved_places_provider.dart';
-import 'package:wandermood/features/places/services/sharing_service.dart';
-import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../services/saved_places_service.dart';
+import '../../models/place.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SavedPlacesScreen extends ConsumerStatefulWidget {
-  const SavedPlacesScreen({Key? key}) : super(key: key);
+  const SavedPlacesScreen({super.key});
 
   @override
   ConsumerState<SavedPlacesScreen> createState() => _SavedPlacesScreenState();
 }
 
 class _SavedPlacesScreenState extends ConsumerState<SavedPlacesScreen> {
-  // Filter state
-  String _currentFilter = 'All';
-  final List<String> _filterOptions = ['All', 'Landmarks', 'Food', 'Nature', 'Entertainment'];
+  @override
+  void initState() {
+    super.initState();
+    // Refresh saved places when screen opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.invalidate(savedPlacesProvider);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final savedPlacesAsync = ref.watch(savedPlacesProvider);
-    
-    return savedPlacesAsync.when(
-      data: (savedPlaces) {
-        // Filter places if not 'All'
-        final filteredPlaces = _currentFilter == 'All'
-            ? savedPlaces
-            : savedPlaces.where((place) {
-                if (_currentFilter == 'Landmarks' && 
-                    (place.types.contains('landmark') || place.tag == 'Landmark')) {
-                  return true;
-                } else if (_currentFilter == 'Food' && 
-                    (place.types.contains('restaurant') || place.types.contains('cafe'))) {
-                  return true;
-                } else if (_currentFilter == 'Nature' && 
-                    (place.types.contains('park') || place.tag == 'Nature')) {
-                  return true;
-                } else if (_currentFilter == 'Entertainment' && 
-                    (place.types.contains('entertainment') || place.tag == 'Entertainment')) {
-                  return true;
-                }
-                return false;
-              }).toList();
 
-        return _buildScreenContent(context, filteredPlaces);
-      },
-      loading: () => Scaffold(
-        backgroundColor: Colors.grey[50],
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: Text(
-            'Saved Places',
-            style: GoogleFonts.museoModerno(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF12B347),
-            ),
-          ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () => Navigator.pop(context),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
+      appBar: AppBar(
+        title: Text(
+          'Saved Places',
+          style: GoogleFonts.poppins(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF1A202C),
           ),
         ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFF1A202C)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Color(0xFF1A202C)),
+            onPressed: () {
+              ref.invalidate(savedPlacesProvider);
+            },
+            tooltip: 'Refresh',
+          ),
+        ],
       ),
-      error: (error, stack) => Scaffold(
-        backgroundColor: Colors.grey[50],
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: Text(
-            'Saved Places',
-            style: GoogleFonts.museoModerno(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF12B347),
-            ),
-          ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
-        body: Center(
-          child: Text('Error loading saved places: $error'),
-        ),
+      body: savedPlacesAsync.when(
+        data: (savedPlaces) {
+          if (savedPlaces.isEmpty) {
+            return _buildEmptyState(context);
+          }
+          return _buildSavedPlacesList(context, ref, savedPlaces);
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => _buildErrorState(context, error.toString()),
       ),
     );
   }
 
-  Widget _buildScreenContent(BuildContext context, List<Place> filteredPlaces) {
-
-    return SwirlBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: Text(
-            'Saved Places',
-            style: GoogleFonts.museoModerno(
-              fontSize: 24,
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.bookmark_border,
+              size: 64,
+              color: Colors.grey.shade400,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'No saved places yet',
+            style: GoogleFonts.poppins(
+              fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF12B347),
+              color: Colors.grey.shade800,
             ),
           ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
+          const SizedBox(height: 8),
+          Text(
+            'Swipe right on places you love\nto save them for later',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 32),
+          ElevatedButton(
             onPressed: () => Navigator.pop(context),
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.search, color: Colors.black),
-              onPressed: () {
-                // Search functionality
-              },
-            ),
-          ],
-        ),
-        body: Column(
-          children: [
-            // Filter chips
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: SizedBox(
-                height: 50,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: _filterOptions.map((filter) {
-                    final isSelected = _currentFilter == filter;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: FilterChip(
-                        label: Text(
-                          filter,
-                          style: GoogleFonts.poppins(
-                            color: isSelected ? Colors.white : Colors.black87,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                          ),
-                        ),
-                        backgroundColor: Colors.white,
-                        selectedColor: const Color(0xFF12B347),
-                        selected: isSelected,
-                        showCheckmark: false,
-                        onSelected: (selected) {
-                          setState(() {
-                            _currentFilter = filter;
-                          });
-                        },
-                      ),
-                    );
-                  }).toList(),
-                ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF12B347),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
             ),
-            
-            // Place count
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Row(
-                children: [
-                  Text(
-                    '${filteredPlaces.length} ${filteredPlaces.length == 1 ? 'place' : 'places'}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.grey[700],
-                    ),
+            child: Text(
+              'Discover places',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSavedPlacesList(
+    BuildContext context,
+    WidgetRef ref,
+    List<SavedPlace> savedPlaces,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header with count
+        Container(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.purple.shade400, Colors.pink.shade400],
                   ),
-                  const Spacer(),
-                  DropdownButton<String>(
-                    value: 'Date: Newest',
-                    icon: const Icon(Icons.keyboard_arrow_down, size: 16),
-                    underline: const SizedBox(),
-                    items: ['Date: Newest', 'Date: Oldest', 'Name: A-Z', 'Rating: High to Low']
-                        .map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: Colors.grey[700],
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.purple.shade200.withOpacity(0.4),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.bookmark, color: Colors.white, size: 16),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${savedPlaces.length} saved',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        
+        // List of saved places
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: savedPlaces.length,
+            itemBuilder: (context, index) {
+              final savedPlace = savedPlaces[index];
+              return _buildSavedPlaceCard(context, ref, savedPlace);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSavedPlaceCard(
+    BuildContext context,
+    WidgetRef ref,
+    SavedPlace savedPlace,
+  ) {
+    final place = savedPlace.place;
+    final gradientColors = _getGradientForIndex(savedPlace.hashCode % 8);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image
+            Container(
+              height: 180,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: gradientColors,
+                ),
+              ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (place.photos.isNotEmpty && place.photos.first.isNotEmpty)
+                    CachedNetworkImage(
+                      imageUrl: place.photos.first,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: gradientColors,
                           ),
                         ),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      // Sort places
-                    },
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white.withOpacity(0.5),
+                            ),
+                          ),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) {
+                        return Center(
+                          child: Text(
+                            _getPlaceEmoji(place.types),
+                            style: const TextStyle(fontSize: 64),
+                          ),
+                        );
+                      },
+                    )
+                  else
+                    Center(
+                      child: Text(
+                        _getPlaceEmoji(place.types),
+                        style: const TextStyle(fontSize: 64),
+                      ),
+                    ),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.6),
+                        ],
+                        stops: const [0.5, 1.0],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 16,
+                    left: 16,
+                    right: 16,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          place.name,
+                          style: GoogleFonts.poppins(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (place.rating > 0) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.shade600,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.star, size: 14, color: Colors.white),
+                                const SizedBox(width: 4),
+                                Text(
+                                  place.rating.toStringAsFixed(1),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
             
-            // List of saved places
-            Expanded(
-              child: filteredPlaces.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: filteredPlaces.length,
-                      itemBuilder: (context, index) {
-                        return _buildPlaceCard(filteredPlaces[index]);
-                      },
+            // Actions
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  // Saved date
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Saved ${_formatSavedDate(savedPlace.savedAt)}',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        if (place.types.isNotEmpty)
+                          Text(
+                            place.types.first.replaceAll('_', ' ').toUpperCase(),
+                            style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              color: Colors.grey.shade500,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                      ],
                     ),
+                  ),
+                  
+                  // Directions button
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _openDirections(place),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF12B347).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.directions,
+                          color: Color(0xFF12B347),
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(width: 8),
+                  
+                  // Remove button
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _removeSavedPlace(context, ref, savedPlace),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.bookmark_remove,
+                          color: Colors.red.shade400,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          heroTag: "add_saved_place_fab",
-          backgroundColor: const Color(0xFF12B347),
-          child: const Icon(Icons.add),
-          onPressed: () {
-            // Navigate to explore to find more places
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Find more places to save'),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          },
         ),
       ),
     );
   }
-  
-  // Empty state widget
-  Widget _buildEmptyState() {
+
+  Widget _buildErrorState(BuildContext context, String error) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.place_outlined,
-            size: 72,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
           const SizedBox(height: 16),
           Text(
-            'No saved places found',
+            'Oops! Something went wrong',
             style: GoogleFonts.poppins(
               fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[700],
+              fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Try adjusting your filters or add new places',
+            error,
             style: GoogleFonts.poppins(
               fontSize: 14,
-              color: Colors.grey[600],
+              color: Colors.grey.shade600,
             ),
             textAlign: TextAlign.center,
           ),
@@ -263,273 +443,105 @@ class _SavedPlacesScreenState extends ConsumerState<SavedPlacesScreen> {
       ),
     );
   }
-  
-  // Place card widget
-  Widget _buildPlaceCard(Place place) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      elevation: 2,
-      child: InkWell(
-        onTap: () {
-          context.push('/place/${place.id}');
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+
+  List<Color> _getGradientForIndex(int index) {
+    final gradients = [
+      [const Color(0xFFFFE5B4), const Color(0xFFFFD6A5)],
+      [const Color(0xFFB4E5FF), const Color(0xFFA5D8FF)],
+      [const Color(0xFFFFB4E5), const Color(0xFFFFA5D8)],
+      [const Color(0xFFB4FFD5), const Color(0xFFA5FFBB)],
+      [const Color(0xFFD4B4FF), const Color(0xFFC8A5FF)],
+      [const Color(0xFFFFE5D4), const Color(0xFFFFD4B4)],
+      [const Color(0xFFD4FFE5), const Color(0xFFB4FFD4)],
+      [const Color(0xFFFFD4E5), const Color(0xFFFFC4D4)],
+    ];
+    return gradients[index % gradients.length];
+  }
+
+  String _getPlaceEmoji(List<String> types) {
+    if (types.isEmpty) return '📍';
+    
+    final emojiMap = {
+      'restaurant': '🍽️',
+      'cafe': '☕',
+      'bar': '🍸',
+      'museum': '🏛️',
+      'park': '🌳',
+      'beach': '🏖️',
+      'shopping_mall': '🛍️',
+      'gym': '💪',
+      'spa': '💆',
+      'market': '🏪',
+      'viewpoint': '🌄',
+      'tourist_attraction': '🗺️',
+      'landmark': '🏰',
+    };
+    
+    for (final type in types) {
+      if (emojiMap.containsKey(type)) {
+        return emojiMap[type]!;
+      }
+    }
+    
+    return '✨';
+  }
+
+  String _formatSavedDate(DateTime savedAt) {
+    final now = DateTime.now();
+    final difference = now.difference(savedAt);
+
+    if (difference.inDays == 0) {
+      if (difference.inHours == 0) {
+        return 'just now';
+      }
+      return '${difference.inHours}h ago';
+    } else if (difference.inDays == 1) {
+      return 'yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d ago';
+    } else {
+      return '${savedAt.day}/${savedAt.month}/${savedAt.year}';
+    }
+  }
+
+  void _removeSavedPlace(
+    BuildContext context,
+    WidgetRef ref,
+    SavedPlace savedPlace,
+  ) {
+    final savedPlacesService = ref.read(savedPlacesServiceProvider);
+    
+    savedPlacesService.unsavePlace(savedPlace.placeId);
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
           children: [
-            // Image section
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                  child: place.isAsset
-                      ? Image.asset(
-                          place.photos.first,
-                          height: 160,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            height: 160,
-                            width: double.infinity,
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.image, color: Colors.white, size: 40),
-                          ),
-                        )
-                      : Image.network(
-                          place.photos.first,
-                          height: 160,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            height: 160,
-                            width: double.infinity,
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.image, color: Colors.white, size: 40),
-                          ),
-                        ),
-                ),
-                
-                // Category tag
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          place.emoji ?? '📍',
-                          style: const TextStyle(
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          place.tag ?? 'Place',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                
-                // Saved date
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      'Saved ${_formatSavedDate(place.dateAdded ?? DateTime.now())}',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            
-            // Content section
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          place.name,
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (place.rating > 0) ...[
-                        const Icon(
-                          Icons.star_rounded,
-                          color: Colors.amber,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          place.rating.toStringAsFixed(1),
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on_outlined,
-                        size: 16,
-                        color: Colors.grey,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          place.address,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: Colors.grey[700],
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    place.description ?? 'No description available',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.grey[800],
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // Activities
-                  if (place.activities.isNotEmpty)
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: place.activities.map((activity) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF12B347).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            activity,
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF12B347),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                ],
-              ),
-            ),
-            
-            // Actions row
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.directions_outlined),
-                    onPressed: () {
-                      // Open directions
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.share_outlined),
-                    onPressed: () async {
-                      try {
-                        await SharingService.sharePlace(place);
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Failed to share place: $e'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.bookmark, color: Color(0xFF12B347)),
-                    onPressed: () async {
-                      await ref.read(savedPlacesProvider.notifier).removeSaved(place.id);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${place.name} removed from saved places'),
-                          backgroundColor: Colors.orange,
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+            const Icon(Icons.bookmark_remove, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                '${savedPlace.placeName} removed',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
               ),
             ),
           ],
         ),
+        backgroundColor: Colors.grey.shade700,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
-  
-  // Format saved date relative to today
-  String _formatSavedDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
+
+  void _openDirections(Place place) async {
+    final url = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(place.name)}&query_place_id=${place.id}',
+    );
     
-    if (difference.inDays == 0) {
-      return 'today';
-    } else if (difference.inDays == 1) {
-      return 'yesterday';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
-    } else if (difference.inDays < 30) {
-      final weeks = (difference.inDays / 7).floor();
-      return '$weeks ${weeks == 1 ? 'week' : 'weeks'} ago';
-    } else {
-      return '${(difference.inDays / 30).floor()} months ago';
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
     }
   }
-} 
+}

@@ -21,6 +21,8 @@ import 'package:wandermood/features/mood/models/mood_option.dart';
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
 import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.dart';
 import 'package:wandermood/features/home/presentation/screens/main_screen.dart';  // Import mainTabProvider from here
+import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
+import 'package:wandermood/features/mood/presentation/screens/moody_hub_screen.dart';
 
 class MoodHomeScreen extends ConsumerStatefulWidget {
   const MoodHomeScreen({super.key});
@@ -42,10 +44,15 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   String _characterEmoji = "😊";
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   
+  // Add personalization state
+  String _personalizedGreeting = '';
+  String _contextualSubtext = '';
+  
   @override
   void initState() {
     super.initState();
     _updateGreeting();
+    _updatePersonalizedGreeting();
   }
 
   @override
@@ -152,6 +159,13 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   void _generatePlan() {
     if (_selectedMoods.isNotEmpty) {
       print('🎯 Generating plan for moods: $_selectedMoods');
+      
+      // 🎯 Save mood selection state for hub
+      ref.read(dailyMoodStateNotifierProvider.notifier).setMoodSelection(
+        mood: _selectedMoods.first,
+        selectedMoods: _selectedMoods.toList(),
+        conversationId: _conversationId,
+      );
       
       // Navigate to PlanLoadingScreen first
       if (context.mounted) {
@@ -467,20 +481,20 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                       end: Alignment.bottomCenter,
                     ),
                     borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
                     ),
                   ),
                   child: Column(
                     children: [
                       // Enhanced header with friendly aesthetics
                       Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              const Color(0xFF12B347).withOpacity(0.05),
-                              Colors.white,
+                              const Color(0xFF12B347).withOpacity(0.03),
+                              Colors.transparent,
                             ],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
@@ -497,52 +511,52 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                 borderRadius: BorderRadius.circular(2),
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 20),
                             
-                            // Header content
+                            // Header content - Modernized
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
                               child: Row(
                                 children: [
-                                  // Enhanced Moody avatar with gradient and shadow
+                                  // Enhanced Moody avatar with modern styling
                                   Container(
-                                    width: 50,
-                                    height: 50,
+                                    width: 56,
+                                    height: 56,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       gradient: const LinearGradient(
-                                        colors: [Color(0xFF12B347), Color(0xFF0A8F3A)],
+                                        colors: [Color(0xFF12B347), Color(0xFF0EA33F)],
                                         begin: Alignment.topLeft,
                                         end: Alignment.bottomRight,
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: const Color(0xFF12B347).withOpacity(0.3),
-                                          blurRadius: 12,
-                                          offset: const Offset(0, 4),
+                                          color: const Color(0xFF12B347).withOpacity(0.25),
+                                          blurRadius: 16,
+                                          offset: const Offset(0, 6),
                                         ),
                                       ],
                                     ),
                                     child: const Center(
-                                      child: MoodyCharacter(size: 28),
+                                      child: MoodyCharacter(size: 32),
                                     ),
                                   ),
                                   const SizedBox(width: 16),
                                   
-                                  // Title and online status
+                                  // Title and personalized status
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Chat with Moody',
+                                          'Moody',
                                           style: GoogleFonts.poppins(
-                                            fontSize: 22,
+                                            fontSize: 24,
                                             fontWeight: FontWeight.bold,
-                                            color: const Color(0xFF2D3748),
+                                            color: const Color(0xFF1A202C),
                                           ),
                                         ),
-                                        const SizedBox(height: 4),
+                                        const SizedBox(height: 2),
                                         Row(
                                           children: [
                                             Container(
@@ -553,13 +567,15 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                                 shape: BoxShape.circle,
                                               ),
                                             ),
-                                            const SizedBox(width: 6),
-                                            Text(
-                                              'Your AI mood assistant is online',
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 13,
-                                                color: Colors.grey[600],
-                                                fontWeight: FontWeight.w500,
+                                            const SizedBox(width: 8),
+                                            Flexible(
+                                              child: Text(
+                                                'Your Rotterdam travel companion',
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 14,
+                                                  color: const Color(0xFF4A5568),
+                                                  fontWeight: FontWeight.w500,
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -570,18 +586,25 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                   
                                   // Enhanced close button
                                   Container(
-                                    width: 36,
-                                    height: 36,
+                                    width: 40,
+                                    height: 40,
                                     decoration: BoxDecoration(
                                       color: Colors.grey[100],
                                       shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.05),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
                                     ),
                                     child: IconButton(
                                       onPressed: () => Navigator.pop(context),
                                       icon: const Icon(
                                         Icons.close_rounded,
                                         color: Colors.grey,
-                                        size: 18,
+                                        size: 20,
                                       ),
                                       padding: EdgeInsets.zero,
                                     ),
@@ -602,46 +625,55 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                 children: [
                                   const Spacer(),
                                   
-                                  // Large enhanced Moody character
+                                  // Large enhanced Moody character with modern styling
                                   Container(
-                                    width: 120,
-                                    height: 120,
+                                    width: 140,
+                                    height: 140,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       gradient: LinearGradient(
                                         colors: [
-                                          const Color(0xFF12B347).withOpacity(0.1),
-                                          const Color(0xFF12B347).withOpacity(0.05),
+                                          const Color(0xFF12B347).withOpacity(0.08),
+                                          const Color(0xFF12B347).withOpacity(0.03),
                                         ],
                                         begin: Alignment.topLeft,
                                         end: Alignment.bottomRight,
                                       ),
                                       border: Border.all(
-                                        color: const Color(0xFF12B347).withOpacity(0.2),
+                                        color: const Color(0xFF12B347).withOpacity(0.15),
                                         width: 2,
                                       ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF12B347).withOpacity(0.1),
+                                          blurRadius: 24,
+                                          offset: const Offset(0, 8),
+                                        ),
+                                      ],
                                     ),
                                     child: const Center(
-                                      child: MoodyCharacter(size: 60),
+                                      child: MoodyCharacter(size: 70),
                                     ),
                                   ),
                                   
-                                  const SizedBox(height: 24),
+                                  const SizedBox(height: 32),
                                   
+                                  // Personalized greeting
                                   Text(
-                                    'Hey there! 👋',
+                                    _personalizedGreeting,
                                     style: GoogleFonts.poppins(
-                                      fontSize: 28,
+                                      fontSize: 32,
                                       fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF2D3748),
+                                      color: const Color(0xFF1A202C),
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
                                   
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: 12),
                                   
+                                  // Contextual subtext
                                   Text(
-                                    'I\'m Moody, your AI mood assistant!',
+                                    _contextualSubtext,
                                     style: GoogleFonts.poppins(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w500,
@@ -650,16 +682,27 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                     textAlign: TextAlign.center,
                                   ),
                                   
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: 24),
                                   
-                                  Text(
-                                    'Tell me how you\'re feeling and I\'ll help you\nfind the perfect activities in Rotterdam!',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 15,
-                                      color: Colors.grey[600],
-                                      height: 1.4,
+                                  // Modern description
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF7FAFC),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: const Color(0xFF12B347).withOpacity(0.1),
+                                      ),
                                     ),
-                                    textAlign: TextAlign.center,
+                                    child: Text(
+                                      'I know Rotterdam like the back of my hand! Tell me your mood, and I\'ll craft the perfect day just for you. Whether you\'re feeling adventurous, romantic, or need some chill vibes - I\'ve got you covered! 🎯',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 16,
+                                        color: const Color(0xFF2D3748),
+                                        height: 1.5,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
                                   ),
                                   
                                   const Spacer(),
@@ -671,7 +714,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                 Expanded(
                                   child: ListView.builder(
                                     controller: scrollController,
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
                                     itemCount: _chatMessages.length,
                                     itemBuilder: (context, index) {
                                       final message = _chatMessages[index];
@@ -680,37 +723,37 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                   ),
                                 ),
                                 
-                                // Enhanced typing indicator
+                                // Enhanced typing indicator with personality
                                 if (_isAILoading) 
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                                     child: Row(
                                       children: [
                                         Container(
-                                          width: 36,
-                                          height: 36,
+                                          width: 40,
+                                          height: 40,
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             gradient: const LinearGradient(
-                                              colors: [Color(0xFF12B347), Color(0xFF0A8F3A)],
+                                              colors: [Color(0xFF12B347), Color(0xFF0EA33F)],
                                             ),
                                             boxShadow: [
                                               BoxShadow(
                                                 color: const Color(0xFF12B347).withOpacity(0.3),
-                                                blurRadius: 8,
-                                                offset: const Offset(0, 2),
+                                                blurRadius: 12,
+                                                offset: const Offset(0, 4),
                                               ),
                                             ],
                                           ),
                                           child: const Center(
-                                            child: MoodyCharacter(size: 20),
+                                            child: MoodyCharacter(size: 22),
                                           ),
                                         ),
                                         const SizedBox(width: 12),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFFF5F7FA),
+                                            color: const Color(0xFFF0F9F0),
                                             borderRadius: const BorderRadius.only(
                                               topLeft: Radius.circular(20),
                                               topRight: Radius.circular(20),
@@ -719,9 +762,9 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                             ),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: Colors.black.withOpacity(0.08),
-                                                blurRadius: 8,
-                                                offset: const Offset(0, 2),
+                                                color: const Color(0xFF12B347).withOpacity(0.08),
+                                                blurRadius: 12,
+                                                offset: const Offset(0, 4),
                                               ),
                                             ],
                                           ),
@@ -729,21 +772,22 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               SizedBox(
-                                                width: 16,
-                                                height: 16,
+                                                width: 18,
+                                                height: 18,
                                                 child: CircularProgressIndicator(
-                                                  strokeWidth: 2,
+                                                  strokeWidth: 2.5,
                                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                                    Colors.grey[400]!,
+                                                    const Color(0xFF12B347).withOpacity(0.7),
                                                   ),
                                                 ),
                                               ),
-                                              const SizedBox(width: 8),
+                                              const SizedBox(width: 12),
                                               Text(
-                                                'Moody is thinking...',
+                                                'Moody is crafting something special...',
                                                 style: GoogleFonts.poppins(
-                                                  fontSize: 14,
-                                                  color: Colors.grey[600],
+                                                  fontSize: 15,
+                                                  color: const Color(0xFF2D3748),
+                                                  fontWeight: FontWeight.w500,
                                                   fontStyle: FontStyle.italic,
                                                 ),
                                               ),
@@ -757,12 +801,24 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                             ),
                       ),
                       
-                      // Quick action button if conversation has started
+                      // Quick action button if conversation has started - Enhanced
                       if (_chatMessages.isNotEmpty) 
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                          child: SizedBox(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          child: Container(
                             width: double.infinity,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF12B347).withOpacity(0.05),
+                                  const Color(0xFF12B347).withOpacity(0.02),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFF12B347).withOpacity(0.2),
+                              ),
+                            ),
                             child: OutlinedButton.icon(
                               onPressed: () {
                                 Navigator.pop(context); // Close chat
@@ -773,44 +829,45 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                   _generatePlan(); // Automatically start plan generation
                                 });
                               },
-                              icon: const Icon(Icons.explore, size: 18),
+                              icon: const Icon(Icons.auto_awesome, size: 20),
                               label: Text(
-                                'Get Personalized Plan 🎯',
+                                '✨ Create My Perfect Plan',
                                 style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: const Color(0xFF12B347),
-                                side: const BorderSide(color: Color(0xFF12B347)),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                backgroundColor: Colors.transparent,
+                                side: BorderSide.none,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
                               ),
                             ),
                           ),
                         ),
 
-                      // Enhanced input area with proper keyboard handling
+                      // Enhanced input area with modern styling
                       Container(
                         padding: EdgeInsets.only(
-                          left: 20,
-                          right: 20,
-                          top: 20,
-                          bottom: 20 + MediaQuery.of(context).viewInsets.bottom,
+                          left: 24,
+                          right: 24,
+                          top: 24,
+                          bottom: 24 + MediaQuery.of(context).viewInsets.bottom,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           border: Border(
-                            top: BorderSide(color: Colors.grey[200]!),
+                            top: BorderSide(color: Colors.grey[100]!),
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, -2),
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 20,
+                              offset: const Offset(0, -4),
                             ),
                           ],
                         ),
@@ -819,81 +876,92 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                               Expanded(
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF8F9FA),
-                                    borderRadius: BorderRadius.circular(25),
+                                    color: const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(28),
                                     border: Border.all(
-                                      color: const Color(0xFF12B347).withOpacity(0.1),
+                                      color: const Color(0xFF12B347).withOpacity(0.15),
+                                      width: 1.5,
                                     ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF12B347).withOpacity(0.05),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
                                   ),
                                   child: TextField(
                                     controller: _chatController,
                                     decoration: InputDecoration(
-                                      hintText: 'Tell me how you\'re feeling...',
+                                      hintText: 'What\'s your mood today?',
                                       hintStyle: GoogleFonts.poppins(
                                         color: Colors.grey[500],
-                                        fontSize: 14,
+                                        fontSize: 16,
                                       ),
                                       border: InputBorder.none,
                                       contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                        vertical: 16,
+                                        horizontal: 24,
+                                        vertical: 18,
                                       ),
-                                      prefixIcon: Icon(
-                                        Icons.mood,
-                                        color: Colors.grey[400],
-                                        size: 20,
+                                      prefixIcon: Padding(
+                                        padding: const EdgeInsets.only(left: 4),
+                                        child: Icon(
+                                          Icons.psychology_outlined,
+                                          color: const Color(0xFF12B347).withOpacity(0.6),
+                                          size: 22,
+                                        ),
                                       ),
                                     ),
                                     style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      color: const Color(0xFF2D3748),
+                                      fontSize: 16,
+                                      color: const Color(0xFF1A202C),
                                     ),
                                     onSubmitted: (text) => _sendChatMessageInModal(text, setModalState),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 16),
                               
-                              // Enhanced send button
+                              // Enhanced send button with modern styling
                               Container(
-                                width: 48,
-                                height: 48,
+                                width: 52,
+                                height: 52,
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [Color(0xFF12B347), Color(0xFF0A8F3A)],
+                                    colors: [Color(0xFF12B347), Color(0xFF0EA33F)],
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                   ),
-                                  borderRadius: BorderRadius.circular(24),
+                                  borderRadius: BorderRadius.circular(26),
                                   boxShadow: [
                                     BoxShadow(
                                       color: const Color(0xFF12B347).withOpacity(0.3),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
                                     ),
                                   ],
                                 ),
                                 child: Material(
                                   color: Colors.transparent,
                                   child: InkWell(
-                                    borderRadius: BorderRadius.circular(24),
+                                    borderRadius: BorderRadius.circular(26),
                                     onTap: _isAILoading 
                                       ? null 
                                       : () => _sendChatMessageInModal(_chatController.text, setModalState),
                                     child: Center(
                                       child: _isAILoading
                                         ? const SizedBox(
-                                            width: 20,
-                                            height: 20,
+                                            width: 22,
+                                            height: 22,
                                             child: CircularProgressIndicator(
-                                              strokeWidth: 2,
+                                              strokeWidth: 2.5,
                                               color: Colors.white,
                                             ),
                                           )
                                         : const Icon(
                                             Icons.send_rounded,
                                             color: Colors.white,
-                                            size: 20,
+                                            size: 22,
                                           ),
                                     ),
                                   ),
@@ -913,10 +981,10 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     );
   }
 
-  // Build message bubble widget with iMessage style
+  // Build message bubble widget with modern iMessage-like style
   Widget _buildMessageBubble(ChatMessage message) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
       child: Row(
         mainAxisAlignment: message.isUser 
           ? MainAxisAlignment.end 
@@ -924,33 +992,33 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!message.isUser) ...[
-            // Moody's Avatar with enhanced styling
+            // Moody's Avatar with enhanced modern styling
             Container(
-              width: 32,
-              height: 32,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF12B347), Color(0xFF0A8F3A)],
+                  colors: [Color(0xFF12B347), Color(0xFF0EA33F)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF12B347).withOpacity(0.3),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
+                    color: const Color(0xFF12B347).withOpacity(0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
               child: const Center(
-                child: MoodyCharacter(size: 18),
+                child: MoodyCharacter(size: 20),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
           ],
           
-          // Message bubble with iMessage styling
+          // Message bubble with modern styling
           Flexible(
             child: Column(
               crossAxisAlignment: message.isUser 
@@ -959,10 +1027,10 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
               children: [
                 Container(
                   constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.75,
-                    minWidth: 60,
+                    maxWidth: MediaQuery.of(context).size.width * 0.72,
+                    minWidth: 80,
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                   decoration: BoxDecoration(
                     gradient: message.isUser
                       ? const LinearGradient(
@@ -971,28 +1039,27 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                           end: Alignment.bottomRight,
                         )
                       : const LinearGradient(
-                          colors: [Color(0xFFE8F5E8), Color(0xFFF0F9F0)],
+                          colors: [Color(0xFFE8F5E8), Color(0xFFF5FBF5)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
-                    color: null,
                     borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(18),
-                      topRight: const Radius.circular(18),
+                      topLeft: const Radius.circular(20),
+                      topRight: const Radius.circular(20),
                       bottomLeft: message.isUser 
-                        ? const Radius.circular(18) 
+                        ? const Radius.circular(20) 
                         : const Radius.circular(4),
                       bottomRight: message.isUser 
                         ? const Radius.circular(4) 
-                        : const Radius.circular(18),
+                        : const Radius.circular(20),
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: message.isUser 
-                          ? Colors.blue.withOpacity(0.15)
-                          : const Color(0xFF12B347).withOpacity(0.08),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
+                          ? Colors.blue.withOpacity(0.12)
+                          : const Color(0xFF12B347).withOpacity(0.06),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
@@ -1000,22 +1067,22 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                     message.message,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
-                      height: 1.3,
-                      fontWeight: FontWeight.w400,
+                      height: 1.4,
+                      fontWeight: FontWeight.w500,
                       color: message.isUser 
                         ? Colors.white 
-                        : const Color(0xFF2D3748),
+                        : const Color(0xFF1A202C),
                     ),
                   ),
                 ),
                 
-                // Timestamp (iMessage style)
+                // Timestamp with modern styling
                 Padding(
-                  padding: const EdgeInsets.only(top: 4, left: 4, right: 4),
+                  padding: const EdgeInsets.only(top: 6, left: 6, right: 6),
                   child: Text(
                     _formatMessageTime(message.timestamp),
                     style: GoogleFonts.poppins(
-                      fontSize: 11,
+                      fontSize: 12,
                       color: Colors.grey[500],
                       fontWeight: FontWeight.w400,
                     ),
@@ -1026,11 +1093,11 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
           ),
           
           if (message.isUser) ...[
-            const SizedBox(width: 8),
-            // User's Profile Picture with enhanced styling
+            const SizedBox(width: 10),
+            // User's Profile Picture with modern styling
             Container(
-              width: 32,
-              height: 32,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const LinearGradient(
@@ -1039,14 +1106,14 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                   end: Alignment.bottomRight,
                 ),
                 border: Border.all(
-                  color: Colors.blue.withOpacity(0.2),
+                  color: Colors.white,
                   width: 2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
+                    color: Colors.blue.withOpacity(0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
@@ -1054,7 +1121,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                 child: Text(
                   'U',
                   style: GoogleFonts.poppins(
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
@@ -1087,6 +1154,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   Future<void> _sendChatMessageInModal(String message, StateSetter setModalState) async {
     if (message.trim().isEmpty || _isAILoading) return;
 
+    print('🚀 Starting chat message process: "${message.trim()}"');
+
     // Add user message to chat
     setModalState(() {
       _chatMessages.add(ChatMessage(
@@ -1097,11 +1166,15 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       _isAILoading = true;
     });
 
+    print('✅ User message added to chat, loading state set to true');
+
     // Clear the input immediately
     _chatController.clear();
 
     try {
       print('💬 Sending message to Moody AI: $message');
+      print('🔧 Conversation ID: $_conversationId');
+      print('🎭 Selected moods: ${_selectedMoods.toList()}');
       
       final response = await WanderMoodAIService.chat(
         message: message.trim(),
@@ -1112,7 +1185,14 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         city: 'Rotterdam',
       );
 
-      print('✅ Moody AI response: ${response.message}');
+      print('✅ Moody AI response received successfully');
+      print('📝 Response message: "${response.message}"');
+      print('🆔 Response conversation ID: ${response.conversationId}');
+
+      // Validate response
+      if (response.message.isEmpty) {
+        throw Exception('Empty response message from AI service');
+      }
 
       // Add AI response to chat
       setModalState(() {
@@ -1123,19 +1203,28 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         ));
         _isAILoading = false;
       });
-    } catch (e) {
-      print('❌ Chat error: $e');
+
+      print('✅ AI response added to chat successfully');
+      print('📊 Total messages in chat: ${_chatMessages.length}');
+
+    } catch (e, stackTrace) {
+      print('❌ Chat error occurred: $e');
+      print('📋 Stack trace: $stackTrace');
       
       // Add error message to chat
       setModalState(() {
         _chatMessages.add(ChatMessage(
-          message: 'Sorry, I couldn\'t respond right now. Try again! 😅',
+          message: 'Oops! I\'m having trouble connecting right now. Can you try again? 🤔',
           isUser: false,
           timestamp: DateTime.now(),
         ));
         _isAILoading = false;
       });
+
+      print('⚠️ Error message added to chat');
     }
+
+    print('🏁 Chat message process completed');
   }
 
   // Send chat message to Moody AI
@@ -1208,11 +1297,57 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     });
   }
 
+  // Add personalized greeting method
+  void _updatePersonalizedGreeting() {
+    final hour = DateTime.now().hour;
+    final isWeekend = DateTime.now().weekday >= 6;
+    final dayOfWeek = DateTime.now().weekday;
+    
+    setState(() {
+      // Contextual greetings based on time and day
+      if (hour >= 5 && hour < 10) {
+        _personalizedGreeting = "Rise and shine! ☀️";
+        _contextualSubtext = isWeekend 
+          ? "Perfect weekend morning for adventures"
+          : "Ready to make today amazing?";
+      } else if (hour >= 10 && hour < 14) {
+        _personalizedGreeting = "Hey there! 👋";
+        _contextualSubtext = "I've been thinking about your perfect day";
+      } else if (hour >= 14 && hour < 18) {
+        _personalizedGreeting = "Afternoon vibes! ✨";
+        _contextualSubtext = "What's on your mind for today?";
+      } else if (hour >= 18 && hour < 22) {
+        _personalizedGreeting = "Evening explorer! 🌆";
+        _contextualSubtext = isWeekend 
+          ? "Weekend nights are the best for discoveries"
+          : "How did your day treat you?";
+      } else {
+        _personalizedGreeting = "Night owl! 🌙";
+        _contextualSubtext = "Late night adventures calling?";
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final locationAsync = ref.watch(locationNotifierProvider);
     final userData = ref.watch(userDataProvider);
     final weatherAsync = ref.watch(weatherProvider);
+    final dailyMoodState = ref.watch(dailyMoodStateNotifierProvider);
+    
+    // 🎯 Hub Logic: Check if user has selected mood today
+    if (dailyMoodState.hasSelectedMoodToday) {
+      return MoodyHubScreen(
+        onChangeMood: () {
+          // Reset mood selection and show full mood selection screen
+          ref.read(dailyMoodStateNotifierProvider.notifier).resetMoodSelection();
+        },
+        onShowChat: () {
+          // Show existing chat dialog with current context
+          _showMoodyTalkDialog(context);
+        },
+      );
+    }
     
     return Stack(
       children: [
@@ -1735,7 +1870,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                       Container(
                         width: double.infinity,
                         height: 56,
-                        margin: const EdgeInsets.only(left: 16, right: 16, bottom: 30, top: 8),
+                        margin: const EdgeInsets.only(left: 16, right: 16, bottom: 12, top: 8),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(28),
                           boxShadow: [
@@ -1790,6 +1925,42 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                           ),
                         ),
                       ),
+                      
+                      // Back to Hub button - secondary text button style
+                      if (dailyMoodState.isInMoodChangeMode)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 30),
+                          child: TextButton(
+                            onPressed: () {
+                              // Return to hub
+                              ref.read(dailyMoodStateNotifierProvider.notifier).returnToHub();
+                            },
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.black54,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              minimumSize: const Size(double.infinity, 44),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.home_rounded,
+                                  size: 18,
+                                  color: Colors.black54,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Back to Hub',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -1888,6 +2059,46 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         emoji: '🔍',
         colorHex: '#FF7675',
         displayOrder: 8,
+        isActive: true,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      MoodOption(
+        id: 'cozy',
+        label: 'Cozy',
+        emoji: '☕',
+        colorHex: '#D63031',
+        displayOrder: 9,
+        isActive: true,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      MoodOption(
+        id: 'excited',
+        label: 'Excited',
+        emoji: '🤩',
+        colorHex: '#00B894',
+        displayOrder: 10,
+        isActive: true,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      MoodOption(
+        id: 'foody',
+        label: 'Foody',
+        emoji: '🍽️',
+        colorHex: '#E17055',
+        displayOrder: 11,
+        isActive: true,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      MoodOption(
+        id: 'surprise',
+        label: 'Surprise',
+        emoji: '😲',
+        colorHex: '#FDCB6E',
+        displayOrder: 12,
         isActive: true,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),

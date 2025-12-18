@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 
 class SupportScreen extends ConsumerStatefulWidget {
@@ -215,17 +216,13 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                 _buildResourceItem(
                   title: 'Privacy Policy',
                   icon: Icons.privacy_tip_outlined,
-                  onTap: () {
-                    // Navigate to privacy policy
-                  },
+                  onTap: () => _openPrivacyPolicy(),
                 ),
                 
                 _buildResourceItem(
                   title: 'Terms of Service',
                   icon: Icons.gavel_outlined,
-                  onTap: () {
-                    // Navigate to terms of service
-                  },
+                  onTap: () => _openTermsOfService(),
                 ),
                 
                 _buildResourceItem(
@@ -403,5 +400,61 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
         behavior: SnackBarBehavior.floating,
       ),
     );
+  }
+
+  /// Open Privacy Policy in external browser
+  Future<void> _openPrivacyPolicy() async {
+    try {
+      final url = Uri.parse('https://wandermood.app/privacy-policy');
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Unable to open Privacy Policy. Please check your internet connection.'),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error opening Privacy Policy: $e'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  /// Open Terms of Service in external browser
+  Future<void> _openTermsOfService() async {
+    try {
+      final url = Uri.parse('https://wandermood.app/terms-of-service');
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Unable to open Terms of Service. Please check your internet connection.'),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error opening Terms of Service: $e'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 } 

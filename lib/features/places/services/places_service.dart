@@ -12,10 +12,31 @@ part 'places_service.g.dart';
 class PlacesService extends _$PlacesService {
   late final GoogleMapsPlaces _places;
   bool _isInitialized = false;
+  
+  // Cache to store full Place objects from search results
+  // This prevents re-fetching incomplete data from Google API
+  final Map<String, Place> _placeCache = {};
 
   @override
   Future<void> build() async {
     await _initializePlaces();
+  }
+  
+  /// Cache a place object for later retrieval
+  void cachePlaceObject(Place place) {
+    _placeCache[place.id] = place;
+    debugPrint('💾 Cached place: ${place.name} (${place.id})');
+  }
+  
+  /// Get a cached place object
+  Place? getCachedPlace(String placeId) {
+    return _placeCache[placeId];
+  }
+  
+  /// Clear the place cache
+  void clearPlaceCache() {
+    _placeCache.clear();
+    debugPrint('🗑️ Cleared place cache');
   }
 
   Future<void> _initializePlaces() async {
@@ -104,9 +125,10 @@ class PlacesService extends _$PlacesService {
           'name',
           'formatted_address',
           'rating',
-          'photo',
-          'type',
+          'photos',
+          'types',
           'geometry',
+          'price_level', // Add price level for booking logic
         ],
       ).timeout(const Duration(seconds: 5), onTimeout: () {
         debugPrint('⏱️ Place details API call timed out for ID: $placeId');
@@ -121,18 +143,39 @@ class PlacesService extends _$PlacesService {
       }
       
       final result = response.result;
+      if (result == null) {
+        debugPrint('❌ Place details result is null');
+        return {};
+      }
+      
+      // Safely extract photos
+      final photoReferences = <String>[];
+      if (result.photos != null && result.photos!.isNotEmpty) {
+        for (final photo in result.photos!) {
+          if (photo.photoReference != null && photo.photoReference!.isNotEmpty) {
+            photoReferences.add(photo.photoReference!);
+          }
+        }
+      }
+      
+      // Safely extract location
+      final geometry = result.geometry;
+      final location = geometry?.location;
+      
       final details = {
         'name': result.name,
         'address': result.formattedAddress,
         'rating': result.rating,
-        'photos': result.photos?.map((p) => p.photoReference).toList() ?? [],
-        'types': result.types,
-        'location': {
-          'lat': result.geometry?.location.lat,
-          'lng': result.geometry?.location.lng,
-        },
+        'photos': photoReferences,
+        'types': result.types ?? [],
+        'priceLevel': result.priceLevel, // Include price level
+        'location': location != null ? {
+          'lat': location.lat,
+          'lng': location.lng,
+        } : null,
       };
-      debugPrint('✅ Got details for ${result.name}');
+      
+      debugPrint('✅ Got details for ${result.name} with ${photoReferences.length} photos');
       return details;
     } catch (e) {
       debugPrint('❌ Failed to get place details: $e');
@@ -148,25 +191,100 @@ class PlacesService extends _$PlacesService {
     }
 
     try {
+      // First, check if we have this place cached from search results
+      final cachedPlace = getCachedPlace(placeId);
+      if (cachedPlace != null) {
+        debugPrint('✅ Using cached place data for: ${cachedPlace.name}');
+        return cachedPlace;
+      }
+      
       // Check if this is a Google Place ID or our internal ID
       if (placeId.startsWith('google_')) {
-        // It's a Google Place ID
+        // It's a Google Place ID - fetch from API as fallback
+        debugPrint('🔄 Place not cached, fetching from Google API: $placeId');
         final googlePlaceId = placeId.substring('google_'.length);
         final details = await getPlaceDetails(googlePlaceId);
         
-        final placeTypes = List<String>.from(details['types'] ?? []);
+        // Check if details are valid
+        if (details.isEmpty || details['name'] == null) {
+          debugPrint('❌ Empty/invalid place details returned for $googlePlaceId');
+          throw Exception('Could not fetch place details - data unavailable');
+        }
+        
+        // Safely extract all fields with proper null handling
+        final name = details['name'] as String?;
+        if (name == null || name.isEmpty) {
+          debugPrint('❌ Invalid place name for $googlePlaceId');
+          throw Exception('Place name is required');
+        }
+        
+        final address = details['address'] as String? ?? 'No address available';
+        final rating = (details['rating'] as num?)?.toDouble() ?? 0.0;
+        final placeTypes = (details['types'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+        final priceLevel = details['priceLevel'] as int?;
+        
+        // Determine if place is free
+        final isFreeByPrice = priceLevel == null || priceLevel == 0;
+        final isFreeByType = _isFreePlaceType(placeTypes);
+        final isFree = isFreeByPrice || isFreeByType;
+        
+        // Generate price range string if not free
+        String? priceRange;
+        if (!isFree && priceLevel != null) {
+          switch (priceLevel) {
+            case 1:
+              priceRange = '€5-15';
+              break;
+            case 2:
+              priceRange = '€15-30';
+              break;
+            case 3:
+              priceRange = '€30-50';
+              break;
+            case 4:
+              priceRange = '€50+';
+              break;
+          }
+        }
+        
+        // Safely extract location
+        final locationData = details['location'];
+        double lat = 0.0;
+        double lng = 0.0;
+        if (locationData != null && locationData is Map<String, dynamic>) {
+          lat = (locationData['lat'] as num?)?.toDouble() ?? 0.0;
+          lng = (locationData['lng'] as num?)?.toDouble() ?? 0.0;
+        }
+        
+        // Get photos and convert to URLs
+        final photoReferences = (details['photos'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+        final photoUrls = <String>[];
+        for (final ref in photoReferences.take(3)) {
+          if (ref.isNotEmpty) {
+            try {
+              final photoUrl = getPhotoUrl(ref);
+              photoUrls.add(photoUrl);
+              debugPrint('✅ Generated photo URL for place');
+            } catch (e) {
+              debugPrint('⚠️ Could not get photo URL for $ref: $e');
+            }
+          }
+        }
+        
+        debugPrint('✅ Successfully created Place object: $name with ${photoUrls.length} photos, priceLevel=$priceLevel, isFree=$isFree');
+        
         return Place(
           id: placeId,
-          name: details['name'] ?? 'Unknown Place',
-          address: details['address'] ?? 'No address',
-          rating: details['rating'] ?? 0.0,
-          photos: List<String>.from(details['photos'] ?? []),
+          name: name,
+          address: address,
+          rating: rating,
+          photos: photoUrls,
           types: placeTypes,
-          location: PlaceLocation(
-            lat: details['location']['lat'] ?? 0.0,
-            lng: details['location']['lng'] ?? 0.0,
-          ),
+          location: PlaceLocation(lat: lat, lng: lng),
           openingHours: OpeningHoursService.generateOpeningHours(placeTypes),
+          priceLevel: priceLevel,
+          priceRange: priceRange,
+          isFree: isFree,
         );
       } else {
         // This is for our hardcoded places
@@ -252,6 +370,35 @@ class PlacesService extends _$PlacesService {
     return _places.buildPhotoUrl(
       photoReference: photoReference,
       maxWidth: 400,
+    );
+  }
+  
+  // Helper to check if place type indicates it's free
+  bool _isFreePlaceType(List<String> types) {
+    final freeTypes = [
+      'park',
+      'natural_feature',
+      'cemetery',
+      'church',
+      'mosque',
+      'synagogue',
+      'hindu_temple',
+      'library',
+      'public_square',
+      'plaza',
+      'beach',
+      'hiking_area',
+      'walking_street',
+      'street',
+      'route',
+      'neighborhood',
+      'locality',
+    ];
+    
+    return types.any((type) => 
+      freeTypes.any((freeType) => 
+        type.toLowerCase().contains(freeType.toLowerCase())
+      )
     );
   }
 }

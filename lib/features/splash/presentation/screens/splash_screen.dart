@@ -140,18 +140,59 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     
     if (!mounted) return;
     
+    // Wait for Supabase to restore session from secure storage
+    // This is critical on hot restart - Supabase needs time to restore the session
+    debugPrint('🔄 Waiting for Supabase session restoration...');
+    for (int i = 0; i < 10; i++) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      final session = Supabase.instance.client.auth.currentSession;
+      final user = Supabase.instance.client.auth.currentUser;
+      
+      if (session != null && user != null) {
+        debugPrint('✅ Session restored: ${user.id}');
+        break;
+      }
+    }
+    
+    if (!mounted) return;
+    
     // Check current authentication and onboarding status
     final prefs = await SharedPreferences.getInstance();
     final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
     final hasCompletedAuth = prefs.getBool('hasCompletedAuth') ?? false;
     final hasCompletedPreferences = prefs.getBool('hasCompletedPreferences') ?? false;
     final currentUser = Supabase.instance.client.auth.currentUser;
+    final currentSession = Supabase.instance.client.auth.currentSession;
     
     debugPrint('🔍 App initialization state:');
     debugPrint('   hasSeenOnboarding: $hasSeenOnboarding');
     debugPrint('   hasCompletedAuth: $hasCompletedAuth');
     debugPrint('   hasCompletedPreferences: $hasCompletedPreferences');
     debugPrint('   currentUser: ${currentUser?.id}');
+    debugPrint('   currentSession: ${currentSession != null}');
+    
+    // If we have a session but local flags aren't set, sync them
+    if (currentUser != null && currentSession != null && !hasCompletedAuth) {
+      debugPrint('🔧 Syncing auth state - user has session but local flags not set');
+      await prefs.setBool('hasCompletedAuth', true);
+      await prefs.setBool('has_seen_onboarding', true);
+      
+      // Check if user has preferences
+      try {
+        final response = await Supabase.instance.client
+            .from('user_preferences')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .maybeSingle();
+        
+        if (response != null && response.isNotEmpty) {
+          await prefs.setBool('hasCompletedPreferences', true);
+          debugPrint('✅ User has preferences, marked as completed');
+        }
+      } catch (e) {
+        debugPrint('📋 Could not check preferences: $e');
+      }
+    }
     
     // Wait for auth state to be available
     final authState = ref.read(authStateProvider);
@@ -164,11 +205,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     
     if (!mounted) return;
     
+    // Re-check after sync
+    final finalHasCompletedAuth = prefs.getBool('hasCompletedAuth') ?? false;
+    final finalCurrentUser = Supabase.instance.client.auth.currentUser;
+    
     // Navigate based on current state
     if (!hasSeenOnboarding) {
       debugPrint('🚀 First time user - navigating to onboarding');
       context.go('/onboarding');
-    } else if (!hasCompletedAuth || currentUser == null) {
+    } else if (!finalHasCompletedAuth || finalCurrentUser == null) {
       debugPrint('🚀 User needs authentication - navigating to login');
       context.go('/login');
     } else if (!hasCompletedPreferences) {

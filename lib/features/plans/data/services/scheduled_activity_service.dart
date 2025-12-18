@@ -105,12 +105,50 @@ class ScheduledActivityService {
     }).toList();
   }
   
-  // Helper to insert activities
+  // Helper to insert activities with duplicate checking
   Future<void> _insertActivities(List<Map<String, dynamic>> activityData) async {
     try {
       print('ScheduledActivityService: Inserting ${activityData.length} activities');
       
-      await _client.from('scheduled_activities').insert(activityData);
+      // Require authentication
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('User must be authenticated to save scheduled activities');
+      }
+      
+      // Filter out duplicates before inserting
+      final filteredActivities = <Map<String, dynamic>>[];
+      
+      for (final activity in activityData) {
+        // Check if an activity with the same name, start_time, and location already exists
+        final existingActivity = await _client
+            .from('scheduled_activities')
+            .select()
+            .eq('user_id', userId)
+            .eq('name', activity['name'] as String)
+            .eq('start_time', activity['start_time'] as String)
+            .eq('latitude', activity['latitude'] as double)
+            .eq('longitude', activity['longitude'] as double)
+            .maybeSingle();
+        
+        if (existingActivity == null) {
+          // No duplicate found, add to insert list
+          filteredActivities.add(activity);
+          print('ScheduledActivityService: Activity "${activity['name']}" is new, will be inserted');
+        } else {
+          print('ScheduledActivityService: Duplicate activity "${activity['name']}" found, skipping insert');
+          print('   Existing: ${existingActivity['activity_id']}, New: ${activity['activity_id']}');
+        }
+      }
+      
+      if (filteredActivities.isEmpty) {
+        print('ScheduledActivityService: All activities are duplicates, nothing to insert');
+        return;
+      }
+      
+      print('ScheduledActivityService: Inserting ${filteredActivities.length} new activities (${activityData.length - filteredActivities.length} duplicates skipped)');
+      
+      await _client.from('scheduled_activities').insert(filteredActivities);
       print('ScheduledActivityService: Activities inserted successfully');
     } catch (e) {
       print('ScheduledActivityService: Failed to save activities to Supabase: $e');
@@ -122,7 +160,8 @@ class ScheduledActivityService {
           await _schemaHelper.createScheduledActivitiesTable();
           print('ScheduledActivityService: Table created successfully, retrying insert');
           
-          await _client.from('scheduled_activities').insert(activityData);
+          // Retry with duplicate checking
+          await _insertActivities(activityData);
           print('ScheduledActivityService: Activities inserted successfully after table creation');
         } catch (tableError) {
           print('ScheduledActivityService: Failed to create table: $tableError');

@@ -425,6 +425,8 @@ class ExplorePlaces extends _$ExplorePlaces {
       'Utrecht': {'lat': 52.0907, 'lng': 5.1214},
       'Eindhoven': {'lat': 51.4416, 'lng': 5.4697},
       'Groningen': {'lat': 53.2194, 'lng': 6.5665},
+      'Delft': {'lat': 52.0067, 'lng': 4.3556},
+      'Beneden-Leeuwen': {'lat': 51.8892, 'lng': 5.5142},
     };
     
     final coords = cityCoords[cityName] ?? cityCoords['Rotterdam']!;
@@ -769,8 +771,24 @@ class ExplorePlaces extends _$ExplorePlaces {
 
       // Enhanced description with metadata for better filtering
       final enhancedDescription = _generateEnhancedDescription(result, {});
+
+      // Extract price level from Google Places API result
+      final priceLevel = _mapPriceLevel(result.priceLevel);
       
-      return Place(
+      // Determine if place is free based on price level or type
+      final isFreeByPrice = priceLevel != null && priceLevel == 0;
+      final isFreeByType = _isFreePlaceType(result.types ?? []);
+      final isFree = isFreeByPrice || isFreeByType;
+      
+      // Generate price range string if not free
+      String? priceRange;
+      if (!isFree && priceLevel != null) {
+        priceRange = _inferPriceRange(priceLevel);
+      }
+      
+      debugPrint('💰 Place ${result.name}: priceLevel=$priceLevel, isFree=$isFree, priceRange=$priceRange');
+
+      final place = Place(
         id: 'google_${result.placeId}',
         name: result.name ?? 'Unknown Place',
         address: result.formattedAddress ?? result.vicinity ?? '',
@@ -790,10 +808,81 @@ class ExplorePlaces extends _$ExplorePlaces {
         energyLevel: energyLevel,
         isIndoor: isIndoor,
         openingHours: null, // Skip opening hours for now to improve speed
+        priceLevel: priceLevel,
+        priceRange: priceRange,
+        isFree: isFree,
       );
+      
+      // Cache the place object so we don't need to re-fetch from API
+      final service = ref.read(placesServiceProvider.notifier);
+      service.cachePlaceObject(place);
+      
+      return place;
     } catch (e) {
       debugPrint('❌ Error converting place: $e');
       return null;
+    }
+  }
+  
+  // Helper to check if place type indicates it's free
+  bool _isFreePlaceType(List<String> types) {
+    final freeTypes = [
+      'park',
+      'natural_feature',
+      'cemetery',
+      'church',
+      'mosque',
+      'synagogue',
+      'hindu_temple',
+      'library',
+      'public_square',
+      'plaza',
+      'beach',
+      'hiking_area',
+      'walking_street',
+      'street',
+      'route',
+      'neighborhood',
+      'locality',
+    ];
+    
+    return types.any((type) => 
+      freeTypes.any((freeType) => 
+        type.toLowerCase().contains(freeType.toLowerCase())
+      )
+    );
+  }
+
+  int? _mapPriceLevel(PriceLevel? level) {
+    if (level == null) return null;
+    switch (level) {
+      case PriceLevel.free:
+        return 0;
+      case PriceLevel.inexpensive:
+        return 1;
+      case PriceLevel.moderate:
+        return 2;
+      case PriceLevel.expensive:
+        return 3;
+      case PriceLevel.veryExpensive:
+        return 4;
+      default:
+        return null;
+    }
+  }
+
+  String _inferPriceRange(int priceLevel) {
+    switch (priceLevel) {
+      case 1:
+        return '€5-15';
+      case 2:
+        return '€15-30';
+      case 3:
+        return '€30-50';
+      case 4:
+        return '€50+';
+      default:
+        return '€5-20';
     }
   }
 

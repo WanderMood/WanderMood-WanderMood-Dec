@@ -17,6 +17,7 @@ import '../../../profile/domain/providers/profile_provider.dart';
 import '../../../weather/providers/weather_provider.dart';
 import '../../../places/providers/explore_places_provider.dart';
 import 'main_screen.dart';
+import 'reservation_details_sheet.dart';
 import 'package:wandermood/core/theme/time_based_theme.dart';
 import '../../providers/time_suggestion_provider.dart';
 import 'package:wandermood/core/presentation/painters/circle_pattern_painter.dart';
@@ -605,12 +606,14 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     Color primaryColor;
     Color backgroundColor;
     IconData statusIcon;
+    bool isUpcoming = false;
     
     switch (status['type']) {
       case 'upcoming':
-        primaryColor = const Color(0xFFFF9800);
-        backgroundColor = const Color(0xFFFFF3E0);
+        primaryColor = const Color(0xFF2196F3); // Blue for icon and top border
+        backgroundColor = Colors.white; // White background
         statusIcon = Icons.schedule;
+        isUpcoming = true;
         break;
       case 'completed':
         primaryColor = const Color(0xFF4CAF50);
@@ -628,24 +631,14 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: primaryColor.withOpacity(0.2), width: 1),
+        border: isUpcoming 
+            ? Border(top: BorderSide(color: primaryColor, width: 4)) 
+            : Border.all(color: primaryColor.withOpacity(0.2), width: 1),
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withOpacity(0.25),
-            blurRadius: 25,
-            offset: const Offset(0, 12),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
             spreadRadius: 0,
           ),
         ],
@@ -710,73 +703,109 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             // Action buttons
             if ((status['action1'] != null || status['action2'] != null)) ...[
               const SizedBox(height: 20),
-              Row(
-                children: [
-                  if (status['action1'] != null)
-                    Expanded(
-                      child: Container(
-                        height: 44,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: primaryColor, width: 1.5),
-                          borderRadius: BorderRadius.circular(14),
+              if (isUpcoming && status['action2'] != null) 
+                // Special case for "Coming Up" card - single "Get Ready" button
+                Container(
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF12B347),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF12B347).withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(24),
+                      onTap: () => _handleStatusAction(status['action2'], status),
+                      child: Center(
+                        child: Text(
+                          isUpcoming ? 'Get Ready' : status['action2'],
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(14),
-                            onTap: () => _handleStatusAction(status['action1'], status),
-                            child: Center(
-                              child: Text(
-                                status['action1'],
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: primaryColor,
+                      ),
+                    ),
+                  ),
+                )
+              else
+                // Standard two-button layout for other card types
+                Row(
+                  children: [
+                    if (status['action1'] != null)
+                      Expanded(
+                        child: Container(
+                          height: 44,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: const Color(0xFF12B347), width: 1.5),
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(24),
+                              onTap: () => _handleStatusAction(status['action1'], status),
+                              child: Center(
+                                child: Text(
+                                  status['action1'],
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF12B347),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  if (status['action1'] != null && status['action2'] != null)
-                    const SizedBox(width: 12),
-                  if (status['action2'] != null)
-                    Expanded(
-                      child: Container(
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: primaryColor,
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: [
-                            BoxShadow(
-                              color: primaryColor.withOpacity(0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(14),
-                            onTap: () => _handleStatusAction(status['action2'], status),
-                            child: Center(
-                              child: Text(
-                                status['action2'],
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                    if (status['action1'] != null && status['action2'] != null)
+                      const SizedBox(width: 12),
+                    if (status['action2'] != null)
+                      Expanded(
+                        child: Container(
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF12B347),
+                            border: null,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF12B347).withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(24),
+                              onTap: () => _handleStatusAction(status['action2'], status),
+                              child: Center(
+                                child: Text(
+                                  status['action2'],
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: status['type'] == 'upcoming' ? Colors.white : Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                ],
-              ),
+                  ],
+                ),
             ],
           ],
         ),
@@ -1264,7 +1293,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     
     // Check payment status
     final paymentType = activity.rawData['paymentType'] as String?;
-    final isBooked = paymentType?.toLowerCase() == 'paid' || paymentType?.toLowerCase() == 'reserved';
+    final bookingRef = activity.rawData['bookingReference'] as String?;
+    final isBooked = paymentType?.toLowerCase() == 'paid' || paymentType?.toLowerCase() == 'reserved' || bookingRef != null;
     
     switch (activity.status) {
       case ActivityStatus.activeNow:
@@ -1539,7 +1569,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                           height: 32,
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           decoration: BoxDecoration(
-                            color: isBooked ? Colors.blue : const Color(0xFF12B347),
+                            color: isBooked || activity.rawData['bookingReference'] != null ? Colors.blue : const Color(0xFF12B347),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Material(
@@ -1548,15 +1578,23 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                               borderRadius: BorderRadius.circular(16),
                               onTap: () {
                                 HapticFeedback.lightImpact();
-                                if (isBooked) {
-                                  _showDirectionsOptions(activity.rawData);
+                                final bookingRef = activity.rawData['bookingReference'] as String?;
+                                final isActuallyBooked = isBooked || bookingRef != null;
+                                if (isActuallyBooked) {
+                                  // Show reservation details instead of just directions
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ReservationDetailsSheet(activity: activity.rawData),
+                                    ),
+                                  );
                                 } else {
                                   _showBookingBottomSheet(activity.rawData);
                                 }
                               },
                               child: Center(
                                 child: Text(
-                                  isBooked ? 'Directions' : 'Book Now',
+                                  isBooked || activity.rawData['bookingReference'] != null ? 'View Reservation' : 'Book Now',
                                   style: GoogleFonts.poppins(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
@@ -1725,10 +1763,13 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     // Handle different status card actions
     switch (action) {
       case 'View Details':
-        // TODO: Navigate to activity details
+        _showActivityDetails(status['activity']);
+        break;
+      case 'Get Ready':
+        _prepareForActivity(status['activity']);
         break;
       case 'Get Directions':
-        // TODO: Open maps
+        _showDirectionsOptions(status['activity']);
         break;
       case 'Rate Experience':
         // TODO: Open rating dialog
@@ -1742,6 +1783,227 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         _navigateToTab(2);
         break;
     }
+  }
+  
+  void _prepareForActivity(Map<String, dynamic> activity) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header with icon and title
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE3F2FD),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.access_time_rounded,
+                    color: Color(0xFF2196F3),
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Get Ready',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF2196F3),
+                        ),
+                      ),
+                      Text(
+                        activity['title'] ?? 'Your upcoming activity',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Get Directions option
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.map_outlined,
+                  color: Colors.blue,
+                  size: 24,
+                ),
+              ),
+              title: Text(
+                'Get Directions',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              subtitle: Text(
+                'Opens in maps app',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: Colors.grey[600],
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _showDirectionsOptions(activity);
+              },
+            ),
+            
+            const Divider(height: 16),
+            
+            // Call Venue option
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.phone_outlined,
+                  color: Colors.green,
+                  size: 24,
+                ),
+              ),
+              title: Text(
+                'Call Venue',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              subtitle: Text(
+                'Confirm details or ask questions',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: Colors.grey[600],
+                ),
+              ),
+              onTap: () {
+                final phone = activity['phone'] ?? '';
+                if (phone.isNotEmpty) {
+                  launchUrl(Uri.parse('tel:$phone'));
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('No phone number available'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
+            ),
+            
+            const Divider(height: 16),
+            
+            // Add to Calendar option
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.calendar_month_outlined,
+                  color: Colors.orange,
+                  size: 24,
+                ),
+              ),
+              title: Text(
+                'Add to Calendar',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              subtitle: Text(
+                'Set reminder and details',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: Colors.grey[600],
+                ),
+              ),
+              onTap: () {
+                // TODO: Implement calendar integration
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Added to calendar'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // I'm Ready button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('You\'re all set! Have a great time!'),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: Color(0xFF12B347),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF12B347),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  elevation: 2,
+                ),
+                child: Text(
+                  'I\'m Ready!',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
   
   void _navigateToTab(int tabIndex) async {
@@ -1786,7 +2048,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
   void _showActivityDetails(Map<String, dynamic> activity) {
     final paymentType = activity['paymentType'] as String?;
-    final isBooked = paymentType?.toLowerCase() == 'paid' || paymentType?.toLowerCase() == 'reserved';
+    final bookingRef = activity['bookingReference'] as String?;
+    final isBooked = paymentType?.toLowerCase() == 'paid' || paymentType?.toLowerCase() == 'reserved' || bookingRef != null;
     final isFree = (activity['price'] == 0 || (paymentType ?? '').toLowerCase() == 'free');
     showModalBottomSheet(
       context: context,
@@ -1983,7 +2246,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                                       foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(vertical: 14),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(24),
                                       ),
                                     ),
                                   ),
@@ -2002,7 +2265,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                                         side: const BorderSide(color: Color(0xFF12B347)),
                                         padding: const EdgeInsets.symmetric(vertical: 14),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(24),
                                         ),
                                       ),
                                     ),
@@ -2060,6 +2323,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF12B347),
                       foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
                     ),
                   ),
                 ),
@@ -2072,6 +2338,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF12B347),
                       side: const BorderSide(color: Color(0xFF12B347)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
                     ),
                   ),
                 ),
@@ -2095,7 +2364,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
   void _showActivityOptions(Map<String, dynamic> activity) {
     final paymentType = activity['paymentType'] as String?;
-    final isBooked = paymentType?.toLowerCase() == 'paid' || paymentType?.toLowerCase() == 'reserved';
+    final bookingRef = activity['bookingReference'] as String?;
+    final isBooked = paymentType?.toLowerCase() == 'paid' || paymentType?.toLowerCase() == 'reserved' || bookingRef != null;
     
     showModalBottomSheet(
       context: context,
@@ -3691,7 +3961,7 @@ class _ActivityPaymentScreenState extends State<_ActivityPaymentScreen> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(24),
                   ),
                 ),
                 child: isProcessing
@@ -4224,7 +4494,7 @@ class _ActivityBookingConfirmationScreenState extends State<_ActivityBookingConf
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(24),
                     ),
                   ),
                   child: Text(
@@ -4318,9 +4588,10 @@ class _ActivityBookingConfirmationScreenState extends State<_ActivityBookingConf
     // Navigate back to main screen and refresh My Day
     Navigator.of(context).popUntil((route) => route.isFirst);
     
-    // Use context.go to navigate to main screen with My Day tab
+    // Navigate back to main screen with My Day tab
     if (context.mounted) {
-      context.go('/main', extra: {'tab': 0});
+      // Use context.go to navigate to main screen with My Day tab
+      context.go('/main', extra: {'tab': 0, 'refresh': true});
     }
   }
 }

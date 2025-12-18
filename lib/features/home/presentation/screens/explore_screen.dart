@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../widgets/moody_character.dart';
-import 'dart:math';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,19 +9,20 @@ import 'package:wandermood/features/location/presentation/widgets/location_dropd
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/providers/explore_places_provider.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_card.dart';
+import 'package:wandermood/features/places/presentation/widgets/place_grid_card.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
-import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.dart';
-import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:wandermood/core/constants/api_keys.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:wandermood/core/services/wandermood_ai_service.dart';
+import 'package:wandermood/core/services/distance_service.dart';
+
 import '../widgets/conversational_explore_header.dart';
 import '../../application/intent_processor.dart';
 import '../../providers/smart_context_provider.dart';
-import '../../application/context_manager.dart';
-import '../../providers/dynamic_grouping_provider.dart';
-import '../widgets/dynamic_grouping_widget.dart';
+
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({Key? key}) : super(key: key);
@@ -41,45 +39,34 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   bool _isSearching = false;
   String _searchQuery = '';
   
-  // Scroll detection for hiding/showing Moody button
-  bool _isMoodyButtonVisible = true;
+  // Scroll detection for content
   bool _isScrolling = false;
   double _lastScrollOffset = 0.0;
+  
+  // View mode toggle - grid, list or map
+  bool _isGridView = false;
+  bool _isMapView = false;
+  GoogleMapController? _mapController;
   
   // Conversational interface state
   String _selectedIntent = '';
   String _currentExplanation = '';
   List<Place> _intentFilteredPlaces = [];
 
-  // AI Chat variables
-  final TextEditingController _chatController = TextEditingController();
-  bool _isAILoading = false;
-  final List<ChatMessage> _chatMessages = [];
-  String? _conversationId;
-  List<String> _aiRecommendedPlaceNames = []; // Track AI recommended places
-  bool _hasAIRecommendations = false; // Track if we have AI recommendations
+
 
   // Advanced filter settings - New Structure
   int _activeFiltersCount = 0;
   
   // Expandable sections state - ALL CLOSED BY DEFAULT
-  bool _moodyExpanded = false;
+  bool _advancedSuggestionsExpanded = false;
   bool _dietaryExpanded = false;
   bool _accessibilityExpanded = false;
   bool _logisticsExpanded = false;
   bool _photoExpanded = false;
 
-  // Moody tips array
-  static const List<String> _moodyTips = [
-    "🏠 Indoor • 🌱 Vegan • 🏳️‍🌈 LGBTQ+? I got you.",
-    "📸 Instagrammable • ☕ Wi-Fi • ♿ Accessible — filtered!",
-    "🌄 Scenic views • 🍽️ Halal • 🎶 Quiet spots?",
-    "🧘‍♀️ Calm vibe • 🌿 Gluten-free • 🌙 Open now — done.",
-    "🍜 Foodie-friendly • 🪑 Outdoor seating • 🤫 Less crowded?",
-    "🎭 Romantic • 🚌 Transport included • 🕒 1–3 hr?"
-  ];
+
   
-  String _selectedMoodyTip = "🏠 Indoor • 🌱 Vegan • 🏳️‍🌈 LGBTQ+? I got you.";
   
   // Moody Suggests filters
   String? _selectedMood; // Keep for backward compatibility
@@ -107,6 +94,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   bool _seniorFriendly = false;
   bool _babyFriendly = false;
   bool _blackOwned = false;
+
+  // Quick filter state (used primarily in map view, but applied globally)
+  bool _quickFilterDistance1km = false;
+  bool _quickFilterRating45 = false;
   
   // Comfort & Convenience
   // Price Range - Multi-select
@@ -158,9 +149,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     _searchController.addListener(_onSearchChanged);
     _scrollController.addListener(_onScrollChanged);
     
-    // Initialize random Moody tip
-    _selectedMoodyTip = _moodyTips[Random().nextInt(_moodyTips.length)];
-    
     // Clear any cached data and get fresh location
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Clear ALL cached places data from SharedPreferences
@@ -177,7 +165,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _scrollController.dispose();
-    _chatController.dispose();
+    _mapController?.dispose();
     super.dispose();
   }
 
@@ -192,15 +180,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final currentScrollOffset = _scrollController.offset;
     final scrollDelta = currentScrollOffset - _lastScrollOffset;
     
-    // Hide button when scrolling down fast, show when scrolling up or stopped
+    // Track scrolling state for any future use
     if (scrollDelta > 10 && !_isScrolling) {
       setState(() {
-        _isMoodyButtonVisible = false;
         _isScrolling = true;
       });
     } else if (scrollDelta < -5 || scrollDelta.abs() < 1) {
       setState(() {
-        _isMoodyButtonVisible = true;
         _isScrolling = false;
       });
     }
@@ -444,6 +430,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   List<Place> _filterPlaces(List<Place> places) {
+    final initialCount = places.length;
     var filteredPlaces = places.where((place) {
       // Filter by search query
       bool matchesSearch = _searchQuery.isEmpty ||
@@ -457,54 +444,73 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       return matchesSearch && matchesAdvancedFilters;
     }).toList();
 
-    // Sort places to prioritize AI recommendations
-    if (_hasAIRecommendations && _aiRecommendedPlaceNames.isNotEmpty) {
-      filteredPlaces.sort((a, b) {
-        final aIsRecommended = _isPlaceRecommendedByAI(a);
-        final bIsRecommended = _isPlaceRecommendedByAI(b);
-        
-        // AI recommended places come first
-        if (aIsRecommended && !bIsRecommended) return -1;
-        if (!aIsRecommended && bIsRecommended) return 1;
-        
-        // Within the same group (recommended or not), sort by rating
-        return (b.rating ?? 0.0).compareTo(a.rating ?? 0.0);
-      });
-      
-      print('🤖 Sorted ${filteredPlaces.length} places, AI recommendations prioritized');
+    // Sort places by rating
+    filteredPlaces.sort((a, b) => (b.rating ?? 0.0).compareTo(a.rating ?? 0.0));
+
+    // Debug logging
+    if (_activeFiltersCount > 0 || _searchQuery.isNotEmpty) {
+      debugPrint('🔍 Filtering: ${initialCount} → ${filteredPlaces.length} places');
+      debugPrint('   Active filters: $_activeFiltersCount');
+      debugPrint('   Search query: "$_searchQuery"');
     }
 
     return filteredPlaces;
   }
 
-  // Check if a place matches AI recommendations
-  bool _isPlaceRecommendedByAI(Place place) {
-    if (!_hasAIRecommendations || _aiRecommendedPlaceNames.isEmpty) return false;
-    
-    // Check for exact or partial matches with AI recommended place names
-    final placeName = place.name.toLowerCase();
-    
-    for (final recommendedName in _aiRecommendedPlaceNames) {
-      final recommended = recommendedName.toLowerCase();
-      
-      // Check for exact match or if the place name contains the recommended name
-      if (placeName.contains(recommended) || recommended.contains(placeName)) {
-        return true;
-      }
-      
-      // Check for keyword matches (e.g., "Markthal" should match "Markthal Rotterdam")
-      final recommendedWords = recommended.split(' ');
-      final placeWords = placeName.split(' ');
-      
-      for (final word in recommendedWords) {
-        if (word.length > 3 && placeWords.any((placeWord) => placeWord.contains(word))) {
-          return true;
-        }
-      }
+  /// Apply quick filters (distance, rating) on top of existing filters
+  List<Place> _applyQuickFilters(
+    List<Place> places, {
+    required Position? userLocation,
+    required String currentCity,
+  }) {
+    var result = List<Place>.from(places);
+
+    // Rating quick filter: 4.5+
+    if (_quickFilterRating45) {
+      result = result.where((place) => place.rating >= 4.5).toList();
     }
-    
-    return false;
+
+    // Distance quick filter: within 1km
+    if (_quickFilterDistance1km) {
+      // If we don't have user location, fall back to city center coordinates
+      double originLat;
+      double originLng;
+
+      if (userLocation != null) {
+        originLat = userLocation.latitude;
+        originLng = userLocation.longitude;
+      } else {
+        // Simple fallback using same coordinates map as explore_places_provider
+        final cityCoords = {
+          'Rotterdam': {'lat': 51.9244, 'lng': 4.4777},
+          'Amsterdam': {'lat': 52.3676, 'lng': 4.9041},
+          'The Hague': {'lat': 52.0705, 'lng': 4.3007},
+          'Utrecht': {'lat': 52.0907, 'lng': 5.1214},
+          'Eindhoven': {'lat': 51.4416, 'lng': 5.4697},
+          'Groningen': {'lat': 53.2194, 'lng': 6.5665},
+          'Delft': {'lat': 52.0067, 'lng': 4.3556},
+          'Beneden-Leeuwen': {'lat': 51.8892, 'lng': 5.5142},
+        };
+        final fallback = cityCoords[currentCity] ?? cityCoords['Rotterdam']!;
+        originLat = fallback['lat']!;
+        originLng = fallback['lng']!;
+      }
+
+      result = result.where((place) {
+        final distanceKm = DistanceService.calculateDistance(
+          originLat,
+          originLng,
+          place.location.lat,
+          place.location.lng,
+        );
+        return distanceKm <= 1.0;
+      }).toList();
+    }
+
+    return result;
   }
+
+
 
   bool _checkAdvancedFilters(Place place) {
     // Mood filter
@@ -549,32 +555,60 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return true;
   }
 
-  // Smart metadata matching method
+  // Smart metadata matching method - improved with fallback logic
   bool _matchesFilter(Place place, String filterKey) {
     // Get filter metadata from places provider
-    final exploreProvider = ref.read(explorePlacesProvider(city: 'Rotterdam').notifier);
+    final currentCity = ref.read(locationNotifierProvider).value ?? 'Rotterdam';
+    final exploreProvider = ref.read(explorePlacesProvider(city: currentCity).notifier);
     final filterMeta = exploreProvider.getFilterMetadata(filterKey);
     
-    if (filterMeta == null) return false;
-
-    // Check keywords in name and description
-    final keywords = List<String>.from(filterMeta['keywords'] ?? []);
-    final targetTypes = List<String>.from(filterMeta['types'] ?? []);
-    final ratingThreshold = filterMeta['rating_threshold'] as double?;
-    
-    // Check name and description for keywords
+    // Create search text for keyword matching
     final searchText = '${place.name.toLowerCase()} ${place.description?.toLowerCase() ?? ''} ${place.address.toLowerCase()}';
     
-    bool keywordMatch = keywords.any((keyword) => searchText.contains(keyword.toLowerCase()));
+    // If metadata exists, use it
+    if (filterMeta != null) {
+      final keywords = List<String>.from(filterMeta['keywords'] ?? []);
+      final targetTypes = List<String>.from(filterMeta['types'] ?? []);
+      final ratingThreshold = filterMeta['rating_threshold'] as double?;
+      
+      bool keywordMatch = keywords.any((keyword) => searchText.contains(keyword.toLowerCase()));
+      bool typeMatch = targetTypes.isEmpty || place.types.any((type) => targetTypes.contains(type));
+      bool ratingMatch = ratingThreshold == null || (place.rating ?? 0.0) >= ratingThreshold;
+      
+      return (keywordMatch || typeMatch) && ratingMatch;
+    }
     
-    // Check place types
-    bool typeMatch = targetTypes.isEmpty || place.types.any((type) => targetTypes.contains(type));
+    // Fallback: Use keyword-based matching if metadata doesn't exist
+    return _matchesFilterByKeywords(place, filterKey, searchText);
+  }
+  
+  // Fallback keyword matching when metadata is not available
+  bool _matchesFilterByKeywords(Place place, String filterKey, String searchText) {
+    final keywordMap = {
+      'vegan': ['vegan', 'plant-based', 'plant based', 'vegetarian'],
+      'vegetarian': ['vegetarian', 'veggie', 'meat-free', 'meat free'],
+      'halal': ['halal', 'muslim', 'islamic'],
+      'gluten_free': ['gluten-free', 'gluten free', 'celiac', 'gf'],
+      'wheelchair_accessible': ['accessible', 'wheelchair', 'ramp', 'elevator', 'disabled'],
+      'lgbtq_friendly': ['lgbtq', 'lgbt', 'gay', 'pride', 'inclusive'],
+      'senior_friendly': ['senior', 'elderly', 'accessible', 'easy access'],
+      'baby_friendly': ['baby', 'child', 'family', 'kids', 'stroller', 'changing'],
+      'black_owned': ['black owned', 'black-owned', 'african'],
+      'wifi_available': ['wifi', 'wi-fi', 'wireless', 'internet', 'free wifi'],
+      'charging_points': ['charging', 'power outlet', 'usb', 'electric'],
+      'parking_available': ['parking', 'car park', 'garage'],
+      'credit_cards': ['card', 'credit', 'debit', 'payment', 'cashless'],
+      'instagrammable': ['instagram', 'photo', 'picturesque', 'scenic', 'beautiful'],
+      'aesthetic_spaces': ['aesthetic', 'design', 'decor', 'interior', 'stylish'],
+      'scenic_views': ['view', 'scenic', 'panoramic', 'vista', 'overlook'],
+      'best_at_sunset': ['sunset', 'evening', 'golden hour', 'dusk'],
+    };
     
-    // Check rating threshold if specified
-    bool ratingMatch = ratingThreshold == null || (place.rating ?? 0.0) >= ratingThreshold;
+    final keywords = keywordMap[filterKey] ?? [];
+    if (keywords.isEmpty) return true; // If no keywords defined, don't filter out
     
-    // Combine all criteria
-    return (keywordMatch || typeMatch) && ratingMatch;
+    // Check if any keyword matches
+    return keywords.any((keyword) => searchText.contains(keyword.toLowerCase()));
   }
 
   // Helper method for mood matching
@@ -711,10 +745,26 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return SwirlBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        drawer: const ProfileDrawer(),
-        floatingActionButton: _buildFloatingMoodyButton(),
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        body: SafeArea(
+        // Removed drawer and floating action button for Moody chat
+        body: NestedScrollView(
+          controller: _scrollController,
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                floating: true,
+                pinned: true,
+                snap: false,
+                expandedHeight: 300, // Increased to accommodate the activities count and view toggle
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                automaticallyImplyLeading: false,
+                // Removed hamburger menu
+                leading: null,
+                // Removed compact title, search and location buttons
+                title: null,
+                flexibleSpace: FlexibleSpaceBar(
+                  collapseMode: CollapseMode.parallax,
+                  background: SafeArea(
           child: Column(
             children: [
               // Header with title
@@ -722,65 +772,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                 child: Row(
                   children: [
-                    // Profile picture menu button
-                    Builder(
-                      builder: (context) {
-                        final profileData = ref.watch(profileProvider);
-                        return GestureDetector(
-                          onTap: () => Scaffold.of(context).openDrawer(),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: profileData.when(
-                              data: (profile) => CircleAvatar(
-                                radius: 20,
-                                backgroundColor: Colors.white,
-                                backgroundImage: profile?.imageUrl != null
-                                    ? NetworkImage(profile!.imageUrl!)
-                                    : null,
-                                child: profile?.imageUrl == null
-                                    ? Text(
-                                        profile?.fullName?.substring(0, 1).toUpperCase() ?? 'U',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: const Color(0xFF12B347),
-                                        ),
-                                      )
-                                    : null,
-                              ),
-                              loading: () => CircleAvatar(
-                                radius: 20,
-                                backgroundColor: Colors.white,
-                                child: Icon(
-                                  Icons.person,
-                                  color: const Color(0xFF12B347),
-                                  size: 20,
-                                ),
-                              ),
-                              error: (_, __) => CircleAvatar(
-                                radius: 20,
-                                backgroundColor: Colors.white,
-                                child: Icon(
-                                  Icons.person,
-                                  color: const Color(0xFF12B347),
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 16),
                     Text(
                       'Explore',
                       style: GoogleFonts.museoModerno(
@@ -802,18 +793,38 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 selectedIntent: _selectedIntent,
                 onFilterTap: _showAdvancedFilters,
                 activeFiltersCount: _activeFiltersCount,
+                          activitiesCount: explorePlacesAsync.when(
+                            data: (places) => _filterPlaces(places).length,
+                            loading: () => 0,
+                            error: (_, __) => 0,
+                          ),
+                          isGridView: _isGridView,
+                          isMapView: _isMapView,
+                          onViewToggle: (isGrid, isMap) {
+                            setState(() {
+                              _isGridView = isGrid;
+                              _isMapView = isMap;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(0), // Changed from 60 to 0
+                  child: Container(), // Empty container since we moved the UI elements
+                ),
               ),
-              
-
-              
-              // Places List
-              Expanded(
-                child: explorePlacesAsync.when(
+            ];
+          },
+          body: explorePlacesAsync.when(
                   data: (allPlaces) {
                     // Get city name for filtering
                     final currentCity = locationAsync.value ?? 'Rotterdam';
                     
                     List<Place> filteredPlaces;
+                    final userLocation = userLocationAsync.value;
                     
                     // Use conversational filtering if active, otherwise use traditional filtering
                     if (_intentFilteredPlaces.isNotEmpty || _selectedIntent.isNotEmpty || _searchQuery.isNotEmpty) {
@@ -826,8 +837,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       // Apply additional search and advanced filters locally
                       filteredPlaces = _filterPlaces(categoryFilteredPlaces);
                     }
+
+                    // For map view: show ALL places (filters are visual indicators only)
+                    // For list/grid view: apply quick filters to actually filter results
+                    final placesForMap = filteredPlaces; // Keep all places for map
                     
-                    if (filteredPlaces.isEmpty) {
+                    if (!_isMapView) {
+                      // Apply quick filters only for list/grid views
+                      filteredPlaces = _applyQuickFilters(
+                        filteredPlaces,
+                        userLocation: userLocation,
+                        currentCity: currentCity,
+                      );
+                    }
+                    
+                    if (filteredPlaces.isEmpty && !_isMapView) {
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -936,7 +960,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2, end: 0),
                         
                         // AI Recommendations Banner
-                        if (_hasAIRecommendations && _aiRecommendedPlaceNames.isNotEmpty)
+                                        if (false) // Removed AI recommendations
                           Container(
                             width: double.infinity,
                             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -961,7 +985,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                     color: const Color(0xFF12B347),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
-                                  child: const MoodyCharacter(size: 16),
+                            child: const Icon(Icons.recommend, size: 16, color: Colors.white),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -977,7 +1001,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                         ),
                                       ),
                                       Text(
-                                        'Places matching your chat with Moody are highlighted',
+                                  'Places matching your search are highlighted',
                                         style: GoogleFonts.poppins(
                                           fontSize: 12,
                                           color: Colors.grey[600],
@@ -989,8 +1013,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                 IconButton(
                                   onPressed: () {
                                     setState(() {
-                                      _hasAIRecommendations = false;
-                                      _aiRecommendedPlaceNames.clear();
+                                      // Removed AI recommendations functionality
                                     });
                                   },
                                   icon: Icon(
@@ -1003,19 +1026,49 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             ),
                           ),
                         
-                        // Places List
+                  // Places List/Grid/Map
                         Expanded(
-                          child: ListView.builder(
-                            controller: _scrollController,
-                            padding: const EdgeInsets.only(bottom: 100),
+                    child: _isMapView
+                      ? _buildMapView(placesForMap, userLocationAsync.value)
+                      : _isGridView 
+                        ? GridView.builder(
+                            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 100),
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.75,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                            ),
                             itemCount: filteredPlaces.length,
                             itemBuilder: (context, index) {
                               final place = filteredPlaces[index];
                               final userLocation = userLocationAsync.value;
                               
+                              return PlaceGridCard(
+                                place: place,
+                                userLocation: userLocation,
+                                cityName: locationAsync.value ?? 'Rotterdam',
+                                onTap: () {
+                                  context.push('/place/${place.id}');
+                                },
+                              ).animate().fadeIn(
+                                duration: 300.ms,
+                                delay: Duration(milliseconds: index * 30),
+                              );
+                            },
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.only(bottom: 100),
+                            itemCount: filteredPlaces.length,
+                            itemBuilder: (context, index) {
+                              final place = filteredPlaces[index];
+                              final userLocation = userLocationAsync.value;
+                              final currentCity = locationAsync.value ?? 'Rotterdam';
+                              
                               return PlaceCard(
                                 place: place,
                                 userLocation: userLocation,
+                                cityName: currentCity,
                                 onTap: () {
                                   context.push('/place/${place.id}');
                                 },
@@ -1068,1030 +1121,36 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       ],
                     ),
                   ),
-                ),
-              ),
-            ],
           ),
         ),
       ),
     );
   }
 
-  // Build floating Moody button with scroll hide/show animation and tap-hold
-  Widget _buildFloatingMoodyButton() {
-    return AnimatedSlide(
-      duration: const Duration(milliseconds: 200),
-      offset: _isMoodyButtonVisible ? Offset.zero : const Offset(0, 2),
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 200),
-        opacity: _isMoodyButtonVisible ? 1.0 : 0.0,
-        child: GestureDetector(
-          onTap: () {
-            print('🎯 Moody button tapped in explore screen!');
-            HapticFeedback.lightImpact();
-            _showMoodyTalkDialog();
-          },
-          onLongPress: () {
-            print('🎯 Moody button long pressed - showing quick mood prompts!');
-            HapticFeedback.mediumImpact();
-            _showQuickMoodPrompts();
-          },
-          child: Container(
-            width: 64,
-            height: 64,
-            child: const MoodyCharacter(size: 48),
-          ),
-        ),
-      ),
-    );
-  }
 
-  // Show quick mood prompts on long press
-  void _showQuickMoodPrompts() {
-    showDialog(
-      context: context,
-      barrierColor: Colors.black26,
-      builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header with Moody character
-                Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF12B347), Color(0xFF0A8F3A)],
-                        ),
-                      ),
-                      child: const Center(
-                        child: MoodyCharacter(size: 22),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Quick Mood Shortcuts',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF2D3748),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                
-                // Quick mood buttons
-                _buildQuickMoodButton(
-                  icon: '😴',
-                  title: "I'm bored",
-                  subtitle: 'Find something exciting nearby',
-                  onTap: () {
-                    Navigator.pop(context);
-                    _selectIntentFromQuickMood('Adventure time');
-                  },
-                ),
-                const SizedBox(height: 12),
-                _buildQuickMoodButton(
-                  icon: '✨',
-                  title: 'Surprise me',
-                  subtitle: 'Random discovery based on my mood',
-                  onTap: () {
-                    Navigator.pop(context);
-                    _selectIntentFromQuickMood('Perfect for now');
-                  },
-                ),
-                const SizedBox(height: 12),
-                _buildQuickMoodButton(
-                  icon: '😌',
-                  title: 'Chill mode',
-                  subtitle: 'Something peaceful and relaxing',
-                  onTap: () {
-                    Navigator.pop(context);
-                    _selectIntentFromQuickMood('Chill vibes');
-                  },
-                ),
-                const SizedBox(height: 16),
-                
-                // Full chat button
-                Container(
-                  width: double.infinity,
-                  height: 48,
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _showMoodyTalkDialog();
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor: const Color(0xFF12B347).withOpacity(0.1),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      'Open Full Chat',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF12B347),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 
-  Widget _buildQuickMoodButton({
-    required String icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.grey[50],
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.grey.withOpacity(0.2),
-          ),
-        ),
-        child: Row(
-          children: [
-            Text(
-              icon,
-              style: const TextStyle(fontSize: 24),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF2D3748),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.arrow_forward_ios,
-              size: 14,
-              color: Colors.grey,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  void _selectIntentFromQuickMood(String intent) {
-    HapticFeedback.selectionClick();
-    _onIntentSelected(intent);
-  }
 
   // Show dialog for talking to Moody
   void _showMoodyTalkDialog() {
-    // Create conversation ID only if it doesn't exist (persistent conversation)
-    if (_conversationId == null) {
-      _conversationId = 'conv_${DateTime.now().millisecondsSinceEpoch}';
-    }
-    
-    // Get current location for dynamic text
-    final currentLocation = ref.read(locationNotifierProvider).value ?? 'your area';
-    
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.9,
-          minChildSize: 0.5,
-          maxChildSize: 0.95,
-          builder: (context, scrollController) {
-            return StatefulBuilder(
-              builder: (context, setModalState) {
-                return Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      // Enhanced header with friendly aesthetics
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              const Color(0xFF12B347).withOpacity(0.05),
-                              Colors.white,
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            // Handle bar
-                            Container(
-                              width: 40,
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            
-                            // Header content
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: Row(
-                                children: [
-                                  // Enhanced Moody avatar with gradient and shadow
-                                  Container(
-                                    width: 50,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      gradient: const LinearGradient(
-                                        colors: [Color(0xFF12B347), Color(0xFF0A8F3A)],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(0xFF12B347).withOpacity(0.3),
-                                          blurRadius: 12,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Center(
-                                      child: MoodyCharacter(size: 28),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  
-                                  // Title and online status
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Chat with Moody',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.bold,
-                                            color: const Color(0xFF2D3748),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            Container(
-                                              width: 8,
-                                              height: 8,
-                                              decoration: const BoxDecoration(
-                                                color: Color(0xFF10B149),
-                                                shape: BoxShape.circle,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 6),
-                                            Text(
-                                              'Your AI explore buddy is online',
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 13,
-                                                color: Colors.grey[600],
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  
-                                  // Enhanced close button
-                                  Container(
-                                    width: 36,
-                                    height: 36,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[100],
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: IconButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      icon: const Icon(
-                                        Icons.close_rounded,
-                                        color: Colors.grey,
-                                        size: 18,
-                                      ),
-                                      padding: EdgeInsets.zero,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      // Chat messages area
-                      Expanded(
-                        child: _chatMessages.isEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.all(32),
-                              child: Column(
-                                children: [
-                                  const Spacer(),
-                                  
-                                  // Large enhanced Moody character
-                                  Container(
-                                    width: 120,
-                                    height: 120,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          const Color(0xFF12B347).withOpacity(0.1),
-                                          const Color(0xFF12B347).withOpacity(0.05),
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                      border: Border.all(
-                                        color: const Color(0xFF12B347).withOpacity(0.2),
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: const Center(
-                                      child: MoodyCharacter(size: 60),
-                                    ),
-                                  ),
-                                  
-                                  const SizedBox(height: 24),
-                                  
-                                  Text(
-                                    'Hey there! 👋',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF2D3748),
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  
-                                  const SizedBox(height: 8),
-                                  
-                                  Text(
-                                    'I\'m Moody, your AI explore buddy!',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                      color: const Color(0xFF4A5568),
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  
-                                  const SizedBox(height: 16),
-                                  
-                                  Text(
-                                    'Ask me about $currentLocation\'s hidden gems,\nbest restaurants, or weekend adventures.',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 15,
-                                      color: Colors.grey[600],
-                                      height: 1.4,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  
-                                  const SizedBox(height: 32),
-                                  
-                                  // Quick suggestion chips
-                                  Container(
-                                    padding: const EdgeInsets.all(20),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF12B347).withOpacity(0.05),
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(
-                                        color: const Color(0xFF12B347).withOpacity(0.1),
-                                      ),
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          'Try asking me about:',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: const Color(0xFF2D3748),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 12),
-                                        Wrap(
-                                          spacing: 8,
-                                          runSpacing: 8,
-                                          alignment: WrapAlignment.center,
-                                          children: [
-                                            _buildStaticSuggestionChip('🍕 Food spots'),
-                                            _buildStaticSuggestionChip('🎨 Art & Culture'),
-                                            _buildStaticSuggestionChip('🌆 Local hotspots'),
-                                            _buildStaticSuggestionChip('🌟 Hidden gems'),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  
-                                  const Spacer(),
-                                ],
-                              ),
-                            )
-                          : ListView.builder(
-                              controller: scrollController,
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              itemCount: _chatMessages.length + (_isAILoading ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                if (index < _chatMessages.length) {
-                                  return _buildMessageBubble(_chatMessages[index]);
-                                } else {
-                                  // Enhanced loading indicator
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 36,
-                                          height: 36,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            gradient: const LinearGradient(
-                                              colors: [Color(0xFF12B347), Color(0xFF0A8F3A)],
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: const Color(0xFF12B347).withOpacity(0.3),
-                                                blurRadius: 8,
-                                                offset: const Offset(0, 2),
-                                              ),
-                                            ],
-                                          ),
-                                          child: const Center(
-                                            child: MoodyCharacter(size: 20),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFF5F7FA),
-                                            borderRadius: const BorderRadius.only(
-                                              topLeft: Radius.circular(20),
-                                              topRight: Radius.circular(20),
-                                              bottomRight: Radius.circular(20),
-                                              bottomLeft: Radius.circular(4),
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black.withOpacity(0.08),
-                                                blurRadius: 8,
-                                                offset: const Offset(0, 2),
-                                              ),
-                                            ],
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              SizedBox(
-                                                width: 16,
-                                                height: 16,
-                                                child: CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                                    Colors.grey[400]!,
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                'Moody is thinking...',
-                                                style: GoogleFonts.poppins(
-                                                  fontSize: 14,
-                                                  color: Colors.grey[600],
-                                                  fontStyle: FontStyle.italic,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
-                      ),
-
-                      // Enhanced input area
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border(
-                            top: BorderSide(color: Colors.grey[200]!),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, -2),
-                            ),
-                          ],
-                        ),
-                        child: SafeArea(
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF8F9FA),
-                                    borderRadius: BorderRadius.circular(25),
-                                    border: Border.all(
-                                      color: const Color(0xFF12B347).withOpacity(0.1),
-                                    ),
-                                  ),
-                                  child: TextField(
-                                    controller: _chatController,
-                                    decoration: InputDecoration(
-                                      hintText: 'Ask me anything about $currentLocation...',
-                                      hintStyle: GoogleFonts.poppins(
-                                        color: Colors.grey[500],
-                                        fontSize: 14,
-                                      ),
-                                      border: InputBorder.none,
-                                      contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                        vertical: 16,
-                                      ),
-                                      prefixIcon: Icon(
-                                        Icons.chat_bubble_outline,
-                                        color: Colors.grey[400],
-                                        size: 20,
-                                      ),
-                                    ),
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      color: const Color(0xFF2D3748),
-                                    ),
-                                    onSubmitted: (text) => _sendChatMessageInModal(text, setModalState),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              
-                              // Enhanced send button
-                              Container(
-                                width: 48,
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFF12B347), Color(0xFF0A8F3A)],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(24),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF12B347).withOpacity(0.3),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(24),
-                                    onTap: () => _sendChatMessageInModal(_chatController.text, setModalState),
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.send_rounded,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          },
-        );
-      },
-    );
+    // Removed - Moody chat now only available on Moody screen
   }
 
   // Send chat message in modal
   Future<void> _sendChatMessageInModal(String message, StateSetter setModalState) async {
-    if (message.trim().isEmpty || _isAILoading) return;
-
-    // Get current location for context
-    final locationAsync = ref.read(locationNotifierProvider);
-    final city = locationAsync.valueOrNull ?? 'Rotterdam';
-
-    // Add user message
-    setModalState(() {
-      _chatMessages.add(ChatMessage(
-        message: message.trim(),
-        isUser: true,
-        timestamp: DateTime.now(),
-      ));
-      _isAILoading = true;
-    });
-
-    // Clear input
-    _chatController.clear();
-
-    try {
-      // Call AI service
-      final response = await WanderMoodAIService.chat(
-        message: message.trim(),
-        conversationId: _conversationId,
-        moods: [], // Empty moods for explore context
-        latitude: 51.9244, // Default Rotterdam coordinates
-        longitude: 4.4777,
-        city: city,
-      );
-
-      // Extract place recommendations from AI response
-      final placeNames = _extractPlaceNamesFromResponse(response.message);
-      
-      // Add AI response
-      setModalState(() {
-        _chatMessages.add(ChatMessage(
-          message: response.message,
-          isUser: false,
-          timestamp: DateTime.now(),
-        ));
-        _isAILoading = false;
-      });
-
-      // Update the main screen with AI recommendations
-      setState(() {
-        _aiRecommendedPlaceNames = placeNames;
-        _hasAIRecommendations = placeNames.isNotEmpty;
-      });
-
-      print('🤖 AI recommended places: $placeNames');
-      
-    } catch (e) {
-      print('🤖 Error getting AI response: $e');
-      setModalState(() {
-        _chatMessages.add(ChatMessage(
-          message: 'Sorry, I had trouble connecting. Please try again!',
-          isUser: false,
-          timestamp: DateTime.now(),
-        ));
-        _isAILoading = false;
-      });
-    }
+    // Removed - Moody chat now only available on Moody screen
   }
 
-  // Extract place names from AI response text
-  List<String> _extractPlaceNamesFromResponse(String response) {
-    final List<String> placeNames = [];
-    
-    // Common place patterns to look for
-    final RegExp placePattern = RegExp(
-      r'(?:visit|try|check out|go to|recommend|suggest)\s+([A-Z][a-zA-Z\s&]+?)(?:\s|,|\.|\!|\?|$)',
-      caseSensitive: false,
-    );
-    
-    final matches = placePattern.allMatches(response);
-    for (final match in matches) {
-      final placeName = match.group(1)?.trim();
-      if (placeName != null && placeName.length > 2) {
-        placeNames.add(placeName);
-      }
-    }
-    
-    // Also look for specific Rotterdam landmarks mentioned
-    final rotterdamLandmarks = [
-      'Markthal', 'Euromast', 'Erasmus Bridge', 'Cube Houses', 'Fenix Food Factory',
-      'Kunsthal', 'Boijmans', 'Het Park', 'Witte de Withstraat', 'Oude Haven'
-    ];
-    
-    for (final landmark in rotterdamLandmarks) {
-      if (response.toLowerCase().contains(landmark.toLowerCase())) {
-        placeNames.add(landmark);
-      }
-    }
-    
-    return placeNames.toSet().toList(); // Remove duplicates
-  }
-
-  // Build message bubble widget with improved aesthetics
+  // Build message bubble
   Widget _buildMessageBubble(ChatMessage message) {
-    final profileData = ref.watch(profileProvider);
-    
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: Row(
-        mainAxisAlignment: message.isUser 
-          ? MainAxisAlignment.end 
-          : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (!message.isUser) ...[
-            // Moody's Avatar with animation
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF12B347), Color(0xFF0A8F3A)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF12B347).withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Center(
-                child: MoodyCharacter(size: 20),
-              ),
-            ),
-            const SizedBox(width: 12),
-          ],
-          
-          // Message bubble with improved styling
-          Flexible(
-            child: Column(
-              crossAxisAlignment: message.isUser 
-                ? CrossAxisAlignment.end 
-                : CrossAxisAlignment.start,
-              children: [
-                Container(
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.7,
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                  decoration: BoxDecoration(
-                    gradient: message.isUser
-                      ? const LinearGradient(
-                          colors: [Color(0xFF12B347), Color(0xFF0A8F3A)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        )
-                      : null,
-                    color: message.isUser ? null : const Color(0xFFF5F7FA),
-                    borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(20),
-                      topRight: const Radius.circular(20),
-                      bottomLeft: message.isUser 
-                        ? const Radius.circular(20) 
-                        : const Radius.circular(4),
-                      bottomRight: message.isUser 
-                        ? const Radius.circular(4) 
-                        : const Radius.circular(20),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: message.isUser 
-                          ? const Color(0xFF12B347).withOpacity(0.2)
-                          : Colors.black.withOpacity(0.08),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    message.message,
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      height: 1.4,
-                      fontWeight: FontWeight.w500,
-                      color: message.isUser 
-                        ? Colors.white 
-                        : const Color(0xFF2D3748),
-                    ),
-                  ),
-                ),
-                
-                // Timestamp
-                Padding(
-                  padding: const EdgeInsets.only(top: 4, left: 4, right: 4),
-                  child: Text(
-                    _formatMessageTime(message.timestamp),
-                    style: GoogleFonts.poppins(
-                      fontSize: 11,
-                      color: Colors.grey[500],
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          if (message.isUser) ...[
-            const SizedBox(width: 12),
-            // User's Profile Picture
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFF12B347).withOpacity(0.2),
-                  width: 2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: ClipOval(
-                child: profileData.when(
-                  data: (profile) {
-                    if (profile?.imageUrl != null) {
-                      return Image.network(
-                        profile!.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return _buildDefaultUserAvatar(profile);
-                        },
-                      );
-                    } else {
-                      return _buildDefaultUserAvatar(profile);
-                    }
-                  },
-                  loading: () => _buildDefaultUserAvatar(null),
-                  error: (_, __) => _buildDefaultUserAvatar(null),
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  // Helper method to build default user avatar
-  Widget _buildDefaultUserAvatar(dynamic profile) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Center(
-        child: Text(
-          profile?.fullName?.substring(0, 1).toUpperCase() ?? 'U',
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    );
-  }
-
-     // Helper method to format message timestamp
-   String _formatMessageTime(DateTime timestamp) {
-     final now = DateTime.now();
-     final difference = now.difference(timestamp);
-     
-     if (difference.inMinutes < 1) {
-       return 'Just now';
-     } else if (difference.inMinutes < 60) {
-       return '${difference.inMinutes}m ago';
-     } else if (difference.inHours < 24) {
-       return '${difference.inHours}h ago';
-     } else {
-       return '${timestamp.day}/${timestamp.month}';
-     }
-   }
-
-   // Helper method to build static suggestion chips
-   Widget _buildStaticSuggestionChip(String text) {
-     return Container(
-       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-       decoration: BoxDecoration(
-         color: Colors.white,
-         borderRadius: BorderRadius.circular(20),
-         border: Border.all(
-           color: const Color(0xFF12B347).withOpacity(0.2),
-         ),
-         boxShadow: [
-           BoxShadow(
-             color: Colors.black.withOpacity(0.05),
-             blurRadius: 4,
-             offset: const Offset(0, 2),
-           ),
-         ],
-       ),
-       child: Text(
-         text,
-         style: GoogleFonts.poppins(
-           fontSize: 12,
-           fontWeight: FontWeight.w500,
-           color: const Color(0xFF4A5568),
-         ),
-       ),
-     );
+    // Removed - Moody chat now only available on Moody screen
+    return Container();
    }
 
    // Helper method to build quick suggestion buttons
    Widget _buildQuickSuggestion(String text) {
-     return GestureDetector(
-       onTap: () {
-         // Find the modal state and send the suggestion as a message
-         _chatController.text = text.replaceAll(RegExp(r'[🍕☕🎨]'), '').trim();
-       },
-       child: Container(
-         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-         decoration: BoxDecoration(
-           color: const Color(0xFF12B347).withOpacity(0.1),
-           borderRadius: BorderRadius.circular(15),
-           border: Border.all(
-             color: const Color(0xFF12B347).withOpacity(0.2),
-           ),
-         ),
-         child: Text(
-           text,
-           style: GoogleFonts.poppins(
-             fontSize: 11,
-             fontWeight: FontWeight.w500,
-             color: const Color(0xFF12B347),
-           ),
-         ),
-       ),
-     );
+    // Removed - Moody chat now only available on Moody screen
+    return Container();
    }
 
   Widget _buildAdvancedFilterModal() {
@@ -2218,21 +1277,22 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Floating Moody when no filters selected
+                        // Empty state when no filters selected
                         if (_activeFiltersCount == 0) ...[
                           Center(
                             child: Column(
                               children: [
-                                MoodyCharacter(
+                                Icon(
+                                  Icons.tune_rounded,
                                   size: 80,
-                                  mood: 'idle',
+                                  color: Colors.grey[400],
                                 ),
                                 const SizedBox(height: 16),
-                                // Random Moody tip
+                                // Filter tip
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 24),
                                   child: Text(
-                                    _selectedMoodyTip,
+                                    "🎯 Use filters to find exactly what you're looking for!",
                                     style: GoogleFonts.poppins(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
@@ -2248,20 +1308,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           const SizedBox(height: 32),
                         ],
                         
-                        // Moody Suggests (AI-recommended toggles)
+                        // Advanced Suggestions 
                         _buildExpandableSection(
-                          '💃', 
-                          'Moody Suggests', 
-                          _moodyExpanded,
+                          '⚡', 
+                          'Quick Suggestions', 
+                          _advancedSuggestionsExpanded,
                           () {
-                            print('🚨 TOGGLE FUNCTION CALLED for Moody Suggests');
                             updateFilter(() {
-                              print('🔄 BEFORE: _moodyExpanded = $_moodyExpanded');
-                              _moodyExpanded = !_moodyExpanded;
-                              print('🔄 AFTER: _moodyExpanded = $_moodyExpanded');
+                              _advancedSuggestionsExpanded = !_advancedSuggestionsExpanded;
                             });
                           },
-                          _buildMoodyFilters(updateFilter),
+                          _buildAdvancedSuggestionFilters(updateFilter),
                         ),
                         
                         const SizedBox(height: 12),
@@ -2339,8 +1396,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);
+                      // Force a rebuild to apply filters
                       setState(() {
-                        // Trigger rebuild to apply all the advanced filters
+                        // Update active filters count
+                        _updateActiveFiltersCount();
+                        debugPrint('💾 Saved filters - Active count: $_activeFiltersCount');
+                        debugPrint('🔍 Filter state - Vegan: $_vegan, Vegetarian: $_vegetarian, Wheelchair: $_wheelchairAccessible');
                       });
                     },
                     style: ElevatedButton.styleFrom(
@@ -2969,14 +2030,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  // Moody Suggests filters
-  Widget _buildMoodyFilters(Function(VoidCallback) updateFilter) {
+  // Advanced Suggestion filters
+  Widget _buildAdvancedSuggestionFilters(Function(VoidCallback) updateFilter) {
     return Column(
       children: [
         Row(
           children: [
             Expanded(
-              child: _buildMoodyFilterChip('🏠', 'Indoor Only', _indoorOnly, const Color(0xFFE3F2FD), (value) {
+              child: _buildFilterChip('🏠', 'Indoor Only', _indoorOnly, const Color(0xFFE3F2FD), (value) {
                 updateFilter(() {
                   _indoorOnly = value;
                   if (value) _outdoorOnly = false; // Exclusive
@@ -2986,7 +2047,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: _buildMoodyFilterChip('☀️', 'Outdoor Only', _outdoorOnly, const Color(0xFFFFF3E0), (value) {
+              child: _buildFilterChip('☀️', 'Outdoor Only', _outdoorOnly, const Color(0xFFFFF3E0), (value) {
                 updateFilter(() {
                   _outdoorOnly = value;
                   if (value) _indoorOnly = false; // Exclusive
@@ -3000,7 +2061,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildMoodyFilterChip('🌧️', 'Weather-Safe', _weatherSafe, const Color(0xFFE8F5E8), (value) {
+              child: _buildFilterChip('🌧️', 'Weather-Safe', _weatherSafe, const Color(0xFFE8F5E8), (value) {
                 updateFilter(() {
                   _weatherSafe = value;
                   _updateActiveFiltersCount();
@@ -3009,7 +2070,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: _buildMoodyFilterChip('🌙', 'Open Now', _openNow, const Color(0xFFFFF8E1), (value) {
+              child: _buildFilterChip('🌙', 'Open Now', _openNow, const Color(0xFFFFF8E1), (value) {
                 updateFilter(() {
                   _openNow = value;
                   _updateActiveFiltersCount();
@@ -3022,7 +2083,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildMoodyFilterChip('🤫', 'Quiet', _crowdQuiet, const Color(0xFFFFF9C4), (value) {
+              child: _buildFilterChip('🤫', 'Quiet', _crowdQuiet, const Color(0xFFFFF9C4), (value) {
                 updateFilter(() {
                   _crowdQuiet = value;
                   if (value) _crowdLively = false; // Exclusive
@@ -3032,7 +2093,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: _buildMoodyFilterChip('💃', 'Lively', _crowdLively, const Color(0xFFFFE0B2), (value) {
+              child: _buildFilterChip('💃', 'Lively', _crowdLively, const Color(0xFFFFE0B2), (value) {
                 updateFilter(() {
                   _crowdLively = value;
                   if (value) _crowdQuiet = false; // Exclusive
@@ -3046,7 +2107,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildMoodyFilterChip('💕', 'Romantic Vibe', _romanticVibe, const Color(0xFFFCE4EC), (value) {
+              child: _buildFilterChip('💕', 'Romantic Vibe', _romanticVibe, const Color(0xFFFCE4EC), (value) {
                 updateFilter(() {
                   _romanticVibe = value;
                   _updateActiveFiltersCount();
@@ -3055,7 +2116,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: _buildMoodyFilterChip('🔀', 'Surprise Me', _surpriseMe, const Color(0xFFE1F5FE), (value) {
+              child: _buildFilterChip('🔀', 'Surprise Me', _surpriseMe, const Color(0xFFE1F5FE), (value) {
                 updateFilter(() {
                   _surpriseMe = value;
                   _updateActiveFiltersCount();
@@ -3074,37 +2135,37 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       spacing: 8,
       runSpacing: 8,
       children: [
-        _buildMoodyFilterChip('🌱', 'Vegan', _vegan, const Color(0xFFE8F5E8), (value) {
+        _buildFilterChip('🌱', 'Vegan', _vegan, const Color(0xFFE8F5E8), (value) {
           updateFilter(() {
             _vegan = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildMoodyFilterChip('🥬', 'Vegetarian', _vegetarian, const Color(0xFFF1F8E9), (value) {
+        _buildFilterChip('🥬', 'Vegetarian', _vegetarian, const Color(0xFFF1F8E9), (value) {
           updateFilter(() {
             _vegetarian = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildMoodyFilterChip('🥗', 'Halal', _halal, const Color(0xFFE0F2F1), (value) {
+        _buildFilterChip('🥗', 'Halal', _halal, const Color(0xFFE0F2F1), (value) {
           updateFilter(() {
             _halal = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildMoodyFilterChip('🌾', 'Gluten-Free', _glutenFree, const Color(0xFFFFF8E1), (value) {
+        _buildFilterChip('🌾', 'Gluten-Free', _glutenFree, const Color(0xFFFFF8E1), (value) {
           updateFilter(() {
             _glutenFree = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildMoodyFilterChip('🐟', 'Pescatarian', _pescatarian, const Color(0xFFE1F5FE), (value) {
+        _buildFilterChip('🐟', 'Pescatarian', _pescatarian, const Color(0xFFE1F5FE), (value) {
           updateFilter(() {
             _pescatarian = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildMoodyFilterChip('❌', 'No Alcohol', _noAlcohol, const Color(0xFFFFF3E0), (value) {
+        _buildFilterChip('❌', 'No Alcohol', _noAlcohol, const Color(0xFFFFF3E0), (value) {
           updateFilter(() {
             _noAlcohol = value;
             _updateActiveFiltersCount();
@@ -3120,31 +2181,31 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       spacing: 8,
       runSpacing: 8,
       children: [
-        _buildMoodyFilterChip('♿', 'Wheelchair Accessible', _wheelchairAccessible, const Color(0xFFE3F2FD), (value) {
+        _buildFilterChip('♿', 'Wheelchair Accessible', _wheelchairAccessible, const Color(0xFFE3F2FD), (value) {
           updateFilter(() {
             _wheelchairAccessible = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildMoodyFilterChip('🏳️‍🌈', 'LGBTQ+ Friendly', _lgbtqFriendly, const Color(0xFFF3E5F5), (value) {
+        _buildFilterChip('🏳️‍🌈', 'LGBTQ+ Friendly', _lgbtqFriendly, const Color(0xFFF3E5F5), (value) {
           updateFilter(() {
             _lgbtqFriendly = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildMoodyFilterChip('🧓', 'Senior-Friendly', _seniorFriendly, const Color(0xFFFFF8E1), (value) {
+        _buildFilterChip('🧓', 'Senior-Friendly', _seniorFriendly, const Color(0xFFFFF8E1), (value) {
           updateFilter(() {
             _seniorFriendly = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildMoodyFilterChip('🧑‍🍼', 'Baby-Friendly', _babyFriendly, const Color(0xFFFCE4EC), (value) {
+        _buildFilterChip('🧑‍🍼', 'Baby-Friendly', _babyFriendly, const Color(0xFFFCE4EC), (value) {
           updateFilter(() {
             _babyFriendly = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildMoodyFilterChip('✊🏿', 'Black-owned', _blackOwned, const Color(0xFFEFEBE9), (value) {
+        _buildFilterChip('✊🏿', 'Black-owned', _blackOwned, const Color(0xFFEFEBE9), (value) {
           updateFilter(() {
             _blackOwned = value;
             _updateActiveFiltersCount();
@@ -3225,31 +2286,31 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           spacing: 8,
           runSpacing: 8,
           children: [
-            _buildMoodyFilterChip('🚗', 'Parking', _parkingAvailable, const Color(0xFFE8EAF6), (value) {
+            _buildFilterChip('🚗', 'Parking', _parkingAvailable, const Color(0xFFE8EAF6), (value) {
               updateFilter(() {
                 _parkingAvailable = value;
                 _updateActiveFiltersCount();
               });
             }),
-            _buildMoodyFilterChip('🚌', 'Transport', _transportIncluded, const Color(0xFFE0F2F1), (value) {
+            _buildFilterChip('🚌', 'Transport', _transportIncluded, const Color(0xFFE0F2F1), (value) {
               updateFilter(() {
                 _transportIncluded = value;
                 _updateActiveFiltersCount();
               });
             }),
-            _buildMoodyFilterChip('💳', 'Credit Cards', _creditCards, const Color(0xFFFFF3E0), (value) {
+            _buildFilterChip('💳', 'Credit Cards', _creditCards, const Color(0xFFFFF3E0), (value) {
               updateFilter(() {
                 _creditCards = value;
                 _updateActiveFiltersCount();
               });
             }),
-            _buildMoodyFilterChip('📶', 'Wi-Fi', _wifiAvailable, const Color(0xFFE1F5FE), (value) {
+            _buildFilterChip('📶', 'Wi-Fi', _wifiAvailable, const Color(0xFFE1F5FE), (value) {
               updateFilter(() {
                 _wifiAvailable = value;
                 _updateActiveFiltersCount();
               });
             }),
-            _buildMoodyFilterChip('🔌', 'Charging', _chargingPoints, const Color(0xFFFFF8E1), (value) {
+            _buildFilterChip('🔌', 'Charging', _chargingPoints, const Color(0xFFFFF8E1), (value) {
               updateFilter(() {
                 _chargingPoints = value;
                 _updateActiveFiltersCount();
@@ -3267,37 +2328,37 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       spacing: 8,
       runSpacing: 8,
       children: [
-        _buildMoodyFilterChip('📸', 'Instagrammable', _instagrammable, const Color(0xFFFCE4EC), (value) {
+        _buildFilterChip('📸', 'Instagrammable', _instagrammable, const Color(0xFFFCE4EC), (value) {
           updateFilter(() {
             _instagrammable = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildMoodyFilterChip('🎨', 'Artistic Design', _artisticDesign, const Color(0xFFF3E5F5), (value) {
+        _buildFilterChip('🎨', 'Artistic Design', _artisticDesign, const Color(0xFFF3E5F5), (value) {
           updateFilter(() {
             _artisticDesign = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildMoodyFilterChip('🧘‍♀️', 'Aesthetic Spaces', _aestheticSpaces, const Color(0xFFE8F5E8), (value) {
+        _buildFilterChip('🧘‍♀️', 'Aesthetic Spaces', _aestheticSpaces, const Color(0xFFE8F5E8), (value) {
           updateFilter(() {
             _aestheticSpaces = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildMoodyFilterChip('🌆', 'Scenic Views', _scenicViews, const Color(0xFFE3F2FD), (value) {
+        _buildFilterChip('🌆', 'Scenic Views', _scenicViews, const Color(0xFFE3F2FD), (value) {
           updateFilter(() {
             _scenicViews = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildMoodyFilterChip('🌙', 'Best at Night', _bestAtNight, const Color(0xFFE8EAF6), (value) {
+        _buildFilterChip('🌙', 'Best at Night', _bestAtNight, const Color(0xFFE8EAF6), (value) {
           updateFilter(() {
             _bestAtNight = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildMoodyFilterChip('🌅', 'Best at Sunset', _bestAtSunset, const Color(0xFFFFE0B2), (value) {
+        _buildFilterChip('🌅', 'Best at Sunset', _bestAtSunset, const Color(0xFFFFE0B2), (value) {
           updateFilter(() {
             _bestAtSunset = value;
             _updateActiveFiltersCount();
@@ -3307,8 +2368,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  // Helper to build Moody filter chips with custom colors
-  Widget _buildMoodyFilterChip(String emoji, String label, bool isSelected, Color unselectedColor, Function(bool) onChanged) {
+  // Helper to build filter chips with custom colors
+  Widget _buildFilterChip(String emoji, String label, bool isSelected, Color unselectedColor, Function(bool) onChanged) {
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -3361,54 +2422,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  // Helper to build filter chips (for other sections)
-  Widget _buildFilterChip(String emoji, String label, bool isSelected, Function(bool) onChanged) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onChanged(!isSelected);
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF12B347) : Colors.grey[100],
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? const Color(0xFF12B347) : Colors.grey[300]!,
-            width: isSelected ? 2 : 1,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF12B347).withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 14)),
-            const SizedBox(width: 6),
-            Flexible(
-              child: Text(
-                label,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? Colors.white : Colors.black87,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+
 
   // Helper to build selectable chips (for single-select options)
   Widget _buildSelectableChip(String label, bool isSelected, VoidCallback onTap) {
@@ -3434,6 +2448,281 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             color: isSelected ? Colors.white : Colors.black87,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Build map view with markers for places
+  Widget _buildMapView(List<Place> places, Position? userLocation) {
+    // Safety check: if no places, show empty state
+    if (places.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.map, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'No places to display on map',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    // Determine initial camera position
+    LatLng initialPosition;
+    if (userLocation != null) {
+      // Check if it's simulator coordinates
+      final isSanFrancisco = (userLocation.latitude - 37.785834).abs() < 0.1 && 
+                            (userLocation.longitude + 122.406417).abs() < 0.1;
+      if (!isSanFrancisco) {
+        initialPosition = LatLng(userLocation.latitude, userLocation.longitude);
+      } else {
+        // Use city center as fallback
+        final currentCity = ref.read(locationNotifierProvider).value ?? 'Rotterdam';
+        final cityCoords = _getCityCoordinates(currentCity);
+        initialPosition = LatLng(cityCoords['lat']!, cityCoords['lng']!);
+      }
+    } else {
+      // Use city center
+      final currentCity = ref.read(locationNotifierProvider).value ?? 'Rotterdam';
+      final cityCoords = _getCityCoordinates(currentCity);
+      initialPosition = LatLng(cityCoords['lat']!, cityCoords['lng']!);
+    }
+    
+    // Create markers for all places (not filtered - show everything on map)
+    final Set<Marker> markers = {};
+    final currentCity = ref.read(locationNotifierProvider).value ?? 'Rotterdam';
+    
+    for (int i = 0; i < places.length; i++) {
+      final place = places[i];
+      final markerId = MarkerId(place.id);
+      
+      // Determine marker color based on quick filters (visual indicator only)
+      BitmapDescriptor markerIcon = BitmapDescriptor.defaultMarker;
+      if (_quickFilterRating45 && place.rating >= 4.5) {
+        markerIcon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+      } else if (_quickFilterDistance1km) {
+        // Check if within 1km (for visual highlighting)
+        final distance = _calculatePlaceDistance(place, userLocation, currentCity);
+        if (distance != null && distance <= 1.0) {
+          markerIcon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+        }
+      }
+      
+      // Store place ID for navigation
+      final placeId = place.id;
+      markers.add(
+        Marker(
+          markerId: markerId,
+          position: LatLng(place.location.lat, place.location.lng),
+          infoWindow: InfoWindow(
+            title: place.name,
+            snippet: place.rating > 0 ? '⭐ ${place.rating.toStringAsFixed(1)}' : null,
+          ),
+          icon: markerIcon,
+          onTap: () async {
+            // Navigate to place detail when marker is tapped
+            // Use a small delay to ensure context is stable
+            await Future.delayed(const Duration(milliseconds: 100));
+            if (mounted) {
+              context.push('/place/$placeId');
+            }
+          },
+        ),
+      );
+    }
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height - 300, // Proper height constraint
+          child: Stack(
+            children: [
+              // Google Map
+              GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: initialPosition,
+                  zoom: 13,
+                ),
+                markers: markers,
+                mapType: MapType.normal, // Ensure map type is set
+                onMapCreated: (GoogleMapController controller) {
+                  _mapController = controller;
+                  debugPrint('✅ Google Map created successfully');
+                },
+                onCameraMoveStarted: () {
+                  debugPrint('🗺️ Camera move started');
+                },
+                myLocationEnabled: userLocation != null && 
+                  (userLocation.latitude - 37.785834).abs() > 0.1, // Don't show if SF simulator
+                myLocationButtonEnabled: true,
+                zoomControlsEnabled: true,
+                mapToolbarEnabled: false, // Hide default toolbar
+                compassEnabled: true,
+              ),
+              
+              // Quick filter chips at the top
+              Positioned(
+                top: 16,
+                left: 16,
+                right: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.filter_list,
+                        size: 20,
+                        color: Colors.grey[600],
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Quick Filters',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[800],
+                        ),
+                      ),
+                      const Spacer(),
+                      // Distance filter (highlights places within 1km)
+                      _buildQuickFilterChip(
+                        '1km',
+                        isActive: _quickFilterDistance1km,
+                        onTap: () {
+                          setState(() {
+                            _quickFilterDistance1km = !_quickFilterDistance1km;
+                          });
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      // Rating filter (highlights places 4.5+)
+                      _buildQuickFilterChip(
+                        '4.5+',
+                        isActive: _quickFilterRating45,
+                        onTap: () {
+                          setState(() {
+                            _quickFilterRating45 = !_quickFilterRating45;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  
+  /// Get city coordinates for map initialization
+  Map<String, double> _getCityCoordinates(String cityName) {
+    final cityCoords = {
+      'Rotterdam': {'lat': 51.9244, 'lng': 4.4777},
+      'Amsterdam': {'lat': 52.3676, 'lng': 4.9041},
+      'The Hague': {'lat': 52.0705, 'lng': 4.3007},
+      'Utrecht': {'lat': 52.0907, 'lng': 5.1214},
+      'Eindhoven': {'lat': 51.4416, 'lng': 5.4697},
+      'Groningen': {'lat': 53.2194, 'lng': 6.5665},
+      'Delft': {'lat': 52.0067, 'lng': 4.3556},
+      'Beneden-Leeuwen': {'lat': 51.8892, 'lng': 5.5142},
+    };
+    return cityCoords[cityName] ?? cityCoords['Rotterdam']!;
+  }
+  
+  /// Calculate distance for a place (helper for map markers)
+  double? _calculatePlaceDistance(Place place, Position? userLocation, String cityName) {
+    Position? referencePoint;
+    
+    if (userLocation != null) {
+      final isSanFrancisco = (userLocation.latitude - 37.785834).abs() < 0.1 && 
+                            (userLocation.longitude + 122.406417).abs() < 0.1;
+      if (!isSanFrancisco) {
+        referencePoint = userLocation;
+      }
+    }
+    
+    if (referencePoint == null) {
+      final cityCoords = _getCityCoordinates(cityName);
+      referencePoint = Position(
+        latitude: cityCoords['lat']!,
+        longitude: cityCoords['lng']!,
+        timestamp: DateTime.now(),
+        accuracy: 0,
+        altitude: 0,
+        altitudeAccuracy: 0,
+        heading: 0,
+        headingAccuracy: 0,
+        speed: 0,
+        speedAccuracy: 0,
+      );
+    }
+    
+    return DistanceService.calculateDistance(
+      referencePoint.latitude,
+      referencePoint.longitude,
+      place.location.lat,
+      place.location.lng,
+    );
+  }
+
+  // Build quick filter chip for map view
+  Widget _buildQuickFilterChip(
+    String label, {
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFF12B347).withOpacity(0.1) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isActive ? const Color(0xFF12B347) : Colors.grey[300]!,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: isActive ? const Color(0xFF12B347) : Colors.grey[800],
           ),
         ),
       ),

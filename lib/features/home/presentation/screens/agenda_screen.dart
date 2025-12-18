@@ -25,6 +25,14 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   void initState() {
     super.initState();
     _selectedDay = DateTime.now();
+    
+    // Force refresh activities when screen opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        print('🔄 Agenda: Screen opened, refreshing activities...');
+        ref.invalidate(cachedActivitySuggestionsProvider);
+      }
+    });
   }
   
   @override
@@ -223,13 +231,31 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     
     return activitiesAsyncValue.when(
       data: (activities) {
+        final selectedDate = _selectedDay ?? DateTime.now();
+        print('📅 Agenda: Looking for activities on ${selectedDate.toString()}');
+        print('📅 Agenda: Total activities loaded: ${activities.length}');
+        
         final events = activities.where((activity) {
           final startTimeStr = activity['startTime'] as String?;
-          if (startTimeStr == null) return false;
+          if (startTimeStr == null) {
+            print('⚠️ Agenda: Activity ${activity['title']} has no startTime');
+            return false;
+          }
           
-          final activityDate = DateTime.parse(startTimeStr);
-          return isSameDay(activityDate, _selectedDay ?? DateTime.now());
+          try {
+            final activityDate = DateTime.parse(startTimeStr);
+            final matches = isSameDay(activityDate, selectedDate);
+            if (matches) {
+              print('✅ Agenda: Found matching activity: ${activity['title']} on ${activityDate.toString()}');
+            }
+            return matches;
+          } catch (e) {
+            print('❌ Agenda: Error parsing startTime for ${activity['title']}: $e');
+            return false;
+          }
         }).map((activity) => _transformActivityData(activity)).toList();
+        
+        print('📅 Agenda: Found ${events.length} events for selected day');
         
         if (events.isEmpty) {
           return SliverToBoxAdapter(

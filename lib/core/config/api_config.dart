@@ -1,6 +1,11 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
+import '../constants/api_keys.dart';
+
 class ApiConfig {
   // Get a free API key from: https://home.openweathermap.org/api_keys
-  static const String openWeatherMapKey = 'd158323777e324a2537591bc7fa6ca17'; // Updated with user's key
+  // Uses environment variables for security
+  static String get openWeatherMapKey => ApiKeys.openWeather;
   static const String openWeatherMapBaseUrl = 'https://api.openweathermap.org/data/2.5';
   
   // Weather API endpoints

@@ -85,51 +85,53 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
                   context.push('/settings');
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.qr_code, color: Color(0xFF4CAF50)),
-                title: Text(
-                  'Share Profile',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _showQRCode();
-                },
-              ),
+              // QR code sharing temporarily hidden - not yet implemented
+              // ListTile(
+              //   leading: const Icon(Icons.qr_code, color: Color(0xFF4CAF50)),
+              //   title: Text(
+              //     'Share Profile',
+              //     style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+              //   ),
+              //   onTap: () {
+              //     Navigator.pop(context);
+              //     _showQRCode();
+              //   },
+              // ),
             ] else ...[
-              ListTile(
-                leading: const Icon(Icons.report_outlined, color: Colors.orange),
-                title: Text(
-                  'Report User',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _reportUser();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.block, color: Colors.red),
-                title: Text(
-                  'Block User',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _blockUser();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.share, color: Colors.blue),
-                title: Text(
-                  'Share Profile',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _shareProfile();
-                },
-              ),
+              // Social actions temporarily hidden - not yet implemented
+              // ListTile(
+              //   leading: const Icon(Icons.report_outlined, color: Colors.orange),
+              //   title: Text(
+              //     'Report User',
+              //     style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+              //   ),
+              //   onTap: () {
+              //     Navigator.pop(context);
+              //     _reportUser();
+              //   },
+              // ),
+              // ListTile(
+              //   leading: const Icon(Icons.block, color: Colors.red),
+              //   title: Text(
+              //     'Block User',
+              //     style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+              //   ),
+              //   onTap: () {
+              //     Navigator.pop(context);
+              //     _blockUser();
+              //   },
+              // ),
+              // ListTile(
+              //   leading: const Icon(Icons.share, color: Colors.blue),
+              //   title: Text(
+              //     'Share Profile',
+              //     style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+              //   ),
+              //   onTap: () {
+              //     Navigator.pop(context);
+              //     _shareProfile();
+              //   },
+              // ),
             ],
           ],
         ),
@@ -432,32 +434,31 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
                 ),
               ),
             ),
-            const SizedBox(width: 12),
-            
-            // Message Button
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: _sendMessage,
-                icon: Icon(
-                  Icons.message,
-                  color: const Color(0xFF4CAF50),
-                ),
-                label: Text(
-                  'Message',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF4CAF50),
-                  ),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF4CAF50)),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                ),
-              ),
-            ),
+            // Message Button temporarily hidden - not yet implemented
+            // const SizedBox(width: 12),
+            // Expanded(
+            //   child: OutlinedButton.icon(
+            //     onPressed: _sendMessage,
+            //     icon: Icon(
+            //       Icons.message,
+            //       color: const Color(0xFF4CAF50),
+            //     ),
+            //     label: Text(
+            //       'Message',
+            //       style: GoogleFonts.poppins(
+            //         fontWeight: FontWeight.w600,
+            //         color: const Color(0xFF4CAF50),
+            //       ),
+            //     ),
+            //     style: OutlinedButton.styleFrom(
+            //       side: const BorderSide(color: Color(0xFF4CAF50)),
+            //       padding: const EdgeInsets.symmetric(vertical: 12),
+            //       shape: RoundedRectangleBorder(
+            //         borderRadius: BorderRadius.circular(25),
+            //       ),
+            //     ),
+            //   ),
+            // ),
           ],
         ],
       ),

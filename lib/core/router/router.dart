@@ -20,7 +20,7 @@ import '../../features/onboarding/presentation/screens/social_vibe_screen.dart';
 import '../../features/onboarding/presentation/screens/planning_pace_screen.dart';
 import '../../features/onboarding/presentation/screens/travel_style_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_loading_screen.dart';
-import '../../features/dev/reset_screen.dart';
+// import '../../features/dev/reset_screen.dart'; // Removed - debug only
 import '../../features/plans/presentation/screens/plan_generation_screen.dart';
 import '../../features/plans/presentation/screens/plan_loading_screen.dart';
 import '../../core/config/supabase_config.dart';
@@ -51,10 +51,12 @@ import '../../features/social/presentation/screens/edit_social_profile_screen.da
 import '../../features/social/presentation/screens/create_diary_entry_screen.dart';
 import '../../features/social/presentation/screens/diary_detail_screen.dart';
 import '../../features/social/presentation/screens/diaries_platform_screen.dart';
+import '../../features/social/presentation/screens/wanderfeed_coming_soon_screen.dart';
 import '../../features/social/presentation/screens/travel_diary_profile_screen.dart';
 import '../../features/auth/providers/auth_state_provider.dart';
 import '../providers/preferences_provider.dart';
-import '../../admin/admin_screen.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
+// import '../../admin/admin_screen.dart'; // Removed - debug only
 
 part 'router.g.dart';
 
@@ -463,7 +465,7 @@ GoRouter router(RouterRef ref) {
       GoRoute(
         path: '/diaries',
         name: 'diaries-platform',
-        builder: (context, state) => const DiariesPlatformScreen(),
+        builder: (context, state) => const WanderFeedComingSoonScreen(),
       ),
       GoRoute(
         path: '/diaries/create-entry',
@@ -488,12 +490,20 @@ GoRouter router(RouterRef ref) {
         },
       ),
       
-      // Admin (temporary for debugging)
-      GoRoute(
-        path: '/admin',
-        name: 'admin',
-        builder: (context, state) => const AdminScreen(),
-      ),
+      // Admin route - ONLY available in debug mode for App Store compliance
+      if (kDebugMode)
+        GoRoute(
+          path: '/admin',
+          name: 'admin',
+          builder: (context, state) {
+            // Lazy import to avoid loading admin screen in production
+            return const Scaffold(
+              body: Center(
+                child: Text('Admin screen disabled in production builds'),
+              ),
+            );
+          },
+        ),
       
       // Settings and Support
       GoRoute(

@@ -849,44 +849,45 @@ class _FreeTimeActivitiesScreenState extends ConsumerState<FreeTimeActivitiesScr
                       size: 64,
                       color: Color(0xFF8B7355),
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Interactive Map Coming Soon!',
-                      style: GoogleFonts.museoModerno(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Explore Rotterdam with our upcoming interactive map feature. See all places, your friends\' locations, and discover hidden gems!',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Map feature coming soon! 🗺️')),
-                        );
-                      },
-                      icon: const Icon(Icons.notification_add),
-                      label: Text(
-                        'Notify Me',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF8B7355),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
+                    // Interactive Map feature - coming soon (hidden for now)
+                    // const SizedBox(height: 16),
+                    // Text(
+                    //   'Interactive Map Coming Soon!',
+                    //   style: GoogleFonts.museoModerno(
+                    //     fontSize: 20,
+                    //     fontWeight: FontWeight.bold,
+                    //     color: Colors.black87,
+                    //   ),
+                    //   textAlign: TextAlign.center,
+                    // ),
+                    // const SizedBox(height: 8),
+                    // Text(
+                    //   'Explore Rotterdam with our upcoming interactive map feature. See all places, your friends\' locations, and discover hidden gems!',
+                    //   style: GoogleFonts.poppins(
+                    //     fontSize: 14,
+                    //     color: Colors.grey[600],
+                    //   ),
+                    //   textAlign: TextAlign.center,
+                    // ),
+                    // const SizedBox(height: 24),
+                    // ElevatedButton.icon(
+                    //   onPressed: () {
+                    //     ScaffoldMessenger.of(context).showSnackBar(
+                    //       const SnackBar(content: Text('Map feature coming soon! 🗺️')),
+                    //     );
+                    //   },
+                    //   icon: const Icon(Icons.notification_add),
+                    //   label: Text(
+                    //     'Notify Me',
+                    //     style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                    //   ),
+                    //   style: ElevatedButton.styleFrom(
+                    //     backgroundColor: const Color(0xFF8B7355),
+                    //     foregroundColor: Colors.white,
+                    //     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    //   ),
+                    // ),
                   ],
                 ),
               ),

@@ -24,6 +24,10 @@ class Place with _$Place {
     @Default(0) int reviewCount,
     @Default('Medium') String energyLevel, // Low, Medium, High
     @Default(false) bool isIndoor,
+    // Pricing information
+    int? priceLevel, // 0=Free, 1=€1-15, 2=€15-30, 3=€30-50, 4=€50+
+    String? priceRange, // e.g., "€10-25", "FREE", "€50+"
+    @Default(false) bool isFree,
   }) = _Place;
 
   factory Place.fromJson(Map<String, dynamic> json) => _$PlaceFromJson(json);

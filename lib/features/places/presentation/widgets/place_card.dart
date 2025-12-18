@@ -1,22 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/core/services/distance_service.dart';
-import 'package:wandermood/features/places/providers/saved_places_provider.dart';
+import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:wandermood/features/places/services/sharing_service.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:map_launcher/map_launcher.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:convert';
 
 class PlaceCard extends ConsumerWidget {
   final Place place;
   final VoidCallback onTap;
   final Position? userLocation;
+  final String? cityName; // City name for fallback distance calculation
 
   const PlaceCard({
     Key? key,
     required this.place,
     required this.onTap,
     this.userLocation,
+    this.cityName,
   }) : super(key: key);
 
   // Cache distance calculation to prevent spam
@@ -57,30 +65,95 @@ class PlaceCard extends ConsumerWidget {
     }
   }
 
-  String _getPriceLevelText(int? priceLevel) {
-    if (priceLevel == null) return '';
-    switch (priceLevel) {
-      case 1:
-        return 'Inexpensive';
-      case 2:
-        return 'Moderate';
-      case 3:
-        return 'Expensive';
-      case 4:
-        return 'Very Expensive';
-      default:
-        return '';
+  // Removed duplicate _getPriceLevelText method
+
+
+
+  /// Get city center coordinates as fallback
+  Position? _getCityCenterCoordinates(String? cityName) {
+    if (cityName == null) return null;
+    
+    final cityCoords = {
+      'Rotterdam': {'lat': 51.9244, 'lng': 4.4777},
+      'Amsterdam': {'lat': 52.3676, 'lng': 4.9041},
+      'The Hague': {'lat': 52.0705, 'lng': 4.3007},
+      'Utrecht': {'lat': 52.0907, 'lng': 5.1214},
+      'Eindhoven': {'lat': 51.4416, 'lng': 5.4697},
+      'Groningen': {'lat': 53.2194, 'lng': 6.5665},
+      'Delft': {'lat': 52.0067, 'lng': 4.3556},
+      'Beneden-Leeuwen': {'lat': 51.8892, 'lng': 5.5142},
+    };
+    
+    final coords = cityCoords[cityName];
+    if (coords != null) {
+      return Position(
+        latitude: coords['lat']!,
+        longitude: coords['lng']!,
+        timestamp: DateTime.now(),
+        accuracy: 0,
+        altitude: 0,
+        altitudeAccuracy: 0,
+        heading: 0,
+        headingAccuracy: 0,
+        speed: 0,
+        speedAccuracy: 0,
+      );
     }
+    
+    // Try to extract city from place address if not provided
+    final extractedCity = _extractCityName();
+    if (extractedCity.isNotEmpty) {
+      final extractedCoords = cityCoords[extractedCity];
+      if (extractedCoords != null) {
+        return Position(
+          latitude: extractedCoords['lat']!,
+          longitude: extractedCoords['lng']!,
+          timestamp: DateTime.now(),
+          accuracy: 0,
+          altitude: 0,
+          altitudeAccuracy: 0,
+          heading: 0,
+          headingAccuracy: 0,
+          speed: 0,
+          speedAccuracy: 0,
+        );
+      }
+    }
+    
+    return null;
   }
-
-
 
   /// Calculate distance from user location to place with caching
   String? _calculateDistance() {
-    // Create cache key based on place ID and user location
-    final userLat = userLocation?.latitude ?? 51.9225;
-    final userLng = userLocation?.longitude ?? 4.4792;
-    final cacheKey = '${place.id}_${userLat.toStringAsFixed(4)}_${userLng.toStringAsFixed(4)}';
+    // Determine reference point: user location > city center > null
+    Position? referencePoint;
+    late String cacheKey;
+    
+    if (userLocation != null) {
+      final userLat = userLocation!.latitude;
+      final userLng = userLocation!.longitude;
+      
+      // Check if this is unrealistic coordinates (SF simulator)
+      final isSanFrancisco = (userLat - 37.785834).abs() < 0.1 && (userLng + 122.406417).abs() < 0.1;
+      
+      if (!isSanFrancisco) {
+        // Use valid user location
+        referencePoint = userLocation;
+        cacheKey = '${place.id}_user_${userLat.toStringAsFixed(4)}_${userLng.toStringAsFixed(4)}';
+      }
+    }
+    
+    // Fallback to city center if user location unavailable or invalid
+    if (referencePoint == null) {
+      final cityCenter = _getCityCenterCoordinates(cityName);
+      if (cityCenter != null) {
+        referencePoint = cityCenter;
+        cacheKey = '${place.id}_city_${cityCenter.latitude.toStringAsFixed(4)}_${cityCenter.longitude.toStringAsFixed(4)}';
+      } else {
+        // No reference point available
+        return null;
+      }
+    }
     
     // Clean up expired cache entries periodically
     if (_distanceCache.length > 100) {
@@ -95,48 +168,10 @@ class PlaceCard extends ConsumerWidget {
       }
     }
     
-    double finalUserLat, finalUserLng;
-    
-    if (userLocation != null) {
-      // Check if this is unrealistic coordinates (outside Netherlands bounds or SF simulator)
-      final lat = userLocation!.latitude;
-      final lng = userLocation!.longitude;
-      
-      // Check for San Francisco simulator coordinates (approximate)
-      final isSanFrancisco = (lat - 37.785834).abs() < 0.1 && (lng + 122.406417).abs() < 0.1;
-      
-      // Netherlands boundaries: lat 50.0-54.0, lng 3.0-8.0
-      final isWithinNetherlands = lat >= 50.0 && lat <= 54.0 && lng >= 3.0 && lng <= 8.0;
-      
-      if (!isSanFrancisco && isWithinNetherlands) {
-        finalUserLat = lat;
-        finalUserLng = lng;
-        // Only log once per cache refresh
-        if (!_distanceCache.containsKey(cacheKey)) {
-          debugPrint('📍 Using real user location for distance calculation: $lat, $lng');
-        }
-      } else {
-        // Use Rotterdam city center for unrealistic coordinates (like simulator SF coordinates)
-        finalUserLat = 51.9225;
-        finalUserLng = 4.4792;
-        // Only log once per cache refresh
-        if (!_distanceCache.containsKey(cacheKey)) {
-          debugPrint('📍 User location outside Netherlands bounds or SF simulator ($lat, $lng), using Rotterdam fallback');
-        }
-      }
-    } else {
-      // Use Rotterdam city center as fallback
-      finalUserLat = 51.9225;
-      finalUserLng = 4.4792;
-      // Only log once per cache refresh
-      if (!_distanceCache.containsKey(cacheKey)) {
-        debugPrint('📍 Using Rotterdam city center as fallback for distance calculation');
-      }
-    }
-    
+    // Calculate distance using reference point
     final distance = DistanceService.calculateDistance(
-      finalUserLat,
-      finalUserLng,
+      referencePoint.latitude,
+      referencePoint.longitude,
       place.location.lat,
       place.location.lng,
     );
@@ -145,7 +180,7 @@ class PlaceCard extends ConsumerWidget {
     
     // Only log once per cache refresh
     if (!_distanceCache.containsKey(cacheKey)) {
-      debugPrint('📏 Distance to ${place.name}: $formattedDistance (${distance.toStringAsFixed(2)}km)');
+      debugPrint('📏 Distance to ${place.name}: $formattedDistance (${distance.toStringAsFixed(2)}km) from ${referencePoint == userLocation ? "user location" : "city center"}');
     }
     
     // Cache the result
@@ -162,7 +197,9 @@ class PlaceCard extends ConsumerWidget {
     // Extract city from address patterns like "Street 123, 1234 AB City" or "Street 123, City"
     final addressParts = place.address.split(',');
     if (addressParts.length >= 2) {
-      String cityPart = addressParts.last.trim();
+      String cityPart = addressParts.isNotEmpty 
+          ? addressParts.last.trim() 
+          : '';
       
       // Remove postal code pattern (e.g., "1234 AB Amsterdam" -> "Amsterdam")
       final postcodePattern = RegExp(r'^\d{4}\s*[A-Z]{2}\s*');
@@ -346,6 +383,20 @@ class PlaceCard extends ConsumerWidget {
     }
   }
 
+  /// Get energy level label (standard terms instead of "low/medium/high energy")
+  String _getEnergyLabel(String energyLevel) {
+    switch (energyLevel.toLowerCase()) {
+      case 'low':
+        return 'Relaxing';
+      case 'medium':
+        return 'Moderate pace';
+      case 'high':
+        return 'Active';
+      default:
+        return 'Moderate pace';
+    }
+  }
+
   /// Get energy level color
   Color _getEnergyColor(String energyLevel) {
     switch (energyLevel.toLowerCase()) {
@@ -416,8 +467,11 @@ class PlaceCard extends ConsumerWidget {
   }
 
   Widget _buildPlaceImage() {
+    Widget mainImage;
+    
+    // Determine the main image
     if (place.photos.isEmpty) {
-      return Container(
+      mainImage = Container(
         height: 200,
         width: double.infinity,
         color: Colors.grey[300],
@@ -440,35 +494,40 @@ class PlaceCard extends ConsumerWidget {
           ),
         ),
       );
-    }
-
-    if (place.isAsset) {
+    } else if (place.isAsset) {
       try {
-        return Image.asset(
+        if (place.photos.isEmpty) {
+          mainImage = _buildFallbackImage();
+        } else {
+          mainImage = Image.asset(
+            place.photos.first,
+            height: 200,
+            width: double.infinity,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              debugPrint('Error loading asset image: $error');
+              return _buildFallbackImage();
+            },
+          );
+        }
+      } catch (e) {
+        debugPrint('Exception loading asset image: $e');
+        mainImage = _buildFallbackImage();
+      }
+    } else {
+      if (place.photos.isEmpty) {
+        mainImage = _buildFallbackImage();
+      } else {
+        mainImage = Image.network(
           place.photos.first,
           height: 200,
           width: double.infinity,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
-            debugPrint('Error loading asset image: $error');
+            debugPrint('Error loading network image: $error');
             return _buildFallbackImage();
           },
-        );
-      } catch (e) {
-        debugPrint('Exception loading asset image: $e');
-        return _buildFallbackImage();
-      }
-    } else {
-      return Image.network(
-        place.photos.first,
-        height: 200,
-        width: double.infinity,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          debugPrint('Error loading network image: $error');
-          return _buildFallbackImage();
-        },
-        loadingBuilder: (context, child, loadingProgress) {
+          loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
           return Container(
             height: 200,
@@ -484,8 +543,52 @@ class PlaceCard extends ConsumerWidget {
             ),
           );
         },
-      );
+        );
+      }
     }
+    
+    // Return stack with image and badges
+    return Stack(
+      children: [
+        // Main image
+        mainImage,
+        
+        // Removed incorrectly positioned price badge - will add to content section instead
+          
+        // Duration badge if available
+        if (place.tag != null && place.tag!.contains('hr'))
+          Positioned(
+            bottom: 12,
+            right: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.access_time,
+                    color: Colors.white,
+                    size: 14,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    place.tag!,
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
   Widget _buildFallbackImage() {
@@ -563,8 +666,9 @@ class PlaceCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Check if place is saved using the new Supabase service
     final savedPlacesAsync = ref.watch(savedPlacesProvider);
-    final isFavorite = savedPlacesAsync.value?.any((p) => p.id == place.id) ?? false;
+    final isFavorite = savedPlacesAsync.value?.any((sp) => sp.place.id == place.id) ?? false;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -657,13 +761,44 @@ class PlaceCard extends ConsumerWidget {
                       ),
                     ),
                       
-                  // Action buttons (favorite and share)
+                  // Action buttons (directions, favorite, and share)
                   Positioned(
                     top: 12,
                     right: 12,
-                    child: Row(
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        // Get Directions button
+                        GestureDetector(
+                          onTap: () => _openDirections(context),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.9),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.15),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                  spreadRadius: 0,
+                                ),
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.08),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                  spreadRadius: -1,
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              Icons.directions,
+                              color: const Color(0xFF12B347),
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
                         // Share button
                         GestureDetector(
                           onTap: () async {
@@ -676,52 +811,7 @@ class PlaceCard extends ConsumerWidget {
                                   backgroundColor: Colors.red,
                                 ),
                               );
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                                  color: Colors.black.withOpacity(0.15),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                  spreadRadius: 0,
-                                ),
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.08),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                                  spreadRadius: -1,
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              Icons.share,
-                              color: const Color(0xFF12B347),
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        // Favorite button
-                        GestureDetector(
-                          onTap: () async {
-                            await ref.read(savedPlacesProvider.notifier).toggleSave(place);
-                            
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  isFavorite 
-                                    ? '${place.name} removed from saved places' 
-                                    : '${place.name} saved to favorites!'
-                                ),
-                                backgroundColor: isFavorite ? Colors.orange : const Color(0xFF12B347),
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
+                            }
                           },
                           child: Container(
                             padding: const EdgeInsets.all(8),
@@ -740,15 +830,87 @@ class PlaceCard extends ConsumerWidget {
                                   blurRadius: 4,
                                   offset: const Offset(0, 2),
                                   spreadRadius: -1,
+                                ),
+                              ],
                             ),
-                          ],
+                            child: Icon(
+                              Icons.share,
+                              color: const Color(0xFF12B347),
+                              size: 20,
+                            ),
+                          ),
                         ),
-                        child: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite ? Colors.red : Colors.grey,
-                          size: 20,
-                        ),
-                      ),
+                        const SizedBox(height: 8),
+                        // Favorite button
+                        GestureDetector(
+                          onTap: () async {
+                            final savedPlacesService = ref.read(savedPlacesServiceProvider);
+                            
+                            try {
+                              if (isFavorite) {
+                                // Unsave
+                                await savedPlacesService.unsavePlace(place.id);
+                                // Invalidate stream to refresh Saved Places screen
+                                ref.invalidate(savedPlacesProvider);
+                                
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('${place.name} removed from saved places'),
+                                    backgroundColor: Colors.orange,
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              } else {
+                                // Save
+                                await savedPlacesService.savePlace(place);
+                                // Invalidate stream to refresh Saved Places screen
+                                ref.invalidate(savedPlacesProvider);
+                                
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('${place.name} saved to favorites!'),
+                                    backgroundColor: const Color(0xFF12B347),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              if (kDebugMode) debugPrint('❌ Error toggling favorite: $e');
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to ${isFavorite ? 'remove' : 'save'} ${place.name}'),
+                                  backgroundColor: Colors.red,
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.9),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.15),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                  spreadRadius: 0,
+                                ),
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.08),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                  spreadRadius: -1,
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              isFavorite ? Icons.favorite : Icons.favorite_border,
+                              color: isFavorite ? Colors.red : Colors.grey,
+                              size: 20,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -836,22 +998,22 @@ class PlaceCard extends ConsumerWidget {
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
-                    children: [
+                              children: [
                                 Text(
                                   _getEnergyIcon(place.energyLevel),
                                   style: const TextStyle(fontSize: 14),
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  '${place.energyLevel} energy',
-                          style: GoogleFonts.poppins(
+                                  _getEnergyLabel(place.energyLevel),
+                                  style: GoogleFonts.poppins(
                                     fontSize: 12,
                                     color: _getEnergyColor(place.energyLevel),
                                     fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ],
@@ -885,6 +1047,40 @@ class PlaceCard extends ConsumerWidget {
                     ),
                         ),
                   ],
+                    ),
+                  ],
+
+                  // Pricing information - always show (Free, price range, or "Price varies")
+                  if (_shouldShowPriceBadge()) ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(
+                          _getCurrencyIcon(),
+                          color: _getPriceBadgeColor(),
+                          size: 16,
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: _getPriceBadgeColor().withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: _getPriceBadgeColor().withOpacity(0.4),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            _getPriceBadgeText(),
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: _getPriceBadgeColor(),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
 
@@ -929,11 +1125,14 @@ class PlaceCard extends ConsumerWidget {
                               ] else ...[
                                 const SizedBox.shrink(),
                               ],
-                              // Distance
-                              if (distance != null) ...[
+                              // Distance and accessibility
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
+                                  // Removed accessibility icon - users can filter for accessibility instead
+                                  
+                                  // Distance
+                                  if (distance != null) ...[
                                     Icon(Icons.directions_walk, color: const Color(0xFF12B347), size: 16),
                                     const SizedBox(width: 4),
                                     Text(
@@ -944,9 +1143,20 @@ class PlaceCard extends ConsumerWidget {
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
+                                  ] else ...[
+                                    Icon(Icons.location_off, color: Colors.grey[400]!, size: 16),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Distance unavailable',
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.grey[500],
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ],
                                   ],
                                 ),
-                              ],
                             ],
                           ),
                         );
@@ -956,55 +1166,498 @@ class PlaceCard extends ConsumerWidget {
                     },
                   ),
                   
-                  // Activity tags
-                  if (place.activities.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: place.activities.take(3).map((activity) {
-                        final tagColor = _getTagColor(activity);
-                        final activityEmoji = _getActivityEmoji(activity);
-                        
+                  // No category pills here - they're shown in the card already
+                  
+                  // Removed action buttons - whole card is now tappable
+                  // Directions, Share, and Favorite are available as floating buttons in image overlay
+                  
+                  // Add bottom padding to prevent overflow
+                  const SizedBox(height: 4),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  // Build category pill with icon and label
+  Widget _buildCategoryPill({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: tagColor.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(20),
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: tagColor.withOpacity(0.3),
+          color: color.withOpacity(0.3),
                               width: 1,
                             ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                activityEmoji,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                ),
+          Icon(
+            icon,
+            size: 14,
+            color: color,
                               ),
-                              const SizedBox(width: 6),
+          const SizedBox(width: 4),
                               Text(
-                            activity,
+            label,
                             style: GoogleFonts.poppins(
                               fontSize: 12,
-                                  color: tagColor,
-                                  fontWeight: FontWeight.w600,
+              color: color,
+              fontWeight: FontWeight.w500,
                                 ),
                             ),
                             ],
                           ),
                         );
-                      }).toList(),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
+  }
+  
+  // Helper method to build type pill
+  Widget _buildTypePill(String type) {
+    String label = type.replaceAll('_', ' ');
+    label = label[0].toUpperCase() + label.substring(1);
+    
+    IconData icon;
+    Color color;
+    
+    if (type.contains('restaurant') || type.contains('food') || type.contains('cafe')) {
+      icon = Icons.restaurant;
+      color = Colors.orange;
+    } else if (type.contains('museum') || type.contains('culture') || type.contains('art')) {
+      icon = Icons.museum;
+      color = Colors.purple;
+    } else if (type.contains('park') || type.contains('outdoor') || type.contains('nature')) {
+      icon = Icons.park;
+      color = Colors.green;
+    } else if (type.contains('hotel') || type.contains('lodging')) {
+      icon = Icons.hotel;
+      color = Colors.blue;
+    } else {
+      icon = Icons.place;
+      color = Colors.grey;
+    }
+    
+    return _buildCategoryPill(
+      icon: icon,
+      label: label,
+      color: color,
+    );
+  }
+
+  /// Get currency symbol based on location
+  String _getCurrencySymbol() {
+    final city = (cityName ?? _extractCityName()).toLowerCase();
+    final countryFlag = _getCountryFlag();
+    
+    // UK cities
+    if (countryFlag == '🇬🇧' || ['london', 'birmingham', 'manchester', 'glasgow', 'liverpool', 'leeds'].any((c) => city.contains(c))) {
+      return '£';
+    }
+    
+    // US cities
+    if (countryFlag == '🇺🇸' || ['new york', 'los angeles', 'chicago', 'houston', 'phoenix', 'philadelphia', 'san antonio', 'san diego', 'dallas', 'boston', 'seattle'].any((c) => city.contains(c))) {
+      return '\$';
+    }
+    
+    // Default to Euro for Netherlands and most European countries
+    return '€';
+  }
+  
+  /// Get currency icon based on currency symbol
+  IconData _getCurrencyIcon() {
+    final currency = _getCurrencySymbol();
+    switch (currency) {
+      case '£':
+        return Icons.currency_pound;
+      case '\$':
+        return Icons.attach_money;
+      case '€':
+      default:
+        return Icons.euro_symbol;
+    }
+  }
+
+  // Pricing helper methods
+  bool _shouldShowPriceBadge() {
+    // Always show price badge - we'll show "Free", price range, or "Price varies"
+    return true;
+  }
+  
+  String _getPriceBadgeText() {
+    final currency = _getCurrencySymbol();
+    
+    // Check if truly free (price level 0 OR free flag OR free type)
+    if (place.isFree || place.priceLevel == 0 || _isFreeByType()) {
+      return 'Free 🎉';
+    }
+    
+    // If we have explicit price range, use it (but replace currency if needed)
+    if (place.priceRange != null) {
+      // Replace any existing currency symbols with the detected one
+      return place.priceRange!.replaceAll(RegExp(r'[€£\$]'), currency);
+    }
+    
+    // If we have explicit price level, convert to range with currency
+    if (place.priceLevel != null) {
+      return _getPriceLevelText(place.priceLevel!, currency: currency);
+    }
+    
+    // If no explicit price data, infer from place types
+    final inferredPrice = _inferPriceFromTypes(currency: currency);
+    if (inferredPrice != null) {
+      return inferredPrice;
+    }
+    
+    // Last resort: show "Price varies"
+    return 'Price varies';
+  }
+  
+  Color _getPriceBadgeColor() {
+    // Check if truly free
+    if (place.isFree || place.priceLevel == 0 || _isFreeByType()) {
+      return const Color(0xFF4CAF50); // Green for FREE
+    }
+    
+    if (place.priceLevel != null) {
+      switch (place.priceLevel!) {
+        case 0: return const Color(0xFF4CAF50); // Green for FREE (price level 0)
+        case 1: return const Color(0xFF4CAF50); // Green for low cost
+        case 2: return const Color(0xFFFF9800); // Orange for moderate
+        case 3: return const Color(0xFFE91E63); // Pink for expensive
+        case 4: return const Color(0xFF9C27B0); // Purple for very expensive
+        default: return Colors.black.withOpacity(0.7);
+      }
+    }
+    
+    // Default color for price range
+    return Colors.black.withOpacity(0.7);
+  }
+  
+  String _getPriceLevelText(int priceLevel, {String currency = '€'}) {
+    switch (priceLevel) {
+      case 0: return 'Free 🎉';
+      case 1: return '$currency 5-15';
+      case 2: return '$currency 15-30';
+      case 3: return '$currency 30-50';
+      case 4: return '$currency 50+';
+      default: return '';
+    }
+  }
+  
+  /// Infer price from place types when no explicit price data
+  String? _inferPriceFromTypes({String currency = '€'}) {
+    // Check if free by type first
+    if (_isFreeByType()) {
+      return 'Free 🎉';
+    }
+    
+    // Infer price range based on place types
+    for (final type in place.types) {
+      final typeLower = type.toLowerCase();
+      if (['museum', 'tourist_attraction', 'amusement_park'].contains(typeLower)) {
+        return '$currency 10-25';
+      } else if (['restaurant', 'bar'].contains(typeLower)) {
+        return '$currency 15-40';
+      } else if (['cafe', 'store'].contains(typeLower)) {
+        return '$currency 5-15';
+      } else if (['hotel', 'spa'].contains(typeLower)) {
+        return '$currency 50+';
+      }
+    }
+    
+    // If it's a paid type but we can't infer specific range, return null (will show "Price varies")
+    final paidTypes = [
+      'restaurant', 'cafe', 'bar', 'museum', 'amusement_park', 
+      'movie_theater', 'spa', 'lodging', 'hotel', 'tourist_attraction',
+      'shopping_mall', 'store', 'gym', 'beauty_salon'
+    ];
+    
+    final hasPaidType = place.types.any((type) => 
+      paidTypes.any((paid) => type.toLowerCase().contains(paid.toLowerCase()))
+    );
+    
+    if (hasPaidType) {
+      return null; // Will show "Price varies"
+    }
+    
+    return null;
+  }
+  
+  // Helper to check if place is free based on type
+  bool _isFreeByType() {
+    final freeTypes = [
+      'park',
+      'arboretum',
+      'garden',
+      'botanical_garden',
+      'natural_feature',
+      'cemetery',
+      'church',
+      'mosque',
+      'synagogue',
+      'hindu_temple',
+      'library',
+      'public_square',
+      'plaza',
+      'beach',
+      'hiking_area',
+      'walking_street',
+      'street',
+      'route',
+      'neighborhood',
+      'locality',
+      'viewpoint',
+      'monument',
+    ];
+    
+    return place.types.any((type) => 
+      freeTypes.any((freeType) => 
+        type.toLowerCase().contains(freeType.toLowerCase())
+      )
+    );
+  }
+  
+  // Helper method to check if place is wheelchair accessible
+  bool _isWheelchairAccessible() {
+    // Check place types for accessibility indicators
+    for (final type in place.types) {
+      if (type.toLowerCase().contains('accessible')) {
+        return true;
+      }
+    }
+    
+    // Check activities for accessibility keywords
+    for (final activity in place.activities) {
+      final activityLower = activity.toLowerCase();
+      if (activityLower.contains('wheelchair') || 
+          activityLower.contains('accessible') || 
+          activityLower.contains('accessibility')) {
+        return true;
+      }
+    }
+    
+    // Check description for accessibility mentions
+    if (place.description != null) {
+      final descLower = place.description!.toLowerCase();
+      if (descLower.contains('wheelchair') || 
+          descLower.contains('accessible') || 
+          descLower.contains('accessibility')) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+  
+  // Add to My Day functionality
+  Future<void> _addToMyDay(BuildContext context) async {
+    try {
+      // Get current user
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) {
+        _showErrorSnackBar(context, 'Please sign in to add activities to My Day');
+        return;
+      }
+
+      // Create activity data for My Day
+      final activityData = {
+        'id': 'place_${place.id}_${DateTime.now().millisecondsSinceEpoch}',
+        'title': place.name,
+        'description': place.description ?? 'Explore ${place.name}',
+        'category': place.types.isNotEmpty ? place.types.first : 'general',
+        'timeOfDay': _getRecommendedTimeOfDay(),
+        'duration': _getEstimatedDuration(),
+        'mood': 'adventurous',
+        'imageUrl': place.photos.isNotEmpty ? place.photos.first : 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80',
+        'isRecommended': false,
+        'isScheduled': false,
+        'startTime': _getDefaultStartTime().toIso8601String(),
+        'paymentType': 'unpaid',
+        'placeId': place.id,
+        'location': {
+          'lat': place.location.lat,
+          'lng': place.location.lng,
+          'address': place.address,
+        },
+      };
+
+      // Save to cache for My Day screen
+      final prefs = await SharedPreferences.getInstance();
+      final existingActivities = prefs.getStringList('cached_activity_suggestions') ?? [];
+      
+      // Check if already added
+      final activityExists = existingActivities.any((activityJson) {
+        try {
+          final activity = jsonDecode(activityJson) as Map<String, dynamic>;
+          return activity['placeId'] == place.id;
+        } catch (e) {
+          return false;
+        }
+      });
+
+      if (activityExists) {
+        _showInfoSnackBar(context, '${place.name} is already in My Day');
+        return;
+      }
+
+      // Add new activity
+      existingActivities.add(jsonEncode(activityData));
+      await prefs.setStringList('cached_activity_suggestions', existingActivities);
+
+      _showSuccessSnackBar(context, 'Added ${place.name} to My Day!');
+      
+    } catch (e) {
+      debugPrint('Error adding to My Day: $e');
+      _showErrorSnackBar(context, 'Failed to add ${place.name} to My Day');
+    }
+  }
+
+  // Open directions functionality
+  Future<void> _openDirections(BuildContext context) async {
+    try {
+      // Check if maps are available
+      final availableMaps = await MapLauncher.installedMaps;
+      
+      if (availableMaps.isNotEmpty) {
+        // Use the first available map app
+        await availableMaps.first.showMarker(
+          coords: Coords(place.location.lat, place.location.lng),
+          title: place.name,
+          description: place.address,
+        );
+      } else {
+        // Fallback to Google Maps web
+        final url = Uri.parse(
+          'https://www.google.com/maps/search/?api=1&query=${place.location.lat},${place.location.lng}'
+        );
+        
+        if (await canLaunchUrl(url)) {
+          await launchUrl(url, mode: LaunchMode.externalApplication);
+        } else {
+          throw 'Could not open maps';
+        }
+      }
+    } catch (e) {
+      debugPrint('Error opening directions: $e');
+      _showErrorSnackBar(context, 'Unable to open directions');
+    }
+  }
+
+  // Helper methods
+  String _getRecommendedTimeOfDay() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'morning';
+    if (hour < 17) return 'afternoon';
+    return 'evening';
+  }
+
+  int _getEstimatedDuration() {
+    // Estimate duration based on place type
+    for (final type in place.types) {
+      final typeLower = type.toLowerCase();
+      if (['museum', 'tourist_attraction', 'amusement_park'].contains(typeLower)) {
+        return 120; // 2 hours
+      } else if (['restaurant', 'cafe'].contains(typeLower)) {
+        return 60; // 1 hour
+      } else if (['store', 'shopping_mall'].contains(typeLower)) {
+        return 90; // 1.5 hours
+      }
+    }
+    return 60; // Default 1 hour
+  }
+
+  DateTime _getDefaultStartTime() {
+    final now = DateTime.now();
+    final hour = now.hour;
+    
+    // Schedule for next appropriate time slot
+    if (hour < 9) {
+      return DateTime(now.year, now.month, now.day, 10, 0); // 10 AM
+    } else if (hour < 14) {
+      return DateTime(now.year, now.month, now.day, 15, 0); // 3 PM
+    } else {
+      return DateTime(now.year, now.month, now.day + 1, 10, 0); // Tomorrow 10 AM
+    }
+  }
+
+  // Snackbar helpers
+  void _showSuccessSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
         ),
+        backgroundColor: const Color(0xFF12B347),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'View',
+          textColor: Colors.white,
+          onPressed: () {
+            // Navigate to My Day screen - this would need router context
+          },
+        ),
+      ),
+    );
+  }
+
+  void _showInfoSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.orange,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 3),
       ),
     );
   }

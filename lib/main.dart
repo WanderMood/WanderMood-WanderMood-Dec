@@ -89,9 +89,62 @@ Future<void> _requestLocationPermission() async {
 }
 
 /// Synchronize SharedPreferences with actual Supabase auth state
+/// Wait for Supabase to restore session from secure storage
+Future<void> _waitForSessionRestore() async {
+  try {
+    debugPrint('🔄 Waiting for Supabase session restoration...');
+    
+    // Give Supabase time to restore session from secure storage
+    // This is especially important on hot restart
+    for (int i = 0; i < 5; i++) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      final session = Supabase.instance.client.auth.currentSession;
+      final user = Supabase.instance.client.auth.currentUser;
+      
+      if (session != null && user != null) {
+        debugPrint('✅ Session restored: ${user.id}');
+        
+        // Try to refresh the session if it's close to expiring
+        try {
+          final expiresAt = session.expiresAt;
+          if (expiresAt != null) {
+            final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+            final timeUntilExpiry = expiresAt - now;
+            
+            // If session expires in less than 5 minutes, refresh it
+            if (timeUntilExpiry < 300) {
+              debugPrint('🔄 Session expiring soon, refreshing...');
+              await Supabase.instance.client.auth.refreshSession();
+              debugPrint('✅ Session refreshed successfully');
+            }
+          }
+        } catch (e) {
+          debugPrint('⚠️ Could not refresh session (might be expired): $e');
+          // If refresh fails, the session might be expired - clear it
+          try {
+            await Supabase.instance.client.auth.signOut();
+            debugPrint('🧹 Cleared expired session');
+          } catch (_) {
+            // Ignore errors during cleanup
+          }
+        }
+        
+        return;
+      }
+    }
+    
+    debugPrint('ℹ️ No session found after waiting');
+  } catch (e) {
+    debugPrint('❌ Error waiting for session restore: $e');
+  }
+}
+
 /// This fixes issues where users are authenticated in Supabase but flags aren't set locally
 Future<void> _synchronizeAuthState() async {
   try {
+    // First, wait for Supabase to restore any existing session
+    await _waitForSessionRestore();
+    
     final prefs = await SharedPreferences.getInstance();
     final user = Supabase.instance.client.auth.currentUser;
     final session = Supabase.instance.client.auth.currentSession;
@@ -109,7 +162,7 @@ Future<void> _synchronizeAuthState() async {
     if (user != null && session != null && !hasCompletedAuth) {
       debugPrint('🔧 FIXING: User is authenticated in Supabase but not marked locally');
       await prefs.setBool('hasCompletedAuth', true);
-              await prefs.setBool('has_seen_onboarding', true);
+      await prefs.setBool('has_seen_onboarding', true);
       
       // Check if user has preferences in database
       try {

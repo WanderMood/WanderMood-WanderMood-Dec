@@ -95,6 +95,18 @@ class AuthService {
     try {
       debugPrint('🔄 Creating profile for user: ${user.id}');
       
+      // First check if profile already exists (might have been created by trigger)
+      final existingProfile = await _supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
+      
+      if (existingProfile != null) {
+        debugPrint('✅ Profile already exists for user: ${user.id} (created by trigger)');
+        return;
+      }
+      
       // Generate unique username
       String username = 'wanderer_${user.id.substring(0, 8)}';
       
@@ -148,6 +160,11 @@ class AuthService {
       
     } catch (e) {
       debugPrint('❌ Error creating profile: $e');
+      // Check if it's a duplicate key error (profile already exists)
+      if (e.toString().contains('duplicate key') || e.toString().contains('already exists')) {
+        debugPrint('⚠️ Profile already exists, this is okay');
+        return;
+      }
       // Don't throw - allow signup to succeed even if profile creation fails
       // Profile can be created later when user signs in
     }
