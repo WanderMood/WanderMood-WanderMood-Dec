@@ -63,24 +63,39 @@ part 'router.g.dart';
 // Helper function to handle email verification
 Future<void> _handleEmailVerification() async {
   try {
-    // Wait a moment for auth state to update
-    await Future.delayed(const Duration(milliseconds: 500));
+    // Wait a moment for auth state to update after deep link
+    await Future.delayed(const Duration(milliseconds: 1000));
+    
+    // Refresh session to get latest user state
+    final session = Supabase.instance.client.auth.currentSession;
+    if (session != null) {
+      // Refresh the session to ensure we have the latest user data
+      await Supabase.instance.client.auth.refreshSession();
+    }
     
     final user = Supabase.instance.client.auth.currentUser;
-    final session = Supabase.instance.client.auth.currentSession;
+    final currentSession = Supabase.instance.client.auth.currentSession;
     
-    debugPrint('🔍 Email verification - User: ${user?.id}, Session: ${session?.user?.id}');
+    debugPrint('🔍 Email verification - User: ${user?.id}');
+    debugPrint('🔍 Email confirmed at: ${user?.emailConfirmedAt}');
+    debugPrint('🔍 Session exists: ${currentSession != null}');
     
-    if (user != null && session != null) {
+    if (user != null && currentSession != null) {
+      // Verify that email is actually confirmed
+      if (user.emailConfirmedAt == null) {
+        debugPrint('⚠️ User authenticated but email not confirmed yet');
+        throw Exception('Email verification incomplete. Please check your email and click the verification link.');
+      }
+      
       // Store user state in SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('hasCompletedAuth', true);
       await prefs.setBool('hasCompletedOnboarding', false);
       await prefs.setBool('hasCompletedPreferences', false);
       
-      debugPrint('✅ Email verification successful, user authenticated');
+      debugPrint('✅ Email verification successful, user authenticated and verified');
     } else {
-      throw Exception('User not authenticated after email verification');
+      throw Exception('User not authenticated after email verification. Please try signing in.');
     }
   } catch (e) {
     debugPrint('❌ Email verification error: $e');

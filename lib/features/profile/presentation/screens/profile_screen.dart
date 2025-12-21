@@ -44,16 +44,49 @@ class ProfileScreen extends ConsumerWidget {
               data: (profile) => SingleChildScrollView(
                 child: Column(
                   children: [
-                    // Header
+                    // Header with back button
                     Padding(
                       padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'Your Profile',
-                        style: GoogleFonts.poppins(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF4CAF50),
-                        ),
+                      child: Row(
+                        children: [
+                          // Back button
+                          IconButton(
+                            icon: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.arrow_back,
+                                color: Color(0xFF4CAF50),
+                                size: 20,
+                              ),
+                            ),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                          // Title (centered)
+                          Expanded(
+                            child: Text(
+                              'Your Profile',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF4CAF50),
+                              ),
+                            ),
+                          ),
+                          // Spacer to balance the back button
+                          const SizedBox(width: 48),
+                        ],
                       ),
                     ).animate().fadeIn(duration: 400.ms),
                     

@@ -266,12 +266,29 @@ class DiaryService {
     }
   }
 
-  /// Get user profile
-  Future<UserProfile> getUserProfile(String userId) async {
+  /// Get user profile (respects privacy settings)
+  Future<UserProfile?> getUserProfile(String userId) async {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
         throw Exception('User must be authenticated to view profiles');
+      }
+
+      // Check privacy settings - users can always view their own profile
+      if (user.id != userId) {
+        final profileResponse = await _supabase
+            .from('profiles')
+            .select('is_public')
+            .eq('id', userId)
+            .maybeSingle();
+        
+        if (profileResponse == null) return null;
+        
+        final isPublic = profileResponse['is_public'] as bool? ?? true;
+        if (!isPublic) {
+          // Profile is private - only owner can view
+          return null;
+        }
       }
 
       final response = await _supabase
@@ -283,7 +300,7 @@ class DiaryService {
       return UserProfile.fromJson(response);
     } catch (e) {
       print('Error loading user profile: $e');
-      rethrow;
+      return null; // Return null instead of throwing for privacy reasons
     }
   }
 

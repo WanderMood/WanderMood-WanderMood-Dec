@@ -8,6 +8,7 @@ import 'package:wandermood/features/home/presentation/screens/free_time_activiti
 import 'package:wandermood/features/home/presentation/screens/mood_home_screen.dart';
 import 'package:wandermood/features/home/providers/dynamic_my_day_provider.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
+import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.dart';
 
 // Create a Provider for the tab controller
 final mainTabProvider = StateProvider<int>((ref) => 0);
@@ -93,53 +94,72 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     debugPrint('📱 MainScreen build: shouldHideBottomNav = $shouldHideBottomNav');
     
     return Scaffold(
+      backgroundColor: const Color(0xFFFFFDF5), // Match app's beige background
+      drawer: const ProfileDrawer(),
+      extendBody: false, // Prevent body from extending behind bottom nav bar
       body: screens[selectedIndex],
-      bottomNavigationBar: shouldHideBottomNav ? null : BottomNavigationBar(
-        currentIndex: selectedIndex,
-        onTap: (index) {
-                // Handle special cases for Feed and Profile
-          if (index == 3) {
-        // Navigate to Feed screen
-          context.push('/diaries');
-          return;
-          } else if (index == 4) {
-            // Navigate directly to Profile screen
-            context.push('/profile');
-          return;
-        }
-        
-          // Update the tab provider for normal tabs
-        ref.read(mainTabProvider.notifier).state = index;
-      },
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: Theme.of(context).primaryColor,
-        unselectedItemColor: Colors.grey,
-        selectedFontSize: 10.0,
-        unselectedFontSize: 10.0,
-        iconSize: 20.0,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'My Day',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.explore),
-            label: 'Explore',
+      bottomNavigationBar: shouldHideBottomNav ? null : SafeArea(
+        top: false,
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: Offset(0, -2),
               ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.mood),
-            label: 'Moody',
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'WanderFeed',
+          child: BottomNavigationBar(
+            currentIndex: selectedIndex,
+            onTap: (index) {
+              // Handle special cases for Feed and Profile
+              if (index == 3) {
+                // Navigate to Feed screen
+                context.push('/diaries');
+                return;
+              } else if (index == 4) {
+                // Navigate directly to Profile screen
+                context.push('/profile');
+                return;
+              }
+              
+              // Update the tab provider for normal tabs
+              ref.read(mainTabProvider.notifier).state = index;
+            },
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            selectedItemColor: Theme.of(context).primaryColor,
+            unselectedItemColor: Colors.grey,
+            selectedFontSize: 10.0,
+            unselectedFontSize: 10.0,
+            iconSize: 20.0,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.calendar_today),
+                label: 'My Day',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.explore),
+                label: 'Explore',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.mood),
+                label: 'Moody',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.people),
+                label: 'WanderFeed',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: 'Profile',
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-            ),
-          ],
+        ),
       ),
     );
   }

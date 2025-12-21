@@ -37,7 +37,7 @@ class Profile with _$Profile {
       email: map['email'] as String,
       username: map['username'] as String?,
       fullName: map['full_name'] as String?,
-      imageUrl: map['image_url'] as String?,
+      imageUrl: map['image_url'] as String? ?? map['avatar_url'] as String?,
       dateOfBirth: map['date_of_birth'] != null 
           ? DateTime.parse(map['date_of_birth'] as String)
           : null,

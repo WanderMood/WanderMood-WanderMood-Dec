@@ -158,9 +158,11 @@ final cachedActivitySuggestionsProvider = FutureProvider.autoDispose<List<Map<St
   // Combine scheduled activities with cached activities
   final allActivities = [...scheduledActivities, ...cachedActivities];
   
-  // If no activities at all, return some defaults
+  // If no activities at all, return empty list (no fake activities)
+  // The UI will show an empty state instead
   if (allActivities.isEmpty) {
-    return _getDefaultActivities();
+    debugPrint('📭 My Day Provider: No activities found - returning empty list for empty state');
+    return [];
   }
   
   return allActivities;

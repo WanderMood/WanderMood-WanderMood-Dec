@@ -142,6 +142,13 @@ final todayActivitiesProvider = FutureProvider.autoDispose<List<EnhancedActivity
         ? DateTime.parse(activity['startTime'])
         : _getDefaultStartTime(activity['timeOfDay'] as String? ?? 'any');
       
+      // CRITICAL: Only include activities for TODAY (filter out future dates)
+      if (startTime.year != today.year || 
+          startTime.month != today.month || 
+          startTime.day != today.day) {
+        continue; // Skip activities not scheduled for today
+      }
+      
       // Calculate end time based on duration
       final duration = activity['duration'] as int? ?? 60;
       final endTime = startTime.add(Duration(minutes: duration));

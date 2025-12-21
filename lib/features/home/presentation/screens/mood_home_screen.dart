@@ -23,6 +23,8 @@ import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.
 import 'package:wandermood/features/home/presentation/screens/main_screen.dart';  // Import mainTabProvider from here
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/mood/presentation/screens/moody_hub_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 
 class MoodHomeScreen extends ConsumerStatefulWidget {
   const MoodHomeScreen({super.key});
@@ -52,7 +54,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   void initState() {
     super.initState();
     _updateGreeting();
-    _updatePersonalizedGreeting();
+    // Removed _updatePersonalizedGreeting() - no auto API calls on init
   }
 
   @override
@@ -1335,19 +1337,71 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     final weatherAsync = ref.watch(weatherProvider);
     final dailyMoodState = ref.watch(dailyMoodStateNotifierProvider);
     
-    // 🎯 Hub Logic: Check if user has selected mood today
-    if (dailyMoodState.hasSelectedMoodToday) {
-      return MoodyHubScreen(
-        onChangeMood: () {
-          // Reset mood selection and show full mood selection screen
-          ref.read(dailyMoodStateNotifierProvider.notifier).resetMoodSelection();
-        },
-        onShowChat: () {
-          // Show existing chat dialog with current context
-          _showMoodyTalkDialog(context);
-        },
-      );
+    // 🎯 Hub Logic: 
+    // 1. First check if user has seen intro overlay - if not, show hub with intro
+    // 2. Then check if user has selected mood today - if yes, show hub
+    // 3. Otherwise show mood selection screen
+    return FutureBuilder<bool>(
+      future: _hasSeenIntroOverlay(),
+      builder: (context, introSnapshot) {
+        final hasSeenIntro = introSnapshot.data ?? false;
+        
+        // If user hasn't seen intro overlay, always show hub (which will show intro)
+        if (!hasSeenIntro) {
+          return MoodyHubScreen(
+            onChangeMood: () {
+              // Reset mood selection and show full mood selection screen
+              ref.read(dailyMoodStateNotifierProvider.notifier).resetMoodSelection();
+            },
+            onShowChat: () {
+              // Show existing chat dialog with current context
+              _showMoodyTalkDialog(context);
+            },
+          );
+        }
+        
+        // If user has seen intro, check if they've selected mood today
+        if (dailyMoodState.hasSelectedMoodToday) {
+          return MoodyHubScreen(
+            onChangeMood: () {
+              // Reset mood selection and show full mood selection screen
+              ref.read(dailyMoodStateNotifierProvider.notifier).resetMoodSelection();
+            },
+            onShowChat: () {
+              // Show existing chat dialog with current context
+              _showMoodyTalkDialog(context);
+            },
+          );
+        }
+        
+        // User has seen intro but hasn't selected mood - show mood selection with "Back to Hub" button
+        return _buildMoodSelectionScreen(context, ref, locationAsync, userData, weatherAsync, dailyMoodState);
+      },
+    );
+  }
+  
+  /// Check if user has seen the Moody intro overlay
+  Future<bool> _hasSeenIntroOverlay() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool('has_seen_moody_intro') ?? false;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Error checking intro overlay status: $e');
+      }
+      return false; // Default to showing intro if check fails
     }
+  }
+  
+  /// Build the mood selection screen (moved from build method)
+  Widget _buildMoodSelectionScreen(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<String?> locationAsync,
+    AsyncValue<Map<String, dynamic>?> userData,
+    AsyncValue<WeatherData?> weatherAsync,
+    DailyMoodState dailyMoodState,
+  ) {
     
     return Stack(
       children: [
@@ -1926,15 +1980,27 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                         ),
                       ),
                       
-                      // Back to Hub button - secondary text button style
-                      if (dailyMoodState.isInMoodChangeMode)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 30),
-                          child: TextButton(
-                            onPressed: () {
-                              // Return to hub
+                      // Back to Hub button - always show when on mood selection screen
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 30),
+                        child: TextButton(
+                          onPressed: () {
+                            // Always show hub when "Back to Hub" is clicked
+                            // If in mood change mode, use returnToHub (preserves activities)
+                            if (dailyMoodState.isInMoodChangeMode) {
                               ref.read(dailyMoodStateNotifierProvider.notifier).returnToHub();
-                            },
+                            } else {
+                              // If not in mood change mode (first-time user), just show hub
+                              // Enter mood change mode temporarily, then return to hub
+                              // This ensures the hub is shown even without a mood selection
+                              ref.read(dailyMoodStateNotifierProvider.notifier).enterMoodChangeMode();
+                              Future.delayed(const Duration(milliseconds: 50), () {
+                                if (mounted) {
+                                  ref.read(dailyMoodStateNotifierProvider.notifier).returnToHub();
+                                }
+                              });
+                            }
+                          },
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.black54,
                               padding: const EdgeInsets.symmetric(vertical: 12),

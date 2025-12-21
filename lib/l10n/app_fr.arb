@@ -1,0 +1,88 @@
+{
+  "@@locale": "fr",
+  "appTitle": "WanderMood",
+  "welcome": "Bienvenue",
+  "hello": "Bonjour",
+  "goodMorning": "Bonjour",
+  "goodAfternoon": "Bon après-midi",
+  "goodEvening": "Bonsoir",
+  "heyNightOwl": "Salut couche-tard",
+  "readyToCreateYourFirstDay": "Prêt à créer votre premier jour incroyable ?",
+  "createMyFirstDay": "Créer mon premier jour",
+  "skipForNow": "Passer pour l'instant",
+  "saveChanges": "Enregistrer les modifications",
+  "cancel": "Annuler",
+  "continueButton": "Continuer",
+  "back": "Retour",
+  "editProfile": "Modifier le profil",
+  "fullName": "Nom complet",
+  "dateOfBirth": "Date de naissance",
+  "selectDate": "Sélectionner la date",
+  "bio": "Biographie",
+  "notifications": "Notifications",
+  "allowNotifications": "Autoriser les notifications",
+  "masterControlForAllNotifications": "Contrôle principal pour toutes les notifications",
+  "activityNotifications": "Notifications d'activité",
+  "activityReminders": "Rappels d'activité",
+  "remindersForUpcomingActivities": "Rappels pour les activités et plans à venir",
+  "moodTracking": "Suivi de l'humeur",
+  "dailyPromptsToTrackYourMood": "Invitations quotidiennes pour suivre votre humeur",
+  "travelAndWeather": "Voyage et météo",
+  "weatherAlerts": "Alertes météorologiques",
+  "getAlertsAboutWeatherChanges": "Recevoir des alertes sur les changements météorologiques",
+  "travelTips": "Conseils de voyage",
+  "suggestionsForYourTrips": "Suggestions pour vos voyages et activités",
+  "localEvents": "Événements locaux",
+  "notificationsAboutEventsInYourArea": "Notifications sur les événements dans votre région",
+  "social": "Social",
+  "friendActivity": "Activité des amis",
+  "whenFriendsShareTrips": "Lorsque les amis partagent des voyages ou des activités",
+  "specialOffers": "Offres spéciales",
+  "promotionalOffersAndAppUpdates": "Offres promotionnelles et mises à jour de l'application",
+  "languageSettings": "Paramètres de langue",
+  "chooseYourPreferredLanguage": "Choisissez votre langue préférée pour l'interface de l'application. Cela affectera tout le texte et le contenu dans toute l'application.",
+  "privacySettings": "Paramètres de confidentialité",
+  "publicProfile": "Profil public",
+  "allowOthersToViewYourProfile": "Permettre aux autres de voir votre profil",
+  "pushNotifications": "Notifications push",
+  "receivePushNotifications": "Recevoir des notifications push",
+  "emailNotifications": "Notifications par e-mail",
+  "receiveEmailNotifications": "Recevoir des notifications par e-mail",
+  "manageYourPrivacySettings": "Gérez vos paramètres de confidentialité et préférences de notifications. Ces paramètres contrôlent qui peut voir votre profil et comment vous recevez les mises à jour.",
+  "themeSettings": "Paramètres de thème",
+  "chooseYourPreferredTheme": "Choisissez votre thème préféré pour l'application. Vous pouvez suivre les paramètres de votre système ou choisir un thème spécifique.",
+  "system": "Système",
+  "followSystemTheme": "Suivre le thème du système",
+  "light": "Clair",
+  "lightTheme": "Thème clair",
+  "dark": "Sombre",
+  "darkTheme": "Thème sombre",
+  "changeYourMood": "Changer votre humeur ?",
+  "doYouWantToContinueToChangeMood": "Voulez-vous continuer à changer votre humeur ? Cela vous mènera à l'écran de sélection de l'humeur.",
+  "enabled": "activé",
+  "disabled": "désactivé",
+  "updated": "mis à jour",
+  "failedToUpdate": "Échec de la mise à jour",
+  "languageUpdatedTo": "Langue mise à jour vers {language}",
+  "@languageUpdatedTo": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "themeUpdatedTo": "Thème mis à jour vers {theme}",
+  "@themeUpdatedTo": {
+    "placeholders": {
+      "theme": {
+        "type": "String"
+      }
+    }
+  },
+  "profileVisibilityUpdated": "Visibilité du profil mise à jour",
+  "pushNotificationsEnabled": "Notifications push activées",
+  "pushNotificationsDisabled": "Notifications push désactivées",
+  "emailNotificationsEnabled": "Notifications par e-mail activées",
+  "emailNotificationsDisabled": "Notifications par e-mail désactivées"
+}
+

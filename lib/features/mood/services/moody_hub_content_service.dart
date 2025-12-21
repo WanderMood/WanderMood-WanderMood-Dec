@@ -3,10 +3,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 import 'check_in_service.dart';
 import '../models/check_in.dart';
+import '../../../core/services/user_preferences_service.dart';
 
 final moodyHubContentServiceProvider = Provider<MoodyHubContentService>((ref) {
   final checkInService = ref.read(checkInServiceProvider);
-  return MoodyHubContentService(checkInService);
+  final preferencesService = ref.read(userPreferencesServiceProvider);
+  return MoodyHubContentService(checkInService, preferencesService);
 });
 
 enum ContentPillar {
@@ -35,10 +37,11 @@ class MomentCard {
 
 class MoodyHubContentService {
   final CheckInService _checkInService;
+  final UserPreferencesService _preferencesService;
   static const String _visitCountKey = 'moody_hub_visit_count';
   static const String _lastVisitDateKey = 'moody_hub_last_visit_date';
 
-  MoodyHubContentService(this._checkInService);
+  MoodyHubContentService(this._checkInService, this._preferencesService);
 
   /// Get the current visit count
   Future<int> getVisitCount() async {
@@ -141,6 +144,25 @@ class MoodyHubContentService {
       "This popped into my head...",
     ];
     
+    // Use user's onboarding preferences to personalize suggestions
+    final userInterests = _preferencesService.travelInterests;
+    final userStyles = _preferencesService.travelStyles;
+    
+    // Map user interests to personalized titles
+    String personalizedTitle = 'this place fits your vibe today';
+    if (userInterests.isNotEmpty) {
+      if (userInterests.contains('Food & Dining')) {
+        personalizedTitle = 'this local spot is a must-try 🍜';
+      } else if (userInterests.contains('Arts & Culture')) {
+        personalizedTitle = 'this museum + you = magic ✨';
+      } else if (userInterests.contains('Nature & Outdoors')) {
+        personalizedTitle = 'this trail is waiting for you 🥾';
+      } else if (userInterests.contains('Shopping & Markets')) {
+        personalizedTitle = 'this market has your energy 🎉';
+      }
+    }
+    
+    // Override with mood-specific if available
     final moodToTitle = {
       'adventurous': 'this hidden gem is calling you 🗺️',
       'exploring': 'this city fits you perfectly 🏙️',
@@ -152,13 +174,23 @@ class MoodyHubContentService {
       'active': 'this trail is waiting for you 🥾',
     };
     
+    final title = moodToTitle[mood.toLowerCase()] ?? personalizedTitle;
     final intro = intros[visitCount % intros.length];
-    final title = moodToTitle[mood.toLowerCase()] ?? 'this place fits your vibe today';
+    
+    // Create personalized subtitle based on travel styles
+    String? subtitle;
+    if (location != null) {
+      if (userStyles.isNotEmpty) {
+        subtitle = 'Perfect for ${userStyles.first.toLowerCase()} explorers in $location';
+      } else {
+        subtitle = 'Perfect for $location explorers';
+      }
+    }
     
     return MomentCard(
       intro: intro,
       title: title,
-      subtitle: location != null ? 'Perfect for $location explorers' : null,
+      subtitle: subtitle,
       pillar: ContentPillar.tripIdea,
       emoji: '🎒',
     );
@@ -276,11 +308,8 @@ class MoodyHubContentService {
 
   /// Determine if "Your Day's Flow" should be shown
   Future<bool> shouldShowDayFlow({required bool hasActivities}) async {
-    if (!hasActivities) return false;
-    
-    final visitCount = await getVisitCount();
-    // Show on 2 out of 3 visits
-    return visitCount % 3 != 2;
+    // Always show timeline when activities exist (removed rotation logic)
+    return hasActivities;
   }
 
   /// Generate interpretive commentary for Day's Flow

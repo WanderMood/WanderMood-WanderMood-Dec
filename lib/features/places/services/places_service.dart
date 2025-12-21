@@ -52,6 +52,27 @@ class PlacesService extends _$PlacesService {
 
   int min(int a, int b) => a < b ? a : b;
 
+  /// Format review timestamp to relative time
+  String _formatReviewTime(int timestamp) {
+    final reviewDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+    final now = DateTime.now();
+    final difference = now.difference(reviewDate);
+
+    if (difference.inDays > 365) {
+      final years = (difference.inDays / 365).floor();
+      return '$years ${years == 1 ? 'year' : 'years'} ago';
+    } else if (difference.inDays > 30) {
+      final months = (difference.inDays / 30).floor();
+      return '$months ${months == 1 ? 'month' : 'months'} ago';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays} ${difference.inDays == 1 ? 'day' : 'days'} ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} ${difference.inHours == 1 ? 'hour' : 'hours'} ago';
+    } else {
+      return 'Recently';
+    }
+  }
+
   /// Search for places based on a query string with smart caching
   Future<List<PlacesSearchResult>> searchPlaces(String query) async {
     if (!_isInitialized) {
@@ -125,6 +146,8 @@ class PlacesService extends _$PlacesService {
           'name',
           'formatted_address',
           'rating',
+          'user_ratings_total', // Get review count
+          'reviews', // Get actual reviews
           'photos',
           'types',
           'geometry',
@@ -158,14 +181,35 @@ class PlacesService extends _$PlacesService {
         }
       }
       
+      // Safely extract reviews from Google Places API
+      final reviews = <Map<String, dynamic>>[];
+      if (result.reviews != null && result.reviews!.isNotEmpty) {
+        for (final review in result.reviews!) {
+          reviews.add({
+            'author_name': review.authorName ?? 'Anonymous',
+            'rating': review.rating ?? 0,
+            'text': review.text ?? '',
+            'time': review.time ?? 0,
+            'relative_time_description': review.time != null 
+                ? _formatReviewTime(review.time!.toInt()) 
+                : 'Recently',
+          });
+        }
+        debugPrint('✅ Extracted ${reviews.length} real reviews from Google Places API');
+      } else {
+        debugPrint('⚠️ No reviews available for this place');
+      }
+      
       // Safely extract location
       final geometry = result.geometry;
       final location = geometry?.location;
       
       final details = {
-        'name': result.name,
-        'address': result.formattedAddress,
+        'name': result.name ?? '',
+        'address': result.formattedAddress ?? '',
         'rating': result.rating,
+        'user_ratings_total': reviews.length, // Use review count from actual reviews
+        'reviews': reviews, // Real reviews from Google Places API
         'photos': photoReferences,
         'types': result.types ?? [],
         'priceLevel': result.priceLevel, // Include price level
@@ -175,7 +219,7 @@ class PlacesService extends _$PlacesService {
         } : null,
       };
       
-      debugPrint('✅ Got details for ${result.name} with ${photoReferences.length} photos');
+      debugPrint('✅ Got details for ${result.name} with ${photoReferences.length} photos and ${reviews.length} reviews');
       return details;
     } catch (e) {
       debugPrint('❌ Failed to get place details: $e');

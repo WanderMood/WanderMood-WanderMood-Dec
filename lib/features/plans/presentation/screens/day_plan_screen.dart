@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -65,6 +66,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
           ),
           backgroundColor: Colors.orange.shade600,
           behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -96,10 +98,10 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
           ),
           backgroundColor: Colors.green.shade600,
           behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          duration: const Duration(seconds: 2),
         ),
       );
 
@@ -1388,33 +1390,13 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
     return 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=500&h=400&fit=crop&auto=format'; // Iconic landmark
   }
 
-  // Mock data for alternative activities (in a real app, this would come from a backend)
-  final List<Map<String, dynamic>> _alternativeActivities = [
-    {
-      'name': 'Romantic Breakfast at Café Fleur',
-      'description': 'Enjoy a delightful breakfast with fresh pastries and artisanal coffee.',
-      'imageUrl': 'https://images.unsplash.com/photo-1579801238797-b9f470d7e120?q=80&w=2069&auto=format&fit=crop',
-      'rating': 4.6,
-      'tags': ['Food', 'Romantic', 'Cozy'],
-      'duration': 60,
-    },
-    {
-      'name': 'Beach Meditation Session',
-      'description': 'Connect with nature and find your inner peace with a guided meditation by the ocean.',
-      'imageUrl': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2073&auto=format&fit=crop',
-      'rating': 4.9,
-      'tags': ['Wellness', 'Outdoor', 'Relaxing'],
-      'duration': 45,
-    },
-    {
-      'name': 'Botanical Garden Tour',
-      'description': 'Explore the city\'s hidden gem with exotic plants and beautiful landscaping.',
-      'imageUrl': 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?q=80&w=2069&auto=format&fit=crop',
-      'rating': 4.7,
-      'tags': ['Outdoor', 'Educational', 'Peaceful'],
-      'duration': 90,
-    },
-  ];
+  // Alternative activities - only used in debug mode
+  // In production, this should fetch real alternative activities from Places API
+  List<Map<String, dynamic>> get _alternativeActivities {
+    // No mock data - return empty list
+    // Alternative activities should come from real API data
+    return [];
+  }
 
   Widget _buildPhotoPlaceholder(String text) {
     return Container(

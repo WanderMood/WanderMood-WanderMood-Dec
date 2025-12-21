@@ -499,6 +499,9 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
       // Mark preferences as completed
       await prefs.setBool('hasCompletedPreferences', true);
       
+      // Check if this is first-time user (hasn't created a plan yet)
+      final hasCompletedFirstPlan = prefs.getBool('has_completed_first_plan') ?? false;
+      
       // Cache timestamp for activity suggestions
       await prefs.setString('lastActivitySuggestionUpdate', DateTime.now().toIso8601String());
       
@@ -508,13 +511,19 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
       // Navigate to main app
       if (mounted) {
         debugPrint('🚀 Navigating to main app...');
-        context.goNamed('main', extra: {'tab': 0});
+        // First-time users go to Moody Hub (tab 2), returning users go to My Day (tab 0)
+        final tabIndex = hasCompletedFirstPlan ? 0 : 2;
+        debugPrint('📍 First-time user: ${!hasCompletedFirstPlan}, routing to tab: $tabIndex');
+        context.goNamed('main', extra: {'tab': tabIndex});
       }
     } catch (e) {
       debugPrint('❌ Prefetch failed: $e');
       // Continue to app even if prefetch fails
       if (mounted) {
-        context.goNamed('main', extra: {'tab': 0});
+        final prefs = await SharedPreferences.getInstance();
+        final hasCompletedFirstPlan = prefs.getBool('has_completed_first_plan') ?? false;
+        final tabIndex = hasCompletedFirstPlan ? 0 : 2;
+        context.goNamed('main', extra: {'tab': tabIndex});
       }
     }
   }

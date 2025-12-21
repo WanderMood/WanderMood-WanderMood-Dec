@@ -10,6 +10,7 @@ import 'package:wandermood/features/plans/presentation/widgets/plan_loading_over
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
+import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
 
 class PlanConfirmationScreen extends ConsumerWidget {
@@ -91,6 +92,11 @@ class PlanConfirmationScreen extends ConsumerWidget {
         debugPrint('🔄 Invalidating providers for fresh My Day data...');
         ref.invalidate(scheduledActivityServiceProvider);
         ref.invalidate(cachedActivitySuggestionsProvider);
+        // Also invalidate My Day providers to refresh the screen
+        ref.invalidate(todayActivitiesProvider);
+        ref.invalidate(timelineCategorizedActivitiesProvider);
+        // Refresh daily mood state to update plannedActivities
+        ref.invalidate(dailyMoodStateNotifierProvider);
         debugPrint('✅ Providers invalidated - My Day will load fresh activities');
         
         // Providers will refresh automatically when My Day loads

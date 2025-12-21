@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -17,31 +18,81 @@ class EmailVerificationScreen extends StatefulWidget {
 
 class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   bool _isResending = false;
+  bool _isVerified = false;
+  bool _isChecking = true;
+  StreamSubscription<AuthState>? _authSubscription;
 
   @override
   void initState() {
     super.initState();
-    // Listen for auth state changes
-    Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
+    _checkVerificationStatus();
+    _listenForVerification();
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
+  }
+
+  /// Check if user is already verified
+  Future<void> _checkVerificationStatus() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null && user.emailConfirmedAt != null) {
+        debugPrint('✅ User is already verified');
+        setState(() {
+          _isVerified = true;
+          _isChecking = false;
+        });
+        await _proceedToOnboarding();
+      } else {
+        setState(() {
+          _isChecking = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('❌ Error checking verification status: $e');
+      setState(() {
+        _isChecking = false;
+      });
+    }
+  }
+
+  /// Listen for email verification completion
+  void _listenForVerification() {
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
       final event = data.event;
       final session = data.session;
+      final user = session?.user;
       
       debugPrint('🔐 Auth state change: $event');
-      debugPrint('🔐 Session: ${session?.user?.id}');
+      debugPrint('🔐 User: ${user?.id}, Email confirmed: ${user?.emailConfirmedAt}');
       
-      if (event == AuthChangeEvent.signedIn && session != null) {
-        debugPrint('✅ Email verified! Setting auth completion flag...');
-        
-        // Set auth completion flag
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('hasCompletedAuth', true);
-        debugPrint('✅ hasCompletedAuth flag set after email verification');
-        
-        if (mounted) {
-          context.go('/preferences/communication');
+      if (event == AuthChangeEvent.signedIn && session != null && user != null) {
+        // Check if email is verified
+        if (user.emailConfirmedAt != null) {
+          debugPrint('✅ Email verified! Proceeding to onboarding...');
+          setState(() {
+            _isVerified = true;
+          });
+          await _proceedToOnboarding();
         }
       }
     });
+  }
+
+  /// Proceed to onboarding after successful verification
+  Future<void> _proceedToOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasCompletedAuth', true);
+    await prefs.setBool('hasCompletedOnboarding', false);
+    await prefs.setBool('hasCompletedPreferences', false);
+    debugPrint('✅ hasCompletedAuth flag set after email verification');
+    
+    if (mounted) {
+      context.go('/preferences/communication');
+    }
   }
 
   Future<void> _resendVerificationEmail() async {
@@ -61,6 +112,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
           const SnackBar(
             content: Text('Verification email sent! Please check your inbox.'),
             backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
           ),
         );
       }
@@ -70,6 +122,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
           SnackBar(
             content: Text('Failed to resend email: ${e.message}'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
           ),
         );
       }
@@ -145,19 +198,82 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               
               const SizedBox(height: 48),
               
-              // Resend button
+              // Show loading while checking verification status
+              if (_isChecking)
+                const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6C5CE7)),
+                  ),
+                )
+              else if (_isVerified)
+                // Show success message if already verified
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.green),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green),
+                      SizedBox(width: 8),
+                      Text(
+                        'Email verified! Redirecting...',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                // Show instructions if not verified
+                Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.orange),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.info_outline, color: Colors.orange),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Please verify your email to continue. Check your inbox and click the verification link.',
+                              style: TextStyle(
+                                color: Colors.orange,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              
+              const SizedBox(height: 16),
+              
+              // SECONDARY ACTION: Resend email button
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: OutlinedButton(
                   onPressed: _isResending ? null : _resendVerificationEmail,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6C5CE7),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF6C5CE7),
+                    side: const BorderSide(color: Color(0xFF6C5CE7)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    elevation: 0,
                   ),
                   child: _isResending
                       ? const SizedBox(
@@ -165,14 +281,14 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6C5CE7)),
                           ),
                         )
                       : const Text(
-                          'Resend Verification Email',
+                          'Resend Email',
                           style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                 ),
@@ -180,51 +296,15 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               
               const SizedBox(height: 24),
               
-              // Continue button (since email confirmation might be disabled)
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () async {
-                    debugPrint('🚀 Manual continue - checking if user can proceed to preferences');
-                    final prefs = await SharedPreferences.getInstance();
-                    await prefs.setBool('hasCompletedAuth', true);
-                    await prefs.setBool('hasCompletedOnboarding', false);
-                    await prefs.setBool('hasCompletedPreferences', false);
-                    debugPrint('✅ hasCompletedAuth flag set manually');
-                    
-                    if (mounted) {
-                      context.go('/preferences/communication');
-                    }
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF6C5CE7),
-                    side: const BorderSide(color: Color(0xFF6C5CE7)),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Continue to App',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // Back to login
+              // TERTIARY ACTION: Back to login (text link)
               TextButton(
                 onPressed: () => context.go('/login'),
                 child: const Text(
                   'Back to Sign In',
                   style: TextStyle(
-                    color: Color(0xFF6C5CE7),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                    color: Colors.white70,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ),

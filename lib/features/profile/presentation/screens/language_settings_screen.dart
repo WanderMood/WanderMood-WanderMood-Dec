@@ -3,12 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
+import 'package:wandermood/core/presentation/providers/language_provider.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class LanguageSettingsScreen extends ConsumerWidget {
   const LanguageSettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final profileAsync = ref.watch(profileProvider);
 
     return SwirlBackground(
@@ -18,7 +21,7 @@ class LanguageSettingsScreen extends ConsumerWidget {
           backgroundColor: Colors.transparent,
           elevation: 0,
           title: Text(
-            'Language Settings',
+            l10n?.languageSettings ?? 'Language Settings',
             style: GoogleFonts.poppins(
               color: const Color(0xFF4CAF50),
               fontWeight: FontWeight.bold,
@@ -30,76 +33,142 @@ class LanguageSettingsScreen extends ConsumerWidget {
           ),
         ),
         body: profileAsync.when(
-          data: (profile) => ListView(
-            padding: const EdgeInsets.all(16.0),
-            children: [
-              Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+          data: (profile) {
+            // Get current language from profile or default to 'en'
+            final currentLanguage = profile?.languagePreference ?? 'en';
+            
+            return ListView(
+              padding: const EdgeInsets.all(16.0),
+              children: [
+                Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildLanguageOption(
+                        context,
+                        ref,
+                        'English',
+                        'en',
+                        currentLanguage,
+                      ),
+                      const Divider(height: 1),
+                      _buildLanguageOption(
+                        context,
+                        ref,
+                        'Nederlands',
+                        'nl',
+                        currentLanguage,
+                      ),
+                      const Divider(height: 1),
+                      _buildLanguageOption(
+                        context,
+                        ref,
+                        'Español',
+                        'es',
+                        currentLanguage,
+                      ),
+                      const Divider(height: 1),
+                      _buildLanguageOption(
+                        context,
+                        ref,
+                        'Français',
+                        'fr',
+                        currentLanguage,
+                      ),
+                      const Divider(height: 1),
+                      _buildLanguageOption(
+                        context,
+                        ref,
+                        'Deutsch',
+                        'de',
+                        currentLanguage,
+                      ),
+                    ],
+                  ),
                 ),
-                child: Column(
-                  children: [
-                    _buildLanguageOption(
-                      context,
-                      ref,
-                      'English',
-                      'en',
-                      profile?.languagePreference ?? 'en',
-                    ),
-                    const Divider(height: 1),
-                    _buildLanguageOption(
-                      context,
-                      ref,
-                      'Nederlands',
-                      'nl',
-                      profile?.languagePreference ?? 'en',
-                    ),
-                    const Divider(height: 1),
-                    _buildLanguageOption(
-                      context,
-                      ref,
-                      'Español',
-                      'es',
-                      profile?.languagePreference ?? 'en',
-                    ),
-                    const Divider(height: 1),
-                    _buildLanguageOption(
-                      context,
-                      ref,
-                      'Français',
-                      'fr',
-                      profile?.languagePreference ?? 'en',
-                    ),
-                    const Divider(height: 1),
-                    _buildLanguageOption(
-                      context,
-                      ref,
-                      'Deutsch',
-                      'de',
-                      profile?.languagePreference ?? 'en',
-                    ),
-                  ],
+                const SizedBox(height: 16),
+                Text(
+                  l10n?.chooseYourPreferredLanguage ?? 'Choose your preferred language for the app interface. This will affect all text and content throughout the app.',
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Choose your preferred language for the app interface. This will affect all text and content throughout the app.',
-                style: GoogleFonts.poppins(
-                  color: Colors.grey[600],
-                  fontSize: 14,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+              ],
+            );
+          },
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Center(
-            child: Text(
-              'Error loading language settings',
-              style: GoogleFonts.poppins(color: Colors.red),
-            ),
-          ),
+          error: (error, stack) {
+            final errorL10n = AppLocalizations.of(context);
+            // Even if profile fails to load, show language options with default 'en'
+            return ListView(
+              padding: const EdgeInsets.all(16.0),
+              children: [
+                Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildLanguageOption(
+                        context,
+                        ref,
+                        'English',
+                        'en',
+                        'en', // Default to English if profile can't load
+                      ),
+                      const Divider(height: 1),
+                      _buildLanguageOption(
+                        context,
+                        ref,
+                        'Nederlands',
+                        'nl',
+                        'en',
+                      ),
+                      const Divider(height: 1),
+                      _buildLanguageOption(
+                        context,
+                        ref,
+                        'Español',
+                        'es',
+                        'en',
+                      ),
+                      const Divider(height: 1),
+                      _buildLanguageOption(
+                        context,
+                        ref,
+                        'Français',
+                        'fr',
+                        'en',
+                      ),
+                      const Divider(height: 1),
+                      _buildLanguageOption(
+                        context,
+                        ref,
+                        'Deutsch',
+                        'de',
+                        'en',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  errorL10n?.chooseYourPreferredLanguage ?? 'Choose your preferred language for the app interface. This will affect all text and content throughout the app.',
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -126,14 +195,24 @@ class LanguageSettingsScreen extends ConsumerWidget {
           : null,
       onTap: () async {
         try {
-          await ref.read(profileProvider.notifier).updateProfile(
-            languagePreference: code,
-          );
+          // Update locale immediately (works offline)
+          await ref.read(localeProvider.notifier).setLocale(Locale(code));
+          
+          // Try to sync with profile when network is available (optional)
+          try {
+            await ref.read(profileProvider.notifier).updateProfile(
+              languagePreference: code,
+            );
+          } catch (e) {
+            // Continue - local locale still works
+          }
+          
           if (context.mounted) {
+            final updatedL10n = AppLocalizations.of(context);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  'Language updated to $language',
+                  updatedL10n?.languageUpdatedTo(language) ?? 'Language updated to $language',
                   style: GoogleFonts.poppins(),
                 ),
                 backgroundColor: const Color(0xFF4CAF50),

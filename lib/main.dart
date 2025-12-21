@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -6,7 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/router/router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/config/supabase_config.dart';
+import 'core/constants/api_keys.dart';
 import 'features/auth/providers/user_provider.dart';
+import 'features/auth/providers/auth_provider.dart';
 import 'core/domain/providers/location_notifier_provider.dart';
 import 'features/location/services/location_service.dart';
 import 'features/plans/data/services/schema_helper.dart';
@@ -202,8 +205,17 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   try {
-    // Load environment variables
-    await dotenv.load(fileName: '.env');
+    // **CRITICAL**: Load environment variables FIRST before any API key access
+    try {
+      await dotenv.load(fileName: '.env');
+      debugPrint('✅ Loaded .env file');
+    } catch (e) {
+      debugPrint('⚠️ Could not load .env file: $e');
+      // Continue - will use build-time environment variables
+    }
+    
+    // **CRITICAL**: Validate required API keys BEFORE initializing Supabase
+    await _validateApiKeys();
     
     // Initialize Supabase with loaded environment variables
     await SupabaseConfig.initialize();
@@ -233,17 +245,110 @@ Future<void> main() async {
         child: const WanderMoodApp(),
       ),
     );
-  } catch (e) {
-    debugPrint('Error initializing app: $e');
-    runApp(
-      MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: Text('Error initializing app: $e'),
+  } catch (e, stackTrace) {
+    debugPrint('❌ Error initializing app: $e');
+    debugPrint('Stack trace: $stackTrace');
+    
+    // Show user-friendly error in debug, fail fast in release
+    if (kDebugMode) {
+      runApp(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'App Initialization Error',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      e.toString(),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Check console for details',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
-      ),
-    );
+      );
+    } else {
+      // In release, fail fast with clear error
+      throw Exception('Failed to initialize app: $e');
+    }
+  }
+}
+
+/// Validate that all required API keys are available
+/// Throws exception if critical keys are missing
+Future<void> _validateApiKeys() async {
+  final missingKeys = <String>[];
+  
+  // Check Supabase keys (CRITICAL - app won't work without these)
+  try {
+    final supabaseUrl = ApiKeys.supabaseUrl;
+    if (supabaseUrl.isEmpty || !supabaseUrl.startsWith('http')) {
+      missingKeys.add('SUPABASE_URL');
+    }
+  } catch (e) {
+    missingKeys.add('SUPABASE_URL');
+  }
+  
+  try {
+    final supabaseKey = ApiKeys.supabaseAnonKey;
+    if (supabaseKey.isEmpty || supabaseKey.length < 50) {
+      missingKeys.add('SUPABASE_ANON_KEY');
+    }
+  } catch (e) {
+    missingKeys.add('SUPABASE_ANON_KEY');
+  }
+  
+  // Check other keys (warnings only, not critical)
+  try {
+    final googlePlacesKey = ApiKeys.googlePlacesKey;
+    if (googlePlacesKey.isEmpty || googlePlacesKey.length < 20) {
+      debugPrint('⚠️ WARNING: GOOGLE_PLACES_API_KEY is missing or invalid');
+    }
+  } catch (e) {
+    debugPrint('⚠️ WARNING: GOOGLE_PLACES_API_KEY is missing: $e');
+  }
+  
+  // If critical keys are missing, throw error
+  if (missingKeys.isNotEmpty) {
+    final errorMessage = '''
+❌ MISSING REQUIRED API KEYS:
+${missingKeys.join('\n')}
+
+For TestFlight/Release builds, provide keys via --dart-define:
+flutter build ios --release --dart-define=SUPABASE_URL=your_url --dart-define=SUPABASE_ANON_KEY=your_key
+
+For development, create a .env file in the project root with:
+SUPABASE_URL=your_url
+SUPABASE_ANON_KEY=your_key
+''';
+    
+    if (kDebugMode) {
+      debugPrint(errorMessage);
+      // In debug, show warning but continue (might use fallbacks)
+      debugPrint('⚠️ Continuing with fallback keys in debug mode...');
+    } else {
+      // In release, fail fast
+      throw Exception(errorMessage);
+    }
+  } else {
+    debugPrint('✅ All required API keys validated');
   }
 }
 

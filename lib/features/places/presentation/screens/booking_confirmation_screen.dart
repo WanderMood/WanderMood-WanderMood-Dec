@@ -16,6 +16,7 @@ import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
+import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class BookingConfirmationScreen extends ConsumerStatefulWidget {
@@ -232,10 +233,15 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
       await _saveToSharedPreferences(activity, startTime);
       
       // CRITICAL: Invalidate providers in correct order to ensure fresh data
-      print('🔄 Invalidating providers for fresh My Agenda data...');
+      print('🔄 Invalidating providers for fresh My Agenda and My Day data...');
       ref.invalidate(scheduledActivityServiceProvider);
       ref.invalidate(cachedActivitySuggestionsProvider);
-      print('✅ Providers invalidated - My Agenda will load fresh activities');
+      // Also invalidate My Day providers to refresh the screen
+      ref.invalidate(todayActivitiesProvider);
+      ref.invalidate(timelineCategorizedActivitiesProvider);
+      // Refresh daily mood state to update plannedActivities
+      ref.invalidate(dailyMoodStateNotifierProvider);
+      print('✅ Providers invalidated - My Agenda and My Day will load fresh activities');
       
     } catch (e, stackTrace) {
       print('❌ ERROR: Could not save to scheduled activities: $e');

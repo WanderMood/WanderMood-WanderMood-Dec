@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import '../../services/saved_places_service.dart';
 import '../../models/place.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
 
 class SavedPlacesScreen extends ConsumerStatefulWidget {
   const SavedPlacesScreen({super.key});
@@ -27,44 +30,46 @@ class _SavedPlacesScreenState extends ConsumerState<SavedPlacesScreen> {
   Widget build(BuildContext context) {
     final savedPlacesAsync = ref.watch(savedPlacesProvider);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        title: Text(
-          'Saved Places',
-          style: GoogleFonts.poppins(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF1A202C),
+    return SwirlBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(
+            'Saved Places',
+            style: GoogleFonts.poppins(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1A202C),
+            ),
           ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          iconTheme: const IconThemeData(color: Color(0xFF1A202C)),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Color(0xFF1A202C)),
+              onPressed: () {
+                ref.invalidate(savedPlacesProvider);
+              },
+              tooltip: 'Refresh',
+            ),
+          ],
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF1A202C)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Color(0xFF1A202C)),
-            onPressed: () {
-              ref.invalidate(savedPlacesProvider);
-            },
-            tooltip: 'Refresh',
-          ),
-        ],
-      ),
-      body: savedPlacesAsync.when(
-        data: (savedPlaces) {
-          if (savedPlaces.isEmpty) {
-            return _buildEmptyState(context);
-          }
-          return _buildSavedPlacesList(context, ref, savedPlaces);
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => _buildErrorState(context, error.toString()),
+        body: savedPlacesAsync.when(
+          data: (savedPlaces) {
+            if (savedPlaces.isEmpty) {
+              return _buildEmptyState(context, ref);
+            }
+            return _buildSavedPlacesList(context, ref, savedPlaces);
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => _buildErrorState(context, error.toString()),
+        ),
       ),
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -101,7 +106,14 @@ class _SavedPlacesScreenState extends ConsumerState<SavedPlacesScreen> {
           ),
           const SizedBox(height: 32),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              // Navigate to Explore tab (tab index 1)
+              Navigator.pop(context); // Close this screen first
+              ref.read(mainTabProvider.notifier).state = 1;
+              if (context.mounted) {
+                context.go('/main', extra: {'tab': 1});
+              }
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF12B347),
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),

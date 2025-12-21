@@ -161,12 +161,16 @@ class AuthService {
     } catch (e) {
       debugPrint('❌ Error creating profile: $e');
       // Check if it's a duplicate key error (profile already exists)
-      if (e.toString().contains('duplicate key') || e.toString().contains('already exists')) {
-        debugPrint('⚠️ Profile already exists, this is okay');
+      // This can happen if a database trigger creates the profile first
+      final errorString = e.toString().toLowerCase();
+      if (errorString.contains('duplicate key') || 
+          errorString.contains('already exists') ||
+          errorString.contains('23505')) {
+        debugPrint('⚠️ Profile already exists (likely created by trigger), this is okay');
         return;
       }
       // Don't throw - allow signup to succeed even if profile creation fails
-      // Profile can be created later when user signs in
+      // Profile can be created later when user signs in via profile_provider
     }
   }
 

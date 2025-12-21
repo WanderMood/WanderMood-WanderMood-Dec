@@ -87,32 +87,57 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         
         if (response.user != null) {
           debugPrint('✅ Signup successful! User ID: ${response.user!.id}');
+          debugPrint('📧 Email confirmed: ${response.user!.emailConfirmedAt}');
+          debugPrint('📧 Session exists: ${response.session != null}');
           
-          // FORCE EMAIL VERIFICATION FLOW FOR BETTER UX
-          // Even if Supabase auto-confirms, we want users to see the verification screen
-          debugPrint('🔄 Forcing email verification flow for better onboarding UX');
-          
-          // Sign out the auto-authenticated user to force email verification
-          if (response.session != null) {
-            debugPrint('🔒 Signing out auto-authenticated user to force email verification');
-            await Supabase.instance.client.auth.signOut();
-          }
+          final user = response.user!;
+          final isEmailVerified = user.emailConfirmedAt != null;
           
           if (mounted) {
             setState(() => _isLoading = false);
             
-            // Show success message and navigate to email verification screen
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Account created! Please check your email at $email to verify your account.'),
-                duration: const Duration(seconds: 5),
-                backgroundColor: Colors.green,
-              ),
-            );
-            
-            // Navigate to email verification screen
-            debugPrint('🚀 Navigating to email verification screen...');
-            context.go('/auth/verify-email?email=${Uri.encodeComponent(email)}');
+            if (isEmailVerified && response.session != null) {
+              // Email already verified (auto-confirm enabled in Supabase)
+              debugPrint('✅ Email already verified, proceeding to onboarding');
+              
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('hasCompletedAuth', true);
+              await prefs.setBool('hasCompletedOnboarding', false);
+              await prefs.setBool('hasCompletedPreferences', false);
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Account created successfully!'),
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+              
+              // Navigate directly to onboarding
+              context.go('/preferences/communication');
+            } else {
+              // Email verification required
+              debugPrint('📧 Email verification required, showing verification screen');
+              
+              // Only sign out if we have a session but email isn't verified
+              // This ensures proper verification flow
+              if (response.session != null && !isEmailVerified) {
+                debugPrint('🔒 Signing out to enforce email verification');
+                await Supabase.instance.client.auth.signOut();
+              }
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Account created! Please check your email at $email to verify your account.'),
+                  duration: const Duration(seconds: 5),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              
+              // Navigate to email verification screen
+              debugPrint('🚀 Navigating to email verification screen...');
+              context.go('/auth/verify-email?email=${Uri.encodeComponent(email)}');
+            }
           }
         } else {
           throw Exception('Signup failed: No user returned');

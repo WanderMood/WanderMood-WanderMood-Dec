@@ -1,0 +1,94 @@
+{
+  "@@locale": "en",
+  "appTitle": "WanderMood",
+  "@appTitle": {
+    "description": "The application title"
+  },
+  "welcome": "Welcome",
+  "hello": "Hello",
+  "goodMorning": "Good morning",
+  "goodAfternoon": "Good afternoon",
+  "goodEvening": "Good evening",
+  "heyNightOwl": "Hey night owl",
+  "readyToCreateYourFirstDay": "Ready to create your first amazing day?",
+  "createMyFirstDay": "Create my first day",
+  "skipForNow": "Skip for now",
+  "saveChanges": "Save Changes",
+  "cancel": "Cancel",
+  "continueButton": "Continue",
+  "@continueButton": {
+    "description": "Continue button text"
+  },
+  "back": "Back",
+  "editProfile": "Edit Profile",
+  "fullName": "Full Name",
+  "dateOfBirth": "Date of Birth",
+  "selectDate": "Select Date",
+  "bio": "Bio",
+  "notifications": "Notifications",
+  "allowNotifications": "Allow Notifications",
+  "masterControlForAllNotifications": "Master control for all notifications",
+  "activityNotifications": "Activity Notifications",
+  "activityReminders": "Activity Reminders",
+  "remindersForUpcomingActivities": "Reminders for upcoming activities and plans",
+  "moodTracking": "Mood Tracking",
+  "dailyPromptsToTrackYourMood": "Daily prompts to track your mood",
+  "travelAndWeather": "Travel & Weather",
+  "weatherAlerts": "Weather Alerts",
+  "getAlertsAboutWeatherChanges": "Get alerts about weather changes",
+  "travelTips": "Travel Tips",
+  "suggestionsForYourTrips": "Suggestions for your trips and activities",
+  "localEvents": "Local Events",
+  "notificationsAboutEventsInYourArea": "Notifications about events in your area",
+  "social": "Social",
+  "friendActivity": "Friend Activity",
+  "whenFriendsShareTrips": "When friends share trips or activities",
+  "specialOffers": "Special Offers",
+  "promotionalOffersAndAppUpdates": "Promotional offers and app updates",
+  "languageSettings": "Language Settings",
+  "chooseYourPreferredLanguage": "Choose your preferred language for the app interface. This will affect all text and content throughout the app.",
+  "privacySettings": "Privacy Settings",
+  "publicProfile": "Public Profile",
+  "allowOthersToViewYourProfile": "Allow others to view your profile",
+  "pushNotifications": "Push Notifications",
+  "receivePushNotifications": "Receive push notifications",
+  "emailNotifications": "Email Notifications",
+  "receiveEmailNotifications": "Receive email notifications",
+  "manageYourPrivacySettings": "Manage your privacy settings and notification preferences. These settings control who can see your profile and how you receive updates.",
+  "themeSettings": "Theme Settings",
+  "chooseYourPreferredTheme": "Choose your preferred theme for the app. You can follow your system settings or choose a specific theme.",
+  "system": "System",
+  "followSystemTheme": "Follow system theme",
+  "light": "Light",
+  "lightTheme": "Light theme",
+  "dark": "Dark",
+  "darkTheme": "Dark theme",
+  "changeYourMood": "Change your mood?",
+  "doYouWantToContinueToChangeMood": "Do you want to continue to change mood? This will take you to the mood selection screen.",
+  "enabled": "enabled",
+  "disabled": "disabled",
+  "updated": "updated",
+  "failedToUpdate": "Failed to update",
+  "languageUpdatedTo": "Language updated to {language}",
+  "@languageUpdatedTo": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "themeUpdatedTo": "Theme updated to {theme}",
+  "@themeUpdatedTo": {
+    "placeholders": {
+      "theme": {
+        "type": "String"
+      }
+    }
+  },
+  "profileVisibilityUpdated": "Profile visibility updated",
+  "pushNotificationsEnabled": "Push notifications enabled",
+  "pushNotificationsDisabled": "Push notifications disabled",
+  "emailNotificationsEnabled": "Email notifications enabled",
+  "emailNotificationsDisabled": "Email notifications disabled"
+}
+

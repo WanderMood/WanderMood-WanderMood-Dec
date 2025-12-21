@@ -520,7 +520,7 @@ class PlacesService extends _$PlacesService {
 
       final response = await _supabase
           .from('places_cache')
-          .select('data, expires_at')
+          .select('data, place_id, expires_at')
           .eq('cache_key', cacheKey)
           .maybeSingle();
 
@@ -550,7 +550,7 @@ class PlacesService extends _$PlacesService {
 
       final response = await _supabase
           .from('places_cache')
-          .select('data, expires_at')
+          .select('data, place_id, expires_at')
           .eq('cache_key', cacheKey)
           .maybeSingle();
 

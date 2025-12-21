@@ -53,6 +53,10 @@
 	<string>WanderMood needs access to camera to capture and share your travel moments.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>WanderMood needs access to photo library to share your existing travel photos.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>WanderMood uses the microphone to capture voice</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>WanderMood uses the microphone to capture voice input when interacting with the AI travel assistant.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

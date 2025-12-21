@@ -13,6 +13,7 @@ import 'package:wandermood/features/auth/presentation/screens/forgot_password_sc
 import 'package:wandermood/features/auth/presentation/screens/register_screen.dart' as register;
 import 'package:wandermood/core/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -31,6 +32,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   String? _emailError;
   String? _passwordError;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRememberMeState();
+  }
+
+  Future<void> _loadRememberMeState() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _rememberMe = prefs.getBool('remember_me') ?? false;
+    });
+  }
+
+  Future<void> _saveRememberMeState(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('remember_me', value);
+    if (kDebugMode) {
+      debugPrint('💾 Remember Me state saved: $value');
+    }
+  }
 
   @override
   void dispose() {
@@ -306,10 +328,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   children: [
                                     Checkbox(
                                       value: _rememberMe,
-                                      onChanged: (value) {
+                                      onChanged: (value) async {
+                                        final newValue = value ?? false;
                                         setState(() {
-                                          _rememberMe = value ?? false;
+                                          _rememberMe = newValue;
                                         });
+                                        await _saveRememberMeState(newValue);
                                       },
                                     ),
                                     const Text('Remember me'),

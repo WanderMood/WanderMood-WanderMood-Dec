@@ -1,0 +1,88 @@
+{
+  "@@locale": "nl",
+  "appTitle": "WanderMood",
+  "welcome": "Welkom",
+  "hello": "Hallo",
+  "goodMorning": "Goedemorgen",
+  "goodAfternoon": "Goedemiddag",
+  "goodEvening": "Goedenavond",
+  "heyNightOwl": "Hey nachtbraker",
+  "readyToCreateYourFirstDay": "Klaar om je eerste geweldige dag te maken?",
+  "createMyFirstDay": "Maak mijn eerste dag",
+  "skipForNow": "Sla nu over",
+  "saveChanges": "Wijzigingen opslaan",
+  "cancel": "Annuleren",
+  "continueButton": "Doorgaan",
+  "back": "Terug",
+  "editProfile": "Profiel bewerken",
+  "fullName": "Volledige naam",
+  "dateOfBirth": "Geboortedatum",
+  "selectDate": "Selecteer datum",
+  "bio": "Bio",
+  "notifications": "Meldingen",
+  "allowNotifications": "Meldingen toestaan",
+  "masterControlForAllNotifications": "Hoofdregeling voor alle meldingen",
+  "activityNotifications": "Activiteitsmeldingen",
+  "activityReminders": "Activiteitsherinneringen",
+  "remindersForUpcomingActivities": "Herinneringen voor aankomende activiteiten en plannen",
+  "moodTracking": "Stemmingsvolgen",
+  "dailyPromptsToTrackYourMood": "Dagelijkse prompts om je stemming bij te houden",
+  "travelAndWeather": "Reizen & Weer",
+  "weatherAlerts": "Weerswaarschuwingen",
+  "getAlertsAboutWeatherChanges": "Krijg waarschuwingen over weersveranderingen",
+  "travelTips": "Reistips",
+  "suggestionsForYourTrips": "Suggesties voor je reizen en activiteiten",
+  "localEvents": "Lokale evenementen",
+  "notificationsAboutEventsInYourArea": "Meldingen over evenementen in jouw omgeving",
+  "social": "Sociaal",
+  "friendActivity": "Vriendenactiviteit",
+  "whenFriendsShareTrips": "Wanneer vrienden reizen of activiteiten delen",
+  "specialOffers": "Speciale aanbiedingen",
+  "promotionalOffersAndAppUpdates": "Promotionele aanbiedingen en app-updates",
+  "languageSettings": "Taalinstellingen",
+  "chooseYourPreferredLanguage": "Kies je voorkeurstaal voor de app-interface. Dit heeft invloed op alle tekst en inhoud in de hele app.",
+  "privacySettings": "Privacy-instellingen",
+  "publicProfile": "Openbaar profiel",
+  "allowOthersToViewYourProfile": "Sta anderen toe je profiel te bekijken",
+  "pushNotifications": "Pushmeldingen",
+  "receivePushNotifications": "Pushmeldingen ontvangen",
+  "emailNotifications": "E-mailmeldingen",
+  "receiveEmailNotifications": "E-mailmeldingen ontvangen",
+  "manageYourPrivacySettings": "Beheer je privacy-instellingen en meldingsvoorkeuren. Deze instellingen bepalen wie je profiel kan zien en hoe je updates ontvangt.",
+  "themeSettings": "Themainstellingen",
+  "chooseYourPreferredTheme": "Kies je voorkeursthema voor de app. Je kunt je systeeminstellingen volgen of een specifiek thema kiezen.",
+  "system": "Systeem",
+  "followSystemTheme": "Volg systeemthema",
+  "light": "Licht",
+  "lightTheme": "Licht thema",
+  "dark": "Donker",
+  "darkTheme": "Donker thema",
+  "changeYourMood": "Je stemming veranderen?",
+  "doYouWantToContinueToChangeMood": "Wil je doorgaan om je stemming te veranderen? Dit brengt je naar het stemmingsselectiescherm.",
+  "enabled": "ingeschakeld",
+  "disabled": "uitgeschakeld",
+  "updated": "bijgewerkt",
+  "failedToUpdate": "Bijwerken mislukt",
+  "languageUpdatedTo": "Taal bijgewerkt naar {language}",
+  "@languageUpdatedTo": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "themeUpdatedTo": "Thema bijgewerkt naar {theme}",
+  "@themeUpdatedTo": {
+    "placeholders": {
+      "theme": {
+        "type": "String"
+      }
+    }
+  },
+  "profileVisibilityUpdated": "Profielzichtbaarheid bijgewerkt",
+  "pushNotificationsEnabled": "Pushmeldingen ingeschakeld",
+  "pushNotificationsDisabled": "Pushmeldingen uitgeschakeld",
+  "emailNotificationsEnabled": "E-mailmeldingen ingeschakeld",
+  "emailNotificationsDisabled": "E-mailmeldingen uitgeschakeld"
+}
+

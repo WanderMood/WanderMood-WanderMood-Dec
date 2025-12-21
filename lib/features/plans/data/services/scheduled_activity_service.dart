@@ -6,6 +6,8 @@ import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:wandermood/features/plans/data/services/schema_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 
 /// Provider for the ScheduledActivityService
 final scheduledActivityServiceProvider = Provider<ScheduledActivityService>((ref) {
@@ -147,6 +149,24 @@ class ScheduledActivityService {
       }
       
       print('ScheduledActivityService: Inserting ${filteredActivities.length} new activities (${activityData.length - filteredActivities.length} duplicates skipped)');
+      
+      // Mark that user has completed their first plan
+      if (filteredActivities.isNotEmpty) {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          final hasCompletedFirstPlan = prefs.getBool('has_completed_first_plan') ?? false;
+          if (!hasCompletedFirstPlan) {
+            await prefs.setBool('has_completed_first_plan', true);
+            if (kDebugMode) {
+              debugPrint('🎉 First plan completed! User has created their first day plan.');
+            }
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('⚠️ Failed to set first plan flag: $e');
+          }
+        }
+      }
       
       await _client.from('scheduled_activities').insert(filteredActivities);
       print('ScheduledActivityService: Activities inserted successfully');

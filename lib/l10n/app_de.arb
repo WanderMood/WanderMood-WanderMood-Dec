@@ -1,0 +1,88 @@
+{
+  "@@locale": "de",
+  "appTitle": "WanderMood",
+  "welcome": "Willkommen",
+  "hello": "Hallo",
+  "goodMorning": "Guten Morgen",
+  "goodAfternoon": "Guten Tag",
+  "goodEvening": "Guten Abend",
+  "heyNightOwl": "Hey Nachteule",
+  "readyToCreateYourFirstDay": "Bereit, deinen ersten großartigen Tag zu erstellen?",
+  "createMyFirstDay": "Meinen ersten Tag erstellen",
+  "skipForNow": "Jetzt überspringen",
+  "saveChanges": "Änderungen speichern",
+  "cancel": "Abbrechen",
+  "continueButton": "Fortfahren",
+  "back": "Zurück",
+  "editProfile": "Profil bearbeiten",
+  "fullName": "Vollständiger Name",
+  "dateOfBirth": "Geburtsdatum",
+  "selectDate": "Datum auswählen",
+  "bio": "Biografie",
+  "notifications": "Benachrichtigungen",
+  "allowNotifications": "Benachrichtigungen zulassen",
+  "masterControlForAllNotifications": "Hauptsteuerung für alle Benachrichtigungen",
+  "activityNotifications": "Aktivitätsbenachrichtigungen",
+  "activityReminders": "Aktivitätserinnerungen",
+  "remindersForUpcomingActivities": "Erinnerungen für bevorstehende Aktivitäten und Pläne",
+  "moodTracking": "Stimmungsverfolgung",
+  "dailyPromptsToTrackYourMood": "Tägliche Aufforderungen, deine Stimmung zu verfolgen",
+  "travelAndWeather": "Reisen & Wetter",
+  "weatherAlerts": "Wetterwarnungen",
+  "getAlertsAboutWeatherChanges": "Warnungen über Wetteränderungen erhalten",
+  "travelTips": "Reisetipps",
+  "suggestionsForYourTrips": "Vorschläge für deine Reisen und Aktivitäten",
+  "localEvents": "Lokale Veranstaltungen",
+  "notificationsAboutEventsInYourArea": "Benachrichtigungen über Veranstaltungen in deiner Nähe",
+  "social": "Sozial",
+  "friendActivity": "Freundesaktivität",
+  "whenFriendsShareTrips": "Wenn Freunde Reisen oder Aktivitäten teilen",
+  "specialOffers": "Sonderangebote",
+  "promotionalOffersAndAppUpdates": "Werbeangebote und App-Updates",
+  "languageSettings": "Spracheinstellungen",
+  "chooseYourPreferredLanguage": "Wähle deine bevorzugte Sprache für die App-Oberfläche. Dies wirkt sich auf alle Texte und Inhalte in der gesamten App aus.",
+  "privacySettings": "Datenschutzeinstellungen",
+  "publicProfile": "Öffentliches Profil",
+  "allowOthersToViewYourProfile": "Anderen erlauben, dein Profil anzusehen",
+  "pushNotifications": "Push-Benachrichtigungen",
+  "receivePushNotifications": "Push-Benachrichtigungen erhalten",
+  "emailNotifications": "E-Mail-Benachrichtigungen",
+  "receiveEmailNotifications": "E-Mail-Benachrichtigungen erhalten",
+  "manageYourPrivacySettings": "Verwalte deine Datenschutzeinstellungen und Benachrichtigungseinstellungen. Diese Einstellungen steuern, wer dein Profil sehen kann und wie du Updates erhältst.",
+  "themeSettings": "Theme-Einstellungen",
+  "chooseYourPreferredTheme": "Wähle dein bevorzugtes Theme für die App. Du kannst den Systemeinstellungen folgen oder ein bestimmtes Theme wählen.",
+  "system": "System",
+  "followSystemTheme": "System-Theme folgen",
+  "light": "Hell",
+  "lightTheme": "Helles Theme",
+  "dark": "Dunkel",
+  "darkTheme": "Dunkles Theme",
+  "changeYourMood": "Deine Stimmung ändern?",
+  "doYouWantToContinueToChangeMood": "Möchtest du fortfahren, um deine Stimmung zu ändern? Dies führt dich zum Stimmungsauswahlbildschirm.",
+  "enabled": "aktiviert",
+  "disabled": "deaktiviert",
+  "updated": "aktualisiert",
+  "failedToUpdate": "Aktualisierung fehlgeschlagen",
+  "languageUpdatedTo": "Sprache aktualisiert auf {language}",
+  "@languageUpdatedTo": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "themeUpdatedTo": "Theme aktualisiert auf {theme}",
+  "@themeUpdatedTo": {
+    "placeholders": {
+      "theme": {
+        "type": "String"
+      }
+    }
+  },
+  "profileVisibilityUpdated": "Profil-Sichtbarkeit aktualisiert",
+  "pushNotificationsEnabled": "Push-Benachrichtigungen aktiviert",
+  "pushNotificationsDisabled": "Push-Benachrichtigungen deaktiviert",
+  "emailNotificationsEnabled": "E-Mail-Benachrichtigungen aktiviert",
+  "emailNotificationsDisabled": "E-Mail-Benachrichtigungen deaktiviert"
+}
+

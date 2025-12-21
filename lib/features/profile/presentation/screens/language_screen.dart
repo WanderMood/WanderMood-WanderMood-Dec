@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
+import 'package:flutter/foundation.dart';
 
 class LanguageScreen extends ConsumerStatefulWidget {
   const LanguageScreen({Key? key}) : super(key: key);
@@ -13,6 +15,30 @@ class LanguageScreen extends ConsumerStatefulWidget {
 class _LanguageScreenState extends ConsumerState<LanguageScreen> {
   // Currently selected language
   String _selectedLanguage = 'English (US)';
+  bool _isLoading = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentLanguage();
+  }
+  
+  Future<void> _loadCurrentLanguage() async {
+    final profileAsync = ref.read(profileProvider);
+    profileAsync.whenData((profile) {
+      if (profile != null && profile.languagePreference != null && mounted) {
+        setState(() {
+          // Map language preference code to display name
+          final langCode = profile.languagePreference!;
+          final lang = _languages.firstWhere(
+            (l) => l['code'] == langCode,
+            orElse: () => _languages[0],
+          );
+          _selectedLanguage = lang['name']!;
+        });
+      }
+    });
+  }
   
   // Available languages
   final List<Map<String, String>> _languages = [
@@ -188,7 +214,7 @@ class _LanguageScreenState extends ConsumerState<LanguageScreen> {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _applyLanguageChange,
+                    onPressed: _isLoading ? null : _applyLanguageChange,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF12B347),
                       foregroundColor: Colors.white,
@@ -197,13 +223,22 @@ class _LanguageScreenState extends ConsumerState<LanguageScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: Text(
-                      'Apply Changes',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : Text(
+                            'Apply Changes',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
               ),
@@ -215,18 +250,54 @@ class _LanguageScreenState extends ConsumerState<LanguageScreen> {
   }
   
   // Apply language change
-  void _applyLanguageChange() {
-    // Here we would actually change the app language
-    // For now, just show a confirmation
+  Future<void> _applyLanguageChange() async {
+    if (_isLoading) return;
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Language changed to $_selectedLanguage'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    setState(() => _isLoading = true);
     
-    // Return to previous screen after applying
-    Navigator.pop(context);
+    try {
+      // Find the language code for the selected language
+      final selectedLang = _languages.firstWhere(
+        (l) => l['name'] == _selectedLanguage,
+        orElse: () => _languages[0],
+      );
+      
+      final langCode = _selectedLanguage == 'system' ? 'system' : selectedLang['code']!;
+      
+      // Update profile with new language preference
+      await ref.read(profileProvider.notifier).updateProfile(
+        languagePreference: langCode,
+      );
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Language changed to $_selectedLanguage'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFF12B347),
+          ),
+        );
+        
+        // Return to previous screen after applying
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Error updating language: $e');
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update language: ${e.toString()}'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 } 

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../providers/daily_mood_state_provider.dart';
 import '../../providers/mood_options_provider.dart';
@@ -25,6 +26,7 @@ import '../widgets/mood_based_carousel.dart';
 import '../widgets/enhanced_mood_carousel.dart';
 import '../widgets/simplified_mood_carousel.dart';
 import '../widgets/period_activities_bottom_sheet.dart';
+import '../widgets/moody_intro_overlay.dart';
 import '../../../places/presentation/screens/saved_places_screen.dart';
 import '../../../places/services/saved_places_service.dart';
 import '../../../plans/data/services/scheduled_activity_service.dart';
@@ -33,6 +35,9 @@ import '../../../plans/domain/enums/time_slot.dart';
 import '../../../plans/domain/enums/payment_type.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../home/presentation/screens/main_screen.dart';
+import '../../../../core/presentation/widgets/swirl_background.dart';
+import '../../../profile/domain/providers/profile_provider.dart';
+import 'dart:ui';
 
 class MoodyHubScreen extends ConsumerStatefulWidget {
   final VoidCallback? onChangeMood;
@@ -67,6 +72,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
   TrendingActivity? _contextualActivity; // For contextual chat from suggestion cards
   final ScrollController _chatScrollController = ScrollController();
   bool _isChatExpanded = false; // Track if chat is expanded to full screen
+  bool _hasShownInitialGreeting = false; // Track if initial greeting was shown (no API call)
+  bool _isSendingMessage = false; // Prevent duplicate sends
+  bool _showIntroOverlay = false; // Track if intro overlay should be shown
 
   @override
   void initState() {
@@ -87,10 +95,84 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     
     // Then setup animations
     _setupAnimations();
-    _conversationId = DateTime.now().millisecondsSinceEpoch.toString();
+    
+    // Load or create persistent conversation ID
+    _loadConversationId();
     
     // Increment visit count for content rotation
     _incrementVisitCount();
+    
+    // Check if user has seen Moody intro
+    _checkIntroOverlay();
+  }
+  
+  /// Check if intro overlay should be shown
+  Future<void> _checkIntroOverlay() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenIntro = prefs.getBool('has_seen_moody_intro') ?? false;
+      
+      // Only show if user hasn't seen it and is a first-time user
+      if (!hasSeenIntro) {
+        final isFirstTime = await _isFirstTimeUser();
+        if (mounted) {
+          setState(() {
+            _showIntroOverlay = isFirstTime;
+          });
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Error checking intro overlay: $e');
+      }
+    }
+  }
+  
+  /// Dismiss intro overlay and mark as seen
+  Future<void> _dismissIntroOverlay() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('has_seen_moody_intro', true);
+      
+      if (mounted) {
+        setState(() {
+          _showIntroOverlay = false;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Error dismissing intro overlay: $e');
+      }
+    }
+  }
+  
+  /// Handle create day action from overlay
+  void _handleCreateDayFromOverlay() {
+    _dismissIntroOverlay();
+    // Navigate to mood selection to start creating first plan
+    widget.onChangeMood?.call();
+  }
+
+  /// Load or create a persistent conversation ID
+  Future<void> _loadConversationId() async {
+    try {
+      final convId = await WanderMoodAIService.getOrCreateConversationId();
+      if (mounted) {
+        setState(() {
+          _conversationId = convId;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Error loading conversation ID: $e');
+      }
+      // Fallback to generating a new one
+      if (mounted) {
+        setState(() {
+          _conversationId = DateTime.now().millisecondsSinceEpoch.toString();
+        });
+      }
+    }
   }
   
   Future<void> _incrementVisitCount() async {
@@ -102,25 +184,48 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
   void _showChatBottomSheet(BuildContext context, {
     TrendingActivity? contextualActivity,
     String? contextualGreeting,
+    bool autoRespond = false, // Auto-respond from Moody when opening
   }) {
     _contextualActivity = contextualActivity;
-    _chatMessages.clear();
+    
+    // Only clear messages if this is a fresh chat session
+    // If chat was already open, keep existing messages
+    if (!_hasShownInitialGreeting) {
+      _chatMessages.clear();
+    }
 
-    if (contextualGreeting != null) {
-      // Use provided contextual greeting from moment card
-      _chatMessages.add({
-        'role': 'user',
-        'content': contextualGreeting,
-        'timestamp': DateTime.now(),
-      });
-    } else if (contextualActivity != null) {
-      _chatMessages.add({
-        'role': 'assistant',
-        'content': _getContextualGreeting(contextualActivity),
-        'timestamp': DateTime.now(),
-        'quickReplies': _getContextualQuickReplies(contextualActivity),
-      });
-    } else {
+    // Show initial greeting ONLY on first open (no API call)
+    if (!_hasShownInitialGreeting) {
+      if (contextualGreeting != null) {
+        // User provided greeting - add as user message but DON'T auto-send
+        _chatMessages.add({
+          'role': 'user',
+          'content': contextualGreeting,
+          'timestamp': DateTime.now(),
+        });
+        // Don't auto-trigger API - wait for user to send
+      } else if (contextualActivity != null) {
+        // Show contextual greeting (static, no API call)
+        _chatMessages.add({
+          'role': 'assistant',
+          'content': _getContextualGreeting(contextualActivity),
+          'timestamp': DateTime.now(),
+          'quickReplies': _getContextualQuickReplies(contextualActivity),
+        });
+      } else {
+        // Show default greeting (static, no API call)
+        _chatMessages.add({
+          'role': 'assistant',
+          'content': _getMoodyGreeting(),
+          'timestamp': DateTime.now(),
+          'quickReplies': _getDefaultQuickReplies(),
+        });
+      }
+      _hasShownInitialGreeting = true;
+    }
+
+    // If autoRespond is true, add a greeting from Moody and trigger response
+    if (autoRespond && _chatMessages.isEmpty) {
       _chatMessages.add({
         'role': 'assistant',
         'content': _getMoodyGreeting(),
@@ -177,9 +282,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
 
   Widget _buildChatBottomSheet(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.7,
+      initialChildSize: 0.85, // Increased from 0.7 for better visibility
       minChildSize: 0.5,
-      maxChildSize: _isChatExpanded ? 0.95 : 0.95,
+      maxChildSize: 0.98, // Increased from 0.95 to handle keyboard better
       builder: (context, scrollController) => StatefulBuilder(
         builder: (context, setModalState) => Container(
           decoration: BoxDecoration(
@@ -203,19 +308,23 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               ),
             ],
           ),
-          child: Column(
-            children: [
-              // Handle bar
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 48,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF12B347).withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(3),
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom, // Handle keyboard
+            ),
+            child: Column(
+              children: [
+                // Handle bar
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  width: 48,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF12B347).withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
                 ),
-              ),
-              // Modern header with Moody character
+                // Modern header with Moody character
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -419,6 +528,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                 ),
               ),
             ],
+            ),
           ),
         ),
       ),
@@ -626,34 +736,62 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           ),
           if (isUser) ...[
             const SizedBox(width: 10),
-            // User avatar
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.blue.shade400,
-                    Colors.purple.shade400,
-                  ],
-                ),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Center(
-                child: Icon(Icons.person, size: 20, color: Colors.white),
-              ),
+            // User avatar with profile picture
+            Consumer(
+              builder: (context, ref, child) {
+                final profileAsync = ref.watch(profileProvider);
+                return profileAsync.when(
+                  data: (profile) {
+                    final imageUrl = profile?.imageUrl;
+                    if (imageUrl != null && imageUrl.isNotEmpty) {
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(18),
+                        child: Image.network(
+                          imageUrl,
+                          width: 36,
+                          height: 36,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => _buildDefaultUserAvatar(),
+                        ),
+                      );
+                    }
+                    return _buildDefaultUserAvatar();
+                  },
+                  loading: () => _buildDefaultUserAvatar(),
+                  error: (_, __) => _buildDefaultUserAvatar(),
+                );
+              },
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildDefaultUserAvatar() {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.blue.shade400,
+            Colors.purple.shade400,
+          ],
+        ),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: const Center(
+        child: Icon(Icons.person, size: 20, color: Colors.white),
       ),
     );
   }
@@ -745,7 +883,13 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
   }
 
   Future<void> _sendMessage(String message, [StateSetter? setModalState]) async {
-    if (message.trim().isEmpty || _isAILoading) return;
+    // Prevent duplicate sends and empty messages
+    if (message.trim().isEmpty || _isAILoading || _isSendingMessage) return;
+    
+    // Set sending flag to prevent duplicate calls
+    _isSendingMessage = true;
+    _isAILoading = true;
+    
     setModalState?.call(() {});
     setState(() {
       _chatMessages.add({
@@ -753,7 +897,6 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         'content': message.trim(),
         'timestamp': DateTime.now(),
       });
-      _isAILoading = true;
     });
 
     _chatController.clear();
@@ -779,6 +922,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         // fallback to defaults
       }
 
+      // ONLY make API call when user explicitly sends a message
       final response = await WanderMoodAIService.chat(
         message: message.trim(),
         conversationId: _conversationId,
@@ -792,31 +936,38 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         _conversationId = response.conversationId;
       }
 
-      setState(() {
-        _chatMessages.add({
-          'role': 'assistant',
-          'content': response.message,
-          'timestamp': DateTime.now(),
+      if (mounted) {
+        setState(() {
+          _chatMessages.add({
+            'role': 'assistant',
+            'content': response.message,
+            'timestamp': DateTime.now(),
+          });
+          _isAILoading = false;
+          _isSendingMessage = false;
         });
-        _isAILoading = false;
-      });
-      setModalState?.call(() {});
-      _scrollToBottom();
+        setModalState?.call(() {});
+        _scrollToBottom();
+      }
     } catch (e) {
-      setState(() {
-        _chatMessages.add({
-          'role': 'assistant',
-          'content': "Oops! I'm having trouble connecting right now. Can you try again? 🤔",
-          'timestamp': DateTime.now(),
+      if (mounted) {
+        setState(() {
+          _chatMessages.add({
+            'role': 'assistant',
+            'content': "Oops! I'm having trouble connecting right now. Can you try again? 🤔",
+            'timestamp': DateTime.now(),
+          });
+          _isAILoading = false;
+          _isSendingMessage = false;
         });
-        _isAILoading = false;
-      });
-      setModalState?.call(() {});
-      _scrollToBottom();
+        setModalState?.call(() {});
+        _scrollToBottom();
+      }
     }
   }
 
   void _handleQuickReply(String reply, StateSetter setModalState) {
+    // Quick replies trigger explicit send - this is user action, so API call is OK
     setModalState(() {});
     if (_chatMessages.isNotEmpty) {
       _chatMessages.last.remove('quickReplies');
@@ -946,33 +1097,23 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     final moodOptionsAsync = ref.watch(moodOptionsProvider);
     final trendingAsync = ref.watch(trendingActivitiesProvider);
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFFFDF5), // Warm cream
-              Color(0xFFFFF3E0), // Warm yellow
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: _fadeAnimation != null && _slideAnimation != null
-              ? FadeTransition(
-                  opacity: _fadeAnimation!,
-            child: SlideTransition(
-                    position: _slideAnimation!,
-                    child: SingleChildScrollView(
-                child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+    // Build the main content with SwirlBackground (same as Explore screen)
+    final mainContent = SwirlBackground(
+      child: SafeArea(
+        child: _fadeAnimation != null && _slideAnimation != null
+            ? FadeTransition(
+                opacity: _fadeAnimation!,
+                child: SlideTransition(
+                  position: _slideAnimation!,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                           const SizedBox(height: 20),
                           // Header with greeting
                           _buildHeader(),
                           const SizedBox(height: 24),
+                          // First-time welcome card removed - now using overlay instead
                           // Large green status card
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -988,26 +1129,12 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                             child: _buildCheckInStreak(),
                           ),
                           const SizedBox(height: 24),
-                          // Your Day's Flow section (conditional)
-                          FutureBuilder<bool>(
-                            future: ref.read(moodyHubContentServiceProvider).shouldShowDayFlow(
-                              hasActivities: dailyState.plannedActivities.isNotEmpty,
-                            ),
-                            builder: (context, snapshot) {
-                              if (snapshot.data == true) {
-                                return Column(
-                      children: [
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                                      child: _buildYourDaysFlow(dailyState),
-                                    ),
-                                    const SizedBox(height: 24),
-                                  ],
-                                );
-                              }
-                              return const SizedBox.shrink();
-                            },
+                          // Your Day's Flow section (always visible)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: _buildYourDaysFlow(dailyState),
                           ),
+                          const SizedBox(height: 24),
                           // You + this = perfect section with mood-based carousel
                           _buildMoodBasedSection(dailyState),
                           const SizedBox(height: 40),
@@ -1039,33 +1166,52 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                         child: _buildCheckInStreak(),
                       ),
                       const SizedBox(height: 24),
-                      // Your Day's Flow section (conditional)
-                      FutureBuilder<bool>(
-                        future: ref.read(moodyHubContentServiceProvider).shouldShowDayFlow(
-                          hasActivities: dailyState.plannedActivities.isNotEmpty,
-                        ),
-                        builder: (context, snapshot) {
-                          if (snapshot.data == true) {
-                            return Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                                  child: _buildYourDaysFlow(dailyState),
-                                ),
-                                const SizedBox(height: 24),
-                              ],
-                            );
-                          }
-                          return const SizedBox.shrink();
-                        },
+                      // Your Day's Flow section (always visible)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: _buildYourDaysFlow(dailyState),
                       ),
+                      const SizedBox(height: 24),
                       // You + this = perfect section with mood-based carousel
                       _buildMoodBasedSection(dailyState),
                       const SizedBox(height: 40),
                     ],
+                  ),
+                ),
+      ),
+    );
+
+    // Wrap in Stack to show overlay when needed
+    return Scaffold(
+      backgroundColor: Colors.transparent, // Transparent to show SwirlBackground
+      extendBody: false, // Don't extend behind nav bar
+      body: Stack(
+        children: [
+          // Main content with blur effect when overlay is shown
+          _showIntroOverlay
+              ? ClipRect(
+                  child: Stack(
+                    children: [
+                      // Blurred background
+                      BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                        child: mainContent,
+                      ),
+                      // Dark overlay on top of blurred content for better contrast
+                      Container(
+                        color: Colors.black.withOpacity(0.4),
+                      ),
+                    ],
+                  ),
+                )
+              : mainContent,
+          // Intro overlay
+          if (_showIntroOverlay)
+            MoodyIntroOverlay(
+              onCreateDay: _handleCreateDayFromOverlay,
+              onSkip: _dismissIntroOverlay,
             ),
-          ),
-        ),
+        ],
       ),
     );
   }
@@ -1091,19 +1237,31 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       emoji = '🌙';
     }
 
-    // Load previous check-in to personalize greeting
-    return FutureBuilder(
-      future: _getPersonalizedGreeting(hour),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          final personalized = snapshot.data as Map<String, String>;
-          greeting = personalized['greeting'] ?? greeting;
-          subtitle = personalized['subtitle'] ?? subtitle;
-        }
+    // Check if this is a first-time user
+    return FutureBuilder<bool>(
+      future: _isFirstTimeUser(),
+      builder: (context, firstTimeSnapshot) {
+        final isFirstTime = firstTimeSnapshot.data ?? false;
         
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
+        if (isFirstTime) {
+          // First-time user - they've already seen the intro overlay, so use a natural greeting
+          // Keep the time-based greeting but with a friendly subtitle
+          subtitle = 'Ready to create your first amazing day?';
+        }
+
+        // Load previous check-in to personalize greeting (for returning users)
+        return FutureBuilder(
+          future: isFirstTime ? Future.value(null) : _getPersonalizedGreeting(hour),
+          builder: (context, snapshot) {
+            if (snapshot.hasData && !isFirstTime) {
+              final personalized = snapshot.data as Map<String, String>;
+              greeting = personalized['greeting'] ?? greeting;
+              subtitle = personalized['subtitle'] ?? subtitle;
+            }
+        
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
             children: [
               Expanded(
                 child: Column(
@@ -1206,8 +1364,22 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             ],
           ),
         );
+          },
+        );
       },
     );
+  }
+
+  // Check if user is first-time (hasn't created a plan yet)
+  Future<bool> _isFirstTimeUser() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasCompletedFirstPlan = prefs.getBool('has_completed_first_plan') ?? false;
+      return !hasCompletedFirstPlan;
+    } catch (e) {
+      if (kDebugMode) debugPrint('⚠️ Error checking first-time user status: $e');
+      return false; // Default to returning user if check fails
+    }
   }
 
   Future<Map<String, String>> _getPersonalizedGreeting(int hour) async {
@@ -1244,6 +1416,117 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       if (kDebugMode) debugPrint('⚠️ Error loading personalized greeting: $e');
       return {'greeting': 'Hey there!', 'subtitle': 'Welcome back to your mood journey 🎭'};
     }
+  }
+
+  // First-time welcome card
+  Widget _buildFirstTimeWelcomeCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF12B347),
+            Color(0xFF0E8F38),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF12B347).withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const MoodyCharacter(
+                  size: 40,
+                  mood: 'excited',
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome to WanderMood!',
+                      style: GoogleFonts.poppins(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'I\'m Moody, your travel companion 🌟',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Let\'s create your first amazing day! I\'ll help you discover places based on your mood, weather, and preferences.',
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              color: Colors.white,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                // Navigate to mood selection to start creating first plan
+                widget.onChangeMood?.call();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF12B347),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 4,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.auto_awesome, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Create Your First Day Plan',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // Dynamic moment card that rotates content
@@ -1517,10 +1800,11 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         };
         break;
       case ContentPillar.eventFestival:
-        buttonText = "What's happening?";
+        buttonText = "Talk to me";
         onTap = () {
           _showChatBottomSheet(context, 
-            contextualGreeting: _getContextualChatStarter(momentCard));
+            contextualGreeting: null, // Don't pre-fill, just open chat
+            autoRespond: true); // Auto-respond from Moody
         };
         break;
       case ContentPillar.softReflection:
@@ -2733,11 +3017,11 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
   // Fetch places filtered by mood
   Future<List<Place>> _fetchMoodFilteredPlaces(String mood) async {
     try {
-      // First, try to get places from cache (no user_id needed, it's shared cache)
+      // Try to get places from cache - select data and place_id if available
       final response = await Supabase.instance.client
           .from('places_cache')
-          .select()
-          .order('fetched_at', ascending: false)
+          .select('data, place_id, created_at')
+          .order('created_at', ascending: false)
           .limit(50); // Get more for better variety
       
       if (response.isEmpty) {
@@ -2748,24 +3032,41 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       final places = (response as List)
           .map((json) {
             try {
-              // Transform places_cache structure to Place model structure
+              // Handle JSONB data structure - places_cache only stores data as JSONB
+              if (json['data'] == null) return null;
+              
+              final data = json['data'] as Map<String, dynamic>;
+              Map<String, dynamic> placeData;
+              
+              // Handle search results array
+              if (data['results'] != null && data['results'] is List) {
+                // This is a search response, extract first result
+                final results = data['results'] as List;
+                if (results.isEmpty) return null;
+                placeData = results.first as Map<String, dynamic>;
+              } else {
+                // Single place data
+                placeData = data;
+              }
+              
+              // Transform to Place model structure
               final transformedJson = {
-                'id': json['id'] ?? json['place_id'],
-                'name': json['name'],
-                'address': json['formatted_address'] ?? json['vicinity'] ?? '',
-                'rating': (json['rating'] ?? 0.0).toDouble(),
-                'photos': json['photos'] ?? [],
-                'types': json['types'] ?? [],
+                'id': placeData['place_id'] ?? placeData['id'] ?? '',
+                'name': placeData['name'] ?? '',
+                'address': placeData['formatted_address'] ?? placeData['vicinity'] ?? '',
+                'rating': ((placeData['rating'] ?? 0.0) as num).toDouble(),
+                'photos': placeData['photos'] ?? [],
+                'types': placeData['types'] ?? [],
                 'location': {
-                  'lat': (json['lat'] ?? 0.0).toDouble(),
-                  'lng': (json['lng'] ?? 0.0).toDouble(),
+                  'lat': ((placeData['geometry']?['location']?['lat'] ?? placeData['latitude'] ?? 0.0) as num).toDouble(),
+                  'lng': ((placeData['geometry']?['location']?['lng'] ?? placeData['longitude'] ?? 0.0) as num).toDouble(),
                 },
-                'reviewCount': json['user_ratings_total'] ?? 0,
-                'priceLevel': json['price_level'],
+                'reviewCount': placeData['user_ratings_total'] ?? 0,
+                'priceLevel': placeData['price_level'],
               };
               return Place.fromJson(transformedJson);
             } catch (e) {
-              if (kDebugMode) debugPrint('⚠️ Error parsing place ${json['name']}: $e');
+              if (kDebugMode) debugPrint('⚠️ Error parsing place: $e');
               return null;
             }
           })
@@ -3401,10 +3702,14 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             ),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              // Enter mood change mode (preserves state and shows "Back to Hub" button)
-              ref.read(dailyMoodStateNotifierProvider.notifier).enterMoodChangeMode();
+            onPressed: () async {
+              // Add a mini delay for better UX
+              await Future.delayed(const Duration(milliseconds: 300));
+              if (mounted) {
+                Navigator.of(context).pop();
+                // Enter mood change mode (preserves state and shows "Back to Hub" button)
+                ref.read(dailyMoodStateNotifierProvider.notifier).enterMoodChangeMode();
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF12B347),

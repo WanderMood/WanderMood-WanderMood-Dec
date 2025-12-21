@@ -1,0 +1,88 @@
+{
+  "@@locale": "es",
+  "appTitle": "WanderMood",
+  "welcome": "Bienvenido",
+  "hello": "Hola",
+  "goodMorning": "Buenos días",
+  "goodAfternoon": "Buenas tardes",
+  "goodEvening": "Buenas noches",
+  "heyNightOwl": "Hola búho nocturno",
+  "readyToCreateYourFirstDay": "¿Listo para crear tu primer día increíble?",
+  "createMyFirstDay": "Crear mi primer día",
+  "skipForNow": "Omitir por ahora",
+  "saveChanges": "Guardar cambios",
+  "cancel": "Cancelar",
+  "continueButton": "Continuar",
+  "back": "Atrás",
+  "editProfile": "Editar perfil",
+  "fullName": "Nombre completo",
+  "dateOfBirth": "Fecha de nacimiento",
+  "selectDate": "Seleccionar fecha",
+  "bio": "Biografía",
+  "notifications": "Notificaciones",
+  "allowNotifications": "Permitir notificaciones",
+  "masterControlForAllNotifications": "Control maestro para todas las notificaciones",
+  "activityNotifications": "Notificaciones de actividad",
+  "activityReminders": "Recordatorios de actividad",
+  "remindersForUpcomingActivities": "Recordatorios para actividades y planes próximos",
+  "moodTracking": "Seguimiento del estado de ánimo",
+  "dailyPromptsToTrackYourMood": "Prompts diarios para rastrear tu estado de ánimo",
+  "travelAndWeather": "Viajes y clima",
+  "weatherAlerts": "Alertas meteorológicas",
+  "getAlertsAboutWeatherChanges": "Recibe alertas sobre cambios en el clima",
+  "travelTips": "Consejos de viaje",
+  "suggestionsForYourTrips": "Sugerencias para tus viajes y actividades",
+  "localEvents": "Eventos locales",
+  "notificationsAboutEventsInYourArea": "Notificaciones sobre eventos en tu área",
+  "social": "Social",
+  "friendActivity": "Actividad de amigos",
+  "whenFriendsShareTrips": "Cuando los amigos comparten viajes o actividades",
+  "specialOffers": "Ofertas especiales",
+  "promotionalOffersAndAppUpdates": "Ofertas promocionales y actualizaciones de la aplicación",
+  "languageSettings": "Configuración de idioma",
+  "chooseYourPreferredLanguage": "Elige tu idioma preferido para la interfaz de la aplicación. Esto afectará todo el texto y el contenido en toda la aplicación.",
+  "privacySettings": "Configuración de privacidad",
+  "publicProfile": "Perfil público",
+  "allowOthersToViewYourProfile": "Permitir que otros vean tu perfil",
+  "pushNotifications": "Notificaciones push",
+  "receivePushNotifications": "Recibir notificaciones push",
+  "emailNotifications": "Notificaciones por correo electrónico",
+  "receiveEmailNotifications": "Recibir notificaciones por correo electrónico",
+  "manageYourPrivacySettings": "Administra tu configuración de privacidad y preferencias de notificaciones. Estas configuraciones controlan quién puede ver tu perfil y cómo recibes actualizaciones.",
+  "themeSettings": "Configuración de tema",
+  "chooseYourPreferredTheme": "Elige tu tema preferido para la aplicación. Puedes seguir la configuración de tu sistema o elegir un tema específico.",
+  "system": "Sistema",
+  "followSystemTheme": "Seguir tema del sistema",
+  "light": "Claro",
+  "lightTheme": "Tema claro",
+  "dark": "Oscuro",
+  "darkTheme": "Tema oscuro",
+  "changeYourMood": "¿Cambiar tu estado de ánimo?",
+  "doYouWantToContinueToChangeMood": "¿Quieres continuar para cambiar tu estado de ánimo? Esto te llevará a la pantalla de selección de estado de ánimo.",
+  "enabled": "habilitado",
+  "disabled": "deshabilitado",
+  "updated": "actualizado",
+  "failedToUpdate": "Error al actualizar",
+  "languageUpdatedTo": "Idioma actualizado a {language}",
+  "@languageUpdatedTo": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "themeUpdatedTo": "Tema actualizado a {theme}",
+  "@themeUpdatedTo": {
+    "placeholders": {
+      "theme": {
+        "type": "String"
+      }
+    }
+  },
+  "profileVisibilityUpdated": "Visibilidad del perfil actualizada",
+  "pushNotificationsEnabled": "Notificaciones push habilitadas",
+  "pushNotificationsDisabled": "Notificaciones push deshabilitadas",
+  "emailNotificationsEnabled": "Notificaciones por correo electrónico habilitadas",
+  "emailNotificationsDisabled": "Notificaciones por correo electrónico deshabilitadas"
+}
+

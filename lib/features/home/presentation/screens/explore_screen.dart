@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,8 @@ import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/location/presentation/widgets/location_dropdown.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/providers/explore_places_provider.dart';
+// OLD - Replaced by moody_explore_provider. Keep for 24-48h rollback safety.
+import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_card.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_grid_card.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
@@ -18,6 +21,7 @@ import 'package:wandermood/core/constants/api_keys.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:wandermood/core/services/distance_service.dart';
+import 'package:wandermood/core/services/user_preferences_service.dart';
 
 import '../widgets/conversational_explore_header.dart';
 import '../../application/intent_processor.dart';
@@ -203,7 +207,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final smartContext = ref.read(smartContextProvider);
     
     // Process intent with current places and context
-    final explorePlacesAsync = ref.read(explorePlacesProvider(city: ref.read(locationNotifierProvider).value ?? 'Rotterdam'));
+    // NEW: Use Moody Edge Function
+    final explorePlacesAsync = ref.read(moodyExploreAutoProvider);
+    // OLD: ref.read(explorePlacesProvider(city: ref.read(locationNotifierProvider).value ?? 'Rotterdam'))
     explorePlacesAsync.whenData((places) {
       final result = IntentProcessor.processIntent(intent, places, context: smartContext);
       final sortedPlaces = IntentProcessor.sortByPriority(
@@ -229,7 +235,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       final smartContext = ref.read(smartContextProvider);
       
       // Process natural language query with context
-      final explorePlacesAsync = ref.read(explorePlacesProvider(city: ref.read(locationNotifierProvider).value ?? 'Rotterdam'));
+      // NEW: Use Moody Edge Function
+    final explorePlacesAsync = ref.read(moodyExploreAutoProvider);
+    // OLD: ref.read(explorePlacesProvider(city: ref.read(locationNotifierProvider).value ?? 'Rotterdam'))
       explorePlacesAsync.whenData((places) {
         final result = IntentProcessor.processNaturalLanguage(query, places, context: smartContext);
         final sortedPlaces = IntentProcessor.sortByPriority(
@@ -431,6 +439,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   List<Place> _filterPlaces(List<Place> places) {
     final initialCount = places.length;
+    final preferencesService = ref.read(userPreferencesServiceProvider);
+    
     var filteredPlaces = places.where((place) {
       // Filter by search query
       bool matchesSearch = _searchQuery.isEmpty ||
@@ -441,17 +451,38 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       // Apply advanced filters (mood, dietary, accessibility, etc.)
       bool matchesAdvancedFilters = _checkAdvancedFilters(place);
 
-      return matchesSearch && matchesAdvancedFilters;
+      // Apply user preferences from onboarding (soft filter - boost matching places)
+      // Only apply if no explicit filters are set (to avoid double-filtering)
+      bool matchesPreferences = true;
+      if (_activeFiltersCount == 0 && _searchQuery.isEmpty) {
+        // Soft preference matching: prefer places that match interests/styles
+        matchesPreferences = preferencesService.placeMatchesInterests(place) ||
+                            preferencesService.placeMatchesTravelStyles(place);
+      }
+
+      return matchesSearch && matchesAdvancedFilters && matchesPreferences;
     }).toList();
 
-    // Sort places by rating
-    filteredPlaces.sort((a, b) => (b.rating ?? 0.0).compareTo(a.rating ?? 0.0));
+    // Sort places: preference matches first, then by rating
+    filteredPlaces.sort((a, b) {
+      final aMatchesPrefs = preferencesService.placeMatchesInterests(a) || 
+                           preferencesService.placeMatchesTravelStyles(a);
+      final bMatchesPrefs = preferencesService.placeMatchesInterests(b) || 
+                           preferencesService.placeMatchesTravelStyles(b);
+      
+      if (aMatchesPrefs && !bMatchesPrefs) return -1;
+      if (!aMatchesPrefs && bMatchesPrefs) return 1;
+      
+      return (b.rating ?? 0.0).compareTo(a.rating ?? 0.0);
+    });
 
     // Debug logging
     if (_activeFiltersCount > 0 || _searchQuery.isNotEmpty) {
-      debugPrint('🔍 Filtering: ${initialCount} → ${filteredPlaces.length} places');
-      debugPrint('   Active filters: $_activeFiltersCount');
-      debugPrint('   Search query: "$_searchQuery"');
+      if (kDebugMode) {
+        debugPrint('🔍 Filtering: ${initialCount} → ${filteredPlaces.length} places');
+        debugPrint('   Active filters: $_activeFiltersCount');
+        debugPrint('   Search query: "$_searchQuery"');
+      }
     }
 
     return filteredPlaces;
@@ -557,28 +588,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   // Smart metadata matching method - improved with fallback logic
   bool _matchesFilter(Place place, String filterKey) {
-    // Get filter metadata from places provider
-    final currentCity = ref.read(locationNotifierProvider).value ?? 'Rotterdam';
-    final exploreProvider = ref.read(explorePlacesProvider(city: currentCity).notifier);
-    final filterMeta = exploreProvider.getFilterMetadata(filterKey);
-    
+    // NEW: Edge Function handles mood-based filtering
+    // Local filters use keyword matching (no need for metadata from old provider)
     // Create search text for keyword matching
     final searchText = '${place.name.toLowerCase()} ${place.description?.toLowerCase() ?? ''} ${place.address.toLowerCase()}';
     
-    // If metadata exists, use it
-    if (filterMeta != null) {
-      final keywords = List<String>.from(filterMeta['keywords'] ?? []);
-      final targetTypes = List<String>.from(filterMeta['types'] ?? []);
-      final ratingThreshold = filterMeta['rating_threshold'] as double?;
-      
-      bool keywordMatch = keywords.any((keyword) => searchText.contains(keyword.toLowerCase()));
-      bool typeMatch = targetTypes.isEmpty || place.types.any((type) => targetTypes.contains(type));
-      bool ratingMatch = ratingThreshold == null || (place.rating ?? 0.0) >= ratingThreshold;
-      
-      return (keywordMatch || typeMatch) && ratingMatch;
-    }
-    
-    // Fallback: Use keyword-based matching if metadata doesn't exist
+    // Use keyword-based matching (Edge Function already filtered by mood)
     return _matchesFilterByKeywords(place, filterKey, searchText);
   }
   
@@ -653,13 +668,20 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
            place.types.contains('school');
   }
 
-  // Helper method to check if place is currently open (mock implementation)
+  // Helper method to check if place is currently open
+  // Uses real opening hours data when available, otherwise estimates based on type
   bool _placeIsCurrentlyOpen(Place place) {
-    // Mock implementation - assume most places are open during day hours
+    // Use real opening hours if available
+    if (place.openingHours != null && place.openingHours!.isOpen != null) {
+      return place.openingHours!.isOpen!;
+    }
+    
+    // Fallback: estimate based on place type and current time
+    // This is a reasonable fallback when real data isn't available
     final hour = DateTime.now().hour;
     if (place.types.contains('museum')) return hour >= 9 && hour <= 17;
     if (place.types.contains('restaurant')) return hour >= 11 && hour <= 22;
-    if (place.types.contains('bar')) return hour >= 17 && hour <= 2;
+    if (place.types.contains('bar')) return hour >= 17 || hour <= 2; // Bars open late
     if (place.types.contains('park')) return hour >= 6 && hour <= 22;
     return hour >= 8 && hour <= 20; // Default business hours
   }
@@ -683,8 +705,28 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       place.description?.toLowerCase().contains('gluten') == true
     );
 
-  bool _placeIsAccessible(Place place) => place.rating > 4.0; // Mock - assume higher rated places are more accessible
-  bool _placeIsLGBTQFriendly(Place place) => place.rating > 4.2; // Mock - assume inclusive places have good ratings
+  // Helper methods for accessibility and inclusivity
+  // These use rating as a proxy when real data isn't available
+  // In production, this data should come from place details API or user reviews
+  bool _placeIsAccessible(Place place) {
+    // Check description for accessibility keywords
+    final desc = place.description?.toLowerCase() ?? '';
+    if (desc.contains('accessible') || desc.contains('wheelchair') || desc.contains('ramp')) {
+      return true;
+    }
+    // Fallback: higher-rated places are more likely to be accessible
+    return place.rating > 4.0;
+  }
+  
+  bool _placeIsLGBTQFriendly(Place place) {
+    // Check description for inclusivity keywords
+    final desc = place.description?.toLowerCase() ?? '';
+    if (desc.contains('lgbtq') || desc.contains('inclusive') || desc.contains('diverse') || desc.contains('pride')) {
+      return true;
+    }
+    // Fallback: higher-rated places are more likely to be inclusive
+    return place.rating > 4.2;
+  }
 
   bool _checkCategoryMatch(Place place, String category) {
     switch (category.toLowerCase()) {
@@ -740,7 +782,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     
     // Use the location to fetch places - optimized to prevent excessive rebuilds
     final city = locationAsync.value ?? 'Rotterdam';
-    final explorePlacesAsync = ref.watch(explorePlacesProvider(city: city));
+    // NEW: Use Moody Edge Function for 60-80 places
+    final explorePlacesAsync = ref.watch(moodyExploreAutoProvider);
+    // OLD: ref.watch(explorePlacesProvider(city: city)) - Replaced by Edge Function
 
     return SwirlBackground(
       child: Scaffold(
@@ -830,12 +874,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     if (_intentFilteredPlaces.isNotEmpty || _selectedIntent.isNotEmpty || _searchQuery.isNotEmpty) {
                       filteredPlaces = _intentFilteredPlaces;
                     } else {
-                      // Use the traditional filtering method from provider
-                      final categoryFilteredPlaces = ref.read(explorePlacesProvider(city: currentCity).notifier)
-                          .filterPlacesByCategory(_selectedCategory, city: currentCity);
+                      // NEW: Edge Function already returns filtered/ranked places based on mood
+                      // Just apply local UI filters (search, category, etc.)
+                      filteredPlaces = allPlaces; // Start with all places from Edge Function
+                      
+                      // Apply local UI filters (category, search, etc.)
+                      if (_selectedCategory != 'All') {
+                        filteredPlaces = filteredPlaces.where((place) {
+                          return place.types.any((type) => 
+                            type.toLowerCase().contains(_selectedCategory.toLowerCase())
+                          );
+                        }).toList();
+                      }
                       
                       // Apply additional search and advanced filters locally
-                      filteredPlaces = _filterPlaces(categoryFilteredPlaces);
+                      filteredPlaces = _filterPlaces(filteredPlaces);
                     }
 
                     // For map view: show ALL places (filters are visual indicators only)
@@ -2568,10 +2621,27 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 mapType: MapType.normal, // Ensure map type is set
                 onMapCreated: (GoogleMapController controller) {
                   _mapController = controller;
-                  debugPrint('✅ Google Map created successfully');
+                  if (kDebugMode) {
+                    debugPrint('✅ Google Map created successfully');
+                    debugPrint('📍 Initial position: ${initialPosition.latitude}, ${initialPosition.longitude}');
+                    debugPrint('📍 Markers count: ${markers.length}');
+                  }
                 },
                 onCameraMoveStarted: () {
-                  debugPrint('🗺️ Camera move started');
+                  if (kDebugMode) {
+                    debugPrint('🗺️ Camera move started');
+                  }
+                },
+                onTap: (LatLng position) {
+                  if (kDebugMode) {
+                    debugPrint('🗺️ Map tapped at: ${position.latitude}, ${position.longitude}');
+                  }
+                },
+                // Error handling for map loading
+                onCameraIdle: () {
+                  if (kDebugMode) {
+                    debugPrint('🗺️ Camera idle - map should be fully loaded');
+                  }
                 },
                 myLocationEnabled: userLocation != null && 
                   (userLocation.latitude - 37.785834).abs() > 0.1, // Don't show if SF simulator
@@ -2579,6 +2649,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 zoomControlsEnabled: true,
                 mapToolbarEnabled: false, // Hide default toolbar
                 compassEnabled: true,
+                // Additional map settings to ensure proper rendering
+                trafficEnabled: false,
+                buildingsEnabled: true,
+                indoorViewEnabled: false,
               ),
               
               // Quick filter chips at the top

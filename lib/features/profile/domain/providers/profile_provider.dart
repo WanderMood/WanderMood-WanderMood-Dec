@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/features/profile/domain/models/profile_model.dart';
 import 'package:wandermood/features/auth/providers/auth_provider.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:io';
 
 final profileProvider = AsyncNotifierProvider<ProfileNotifier, Profile?>(() {
@@ -28,9 +29,10 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
 
     try {
       // First try to fetch the profile
+      // Select specific columns to avoid errors if some columns don't exist
       final response = await supabase
           .from('profiles')
-          .select()
+          .select('id, email, username, full_name, image_url, date_of_birth, bio, favorite_mood, mood_streak, followers_count, following_count, is_public, notification_preferences, theme_preference, language_preference, achievements, created_at, updated_at')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -67,7 +69,9 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
 
       return Profile.fromSupabase(result);
     } catch (e) {
-      print('Error in profile provider: $e');
+      if (kDebugMode) {
+        debugPrint('❌ Error in profile provider: $e');
+      }
       return null;
     }
   }
@@ -128,20 +132,37 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
 
     try {
       final file = File(filePath);
-      final fileName = 'profile_${user.id}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final fileName = '${user.id}/${DateTime.now().millisecondsSinceEpoch}.jpg';
       
+      // Try 'avatars' bucket first (standard), fallback to 'profile_images'
+      String bucketName = 'avatars';
+      try {
+        // Check if bucket exists by trying to list (will throw if doesn't exist)
+        await supabase.storage.from(bucketName).list();
+      } catch (e) {
+        // If 'avatars' doesn't exist, try 'profile_images'
+        bucketName = 'profile_images';
+      }
+      
+      // Upload with overwrite option
       await supabase.storage
-          .from('profile_images')
-          .upload(fileName, file);
+          .from(bucketName)
+          .upload(fileName, file, fileOptions: const FileOptions(upsert: true));
 
       final imageUrl = supabase.storage
-          .from('profile_images')
+          .from(bucketName)
           .getPublicUrl(fileName);
+
+      if (kDebugMode) {
+        debugPrint('✅ Profile image uploaded to $bucketName/$fileName');
+      }
 
       return imageUrl;
     } catch (e) {
-      print('Error uploading profile image: $e');
-      return null;
+      if (kDebugMode) {
+        debugPrint('❌ Error uploading profile image: $e');
+      }
+      rethrow; // Re-throw so caller can handle the error
     }
   }
 } 

@@ -15,6 +15,8 @@ import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:wandermood/features/places/presentation/widgets/booking_bottom_sheet.dart';
 import 'package:wandermood/core/services/moody_ai_service.dart';
 import 'package:wandermood/features/places/services/places_service.dart';
+import 'package:wandermood/features/places/services/reviews_cache_service.dart';
+import 'package:wandermood/core/widgets/data_source_badge.dart';
 
 class PlaceDetailScreen extends ConsumerStatefulWidget {
   final String placeId;
@@ -34,15 +36,28 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   final PageController _photoController = PageController();
   int _currentPhotoIndex = 0;
   Place? _currentPlace; // Track current place for booking button
+  List<Map<String, dynamic>> _realReviews = []; // Real reviews from Google API
+  bool _loadingReviews = false;
+  bool _hasAttemptedReviewFetch = false;
+  
+  // Request deduplication: Track in-flight API requests
+  final Set<String> _inFlightRequests = {};
+  Place? _cachedPlace; // Cache the found place to avoid repeated lookups
+  Future<List<String>>? _cachedMoodyTipsFuture; // Cache AI tips Future
+  String? _cachedPlaceIdForTips; // Track which place the tips are for
+  bool _isInitialized = false; // Track if widget has been initialized to prevent rebuild loops
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _isInitialized = true;
   }
 
   @override
   void dispose() {
+    _isInitialized = false; // Mark as disposed to prevent rebuilds
+    _inFlightRequests.clear(); // Clear any pending requests
     _tabController.dispose();
     _photoController.dispose();
     super.dispose();
@@ -51,6 +66,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   @override
   Widget build(BuildContext context) {
     if (kDebugMode) debugPrint('🔥 PLACE DETAIL SCREEN - BUILDING WITH PLACE ID: ${widget.placeId}');
+    
+    // Prevent rebuild loops: If we have a cached place and it matches, use it immediately
+    // Don't do any provider reads/watches that could trigger rebuilds
+    if (_cachedPlace != null && _cachedPlace!.id == widget.placeId && _isInitialized) {
+      return _buildWithPlace(_cachedPlace!);
+    }
     
     // List of all possible cities to check (including Delft, Beneden-Leeuwen and other cities)
     const allCities = [
@@ -64,41 +85,47 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       'Beneden-Leeuwen',
     ];
     
-    // Watch all city providers
-    final cityProviders = {
-      for (final city in allCities)
-        city: ref.watch(explorePlacesProvider(city: city))
-    };
-    
-    // Find which city has this place
-    AsyncValue<List<Place>> placesAsync = cityProviders['Rotterdam']!; // Default fallback
+    // Use ref.read instead of ref.watch to avoid rebuilds when providers update
+    // Only read once and cache the result
+    Place? foundPlace;
+    String? foundCity;
     
     for (final city in allCities) {
-      final hasPlace = cityProviders[city]!.maybeWhen(
+      final placesAsync = ref.read(explorePlacesProvider(city: city));
+      final place = placesAsync.maybeWhen(
         data: (places) {
           try {
-            places.firstWhere(
+            return places.firstWhere(
               (p) => p.id == widget.placeId,
-              orElse: () => throw StateError('Place not found'),
             );
-            return true;
           } catch (e) {
-            return false;
+            return null;
           }
         },
-        orElse: () => false,
+        orElse: () => null,
       );
       
-      if (hasPlace) {
+      if (place != null) {
+        foundPlace = place;
+        foundCity = city;
         if (kDebugMode) debugPrint('✅ Place found in $city cache');
-        placesAsync = cityProviders[city]!;
         break;
       }
     }
     
-    if (placesAsync == cityProviders['Rotterdam']) {
-      if (kDebugMode) debugPrint('⚠️ Place not found in any city cache, using Rotterdam as fallback...');
+    // Cache the found place to avoid repeated lookups
+    if (foundPlace != null) {
+      _cachedPlace = foundPlace;
+      return _buildWithPlace(foundPlace);
     }
+    
+    if (kDebugMode) debugPrint('⚠️ Place not found in any city cache, using Rotterdam as fallback...');
+    
+    // Fallback: Use Rotterdam provider (but only watch this one, not all 8)
+    // Only watch if we haven't cached a place yet to prevent rebuild loops
+    final rotterdamAsync = _cachedPlace == null 
+        ? ref.watch(explorePlacesProvider(city: 'Rotterdam'))
+        : ref.read(explorePlacesProvider(city: 'Rotterdam'));
     
     return Container(
       decoration: const BoxDecoration(
@@ -114,21 +141,15 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: placesAsync.when(
+        body: rotterdamAsync.when(
           data: (places) {
             try {
               final place = places.firstWhere(
                 (p) => p.id == widget.placeId,
               );
-              // Update current place for booking button
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (mounted && _currentPlace?.id != place.id) {
-                  setState(() {
-                    _currentPlace = place;
-                  });
-                }
-              });
-              return _buildPlaceDetail(place);
+              // Cache the place
+              _cachedPlace = place;
+              return _buildWithPlace(place);
             } catch (e) {
               // Place not found in any cache - try to fetch it directly if it's a Google Place ID
               if (widget.placeId.startsWith('google_')) {
@@ -145,15 +166,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     }
                     if (snapshot.hasData && snapshot.data != null) {
                       final place = snapshot.data!;
-                      // Update current place for booking button
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted && _currentPlace?.id != place.id) {
-                          setState(() {
-                            _currentPlace = place;
-                          });
-                        }
-                      });
-                      return _buildPlaceDetail(place);
+                      // Cache the place
+                      _cachedPlace = place;
+                      return _buildWithPlace(place);
                     }
                     return _buildErrorState(Exception('Place not found and could not be fetched'));
                   },
@@ -169,28 +184,43 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           ),
           error: (error, stack) => _buildErrorState(error),
         ),
-        bottomNavigationBar: _currentPlace != null
-            ? (_isPlaceBookable(_currentPlace!)
-                ? _buildBookingButton(_currentPlace!)
+        bottomNavigationBar: _cachedPlace != null
+            ? (_isPlaceBookable(_cachedPlace!)
+                ? _buildBookingButton(_cachedPlace!)
                 : const SizedBox.shrink())
-            : placesAsync.maybeWhen(
-                data: (places) {
-                  try {
-                    final place = places.firstWhere(
-                      (p) => p.id == widget.placeId,
-                      orElse: () => throw StateError('Place not found'),
-                    );
-                    // Show booking button for bookable places
-                    if (_isPlaceBookable(place)) {
-                      return _buildBookingButton(place);
-                    }
-                    return const SizedBox.shrink();
-                  } catch (e) {
-                    return const SizedBox.shrink();
-                  }
-                },
-                orElse: () => const SizedBox.shrink(),
-              ),
+            : const SizedBox.shrink(),
+      ),
+    );
+  }
+  
+  /// Helper method to build with a place (avoids duplicate code)
+  Widget _buildWithPlace(Place place) {
+    // Update current place for booking button (only if changed)
+    if (_currentPlace?.id != place.id) {
+      _currentPlace = place;
+      _cachedPlace = place; // Ensure cached place is set for booking button
+      _hasAttemptedReviewFetch = false;
+      _realReviews = [];
+    }
+    // Return the full Scaffold structure with booking button
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFFFFDF5), // Warm cream yellow
+            Color(0xFFFFF3E0), // Slightly darker warm yellow
+            Color(0xFFFFF9E8), // Light peachy warmth
+          ],
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: _buildPlaceDetail(place),
+        bottomNavigationBar: _isPlaceBookable(place)
+            ? _buildBookingButton(place)
+            : const SizedBox.shrink(),
       ),
     );
   }
@@ -541,31 +571,33 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
 
 
   Widget _buildTabBar() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withOpacity(0.9),
-            Colors.white.withOpacity(0.7),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(
-          color: const Color(0xFF12B347).withOpacity(0.2),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF12B347).withOpacity(0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 24),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.white.withOpacity(0.9),
+              Colors.white.withOpacity(0.7),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-        ],
-      ),
-      child: TabBar(
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: const Color(0xFF12B347).withOpacity(0.2),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF12B347).withOpacity(0.1),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: TabBar(
         controller: _tabController,
         labelColor: Colors.white,
         unselectedLabelColor: const Color(0xFF12B347),
@@ -601,6 +633,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           Tab(text: '📸 Photos'),
           Tab(text: '⭐ Reviews'),
         ],
+      ),
       ),
     );
   }
@@ -805,29 +838,45 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                   ],
             ),
           ),
-              const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              _buildColorfulFeatureChip(
-                place.isIndoor ? '🏠' : '☀️',
-                    place.isIndoor ? 'Indoor Vibes' : 'Outdoor Fun',
-                    place.isIndoor ? const Color(0xFF9C27B0) : const Color(0xFFFF9800),
-              ),
-              _buildColorfulFeatureChip(
-                _getEnergyEmoji(place.energyLevel),
-                '${place.energyLevel} Energy',
-                _getEnergyColor(place.energyLevel),
-              ),
-              if (place.types.isNotEmpty)
-                _buildColorfulFeatureChip(
-                  _getCategoryEmoji(place.types.first),
-                  place.types.first.replaceAll('_', ' ').toUpperCase(),
-                  _getCategoryColor(place.types.first),
-                    ),
-                ],
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 36, // Fixed height for carousel
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  itemCount: (place.types.isNotEmpty ? 3 : 2),
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: _buildColorfulFeatureChip(
+                          place.isIndoor ? '🏠' : '☀️',
+                          place.isIndoor ? 'Indoor Vibes' : 'Outdoor Fun',
+                          place.isIndoor ? const Color(0xFFE1BEE7) : const Color(0xFFFFE0B2), // Softer pastel colors
+                        ),
+                      );
+                    } else if (index == 1) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: _buildColorfulFeatureChip(
+                          _getEnergyEmoji(place.energyLevel),
+                          '${place.energyLevel} Energy',
+                          _getSoftEnergyColor(place.energyLevel),
+                        ),
+                      );
+                    } else {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: _buildColorfulFeatureChip(
+                          _getCategoryEmoji(place.types.first),
+                          place.types.first.replaceAll('_', ' ').toUpperCase(),
+                          _getSoftCategoryColor(place.types.first),
+                        ),
+                      );
+                    }
+                  },
                 ),
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -1332,44 +1381,41 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
 
   Widget _buildColorfulFeatureChip(String emoji, String label, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Reduced from 18,14 to 12,8
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color, // Solid vibrant color
-        borderRadius: BorderRadius.circular(20), // Reduced from 30 to 20
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.3),
-            blurRadius: 8, // Reduced from 12 to 8
-            offset: const Offset(0, 3), // Reduced from 4 to 3
-          ),
-        ],
+        color: color.withOpacity(0.2), // Slightly more visible background
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: color.withOpacity(0.5), // More visible border
+          width: 1,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.all(4), // Reduced from 6 to 4
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.25),
-              borderRadius: BorderRadius.circular(12), // Reduced from 15 to 12
-            ),
-            child: Text(
-              emoji,
-              style: const TextStyle(fontSize: 12), // Reduced from 14 to 12
-            ),
+          Text(
+            emoji,
+            style: const TextStyle(fontSize: 14),
           ),
-          const SizedBox(width: 6), // Reduced from 8 to 6
+          const SizedBox(width: 6),
           Text(
             label,
             style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 12, // Reduced from 14 to 12
+              color: _getReadableTextColor(color), // High contrast text
+              fontWeight: FontWeight.w600, // Bolder for readability
+              fontSize: 11,
             ),
           ),
         ],
       ),
     );
+  }
+
+  // Get readable text color based on background
+  Color _getReadableTextColor(Color backgroundColor) {
+    // Use a darker, more saturated version of the color for text
+    final hsl = HSLColor.fromColor(backgroundColor);
+    return hsl.withLightness(0.3).withSaturation(0.8).toColor();
   }
 
   String _getEnergyEmoji(String energyLevel) {
@@ -1395,6 +1441,20 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         return Colors.red;
       default:
         return Colors.amber;
+    }
+  }
+
+  // Softer pastel versions for the carousel
+  Color _getSoftEnergyColor(String energyLevel) {
+    switch (energyLevel.toLowerCase()) {
+      case 'low':
+        return const Color(0xFFB3E5FC); // Soft blue
+      case 'medium':
+        return const Color(0xFFFFF9C4); // Soft yellow
+      case 'high':
+        return const Color(0xFFFFCDD2); // Soft red/pink
+      default:
+        return const Color(0xFFFFF9C4); // Soft yellow
     }
   }
 
@@ -1441,6 +1501,30 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         return Colors.deepPurple;
       default:
         return const Color(0xFF12B347);
+    }
+  }
+
+  // Softer pastel versions for the carousel
+  Color _getSoftCategoryColor(String category) {
+    switch (category.toLowerCase()) {
+      case 'tourist_attraction':
+        return const Color(0xFFC5CAE9); // Soft indigo
+      case 'museum':
+        return const Color(0xFFD7CCC8); // Soft brown
+      case 'park':
+        return const Color(0xFFC8E6C9); // Soft green
+      case 'restaurant':
+        return const Color(0xFFFFE0B2); // Soft orange
+      case 'shopping':
+        return const Color(0xFFF8BBD0); // Soft pink
+      case 'entertainment':
+        return const Color(0xFFE1BEE7); // Soft purple
+      case 'nature':
+        return const Color(0xFFB2DFDB); // Soft teal
+      case 'culture':
+        return const Color(0xFFD1C4E9); // Soft deep purple
+      default:
+        return const Color(0xFFC8E6C9); // Soft green
     }
   }
 
@@ -1615,6 +1699,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
 
   Widget _buildMoodyTips(Place place) {
+    // Cache the Future to avoid creating new ones on every rebuild
+    if (_cachedMoodyTipsFuture == null || _cachedPlaceIdForTips != place.id) {
+      _cachedMoodyTipsFuture = _generateAIMoodyTips(place);
+      _cachedPlaceIdForTips = place.id;
+    }
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -1653,7 +1743,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         ),
           const SizedBox(height: 8),
           FutureBuilder<List<String>>(
-            future: _generateAIMoodyTips(place),
+            future: _cachedMoodyTipsFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Container(
@@ -1766,8 +1856,23 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return conversation;
   }
 
-  /// Generate AI-powered Moody Tips for the place
+  /// Generate AI-powered Moody Tips for the place with request deduplication
   Future<List<String>> _generateAIMoodyTips(Place place) async {
+    // Request deduplication: Check if request is already in flight
+    final requestKey = 'moody_tips_${place.id}';
+    if (_inFlightRequests.contains(requestKey)) {
+      if (kDebugMode) debugPrint('⏸️ Moody Tips request already in flight for: ${place.id}');
+      // Return empty list or wait for existing request
+      return [
+        '🕐 Check opening hours before your visit to avoid disappointment',
+        '📱 Consider downloading offline maps in case of poor signal', 
+        '💧 Stay hydrated and bring water, especially during warmer weather',
+      ];
+    }
+    
+    // Mark request as in-flight
+    _inFlightRequests.add(requestKey);
+    
     try {
       final moodyService = ref.read(moodyAIServiceProvider);
       
@@ -1787,6 +1892,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         // weather: ref.read(weatherProvider).value?.description,
       );
       
+      if (kDebugMode) debugPrint('✅ Generated ${tips.length} AI-powered Moody Tips');
       return tips;
     } catch (e) {
       debugPrint('❌ Error generating AI Moody Tips: $e');
@@ -1796,11 +1902,21 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         '📱 Consider downloading offline maps in case of poor signal', 
         '💧 Stay hydrated and bring water, especially during warmer weather',
       ];
+    } finally {
+      // Always remove from in-flight requests
+      _inFlightRequests.remove(requestKey);
     }
   }
 
   Widget _buildReviews(Place place) {
-    final reviews = _generateSampleReviews(place);
+    if (!_loadingReviews && _realReviews.isEmpty && !_hasAttemptedReviewFetch) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_loadingReviews && _realReviews.isEmpty && !_hasAttemptedReviewFetch) {
+          _fetchRealReviews(place);
+        }
+      });
+    }
+    final reviews = _realReviews;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1895,7 +2011,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 radius: 20,
                 backgroundColor: const Color(0xFF12B347).withOpacity(0.1),
                 child: Text(
-                  review['name'][0].toUpperCase(),
+                  (review['author_name'] as String? ?? 'A')[0].toUpperCase(),
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -1909,7 +2025,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      review['name'],
+                      review['author_name'] ?? 'Anonymous',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -1929,7 +2045,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          review['date'],
+                          review['relative_time_description'] ?? 'Recently',
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             color: Colors.grey[500],
@@ -1944,7 +2060,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           ),
           const SizedBox(height: 12),
           Text(
-            review['comment'],
+            review['text'] ?? '',
             style: GoogleFonts.poppins(
               fontSize: 14,
               height: 1.5,
@@ -1956,29 +2072,116 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     );
   }
 
-  List<Map<String, dynamic>> _generateSampleReviews(Place place) {
-    final baseReviews = [
-      {
-        'name': 'Emma Johnson',
-        'rating': 5,
-        'date': '2 days ago',
-        'comment': '🤩 Absolutely amazing experience! The atmosphere was perfect and the staff was incredibly friendly. 📸 Highly recommend visiting during the golden hour for the best photos!',
-      },
-      {
-        'name': 'Michael Chen',
-        'rating': 4,
-        'date': '1 week ago',
-        'comment': '👍 Great place to spend an afternoon. Well-maintained and lots to see. ⚠️ The only downside was it got quite crowded around lunchtime, so plan accordingly.',
-      },
-      {
-        'name': 'Sarah Williams',
-        'rating': 5,
-        'date': '2 weeks ago',
-        'comment': '✨ This place exceeded all my expectations! Perfect for ${place.activities.isNotEmpty ? place.activities.first.toLowerCase() : 'a day out'}. 👯‍♀️ Will definitely be coming back with friends!',
-      },
-    ];
+  /// Smart review fetching: Check cache first, then API with request deduplication
+  Future<void> _fetchRealReviews(Place place) async {
+    // Extract Google Place ID from place.id (format: "google_ChIJ...")
+    String googlePlaceId = place.id;
+    if (googlePlaceId.startsWith('google_')) {
+      googlePlaceId = googlePlaceId.substring('google_'.length);
+    }
     
-    return baseReviews;
+    // Request deduplication: Check if request is already in flight
+    final requestKey = 'reviews_$googlePlaceId';
+    if (_inFlightRequests.contains(requestKey)) {
+      if (kDebugMode) debugPrint('⏸️ Reviews request already in flight for: $googlePlaceId');
+      return; // Request already in progress, don't start another one
+    }
+    
+    if (_loadingReviews) return;
+    
+    // If we already have reviews, don't fetch again
+    if (_realReviews.isNotEmpty) {
+      if (kDebugMode) debugPrint('✅ Already have reviews cached in memory for: $googlePlaceId');
+      return;
+    }
+    
+    setState(() {
+      _loadingReviews = true;
+    });
+    
+    // Mark request as in-flight
+    _inFlightRequests.add(requestKey);
+
+    try {
+      _hasAttemptedReviewFetch = true;
+      final reviewsCache = ref.read(reviewsCacheServiceProvider);
+      
+      // Step 1: Check cache first
+      final cachedReviews = await reviewsCache.getCachedReviews(googlePlaceId);
+      if (cachedReviews != null && cachedReviews.isNotEmpty) {
+        if (mounted) {
+          setState(() {
+            _realReviews = cachedReviews;
+            _loadingReviews = false;
+          });
+          if (kDebugMode) {
+            debugPrint('✅ Using cached reviews for place: $googlePlaceId (${cachedReviews.length} reviews)');
+          }
+        }
+        _inFlightRequests.remove(requestKey);
+        return; // Use cached reviews, no API call needed
+      }
+      
+      // Step 2: Cache miss - fetch from API
+      if (kDebugMode) {
+        debugPrint('🔄 Cache miss - fetching reviews from API for: $googlePlaceId');
+      }
+      
+      // Check if widget is still mounted before making API call
+      if (!mounted) {
+        _inFlightRequests.remove(requestKey);
+        return;
+      }
+      
+      final placesService = ref.read(placesServiceProvider.notifier);
+      final details = await placesService.getPlaceDetails(googlePlaceId);
+      
+      // Check again after async operation
+      if (!mounted) {
+        _inFlightRequests.remove(requestKey);
+        return;
+      }
+      
+      // Step 3: Safely extract reviews with null safety
+      List<Map<String, dynamic>> reviews = [];
+      if (details.containsKey('reviews') && details['reviews'] != null) {
+        final reviewsData = details['reviews'];
+        if (reviewsData is List) {
+          reviews = reviewsData
+              .where((r) => r is Map<String, dynamic>)
+              .cast<Map<String, dynamic>>()
+              .toList();
+        }
+      }
+      
+      // Step 4: Cache the fetched reviews
+      if (reviews.isNotEmpty) {
+        await reviewsCache.cacheReviews(googlePlaceId, reviews);
+      }
+      
+      if (mounted) {
+        setState(() {
+          _realReviews = reviews;
+          _loadingReviews = false;
+        });
+        if (kDebugMode) {
+          debugPrint('✅ Loaded ${reviews.length} real reviews from Google Places API and cached them');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Error fetching reviews: $e');
+      }
+      if (mounted) {
+        setState(() {
+          _realReviews = [];
+          _loadingReviews = false;
+        });
+      }
+    } finally {
+      // Always remove from in-flight requests
+      _inFlightRequests.remove(requestKey);
+    }
   }
 
   Widget _buildPhotosTab(Place place) {
@@ -2035,7 +2238,13 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
 
   Widget _buildReviewsTab(Place place) {
-    final reviews = _generateSampleReviews(place);
+    if (!_loadingReviews && _realReviews.isEmpty && !_hasAttemptedReviewFetch) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_loadingReviews && _realReviews.isEmpty && !_hasAttemptedReviewFetch) {
+          _fetchRealReviews(place);
+        }
+      });
+    }
     
     return SingleChildScrollView(
       child: Column(
@@ -2044,25 +2253,36 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           // Reviews header with rating summary
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-                '⭐ Reviews',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-          ),
-          Container(
+            children: [
+              Row(
+                children: [
+                  Text(
+                    '⭐ Reviews',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  if (_realReviews.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    const DataSourceBadge(
+                      source: DataSource.real,
+                      tooltip: 'Real reviews from Google Places API',
+                    ),
+                  ],
+                ],
+              ),
+              Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
+                decoration: BoxDecoration(
                   color: const Color(0xFF12B347).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: const Color(0xFF12B347).withOpacity(0.3)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                children: [
+                  children: [
                     const Icon(
                       Icons.star,
                       size: 16,
@@ -2070,24 +2290,76 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      '${place.rating.toStringAsFixed(1)} (${reviews.length})',
+                      '${place.rating.toStringAsFixed(1)}',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF12B347),
+                        color: const Color(0xFF12B347),
+                      ),
+                    ),
+                    if (place.reviewCount > 0) ...[
+                      const SizedBox(width: 4),
+                      Text(
+                        '(${place.reviewCount} reviews)',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const DataSourceBadge(
+                        source: DataSource.real,
+                        tooltip: 'Rating and review count from Google Places API',
+                        size: 10,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          
+          // Reviews list - show loading or real reviews
+          if (_loadingReviews)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24.0),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (_realReviews.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  children: [
+                    Icon(Icons.reviews_outlined, size: 48, color: Colors.grey[400]),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No reviews available',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Reviews will appear here when available',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Colors.grey[500],
                       ),
                     ),
                   ],
                 ),
-                                    ),
-                                  ],
-                                ),
-          const SizedBox(height: 16),
-          
-          // Reviews list
-          Column(
-            children: reviews.map((review) => _buildDetailedReviewCard(review)).toList(),
-                              ),
+              ),
+            )
+          else
+            Column(
+              children: _realReviews.map((review) => _buildDetailedReviewCard(review)).toList(),
+            ),
           
           const SizedBox(height: 16),
           
@@ -2155,7 +2427,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 radius: 24,
                 backgroundColor: const Color(0xFF12B347).withOpacity(0.1),
                 child: Text(
-                  review['name'][0].toUpperCase(),
+                  (review['author_name'] as String? ?? 'A')[0].toUpperCase(),
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -2169,7 +2441,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      review['name'],
+                      review['author_name'] ?? 'Anonymous',
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -2190,7 +2462,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         ),
                         const SizedBox(width: 8),
                 Text(
-                          review['date'],
+                          review['relative_time_description'] ?? 'Recently',
                   style: GoogleFonts.poppins(
                             fontSize: 12,
                             color: Colors.grey[500],
@@ -2205,7 +2477,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 ),
           const SizedBox(height: 12),
           Text(
-            review['comment'],
+            review['text'] ?? '',
               style: GoogleFonts.poppins(
               fontSize: 14,
               height: 1.6,

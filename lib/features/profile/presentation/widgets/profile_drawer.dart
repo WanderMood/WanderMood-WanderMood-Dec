@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/features/auth/providers/user_provider.dart';
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
+import 'package:wandermood/features/profile/presentation/screens/language_settings_screen.dart';
+import 'package:wandermood/features/profile/presentation/screens/help_support_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -82,7 +84,8 @@ class ProfileDrawer extends ConsumerWidget {
                               GestureDetector(
                                 onTap: () {
                                   Navigator.pop(context);
-                                  context.push('/profile/edit');
+                                  // Navigate to main profile screen (source of truth in bottom nav)
+                                  context.push('/profile');
                                 },
                                 child: Container(
                                   decoration: BoxDecoration(
@@ -330,7 +333,8 @@ class ProfileDrawer extends ConsumerWidget {
                       title: 'App Settings',
                       onTap: () {
                         Navigator.pop(context);
-                        context.push('/settings');
+                        // Route to Profile settings (the main settings hub)
+                        context.push('/profile');
                       },
                     ),
                     _buildDrawerItem(
@@ -348,7 +352,13 @@ class ProfileDrawer extends ConsumerWidget {
                       title: 'Language',
                       onTap: () {
                         Navigator.pop(context);
-                        context.push('/settings/language');
+                        // Route directly to Profile's Language Settings (the working one)
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LanguageSettingsScreen(),
+                          ),
+                        );
                       },
                     ),
                     _buildDrawerItem(
@@ -357,7 +367,13 @@ class ProfileDrawer extends ConsumerWidget {
                       title: 'Help & Support',
                       onTap: () {
                         Navigator.pop(context);
-                        context.push('/support');
+                        // Route to Profile's Help & Support (the comprehensive one)
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HelpSupportScreen(),
+                          ),
+                        );
                       },
                     ),
                     const SizedBox(height: 8),
@@ -365,10 +381,11 @@ class ProfileDrawer extends ConsumerWidget {
                     _buildDrawerItem(
                       context,
                       icon: Icons.person_outline,
-                      title: 'Edit Profile',
+                      title: 'Profile',
                       onTap: () {
                         Navigator.pop(context);
-                        context.push('/profile/edit');
+                        // Navigate to main profile screen (source of truth in bottom nav)
+                        context.push('/profile');
                       },
                     ),
                     _buildDrawerItem(
@@ -387,6 +404,7 @@ class ProfileDrawer extends ConsumerWidget {
                               SnackBar(
                                 content: Text('Error signing out: $e'),
                                 backgroundColor: Colors.red,
+                                duration: const Duration(seconds: 2),
                               ),
                             );
                           }

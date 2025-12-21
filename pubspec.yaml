@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   
   # Core
   supabase_flutter: ^2.9.1  # Updated for important fixes
@@ -126,6 +128,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # Internationalization (i18n) configuration
+  generate: true
 
   assets:
     - .env

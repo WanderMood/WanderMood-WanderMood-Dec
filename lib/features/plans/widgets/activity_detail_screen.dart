@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -51,6 +52,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
             ),
           ),
           SliverFillRemaining(
+            hasScrollBody: true,
             child: TabBarView(
               controller: _tabController,
               children: [
@@ -411,10 +413,10 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
   }
 
   String _getReviewCount() {
-    // Simulate review count based on rating
-    if (widget.activity.rating >= 4.5) return '${100 + (widget.activity.rating * 50).round()}';
-    if (widget.activity.rating >= 4.0) return '${50 + (widget.activity.rating * 30).round()}';
-    return '${(widget.activity.rating * 20).round()}';
+    // Activity model doesn't have reviewCount field
+    // Review count should come from Google Places API when activity is created
+    // For now, return "N/A" to avoid showing fake data
+    return 'N/A';
   }
 
   Widget _buildRatingChip() {
@@ -510,7 +512,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
           ],
           const SizedBox(height: 20),
           _buildMoodyTips(),
-          const SizedBox(height: 100), // Space for floating buttons
+          const SizedBox(height: 150), // Increased space for floating buttons
         ],
       ),
     );
@@ -733,7 +735,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
   }
 
   Widget _buildReviewsTab() {
-    final reviews = _generateMockReviews();
+    final reviews = _getRealReviews(); // No mock data - only real reviews
     
     return Container(
       decoration: const BoxDecoration(
@@ -778,7 +780,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
             ),
             const SizedBox(height: 16),
             ...reviews.map((review) => _buildReviewCard(review)).toList(),
-            const SizedBox(height: 100),
+            const SizedBox(height: 150), // Increased space for floating buttons
           ],
         ),
       ),
@@ -786,7 +788,8 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
   }
 
   Widget _buildImagesTab() {
-    final images = _generateMockImages();
+    // Only return real images - no mock/placeholder images
+    final images = [widget.activity.imageUrl].where((url) => url.isNotEmpty).toList();
     
     return Container(
       decoration: const BoxDecoration(
@@ -844,7 +847,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
                 return _buildImageCard(images[index], index);
               },
             ),
-            const SizedBox(height: 100),
+            const SizedBox(height: 150), // Increased space for floating buttons
           ],
         ),
       ),
@@ -1167,62 +1170,17 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
     );
   }
 
-  List<Map<String, dynamic>> _generateMockReviews() {
-    final funReviews = [
-      {
-        'author': 'Emma ✨',
-        'rating': 5,
-        'date': '2 weeks ago',
-        'text': 'OMG! This place is absolutely MAGICAL! 🪄 I went in stressed and came out feeling like I could float on clouds. The vibes here are unmatched - definitely my new happy place! 💕',
-      },
-      {
-        'author': 'Marcus 🌟',
-        'rating': 4,
-        'date': '1 month ago',
-        'text': 'Solid choice for anyone looking to escape the daily grind! The atmosphere is super chill and the whole experience left me feeling refreshed. Small hiccup with timing but totally worth it! 👌',
-      },
-      {
-        'author': 'Sarah 🦋',
-        'rating': 5,
-        'date': '3 weeks ago',
-        'text': 'If you need a mental reset, THIS IS IT! 🧠✨ I\'ve been coming here regularly and it never fails to restore my zen. Perfect for anyone who wants to disconnect and recharge! Highly recommend! 🙌',
-      },
-      {
-        'author': 'David 🌈',
-        'rating': 4,
-        'date': '2 months ago',
-        'text': 'Great experience overall! The setting is beautiful and you can tell they really care about creating the right atmosphere. Will definitely be back when I\'m in the area again! 😊',
-      },
-      {
-        'author': 'Lisa 💎',
-        'rating': 5,
-        'date': '1 week ago',
-        'text': 'WOW WOW WOW! 🤩 Every single detail was perfection. This is exactly what I needed and the whole experience exceeded all my expectations. Book this NOW - you won\'t regret it! ⭐⭐⭐⭐⭐',
-      },
-    ];
-
-    // Customize first review based on activity type
-    if (widget.activity.tags.contains('Food') || widget.activity.tags.contains('Restaurant')) {
-      funReviews.first['text'] = 'FOODIE HEAVEN! 🍽️✨ The flavors here are out of this world and every bite was pure joy. Instagram-worthy presentation meets incredible taste - what more could you want? Already planning my next visit! 📸🤤';
-    } else if (widget.activity.tags.contains('Wellness') || widget.activity.tags.contains('Spa')) {
-      funReviews.first['text'] = 'PURE BLISS! 🧘‍♀️💆 I floated out of here feeling like a completely new person. The therapists are absolute angels and the atmosphere is so peaceful. This is self-care at its finest! ✨';
-    } else if (widget.activity.tags.contains('Adventure') || widget.activity.tags.contains('Active')) {
-      funReviews.first['text'] = 'ADRENALINE RUSH! 🎢💪 What an incredible adventure! My heart was pumping the entire time and the guides made sure we were safe while having the time of our lives. Best decision ever! 🚀';
-    }
-
-    return funReviews;
+  // Fetch real reviews from Google Places API
+  // Returns empty list if no reviews available (no mock data)
+  List<Map<String, dynamic>> _getRealReviews() {
+    // Reviews should come from the Activity's place data
+    // If activity has a placeId, fetch reviews from Google Places API
+    // For now, return empty - reviews will be fetched when place detail is available
+    return [];
   }
 
-  List<String> _generateMockImages() {
-    return [
-      widget.activity.imageUrl,
-      'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop',
-    ];
-  }
+  // Removed _generateMockImages() - no mock images
+  // Only real images from activity data
 
   Widget _buildFloatingButtons() {
     final isAddedToPlan = ref.watch(selectedActivitiesProvider).contains(widget.activity.id);
@@ -1332,49 +1290,17 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
   }
 
   String _getFormattedAddress() {
-    // For now, generate a mock address based on the activity location
-    // In a real app, this would come from Google Places details API
+    // Address should come from Google Places API when activity is created
+    // If no address available, show coordinates instead of fake address
     final lat = widget.activity.location.latitude;
     final lng = widget.activity.location.longitude;
     
-    // Generate a mock street address based on coordinates
-    final streetNumber = (lat * 100).round().abs() % 999 + 1;
-    final streetName = _getStreetName();
-    
-    // Determine city based on general area
-    String city = 'Rotterdam';
-    String postalCode = '3000 AA';
-    
-    if (lat > 52.3 && lng > 4.8) {
-      city = 'Amsterdam';
-      postalCode = '1000 AA';
-    } else if (lat > 52.0 && lng > 4.3) {
-      city = 'The Hague';
-      postalCode = '2500 AA';
-    }
-    
-    return '$streetName $streetNumber, $postalCode $city';
+    // Return coordinates if address not available (no mock addresses)
+    return '${lat.toStringAsFixed(6)}, ${lng.toStringAsFixed(6)}';
   }
 
-  String _getStreetName() {
-    // Generate street name based on activity type/tags
-    if (widget.activity.tags.contains('Food') || widget.activity.tags.contains('Restaurant')) {
-      final foodStreets = ['Culinary Lane', 'Restaurant Row', 'Foodie Street', 'Bistro Boulevard'];
-      return foodStreets[widget.activity.name.hashCode.abs() % foodStreets.length];
-    } else if (widget.activity.tags.contains('Art') || widget.activity.tags.contains('Culture')) {
-      final artStreets = ['Museum Quarter', 'Gallery Street', 'Arts District', 'Cultural Avenue'];
-      return artStreets[widget.activity.name.hashCode.abs() % artStreets.length];
-    } else if (widget.activity.tags.contains('Wellness') || widget.activity.tags.contains('Spa')) {
-      final wellnessStreets = ['Wellness Way', 'Serenity Street', 'Zen Boulevard', 'Peaceful Plaza'];
-      return wellnessStreets[widget.activity.name.hashCode.abs() % wellnessStreets.length];
-    } else if (widget.activity.tags.contains('Shopping')) {
-      final shoppingStreets = ['Shopping District', 'Market Square', 'Retail Row', 'Commerce Street'];
-      return shoppingStreets[widget.activity.name.hashCode.abs() % shoppingStreets.length];
-    } else {
-      final generalStreets = ['Main Street', 'Central Avenue', 'City Square', 'Downtown District', 'Harbor Street'];
-      return generalStreets[widget.activity.name.hashCode.abs() % generalStreets.length];
-    }
-  }
+  // Removed _getStreetName() - no mock street names
+  // Address should come from Google Places API
 
   bool _isRestaurantActivity() {
     final activityName = widget.activity.name.toLowerCase();

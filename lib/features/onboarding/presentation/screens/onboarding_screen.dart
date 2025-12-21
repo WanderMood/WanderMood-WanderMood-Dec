@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/providers/preferences_provider.dart';
+import 'package:flutter/foundation.dart';
 
 class OnboardingPage {
   final String title;
@@ -104,7 +105,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             top: 48,
             right: 16,
             child: TextButton(
-              onPressed: () => context.go('/auth/signup'),
+              onPressed: () async {
+                // Set onboarding completion flag before navigating
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('has_seen_onboarding', true);
+                if (kDebugMode) {
+                  debugPrint('✅ Skip clicked - has_seen_onboarding set to true');
+                }
+                if (mounted) {
+                  context.go('/auth/signup');
+                }
+              },
               child: Text(
                 'Skip',
                 style: GoogleFonts.poppins(

@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:dio/dio.dart';
 import 'package:wandermood/core/models/ai_recommendation.dart';
 import 'package:wandermood/core/models/ai_chat_message.dart';
+import 'package:wandermood/core/constants/api_keys.dart';
 
 class WanderMoodAIService {
   static final SupabaseClient _supabase = Supabase.instance.client;
@@ -71,47 +73,158 @@ class WanderMoodAIService {
   }) async {
     debugPrint('💬 Starting AI chat: ${message.substring(0, message.length.clamp(0, 50))}...');
     
-    try {
-      final response = await _supabase.functions.invoke(
-        _functionName,
-        body: {
-          'action': 'chat',
-          'message': message,
-          'conversationId': conversationId ?? _generateConversationId(),
-          'moods': moods,
-          'location': (latitude != null && longitude != null) ? {
-            'latitude': latitude,
-            'longitude': longitude,
-            'city': city,
-          } : null,
-        },
-      );
-
-      if (response.status != 200) {
-        throw Exception('AI chat error: ${response.status}');
-      }
-
-      final data = response.data as Map<String, dynamic>;
-      debugPrint('✅ AI chat response received');
-      
-      return AIChatResponse.fromJson(data);
-    } catch (e) {
-      debugPrint('❌ Error in AI chat: $e');
-      
-      // Fallback response when edge function doesn't exist
-      if (e.toString().contains('404') || e.toString().contains('NOT_FOUND')) {
-        debugPrint('⚠️ Edge function not found, using fallback response');
-        return AIChatResponse(
-          success: true,
-          action: 'chat',
-          timestamp: DateTime.now().toIso8601String(),
-          message: _getFallbackResponse(message, moods?.first ?? 'exploring'),
-          conversationId: conversationId ?? _generateConversationId(),
-          contextUsed: {},
+    final openAiKey = ApiKeys.openAiKey;
+    final convId = conversationId ?? _generateConversationId();
+    
+    // If OpenAI key is available, call OpenAI directly
+    if (openAiKey.isNotEmpty) {
+      try {
+        debugPrint('🤖 Calling OpenAI API directly...');
+        
+        final dio = Dio();
+        final systemPrompt = _buildSystemPrompt(moods, city);
+        
+        // Get conversation history if available - ALWAYS try to load for continuity
+        List<Map<String, String>> conversationHistory = [];
+        try {
+          final history = await getConversationHistory(convId);
+          conversationHistory = history.map((msg) => {
+            'role': msg.role,
+            'content': msg.content,
+          }).toList();
+          debugPrint('📚 Using ${conversationHistory.length} previous messages for context');
+        } catch (e) {
+          debugPrint('⚠️ Could not load conversation history: $e');
+          // Continue without history - new conversation
+        }
+        
+        // Build messages array
+        final messages = <Map<String, String>>[
+          {'role': 'system', 'content': systemPrompt},
+          ...conversationHistory,
+          {'role': 'user', 'content': message},
+        ];
+        
+        final response = await dio.post(
+          'https://api.openai.com/v1/chat/completions',
+          options: Options(
+            headers: {
+              'Authorization': 'Bearer $openAiKey',
+              'Content-Type': 'application/json',
+            },
+          ),
+          data: {
+            'model': 'gpt-4o', // Using gpt-4o for better responses
+            'messages': messages,
+            'max_tokens': 300,
+            'temperature': 0.8,
+          },
         );
+        
+        if (response.statusCode == 200) {
+          final aiMessage = response.data['choices'][0]['message']['content'] as String;
+          
+          // Save conversation to database
+          try {
+            await _saveConversation(convId, message, aiMessage);
+          } catch (e) {
+            debugPrint('⚠️ Could not save conversation: $e');
+          }
+          
+          debugPrint('✅ AI chat response received from OpenAI');
+          
+          return AIChatResponse(
+            success: true,
+            action: 'chat',
+            timestamp: DateTime.now().toIso8601String(),
+            message: aiMessage.trim(),
+            conversationId: convId,
+            contextUsed: {
+              'moods': moods ?? [],
+              'location': city ?? 'Unknown',
+            },
+          );
+        } else {
+          throw Exception('OpenAI API error: ${response.statusCode}');
+        }
+      } catch (e) {
+        debugPrint('❌ Error calling OpenAI directly: $e');
+        // Fall through to fallback
       }
+    }
+    
+    // Fallback response when OpenAI is not available or fails
+    debugPrint('⚠️ Using fallback response');
+    return AIChatResponse(
+      success: true,
+      action: 'chat',
+      timestamp: DateTime.now().toIso8601String(),
+      message: _getFallbackResponse(message, moods?.first ?? 'exploring'),
+      conversationId: convId,
+      contextUsed: {},
+    );
+  }
+  
+  /// Build system prompt for Moody
+  static String _buildSystemPrompt(List<String>? moods, String? city) {
+    final moodText = moods?.isNotEmpty == true 
+        ? 'The user is currently feeling ${moods!.join(' and ')}.'
+        : 'The user is exploring.';
+    
+    final locationText = city != null ? 'They are in $city.' : '';
+    
+    return '''You are Moody — a warm, playful travel companion for WanderMood, not a formal assistant. You speak like a close friend: casual, supportive, and genuinely excited about travel.
+
+Your personality:
+- Casual and friendly, like talking to a bestie
+- Use emojis naturally (but not excessively) ✨
+- Remember what users tell you and reference it later
+- Ask thoughtful follow-up questions
+- Celebrate wins and empathize with struggles
+- Keep responses concise (2-3 sentences max)
+- Be enthusiastic about travel and discovery
+
+Context:
+$moodText $locationText
+
+Guidelines:
+- Respond naturally to what the user says
+- If they mention activities or places, show interest
+- If they're asking for help, be helpful and specific
+- Keep it conversational, not robotic
+- Match their energy level''';
+  }
+  
+  /// Save conversation to database
+  static Future<void> _saveConversation(
+    String conversationId,
+    String userMessage,
+    String aiMessage,
+  ) async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) return; // Skip if not authenticated
       
-      rethrow;
+      // Save user message
+      await _supabase.from('ai_conversations').insert({
+        'conversation_id': conversationId,
+        'user_id': user.id,
+        'role': 'user',
+        'content': userMessage,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+      
+      // Save AI message
+      await _supabase.from('ai_conversations').insert({
+        'conversation_id': conversationId,
+        'user_id': user.id,
+        'role': 'assistant',
+        'content': aiMessage,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      debugPrint('⚠️ Error saving conversation: $e');
+      // Don't throw - conversation saving is optional
     }
   }
 
@@ -262,17 +375,19 @@ class WanderMoodAIService {
           .from('ai_conversations')
           .select('role, content, created_at')
           .eq('conversation_id', conversationId)
-          .order('created_at', ascending: true);
+          .order('created_at', ascending: true)
+          .limit(50); // Limit to last 50 messages to avoid token limits
 
       final messages = (response as List)
           .map((json) => AIChatMessage.fromJson(json))
           .toList();
       
-      debugPrint('✅ Loaded ${messages.length} conversation messages');
+      debugPrint('✅ Loaded ${messages.length} conversation messages for context');
       return messages;
     } catch (e) {
       debugPrint('❌ Error loading conversation history: $e');
-      rethrow;
+      // Return empty list instead of throwing - allows chat to continue without history
+      return [];
     }
   }
 
@@ -351,6 +466,41 @@ class WanderMoodAIService {
   /// Generate a unique conversation ID
   static String _generateConversationId() {
     return 'conv_${DateTime.now().millisecondsSinceEpoch}_${_supabase.auth.currentUser?.id?.substring(0, 8) ?? 'anon'}';
+  }
+
+  /// Get or create a persistent conversation ID for the current user
+  /// This ensures conversations persist across app sessions
+  static Future<String> getOrCreateConversationId() async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        return _generateConversationId();
+      }
+
+      // Try to get the most recent conversation ID for this user
+      final response = await _supabase
+          .from('ai_conversations')
+          .select('conversation_id')
+          .eq('user_id', user.id)
+          .order('created_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
+
+      if (response != null && response['conversation_id'] != null) {
+        final existingId = response['conversation_id'] as String;
+        debugPrint('✅ Found existing conversation ID: $existingId');
+        return existingId;
+      }
+
+      // No existing conversation, create a new one
+      final newId = 'conv_${user.id}_${DateTime.now().millisecondsSinceEpoch}';
+      debugPrint('🆕 Created new conversation ID: $newId');
+      return newId;
+    } catch (e) {
+      debugPrint('⚠️ Error getting conversation ID: $e');
+      // Fallback to generating a new one
+      return _generateConversationId();
+    }
   }
 
   /// Check if AI service is available

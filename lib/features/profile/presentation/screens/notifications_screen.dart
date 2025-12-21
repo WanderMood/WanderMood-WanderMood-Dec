@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({Key? key}) : super(key: key);
@@ -11,7 +13,8 @@ class NotificationsScreen extends ConsumerStatefulWidget {
 }
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
-  // Notification settings
+  // Notification settings - loaded from profile
+  bool _allowNotifications = true;
   bool _activityReminders = true;
   bool _moodTracking = true;
   bool _specialOffers = false;
@@ -19,6 +22,33 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   bool _weatherAlerts = true;
   bool _travelTips = true;
   bool _localEvents = false;
+  bool _isLoading = false;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotificationSettings();
+  }
+
+  Future<void> _loadNotificationSettings() async {
+    final profileAsync = ref.read(profileProvider);
+    profileAsync.whenData((profile) {
+      if (profile?.notificationPreferences != null && mounted) {
+        final prefs = profile!.notificationPreferences;
+        setState(() {
+          _allowNotifications = prefs['push'] ?? true;
+          _activityReminders = prefs['activityReminders'] ?? prefs['travelTips'] ?? true;
+          _moodTracking = prefs['moodTracking'] ?? true;
+          _weatherAlerts = prefs['weatherAlerts'] ?? prefs['travelTips'] ?? true;
+          _travelTips = prefs['travelTips'] ?? true;
+          _friendActivity = prefs['friendActivity'] ?? prefs['socialUpdates'] ?? true;
+          _specialOffers = prefs['specialOffers'] ?? prefs['marketing'] ?? false;
+          _localEvents = prefs['localEvents'] ?? false;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,11 +94,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                         color: Colors.grey[600],
                       ),
                     ),
-                    value: true, // This would be a global setting
+                    value: _allowNotifications,
                     activeColor: const Color(0xFF12B347),
-                    onChanged: (value) {
-                      // This would toggle all notifications
+                    onChanged: (value) async {
                       setState(() {
+                        _allowNotifications = value;
+                        // Toggle all notifications when master is toggled
                         _activityReminders = value;
                         _moodTracking = value;
                         _specialOffers = value;
@@ -77,6 +108,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                         _travelTips = value;
                         _localEvents = value;
                       });
+                      await _saveNotificationSettings();
                     },
                   ),
                   
@@ -97,10 +129,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     title: 'Activity Reminders',
                     subtitle: 'Reminders for upcoming activities and plans',
                     value: _activityReminders,
-                    onChanged: (value) {
+                    onChanged: (value) async {
                       setState(() {
                         _activityReminders = value;
                       });
+                      await _saveNotificationSettings();
                     },
                   ),
                   
@@ -108,10 +141,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     title: 'Mood Tracking',
                     subtitle: 'Daily prompts to track your mood',
                     value: _moodTracking,
-                    onChanged: (value) {
+                    onChanged: (value) async {
                       setState(() {
                         _moodTracking = value;
                       });
+                      await _saveNotificationSettings();
                     },
                   ),
                   
@@ -131,10 +165,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     title: 'Weather Alerts',
                     subtitle: 'Get alerts about weather changes',
                     value: _weatherAlerts,
-                    onChanged: (value) {
+                    onChanged: (value) async {
                       setState(() {
                         _weatherAlerts = value;
                       });
+                      await _saveNotificationSettings();
                     },
                   ),
                   
@@ -142,10 +177,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     title: 'Travel Tips',
                     subtitle: 'Suggestions for your trips and activities',
                     value: _travelTips,
-                    onChanged: (value) {
+                    onChanged: (value) async {
                       setState(() {
                         _travelTips = value;
                       });
+                      await _saveNotificationSettings();
                     },
                   ),
                   
@@ -153,10 +189,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     title: 'Local Events',
                     subtitle: 'Notifications about events in your area',
                     value: _localEvents,
-                    onChanged: (value) {
+                    onChanged: (value) async {
                       setState(() {
                         _localEvents = value;
                       });
+                      await _saveNotificationSettings();
                     },
                   ),
                   
@@ -176,10 +213,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     title: 'Friend Activity',
                     subtitle: 'When friends share trips or activities',
                     value: _friendActivity,
-                    onChanged: (value) {
+                    onChanged: (value) async {
                       setState(() {
                         _friendActivity = value;
                       });
+                      await _saveNotificationSettings();
                     },
                   ),
                   
@@ -187,10 +225,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     title: 'Special Offers',
                     subtitle: 'Promotional offers and app updates',
                     value: _specialOffers,
-                    onChanged: (value) {
+                    onChanged: (value) async {
                       setState(() {
                         _specialOffers = value;
                       });
+                      await _saveNotificationSettings();
                     },
                   ),
                   
@@ -304,15 +343,65 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     );
   }
   
-  // Save notification settings
-  void _saveNotificationSettings() {
-    // Here you would persist the settings to your backend or local storage
+  // Save notification settings to profile
+  Future<void> _saveNotificationSettings() async {
+    if (_isSaving) return;
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Notification settings saved'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    setState(() => _isSaving = true);
+    
+    try {
+      // Map local state to notification preferences format
+      final notificationPrefs = {
+        'push': _allowNotifications,
+        'email': _allowNotifications, // Can be separated later
+        'travelTips': _travelTips,
+        'socialUpdates': _friendActivity,
+        'marketing': _specialOffers,
+        // Additional preferences that can be added to the model
+        'activityReminders': _activityReminders,
+        'moodTracking': _moodTracking,
+        'weatherAlerts': _weatherAlerts,
+        'localEvents': _localEvents,
+      };
+      
+      await ref.read(profileProvider.notifier).updateProfile(
+        notificationPreferences: notificationPrefs,
+      );
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Notification settings saved',
+              style: GoogleFonts.poppins(),
+            ),
+            backgroundColor: const Color(0xFF12B347),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Error saving notification settings: $e');
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to save settings: ${e.toString()}',
+              style: GoogleFonts.poppins(),
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
   }
 } 

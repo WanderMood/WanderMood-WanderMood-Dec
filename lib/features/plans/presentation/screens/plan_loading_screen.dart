@@ -129,7 +129,11 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
       debugPrint('📡 Edge Function response status: ${response.status}');
       
       if (response.status != 200) {
-        throw Exception('Edge Function returned status ${response.status}: ${response.data}');
+        final errorData = response.data;
+        if (kDebugMode) {
+          debugPrint('❌ Edge Function error: Status ${response.status}, Data: $errorData');
+        }
+        throw Exception('Service error (${response.status}). Please try again.');
       }
 
       final responseData = response.data as Map<String, dynamic>;
@@ -204,8 +208,9 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
         activities = await _generateDynamicActivities();
         debugPrint('✅ Fallback generation produced ${activities.length} activities');
       } catch (fallbackError) {
-        debugPrint('❌ CRITICAL: All activity generation methods failed');
-        await _showErrorState('Unable to generate activities. Please check your internet connection and try again.');
+        debugPrint('❌ CRITICAL: All activity generation methods failed: $fallbackError');
+        final errorMessage = _getErrorMessage(fallbackError);
+        await _showErrorState(errorMessage);
         return;
       }
     }
@@ -213,7 +218,7 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
     // If we still have no activities, show error state
     if (activities.isEmpty) {
       debugPrint('❌ CRITICAL: No activities generated at all');
-      await _showErrorState('Unable to generate activities. Please check your internet connection and try again.');
+      await _showErrorState('No activities found for your selected moods. Please try different moods or check your location settings.');
       return;
     }
 
@@ -238,6 +243,33 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
         ),
       );
     }
+  }
+
+  String _getErrorMessage(dynamic error) {
+    final errorString = error.toString().toLowerCase();
+    
+    if (errorString.contains('api key') || errorString.contains('invalid key') || errorString.contains('unauthorized')) {
+      return 'API key configuration error. Please contact support if this persists.';
+    }
+    
+    if (errorString.contains('network') || errorString.contains('connection') || errorString.contains('timeout')) {
+      return 'Network connection error. Please check your internet connection and try again.';
+    }
+    
+    if (errorString.contains('rate limit') || errorString.contains('quota')) {
+      return 'Service temporarily unavailable due to high demand. Please try again in a few minutes.';
+    }
+    
+    if (errorString.contains('location') || errorString.contains('permission')) {
+      return 'Location access required. Please enable location services and try again.';
+    }
+    
+    if (errorString.contains('not found') || errorString.contains('404')) {
+      return 'Service unavailable. Please try again later or contact support.';
+    }
+    
+    // Generic error message
+    return 'Unable to generate activities. Please try again or select different moods.';
   }
 
   Future<void> _showErrorState(String message) async {
@@ -291,8 +323,8 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
       return activities;
     } catch (e) {
       debugPrint('❌ Error generating dynamic activities: $e');
-      // Instead of fallback, show error state to user
-      throw Exception('Unable to generate activities. Please check your internet connection and try again.');
+      // Throw with specific error message
+      throw Exception(_getErrorMessage(e));
     }
   }
   

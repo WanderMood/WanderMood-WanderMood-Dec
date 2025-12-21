@@ -16,6 +16,9 @@ import '../../../profile/presentation/widgets/profile_drawer.dart';
 import '../../../profile/domain/providers/profile_provider.dart';
 import '../../../weather/providers/weather_provider.dart';
 import '../../../places/providers/explore_places_provider.dart';
+import '../../../places/models/place.dart';
+import '../../../../core/domain/providers/location_notifier_provider.dart';
+import '../../../../core/providers/user_location_provider.dart';
 import 'main_screen.dart';
 import 'reservation_details_sheet.dart';
 import 'package:wandermood/core/theme/time_based_theme.dart';
@@ -557,7 +560,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                           _buildActionButton(
                             'Ask Moody',
                             Icons.chat_bubble_outline,
-                            () => _showMoodyChatDialog(),
+                            () => _navigateToTab(2), // Navigate to Moody Hub (tab 2)
                                     ),
                         ],
                                   ),
@@ -1697,57 +1700,89 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         child: Padding(
           padding: const EdgeInsets.all(40.0),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.calendar_today_outlined,
-                size: 64,
-                color: Colors.grey[400],
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.calendar_today_outlined,
+                  size: 64,
+                  color: Colors.grey[400],
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 32),
               Text(
-                'No activities planned for today',
+                'Ready to plan your day?',
                 style: GoogleFonts.poppins(
-                  fontSize: 18,
+                  fontSize: 24,
                   fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Create your first day plan and start exploring amazing places based on your mood!',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
                   color: Colors.grey[600],
                 ),
+                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Ready to plan something amazing?',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.grey[500],
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Navigate to Moody Hub to create first plan
+                    context.goNamed('main', extra: {'tab': 2});
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF12B347),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    elevation: 4,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.auto_awesome, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Create Your First Day Plan',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () => context.goNamed('main', extra: {'tab': 1}),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF12B347),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    child: Text('Explore Places'),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () => context.goNamed('main', extra: {'tab': 1}),
+                child: Text(
+                  'Or explore places first',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.grey[600],
                   ),
-                  const SizedBox(width: 16),
-                  OutlinedButton(
-                    onPressed: () => context.goNamed('main', extra: {'tab': 2}),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF12B347),
-                      side: const BorderSide(color: Color(0xFF12B347)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    child: Text('Ask Moody'),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
@@ -2843,11 +2878,19 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   List<Map<String, dynamic>> _getFreeTimeActivities() {
-    // Use real places data from explorePlacesProvider instead of mock data
-    return ref.watch(explorePlacesProvider(city: 'Rotterdam')).when(
+    // Get user's actual city from location provider
+    final locationAsync = ref.watch(locationNotifierProvider);
+    final city = locationAsync.valueOrNull ?? 'Rotterdam';
+    
+    // Get user's current position for accurate distance calculation
+    final userPositionAsync = ref.watch(userLocationProvider);
+    final userPosition = userPositionAsync.valueOrNull;
+    
+    // Use real places data from explorePlacesProvider with user's actual city
+    return ref.watch(explorePlacesProvider(city: city)).when(
       data: (places) {
         if (places.isEmpty) {
-          // Fallback to a few real Rotterdam places if API fails
+          // Fallback to a few real places if API fails
           return [
             {
               'title': 'Markthal Rotterdam',
@@ -2868,8 +2911,11 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           ];
         }
         
-        // Convert real places to the format expected by the carousel
-        return places.take(5).map((place) {
+        // Shuffle places to show different ones each time
+        final shuffledPlaces = List<Place>.from(places)..shuffle(Random());
+        
+        // Convert real places to the format expected by the carousel (take 5 random ones)
+        return shuffledPlaces.take(5).map((place) {
           // Determine category based on place types
           String category = 'culture';
           if (place.types.contains('restaurant') || place.types.contains('cafe') || place.types.contains('food')) {
@@ -2911,17 +2957,26 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             duration = 75;
           }
           
-          // Calculate distance from Rotterdam center (default user location)
-          final rotterdamLat = 51.9225;
-          final rotterdamLng = 4.4792;
+          // Calculate distance from user's actual location (or city center as fallback)
+          double userLat, userLng;
+          if (userPosition != null) {
+            userLat = userPosition.latitude;
+            userLng = userPosition.longitude;
+          } else {
+            // Fallback to city center coordinates
+            final cityCoords = _getCityCoordinates(city);
+            userLat = cityCoords['lat']!;
+            userLng = cityCoords['lng']!;
+          }
+          
           final distance = _calculateDistance(
-            rotterdamLat, rotterdamLng,
+            userLat, userLng,
             place.location.lat, place.location.lng,
           );
           
           return {
             'title': place.name,
-            'description': place.description ?? 'Discover this amazing place in Rotterdam',
+            'description': place.description ?? 'Discover this amazing place in $city',
             'category': category,
             'distance': '${distance.toStringAsFixed(1)} km',
             'duration': duration,
@@ -3165,6 +3220,20 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   // Helper method to calculate distance between two coordinates using Haversine formula
+  // Helper method to get city coordinates
+  Map<String, double> _getCityCoordinates(String cityName) {
+    final cityCoords = <String, Map<String, double>>{
+      'Rotterdam': {'lat': 51.9225, 'lng': 4.4792},
+      'Amsterdam': {'lat': 52.3676, 'lng': 4.9041},
+      'The Hague': {'lat': 52.0705, 'lng': 4.3007},
+      'Utrecht': {'lat': 52.0907, 'lng': 5.1214},
+      'Eindhoven': {'lat': 51.4416, 'lng': 5.4697},
+      'Groningen': {'lat': 53.2194, 'lng': 6.5665},
+      'Delft': {'lat': 52.0067, 'lng': 4.3556},
+    };
+    return cityCoords[cityName] ?? cityCoords['Rotterdam']!;
+  }
+
   double _calculateDistance(double lat1, double lng1, double lat2, double lng2) {
     const double earthRadius = 6371; // Earth's radius in kilometers
     
