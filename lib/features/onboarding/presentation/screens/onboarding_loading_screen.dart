@@ -8,15 +8,18 @@ import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../../core/providers/preferences_provider.dart';
 import '../widgets/swirling_gradient_painter.dart';
 import '../../../plans/services/activity_generator_service.dart';
-import '../../../places/providers/explore_places_provider.dart';
+import '../../../places/providers/moody_explore_provider.dart';
 import '../../../location/services/location_service.dart';
 import 'package:geolocator/geolocator.dart';
+import '../../../../core/domain/providers/location_notifier_provider.dart';
+import '../../../../core/providers/user_location_provider.dart';
 import '../../../weather/application/weather_service.dart';
 import '../../../weather/domain/models/weather_location.dart';
 import 'dart:math' as math;
 import 'dart:convert';
 import '../../../auth/providers/auth_state_provider.dart';
 import '../../../../core/providers/supabase_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class OnboardingLoadingScreen extends ConsumerStatefulWidget {
   const OnboardingLoadingScreen({super.key});
@@ -453,29 +456,10 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
       }
       await Future.delayed(const Duration(milliseconds: 1000));
 
-      // Step 4: Fetch places for exploration (80%) - OPTIMIZED WITH PARALLEL PROCESSING
-      await _updateProgress(3, 'Discovering amazing places nearby...');
-      try {
-        // Show dynamic progress during places fetching
-        setState(() {
-          _currentStep = 'Finding restaurants, cafes, and attractions...';
-        });
-        
-        // Use Future.microtask to avoid lifecycle conflicts
-        await Future.microtask(() {
-          ref.invalidate(explorePlacesProvider(city: 'Rotterdam'));
-        });
-        final places = await ref.read(explorePlacesProvider(city: 'Rotterdam').future);
-        debugPrint('🏛️ Prefetched ${places.length} places for exploration');
-        
-        // Update progress with more specific message
-        setState(() {
-          _currentStep = 'Organizing your perfect day...';
-        });
-      } catch (e) {
-        debugPrint('⚠️ Places prefetch failed: $e (continuing anyway)');
-      }
-      await Future.delayed(const Duration(milliseconds: 800));
+      // Step 4: Skip places prefetch here - moved to MainScreen for better timing
+      // Places will be prefetched in background after MainScreen loads (user is authenticated, session established)
+      await _updateProgress(3, 'Almost ready! Setting up your dashboard...');
+      await Future.delayed(const Duration(milliseconds: 600));
 
       // Step 5: Fetch weather data (90%)
       await _updateProgress(4, 'Preparing your personalized dashboard...');
@@ -496,8 +480,23 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
       // Step 6: Finalize and prepare dashboard (100%)
       await _updateProgress(5, 'Almost ready! Setting up your dashboard...');
       
-      // Mark preferences as completed
+      // Mark preferences as completed in local storage
       await prefs.setBool('hasCompletedPreferences', true);
+      
+      // CRITICAL: Also update database so login checks work correctly
+      try {
+        final user = Supabase.instance.client.auth.currentUser;
+        if (user != null) {
+          await Supabase.instance.client
+              .from('user_preferences')
+              .update({'has_completed_preferences': true})
+              .eq('user_id', user.id);
+          debugPrint('✅ Updated has_completed_preferences=true in database');
+        }
+      } catch (e) {
+        debugPrint('⚠️ Could not update preferences completion flag in database: $e');
+        // Non-critical - local flag is set, user can proceed
+      }
       
       // Check if this is first-time user (hasn't created a plan yet)
       final hasCompletedFirstPlan = prefs.getBool('has_completed_first_plan') ?? false;
@@ -548,6 +547,21 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
     
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hasCompletedPreferences', true);
+    
+    // CRITICAL: Also update database so login checks work correctly
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        await Supabase.instance.client
+            .from('user_preferences')
+            .update({'has_completed_preferences': true})
+            .eq('user_id', user.id);
+        debugPrint('✅ Updated has_completed_preferences=true in database (error handler)');
+      }
+    } catch (e) {
+      debugPrint('⚠️ Could not update preferences completion flag in database: $e');
+      // Non-critical - local flag is set, user can proceed
+    }
     
     if (mounted) {
       setState(() {

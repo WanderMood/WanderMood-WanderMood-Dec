@@ -8,9 +8,15 @@ import '../domain/models/activity.dart';
 import '../domain/enums/time_slot.dart';
 import '../domain/enums/payment_type.dart';
 
+/// @deprecated This service should NOT be used. All activity generation must go through the Edge Function.
+/// The Edge Function is the ONLY data authority. Use `moody` Edge Function with `create_day_plan` action instead.
+/// This class is kept for backward compatibility but will be removed in a future version.
 class ActivityGeneratorService {
+  /// @deprecated Use Edge Function `moody` with `create_day_plan` action instead.
+  /// This method directly calls Google Places API which violates the architecture.
   /// Generate activities from Google Places based on moods and user's ACTUAL location
   /// Uses precise mood-to-place-type mapping for targeted suggestions
+  @Deprecated('Use Edge Function moody with create_day_plan action instead')
   static Future<List<Activity>> generateActivities({
     required List<String> selectedMoods,
     required String? userLocation,

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../places/providers/explore_places_provider.dart';
 
 // Provider voor de splash service
 final splashServiceProvider = Provider<SplashService>((ref) {
@@ -30,21 +29,12 @@ class SplashService {
       final hasCompletedOnboarding = prefs.getBool('has_completed_preferences') ?? false;
       
       if (hasCompletedOnboarding) {
-        // 🎯 PRE-FETCH FOR RETURNING USERS
-        // Start activities pre-fetch in background during splash for instant Explore screen
-        debugPrint('🎯 RETURNING USER: Pre-fetching activities during splash screen');
-        try {
-          // Don't await - let it run in background while navigating
-          ref.read(explorePlacesProvider().future).then((_) {
-            debugPrint('✅ SPLASH PRE-FETCH: Activities ready for instant access');
-          }).catchError((e) {
-            debugPrint('⚠️ SPLASH PRE-FETCH WARNING: $e - Activities will load on demand');
-          });
-        } catch (e) {
-          debugPrint('⚠️ SPLASH PRE-FETCH ERROR: $e');
-        }
+        // CRITICAL: DO NOT prefetch here - causes infinite API loop
+        // Prefetch is handled in main_screen.dart using Edge Function (moodyExploreAutoProvider)
+        // The old explorePlacesProvider() was making hundreds of API calls for ALL cities
+        debugPrint('🎯 RETURNING USER: Navigating to home (prefetch handled by main_screen)');
         
-        // Navigate to home with pre-fetch running in background
+        // Navigate to home - prefetch will happen in main_screen.dart
         context.go('/home');
       } else {
         // Always show onboarding for better testing or new users

@@ -16,6 +16,7 @@ import '../../../profile/presentation/widgets/profile_drawer.dart';
 import '../../../profile/domain/providers/profile_provider.dart';
 import '../../../weather/providers/weather_provider.dart';
 import '../../../places/providers/explore_places_provider.dart';
+import '../../../places/providers/moody_explore_provider.dart';
 import '../../../places/models/place.dart';
 import '../../../../core/domain/providers/location_notifier_provider.dart';
 import '../../../../core/providers/user_location_provider.dart';
@@ -2886,8 +2887,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     final userPositionAsync = ref.watch(userLocationProvider);
     final userPosition = userPositionAsync.valueOrNull;
     
-    // Use real places data from explorePlacesProvider with user's actual city
-    return ref.watch(explorePlacesProvider(city: city)).when(
+    // Use Edge Function data instead of old Google Places API
+    return ref.watch(moodyExploreAutoProvider).when(
       data: (places) {
         if (places.isEmpty) {
           // Fallback to a few real places if API fails

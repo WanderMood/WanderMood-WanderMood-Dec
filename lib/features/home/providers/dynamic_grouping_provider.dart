@@ -166,8 +166,8 @@ final filteredPlacesProvider = Provider<List<Place>>((ref) {
   final locationState = ref.watch(locationNotifierProvider);
   final city = locationState.value ?? 'Rotterdam';
   
-  // Use read instead of watch to prevent reactive rebuilds
-  final placesAsync = ref.read(explorePlacesProvider(city: city));
+  // Use Edge Function data instead of old Google Places API
+  final placesAsync = ref.read(moodyExploreAutoProvider);
   
   return placesAsync.when(
     data: (places) => places,

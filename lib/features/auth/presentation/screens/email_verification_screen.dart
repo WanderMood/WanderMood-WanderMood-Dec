@@ -84,14 +84,62 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
 
   /// Proceed to onboarding after successful verification
   Future<void> _proceedToOnboarding() async {
+    try {
+      // CRITICAL: Don't refresh session here - it's already established from deep link
+      // Refreshing immediately after email verification can cause rate limiting
+      debugPrint('🔄 Checking Supabase session after email verification...');
+      final session = Supabase.instance.client.auth.currentSession;
+      
+      if (session == null) {
+        debugPrint('⚠️ No session found after verification, waiting a moment...');
+        // Wait a moment for session to be established
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        // Check again
+        final newSession = Supabase.instance.client.auth.currentSession;
+        if (newSession == null) {
+          debugPrint('❌ Still no session after wait, this is an error');
+          throw Exception('Session not established after email verification');
+        }
+        debugPrint('✅ Session found after waiting');
+      } else {
+        debugPrint('✅ Session already established, no refresh needed');
+      }
+      
+      // Verify user is authenticated
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not found after email verification');
+      }
+      
+      if (user.emailConfirmedAt == null) {
+        throw Exception('Email not confirmed after verification');
+      }
+      
+      debugPrint('✅ User authenticated: ${user.id}, Email confirmed: ${user.emailConfirmedAt}');
+      
+      // Set preferences flag and track auth timestamp
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('hasCompletedAuth', true);
-    await prefs.setBool('hasCompletedOnboarding', false);
     await prefs.setBool('hasCompletedPreferences', false);
-    debugPrint('✅ hasCompletedAuth flag set after email verification');
+      await prefs.setInt('last_auth_timestamp', DateTime.now().millisecondsSinceEpoch);
+      debugPrint('✅ Auth flags set after email verification');
+      
+      // Small delay to ensure flags are persisted
+      await Future.delayed(const Duration(milliseconds: 100));
     
     if (mounted) {
       context.go('/preferences/communication');
+      }
+    } catch (e) {
+      debugPrint('❌ Error in _proceedToOnboarding: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

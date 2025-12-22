@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,7 +6,7 @@ import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../profile/domain/providers/profile_provider.dart';
 
 /// Overlay widget that introduces Moody to first-time users
-/// Shows on top of blurred Moody Hub background
+/// Shows as a centered modal on top of blurred Moody Hub background
 class MoodyIntroOverlay extends ConsumerWidget {
   final VoidCallback onCreateDay;
   final VoidCallback onSkip;
@@ -32,24 +33,41 @@ class MoodyIntroOverlay extends ConsumerWidget {
       error: (_, __) => 'there',
     );
 
-    return Container(
-      color: Colors.black.withOpacity(0.6), // Darker overlay for better contrast
-      child: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width - 40,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+      child: Container(
+        color: Colors.black.withOpacity(0.3), // Light dark overlay
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+              child: Container(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width - 48,
+                  maxHeight: MediaQuery.of(context).size.height * 0.85,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 30,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
                 // Moody Avatar
                 Container(
-                  width: 120,
-                  height: 120,
+                  width: 100,
+                  height: 100,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(
@@ -62,74 +80,67 @@ class MoodyIntroOverlay extends ConsumerWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF12B347).withOpacity(0.4),
-                        blurRadius: 30,
-                        spreadRadius: 5,
-                        offset: const Offset(0, 8),
+                        color: const Color(0xFF12B347).withOpacity(0.3),
+                        blurRadius: 20,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: const Center(
                     child: MoodyCharacter(
-                      size: 90,
+                      size: 75,
                       mood: 'excited',
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
 
                 // Greeting
                 Text(
                   'Hey $userName! 👋',
                   style: GoogleFonts.poppins(
-                    fontSize: 28,
+                    fontSize: 26,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: const Color(0xFF1A202C),
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
                   'I\'m Moody.',
                   style: GoogleFonts.poppins(
-                    fontSize: 24,
+                    fontSize: 22,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: const Color(0xFF1A202C),
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
                 // Subtext
                 Text(
                   'I\'m here to help you plan days that match your mood, energy, and vibe.',
                   style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    color: Colors.white,
+                    fontSize: 15,
+                    color: const Color(0xFF4A5568),
                     height: 1.5,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w400,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
 
-                // Preview Card - More solid for better readability
+                // Preview Card
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.95), // Much more opaque
-                    borderRadius: BorderRadius.circular(20),
+                    color: const Color(0xFFF7FAFC),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.5),
-                      width: 2,
+                      color: const Color(0xFFE2E8F0),
+                      width: 1,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,33 +148,33 @@ class MoodyIntroOverlay extends ConsumerWidget {
                       Text(
                         'I\'ll suggest activities like:',
                         style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: const Color(0xFF1A202C),
+                          fontSize: 13,
+                          color: const Color(0xFF4A5568),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       _buildPreviewItem('☕', 'Morning coffee spot'),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       _buildPreviewItem('🛍️', 'Local market visit'),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       _buildPreviewItem('🌅', 'Evening walk with a view'),
                     ],
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
 
                 // Main Question
                 Text(
                   'Ready to create your first day?',
                   style: GoogleFonts.poppins(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: const Color(0xFF1A202C),
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 20),
 
                 // Primary CTA
                 SizedBox(
@@ -171,25 +182,25 @@ class MoodyIntroOverlay extends ConsumerWidget {
                   child: ElevatedButton(
                     onPressed: onCreateDay,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF12B347),
-                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      backgroundColor: const Color(0xFF12B347),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      elevation: 8,
+                      elevation: 2,
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('✨', style: TextStyle(fontSize: 20)),
+                        const Text('✨', style: TextStyle(fontSize: 18)),
                         const SizedBox(width: 8),
                         Flexible(
                           child: Text(
                             'Create my first day',
                             style: GoogleFonts.poppins(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
                             textAlign: TextAlign.center,
@@ -200,42 +211,45 @@ class MoodyIntroOverlay extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
 
                 // Micro-copy
                 Text(
                   'Takes less than a minute • Uses your preferences',
                   style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
+                    color: const Color(0xFF718096),
+                    fontWeight: FontWeight.w400,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
                 // Skip link
                 TextButton(
                   onPressed: onSkip,
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   ),
                   child: Text(
                     'Skip for now',
                     style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      color: Colors.white,
+                      fontSize: 14,
+                      color: const Color(0xFF718096),
                       fontWeight: FontWeight.w500,
                       decoration: TextDecoration.underline,
-                      decorationColor: Colors.white,
+                      decorationColor: const Color(0xFF718096),
                     ),
                   ),
                 ),
-              ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
-      ),
       ),
     );
   }

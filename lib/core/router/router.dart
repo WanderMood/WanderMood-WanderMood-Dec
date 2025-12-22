@@ -23,6 +23,8 @@ import '../../features/onboarding/presentation/screens/onboarding_loading_screen
 // import '../../features/dev/reset_screen.dart'; // Removed - debug only
 import '../../features/plans/presentation/screens/plan_generation_screen.dart';
 import '../../features/plans/presentation/screens/plan_loading_screen.dart';
+import '../../features/plans/presentation/screens/day_plan_screen.dart';
+import '../../features/plans/domain/models/activity.dart';
 import '../../core/config/supabase_config.dart';
 // Removed mood_page.dart import - page has been archived
 import '../../features/weather/presentation/pages/weather_page.dart';
@@ -61,42 +63,133 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 part 'router.g.dart';
 
 // Helper function to handle email verification
-Future<void> _handleEmailVerification() async {
+// CRITICAL FIX: With PKCE flow, Supabase Flutter processes deep links automatically
+// We need to wait for it to process, then verify the session
+Future<void> _handleEmailVerification(Uri uri) async {
   try {
-    // Wait a moment for auth state to update after deep link
-    await Future.delayed(const Duration(milliseconds: 1000));
+    debugPrint('🔗 Processing email verification deep link...');
+    debugPrint('   Deep link URI: ${uri.toString()}');
     
-    // Refresh session to get latest user state
-    final session = Supabase.instance.client.auth.currentSession;
-    if (session != null) {
-      // Refresh the session to ensure we have the latest user data
-      await Supabase.instance.client.auth.refreshSession();
-    }
+    // CRITICAL: With PKCE flow, Supabase Flutter automatically processes the deep link
+    // Extract tokens/code from URL to manually process if auto-processing fails
+    final accessToken = uri.queryParameters['access_token'];
+    final refreshToken = uri.queryParameters['refresh_token'];
+    final code = uri.queryParameters['code']; // For PKCE flow
+    final type = uri.queryParameters['type'];
     
-    final user = Supabase.instance.client.auth.currentUser;
-    final currentSession = Supabase.instance.client.auth.currentSession;
+    debugPrint('   URL parameters:');
+    debugPrint('   access_token exists: ${accessToken != null}');
+    debugPrint('   refresh_token exists: ${refreshToken != null}');
+    debugPrint('   code exists: ${code != null}');
+    debugPrint('   type: $type');
     
-    debugPrint('🔍 Email verification - User: ${user?.id}');
-    debugPrint('🔍 Email confirmed at: ${user?.emailConfirmedAt}');
-    debugPrint('🔍 Session exists: ${currentSession != null}');
-    
-    if (user != null && currentSession != null) {
-      // Verify that email is actually confirmed
-      if (user.emailConfirmedAt == null) {
-        debugPrint('⚠️ User authenticated but email not confirmed yet');
-        throw Exception('Email verification incomplete. Please check your email and click the verification link.');
+    // STEP 1: Wait for Supabase Flutter to automatically process the deep link (PKCE flow)
+    // CRITICAL: After email verification, app may restart, so we need more time for session restoration
+    debugPrint('⏳ Waiting for Supabase to automatically process deep link (PKCE)...');
+    for (int i = 0; i < 20; i++) { // Increased from 10 to 20 (4 seconds total) to allow more time
+      await Future.delayed(const Duration(milliseconds: 200));
+      final user = Supabase.instance.client.auth.currentUser;
+      final session = Supabase.instance.client.auth.currentSession;
+      
+      if (user != null && session != null) {
+        debugPrint('✅ Supabase automatically processed deep link!');
+        debugPrint('   User ID: ${user.id}');
+        debugPrint('   Email confirmed: ${user.emailConfirmedAt != null}');
+        break;
       }
-      
-      // Store user state in SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('hasCompletedAuth', true);
-      await prefs.setBool('hasCompletedOnboarding', false);
-      await prefs.setBool('hasCompletedPreferences', false);
-      
-      debugPrint('✅ Email verification successful, user authenticated and verified');
-    } else {
-      throw Exception('User not authenticated after email verification. Please try signing in.');
     }
+    
+    // STEP 2: Check if session was established automatically
+    var user = Supabase.instance.client.auth.currentUser;
+    var currentSession = Supabase.instance.client.auth.currentSession;
+    
+    // STEP 3: If not established automatically, manually process it
+    if (user == null || currentSession == null) {
+      debugPrint('⚠️ Session not established automatically, trying manual processing...');
+      
+      if (code != null) {
+        // PKCE flow - exchange code for session
+        debugPrint('🔑 Manually exchanging code for session (PKCE flow)...');
+        try {
+          final response = await Supabase.instance.client.auth.exchangeCodeForSession(code);
+          
+          if (response.session == null) {
+            throw Exception('Failed to exchange code for session');
+          }
+          
+          debugPrint('✅ Session established from PKCE code');
+          debugPrint('   User ID: ${response.session!.user.id}');
+          debugPrint('   Email confirmed: ${response.session!.user.emailConfirmedAt != null}');
+          
+          // Update references after manual processing
+          user = Supabase.instance.client.auth.currentUser;
+          currentSession = Supabase.instance.client.auth.currentSession;
+        } catch (e) {
+          debugPrint('❌ Failed to exchange code for session: $e');
+          // If code exchange fails, the link might be expired
+          if (e.toString().contains('expired') || e.toString().contains('invalid')) {
+            throw Exception('Email verification link has expired. Please request a new verification email.');
+          }
+          throw Exception('Failed to establish session: $e');
+        }
+      } else if (accessToken != null && refreshToken != null) {
+        // Direct token flow (shouldn't happen with PKCE, but handle it)
+        debugPrint('🔑 Manually setting session from tokens (implicit flow)...');
+        try {
+          final response = await Supabase.instance.client.auth.setSession(accessToken);
+          
+          if (response.session == null) {
+            throw Exception('Failed to establish session from deep link tokens');
+          }
+          
+          debugPrint('✅ Session established from tokens');
+          user = Supabase.instance.client.auth.currentUser;
+          currentSession = Supabase.instance.client.auth.currentSession;
+        } catch (e) {
+          debugPrint('❌ Failed to set session from tokens: $e');
+          throw Exception('Failed to establish session: $e');
+        }
+      } else {
+        throw Exception('No authentication tokens or code found in deep link URL. The link may be invalid or expired.');
+      }
+    }
+    
+    // STEP 4: Verify all 3 conditions are true
+    final sessionToken = currentSession?.accessToken;
+    
+    debugPrint('🔍 Email verification - Final auth state check:');
+    debugPrint('   currentUser != null: ${user != null}');
+    debugPrint('   currentSession != null: ${currentSession != null}');
+    debugPrint('   accessToken != null: ${sessionToken != null}');
+    if (user != null) {
+      debugPrint('   User ID: ${user.id}');
+      debugPrint('   Email confirmed at: ${user.emailConfirmedAt}');
+    }
+    
+    // All 3 must be true for session to be established
+    if (user == null || currentSession == null || sessionToken == null) {
+      debugPrint('❌ Session not established after email verification');
+      debugPrint('   Missing: user=${user == null}, session=${currentSession == null}, token=${sessionToken == null}');
+      throw Exception('Session not established after email verification. Please try signing in again.');
+    }
+    
+    // Verify that email is actually confirmed
+    if (user.emailConfirmedAt == null) {
+      debugPrint('⚠️ User authenticated but email not confirmed yet');
+      throw Exception('Email verification incomplete. Please check your email and click the verification link.');
+    }
+    
+    // Store user state in SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_seen_onboarding', true); // CRITICAL: Mark onboarding as seen so router doesn't redirect back
+    await prefs.setBool('hasCompletedPreferences', false);
+    await prefs.setInt('last_auth_timestamp', DateTime.now().millisecondsSinceEpoch);
+    
+    debugPrint('✅ Email verification successful - all checks passed:');
+    debugPrint('   ✅ currentUser != null');
+    debugPrint('   ✅ currentSession != null');
+    debugPrint('   ✅ accessToken != null');
+    debugPrint('   ✅ Email confirmed');
   } catch (e) {
     debugPrint('❌ Email verification error: $e');
     rethrow;
@@ -108,18 +201,14 @@ Future<bool> _checkAuthenticationState() async {
   try {
     final prefs = await SharedPreferences.getInstance();
     
-    // Check if user has completed auth (either through Supabase or bypass)
-    final hasCompletedAuth = prefs.getBool('hasCompletedAuth') ?? false;
-    
-    // Also check Supabase auth state
+    // SIMPLIFIED: Only check Supabase auth state (no local flags needed)
     final user = Supabase.instance.client.auth.currentUser;
     final session = Supabase.instance.client.auth.currentSession;
-    final supabaseAuthenticated = user != null && session != null;
+    final isAuthenticated = user != null && session != null;
     
-    debugPrint('🔍 Auth check - Local: $hasCompletedAuth, Supabase: $supabaseAuthenticated');
+    debugPrint('🔍 Auth check - Supabase authenticated: $isAuthenticated');
     
-    // User is authenticated if either local flag is set OR Supabase auth is valid
-    return hasCompletedAuth || supabaseAuthenticated;
+    return isAuthenticated;
   } catch (e) {
     debugPrint('❌ Error checking authentication state: $e');
     return false;
@@ -248,8 +337,9 @@ GoRouter router(RouterRef ref) {
         path: '/auth-callback',
         name: 'auth-callback',
         builder: (context, state) {
+          // CRITICAL: Pass the URI to extract tokens from deep link
           return FutureBuilder(
-            future: _handleEmailVerification(),
+            future: _handleEmailVerification(state.uri),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Scaffold(
@@ -269,7 +359,7 @@ GoRouter router(RouterRef ref) {
               if (snapshot.hasError) {
                 debugPrint('❌ Email verification error: ${snapshot.error}');
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  context.go('/login');
+                  context.go('/auth/signup');
                 });
                 return const Scaffold(
                   body: Center(
@@ -365,6 +455,16 @@ GoRouter router(RouterRef ref) {
             onLoadingComplete: () {
               // This callback is handled inside PlanLoadingScreen
             },
+          );
+        },
+      ),
+      GoRoute(
+        path: '/day-plan',
+        name: 'day-plan',
+        builder: (context, state) {
+          final activities = state.extra as List<Activity>;
+          return DayPlanScreen(
+            activities: activities,
           );
         },
       ),
@@ -600,6 +700,14 @@ GoRouter router(RouterRef ref) {
         return null;
       }
       
+      // CRITICAL: Always allow preferences pages - user is in onboarding flow
+      // Don't redirect away from preferences even if there are temporary auth issues
+      final isPreferencesPage = currentLocation.startsWith('/preferences/');
+      if (isPreferencesPage) {
+        debugPrint('✅ User is on preferences page - allowing navigation');
+        return null; // Allow preferences flow to continue
+      }
+      
       // Handle auth state loading
       if (authState.isLoading) {
         debugPrint('⏳ Auth state loading, staying on current route');
@@ -609,7 +717,9 @@ GoRouter router(RouterRef ref) {
       // Handle auth state error
       if (authState.hasError) {
         debugPrint('❌ Auth state error: ${authState.error}');
-        if (!isAuthPage && !isSplashPage) {
+        // CRITICAL: Don't redirect away from preferences during auth errors (e.g., rate limiting)
+        // User is in the middle of onboarding and should be allowed to continue
+        if (!isAuthPage && !isSplashPage && !isPreferencesPage) {
           return '/onboarding';
         }
         return null;
@@ -626,28 +736,49 @@ GoRouter router(RouterRef ref) {
         // Check if user has seen onboarding before
         final prefs = await SharedPreferences.getInstance();
         final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
-        final hasCompletedAuth = prefs.getBool('hasCompletedAuth') ?? false;
         
-        debugPrint('🔍 Not authenticated - hasSeenOnboarding: $hasSeenOnboarding, hasCompletedAuth: $hasCompletedAuth');
+        debugPrint('🔍 Not authenticated - hasSeenOnboarding: $hasSeenOnboarding');
         
         // CACHE PROBLEM DETECTION: Only clear cache if there's a genuine inconsistency
         // Don't clear cache for users who legitimately completed onboarding but haven't authenticated yet
-        if (hasSeenOnboarding && !hasCompletedAuth) {
-          // Check if user has completed preferences too - if so, this might be a legitimate state
-          // where they completed onboarding but need to authenticate
-          final hasCompletedPreferences = prefs.getBool('hasCompletedPreferences') ?? false;
+        // CRITICAL: Only clear cache if user claims to have completed everything AND
+        // we can verify they were recently authenticated (indicating session expiry, not initial state)
+        // Don't clear on temporary auth issues like rate limiting
+        final hasCompletedPreferences = prefs.getBool('hasCompletedPreferences') ?? false;
+        
+        if (hasSeenOnboarding && hasCompletedPreferences) {
+          // Check if there's a recent session timestamp to distinguish between:
+          // 1. User was authenticated but session expired (clear cache)
+          // 2. User never authenticated in this session (don't clear - might be rate limiting)
+          final lastAuthTime = prefs.getInt('last_auth_timestamp');
+          final now = DateTime.now().millisecondsSinceEpoch;
+          final fiveMinutesAgo = now - (5 * 60 * 1000);
           
-          // Only clear cache if user claims to have completed everything but has no auth
-          // This indicates a genuine cache corruption issue
-          if (hasCompletedPreferences) {
-            debugPrint('⚠️ Router detected cache problem: completed everything but no auth');
+          if (lastAuthTime != null && lastAuthTime > fiveMinutesAgo) {
+            // User was authenticated recently but now isn't - likely session expiry
+            debugPrint('⚠️ Router detected cache problem: completed everything but no auth (recent auth detected)');
             debugPrint('🔧 Clearing problematic cache state...');
             await prefs.clear();
             debugPrint('✅ Cache cleared, redirecting to fresh onboarding');
             return '/onboarding';
           } else {
-            debugPrint('✅ User has seen onboarding but not completed preferences - legitimate state');
+            // No recent auth - might be temporary issue, don't clear cache
+            debugPrint('⚠️ User not authenticated but no recent auth detected - might be temporary (rate limiting?)');
+            debugPrint('✅ Not clearing cache - redirecting to signup instead');
+            if (!isAuthPage && !isOnboardingPage) {
+              return '/auth/signup';
+            }
           }
+        } else if (hasSeenOnboarding && !hasCompletedPreferences) {
+          debugPrint('✅ User has seen onboarding but not completed preferences - legitimate state');
+        }
+        
+        // CRITICAL: Don't redirect away from preferences pages even if auth appears null
+        // User might be in the middle of preferences onboarding with temporary auth issues
+        final isPreferencesPage = currentLocation.startsWith('/preferences/');
+        if (isPreferencesPage) {
+          debugPrint('✅ User is on preferences page - allowing navigation despite auth state');
+          return null; // Allow preferences flow to continue
         }
         
         if (hasSeenOnboarding) {

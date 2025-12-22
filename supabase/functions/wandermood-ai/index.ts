@@ -1,8 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
-import { corsHeaders } from '../_shared/cors.ts'
 
-const GOOGLE_PLACES_API_KEY = 'AIzaSyAzmi2Z4Y0Z4ZMLTtiZcbZseOHwAlMux60'
+// CORS headers (inlined for Dashboard deployment - _shared folder not supported)
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
+}
+
+// REMOVED: Hardcoded API key - now uses moody Edge Function which has proper API key management
 
 interface WanderMoodRequest {
   action: 'recommend' | 'chat' | 'plan' | 'optimize'
@@ -74,12 +80,33 @@ serve(async (req) => {
     // Get user context including communication preferences
     const userContext = await getUserContext(supabaseClient, user.id)
     
+    // CRITICAL: Extract user's JWT token to forward to moody Edge Function
+    const userToken = req.headers.get('Authorization')
+    
     // Get relevant places based on location and moods
     const relevantPlaces = await getRelevantPlaces(
       supabaseClient, 
       body.location, 
-      body.moods || []
+      body.moods || [],
+      userToken // Pass user's token to forward to moody function
     )
+
+    // CRITICAL: If no places exist, Moody must say "I don't have real options for this right now"
+    if (relevantPlaces.length === 0) {
+      console.log('⚠️ No places found - returning empty state message')
+      return new Response(
+        JSON.stringify({
+          success: false,
+          action: body.action,
+          message: "I don't have real options for this right now. Please try different moods or check your location settings.",
+          availablePlaces: 0,
+          timestamp: new Date().toISOString()
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
 
     // Get conversation history for chat continuity
     const conversationHistory = body.conversationId ? 
@@ -150,18 +177,65 @@ async function getUserContext(supabase: any, userId: string) {
 }
 
 // Get relevant places based on location and moods
-async function getRelevantPlaces(supabase: any, location: any, moods: string[]) {
-  if (!location) return []
+// CRITICAL: Must use moody Edge Function (get_explore) to get real Google Places API data
+async function getRelevantPlaces(supabase: any, location: any, moods: string[], userToken: string | null): Promise<any[]> {
+  if (!location || !location.city || !location.latitude || !location.longitude) {
+    console.warn('⚠️ Location missing or incomplete - cannot fetch places')
+    return []
+  }
+
+  if (!userToken) {
+    console.warn('⚠️ User token missing - cannot authenticate with moody Edge Function')
+    return []
+  }
 
   try {
-    const { data: places } = await supabase
-      .from('places')
-      .select('*')
-      .limit(10)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    
+    // Call moody Edge Function to get real places from Google Places API
+    const mood = moods && moods.length > 0 ? moods[0] : 'adventurous'
+    
+    console.log(`🔍 Fetching places from moody Edge Function: location=${location.city}, mood=${mood}`)
+    console.log(`🔑 Forwarding user's JWT token to moody function`)
+    
+    const response = await fetch(`${supabaseUrl}/functions/v1/moody`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': userToken, // CRITICAL: Forward user's JWT token, not anon key
+        'apikey': supabaseAnonKey, // Still need apikey header for Supabase Edge Functions
+      },
+      body: JSON.stringify({
+        action: 'get_explore',
+        mood: mood,
+        location: location.city,
+        coordinates: {
+          lat: location.latitude,
+          lng: location.longitude,
+        },
+        filters: {},
+      }),
+    })
 
-    return places || []
+    if (!response.ok) {
+      console.error(`❌ moody Edge Function error: ${response.status}`)
+      return []
+    }
+
+    const data = await response.json()
+    
+    if (data.error) {
+      console.error(`❌ moody Edge Function returned error: ${data.error}`)
+      return []
+    }
+
+    const places = data.cards || []
+    console.log(`✅ Retrieved ${places.length} places from Google Places API via moody Edge Function`)
+    
+    return places
   } catch (error) {
-    console.warn('Could not fetch places:', error)
+    console.error('❌ Error fetching places from moody Edge Function:', error)
     return []
   }
 }
@@ -195,10 +269,17 @@ function buildAIPrompt(
 🕰️ Recent Adventures:
 ${userContext.visitedPlaces?.slice(0, 5).map((p: any) => `- ${p.place_name || p.name} (${p.mood} mood)`).join('\n') || 'First time using WanderMood! 🎉'}
 
-🏢 Your Local Knowledge (Top Spots):
-${places.slice(0, 10).map(place => 
-  `- ${place.name}: ${place.rating}⭐ (${place.types?.join(', ')}) - ${place.description}`
-).join('\n')}
+🏢 Your Local Knowledge (Top Spots) - CRITICAL: You can ONLY reference these places:
+${places.length > 0 ? places.slice(0, 20).map((place: any, index: number) => 
+  `${index + 1}. ${place.name} (Rating: ${place.rating || 'N/A'}⭐, Types: ${(place.types || []).join(', ')}, Address: ${place.address || place.vicinity || 'N/A'})`
+).join('\n') : 'NO PLACES AVAILABLE - You must tell the user you do not have real options.'}
+
+🚨 CRITICAL RULES - YOU MUST FOLLOW THESE:
+1. You can ONLY suggest places from the "Your Local Knowledge" list above
+2. You MUST NOT suggest any place that is NOT in that list
+3. You MUST NOT make up place names or suggest generic locations (e.g., "Witte de With", "Markthal") unless they appear in the list above
+4. If the user asks about a place not in the list, you must say: "I don't have information about that specific place in my current database. Let me suggest something from what I know: [suggest from list]"
+5. If no places match the user's request, you must say: "I don't have real options for this right now. Please try different moods or check your location settings."
 `
 
   switch (request.action) {
@@ -207,8 +288,13 @@ ${places.slice(0, 10).map(place =>
 
 TASK: Generate 3-5 personalized activity recommendations for the user's current mood(s).
 
-Requirements:
-- Focus on real venues from the Available Venues Context above
+🚨 CRITICAL REQUIREMENTS:
+- You MUST ONLY recommend places from the "Your Local Knowledge" list above
+- You MUST NOT suggest any place that is NOT in that list
+- You MUST NOT make up place names or suggest generic city locations
+- If you cannot find suitable places in the list, you must say: "I don't have real options for this right now"
+
+Other Requirements:
 - Match the user's current mood: ${request.moods?.join(', ')}
 - Consider time of day: ${request.preferences?.timeSlot || 'any time'}
 - Budget consideration: ${request.preferences?.budget || 'flexible'}
@@ -242,13 +328,19 @@ Format your response as a structured JSON with:
 
 TASK: Create a complete day plan based on user's moods and preferences.
 
-Requirements:
-- Create a full day itinerary using real venues
+🚨 CRITICAL REQUIREMENTS:
+- You MUST ONLY use venues from the "Your Local Knowledge" list above
+- You MUST NOT suggest any place that is NOT in that list
+- You MUST NOT make up place names or suggest generic city locations
+- If you cannot create a plan with available places, say: "I don't have real options for this right now"
+
+Other Requirements:
+- Create a full day itinerary using real venues from the list
 - Balance different types of activities
 - Consider travel time between locations
 - Match activities to optimal time slots
 - Include variety while staying true to mood
-- Provide backup options
+- Provide backup options from the available places list
 - Use their preferred communication style: ${userContext.preferences?.communication_style || 'friendly'}
 
 Format as structured day plan with timing, activities, and transitions.`
@@ -326,11 +418,17 @@ Available local venues: ${request.moods?.join(', ') || 'general exploration'}
 User's selected moods: ${request.moods?.join(', ') || 'none selected'}
 
 🪄 Response Rules:
+🚨 CRITICAL: You MUST ONLY reference places from the "Your Local Knowledge" list above
+- You MUST NOT suggest any place that is NOT in that list
+- You MUST NOT make up place names or suggest generic city locations (e.g., "Witte de With", "Markthal") unless they appear in the list
+- If the user asks about a place not in the list, say: "I don't have information about that specific place. Let me suggest something from what I know: [suggest from list]"
+- If no places match, say: "I don't have real options for this right now. Please try different moods or check your location settings."
+
+Other Rules:
 - Always suggest places that are highly rated (3.5★+) and locally relevant
 - Adapt to weather, time of day, and mood
 - Use memory of past conversations when relevant
 - Ask clarifying questions if input is vague, but keep it natural
-- Reference real places from your available venues context when possible
 - Be supportive if they seem sad/upset, suggest mood-lifting activities
 - IMPORTANT: Match your communication style to their preference: ${communicationStyle}
 

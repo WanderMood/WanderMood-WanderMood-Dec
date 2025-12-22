@@ -142,14 +142,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     
     // Wait for Supabase to restore session from secure storage
     // This is critical on hot restart - Supabase needs time to restore the session
+    // CRITICAL: After email verification, app restarts and session needs more time to restore
     debugPrint('🔄 Waiting for Supabase session restoration...');
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 20; i++) { // Increased from 10 to 20 (4 seconds total)
       await Future.delayed(const Duration(milliseconds: 200));
       final session = Supabase.instance.client.auth.currentSession;
       final user = Supabase.instance.client.auth.currentUser;
       
       if (session != null && user != null) {
         debugPrint('✅ Session restored: ${user.id}');
+        // CRITICAL: Don't refresh session here - causes rate limiting during onboarding
+        // Session is already valid if we found it, no need to refresh constantly
+        debugPrint('✅ Session found and valid, skipping refresh to avoid rate limiting');
         break;
       }
     }
@@ -159,25 +163,24 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     // Check current authentication and onboarding status
     final prefs = await SharedPreferences.getInstance();
     final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
-    final hasCompletedAuth = prefs.getBool('hasCompletedAuth') ?? false;
     final hasCompletedPreferences = prefs.getBool('hasCompletedPreferences') ?? false;
     final currentUser = Supabase.instance.client.auth.currentUser;
     final currentSession = Supabase.instance.client.auth.currentSession;
     
     debugPrint('🔍 App initialization state:');
     debugPrint('   hasSeenOnboarding: $hasSeenOnboarding');
-    debugPrint('   hasCompletedAuth: $hasCompletedAuth');
     debugPrint('   hasCompletedPreferences: $hasCompletedPreferences');
     debugPrint('   currentUser: ${currentUser?.id}');
     debugPrint('   currentSession: ${currentSession != null}');
     
-    // If we have a session but local flags aren't set, sync them
-    if (currentUser != null && currentSession != null && !hasCompletedAuth) {
-      debugPrint('🔧 Syncing auth state - user has session but local flags not set');
-      await prefs.setBool('hasCompletedAuth', true);
+    // If we have a session, mark onboarding as seen
+    if (currentUser != null && currentSession != null && !hasSeenOnboarding) {
+      debugPrint('🔧 User has session, marking onboarding as seen');
       await prefs.setBool('has_seen_onboarding', true);
       
-      // Check if user has preferences
+      // CRITICAL: Don't auto-mark preferences as completed just because they exist in DB
+      // Preferences are saved during email verification (basic communication prefs),
+      // but onboarding completion should only be set after the full onboarding flow
       try {
         final response = await Supabase.instance.client
             .from('user_preferences')
@@ -186,8 +189,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
             .maybeSingle();
         
         if (response != null && response.isNotEmpty) {
-          await prefs.setBool('hasCompletedPreferences', true);
-          debugPrint('✅ User has preferences, marked as completed');
+          debugPrint('📋 User has preferences in database (may be partial from email verification)');
+          // Don't set hasCompletedPreferences here - let onboarding_loading_screen.dart handle it
         }
       } catch (e) {
         debugPrint('📋 Could not check preferences: $e');
@@ -206,22 +209,28 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     if (!mounted) return;
     
     // Re-check after sync
-    final finalHasCompletedAuth = prefs.getBool('hasCompletedAuth') ?? false;
     final finalCurrentUser = Supabase.instance.client.auth.currentUser;
+    final finalHasCompletedPreferences = prefs.getBool('hasCompletedPreferences') ?? false;
     
     // Navigate based on current state
+    // SIMPLIFIED: Only check Supabase auth + preferences flag
     if (!hasSeenOnboarding) {
       debugPrint('🚀 First time user - navigating to onboarding');
       context.go('/onboarding');
-    } else if (!finalHasCompletedAuth || finalCurrentUser == null) {
-      debugPrint('🚀 User needs authentication - navigating to login');
+    } else if (finalCurrentUser == null) {
+      debugPrint('🚀 User not authenticated - navigating to login');
       context.go('/login');
-    } else if (!hasCompletedPreferences) {
+    } else if (!finalHasCompletedPreferences) {
       debugPrint('🚀 User needs to complete preferences - navigating to preferences');
       context.go('/preferences/communication');
     } else {
-      debugPrint('🚀 User is ready - navigating to standalone mood selection');
-      context.go('/home');
+      // User has completed preferences - check if first-time user
+      final hasCompletedFirstPlan = prefs.getBool('has_completed_first_plan') ?? false;
+      final tabIndex = hasCompletedFirstPlan ? 0 : 2; // My Day (0) or Moody Hub (2)
+      
+      debugPrint('🚀 User is ready - navigating to main app');
+      debugPrint('📍 First-time user: ${!hasCompletedFirstPlan}, routing to tab: $tabIndex');
+      context.goNamed('main', extra: {'tab': tabIndex});
     }
   }
 

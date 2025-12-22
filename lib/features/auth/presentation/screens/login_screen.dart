@@ -94,13 +94,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           password: _passwordController.text,
           onSuccess: () async {
             if (mounted) {
-              // Set auth completion flag
+              // Track auth timestamp for router cache clearing logic
               final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('hasCompletedAuth', true);
-              debugPrint('✅ Login successful, hasCompletedAuth flag set');
+              await prefs.setInt('last_auth_timestamp', DateTime.now().millisecondsSinceEpoch);
+              debugPrint('✅ Login successful');
               
-              // Let the router handle redirect logic instead of directly going to home
-              // The router will check preferences completion and redirect accordingly
+              // CRITICAL: Check database for completed preferences to avoid re-onboarding
+              // When user logs out, local SharedPreferences is cleared, but database isn't
+              try {
+                final user = Supabase.instance.client.auth.currentUser;
+                if (user != null) {
+                  final response = await Supabase.instance.client
+                      .from('user_preferences')
+                      .select('has_completed_preferences')
+                      .eq('user_id', user.id)
+                      .maybeSingle();
+                  
+                  if (response != null && response['has_completed_preferences'] == true) {
+                    // User has completed preferences in database - sync to local
+                    await prefs.setBool('hasCompletedPreferences', true);
+                    debugPrint('✅ Synced preferences completion from database');
+                  } else {
+                    debugPrint('ℹ️ User has not completed preferences');
+                  }
+                }
+              } catch (e) {
+                debugPrint('⚠️ Could not check preferences: $e');
+                // Non-critical - router will handle redirect
+              }
+              
+              // Let the router handle redirect logic
+              // Router will check both local flag and database
               context.go('/');
             }
           },
@@ -129,10 +153,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (result != null && result.user != null) {
         print('✅ Social Sign-In: Authentication successful');
         if (mounted) {
-          // Set auth completion flag for social sign-in
+          // Track auth timestamp for router cache clearing logic
           final prefs = await SharedPreferences.getInstance();
-          await prefs.setBool('hasCompletedAuth', true);
-          debugPrint('✅ Social login successful, hasCompletedAuth flag set');
+          await prefs.setInt('last_auth_timestamp', DateTime.now().millisecondsSinceEpoch);
+          debugPrint('✅ Social login successful');
           
           // Let the router handle redirect logic instead of directly going to home
           context.go('/');

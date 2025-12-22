@@ -313,28 +313,8 @@ class _CommunicationPreferenceScreenState extends ConsumerState<CommunicationPre
                 ],
               ),
               
-              // Debug: Sign In Again button for users who get stuck
-              Positioned(
-                bottom: 120,
-                left: 24,
-                child: TextButton(
-                  onPressed: () async {
-                    // Clear authentication state and start fresh
-                    await ref.read(clearAuthProvider)();
-                    if (mounted) {
-                      context.go('/auth/signup');
-                    }
-                  },
-                  child: Text(
-                    'Sign In Again',
-                    style: GoogleFonts.poppins(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ),
-              ),
+              // REMOVED: "Sign In Again" debug button - was always visible and confusing
+              // If user needs to sign in again, they can use the app's normal auth flow
             ],
           ),
         ),

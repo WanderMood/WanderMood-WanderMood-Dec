@@ -85,27 +85,73 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     _updateAIGreeting();
   }
 
-  // AI-powered personalized greeting
+  // Generate contextual message based on time, user history, and context
   void _updateAIGreeting() {
     final hour = DateTime.now().hour;
-    final isWeekend = DateTime.now().weekday >= 6;
+    
+    // Get contextual message
+    final contextualMessage = _getContextualMoodMessage();
     
     setState(() {
       // Smart character expressions based on context
       if (hour >= 5 && hour < 12) {
         _characterEmoji = "😊"; // Happy morning
-        _moodQuestion = "Ready to start your day?";
       } else if (hour >= 12 && hour < 17) {
         _characterEmoji = "☀️"; // Sunny afternoon  
-        _moodQuestion = "What's the afternoon vibe?";
       } else if (hour >= 17 && hour < 21) {
         _characterEmoji = "✨"; // Evening sparkle
-        _moodQuestion = isWeekend ? "Weekend plans calling?" : "How do you want to unwind?";
       } else {
         _characterEmoji = "🌙"; // Night owl
-        _moodQuestion = "Late night adventures?";
       }
+      
+      _moodQuestion = contextualMessage;
     });
+  }
+  
+  /// Generate contextual mood selection message
+  /// Returns a statement (not a question) that guides the user
+  String _getContextualMoodMessage() {
+    try {
+      final hour = DateTime.now().hour;
+      final isWeekend = DateTime.now().weekday >= 6;
+      
+      // Check if user is new (no previous mood selections)
+      final dailyState = ref.read(dailyMoodStateNotifierProvider);
+      final isNewUser = !dailyState.hasSelectedMoodToday && dailyState.currentMood == null;
+      
+      // Generate contextual message based on available data
+      if (isNewUser) {
+        // First-time user messages
+        if (hour >= 5 && hour < 12) {
+          return "Let's start your day with the right energy.";
+        } else if (hour >= 12 && hour < 17) {
+          return "Time to make the most of your afternoon.";
+        } else if (hour >= 17 && hour < 21) {
+          return "Evening's here — let's find your perfect vibe.";
+        } else {
+          return "Night owl mode activated. Let's see what fits.";
+        }
+      }
+      
+      // Time-based messages for returning users
+      if (hour >= 5 && hour < 12) {
+        return isWeekend 
+            ? "Weekend morning vibes — let's set the tone."
+            : "Fresh start to the day — what feels right?";
+      } else if (hour >= 12 && hour < 17) {
+        return "Afternoon's rolling in — time to match your energy.";
+      } else if (hour >= 17 && hour < 21) {
+        return isWeekend
+            ? "Weekend evening — let's find something that fits."
+            : "Workday's done — what's your evening vibe?";
+      } else {
+        return "Late night energy — let's see what calls to you.";
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('⚠️ Error generating contextual message: $e');
+      // Fallback message
+      return "Let's find the right vibe for today.";
+    }
   }
 
   // Get AI-powered greeting based on weather and context
@@ -452,7 +498,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   }
 
 
-  // Show dialog for talking to Moody
+
   void _showMoodyTalkDialog(BuildContext context) {
     // Create conversation ID only if it doesn't exist (persistent conversation)
     if (_conversationId == null) {
@@ -1364,8 +1410,15 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         if (dailyMoodState.hasSelectedMoodToday) {
           return MoodyHubScreen(
             onChangeMood: () {
-              // Reset mood selection and show full mood selection screen
-              ref.read(dailyMoodStateNotifierProvider.notifier).resetMoodSelection();
+              // Navigate to mood selection as standalone route (no navbar)
+              // This acts as an input step for updating the plan
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MoodSelectionStandaloneScreen(),
+                  fullscreenDialog: true, // Opens as full-screen without navbar
+                ),
+              );
             },
             onShowChat: () {
               // Show existing chat dialog with current context
@@ -1606,125 +1659,21 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                 ),
               ),
               
-              // Greeting Header - Made smaller
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                    userData.when(
-                                data: (data) {
-                                  String firstName = '';
-                                  if (data != null && data.containsKey('name') && data['name'] != null) {
-                          firstName = data['name'].toString().split(' ')[0];
-                                  } else {
-                                    firstName = 'explorer';
-                                  }
-                        return Text(
-                                      "$_timeGreeting $firstName $_timeEmoji",
-                                      style: GoogleFonts.poppins(
-                            fontSize: 24, // Reduced from ~28
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black,
-                                    ),
-                                  );
-                                },
-                      loading: () => Text(
-                                    "$_timeGreeting explorer $_timeEmoji",
-                                    style: GoogleFonts.poppins(
-                          fontSize: 24, // Reduced from ~28
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                      error: (_, __) => Text(
-                                    "$_timeGreeting explorer $_timeEmoji",
-                                    style: GoogleFonts.poppins(
-                          fontSize: 24, // Reduced from ~28
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ),
-                  ],
-                              ),
-              ),
-
-                    const SizedBox(height: 10),
-                    Center(
-                      child: Text(
-                  _moodQuestion, // AI-powered dynamic greeting instead of hardcoded text
-                        style: GoogleFonts.poppins(
-                    fontSize: 18, // Reduced from 22
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black,
-                        ),
-                        textAlign: TextAlign.center,
+              // Simple guiding sentence - no redundant greeting
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Text(
+                  'Pick the vibe that fits right now ✨',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1A202C),
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
 
-              const SizedBox(height: 24),
-
-              // Original Moody Character - Not emoji
-              Center(
-                child: GestureDetector(
-                  onTap: () {
-                        // Show conversation screen when tapping on Moody
-                    _showMoodyTalkDialog(context);
-                  },
-                  child: MoodyCharacter(
-                    size: 120,
-                    mood: _selectedMoods.isEmpty ? 'default' : 'happy',
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-              
-                  // Update Talk to Moody input field
-              GestureDetector(
-                onTap: () {
-                      // Show conversation screen when tapping on input field
-                  _showMoodyTalkDialog(context);
-                },
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 24),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.8),
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        spreadRadius: 1,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Talk to me or select moods for your daily plan',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(
-                        Icons.mic,
-                        color: const Color(0xFF12B347).withOpacity(0.7),
-                        size: 24,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
               // Put mood tiles and button in a single scrollable container
               Expanded(
@@ -1971,7 +1920,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                 ],
                               )
                             : Text(
-                            "Let's create your perfect plan! 🎯",
+                            "Update my day",
                             style: GoogleFonts.poppins(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -2331,6 +2280,33 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
 }
 
 
+
+/// Standalone mood selection screen (opens without navbar)
+/// This is a wrapper that shows MoodHomeScreen in a way that forces mood selection mode
+class MoodSelectionStandaloneScreen extends ConsumerStatefulWidget {
+  const MoodSelectionStandaloneScreen({super.key});
+
+  @override
+  ConsumerState<MoodSelectionStandaloneScreen> createState() => _MoodSelectionStandaloneScreenState();
+}
+
+class _MoodSelectionStandaloneScreenState extends ConsumerState<MoodSelectionStandaloneScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Reset mood selection immediately to force mood selection screen to show
+    // This ensures the screen shows mood selection instead of hub
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(dailyMoodStateNotifierProvider.notifier).resetMoodSelection();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Return MoodHomeScreen which will show mood selection when hasSelectedMoodToday is false
+    return const MoodHomeScreen();
+  }
+}
 
 class ChatMessage {
   final String message;

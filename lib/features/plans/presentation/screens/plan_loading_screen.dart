@@ -4,12 +4,16 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/core/config/supabase_config.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/features/plans/services/activity_generator_service.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
+import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:wandermood/core/services/wandermood_ai_service.dart' as ai_service;
 import 'package:wandermood/features/location/services/location_service.dart';
 import 'package:wandermood/core/models/ai_recommendation.dart';
@@ -18,7 +22,7 @@ import 'package:wandermood/core/extensions/string_extensions.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/core/utils/auth_helper.dart';
 import 'dart:convert';
 
 class PlanLoadingScreen extends ConsumerStatefulWidget {
@@ -98,6 +102,35 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
     // Generate activities with guaranteed 6-8 second experience
     _generateActivitiesWithProperLoading();
   }
+  
+  /// Wait for session to be fully ready (not just valid)
+  /// This prevents race conditions during email verification
+  Future<void> _waitForSessionReady() async {
+    // Wait up to 2 seconds for session to be fully established
+    for (int i = 0; i < 20; i++) {
+      final user = Supabase.instance.client.auth.currentUser;
+      final session = Supabase.instance.client.auth.currentSession;
+      final token = session?.accessToken;
+      
+      // All 3 must be true for session to be ready
+      if (user != null && session != null && token != null && token.isNotEmpty) {
+        debugPrint('✅ Session ready for day plan: user=${user.id}');
+        return;
+      }
+      
+      // Wait 100ms before checking again
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+    
+    // If we get here, session is still not ready after 2 seconds
+    final user = Supabase.instance.client.auth.currentUser;
+    final session = Supabase.instance.client.auth.currentSession;
+    final token = session?.accessToken;
+    
+    if (user == null || session == null || token == null) {
+      throw Exception('Session not ready after waiting. Please sign in again.');
+    }
+  }
 
   Future<void> _generateActivitiesWithProperLoading() async {
     debugPrint('🚀 Starting activity generation using Supabase Edge Function for moods: ${widget.selectedMoods}');
@@ -109,43 +142,104 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
     List<Activity> activities = [];
       
       try {
+      // CRITICAL: Ensure session is valid before calling Edge Function
+      await AuthHelper.ensureValidSession();
+      
+      // CRITICAL FIX: Wait for session to be fully ready (prevents race conditions)
+      await _waitForSessionReady();
+      
       // Get current user ID
       final user = Supabase.instance.client.auth.currentUser;
       if (user == null) {
         throw Exception('User not authenticated');
       }
 
-      debugPrint('🔗 Calling generate-mood-activities Edge Function...');
+      debugPrint('🔗 Calling moody Edge Function: create_day_plan...');
       
-      // Call the Supabase Edge Function for reliable Rotterdam activity generation
-      final response = await Supabase.instance.client.functions.invoke(
-        'generate-mood-activities',
-        body: {
+      // CRITICAL: Get location and coordinates (required by Edge Function)
+      final locationAsync = ref.read(locationNotifierProvider);
+      final location = locationAsync.value;
+      
+      // CRITICAL: Validate location exists - no defaults allowed
+      if (location == null || location.isEmpty || location.trim().isEmpty) {
+        throw Exception('Location is required. Please enable location services or set your location in settings.');
+      }
+      
+      // CRITICAL: Get GPS coordinates - use .future to get the Future directly
+      final position = await ref.read(userLocationProvider.future);
+      
+      if (position == null) {
+        throw Exception('GPS coordinates are required. Please enable location services.');
+      }
+      
+      debugPrint('📍 Using location: $location at (${position.latitude}, ${position.longitude})');
+      
+      // FIX #1: Explicitly pass Authorization header
+      final session = Supabase.instance.client.auth.currentSession;
+      final token = session?.accessToken;
+      
+      // CRITICAL: All 3 must be true - user, session, and token
+      if (user == null || session == null || token == null) {
+        throw Exception('Session not ready. Please wait a moment and try again.');
+      }
+      
+      // Use Dio to explicitly send Authorization header
+      final dio = Dio();
+      final supabaseUrl = SupabaseConfig.url;
+      final functionUrl = '$supabaseUrl/functions/v1/moody';
+      
+      debugPrint('🔑 Calling Edge Function with explicit Authorization header');
+      debugPrint('   Token preview: ${token.substring(0, 20)}...');
+      
+      final response = await dio.post(
+        functionUrl,
+        data: {
+          'action': 'create_day_plan',
           'moods': widget.selectedMoods,
-          'userId': user.id,
+          'location': location.trim(),
+          'coordinates': {
+            'lat': position.latitude,
+            'lng': position.longitude,
+          },
         },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+            'apikey': SupabaseConfig.anonKey,
+        },
+        ),
       );
         
-      debugPrint('📡 Edge Function response status: ${response.status}');
+      debugPrint('📡 Edge Function response status: ${response.statusCode}');
       
-      if (response.status != 200) {
+      if (response.statusCode != 200) {
         final errorData = response.data;
         if (kDebugMode) {
-          debugPrint('❌ Edge Function error: Status ${response.status}, Data: $errorData');
+          debugPrint('❌ Edge Function error: Status ${response.statusCode}, Data: $errorData');
         }
-        throw Exception('Service error (${response.status}). Please try again.');
+        final errorMessage = (errorData as Map<String, dynamic>?)?['message'] ?? 
+                            (errorData as Map<String, dynamic>?)?['error'] ?? 
+                            'Service error. Please try again.';
+        throw Exception(errorMessage);
       }
 
       final responseData = response.data as Map<String, dynamic>;
       
-      if (!responseData['success']) {
-        throw Exception('Edge Function failed: ${responseData['error']}');
+      // CRITICAL: Check if Edge Function returned empty state
+      if (!responseData['success'] || responseData['total_found'] == 0) {
+        final errorMessage = responseData['message'] ?? 
+                            responseData['error'] ?? 
+                            'No activities found for your selected moods and location.';
+        debugPrint('⚠️ Edge Function returned empty state: $errorMessage');
+        await _showErrorState(errorMessage);
+        return;
       }
 
       final activitiesData = responseData['activities'] as List<dynamic>;
       final locationData = responseData['location'] as Map<String, dynamic>;
       
-      debugPrint('✅ Edge Function generated ${activitiesData.length} Rotterdam activities');
+      debugPrint('✅ Edge Function generated ${activitiesData.length} activities');
       debugPrint('📍 Location confirmed: ${locationData['city']} (${locationData['latitude']}, ${locationData['longitude']})');
 
       // 🔄 CRITICAL: Invalidate providers so My Day shows the new mood-generated activities
@@ -183,11 +277,11 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
             activity['location']['longitude'] as double,
           ),
           paymentType: _parsePaymentType(activity['paymentType'] as String),
-          imageUrl: activity['imageUrl'] as String,
+          imageUrl: activity['imageUrl'] as String? ?? '', // Handle null imageUrl
           rating: (activity['rating'] as num).toDouble(),
           tags: List<String>.from(activity['tags'] as List),
           startTime: todayStartTime, // 🔧 Use today's date instead of Edge Function date
-          priceLevel: activity['priceLevel'] as String,
+          priceLevel: activity['priceLevel'] as String? ?? 'Free', // Handle null priceLevel
         refreshCount: 0,
         );
       }).toList();
@@ -201,24 +295,18 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
 
     } catch (e) {
       debugPrint('❌ Edge Function failed: $e');
-      debugPrint('🔄 Falling back to local generation...');
       
-      // Fallback to local generation if Edge Function fails
-      try {
-        activities = await _generateDynamicActivities();
-        debugPrint('✅ Fallback generation produced ${activities.length} activities');
-      } catch (fallbackError) {
-        debugPrint('❌ CRITICAL: All activity generation methods failed: $fallbackError');
-        final errorMessage = _getErrorMessage(fallbackError);
+      // CRITICAL: No fallback - Edge Function is the only data authority
+      // Show error state instead of generating fake data
+      final errorMessage = _getErrorMessage(e);
         await _showErrorState(errorMessage);
         return;
-      }
     }
 
-    // If we still have no activities, show error state
+    // CRITICAL: If Edge Function returned empty activities, show error state
     if (activities.isEmpty) {
-      debugPrint('❌ CRITICAL: No activities generated at all');
-      await _showErrorState('No activities found for your selected moods. Please try different moods or check your location settings.');
+      debugPrint('❌ Edge Function returned no activities');
+      await _showErrorState('No activities found for your selected moods and location. Please try different moods or check your location settings.');
       return;
     }
 
@@ -233,15 +321,9 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
 
     debugPrint('✅ Loading complete! Navigating to day plan with ${activities.length} activities');
     
-    // Navigate to the day plan screen to let user select activities
+    // Navigate to the day plan screen using go_router
     if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => DayPlanScreen(
-            activities: activities,
-          ),
-        ),
-      );
+      context.goNamed('day-plan', extra: activities);
     }
   }
 

@@ -11,6 +11,7 @@ import 'package:map_launcher/map_launcher.dart';
 import 'package:wandermood/core/theme/app_theme.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/providers/explore_places_provider.dart';
+import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:wandermood/features/places/presentation/widgets/booking_bottom_sheet.dart';
 import 'package:wandermood/core/services/moody_ai_service.dart';
@@ -73,59 +74,14 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       return _buildWithPlace(_cachedPlace!);
     }
     
-    // List of all possible cities to check (including Delft, Beneden-Leeuwen and other cities)
-    const allCities = [
-      'Eindhoven', 
-      'Rotterdam', 
-      'Amsterdam', 
-      'The Hague', 
-      'Utrecht', 
-      'Groningen',
-      'Delft',
-      'Beneden-Leeuwen',
-    ];
+    // FIX: Use Edge Function cache instead of looping through all cities
+    // This prevents the infinite API call loop
+    if (kDebugMode) debugPrint('🔍 Looking for place in Edge Function cache...');
     
-    // Use ref.read instead of ref.watch to avoid rebuilds when providers update
-    // Only read once and cache the result
-    Place? foundPlace;
-    String? foundCity;
-    
-    for (final city in allCities) {
-      final placesAsync = ref.read(explorePlacesProvider(city: city));
-      final place = placesAsync.maybeWhen(
-        data: (places) {
-          try {
-            return places.firstWhere(
-              (p) => p.id == widget.placeId,
-            );
-          } catch (e) {
-            return null;
-          }
-        },
-        orElse: () => null,
-      );
-      
-      if (place != null) {
-        foundPlace = place;
-        foundCity = city;
-        if (kDebugMode) debugPrint('✅ Place found in $city cache');
-        break;
-      }
-    }
-    
-    // Cache the found place to avoid repeated lookups
-    if (foundPlace != null) {
-      _cachedPlace = foundPlace;
-      return _buildWithPlace(foundPlace);
-    }
-    
-    if (kDebugMode) debugPrint('⚠️ Place not found in any city cache, using Rotterdam as fallback...');
-    
-    // Fallback: Use Rotterdam provider (but only watch this one, not all 8)
-    // Only watch if we haven't cached a place yet to prevent rebuild loops
-    final rotterdamAsync = _cachedPlace == null 
-        ? ref.watch(explorePlacesProvider(city: 'Rotterdam'))
-        : ref.read(explorePlacesProvider(city: 'Rotterdam'));
+    // Check Edge Function cache first (moodyExploreAutoProvider)
+    final edgePlacesAsync = _cachedPlace == null 
+        ? ref.watch(moodyExploreAutoProvider)
+        : ref.read(moodyExploreAutoProvider);
     
     return Container(
       decoration: const BoxDecoration(
@@ -141,7 +97,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: rotterdamAsync.when(
+        body: edgePlacesAsync.when(
           data: (places) {
             try {
               final place = places.firstWhere(
@@ -149,11 +105,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               );
               // Cache the place
               _cachedPlace = place;
+              if (kDebugMode) debugPrint('✅ Place found in Edge Function cache');
               return _buildWithPlace(place);
             } catch (e) {
-              // Place not found in any cache - try to fetch it directly if it's a Google Place ID
+              // Place not found in Edge Function cache - try to fetch it directly if it's a Google Place ID
               if (widget.placeId.startsWith('google_')) {
-                if (kDebugMode) debugPrint('🔄 Place not in cache, fetching directly from Google Places API...');
+                if (kDebugMode) debugPrint('🔄 Place not in Edge Function cache, fetching directly from Google Places API...');
                 return FutureBuilder<Place>(
                   future: _fetchPlaceDirectly(widget.placeId),
                   builder: (context, snapshot) {
@@ -296,7 +253,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             } else {
               // Fallback: Navigate to Explore tab if no previous route exists
               // This preserves the selected city since locationNotifierProvider is stateful
-              context.go('/main?tab=1');
+              context.goNamed('main', extra: {'tab': 1});
             }
           },
         ),
@@ -658,28 +615,29 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // About section - clean without border, more emojis
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          // About section - title only
+          Row(
             children: [
-              Row(
-                children: [
-                  const Text(
-                    '🏛️✨',
-                    style: TextStyle(fontSize: 24),
-                  ),
-                  const SizedBox(width: 12),
-          Text(
-                    'About this magical place 🌟',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF2E2E2E),
-            ),
-          ),
-                ],
+              const Text(
+                '🏛️✨',
+                style: TextStyle(fontSize: 24),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(width: 12),
+              Text(
+                'About this place',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF2E2E2E),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // MOVED: Moody says section appears HERE (right after title)
+          _buildMoodyTips(place),
+          const SizedBox(height: 16),
+          // Description
           Text(
             place.description ?? 
                     '✨ A wonderful place to visit with great atmosphere and excellent vibes! 🎉 '
@@ -690,8 +648,6 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                   color: const Color(0xFF424242),
                   fontWeight: FontWeight.w400,
             ),
-              ),
-            ],
           ),
           const SizedBox(height: 24),
           if (place.openingHours != null) ...[
@@ -880,11 +836,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             ],
           ),
           const SizedBox(height: 24),
-          _buildEssentialInfo(place),
+          _buildGoodToKnow(place),
           const SizedBox(height: 24),
           _buildImageCarousel(place),
-          const SizedBox(height: 24),
-          _buildMoodyTips(place),
         ],
       ),
     );
@@ -909,125 +863,253 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return cleanName.trim();
   }
 
-  Widget _buildEssentialInfo(Place place) {
+  /// New "Good to know" section - lighter and more decision-focused
+  Widget _buildGoodToKnow(Place place) {
+    final hour = DateTime.now().hour;
+    final bestTime = _getBestTimeForPlace(place, hour);
+    final goodWith = _getGoodWithContext(place);
+    final energyLevel = place.energyLevel;
+    final timeNeeded = _getTimeNeeded(place);
+    final moodAwareLabel = _getMoodAwareLabel(place, hour);
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFFFFB74D).withOpacity(0.1),
-            const Color(0xFFFFA726).withOpacity(0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
+        color: const Color(0xFF12B347).withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFFFFB74D).withOpacity(0.3),
-          width: 1.5,
+          color: const Color(0xFF12B347).withOpacity(0.15),
+          width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFFFB74D).withOpacity(0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFB74D).withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  '📋',
-                  style: TextStyle(fontSize: 20),
-                ),
+              const Text(
+                '💡',
+                style: TextStyle(fontSize: 20),
               ),
-              const SizedBox(width: 12),
-          Text(
-                'Essential Travel Info',
+              const SizedBox(width: 8),
+              Text(
+                'Good to know',
                 style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFFE65100),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF2E2E2E),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: const Color(0xFF12B347).withOpacity(0.2),
-                width: 1,
+          // Mood-aware label (if applicable)
+          if (moodAwareLabel != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF12B347).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '✨',
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    moodAwareLabel,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF12B347),
+                    ),
+                  ),
+                ],
               ),
             ),
-            child: Column(
-              children: [
-                // First row: Opening hours and Cost
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildInfoItem(
-                        '⏰',
-                        'Opening Hours',
-                        _getOpeningHoursText(place),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildInfoItem(
-                        '💰',
-                        'Cost',
-                        _getCostText(place),
-                      ),
-                    ),
-                  ],
+          ],
+          const SizedBox(height: 16),
+          // Quick info grid
+          Row(
+            children: [
+              Expanded(
+                child: _buildCompactInfoCard(
+                  '🕐',
+                  'Best time',
+                  bestTime,
                 ),
-                const SizedBox(height: 16),
-                // Second row: Duration and Accessibility
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildInfoItem(
-                        '⏱️',
-                        'Duration',
-                        _getDurationText(place),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildInfoItem(
-                        '🚶',
-                        'Accessibility',
-                        _getAccessibilityText(place),
-                      ),
-                    ),
-                  ],
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildCompactInfoCard(
+                  '👥',
+                  'Good with',
+                  goodWith,
                 ),
-                const SizedBox(height: 16),
-                // Full width: Best time to visit
-                _buildFullWidthInfoItem(
-                  '🌟',
-                  'Best Time',
-                  _getBestTimeText(place),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildCompactInfoCard(
+                  '⚡',
+                  'Energy',
+                  energyLevel,
                 ),
-              ],
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildCompactInfoCard(
+                  '⏱️',
+                  'Time needed',
+                  timeNeeded,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// Helper to build compact info cards for Good to know section
+  Widget _buildCompactInfoCard(String emoji, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 16)),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF2E2E2E),
             ),
           ),
         ],
       ),
     );
+  }
+  
+  /// Get best time for place based on current hour and place properties
+  String _getBestTimeForPlace(Place place, int hour) {
+    // Check place type for time hints
+    final types = place.types.map((t) => t.toLowerCase()).toList();
+    
+    if (types.any((t) => t.contains('bar') || t.contains('night_club') || t.contains('nightclub'))) {
+      return 'Evening';
+    } else if (types.any((t) => t.contains('cafe') || t.contains('breakfast'))) {
+      return 'Morning';
+    } else if (types.any((t) => t.contains('restaurant'))) {
+      return 'Lunch/Dinner';
+    }
+    
+    // Fallback to energy level
+    if (place.energyLevel.toLowerCase() == 'high') {
+      return 'Afternoon';
+    } else if (place.energyLevel.toLowerCase() == 'low') {
+      return 'Anytime';
+    } else {
+      return 'Morning';
+    }
+  }
+  
+  /// Helper to check if place is good for groups based on type
+  bool _isGoodForGroups(Place place) {
+    final types = place.types.map((t) => t.toLowerCase()).toList();
+    return types.any((t) => 
+      t.contains('restaurant') || 
+      t.contains('bar') || 
+      t.contains('park') || 
+      t.contains('stadium') ||
+      t.contains('bowling') ||
+      t.contains('amusement') ||
+      t.contains('tourist_attraction')
+    );
+  }
+  
+  /// Get social context for place
+  String _getGoodWithContext(Place place) {
+    if (_isGoodForGroups(place)) {
+      return 'Friends / Groups';
+    } else if (place.types.any((t) => 
+      t.contains('restaurant') || t.contains('cafe') || t.contains('bar'))) {
+      return 'Solo / Date';
+    } else {
+      return 'Solo / Friends';
+    }
+  }
+  
+  /// Get estimated time needed
+  String _getTimeNeeded(Place place) {
+    // Based on place type and energy level
+    if (place.types.any((t) => 
+      t.contains('museum') || t.contains('art_gallery') || t.contains('zoo'))) {
+      return '2-3 hours';
+    } else if (place.types.any((t) => 
+      t.contains('cafe') || t.contains('bar') || t.contains('restaurant'))) {
+      return '1-2 hours';
+    } else if (place.energyLevel.toLowerCase() == 'high') {
+      return '2-4 hours';
+    } else {
+      return '~1 hour';
+    }
+  }
+  
+  /// Get mood-aware label based on current time and place properties
+  String? _getMoodAwareLabel(Place place, int hour) {
+    final isEvening = hour >= 17;
+    final isWeekend = DateTime.now().weekday >= 6;
+    final isLateNight = hour >= 21 || hour < 6;
+    
+    // Evening fit
+    if (isEvening && place.energyLevel.toLowerCase() != 'low' && 
+        place.types.any((t) => 
+          t.contains('bar') || t.contains('restaurant') || t.contains('night_club'))) {
+      return 'Good fit for tonight';
+    }
+    
+    // Weekend fit
+    if (isWeekend && _isGoodForGroups(place)) {
+      return 'Best on weekends';
+    }
+    
+    // Chill warning
+    if (place.energyLevel.toLowerCase() == 'high' && hour < 12) {
+      return 'Skip if you\'re looking for something chill';
+    }
+    
+    // Late night warning
+    if (isLateNight && place.openingHours != null && !place.openingHours!.isOpen) {
+      return 'Closed now — check hours';
+    }
+    
+    return null; // No special label
   }
 
   Widget _buildInfoItem(String emoji, String label, String value) {
@@ -1807,53 +1889,54 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
 
   String _formatTipsAsConversation(List<String> tips, Place place) {
-    if (tips.isEmpty) return 'Have an awesome time exploring! 🎉';
-    
-    // Take max 3 tips and make them conversational
-    final selectedTips = tips.take(3).toList();
-    final placeName = place.name.split(',').first; // Get just the place name without location
-    
-    String conversation = 'Yo! Quick heads up about $placeName - ';
-    
-    for (int i = 0; i < selectedTips.length; i++) {
-      String tip = selectedTips[i];
-      
-      // Clean up the tip (remove ** formatting, make it more casual)
-      tip = tip.replaceAll('**', '').replaceAll('*', '');
-      
-      // Make tips more conversational and shorter with casual emojis
-      if (tip.toLowerCase().contains('food') || tip.toLowerCase().contains('eat')) {
-        tip = 'the food here is fire! 🔥';
-      } else if (tip.toLowerCase().contains('photo') || tip.toLowerCase().contains('picture')) {
-        tip = 'it\'s totally Insta-worthy! 📸';
-      } else if (tip.toLowerCase().contains('time') || tip.toLowerCase().contains('visit')) {
-        tip = 'timing is everything here ⏰';
-      } else if (tip.toLowerCase().contains('drink') || tip.toLowerCase().contains('bar')) {
-        tip = 'def grab a drink! 🍻';
-      } else if (tip.toLowerCase().contains('crowd') || tip.toLowerCase().contains('busy')) {
-        tip = 'it gets pretty packed! 🙈';
-      } else if (tip.toLowerCase().contains('walk') || tip.toLowerCase().contains('stroll')) {
-        tip = 'perfect for a chill walk! 🚶‍♀️';
-      } else {
-        // Keep it short and casual
-        if (tip.length > 45) {
-          tip = tip.substring(0, 42) + '...';
-        }
-      }
-      
-      if (i == 0) {
-        conversation += tip;
-      } else if (i == selectedTips.length - 1 && selectedTips.length > 1) {
-        conversation += ' Also, $tip';
-      } else {
-        conversation += ' Plus, $tip';
-      }
+    if (tips.isEmpty) {
+      // Fallback decision-focused message based on place properties
+      return _getDecisionFocusedMessage(place);
     }
     
-    // Add a fun ending
-    conversation += ' Have fun! ✨';
+    // Take first tip only and make it decision-focused (1-2 sentences max)
+    String tip = tips.first;
     
-    return conversation;
+    // Clean up the tip (remove ** formatting)
+    tip = tip.replaceAll('**', '').replaceAll('*', '').trim();
+    
+    // Keep it short and decision-oriented (max 2 sentences)
+    if (tip.length > 120) {
+      // Find the first sentence or cut at 120 chars
+      final firstSentence = tip.split(RegExp(r'[.!?]')).first;
+      tip = firstSentence.length <= 120 ? firstSentence + '.' : tip.substring(0, 117) + '...';
+    }
+    
+    return tip;
+  }
+  
+  /// Generate a decision-focused message based on place properties
+  String _getDecisionFocusedMessage(Place place) {
+    final hour = DateTime.now().hour;
+    final isEvening = hour >= 17;
+    final isMorning = hour < 12;
+    
+    // Build decision-focused message based on place characteristics
+    String fitContext = '';
+    String energyNote = '';
+    
+    // Determine fit based on time and energy level
+    if (place.energyLevel.toLowerCase() == 'high') {
+      fitContext = isEvening ? 'evening' : 'daytime';
+      energyNote = 'engaging but high-energy';
+    } else if (place.energyLevel.toLowerCase() == 'low' || place.energyLevel.toLowerCase() == 'relaxed') {
+      fitContext = 'any time';
+      energyNote = 'relaxed and easy-going';
+    } else {
+      fitContext = isEvening ? 'evening' : 'afternoon';
+      energyNote = 'moderately active';
+    }
+    
+    // Determine social context
+    final isGroupPlace = _isGoodForGroups(place);
+    String socialContext = isGroupPlace ? 'friends or groups' : 'solo or intimate outings';
+    
+    return 'Perfect for ${isGroupPlace ? 'a ' : ''}$fitContext with $socialContext — $energyNote, not too intense.';
   }
 
   /// Generate AI-powered Moody Tips for the place with request deduplication

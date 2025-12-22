@@ -21,6 +21,7 @@ import '../../services/check_in_service.dart';
 import '../../../../core/config/supabase_config.dart';
 import '../../../../core/domain/providers/location_notifier_provider.dart';
 import '../../../../core/extensions/string_extensions.dart';
+import '../../../places/providers/moody_explore_provider.dart';
 import '../../services/moody_hub_content_service.dart';
 import '../widgets/mood_based_carousel.dart';
 import '../widgets/enhanced_mood_carousel.dart';
@@ -129,6 +130,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
   }
   
   /// Dismiss intro overlay and mark as seen
+  /// This reveals the full Moody Hub content (including nav bar from MainScreen)
   Future<void> _dismissIntroOverlay() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -138,6 +140,8 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         setState(() {
           _showIntroOverlay = false;
         });
+        // Hub content is now visible with full MainScreen context (including nav bar)
+        // User can see and interact with everything in the Hub
       }
     } catch (e) {
       if (kDebugMode) {
@@ -147,10 +151,17 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
   }
   
   /// Handle create day action from overlay
-  void _handleCreateDayFromOverlay() {
-    _dismissIntroOverlay();
+  Future<void> _handleCreateDayFromOverlay() async {
+    // Dismiss overlay first
+    await _dismissIntroOverlay();
+    
+    // Add 1 second delay before showing mood selection screen
+    await Future.delayed(const Duration(seconds: 1));
+    
+    if (mounted) {
     // Navigate to mood selection to start creating first plan
     widget.onChangeMood?.call();
+    }
   }
 
   /// Load or create a persistent conversation ID
@@ -1113,8 +1124,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                           // Header with greeting
                           _buildHeader(),
                           const SizedBox(height: 24),
-                          // First-time welcome card removed - now using overlay instead
-                          // Large green status card
+                          // Hero Moody card (contains primary CTA inside)
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: _buildStatusCard(dailyState),
@@ -1151,7 +1161,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                       // Header with greeting
                       _buildHeader(),
                       const SizedBox(height: 24),
-                      // Large green status card
+                      // Hero Moody card (contains primary CTA inside)
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: _buildStatusCard(dailyState),
@@ -1192,14 +1202,14 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               ? ClipRect(
                   child: Stack(
                     children: [
-                      // Blurred background
+                      // Blurred background - stronger blur to hide Moody Hub content
                       BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                        filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
                         child: mainContent,
                       ),
-                      // Dark overlay on top of blurred content for better contrast
+                      // Dark overlay on top of blurred content - stronger to hide green cards
                       Container(
-                        color: Colors.black.withOpacity(0.4),
+                        color: Colors.black.withOpacity(0.7),
                       ),
                     ],
                   ),
@@ -1418,6 +1428,253 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     }
   }
 
+  // Primary CTA button for inside the hero card - Creates or updates day plan
+  Widget _buildPrimaryCTAButton() {
+    final scheduledActivitiesAsync = ref.watch(todayActivitiesProvider);
+    
+    return scheduledActivitiesAsync.when(
+      data: (activities) {
+        final hasPlan = activities.isNotEmpty;
+        final buttonText = hasPlan ? 'Update my day' : 'Create my day ✨';
+        
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF12B347),
+                Color(0xFF6DE89A),
+              ],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF12B347).withOpacity(0.3),
+                blurRadius: 12,
+                spreadRadius: 1,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => widget.onChangeMood?.call(),
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      buttonText,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+      loading: () => Container(
+        height: 50,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: Colors.grey[200],
+        ),
+        child: const Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+            ),
+          ),
+        ),
+      ),
+      error: (_, __) => Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF12B347),
+              Color(0xFF6DE89A),
+            ],
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => widget.onChangeMood?.call(),
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Create my day ✨',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Old full-width primary CTA (kept for reference, can be removed if not used elsewhere)
+  Widget _buildPrimaryCTA() {
+    final scheduledActivitiesAsync = ref.watch(todayActivitiesProvider);
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: scheduledActivitiesAsync.when(
+        data: (activities) {
+          final hasPlan = activities.isNotEmpty;
+          final buttonText = hasPlan ? 'Update my day' : 'Create my day ✨';
+          
+          return Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF12B347),
+                  Color(0xFF6DE89A),
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF12B347).withOpacity(0.4),
+                  blurRadius: 20,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => widget.onChangeMood?.call(),
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        buttonText,
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Icon(
+                        Icons.arrow_forward_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+        loading: () => Container(
+          height: 60,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.grey[200],
+          ),
+          child: const Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+              ),
+            ),
+          ),
+        ),
+        error: (_, __) => Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF12B347),
+                Color(0xFF6DE89A),
+              ],
+            ),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => widget.onChangeMood?.call(),
+              borderRadius: BorderRadius.circular(20),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Create my day ✨',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   // First-time welcome card
   Widget _buildFirstTimeWelcomeCard() {
     return Container(
@@ -1623,8 +1880,8 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         ),
                     ],
                     const SizedBox(height: 16),
-                    // Action button based on moment type
-                    _buildMomentActionButton(momentCard, currentMood),
+                    // Primary CTA button - Create or Update day plan (moved inside hero card)
+                    _buildPrimaryCTAButton(),
       ],
                 ),
               ),
@@ -3014,96 +3271,24 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     );
   }
   
-  // Fetch places filtered by mood
+  // Fetch places filtered by mood - USING EDGE FUNCTION
   Future<List<Place>> _fetchMoodFilteredPlaces(String mood) async {
     try {
-      // Try to get places from cache - select data and place_id if available
-      final response = await Supabase.instance.client
-          .from('places_cache')
-          .select('data, place_id, created_at')
-          .order('created_at', ascending: false)
-          .limit(50); // Get more for better variety
+      // CRITICAL: Use moodyExploreAutoProvider (Edge Function) instead of old cache query
+      // This ensures we get real places from Google Places API via Edge Function
+      // moodyExploreAutoProvider is a FutureProvider, so we can await it directly
+      final places = await ref.read(moodyExploreAutoProvider.future);
       
-      if (response.isEmpty) {
+      if (places.isEmpty) {
+        debugPrint('⚠️ No places found from Edge Function for mood: $mood');
         return [];
       }
       
-      // Convert to Place objects with proper data transformation
-      final places = (response as List)
-          .map((json) {
-            try {
-              // Handle JSONB data structure - places_cache only stores data as JSONB
-              if (json['data'] == null) return null;
-              
-              final data = json['data'] as Map<String, dynamic>;
-              Map<String, dynamic> placeData;
-              
-              // Handle search results array
-              if (data['results'] != null && data['results'] is List) {
-                // This is a search response, extract first result
-                final results = data['results'] as List;
-                if (results.isEmpty) return null;
-                placeData = results.first as Map<String, dynamic>;
-              } else {
-                // Single place data
-                placeData = data;
-              }
-              
-              // Transform to Place model structure
-              final transformedJson = {
-                'id': placeData['place_id'] ?? placeData['id'] ?? '',
-                'name': placeData['name'] ?? '',
-                'address': placeData['formatted_address'] ?? placeData['vicinity'] ?? '',
-                'rating': ((placeData['rating'] ?? 0.0) as num).toDouble(),
-                'photos': placeData['photos'] ?? [],
-                'types': placeData['types'] ?? [],
-                'location': {
-                  'lat': ((placeData['geometry']?['location']?['lat'] ?? placeData['latitude'] ?? 0.0) as num).toDouble(),
-                  'lng': ((placeData['geometry']?['location']?['lng'] ?? placeData['longitude'] ?? 0.0) as num).toDouble(),
-                },
-                'reviewCount': placeData['user_ratings_total'] ?? 0,
-                'priceLevel': placeData['price_level'],
-              };
-              return Place.fromJson(transformedJson);
-            } catch (e) {
-              if (kDebugMode) debugPrint('⚠️ Error parsing place: $e');
-              return null;
-            }
-          })
-          .whereType<Place>()
-          .toList();
+      debugPrint('✅ Fetched ${places.length} places from Edge Function for mood: $mood');
       
-      // Filter by mood
-      final moodToTypes = {
-        'cultural': ['museum', 'art_gallery', 'historical_place', 'library', 'cultural_center'],
-        'adventurous': ['hiking_area', 'adventure_sports', 'viewpoint', 'natural_feature'],
-        'social': ['bar', 'night_club', 'event_venue', 'shopping_mall', 'market'],
-        'chill': ['park', 'cafe', 'spa', 'beach', 'garden'],
-        'romantic': ['restaurant', 'cafe', 'viewpoint', 'park', 'waterfront'],
-        'foodie': ['restaurant', 'cafe', 'bakery', 'food_market', 'wine_bar'],
-        'active': ['gym', 'sports_center', 'hiking_area', 'bicycle_rental'],
-        'exploring': ['tourist_attraction', 'landmark', 'viewpoint', 'neighborhood'],
-      };
-      
-      final preferredTypes = moodToTypes[mood.toLowerCase()] ?? ['tourist_attraction'];
-      
-      // Score and sort places by mood fit
-      final scoredPlaces = places.map((place) {
-        int score = 0;
-        for (final type in place.types) {
-          if (preferredTypes.contains(type)) {
-            score += 10;
-          }
-        }
-        return {'place': place, 'score': score};
-      }).toList();
-      
-      scoredPlaces.sort((a, b) => (b['score'] as int).compareTo(a['score'] as int));
-      
-      return scoredPlaces
-          .map((item) => item['place'] as Place)
-          .take(5)
-          .toList();
+      // Return places directly (already transformed by Edge Function)
+      // Edge Function already filters by mood, so we can return all places
+      return places;
     } catch (e) {
       if (kDebugMode) debugPrint('⚠️ Error fetching mood-filtered places: $e');
       return [];
@@ -3917,7 +4102,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             ),
           ),
           const SizedBox(width: 16),
-          // Change Mood card
+          // Talk to Moody card
           Expanded(
             child: _buildModernActionCard(
               gradient: const LinearGradient(
@@ -3928,12 +4113,12 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                   Color(0xFF6DE89A), // Light green
                 ],
               ),
-              icon: Icons.mood,
-              title: 'Change',
-              subtitle: 'Switch your vibe',
-              emoji: '🎭',
+              icon: Icons.chat_bubble_rounded,
+              title: 'Talk to Moody',
+              subtitle: 'Ask me anything',
+              emoji: '💬',
               accentColor: const Color(0xFF12B347),
-              onTap: () => _showChangeMoodConfirmation(context),
+              onTap: () => widget.onShowChat?.call(),
             ),
           ),
         ],

@@ -101,8 +101,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               debugPrint('✅ Email already verified, proceeding to onboarding');
               
               final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('hasCompletedAuth', true);
-              await prefs.setBool('hasCompletedOnboarding', false);
               await prefs.setBool('hasCompletedPreferences', false);
               
               ScaffoldMessenger.of(context).showSnackBar(

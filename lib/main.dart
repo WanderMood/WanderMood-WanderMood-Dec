@@ -98,8 +98,9 @@ Future<void> _waitForSessionRestore() async {
     debugPrint('🔄 Waiting for Supabase session restoration...');
     
     // Give Supabase time to restore session from secure storage
-    // This is especially important on hot restart
-    for (int i = 0; i < 5; i++) {
+    // This is especially important on hot restart and after email verification
+    // CRITICAL: After email verification, app restarts and session needs more time to restore
+    for (int i = 0; i < 20; i++) { // Increased from 5 to 20 (4 seconds total)
       await Future.delayed(const Duration(milliseconds: 200));
       final session = Supabase.instance.client.auth.currentSession;
       final user = Supabase.instance.client.auth.currentUser;
@@ -107,30 +108,9 @@ Future<void> _waitForSessionRestore() async {
       if (session != null && user != null) {
         debugPrint('✅ Session restored: ${user.id}');
         
-        // Try to refresh the session if it's close to expiring
-        try {
-          final expiresAt = session.expiresAt;
-          if (expiresAt != null) {
-            final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-            final timeUntilExpiry = expiresAt - now;
-            
-            // If session expires in less than 5 minutes, refresh it
-            if (timeUntilExpiry < 300) {
-              debugPrint('🔄 Session expiring soon, refreshing...');
-              await Supabase.instance.client.auth.refreshSession();
-              debugPrint('✅ Session refreshed successfully');
-            }
-          }
-        } catch (e) {
-          debugPrint('⚠️ Could not refresh session (might be expired): $e');
-          // If refresh fails, the session might be expired - clear it
-          try {
-            await Supabase.instance.client.auth.signOut();
-            debugPrint('🧹 Cleared expired session');
-          } catch (_) {
-            // Ignore errors during cleanup
-          }
-        }
+        // CRITICAL: Don't refresh session here - causes rate limiting during onboarding
+        // Session is already valid if we found it, no need to refresh constantly
+        debugPrint('✅ Session found and valid, skipping refresh to avoid rate limiting');
         
         return;
       }
@@ -152,48 +132,39 @@ Future<void> _synchronizeAuthState() async {
     final user = Supabase.instance.client.auth.currentUser;
     final session = Supabase.instance.client.auth.currentSession;
     
-    final hasCompletedAuth = prefs.getBool('hasCompletedAuth') ?? false;
     final hasCompletedPreferences = prefs.getBool('hasCompletedPreferences') ?? false;
     
     debugPrint('🔄 Synchronizing auth state...');
     debugPrint('   Supabase User: ${user?.id}');
     debugPrint('   Supabase Session: ${session != null}');
-    debugPrint('   Local hasCompletedAuth: $hasCompletedAuth');
     debugPrint('   Local hasCompletedPreferences: $hasCompletedPreferences');
     
-    // If user is authenticated in Supabase but not marked as completed locally
-    if (user != null && session != null && !hasCompletedAuth) {
-      debugPrint('🔧 FIXING: User is authenticated in Supabase but not marked locally');
-      await prefs.setBool('hasCompletedAuth', true);
+    // If user is authenticated, mark onboarding as seen
+    if (user != null && session != null) {
+      final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+      if (!hasSeenOnboarding) {
       await prefs.setBool('has_seen_onboarding', true);
+        debugPrint('✅ Marked onboarding as seen');
+      }
       
-      // Check if user has preferences in database
+      // CRITICAL: Don't auto-mark preferences as completed just because they exist in DB
+      // Preferences are saved during email verification (basic communication prefs),
+      // but onboarding completion should only be set after the full onboarding flow
+      // Only check if preferences exist, but don't set the flag here
       try {
         final response = await Supabase.instance.client
             .from('user_preferences')
             .select('*')
             .eq('user_id', user.id)
-            .single();
+            .maybeSingle();
         
-        if (response.isNotEmpty) {
-          debugPrint('🔧 FIXING: User has preferences in database, marking as completed');
-          await prefs.setBool('hasCompletedPreferences', true);
-        } else {
-          debugPrint('📋 User has no preferences in database yet');
+        if (response != null && response.isNotEmpty) {
+          debugPrint('📋 User has preferences in database (may be partial from email verification)');
+          // Don't set hasCompletedPreferences here - let onboarding_loading_screen.dart handle it
         }
       } catch (e) {
-        debugPrint('📋 User has no preferences in database yet: $e');
+        debugPrint('📋 Could not check preferences: $e');
       }
-      
-      debugPrint('✅ Auth state synchronized successfully!');
-    }
-    
-    // If user is NOT authenticated in Supabase but marked as completed locally
-    if (user == null && hasCompletedAuth) {
-      debugPrint('🔧 FIXING: Local state says authenticated but Supabase says not');
-      await prefs.setBool('hasCompletedAuth', false);
-      await prefs.setBool('hasCompletedPreferences', false);
-      debugPrint('✅ Cleared inconsistent local auth state');
     }
     
   } catch (e) {

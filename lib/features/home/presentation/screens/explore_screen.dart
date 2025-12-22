@@ -904,6 +904,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       );
                     }
                     
+                    // REMOVED: Auto-invalidate was causing infinite loop
+                    // If filters reduce results too much, user can manually refresh or adjust filters
+                    if (filteredPlaces.length < 5 && allPlaces.length >= 50) {
+                      debugPrint('⚠️ Filters reduced results to ${filteredPlaces.length} places (${allPlaces.length} unfiltered).');
+                      // User can adjust filters or pull to refresh manually
+                    }
+                    
                     if (filteredPlaces.isEmpty && !_isMapView) {
                       return Center(
                         child: Column(
@@ -1138,42 +1145,62 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   loading: () => const Center(
                     child: CircularProgressIndicator(),
                   ),
-                  error: (error, stack) => Center(
+                  error: (error, stack) {
+                    // Check if error is location-related
+                    final errorMessage = error.toString();
+                    final isLocationError = errorMessage.contains('Location is required') || 
+                                          errorMessage.contains('GPS coordinates') ||
+                                          errorMessage.contains('location services');
+                    
+                    return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.error_outline,
+                            isLocationError ? Icons.location_off : Icons.error_outline,
                           size: 64,
                           color: Colors.red[300],
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Error loading places',
+                            isLocationError ? 'Location Required' : 'Error loading places',
                           style: GoogleFonts.poppins(
                             fontSize: 18,
                             fontWeight: FontWeight.w500,
                             color: Colors.red[700],
                           ),
                         ),
-                        Text(
-                          error.toString(),
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                            child: Text(
+                              isLocationError 
+                                ? 'Please enable location services or set your location in settings to discover places near you.'
+                                : errorMessage,
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             color: Colors.grey[700],
                           ),
                           textAlign: TextAlign.center,
+                            ),
                         ),
                         const SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: () {
-                            ref.invalidate(explorePlacesProvider);
+                              // Invalidate the correct provider
+                              ref.invalidate(moodyExploreAutoProvider);
+                              // Also try to refresh location
+                              if (isLocationError) {
+                                ref.read(locationNotifierProvider.notifier).retryLocationAccess();
+                                ref.read(userLocationProvider.notifier).refreshLocation();
+                              }
                           },
-                          child: const Text('Try Again'),
+                            child: Text(isLocationError ? 'Enable Location' : 'Try Again'),
                         ),
                       ],
                     ),
-                  ),
+                    );
+                  },
           ),
         ),
       ),
