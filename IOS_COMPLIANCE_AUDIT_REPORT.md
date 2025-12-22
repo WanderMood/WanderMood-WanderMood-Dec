@@ -13,9 +13,9 @@
 **File:** `lib/core/constants/api_keys.dart`
 
 **Issue:**
-- Google Places API key hardcoded: `AIzaSyAzmi2Z4Y0Z4ZMLTtiZcbZseOHwAlMux60`
-- OpenAI API key hardcoded: `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`
-- OpenWeather API key hardcoded: `d158323777e324a2537591bc7fa6ca17`
+- Google Places API key hardcoded: `AIzaSy[REDACTED]` (API key removed for security)
+- OpenAI API key hardcoded: `sk-proj-[REDACTED]` (API key removed for security)
+- OpenWeather API key hardcoded: `[REDACTED]` (API key removed for security)
 - Supabase URL and anon key hardcoded
 
 **Risk:**
