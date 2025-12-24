@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../profile/domain/providers/profile_provider.dart';
+import '../../../../core/providers/preferences_provider.dart';
 
 /// Overlay widget that introduces Moody to first-time users
 /// Shows as a centered modal on top of blurred Moody Hub background
@@ -21,6 +22,8 @@ class MoodyIntroOverlay extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Get user's name from profile
     final profileAsync = ref.watch(profileProvider);
+    final preferences = ref.watch(preferencesProvider);
+    
     final userName = profileAsync.when(
       data: (profile) {
         final fullName = profile?.fullName;
@@ -32,6 +35,9 @@ class MoodyIntroOverlay extends ConsumerWidget {
       loading: () => 'there',
       error: (_, __) => 'there',
     );
+
+    // Generate personalized preview activities based on preferences
+    final previewActivities = _generatePreviewActivities(preferences);
 
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -131,7 +137,7 @@ class MoodyIntroOverlay extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // Preview Card
+                // Preview Card - Personalized based on user preferences
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
@@ -154,11 +160,14 @@ class MoodyIntroOverlay extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 14),
-                      _buildPreviewItem('☕', 'Morning coffee spot'),
-                      const SizedBox(height: 10),
-                      _buildPreviewItem('🛍️', 'Local market visit'),
-                      const SizedBox(height: 10),
-                      _buildPreviewItem('🌅', 'Evening walk with a view'),
+                      ...previewActivities.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final activity = entry.value;
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: index < previewActivities.length - 1 ? 10 : 0),
+                          child: _buildPreviewItem(activity['emoji']!, activity['text']!),
+                        );
+                      }),
                     ],
                   ),
                 ),
@@ -271,6 +280,82 @@ class MoodyIntroOverlay extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  /// Generate personalized preview activities based on user preferences
+  List<Map<String, String>> _generatePreviewActivities(UserPreferences prefs) {
+    final activities = <Map<String, String>>[];
+    
+    // Map travel interests to activity examples
+    final interests = prefs.travelInterests;
+    final styles = prefs.travelStyles;
+    
+    // Generate activities based on preferences
+    if (interests.contains('Food & Dining')) {
+      activities.add({'emoji': '🍽️', 'text': 'Local restaurant discovery'});
+    } else if (interests.contains('Arts & Culture')) {
+      activities.add({'emoji': '🎨', 'text': 'Museum or gallery visit'});
+    } else if (interests.contains('Shopping & Markets')) {
+      activities.add({'emoji': '🛍️', 'text': 'Local market exploration'});
+    } else if (interests.contains('Nature & Outdoors')) {
+      activities.add({'emoji': '🌲', 'text': 'Nature walk or park visit'});
+    } else if (interests.contains('Nightlife')) {
+      activities.add({'emoji': '🍸', 'text': 'Evening bar or lounge'});
+    } else if (interests.contains('Wellness & Relaxation')) {
+      activities.add({'emoji': '🧘', 'text': 'Spa or wellness experience'});
+    } else {
+      activities.add({'emoji': '☕', 'text': 'Morning coffee spot'});
+    }
+    
+    // Add activity based on travel styles
+    if (styles.contains('Adventurous')) {
+      activities.add({'emoji': '🏃', 'text': 'Active outdoor adventure'});
+    } else if (styles.contains('Relaxed')) {
+      activities.add({'emoji': '🌅', 'text': 'Peaceful evening walk'});
+    } else if (styles.contains('Cultural')) {
+      activities.add({'emoji': '🏛️', 'text': 'Historical site visit'});
+    } else if (styles.contains('Romantic')) {
+      activities.add({'emoji': '💕', 'text': 'Romantic dining experience'});
+    } else if (styles.contains('Social')) {
+      activities.add({'emoji': '👥', 'text': 'Social gathering spot'});
+    } else {
+      activities.add({'emoji': '🌆', 'text': 'Scenic viewpoint'});
+    }
+    
+    // Add a third activity based on preferred time slots
+  if (prefs.preferredTimeSlots.contains('morning')) {
+      activities.add({'emoji': '🌄', 'text': 'Early morning experience'});
+    } else if (prefs.preferredTimeSlots.contains('evening')) {
+      activities.add({'emoji': '🌃', 'text': 'Evening entertainment'});
+    } else if (prefs.preferredTimeSlots.contains('afternoon')) {
+      activities.add({'emoji': '🎭', 'text': 'Afternoon activity'});
+    } else {
+      activities.add({'emoji': '✨', 'text': 'Surprise discovery'});
+    }
+    
+    // Ensure we have exactly 3 activities (fill with defaults if needed)
+    final defaultActivities = _getDefaultPreviewActivities();
+    while (activities.length < 3) {
+      final defaultToAdd = defaultActivities[activities.length % defaultActivities.length];
+      if (!activities.any((a) => a['text'] == defaultToAdd['text'])) {
+        activities.add(defaultToAdd);
+      } else {
+        // If duplicate, add a different default
+        final nextDefault = defaultActivities[(activities.length + 1) % defaultActivities.length];
+        activities.add(nextDefault);
+      }
+    }
+    
+    return activities.take(3).toList();
+  }
+
+  /// Default preview activities when preferences are not available
+  List<Map<String, String>> _getDefaultPreviewActivities() {
+    return [
+      {'emoji': '☕', 'text': 'Morning coffee spot'},
+      {'emoji': '🛍️', 'text': 'Local market visit'},
+      {'emoji': '🌅', 'text': 'Evening walk with a view'},
+    ];
   }
 }
 

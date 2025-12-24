@@ -36,3 +36,5 @@ echo "   - Open: ios/Runner.xcworkspace"
 echo "   - Product → Clean Build Folder (Shift+Cmd+K)"
 echo "   - Product → Build (Cmd+B)"
 
+
+

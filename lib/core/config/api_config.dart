@@ -52,6 +52,11 @@ class ApiConfig {
   static const bool enableDebugLogs = true;
   static const bool enableApiCostTracking = true;
   
+  // 🔧 DEV MODE: Use Supabase cache instead of live API calls (saves costs)
+  // Set to true to use cached data only, false to use live API calls
+  // In dev mode, if cache is missing, returns empty results instead of making API calls
+  static const bool useDevModeCache = kDebugMode; // Automatically true in debug builds
+  
   // ⚠️ ERROR HANDLING
   static const Duration apiTimeout = Duration(seconds: 5);
   static const int maxRetryAttempts = 0; // No retries to prevent cost escalation

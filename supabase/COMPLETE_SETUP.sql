@@ -288,3 +288,5 @@ CREATE POLICY "Anyone can view weather cache" ON public.weather_cache
 -- All tables created with RLS policies
 -- You can now use your new Supabase project with WanderMood!
 
+
+

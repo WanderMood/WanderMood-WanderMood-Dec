@@ -39,9 +39,18 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
     _loadSavedPlaces();
   }
 
+  @override
+  void dispose() {
+    // Widget is being disposed - any pending async operations will check mounted
+    super.dispose();
+  }
+
   Future<void> _loadSavedPlaces() async {
     final savedPlacesService = ref.read(savedPlacesServiceProvider);
     final savedPlaces = await savedPlacesService.getSavedPlaces();
+    
+    // Check if widget is still mounted before calling setState
+    if (!mounted) return;
     
     setState(() {
       _savedPlaces.addAll(savedPlaces.map((sp) => sp.placeId));
@@ -187,10 +196,13 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
         if (direction == DismissDirection.startToEnd) {
           _savePlaceForLater(place);
         } else {
+          if (!mounted) return false;
           setState(() {
             _dismissedPlaces.add(place.id);
           });
-          _showDismissMessage(place);
+          if (mounted) {
+            _showDismissMessage(place);
+          }
         }
         return false; // Don't actually dismiss, just update state
       },
@@ -1049,12 +1061,14 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
     
     if (_savedPlaces.contains(place.id)) {
       // Unsave
+      if (!mounted) return;
       setState(() {
         _savedPlaces.remove(place.id);
       });
       
       try {
         await savedPlacesService.unsavePlace(place.id);
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -1082,26 +1096,31 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
       } catch (e) {
         if (kDebugMode) debugPrint('❌ Error unsaving place: $e');
         // Re-add if unsave failed
+        if (!mounted) return;
         setState(() {
           _savedPlaces.add(place.id);
         });
       }
     } else {
       // Save
+      if (!mounted) return;
       setState(() {
         _savedPlaces.add(place.id);
       });
       
       try {
         await savedPlacesService.savePlace(place);
+        if (!mounted) return;
         _showSavedMessage(place);
         if (kDebugMode) debugPrint('✅ Successfully saved ${place.name} to database');
       } catch (e) {
         if (kDebugMode) debugPrint('❌ Error saving place: $e');
         // Remove from local state if save failed
+        if (!mounted) return;
         setState(() {
           _savedPlaces.remove(place.id);
         });
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to save ${place.name}. Please try again.'),
@@ -1116,6 +1135,7 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
   void _savePlaceForLater(Place place) async {
     final savedPlacesService = ref.read(savedPlacesServiceProvider);
     
+    if (!mounted) return;
     setState(() {
       _savedPlaces.add(place.id);
     });
@@ -1123,15 +1143,18 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
     // Save to database
     try {
       await savedPlacesService.savePlace(place);
+      if (!mounted) return;
       _showSavedMessage(place);
       if (kDebugMode) debugPrint('✅ Successfully saved ${place.name} to database');
     } catch (e) {
       if (kDebugMode) debugPrint('❌ Error saving place: $e');
       // Remove from local state if save failed
+      if (!mounted) return;
       setState(() {
         _savedPlaces.remove(place.id);
       });
       // Show error message
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to save ${place.name}. Please try again.'),
@@ -1204,10 +1227,13 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
           label: 'Undo',
           textColor: Colors.white,
           onPressed: () {
+            if (!mounted) return;
             setState(() {
               _dismissedPlaces.remove(place.id);
             });
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            if (mounted) {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            }
           },
         ),
       ),

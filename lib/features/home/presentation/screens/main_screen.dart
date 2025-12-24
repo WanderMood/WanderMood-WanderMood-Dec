@@ -19,7 +19,8 @@ import 'package:wandermood/core/utils/auth_helper.dart';
 final mainTabProvider = StateProvider<int>((ref) => 0);
 
 // Provider to check if user has seen Moody intro overlay
-final _hasSeenIntroProvider = FutureProvider<bool>((ref) async {
+// Made public so it can be invalidated from MoodyHubScreen when intro is dismissed
+final hasSeenIntroProvider = FutureProvider<bool>((ref) async {
   try {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('has_seen_moody_intro') ?? false;
@@ -152,7 +153,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   Widget build(BuildContext context) {
     final selectedIndex = ref.watch(mainTabProvider);
     final dailyMoodState = ref.watch(dailyMoodStateNotifierProvider);
-    final hasSeenIntroAsync = ref.watch(_hasSeenIntroProvider);
+    final hasSeenIntroAsync = ref.watch(hasSeenIntroProvider);
     
     // Get hasSeenIntro value from AsyncValue (default to false if loading/error)
     final hasSeenIntro = hasSeenIntroAsync.when(

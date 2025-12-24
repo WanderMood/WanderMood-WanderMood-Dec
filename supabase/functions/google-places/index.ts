@@ -1,7 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
 import { corsHeaders } from '../_shared/cors.ts'
 
-const GOOGLE_PLACES_API_KEY = 'AIzaSyAzmi2Z4Y0Z4ZMLTtiZcbZseOHwAlMux60'
+const GOOGLE_PLACES_API_KEY = Deno.env.get('GOOGLE_PLACES_API_KEY') || 'AIzaSyAzmi2Z4Y0Z4ZMLTtiZcbZseOHwAlMux60'
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -10,6 +11,14 @@ serve(async (req) => {
   }
 
   try {
+    // Initialize Supabase client for cache access
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    
+    // Check if we're in dev mode
+    const isDevMode = Deno.env.get('DEV_MODE') === 'true' || Deno.env.get('NODE_ENV') === 'development'
+    
     const { 
       query, 
       latitude, 
@@ -19,6 +28,52 @@ serve(async (req) => {
     } = await req.json()
 
     console.log(`🔍 Places API request: ${query} near (${latitude}, ${longitude})`)
+    console.log(`🔧 Dev mode: ${isDevMode ? 'ON (cache only)' : 'OFF (live API)'}`)
+
+    // Check cache first (dev mode or always for performance)
+    const cacheKey = `google_places_${query}_${latitude}_${longitude}_${radius}_${type}`
+    const { data: cacheData, error: cacheError } = await supabase
+      .from('places_cache')
+      .select('data, expires_at')
+      .eq('cache_key', cacheKey)
+      .maybeSingle()
+
+    if (!cacheError && cacheData) {
+      const expiresAt = new Date(cacheData.expires_at)
+      if (expiresAt > new Date()) {
+        console.log('✅ Using cached response')
+        return new Response(
+          JSON.stringify(cacheData.data),
+          {
+            headers: { 
+              ...corsHeaders, 
+              'Content-Type': 'application/json' 
+            }
+          }
+        )
+      }
+    }
+
+    // DEV MODE: If cache miss and in dev mode, return empty (don't make API call)
+    if (isDevMode) {
+      console.log('🚫 DEV MODE: Cache miss - returning empty results to avoid API costs')
+      return new Response(
+        JSON.stringify({ 
+          status: 'ZERO_RESULTS',
+          results: [],
+          message: 'DEV_MODE: No cached data available. Please populate cache in production mode first.'
+        }),
+        {
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json' 
+          }
+        }
+      )
+    }
+
+    // PRODUCTION MODE: Make live API call
+    console.log('🌐 Making live Google Places API call')
 
     // Construct the Google Places API URL
     const baseUrl = 'https://maps.googleapis.com/maps/api/place/textsearch/json'
@@ -60,12 +115,38 @@ serve(async (req) => {
       isOpen: place.opening_hours?.open_now || null
     })) || []
 
+    const responseData = {
+      status: data.status,
+      results: transformedResults,
+      nextPageToken: data.next_page_token
+    }
+
+    // Cache the response in Supabase (30 days expiration)
+    const expiresAt = new Date()
+    expiresAt.setDate(expiresAt.getDate() + 30)
+    
+    try {
+      await supabase
+        .from('places_cache')
+        .upsert({
+          cache_key: cacheKey,
+          data: responseData,
+          user_id: null, // Anonymous cache entry
+          request_type: 'search',
+          query: query,
+          location_lat: latitude,
+          location_lng: longitude,
+          expires_at: expiresAt.toISOString(),
+        }, { onConflict: 'cache_key' })
+      
+      console.log('💾 Cached API response in Supabase')
+    } catch (cacheErr) {
+      console.error('⚠️ Failed to cache response:', cacheErr)
+      // Don't fail the request if caching fails
+    }
+
     return new Response(
-      JSON.stringify({
-        status: data.status,
-        results: transformedResults,
-        nextPageToken: data.next_page_token
-      }),
+      JSON.stringify(responseData),
       {
         headers: { 
           ...corsHeaders, 

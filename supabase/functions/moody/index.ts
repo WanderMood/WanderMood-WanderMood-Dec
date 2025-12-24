@@ -506,7 +506,10 @@ async function handleGetExplore(
       }
     }
 
-    // 2. Check cache first - CRITICAL: Cache by city + mood only (NOT filters)
+    // 2. Check if we're in dev mode (use cache only, no API calls)
+    const isDevMode = Deno.env.get('DEV_MODE') === 'true' || Deno.env.get('NODE_ENV') === 'development'
+    
+    // 3. Check cache first - CRITICAL: Cache by city + mood only (NOT filters)
     // Filters are applied client-side to avoid fragmenting cache
     const cacheKey = `explore_${mood}_${location.toLowerCase().trim()}`
     const cachedResult = await checkCache(supabase, cacheKey, userId)
@@ -528,7 +531,25 @@ async function handleGetExplore(
       )
     }
 
-    // 3. Cache miss or insufficient cached places - fetch from Google Places API
+    // 4. DEV MODE: If cache miss and in dev mode, return empty or error (don't make API calls)
+    if (isDevMode) {
+      console.log('🚫 DEV MODE: Cache miss - returning empty results to avoid API costs')
+      console.log('💡 To populate cache, make API calls in production mode first')
+      return new Response(
+        JSON.stringify({
+          cards: [],
+          cached: false,
+          total_found: 0,
+          error: 'DEV_MODE: No cached data available. Please populate cache in production mode first.',
+          message: 'Development mode is enabled. API calls are disabled to save costs. Use cached data or switch to production mode.',
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    // 5. PRODUCTION MODE: Cache miss - fetch from Google Places API
     console.log('🔄 Cache miss or insufficient places - fetching from Google Places API')
     let places = await fetchPlacesFromGoogle(location, coordinates, mood, {})
 
@@ -567,6 +588,7 @@ async function handleGetExplore(
     const rankedPlaces = rankPlacesByPreferences(places, profile, mood, {})
 
     // 6. Cache results (without filters - filters applied client-side)
+    // Cache the full explore response for dev mode reuse
     await cachePlaces(supabase, cacheKey, rankedPlaces, userId, location)
 
     // 7. Apply filters client-side and return response

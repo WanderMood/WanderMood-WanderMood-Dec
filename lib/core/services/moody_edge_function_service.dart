@@ -4,6 +4,7 @@ import 'package:wandermood/core/utils/auth_helper.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:dio/dio.dart';
 import 'package:wandermood/core/config/supabase_config.dart';
+import 'package:wandermood/core/services/supabase_api_cache_service.dart';
 
 /// Service to call the `moody` Edge Function
 class MoodyEdgeFunctionService {
@@ -95,6 +96,40 @@ class MoodyEdgeFunctionService {
         debugPrint('   🔑 Token preview: ${token.substring(0, 20)}...');
       }
 
+      // Check Supabase cache first (dev mode only)
+      // Note: The Edge Function also checks cache, but we check here too for faster response
+      if (SupabaseApiCacheService.shouldUseCache) {
+        // Use same cache key format as Edge Function: explore_{mood}_{location}
+        final cacheKey = 'explore_${mood}_${location.toLowerCase().trim()}';
+        
+        // Check cache directly in Supabase (bypassing Edge Function for speed)
+        try {
+          final cacheResponse = await _supabase
+              .from('places_cache')
+              .select('data, expires_at')
+              .eq('cache_key', cacheKey)
+              .maybeSingle();
+          
+          if (cacheResponse != null) {
+            final cacheData = cacheResponse as Map<String, dynamic>;
+            final expiresAt = DateTime.parse(cacheData['expires_at'] as String);
+            if (expiresAt.isAfter(DateTime.now())) {
+              final cachedData = cacheData['data'] as Map<String, dynamic>?;
+              if (cachedData != null && cachedData.containsKey('cards')) {
+                final cards = cachedData['cards'] as List<dynamic>?;
+                if (cards != null && cards.isNotEmpty) {
+                  debugPrint('✅ Using cached explore results from Supabase (${cards.length} places)');
+                  final places = cards.map((card) => _transformCardToPlace(card as Map<String, dynamic>)).toList();
+                  return places;
+                }
+              }
+            }
+          }
+        } catch (e) {
+          debugPrint('⚠️ Cache check error (continuing to Edge Function): $e');
+        }
+      }
+
       // Use Dio to explicitly send Authorization header
       final dio = Dio();
       final supabaseUrl = SupabaseConfig.url;
@@ -150,6 +185,9 @@ class MoodyEdgeFunctionService {
 
       // Transform Edge Function response to Place objects
       final places = cards.map((card) => _transformCardToPlace(card as Map<String, dynamic>)).toList();
+
+      // Note: Edge Function already caches the response, so we don't need to cache again here
+      // The Edge Function's cachePlaces() function handles caching automatically
 
       if (kDebugMode) {
         debugPrint('✅ Edge Function returned ${places.length} places');

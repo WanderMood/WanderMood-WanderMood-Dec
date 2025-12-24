@@ -7,6 +7,7 @@ import 'dart:math' as math;
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../auth/providers/auth_state_provider.dart';
 import '../../../../core/providers/preferences_provider.dart';
+import '../../../../core/providers/feature_flags_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -212,14 +213,44 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     final finalCurrentUser = Supabase.instance.client.auth.currentUser;
     final finalHasCompletedPreferences = prefs.getBool('hasCompletedPreferences') ?? false;
     
+    // Check feature flag for new onboarding flow
+    final useNewOnboarding = ref.read(useNewOnboardingFlowProvider);
+    debugPrint('🚩 Feature flag - useNewOnboarding: $useNewOnboarding');
+    debugPrint('🚩 hasSeenOnboarding: $hasSeenOnboarding');
+    debugPrint('🚩 finalCurrentUser: ${finalCurrentUser?.id}');
+    debugPrint('🚩 finalHasCompletedPreferences: $finalHasCompletedPreferences');
+    
+    // FORCE NEW FLOW: If feature flag is enabled, always use new flow
+    // This ensures new users see the new onboarding even if hasSeenOnboarding is somehow set
+    if (useNewOnboarding && !hasSeenOnboarding) {
+      // NEW FLOW: Splash → Intro → Demo → Guest Explore → Signup → Main
+      debugPrint('🚀 First time user (NEW FLOW) - navigating to intro');
+      context.go('/intro');
+      return;
+    }
+    
     // Navigate based on current state
     // SIMPLIFIED: Only check Supabase auth + preferences flag
     if (!hasSeenOnboarding) {
-      debugPrint('🚀 First time user - navigating to onboarding');
-      context.go('/onboarding');
+      if (useNewOnboarding) {
+        // NEW FLOW: Splash → Intro → Demo → Guest Explore → Signup → Main
+        debugPrint('🚀 First time user (NEW FLOW) - navigating to intro');
+        context.go('/intro');
+      } else {
+        // OLD FLOW: Splash → Onboarding → Signup → Preferences → Main
+        debugPrint('🚀 First time user (OLD FLOW) - navigating to onboarding');
+        context.go('/onboarding');
+      }
     } else if (finalCurrentUser == null) {
-      debugPrint('🚀 User not authenticated - navigating to login');
-      context.go('/login');
+      // User has seen onboarding but is not authenticated
+      // If new flow is enabled, show new onboarding screens instead of login
+      if (useNewOnboarding) {
+        debugPrint('🚀 User not authenticated (NEW FLOW) - showing new onboarding flow');
+        context.go('/intro');
+      } else {
+        debugPrint('🚀 User not authenticated (OLD FLOW) - navigating to login');
+        context.go('/login');
+      }
     } else if (!finalHasCompletedPreferences) {
       debugPrint('🚀 User needs to complete preferences - navigating to preferences');
       context.go('/preferences/communication');

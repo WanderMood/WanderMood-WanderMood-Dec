@@ -56,7 +56,13 @@ import '../../features/social/presentation/screens/diaries_platform_screen.dart'
 import '../../features/social/presentation/screens/wanderfeed_coming_soon_screen.dart';
 import '../../features/social/presentation/screens/travel_diary_profile_screen.dart';
 import '../../features/auth/providers/auth_state_provider.dart';
+import '../../features/auth/presentation/screens/magic_link_signup_screen.dart';
 import '../providers/preferences_provider.dart';
+import '../providers/feature_flags_provider.dart';
+import '../../features/onboarding/presentation/screens/app_intro_screen.dart';
+import '../../features/onboarding/presentation/screens/moody_demo_screen.dart';
+import '../../features/onboarding/presentation/screens/guest_explore_screen.dart';
+import '../../features/dev/reset_onboarding_screen.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 // import '../../admin/admin_screen.dart'; // Removed - debug only
 
@@ -231,6 +237,29 @@ GoRouter router(RouterRef ref) {
         path: '/onboarding',
         name: 'onboarding',
         builder: (context, state) => const OnboardingScreen(),
+      ),
+      
+      // NEW ONBOARDING FLOW SCREENS (Feature Flag Controlled)
+      // These screens are part of the new value-first onboarding experience
+      GoRoute(
+        path: '/intro',
+        name: 'intro',
+        builder: (context, state) => const AppIntroScreen(),
+      ),
+      GoRoute(
+        path: '/demo',
+        name: 'demo',
+        builder: (context, state) => const MoodyDemoScreen(),
+      ),
+      GoRoute(
+        path: '/guest-explore',
+        name: 'guest-explore',
+        builder: (context, state) => const GuestExploreScreen(),
+      ),
+      GoRoute(
+        path: '/auth/magic-link',
+        name: 'magic-link',
+        builder: (context, state) => const MagicLinkSignupScreen(),
       ),
       
       // Full Onboarding Flow (Authentication Required)
@@ -620,6 +649,16 @@ GoRouter router(RouterRef ref) {
           },
         ),
       
+      // Dev route to reset onboarding (debug only)
+      if (kDebugMode)
+        GoRoute(
+          path: '/dev/reset-onboarding',
+          name: 'reset-onboarding',
+          builder: (context, state) {
+            return const ResetOnboardingScreen();
+          },
+        ),
+      
       // Settings and Support
       GoRoute(
         path: '/settings',
@@ -674,8 +713,15 @@ GoRouter router(RouterRef ref) {
                         currentLocation == '/auth/signup' ||
                         currentLocation == '/auth/verify-email';
       
+      final useNewFlow = ref.read(useNewOnboardingFlowProvider);
+      
       final isOnboardingPage = currentLocation == '/onboarding' ||
                               currentLocation.startsWith('/preferences/');
+      
+      final isNewOnboardingPage = currentLocation == '/intro' ||
+                                  currentLocation == '/demo' ||
+                                  currentLocation == '/guest-explore' ||
+                                  currentLocation == '/auth/magic-link';
       
       final isSplashPage = currentLocation == '/';
       
@@ -700,12 +746,31 @@ GoRouter router(RouterRef ref) {
         return null;
       }
       
+      // Always allow new onboarding pages when feature flag is enabled
+      // This allows users to access new onboarding even if they've seen old onboarding
+      if (useNewFlow && isNewOnboardingPage) {
+        debugPrint('✅ User is on new onboarding page - allowing navigation');
+        return null;
+      }
+      
+      // If new flow is enabled and user tries to access old onboarding, redirect to new flow
+      if (useNewFlow && isOnboardingPage && currentLocation == '/onboarding') {
+        debugPrint('🔄 Redirecting from old onboarding to new flow');
+        return '/intro';
+      }
+      
       // CRITICAL: Always allow preferences pages - user is in onboarding flow
       // Don't redirect away from preferences even if there are temporary auth issues
       final isPreferencesPage = currentLocation.startsWith('/preferences/');
       if (isPreferencesPage) {
         debugPrint('✅ User is on preferences page - allowing navigation');
         return null; // Allow preferences flow to continue
+      }
+      
+      // Always allow old onboarding page when feature flag is disabled
+      if (!useNewFlow && isOnboardingPage) {
+        debugPrint('✅ User is on old onboarding page - allowing navigation');
+        return null;
       }
       
       // Handle auth state loading
@@ -720,7 +785,8 @@ GoRouter router(RouterRef ref) {
         // CRITICAL: Don't redirect away from preferences during auth errors (e.g., rate limiting)
         // User is in the middle of onboarding and should be allowed to continue
         if (!isAuthPage && !isSplashPage && !isPreferencesPage) {
-          return '/onboarding';
+          final useNewFlow = ref.read(useNewOnboardingFlowProvider);
+          return useNewFlow ? '/intro' : '/onboarding';
         }
         return null;
       }
@@ -760,7 +826,8 @@ GoRouter router(RouterRef ref) {
             debugPrint('🔧 Clearing problematic cache state...');
             await prefs.clear();
             debugPrint('✅ Cache cleared, redirecting to fresh onboarding');
-            return '/onboarding';
+            final useNewFlow = ref.read(useNewOnboardingFlowProvider);
+            return useNewFlow ? '/intro' : '/onboarding';
           } else {
             // No recent auth - might be temporary issue, don't clear cache
             debugPrint('⚠️ User not authenticated but no recent auth detected - might be temporary (rate limiting?)');
@@ -782,17 +849,23 @@ GoRouter router(RouterRef ref) {
         }
         
         if (hasSeenOnboarding) {
-          // User has seen "Meet Moody" before but isn't authenticated
-          // Send them to auth flow, not back to onboarding
-          if (!isAuthPage && !isOnboardingPage) {
-            debugPrint('❌ Not authenticated but has seen onboarding before, redirecting to signup');
-            return '/auth/signup';
+          // User has seen onboarding before but isn't authenticated
+          // Send them to auth flow based on feature flag
+          if (!isAuthPage && !isOnboardingPage && !isNewOnboardingPage) {
+            debugPrint('❌ Not authenticated but has seen onboarding before');
+            if (useNewFlow) {
+              debugPrint('   Redirecting to magic link (NEW FLOW)');
+              return '/auth/magic-link';
+            } else {
+              debugPrint('   Redirecting to signup (OLD FLOW)');
+              return '/auth/signup';
+            }
           }
         } else {
-          // Fresh user who hasn't seen "Meet Moody" screens
-          if (!isOnboardingPage) {
+          // Fresh user who hasn't seen onboarding screens
+          if (!isOnboardingPage && !isNewOnboardingPage) {
             debugPrint('❌ Not authenticated and fresh user, redirecting to onboarding');
-            return '/onboarding';
+            return useNewFlow ? '/intro' : '/onboarding';
           }
         }
         return null;
@@ -825,7 +898,8 @@ GoRouter router(RouterRef ref) {
         } catch (e) {
           debugPrint('❌ Error checking preferences: $e');
           if (isMainAppPage) {
-            return '/onboarding';
+            final useNewFlow = ref.read(useNewOnboardingFlowProvider);
+            return useNewFlow ? '/intro' : '/onboarding';
           }
         }
       }

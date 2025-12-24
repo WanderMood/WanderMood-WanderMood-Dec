@@ -23,6 +23,7 @@ import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.
 import 'package:wandermood/features/home/presentation/screens/main_screen.dart';  // Import mainTabProvider from here
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/mood/presentation/screens/moody_hub_screen.dart';
+import 'package:wandermood/features/mood/presentation/widgets/mood_action_choice_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 
@@ -129,7 +130,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         } else if (hour >= 17 && hour < 21) {
           return "Evening's here — let's find your perfect vibe.";
         } else {
-          return "Night owl mode activated. Let's see what fits.";
+          return "Late night energy — let's find something that fits.";
         }
       }
       
@@ -151,6 +152,98 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       if (kDebugMode) debugPrint('⚠️ Error generating contextual message: $e');
       // Fallback message
       return "Let's find the right vibe for today.";
+    }
+  }
+  
+  /// Get enhanced contextual Moody message - feels like Moody is speaking
+  /// Can be enhanced with AI later for more personalization
+  Future<String> _getContextualMoodyMessage(DailyMoodState dailyMoodState) async {
+    try {
+      final hour = DateTime.now().hour;
+      final isWeekend = DateTime.now().weekday >= 6;
+      final isNewUser = !dailyMoodState.hasSelectedMoodToday && dailyMoodState.currentMood == null;
+      
+      // Get user's last mood if available
+      final lastMood = dailyMoodState.currentMood;
+      
+      // Get weather context
+      final weatherAsync = ref.read(weatherProvider);
+      final weather = weatherAsync.valueOrNull;
+      
+      // Get location context
+      final locationAsync = ref.read(locationNotifierProvider);
+      final location = locationAsync.valueOrNull;
+      
+      // Build contextual message based on multiple factors
+      String message = '';
+      
+      if (isNewUser) {
+        // First-time user messages - more welcoming
+        if (hour >= 5 && hour < 12) {
+          message = "Good morning! Let's start your day with the right energy.";
+        } else if (hour >= 12 && hour < 17) {
+          message = "Afternoon's here — time to match your vibe.";
+        } else if (hour >= 17 && hour < 21) {
+          message = "Evening's perfect for exploring — what feels right?";
+        } else {
+          message = "Late night energy — let's find something that fits.";
+        }
+      } else {
+        // Returning user - reference their last mood or time context
+        if (lastMood != null) {
+          // Reference their previous mood
+          if (hour >= 5 && hour < 12) {
+            message = isWeekend
+                ? "Weekend morning — ready to switch it up from yesterday's $lastMood mood?"
+                : "Morning vibes — ready to try something different from $lastMood?";
+          } else if (hour >= 12 && hour < 17) {
+            message = "Afternoon's rolling in — what's calling to you today?";
+          } else if (hour >= 17 && hour < 21) {
+            message = isWeekend
+                ? "Weekend evening — let's find something that fits."
+                : "Workday's done — what's your evening vibe?";
+          } else {
+            message = "Late night energy — let's see what calls to you.";
+          }
+        } else {
+          // No previous mood, use time-based
+          if (hour >= 5 && hour < 12) {
+            message = isWeekend
+                ? "Weekend morning — let's set the tone for your day."
+                : "Fresh start — what feels right today?";
+          } else if (hour >= 12 && hour < 17) {
+            message = "Afternoon's here — time to match your energy.";
+          } else if (hour >= 17 && hour < 21) {
+            message = isWeekend
+                ? "Weekend evening — let's find something that fits."
+                : "Evening's perfect — what's your vibe?";
+          } else {
+            message = "Late night energy — let's see what fits.";
+          }
+        }
+      }
+      
+      // Add weather context if available
+      if (weather != null) {
+        final condition = weather.condition.toLowerCase();
+        if (condition.contains('rain') || condition.contains('storm') || condition.contains('drizzle')) {
+          message += " Perfect for indoor vibes today.";
+        } else if (condition.contains('sun') || condition.contains('clear')) {
+          message += " Great weather for exploring!";
+        } else if (condition.contains('cloud')) {
+          message += " Cloudy but still great for adventures.";
+        }
+      }
+      
+      // Add location context if available (optional, can be removed if too verbose)
+      // if (location != null && location.isNotEmpty) {
+      //   message += " Let's explore $location.";
+      // }
+      
+      return message;
+    } catch (e) {
+      if (kDebugMode) debugPrint('⚠️ Error generating contextual Moody message: $e');
+      return _getContextualMoodMessage(); // Fallback to sync version
     }
   }
 
@@ -498,6 +591,25 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   }
 
 
+  // Show dialog for talking to Moody
+  void _showMoodActionChoiceDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => MoodActionChoiceDialog(
+        onUpdatePlan: () {
+          // Reset mood selection to show mood selection screen
+          // After mood selection, it will navigate to plan loading
+          ref.read(dailyMoodStateNotifierProvider.notifier).resetMoodSelection();
+        },
+        onJustChangeMood: () {
+          // Just reset mood selection without navigating to plan loading
+          // User can pick new moods but won't regenerate activities
+          ref.read(dailyMoodStateNotifierProvider.notifier).resetMoodSelection();
+          // TODO: Add flag to skip plan generation after mood selection
+        },
+      ),
+    );
+  }
 
   void _showMoodyTalkDialog(BuildContext context) {
     // Create conversation ID only if it doesn't exist (persistent conversation)
@@ -1410,15 +1522,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         if (dailyMoodState.hasSelectedMoodToday) {
           return MoodyHubScreen(
             onChangeMood: () {
-              // Navigate to mood selection as standalone route (no navbar)
-              // This acts as an input step for updating the plan
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const MoodSelectionStandaloneScreen(),
-                  fullscreenDialog: true, // Opens as full-screen without navbar
-                ),
-              );
+              // Show toggle dialog before mood selection
+              _showMoodActionChoiceDialog(context);
             },
             onShowChat: () {
               // Show existing chat dialog with current context
@@ -1659,26 +1764,70 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                 ),
               ),
               
-              // Simple guiding sentence - no redundant greeting
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                child: Text(
-                  'Pick the vibe that fits right now ✨',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF1A202C),
-                  ),
-                  textAlign: TextAlign.center,
+              const SizedBox(height: 16),
+              
+              // Compact contextual Moody message - smaller greeting
+              FutureBuilder<String>(
+                future: _getContextualMoodyMessage(dailyMoodState),
+                builder: (context, snapshot) {
+                  final message = snapshot.data ?? _getContextualMoodMessage();
+                  
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10), // Reduced padding
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF12B347).withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(10), // Slightly smaller radius
+                      border: Border.all(
+                        color: const Color(0xFF12B347).withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '😊',
+                          style: TextStyle(fontSize: 16), // Reduced from 18
+                        ),
+                        const SizedBox(width: 8), // Reduced from 10
+                        Expanded(
+                          child: Text(
+                            message,
+                            style: GoogleFonts.poppins(
+                              fontSize: 13, // Reduced from 14
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF1A202C),
+                              height: 1.3,
+                            ),
+                            textAlign: TextAlign.left,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 16),
+
+              // Balanced Moody Character - better proportion with cards
+              Center(
+                child: MoodyCharacter(
+                  size: 100, // Increased from 80 to balance with cards
+                  mood: _selectedMoods.isEmpty ? 'default' : 'happy',
                 ),
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
               // Put mood tiles and button in a single scrollable container
               Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 20),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1752,24 +1901,19 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                               }
                               
                               return GridView.count(
-                                crossAxisCount: 4,
+                                crossAxisCount: 4, // Back to 4 columns for balanced proportions
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
-                                padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 16),
-                                mainAxisSpacing: 12,
-                                crossAxisSpacing: 16,
-                                childAspectRatio: 1.0,
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                mainAxisSpacing: 14, // Slightly increased from original 12
+                                crossAxisSpacing: 14, // Slightly increased from original 16
+                                childAspectRatio: 0.95, // Slightly taller cards (was 1.0)
                                 children: finalMoodOptions.map((mood) {
                                   final isSelected = _selectedMoods.contains(mood.label);
                                   return GestureDetector(
                                     onTap: () => _toggleMood(mood),
                                     child: Container(
-                                      constraints: const BoxConstraints(
-                                        minWidth: 80,
-                                        maxWidth: 80,
-                                        minHeight: 80,
-                                        maxHeight: 80,
-                                      ),
+                                      // Removed fixed constraints - let grid calculate size naturally
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
                                           begin: Alignment.topLeft,
@@ -1805,20 +1949,20 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                               children: [
                                                 Text(
                                                   mood.emoji,
-                                                  style: const TextStyle(fontSize: 28),
+                                                  style: const TextStyle(fontSize: 32), // Balanced size (between 28 and 36)
                                                 ),
-                                                const SizedBox(height: 4),
-                                                SizedBox(
-                                                  width: 70,
+                                                const SizedBox(height: 5), // Balanced spacing
+                                                Padding(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 4), // Reduced from 6 to give more space
                                                   child: Text(
                                                     mood.label,
                                                     style: GoogleFonts.poppins(
-                                                      fontSize: 11,
-                                                      fontWeight: FontWeight.w400,
+                                                      fontSize: 11, // Reduced from 12 to fit longer words
+                                                      fontWeight: FontWeight.w500,
                                                       color: Colors.black87,
                                                     ),
                                                     textAlign: TextAlign.center,
-                                                    maxLines: 1,
+                                                    maxLines: 2, // Allow 2 lines for longer words like "Adventurous"
                                                     overflow: TextOverflow.ellipsis,
                                                   ),
                                                 ),
@@ -1920,12 +2064,54 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                 ],
                               )
                             : Text(
-                            "Update my day",
+                            "Let's create your perfect plan! 🎯",
                             style: GoogleFonts.poppins(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
+                        ),
+                      ),
+                      
+                      // Helpful tip below CTA button
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF12B347).withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFF12B347).withOpacity(0.1),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF12B347).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                Icons.lightbulb_outline,
+                                size: 20,
+                                color: Color(0xFF12B347),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Tip: Select up to 3 moods to create a personalized day plan that matches your vibe.',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color(0xFF424242),
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       
@@ -2126,24 +2312,19 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     final fallbackMoodOptions = _getFallbackMoodOptions();
     
     return GridView.count(
-      crossAxisCount: 4,
+      crossAxisCount: 4, // Back to 4 columns for balanced proportions
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 16),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 16,
-      childAspectRatio: 1.0,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      mainAxisSpacing: 14, // Slightly increased from original 12
+      crossAxisSpacing: 14, // Slightly increased from original 16
+      childAspectRatio: 0.95, // Slightly taller cards (was 1.0)
       children: fallbackMoodOptions.map((mood) {
         final isSelected = _selectedMoods.contains(mood.label);
         return GestureDetector(
           onTap: () => _toggleMood(mood),
           child: Container(
-            constraints: const BoxConstraints(
-              minWidth: 80,
-              maxWidth: 80,
-              minHeight: 80,
-              maxHeight: 80,
-            ),
+            // Removed fixed constraints - let grid calculate size naturally
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -2179,20 +2360,20 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                     children: [
                       Text(
                         mood.emoji,
-                        style: const TextStyle(fontSize: 28),
+                        style: const TextStyle(fontSize: 32), // Balanced size (between 28 and 36)
                       ),
-                      const SizedBox(height: 4),
-                      SizedBox(
-                        width: 70,
+                      const SizedBox(height: 5), // Balanced spacing
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4), // Reduced from 6 to give more space
                         child: Text(
                           mood.label,
                           style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w400,
+                            fontSize: 11, // Reduced from 12 to fit longer words
+                            fontWeight: FontWeight.w500,
                             color: Colors.black87,
                           ),
                           textAlign: TextAlign.center,
-                          maxLines: 1,
+                          maxLines: 2, // Allow 2 lines for longer words like "Adventurous"
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -2280,33 +2461,6 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
 }
 
 
-
-/// Standalone mood selection screen (opens without navbar)
-/// This is a wrapper that shows MoodHomeScreen in a way that forces mood selection mode
-class MoodSelectionStandaloneScreen extends ConsumerStatefulWidget {
-  const MoodSelectionStandaloneScreen({super.key});
-
-  @override
-  ConsumerState<MoodSelectionStandaloneScreen> createState() => _MoodSelectionStandaloneScreenState();
-}
-
-class _MoodSelectionStandaloneScreenState extends ConsumerState<MoodSelectionStandaloneScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Reset mood selection immediately to force mood selection screen to show
-    // This ensures the screen shows mood selection instead of hub
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(dailyMoodStateNotifierProvider.notifier).resetMoodSelection();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Return MoodHomeScreen which will show mood selection when hasSelectedMoodToday is false
-    return const MoodHomeScreen();
-  }
-}
 
 class ChatMessage {
   final String message;

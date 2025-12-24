@@ -131,17 +131,27 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
   
   /// Dismiss intro overlay and mark as seen
   /// This reveals the full Moody Hub content (including nav bar from MainScreen)
+  /// When user clicks "Skip for now", this unlocks the entire app
   Future<void> _dismissIntroOverlay() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('has_seen_moody_intro', true);
       
+      // Invalidate the provider to force MainScreen to refresh and show bottom nav
+      ref.invalidate(hasSeenIntroProvider);
+      
       if (mounted) {
         setState(() {
           _showIntroOverlay = false;
         });
-        // Hub content is now visible with full MainScreen context (including nav bar)
-        // User can see and interact with everything in the Hub
+        
+        // Force MainScreen to refresh and show bottom nav
+        // The MainScreen watches hasSeenIntroProvider which will update immediately
+        // This ensures the bottom nav appears immediately when user skips
+        if (kDebugMode) {
+          debugPrint('✅ Intro overlay dismissed - app unlocked');
+          debugPrint('✅ Provider invalidated - bottom navigation should now be visible');
+        }
       }
     } catch (e) {
       if (kDebugMode) {
@@ -1432,10 +1442,18 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
   Widget _buildPrimaryCTAButton() {
     final scheduledActivitiesAsync = ref.watch(todayActivitiesProvider);
     
-    return scheduledActivitiesAsync.when(
-      data: (activities) {
-        final hasPlan = activities.isNotEmpty;
-        final buttonText = hasPlan ? 'Update my day' : 'Create my day ✨';
+    return FutureBuilder<bool>(
+      future: _hasCompletedFirstPlan(),
+      builder: (context, firstPlanSnapshot) {
+        final hasCompletedFirstPlan = firstPlanSnapshot.data ?? false;
+        
+        return scheduledActivitiesAsync.when(
+          data: (activities) {
+            // Only show "Update my day" if:
+            // 1. User has completed their first plan (they understand the flow)
+            // 2. AND they have activities for today
+            final hasPlan = hasCompletedFirstPlan && activities.isNotEmpty;
+            final buttonText = hasPlan ? 'Update my day' : 'Create my day ✨';
         
         return Container(
           decoration: BoxDecoration(
@@ -1487,8 +1505,8 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             ),
           ),
         );
-      },
-      loading: () => Container(
+          },
+          loading: () => Container(
         height: 50,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
@@ -1547,7 +1565,22 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           ),
         ),
       ),
+        );
+      },
     );
+  }
+
+  /// Check if user has completed their first plan
+  Future<bool> _hasCompletedFirstPlan() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool('has_completed_first_plan') ?? false;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Error checking first plan completion: $e');
+      }
+      return false;
+    }
   }
 
   // Old full-width primary CTA (kept for reference, can be removed if not used elsewhere)
@@ -1556,10 +1589,16 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: scheduledActivitiesAsync.when(
-        data: (activities) {
-          final hasPlan = activities.isNotEmpty;
-          final buttonText = hasPlan ? 'Update my day' : 'Create my day ✨';
+      child: FutureBuilder<bool>(
+        future: _hasCompletedFirstPlan(),
+        builder: (context, firstPlanSnapshot) {
+          final hasCompletedFirstPlan = firstPlanSnapshot.data ?? false;
+          
+          return scheduledActivitiesAsync.when(
+            data: (activities) {
+              // Only show "Update my day" if user has completed first plan AND has activities
+              final hasPlan = hasCompletedFirstPlan && activities.isNotEmpty;
+              final buttonText = hasPlan ? 'Update my day' : 'Create my day ✨';
           
           return Container(
             decoration: BoxDecoration(
@@ -1671,7 +1710,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             ),
           ),
         ),
-      ),
+      );
+      },
+    ),
     );
   }
 
