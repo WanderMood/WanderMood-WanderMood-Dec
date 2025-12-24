@@ -145,6 +145,48 @@ android/.gradle/
 .env
 .env.*
 
+# ============================================================================
+# FOLDERS TO BE DELETED - DO NOT COMMIT
+# ============================================================================
+# These folders are listed in TO-BE-DELETED.md and should not be committed
+# They will be deleted in a future cleanup phase
+
+# Large backup folders (~3.1 GB)
+backups/
+Flutter_wandermood/
+archive/
+current_backup_*/
+
+# Duplicate/old code folders
+lib_old/
+supabase_backup_with_issues/
+lib/archive/
+
+# Old functions folder (root level - duplicate of supabase/functions)
+/functions/
+
+# ============================================================================
+# FILES TO BE DELETED - DO NOT COMMIT
+# ============================================================================
+# Old TypeScript files (root level)
+wandermood-ai-*.ts
+
+# Test/example files (root level)
+example_navigator.dart
+test_activity_filtering.dart
+clear_cache_debug.dart
+app.dart
+
+# Log files
+flutter_01.log
+flutter_01.png
+logs.txt
+push.log
+
+# Duplicate asset folders (root level)
+/images/
+/icons/
+
 # Generated files
 *.g.dart
 *.freezed.dart
