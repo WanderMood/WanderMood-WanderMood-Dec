@@ -13,6 +13,7 @@ import 'package:wandermood/features/profile/presentation/screens/privacy_setting
 import 'package:wandermood/features/profile/presentation/screens/theme_settings_screen.dart';
 import 'package:wandermood/features/profile/presentation/screens/notifications_screen.dart';
 import 'package:wandermood/features/profile/presentation/screens/help_support_screen.dart';
+import 'package:wandermood/features/profile/presentation/widgets/profile_stats_cards.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/extensions/string_extensions.dart';
 
@@ -46,46 +47,66 @@ class ProfileScreen extends ConsumerWidget {
                   children: [
                     // Header with back button
                     Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                       child: Row(
                         children: [
                           // Back button
-                          IconButton(
-                            icon: Container(
-                              padding: const EdgeInsets.all(8),
+                          GestureDetector(
+                            onTap: () => Navigator.of(context).pop(),
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 4,
+                                    blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
                                 ],
                               ),
                               child: const Icon(
-                                Icons.arrow_back,
+                                Icons.arrow_back_ios_new,
                                 color: Color(0xFF4CAF50),
                                 size: 20,
                               ),
                             ),
-                            onPressed: () => Navigator.of(context).pop(),
                           ),
-                          // Title (centered)
-                          Expanded(
-                            child: Text(
-                              'Your Profile',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF4CAF50),
+                          const SizedBox(width: 12),
+                          // Title
+                          Text(
+                            'Your Profile',
+                            style: GoogleFonts.poppins(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF4CAF50),
+                            ),
+                          ),
+                          const Spacer(),
+                          // Settings button
+                          GestureDetector(
+                            onTap: () => context.push('/settings'),
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.settings_outlined,
+                                color: Colors.grey,
+                                size: 22,
                               ),
                             ),
                           ),
-                          // Spacer to balance the back button
-                          const SizedBox(width: 48),
                         ],
                       ),
                     ).animate().fadeIn(duration: 400.ms),
@@ -95,60 +116,104 @@ class ProfileScreen extends ConsumerWidget {
                     // Profile Info Section
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0xFFFF9A56), // Orange
+                              Color(0xFFFF6B9D), // Pink
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.all(24.0),
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Avatar with Edit Button
-                              Stack(
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  CircleAvatar(
-                                    radius: 50,
-                                    backgroundColor: const Color(0xFF4CAF50).withOpacity(0.2),
-                                    backgroundImage: profile?.imageUrl != null
-                                        ? NetworkImage(profile!.imageUrl!)
-                                        : null,
-                                    child: profile?.imageUrl == null
-                                        ? Text(
-                                            profile?.fullName?.substring(0, 1).toUpperCase() ?? 
-                                            profile?.email.substring(0, 1).toUpperCase() ?? 'U',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 40,
-                                              fontWeight: FontWeight.bold,
-                                              color: const Color(0xFF4CAF50),
-                                            ),
-                                          )
-                                        : null,
-                                  ),
-                                  Positioned(
-                                    right: -8,
-                                    bottom: -8,
-                                    child: IconButton(
-                                      icon: Container(
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: const BoxDecoration(
-                                          color: Color(0xFF4CAF50),
+                                  // Avatar with Camera Button
+                                  Stack(
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
                                           shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 3,
+                                          ),
                                         ),
-                                        child: const Icon(
-                                          Icons.edit,
-                                          color: Colors.white,
-                                          size: 16,
+                                        child: CircleAvatar(
+                                          radius: 40,
+                                          backgroundColor: Colors.white,
+                                          backgroundImage: profile?.imageUrl != null
+                                              ? NetworkImage(profile!.imageUrl!)
+                                              : null,
+                                          child: profile?.imageUrl == null
+                                              ? Text(
+                                                  profile?.fullName?.substring(0, 1).toUpperCase() ?? 
+                                                  profile?.email.substring(0, 1).toUpperCase() ?? 'U',
+                                                  style: GoogleFonts.poppins(
+                                                    fontSize: 32,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: const Color(0xFF4CAF50),
+                                                  ),
+                                                )
+                                              : null,
                                         ),
                                       ),
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => const ProfileEditScreen(),
+                                      Positioned(
+                                        right: 0,
+                                        bottom: 0,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFF4CAF50),
+                                            shape: BoxShape.circle,
                                           ),
-                                        );
-                                      },
+                                          child: const Icon(
+                                            Icons.camera_alt,
+                                            color: Colors.white,
+                                            size: 16,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 16),
+                                  // Name and Username
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          profile?.fullName ?? 'User',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '@${profile?.username ?? 'null'}',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 14,
+                                            color: Colors.white.withOpacity(0.9),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
@@ -156,84 +221,156 @@ class ProfileScreen extends ConsumerWidget {
                               
                               const SizedBox(height: 16),
                               
-                              // Username and Display Name
-                              Text(
-                                profile?.fullName ?? 'Add your name',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
+                              // Green Badge (20s Adventurer)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
                                 ),
-                              ),
-                              Text(
-                                '@${profile?.username ?? 'username'}',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF4CAF50),
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
-                              ),
-                              
-                              const SizedBox(height: 8),
-                              
-                              // Bio
-                              Text(
-                                profile?.bio ?? 'Add a bio to tell your story',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  color: Colors.grey[800],
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.calendar_today,
+                                      color: Colors.white,
+                                      size: 14,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '20s Adventurer',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                textAlign: TextAlign.center,
                               ),
                               
                               const SizedBox(height: 16),
                               
-                              // Mood Streak and Favorite Mood
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Column(
-                                    children: [
-                                      Text(
-                                        '${profile?.moodStreak ?? 0}',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: const Color(0xFF4CAF50),
-                                        ),
-                                      ),
-                                      Text(
-                                        'Day Streak',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14,
-                                          color: Colors.grey[600],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(width: 32),
-                                  Column(
-                                    children: [
-                                      Text(
-                                        profile?.favoriteMood ?? '😊',
-                                        style: const TextStyle(
-                                          fontSize: 24,
-                                        ),
-                                      ),
-                                      Text(
-                                        'Favorite Mood',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14,
-                                          color: Colors.grey[600],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                              // Bio
+                              Text(
+                                profile?.bio ?? 'Hello! I\'m new to WanderMood 👋',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                  height: 1.4,
+                                ),
                               ),
                             ],
                           ),
                         ),
                       ),
                     ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.2, end: 0),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Local Mode / Traveling Toggle
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF4CAF50),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.home,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Local Mode',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.grey[300]!,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.flight_takeoff,
+                                    color: Colors.grey[600],
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Traveling',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ).animate().fadeIn(duration: 700.ms),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Info Link
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.info_outline,
+                            color: Color(0xFF2196F3),
+                            size: 18,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'What does this do?',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF2196F3),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ).animate().fadeIn(duration: 800.ms),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Stats Cards Section
+                    const ProfileStatsCards().animate().fadeIn(duration: 800.ms).slideY(begin: 0.2, end: 0),
                     
                     const SizedBox(height: 16),
                     
@@ -595,7 +732,7 @@ class ProfileScreen extends ConsumerWidget {
           // First pop the loading dialog
           Navigator.of(context).pop();
           // Then navigate to login
-          context.go('/login');
+          context.go('/auth/magic-link');
         }
       } catch (e) {
         // Pop loading dialog if there's an error

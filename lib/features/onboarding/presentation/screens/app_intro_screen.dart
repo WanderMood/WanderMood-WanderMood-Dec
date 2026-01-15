@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
+import '../../../../core/presentation/widgets/swirl_background.dart';
+import '../../../home/presentation/widgets/moody_character.dart';
+import '../../../home/domain/enums/moody_feature.dart';
 
 /// Three-Word Intro Screen
 /// 
@@ -121,21 +125,7 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          // Warm gradient background matching app theme
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFFFF8E1), // Warm cream
-              Color(0xFFFFE0B2), // Soft orange
-              Color(0xFFFFF3E0), // Light peach
-            ],
-          ),
-        ),
+      body: SwirlBackground(
         child: SafeArea(
           child: FadeTransition(
             opacity: _fadeAnimation,
@@ -165,26 +155,10 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                 // Moody character with pulse animation
                 ScaleTransition(
                   scale: _pulseAnimation,
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.orange.withOpacity(0.2),
-                          blurRadius: 30,
-                          spreadRadius: 10,
-                        ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Text(
-                        '🌟',
-                        style: TextStyle(fontSize: 60),
-                      ),
-                    ),
+                  child: const MoodyCharacter(
+                    size: 140,
+                    mood: 'happy',
+                    currentFeature: MoodyFeature.none,
                   ),
                 ),
                 
@@ -219,7 +193,7 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                       style: TextStyle(
                         fontSize: 48,
                         fontWeight: FontWeight.w600,
-                        color: Colors.orange[700],
+                        color: const Color(0xFF4CAF50),
                         letterSpacing: 3,
                         height: 1.2,
                       ),
@@ -273,7 +247,7 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                     child: ElevatedButton(
                       onPressed: _onContinue,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange[600],
+                        backgroundColor: const Color(0xFF4CAF50),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -328,7 +302,7 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
       width: isActive ? 24 : 8,
       height: 8,
       decoration: BoxDecoration(
-        color: isActive ? Colors.orange[600] : Colors.grey[300],
+        color: isActive ? const Color(0xFF4CAF50) : Colors.grey[300],
         borderRadius: BorderRadius.circular(4),
       ),
     );

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../domain/models/place.dart';
+import '../../../core/constants/api_keys.dart';
 
 part 'places_service.g.dart';
 
@@ -227,7 +228,7 @@ class PlacesService extends _$PlacesService {
     try {
       print('💭 Getting autocomplete for: $input');
 
-      final requestData = {
+      final requestData = <String, dynamic>{
         'type': 'autocomplete',
         'query': input,
         'language': language,
@@ -427,8 +428,14 @@ class PlacesService extends _$PlacesService {
       );
 
       if (response.status == 200) {
-        // Photo endpoint returns the image directly
-        return '${_supabase.supabaseUrl}/functions/v1/places';
+        // Photo endpoint should return the URL in the response data
+        final data = response.data;
+        if (data is Map && data['url'] != null) {
+          return data['url'] as String;
+        }
+        // Fallback: construct URL from ApiKeys
+        final supabaseUrl = ApiKeys.supabaseUrl;
+        return '$supabaseUrl/functions/v1/places';
       } else {
         throw Exception('Failed to get photo URL');
       }

@@ -159,7 +159,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             // Redirect to login screen after a short delay
             Future.delayed(const Duration(seconds: 2), () {
               if (mounted) {
-                context.go('/login');
+                context.go('/auth/magic-link');
               }
             });
           } else {

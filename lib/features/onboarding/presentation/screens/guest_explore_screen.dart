@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
+import '../../../../core/presentation/widgets/swirl_background.dart';
 
 /// Guest Explore Screen
 /// 
@@ -117,17 +118,7 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFFF8E1),
-              Color(0xFFFFFBF5),
-            ],
-          ),
-        ),
+      body: SwirlBackground(
         child: SafeArea(
           child: Column(
             children: [
@@ -150,7 +141,7 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _navigateToSignup,
-        backgroundColor: Colors.orange[600],
+        backgroundColor: const Color(0xFF4CAF50),
         icon: const Icon(Icons.star_rounded, color: Colors.white),
         label: const Text(
           'Sign Up Free',

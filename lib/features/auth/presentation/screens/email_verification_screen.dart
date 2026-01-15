@@ -346,7 +346,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               
               // TERTIARY ACTION: Back to login (text link)
               TextButton(
-                onPressed: () => context.go('/login'),
+                onPressed: () => context.go('/auth/magic-link'),
                 child: const Text(
                   'Back to Sign In',
                   style: TextStyle(

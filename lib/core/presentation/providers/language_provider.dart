@@ -4,15 +4,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
 
 /// Provider for the app's current locale based on user profile preference
-final localeProvider = StateNotifierProvider<LocaleNotifier, Locale>((ref) {
+/// Returns null to use system locale, or a specific Locale if user has set a preference
+final localeProvider = StateNotifierProvider<LocaleNotifier, Locale?>((ref) {
   return LocaleNotifier(ref);
 });
 
-class LocaleNotifier extends StateNotifier<Locale> {
+class LocaleNotifier extends StateNotifier<Locale?> {
   final Ref _ref;
   static const String _localeKey = 'app_locale';
+  static const String _useSystemKey = 'use_system_locale';
   
-  LocaleNotifier(this._ref) : super(const Locale('en')) {
+  LocaleNotifier(this._ref) : super(null) { // Start with null (system default)
     _loadLocale();
     // Watch profile changes to update locale when user changes language preference
     _ref.listen(profileProvider, (previous, next) {
@@ -27,6 +29,13 @@ class LocaleNotifier extends StateNotifier<Locale> {
   Future<void> _loadLocale() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      
+      // Check if user explicitly wants to use system locale
+      final useSystem = prefs.getBool(_useSystemKey) ?? false;
+      if (useSystem) {
+        state = null; // Use system locale
+        return;
+      }
       
       // Check if user has ever set a language preference
       final hasSetLanguage = prefs.containsKey(_localeKey);
@@ -45,37 +54,11 @@ class LocaleNotifier extends StateNotifier<Locale> {
         final localeCode = prefs.getString(_localeKey) ?? 'en';
         state = Locale(localeCode);
       } else {
-        // First install - detect system locale
-        final systemLocale = WidgetsBinding.instance.platformDispatcher.locale;
-        final systemLanguageCode = systemLocale.languageCode.toLowerCase();
-        
-        // Supported languages: en, nl, es, fr, de
-        final supportedLanguages = ['en', 'nl', 'es', 'fr', 'de'];
-        final detectedLanguage = supportedLanguages.contains(systemLanguageCode) 
-            ? systemLanguageCode 
-            : 'en'; // Default to English if system language not supported
-        
-        state = Locale(detectedLanguage);
-        
-        // Save detected language to preferences
-        await prefs.setString(_localeKey, detectedLanguage);
-        
-        // Try to save to profile (optional, works offline)
-        try {
-          final profileAsync = _ref.read(profileProvider);
-          profileAsync.whenData((profile) async {
-            if (profile != null) {
-              await _ref.read(profileProvider.notifier).updateProfile(
-                languagePreference: detectedLanguage,
-              );
-            }
-          });
-        } catch (e) {
-          // Continue - local preference still works
-        }
+        // First install - use system locale (null)
+        state = null;
       }
     } catch (e) {
-      state = const Locale('en');
+      state = null; // Default to system locale on error
     }
   }
 
@@ -94,23 +77,32 @@ class LocaleNotifier extends StateNotifier<Locale> {
     // Also save to SharedPreferences for offline access
     SharedPreferences.getInstance().then((prefs) {
       prefs.setString(_localeKey, languageCode);
+      prefs.setBool(_useSystemKey, false);
     });
   }
 
-  Future<void> setLocale(Locale locale) async {
+  Future<void> setLocale(Locale? locale) async {
     state = locale;
     
-    // Save to SharedPreferences
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_localeKey, locale.languageCode);
     
-    // Try to sync with profile (optional, works offline)
-    try {
-      await _ref.read(profileProvider.notifier).updateProfile(
-        languagePreference: locale.languageCode,
-      );
-    } catch (e) {
-      // Continue - local preference still works
+    if (locale == null) {
+      // User selected "System default"
+      await prefs.setBool(_useSystemKey, true);
+      await prefs.remove(_localeKey);
+    } else {
+      // User selected a specific language
+      await prefs.setBool(_useSystemKey, false);
+      await prefs.setString(_localeKey, locale.languageCode);
+      
+      // Try to sync with profile (optional, works offline)
+      try {
+        await _ref.read(profileProvider.notifier).updateProfile(
+          languagePreference: locale.languageCode,
+        );
+      } catch (e) {
+        // Continue - local preference still works
+      }
     }
   }
 }

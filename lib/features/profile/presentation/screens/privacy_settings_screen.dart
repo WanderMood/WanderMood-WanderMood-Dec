@@ -1,218 +1,312 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
-import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
+import 'package:go_router/go_router.dart';
+import '../../domain/providers/profile_provider.dart';
+import '../widgets/settings_screen_template.dart';
 
-class PrivacySettingsScreen extends ConsumerWidget {
+class PrivacySettingsScreen extends ConsumerStatefulWidget {
   const PrivacySettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final profileAsync = ref.watch(profileProvider);
+  ConsumerState<PrivacySettingsScreen> createState() => _PrivacySettingsScreenState();
+}
 
-    return SwirlBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: Text(
-            'Privacy Settings',
+class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
+  String _selectedVisibility = 'public';
+  bool _showEmail = false;
+  bool _showAge = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  void _loadSettings() {
+    final profileAsync = ref.read(profileProvider);
+    profileAsync.whenData((profile) {
+      if (mounted && profile != null) {
+        setState(() {
+          _selectedVisibility = profile.isPublic ? 'public' : 'private';
+        });
+      }
+    });
+  }
+
+  Future<void> _updateVisibility(String value) async {
+    setState(() => _selectedVisibility = value);
+    try {
+      await ref.read(profileProvider.notifier).updateProfile(
+        isPublic: value == 'public',
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile visibility updated'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SettingsScreenTemplate(
+      title: 'Privacy',
+      onBack: () => context.pop(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Profile Visibility',
             style: GoogleFonts.poppins(
-              color: const Color(0xFF4CAF50),
+              fontSize: 14,
               fontWeight: FontWeight.bold,
+              color: const Color(0xFF374151),
             ),
           ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF4CAF50)),
-            onPressed: () => Navigator.pop(context),
+          const SizedBox(height: 12),
+          _buildRadioOption(
+            label: 'Public',
+            subtitle: 'Anyone can see your profile',
+            value: 'public',
+            selected: _selectedVisibility == 'public',
+            onTap: () => _updateVisibility('public'),
           ),
+          const SizedBox(height: 8),
+          _buildRadioOption(
+            label: 'Friends Only',
+            subtitle: 'Only your friends can see',
+            value: 'friends',
+            selected: _selectedVisibility == 'friends',
+            onTap: () => _updateVisibility('friends'),
+          ),
+          const SizedBox(height: 8),
+          _buildRadioOption(
+            label: 'Private',
+            subtitle: 'Only you can see',
+            value: 'private',
+            selected: _selectedVisibility == 'private',
+            onTap: () => _updateVisibility('private'),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'What Others Can See',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF374151),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildToggleOption(
+            label: 'Show Email Address',
+            checked: _showEmail,
+            onChange: () => setState(() => _showEmail = !_showEmail),
+          ),
+          const SizedBox(height: 12),
+          _buildToggleOption(
+            label: 'Show Age',
+            checked: _showAge,
+            onChange: () => setState(() => _showAge = !_showAge),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRadioOption({
+    required String label,
+    required String subtitle,
+    required String value,
+    required bool selected,
+    required VoidCallback onTap,
+    String? badge,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: selected ? const Color(0xFFFB923C) : const Color(0xFFE5E7EB),
+          width: 2,
         ),
-        body: profileAsync.when(
-          data: (profile) => ListView(
-            padding: const EdgeInsets.all(16.0),
-            children: [
-              Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    // Profile Visibility
-                    SwitchListTile(
-                      title: Text(
-                        'Public Profile',
-                        style: GoogleFonts.poppins(),
+      ),
+      child: Material(
+        color: selected ? const Color(0xFFFFF7ED) : Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            label,
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: const Color(0xFF1F2937),
+                            ),
+                          ),
+                          if (badge != null) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFD1FAE5),
+                                borderRadius: BorderRadius.circular(9999),
+                              ),
+                              child: Text(
+                                badge,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF16A34A),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      subtitle: Text(
-                        'Allow others to view your profile',
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
                         style: GoogleFonts.poppins(
-                          color: Colors.grey[600],
-                          fontSize: 12,
+                          fontSize: 14,
+                          color: const Color(0xFF6B7280),
                         ),
                       ),
-                      value: profile?.isPublic ?? true,
-                      activeColor: const Color(0xFF4CAF50),
-                      onChanged: (value) async {
-                        try {
-                          await ref.read(profileProvider.notifier).updateProfile(
-                            isPublic: value,
-                          );
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Profile visibility updated',
-                                  style: GoogleFonts.poppins(),
-                                ),
-                                backgroundColor: const Color(0xFF4CAF50),
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Failed to update privacy settings: ${e.toString()}',
-                                  style: GoogleFonts.poppins(),
-                                ),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        }
-                      },
-                    ),
-                    const Divider(height: 1),
-                    // Push Notifications
-                    SwitchListTile(
-                      title: Text(
-                        'Push Notifications',
-                        style: GoogleFonts.poppins(),
-                      ),
-                      subtitle: Text(
-                        'Receive push notifications',
-                        style: GoogleFonts.poppins(
-                          color: Colors.grey[600],
-                          fontSize: 12,
-                        ),
-                      ),
-                      value: profile?.notificationPreferences['push'] ?? true,
-                      activeColor: const Color(0xFF4CAF50),
-                      onChanged: (value) async {
-                        try {
-                          final newPrefs = Map<String, bool>.from(
-                            profile?.notificationPreferences ?? {'push': true, 'email': true},
-                          );
-                          newPrefs['push'] = value;
-                          
-                          await ref.read(profileProvider.notifier).updateProfile(
-                            notificationPreferences: newPrefs,
-                          );
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Push notifications ${value ? 'enabled' : 'disabled'}',
-                                  style: GoogleFonts.poppins(),
-                                ),
-                                backgroundColor: const Color(0xFF4CAF50),
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Failed to update notification settings: ${e.toString()}',
-                                  style: GoogleFonts.poppins(),
-                                ),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        }
-                      },
-                    ),
-                    const Divider(height: 1),
-                    // Email Notifications
-                    SwitchListTile(
-                      title: Text(
-                        'Email Notifications',
-                        style: GoogleFonts.poppins(),
-                      ),
-                      subtitle: Text(
-                        'Receive email notifications',
-                        style: GoogleFonts.poppins(
-                          color: Colors.grey[600],
-                          fontSize: 12,
-                        ),
-                      ),
-                      value: profile?.notificationPreferences['email'] ?? true,
-                      activeColor: const Color(0xFF4CAF50),
-                      onChanged: (value) async {
-                        try {
-                          final newPrefs = Map<String, bool>.from(
-                            profile?.notificationPreferences ?? {'push': true, 'email': true},
-                          );
-                          newPrefs['email'] = value;
-                          
-                          await ref.read(profileProvider.notifier).updateProfile(
-                            notificationPreferences: newPrefs,
-                          );
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Email notifications ${value ? 'enabled' : 'disabled'}',
-                                  style: GoogleFonts.poppins(),
-                                ),
-                                backgroundColor: const Color(0xFF4CAF50),
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Failed to update notification settings: ${e.toString()}',
-                                  style: GoogleFonts.poppins(),
-                                ),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        }
-                      },
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Manage your privacy settings and notification preferences. These settings control who can see your profile and how you receive updates.',
-                style: GoogleFonts.poppins(
-                  color: Colors.grey[600],
-                  fontSize: 14,
+                Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: selected ? const Color(0xFFF97316) : const Color(0xFFD1D5DB),
+                      width: 2,
+                    ),
+                  ),
+                  child: selected
+                      ? Center(
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFF97316),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        )
+                      : null,
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Center(
-            child: Text(
-              'Error loading privacy settings',
-              style: GoogleFonts.poppins(color: Colors.red),
+              ],
             ),
           ),
         ),
       ),
     );
   }
-} 
+
+  Widget _buildToggleOption({
+    required String label,
+    String? subtitle,
+    required bool checked,
+    required VoidCallback onChange,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFE5E7EB),
+          width: 2,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: const Color(0xFF1F2937),
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            GestureDetector(
+              onTap: onChange,
+              child: Container(
+                width: 48,
+                height: 28,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(9999),
+                  gradient: checked
+                      ? const LinearGradient(
+                          colors: [Color(0xFFFB923C), Color(0xFFEC4899)],
+                        )
+                      : null,
+                  color: checked ? null : const Color(0xFFD1D5DB),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(2),
+                  child: AnimatedAlign(
+                    duration: const Duration(milliseconds: 200),
+                    alignment: checked ? Alignment.centerRight : Alignment.centerLeft,
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

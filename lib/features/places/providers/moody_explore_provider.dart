@@ -83,6 +83,8 @@ final moodyExploreProvider = FutureProvider.family<List<Place>, ExploreParams>((
 /// 
 /// CRITICAL: Location and coordinates are REQUIRED - no defaults
 /// If location is missing, this will throw an error that UI should handle
+/// 
+/// CRITICAL: NOT autoDispose to prevent disposal on hot reload
 final moodyExploreAutoProvider = FutureProvider<List<Place>>((ref) async {
   // Get current mood from daily mood state
   final dailyMoodState = ref.watch(dailyMoodStateNotifierProvider);

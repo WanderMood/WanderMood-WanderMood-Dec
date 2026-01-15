@@ -48,6 +48,8 @@ class MainScreen extends ConsumerStatefulWidget {
 }
 
 class _MainScreenState extends ConsumerState<MainScreen> {
+  bool _hasPrefetched = false; // Prevent prefetch on hot reload
+  
   @override
   void initState() {
     super.initState();
@@ -62,9 +64,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         ref.read(mainTabProvider.notifier).state = finalTab;
         debugPrint('✅ MainScreen: Tab provider set to ${ref.read(mainTabProvider)}');
           
-          // FIX #2: Delay prefetch until session is guaranteed (async, non-blocking)
+          // CRITICAL: Only prefetch once (not on hot reload)
           // User is authenticated, session established, preferences set - perfect timing
-          _prefetchPlacesInBackground();
+          if (!_hasPrefetched) {
+            _hasPrefetched = true;
+            _prefetchPlacesInBackground();
+          }
       }
       });
     });

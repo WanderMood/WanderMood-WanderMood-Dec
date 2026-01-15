@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
+import '../../../../core/presentation/widgets/swirl_background.dart';
+import '../../../home/presentation/widgets/moody_character.dart';
+import '../../../home/domain/enums/moody_feature.dart';
 
 /// Interactive Demo Screen
 /// 
@@ -276,19 +281,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFFF8E1),
-              Color(0xFFFFFBF5),
-            ],
-          ),
-        ),
+      body: SwirlBackground(
         child: SafeArea(
           child: Column(
             children: [
@@ -327,21 +320,21 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.orange[100],
+              color: const Color(0xFFFFF8E1),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.orange[300]!),
+              border: Border.all(color: const Color(0xFFFFE0B2)),
             ),
-            child: Row(
+            child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.play_circle_outline, size: 16, color: Colors.orange[700]),
-                const SizedBox(width: 4),
+                Icon(Icons.play_circle_outline, size: 16, color: Color(0xFFE65100)),
+                SizedBox(width: 4),
                 Text(
                   'Demo Mode',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Colors.orange[700],
+                    color: Color(0xFFE65100),
                   ),
                 ),
               ],
@@ -372,27 +365,14 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
       children: [
         const SizedBox(height: 16),
         
-        // Moody avatar
+        // Moody character
         Center(
           child: Column(
             children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.orange.withOpacity(0.2),
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-                child: const Center(
-                  child: Text('🌟', style: TextStyle(fontSize: 40)),
-                ),
+              MoodyCharacter(
+                size: 100,
+                mood: _isTyping ? 'thinking' : 'happy',
+                currentFeature: MoodyFeature.none,
               ),
               const SizedBox(height: 8),
               Text(
@@ -429,6 +409,9 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
   }
 
   Widget _buildMessage(_DemoMessage message) {
+    // Trigger haptic feedback when message appears
+    HapticFeedback.lightImpact();
+    
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -443,20 +426,27 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: message.isFromMoody 
-                    ? Colors.white 
-                    : Colors.orange[600],
+                gradient: message.isFromMoody 
+                    ? null
+                    : const LinearGradient(
+                        colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                color: message.isFromMoody ? Colors.white : null,
                 borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(message.isFromMoody ? 4 : 16),
-                  bottomRight: Radius.circular(message.isFromMoody ? 16 : 4),
+                  topLeft: const Radius.circular(20),
+                  topRight: const Radius.circular(20),
+                  bottomLeft: Radius.circular(message.isFromMoody ? 4 : 20),
+                  bottomRight: Radius.circular(message.isFromMoody ? 20 : 4),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
+                    color: message.isFromMoody 
+                        ? Colors.black.withOpacity(0.08)
+                        : const Color(0xFF4CAF50).withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -466,10 +456,23 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
                   fontSize: 15,
                   color: message.isFromMoody ? Colors.grey[800] : Colors.white,
                   height: 1.4,
+                  fontWeight: message.isFromMoody ? FontWeight.normal : FontWeight.w500,
                 ),
               ),
             ),
-          ),
+          ).animate()
+            .fadeIn(duration: 300.ms)
+            .slideX(
+              begin: message.isFromMoody ? -0.1 : 0.1,
+              end: 0,
+              duration: 300.ms,
+              curve: Curves.easeOutCubic,
+            )
+            .scale(
+              begin: const Offset(0.95, 0.95),
+              end: const Offset(1, 1),
+              duration: 200.ms,
+            ),
           
           if (message.isFromMoody) const Spacer(flex: 2),
         ],
@@ -656,9 +659,12 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: _onContinue,
+                  onPressed: () {
+                    HapticFeedback.mediumImpact();
+                    _onContinue();
+                  },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange[600],
+                    backgroundColor: const Color(0xFF4CAF50),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
@@ -677,11 +683,11 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
               const SizedBox(height: 12),
               TextButton(
                 onPressed: _onSignUp,
-                child: Text(
+                child: const Text(
                   'Ready to sign up? Start now →',
                   style: TextStyle(
                     fontSize: 15,
-                    color: Colors.orange[700],
+                    color: Color(0xFF4CAF50),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -707,13 +713,25 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
 
   Widget _buildMoodButton(String mood, String emoji) {
     return Material(
-      color: Colors.orange[50],
+      color: const Color(0xFFFFF8E1),
       borderRadius: BorderRadius.circular(24),
       child: InkWell(
-        onTap: () => _selectMood(mood),
+        onTap: () {
+          HapticFeedback.mediumImpact();
+          _selectMood(mood);
+        },
         borderRadius: BorderRadius.circular(24),
+        splashColor: const Color(0xFF4CAF50).withOpacity(0.2),
+        highlightColor: const Color(0xFF4CAF50).withOpacity(0.1),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: const Color(0xFFFFE0B2),
+              width: 1.5,
+            ),
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -731,7 +749,14 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
           ),
         ),
       ),
-    );
+    ).animate()
+      .fadeIn(duration: 200.ms)
+      .scale(
+        begin: const Offset(0.9, 0.9),
+        end: const Offset(1, 1),
+        duration: 200.ms,
+        curve: Curves.easeOutBack,
+      );
   }
 
   Widget _buildDot({required bool isActive}) {
@@ -740,7 +765,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
       width: isActive ? 24 : 8,
       height: 8,
       decoration: BoxDecoration(
-        color: isActive ? Colors.orange[600] : Colors.grey[300],
+        color: isActive ? const Color(0xFF4CAF50) : Colors.grey[300],
         borderRadius: BorderRadius.circular(4),
       ),
     );

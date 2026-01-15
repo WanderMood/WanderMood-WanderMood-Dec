@@ -1,205 +1,193 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
-import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
-import 'package:wandermood/core/presentation/providers/local_theme_provider.dart';
+import 'package:go_router/go_router.dart';
+import '../../domain/providers/profile_provider.dart';
+import '../../../../core/presentation/providers/local_theme_provider.dart';
+import '../widgets/settings_screen_template.dart';
 
-class ThemeSettingsScreen extends ConsumerWidget {
+class ThemeSettingsScreen extends ConsumerStatefulWidget {
   const ThemeSettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final currentTheme = ref.watch(localThemeProvider);
-    final localThemeNotifier = ref.read(localThemeProvider.notifier);
-    final themeBrightness = Theme.of(context).brightness;
-    
-    print('🎨 ThemeSettingsScreen: currentTheme=$currentTheme, brightness=$themeBrightness');
+  ConsumerState<ThemeSettingsScreen> createState() => _ThemeSettingsScreenState();
+}
 
-    return SwirlBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: Text(
-            'Theme Settings',
-            style: GoogleFonts.poppins(
-              color: const Color(0xFF4CAF50),
-              fontWeight: FontWeight.bold,
-            ),
+class _ThemeSettingsScreenState extends ConsumerState<ThemeSettingsScreen> {
+  String _selectedTheme = 'system';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  void _loadSettings() {
+    final themeNotifier = ref.read(localThemeProvider.notifier);
+    if (mounted) {
+      setState(() {
+        _selectedTheme = themeNotifier.currentThemeString;
+      });
+    }
+  }
+
+  Future<void> _updateTheme(String theme) async {
+    setState(() => _selectedTheme = theme);
+    try {
+      await ref.read(localThemeProvider.notifier).setThemeFromString(theme);
+      await ref.read(profileProvider.notifier).updateProfile(
+        themePreference: theme,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Theme updated'),
+            backgroundColor: Colors.green,
           ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF4CAF50)),
-            onPressed: () => Navigator.pop(context),
+        );
+      }
+    } catch (e) {
+      // Handle error silently
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SettingsScreenTemplate(
+      title: 'Theme',
+      onBack: () => context.pop(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildRadioOption(
+            label: 'Light',
+            subtitle: 'Always use light theme',
+            value: 'light',
+            selected: _selectedTheme == 'light',
+            onTap: () => _updateTheme('light'),
           ),
+          const SizedBox(height: 8),
+          _buildRadioOption(
+            label: 'Dark',
+            subtitle: 'Always use dark theme',
+            value: 'dark',
+            selected: _selectedTheme == 'dark',
+            onTap: () => _updateTheme('dark'),
+          ),
+          const SizedBox(height: 8),
+          _buildRadioOption(
+            label: 'System',
+            subtitle: 'Match your device settings',
+            value: 'system',
+            selected: _selectedTheme == 'system',
+            onTap: () => _updateTheme('system'),
+            badge: 'Recommended',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRadioOption({
+    required String label,
+    required String subtitle,
+    required String value,
+    required bool selected,
+    required VoidCallback onTap,
+    String? badge,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: selected ? const Color(0xFFFB923C) : const Color(0xFFE5E7EB),
+          width: 2,
         ),
-        body: ListView(
-          padding: const EdgeInsets.all(16.0),
-          children: [
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  _buildThemeOption(
-                    context,
-                    ref,
-                    'System',
-                    'system',
-                    Icons.brightness_auto,
-                    'Follow system theme',
-                    localThemeNotifier.currentThemeString,
-                  ),
-                  const Divider(height: 1),
-                  _buildThemeOption(
-                    context,
-                    ref,
-                    'Light',
-                    'light',
-                    Icons.light_mode,
-                    'Light theme',
-                    localThemeNotifier.currentThemeString,
-                  ),
-                  const Divider(height: 1),
-                  _buildThemeOption(
-                    context,
-                    ref,
-                    'Dark',
-                    'dark',
-                    Icons.dark_mode,
-                    'Dark theme',
-                    localThemeNotifier.currentThemeString,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Choose your preferred theme for the app. You can follow your system settings or choose a specific theme.',
-              style: GoogleFonts.poppins(
-                color: Colors.grey[600],
-                fontSize: 14,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            // Debug info card
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Debug Info:',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+      ),
+      child: Material(
+        color: selected ? const Color(0xFFFFF7ED) : Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            label,
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: const Color(0xFF1F2937),
+                            ),
+                          ),
+                          if (badge != null) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFD1FAE5),
+                                borderRadius: BorderRadius.circular(9999),
+                              ),
+                              child: Text(
+                                badge,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF16A34A),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Local Theme: ${localThemeNotifier.currentThemeString}',
-                      style: GoogleFonts.poppins(fontSize: 12),
-                    ),
-                    Text(
-                      'App Theme Mode: $currentTheme',
-                      style: GoogleFonts.poppins(fontSize: 12),
-                    ),
-                    Text(
-                      'UI Brightness: $themeBrightness',
-                      style: GoogleFonts.poppins(fontSize: 12),
-                    ),
-                  ],
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: const Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+                Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: selected ? const Color(0xFFF97316) : const Color(0xFFD1D5DB),
+                      width: 2,
+                    ),
+                  ),
+                  child: selected
+                      ? Center(
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFF97316),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        )
+                      : null,
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
-
-  Widget _buildThemeOption(
-    BuildContext context,
-    WidgetRef ref,
-    String title,
-    String value,
-    IconData icon,
-    String description,
-    String currentTheme,
-  ) {
-    final isSelected = currentTheme == value;
-
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: isSelected ? const Color(0xFF4CAF50) : Colors.grey[600],
-      ),
-      title: Text(
-        title,
-        style: GoogleFonts.poppins(
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-      subtitle: Text(
-        description,
-        style: GoogleFonts.poppins(
-          color: Colors.grey[600],
-          fontSize: 12,
-        ),
-      ),
-      trailing: isSelected
-          ? const Icon(Icons.check, color: Color(0xFF4CAF50))
-          : null,
-      onTap: () async {
-        try {
-          // Update local theme immediately (works offline)
-          await ref.read(localThemeProvider.notifier).setThemeFromString(value);
-          
-          // Try to sync with profile when network is available (optional)
-          try {
-            await ref.read(profileProvider.notifier).updateProfile(
-              themePreference: value,
-            );
-            print('🎨 Theme synced to profile successfully');
-          } catch (e) {
-            print('🎨 Could not sync theme to profile (offline): $e');
-            // Continue - local theme still works
-          }
-          
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Theme updated to $title',
-                  style: GoogleFonts.poppins(),
-                ),
-                backgroundColor: const Color(0xFF4CAF50),
-              ),
-            );
-          }
-        } catch (e) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Failed to update theme: ${e.toString()}',
-                  style: GoogleFonts.poppins(),
-                ),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        }
-      },
-    );
-  }
-} 
+}

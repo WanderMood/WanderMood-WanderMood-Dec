@@ -396,7 +396,7 @@ class ProfileDrawer extends ConsumerWidget {
                         try {
                           await Supabase.instance.client.auth.signOut();
                           if (context.mounted) {
-                            context.go('/login');
+                            context.go('/auth/magic-link');
                           }
                         } catch (e) {
                           if (context.mounted) {

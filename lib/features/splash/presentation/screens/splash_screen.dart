@@ -211,7 +211,40 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     
     // Re-check after sync
     final finalCurrentUser = Supabase.instance.client.auth.currentUser;
-    final finalHasCompletedPreferences = prefs.getBool('hasCompletedPreferences') ?? false;
+    
+    // OPTIMIZED: Check SharedPreferences first (fast), then database as fallback
+    // This reduces database calls while ensuring accuracy
+    bool finalHasCompletedPreferences = prefs.getBool('hasCompletedPreferences') ?? false;
+    
+    // Only check database if user is authenticated and flag is missing or false
+    // This prevents unnecessary database calls
+    if (finalCurrentUser != null && !finalHasCompletedPreferences) {
+      try {
+        final response = await Supabase.instance.client
+            .from('user_preferences')
+            .select('has_completed_preferences')
+            .eq('user_id', finalCurrentUser.id)
+            .maybeSingle();
+        
+        if (response != null && response['has_completed_preferences'] == true) {
+          finalHasCompletedPreferences = true;
+          // Sync to local cache for future fast access
+          await prefs.setBool('hasCompletedPreferences', true);
+          debugPrint('✅ User has completed preferences in database - synced to local');
+        } else {
+          finalHasCompletedPreferences = false;
+          // Sync to local cache for future fast access
+          await prefs.setBool('hasCompletedPreferences', false);
+          debugPrint('🆕 User has NOT completed preferences in database - forcing preferences flow');
+        }
+      } catch (e) {
+        debugPrint('⚠️ Could not check preferences from database: $e');
+        // Use existing local cache value if database check fails
+        debugPrint('   Using cached value: $finalHasCompletedPreferences');
+      }
+    } else if (finalHasCompletedPreferences) {
+      debugPrint('⚡ Using cached preferences flag (fast path)');
+    }
     
     // Check feature flag for new onboarding flow
     final useNewOnboarding = ref.read(useNewOnboardingFlowProvider);
@@ -248,8 +281,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
         debugPrint('🚀 User not authenticated (NEW FLOW) - showing new onboarding flow');
         context.go('/intro');
       } else {
-        debugPrint('🚀 User not authenticated (OLD FLOW) - navigating to login');
-        context.go('/login');
+        debugPrint('🚀 User not authenticated (OLD FLOW) - navigating to magic link');
+        context.go('/auth/magic-link');
       }
     } else if (!finalHasCompletedPreferences) {
       debugPrint('🚀 User needs to complete preferences - navigating to preferences');

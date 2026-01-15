@@ -116,7 +116,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> with Sing
               ),
               onTap: () {
                 Navigator.pop(context);
-                context.go('/login');
+                context.go('/auth/magic-link');
               },
             ),
           ],

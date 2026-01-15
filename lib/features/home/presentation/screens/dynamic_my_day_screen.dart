@@ -39,17 +39,24 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final Map<String, bool> _collapsedSections = {}; // Track which sections are collapsed
   
+  bool _hasInitialized = false; // Prevent invalidate on hot reload
+  DateTime? _lastRefreshTime; // ✅ Debounce refresh button
+  
   @override
   void initState() {
     super.initState();
+    // CRITICAL: Only invalidate once (not on hot reload)
     // Refresh data when the screen loads - delay properly to avoid build cycle conflicts
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.microtask(() {
-        if (mounted) {
-      ref.invalidate(cachedActivitySuggestionsProvider);
-        }
+    if (!_hasInitialized) {
+      _hasInitialized = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Future.microtask(() {
+          if (mounted) {
+        ref.invalidate(cachedActivitySuggestionsProvider);
+          }
+        });
       });
-    });
+    }
   }
   
   @override
@@ -172,8 +179,15 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                               // Refresh button
                               IconButton(
                                 onPressed: () {
-                                  // Refresh activities
-                                  ref.invalidate(cachedActivitySuggestionsProvider);
+                                  // ✅ FIXED: Add debounce - only allow refresh every 2 seconds
+                                  final now = DateTime.now();
+                                  if (_lastRefreshTime == null || now.difference(_lastRefreshTime!).inSeconds > 2) {
+                                    _lastRefreshTime = now;
+                                    debugPrint('🔄 My Day: Manual refresh triggered');
+                                    ref.invalidate(cachedActivitySuggestionsProvider);
+                                  } else {
+                                    debugPrint('⏸️ My Day: Refresh blocked (debounced)');
+                                  }
                                 },
                                 icon: const Icon(
                                   Icons.refresh,

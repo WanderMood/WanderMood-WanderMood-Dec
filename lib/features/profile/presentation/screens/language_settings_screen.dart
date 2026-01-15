@@ -1,238 +1,178 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
-import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
-import 'package:wandermood/core/presentation/providers/language_provider.dart';
-import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
+import '../../domain/providers/profile_provider.dart';
+import '../../../../core/presentation/providers/language_provider.dart';
+import '../widgets/settings_screen_template.dart';
 
-class LanguageSettingsScreen extends ConsumerWidget {
+class LanguageSettingsScreen extends ConsumerStatefulWidget {
   const LanguageSettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
-    final profileAsync = ref.watch(profileProvider);
+  ConsumerState<LanguageSettingsScreen> createState() => _LanguageSettingsScreenState();
+}
 
-    return SwirlBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: Text(
-            l10n?.languageSettings ?? 'Language Settings',
-            style: GoogleFonts.poppins(
-              color: const Color(0xFF4CAF50),
-              fontWeight: FontWeight.bold,
+class _LanguageSettingsScreenState extends ConsumerState<LanguageSettingsScreen> {
+  String _selectedLanguage = 'en';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  void _loadSettings() {
+    final profileAsync = ref.read(profileProvider);
+    profileAsync.whenData((profile) {
+      if (mounted && profile != null) {
+        setState(() {
+          _selectedLanguage = profile.languagePreference;
+        });
+      }
+    });
+  }
+
+  Future<void> _updateLanguage(String code) async {
+    setState(() => _selectedLanguage = code);
+    try {
+      await ref.read(localeProvider.notifier).setLocale(Locale(code));
+      await ref.read(profileProvider.notifier).updateProfile(
+        languagePreference: code,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Language updated'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SettingsScreenTemplate(
+      title: 'Language',
+      onBack: () => context.pop(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildLanguageOption(
+            code: 'en',
+            name: 'English',
+            native: 'English',
+            selected: _selectedLanguage == 'en',
+            onTap: () => _updateLanguage('en'),
+          ),
+          const SizedBox(height: 8),
+          _buildLanguageOption(
+            code: 'nl',
+            name: 'Dutch',
+            native: 'Nederlands',
+            selected: _selectedLanguage == 'nl',
+            onTap: () => _updateLanguage('nl'),
+          ),
+          const SizedBox(height: 8),
+          _buildLanguageOption(
+            code: 'es',
+            name: 'Spanish',
+            native: 'Español',
+            selected: _selectedLanguage == 'es',
+            onTap: () => _updateLanguage('es'),
+          ),
+          const SizedBox(height: 8),
+          _buildLanguageOption(
+            code: 'fr',
+            name: 'French',
+            native: 'Français',
+            selected: _selectedLanguage == 'fr',
+            onTap: () => _updateLanguage('fr'),
+          ),
+          const SizedBox(height: 8),
+          _buildLanguageOption(
+            code: 'de',
+            name: 'German',
+            native: 'Deutsch',
+            selected: _selectedLanguage == 'de',
+            onTap: () => _updateLanguage('de'),
+          ),
+          const SizedBox(height: 8),
+          _buildLanguageOption(
+            code: 'it',
+            name: 'Italian',
+            native: 'Italiano',
+            selected: _selectedLanguage == 'it',
+            onTap: () => _updateLanguage('it'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLanguageOption({
+    required String code,
+    required String name,
+    required String native,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: selected ? const Color(0xFFFB923C) : const Color(0xFFE5E7EB),
+          width: 2,
+        ),
+      ),
+      child: Material(
+        color: selected ? const Color(0xFFFFF7ED) : Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          color: const Color(0xFF1F2937),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        native,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: const Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (selected)
+                  const Icon(
+                    Icons.check,
+                    color: Color(0xFFF97316),
+                    size: 20,
+                  ),
+              ],
             ),
           ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF4CAF50)),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
-        body: profileAsync.when(
-          data: (profile) {
-            // Get current language from profile or default to 'en'
-            final currentLanguage = profile?.languagePreference ?? 'en';
-            
-            return ListView(
-              padding: const EdgeInsets.all(16.0),
-              children: [
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    children: [
-                      _buildLanguageOption(
-                        context,
-                        ref,
-                        'English',
-                        'en',
-                        currentLanguage,
-                      ),
-                      const Divider(height: 1),
-                      _buildLanguageOption(
-                        context,
-                        ref,
-                        'Nederlands',
-                        'nl',
-                        currentLanguage,
-                      ),
-                      const Divider(height: 1),
-                      _buildLanguageOption(
-                        context,
-                        ref,
-                        'Español',
-                        'es',
-                        currentLanguage,
-                      ),
-                      const Divider(height: 1),
-                      _buildLanguageOption(
-                        context,
-                        ref,
-                        'Français',
-                        'fr',
-                        currentLanguage,
-                      ),
-                      const Divider(height: 1),
-                      _buildLanguageOption(
-                        context,
-                        ref,
-                        'Deutsch',
-                        'de',
-                        currentLanguage,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n?.chooseYourPreferredLanguage ?? 'Choose your preferred language for the app interface. This will affect all text and content throughout the app.',
-                  style: GoogleFonts.poppins(
-                    color: Colors.grey[600],
-                    fontSize: 14,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) {
-            final errorL10n = AppLocalizations.of(context);
-            // Even if profile fails to load, show language options with default 'en'
-            return ListView(
-              padding: const EdgeInsets.all(16.0),
-              children: [
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    children: [
-                      _buildLanguageOption(
-                        context,
-                        ref,
-                        'English',
-                        'en',
-                        'en', // Default to English if profile can't load
-                      ),
-                      const Divider(height: 1),
-                      _buildLanguageOption(
-                        context,
-                        ref,
-                        'Nederlands',
-                        'nl',
-                        'en',
-                      ),
-                      const Divider(height: 1),
-                      _buildLanguageOption(
-                        context,
-                        ref,
-                        'Español',
-                        'es',
-                        'en',
-                      ),
-                      const Divider(height: 1),
-                      _buildLanguageOption(
-                        context,
-                        ref,
-                        'Français',
-                        'fr',
-                        'en',
-                      ),
-                      const Divider(height: 1),
-                      _buildLanguageOption(
-                        context,
-                        ref,
-                        'Deutsch',
-                        'de',
-                        'en',
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  errorL10n?.chooseYourPreferredLanguage ?? 'Choose your preferred language for the app interface. This will affect all text and content throughout the app.',
-                  style: GoogleFonts.poppins(
-                    color: Colors.grey[600],
-                    fontSize: 14,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            );
-          },
         ),
       ),
     );
   }
-
-  Widget _buildLanguageOption(
-    BuildContext context,
-    WidgetRef ref,
-    String language,
-    String code,
-    String currentLanguage,
-  ) {
-    final isSelected = currentLanguage == code;
-
-    return ListTile(
-      title: Text(
-        language,
-        style: GoogleFonts.poppins(
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-      trailing: isSelected
-          ? const Icon(Icons.check, color: Color(0xFF4CAF50))
-          : null,
-      onTap: () async {
-        try {
-          // Update locale immediately (works offline)
-          await ref.read(localeProvider.notifier).setLocale(Locale(code));
-          
-          // Try to sync with profile when network is available (optional)
-          try {
-            await ref.read(profileProvider.notifier).updateProfile(
-              languagePreference: code,
-            );
-          } catch (e) {
-            // Continue - local locale still works
-          }
-          
-          if (context.mounted) {
-            final updatedL10n = AppLocalizations.of(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  updatedL10n?.languageUpdatedTo(language) ?? 'Language updated to $language',
-                  style: GoogleFonts.poppins(),
-                ),
-                backgroundColor: const Color(0xFF4CAF50),
-              ),
-            );
-          }
-        } catch (e) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Failed to update language: ${e.toString()}',
-                  style: GoogleFonts.poppins(),
-                ),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        }
-      },
-    );
-  }
-} 
+}

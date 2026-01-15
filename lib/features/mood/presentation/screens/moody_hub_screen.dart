@@ -3237,7 +3237,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           ),
         ),
         const SizedBox(height: 16),
-        // Get mood-filtered places
+        // Get mood-filtered places - use ref.watch to prevent API calls on rebuild
         locationNotifier.when(
           data: (location) {
             if (location == null) {
@@ -3254,20 +3254,12 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               );
             }
             
-            // Fetch places from Supabase or cache
-            return FutureBuilder<List<Place>>(
-              future: _fetchMoodFilteredPlaces(currentMood),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(20.0),
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                }
-                
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            // Use ref.watch instead of FutureBuilder to prevent API calls on rebuild
+            final placesAsync = ref.watch(moodyExploreAutoProvider);
+            
+            return placesAsync.when(
+              data: (places) {
+                if (places.isEmpty) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Text(
@@ -3282,13 +3274,30 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                 }
                 
                 return SimplifiedMoodCarousel(
-                  places: snapshot.data!,
+                  places: places,
                   mood: currentMood,
                   onChatOpen: _showChatBottomSheet,
                   onAddToDay: _addPlaceToSchedule,
-                  onRefresh: () => setState(() {}), // Refresh by rebuilding
+                  onRefresh: () => ref.invalidate(moodyExploreAutoProvider),
                 );
               },
+              loading: () => const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+              error: (error, stack) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  'Exploring places just for you...',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: const Color(0xFF718096),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
             );
           },
           loading: () => const Center(
@@ -3310,30 +3319,6 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         ),
       ],
     );
-  }
-  
-  // Fetch places filtered by mood - USING EDGE FUNCTION
-  Future<List<Place>> _fetchMoodFilteredPlaces(String mood) async {
-    try {
-      // CRITICAL: Use moodyExploreAutoProvider (Edge Function) instead of old cache query
-      // This ensures we get real places from Google Places API via Edge Function
-      // moodyExploreAutoProvider is a FutureProvider, so we can await it directly
-      final places = await ref.read(moodyExploreAutoProvider.future);
-      
-      if (places.isEmpty) {
-        debugPrint('⚠️ No places found from Edge Function for mood: $mood');
-        return [];
-      }
-      
-      debugPrint('✅ Fetched ${places.length} places from Edge Function for mood: $mood');
-      
-      // Return places directly (already transformed by Edge Function)
-      // Edge Function already filters by mood, so we can return all places
-      return places;
-    } catch (e) {
-      if (kDebugMode) debugPrint('⚠️ Error fetching mood-filtered places: $e');
-      return [];
-    }
   }
 
   // Moody thinks you'd love section

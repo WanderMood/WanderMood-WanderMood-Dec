@@ -180,17 +180,17 @@ class _CommunicationPreferenceScreenState extends ConsumerState<CommunicationPre
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ...List.generate(6, (index) => Container(
-                          width: 35,
-                          height: 4,
-                          margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                          decoration: BoxDecoration(
-                            color: index < 1
-                              ? const Color(0xFF5BB32A)
-                              : Colors.grey.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        )),
+                        ...List.generate(4, (index) => Container(
+                      width: 35,
+                      height: 4,
+                      margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                      decoration: BoxDecoration(
+                        color: index < 1 
+                          ? const Color(0xFF4CAF50)
+                          : Colors.grey.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    )),
                       ],
                     ),
                   ),
@@ -209,7 +209,7 @@ class _CommunicationPreferenceScreenState extends ConsumerState<CommunicationPre
                           style: GoogleFonts.museoModerno(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFF5BB32A),
+                            color: const Color(0xFF4CAF50),
                           ),
                         ).animate()
                          .fadeIn(duration: 600.ms)

@@ -360,13 +360,13 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    ...List.generate(6, (index) => Container(
+                    ...List.generate(4, (index) => Container(
                       width: 35,
                       height: 4,
                       margin: const EdgeInsets.symmetric(horizontal: 1.5),
                       decoration: BoxDecoration(
                         color: index < 3 
-                          ? const Color(0xFF5BB32A)
+                          ? const Color(0xFF4CAF50)
                           : Colors.grey.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
@@ -397,7 +397,7 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                     ),
                     child: const Icon(
                       Icons.arrow_back_ios_new,
-                      color: Color(0xFF5BB32A),
+                      color: const Color(0xFF4CAF50),
                       size: 20,
                     ),
                   ),
@@ -479,7 +479,7 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _selectedInterests.isNotEmpty
-                          ? () => context.go('/preferences/social-vibe')
+                          ? () => context.go('/preferences/travel-preferences')
                           : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _selectedInterests.isNotEmpty

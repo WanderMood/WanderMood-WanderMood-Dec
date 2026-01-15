@@ -235,4 +235,82 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get emailNotificationsDisabled => 'E-mailmeldingen uitgeschakeld';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get privacy => 'Privacy';
+
+  @override
+  String get privateProfile => 'Private Profile';
+
+  @override
+  String get loading => 'Loading...';
+
+  @override
+  String get appSettings => 'App Settings';
+
+  @override
+  String get pushEmailInApp => 'Push, email, and in-app';
+
+  @override
+  String get location => 'Location';
+
+  @override
+  String get autoDetectPermissions => 'Auto-detect and permissions';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get more => 'More';
+
+  @override
+  String get achievements => 'Achievements';
+
+  @override
+  String get unlocked => 'unlocked';
+
+  @override
+  String get subscription => 'Subscription';
+
+  @override
+  String get free => 'Free';
+
+  @override
+  String get plan => 'Plan';
+
+  @override
+  String get premium => 'Premium';
+
+  @override
+  String get dataStorage => 'Data & Storage';
+
+  @override
+  String get exportClearCache => 'Export data and clear cache';
+
+  @override
+  String get helpSupport => 'Help & Support';
+
+  @override
+  String get faqContactUs => 'FAQ and contact us';
+
+  @override
+  String get dangerZone => 'Danger Zone';
+
+  @override
+  String get deleteAccount => 'Delete Account';
+
+  @override
+  String get permanentlyDeleteYourData => 'Permanently delete your data';
+
+  @override
+  String get signOut => 'Sign Out';
+
+  @override
+  String get logOutOfYourAccount => 'Log out of your account';
 }

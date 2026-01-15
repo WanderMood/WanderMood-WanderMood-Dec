@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
+import '../../../../core/presentation/widgets/swirl_background.dart';
+import '../../../home/presentation/widgets/moody_character.dart';
+import '../../../home/domain/enums/moody_feature.dart';
 
 /// Magic Link Signup Screen
 /// 
@@ -111,20 +114,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFFFF8E1),
-              Color(0xFFFFE0B2),
-              Color(0xFFFFF3E0),
-            ],
-          ),
-        ),
+      body: SwirlBackground(
         child: SafeArea(
           child: FadeTransition(
             opacity: _fadeAnimation,
@@ -153,23 +143,10 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
           
           // Moody character
           Center(
-            child: Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.orange.withOpacity(0.2),
-                    blurRadius: 25,
-                    spreadRadius: 5,
-                  ),
-                ],
-              ),
-              child: const Center(
-                child: Text('🌟', style: TextStyle(fontSize: 50)),
-              ),
+            child: const MoodyCharacter(
+              size: 120,
+              mood: 'happy',
+              currentFeature: MoodyFeature.none,
             ),
           ),
           
@@ -231,7 +208,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: Colors.orange[600]!, width: 2),
+                      borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
                     ),
                     errorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -286,9 +263,9 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _sendMagicLink,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange[600],
+                      backgroundColor: const Color(0xFF4CAF50),
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor: Colors.orange[300],
+                      disabledBackgroundColor: const Color(0xFF4CAF50).withOpacity(0.5),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -435,10 +412,10 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
           
           Text(
             _emailController.text,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Colors.orange[700],
+              color: Color(0xFF4CAF50),
             ),
           ),
           
@@ -461,7 +438,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
               children: [
                 Row(
                   children: [
-                    Icon(Icons.check_circle, color: Colors.green[600], size: 24),
+                    const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 24),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -477,7 +454,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Icon(Icons.schedule, color: Colors.orange[600], size: 24),
+                    const Icon(Icons.schedule, color: Color(0xFF4CAF50), size: 24),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -519,11 +496,11 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                 _emailSent = false;
               });
             },
-            child: Text(
+            child: const Text(
               'Didn\'t receive email? Try again',
               style: TextStyle(
                 fontSize: 15,
-                color: Colors.orange[700],
+                color: Color(0xFF4CAF50),
                 fontWeight: FontWeight.w500,
               ),
             ),

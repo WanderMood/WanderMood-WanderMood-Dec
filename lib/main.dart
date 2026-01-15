@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/router/router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/config/supabase_config.dart';
@@ -17,6 +18,8 @@ import 'features/settings/presentation/providers/user_preferences_provider.dart'
 import 'features/gamification/providers/gamification_provider.dart' as gamification;
 import 'package:wandermood/features/places/providers/explore_places_provider.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/providers/language_provider.dart';
 
 // Provider to initialize app data on startup
 final appInitializerProvider = FutureProvider<bool>((ref) async {
@@ -337,6 +340,9 @@ class WanderMoodApp extends ConsumerWidget {
     // Get user preferences for theme
     final userPrefs = ref.watch(userPreferencesProvider);
     
+    // Get locale from locale provider
+    final locale = ref.watch(localeProvider);
+    
     return MaterialApp.router(
       title: 'WanderMood',
       debugShowCheckedModeBanner: false,
@@ -347,6 +353,26 @@ class WanderMoodApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: userPrefs.getThemeMode(),
+      // Localization configuration
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: locale, // null means use system locale
+      localeResolutionCallback: (locale, supportedLocales) {
+        // If locale is null (system default), use device locale
+        if (locale == null) {
+          final deviceLocale = WidgetsBinding.instance.platformDispatcher.locale;
+          // Check if device locale is supported
+          for (var supportedLocale in supportedLocales) {
+            if (supportedLocale.languageCode == deviceLocale.languageCode) {
+              return supportedLocale;
+            }
+          }
+          // Fallback to English if device locale not supported
+          return const Locale('en');
+        }
+        // Use the provided locale
+        return locale;
+      },
       routerConfig: router,
     );
   }

@@ -4,7 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/adventure/presentation/screens/adventure_plan_screen.dart';
-import '../../features/auth/presentation/screens/login_screen.dart';
+// import '../../features/auth/presentation/screens/login_screen.dart'; // Removed - using magic link instead
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/email_verification_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
@@ -19,6 +19,7 @@ import '../../features/onboarding/presentation/screens/travel_interests_screen.d
 import '../../features/onboarding/presentation/screens/social_vibe_screen.dart';
 import '../../features/onboarding/presentation/screens/planning_pace_screen.dart';
 import '../../features/onboarding/presentation/screens/travel_style_screen.dart';
+import '../../features/onboarding/presentation/screens/combined_travel_preferences_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_loading_screen.dart';
 // import '../../features/dev/reset_screen.dart'; // Removed - debug only
 import '../../features/plans/presentation/screens/plan_generation_screen.dart';
@@ -30,10 +31,26 @@ import '../../core/config/supabase_config.dart';
 import '../../features/weather/presentation/pages/weather_page.dart';
 import '../../features/recommendations/presentation/pages/recommendations_page.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/profile/presentation/screens/user_profile_screen.dart' as profile;
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
+import '../../features/profile/presentation/screens/share_profile_screen.dart';
 import '../../features/profile/presentation/screens/notifications_screen.dart';
 import '../../features/profile/presentation/screens/language_screen.dart';
-import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/profile/presentation/screens/comprehensive_settings_screen.dart';
+import '../../features/profile/presentation/screens/preferences_screen.dart';
+import '../../features/profile/presentation/screens/account_security_screen.dart';
+import '../../features/profile/presentation/screens/change_password_screen.dart';
+import '../../features/profile/presentation/screens/privacy_settings_screen.dart';
+import '../../features/profile/presentation/screens/location_settings_screen.dart';
+import '../../features/profile/presentation/screens/language_settings_screen.dart';
+import '../../features/profile/presentation/screens/theme_settings_screen.dart';
+import '../../features/profile/presentation/screens/achievements_settings_screen.dart';
+import '../../features/profile/presentation/screens/subscription_screen.dart';
+import '../../features/profile/presentation/screens/data_storage_screen.dart';
+import '../../features/profile/presentation/screens/help_support_screen.dart';
+import '../../features/profile/presentation/screens/delete_account_screen.dart';
+import '../../features/profile/presentation/screens/two_factor_auth_screen.dart';
+import '../../features/profile/presentation/screens/active_sessions_screen.dart';
 import '../../features/support/presentation/screens/support_screen.dart';
 import '../../features/home/presentation/screens/mood_home_screen.dart';
 import '../../features/home/presentation/screens/main_screen.dart';
@@ -187,8 +204,34 @@ Future<void> _handleEmailVerification(Uri uri) async {
     
     // Store user state in SharedPreferences
     final prefs = await SharedPreferences.getInstance();
+    
+    // CRITICAL: Check database to see if user has completed preferences
+    // This is the SINGLE SOURCE OF TRUTH for new signups
+    bool hasCompletedPrefsInDb = false;
+    try {
+      final response = await Supabase.instance.client
+          .from('user_preferences')
+          .select('has_completed_preferences')
+          .eq('user_id', user.id)
+          .maybeSingle();
+      
+      if (response != null && response['has_completed_preferences'] == true) {
+        hasCompletedPrefsInDb = true;
+        debugPrint('✅ User has completed preferences in database - syncing to local');
+      } else {
+        debugPrint('🆕 User has NOT completed preferences in database - forcing preferences flow');
+      }
+    } catch (e) {
+      debugPrint('⚠️ Could not check preferences from database: $e');
+      debugPrint('   Defaulting to false (user must complete preferences)');
+      // Default to false for safety - user must complete preferences
+      hasCompletedPrefsInDb = false;
+    }
+    
+    // CRITICAL: Set SharedPreferences flag based on database (SINGLE SOURCE OF TRUTH)
+    // This ensures new signups always go through preferences, even if local cache says otherwise
+    await prefs.setBool('hasCompletedPreferences', hasCompletedPrefsInDb);
     await prefs.setBool('has_seen_onboarding', true); // CRITICAL: Mark onboarding as seen so router doesn't redirect back
-    await prefs.setBool('hasCompletedPreferences', false);
     await prefs.setInt('last_auth_timestamp', DateTime.now().millisecondsSinceEpoch);
     
     debugPrint('✅ Email verification successful - all checks passed:');
@@ -196,6 +239,7 @@ Future<void> _handleEmailVerification(Uri uri) async {
     debugPrint('   ✅ currentSession != null');
     debugPrint('   ✅ accessToken != null');
     debugPrint('   ✅ Email confirmed');
+    debugPrint('   ✅ hasCompletedPreferences set to: $hasCompletedPrefsInDb (from database)');
   } catch (e) {
     debugPrint('❌ Email verification error: $e');
     rethrow;
@@ -290,6 +334,18 @@ GoRouter router(RouterRef ref) {
         },
       ),
       GoRoute(
+        path: '/preferences/travel-preferences',
+        name: 'combined-travel-preferences',
+        builder: (context, state) {
+          final isAuthenticated = SupabaseConfig.auth.currentUser != null;
+          if (!isAuthenticated) {
+            WidgetsBinding.instance.addPostFrameCallback((_) => context.go('/auth/signup'));
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          }
+          return const CombinedTravelPreferencesScreen();
+        },
+      ),
+      GoRoute(
         path: '/preferences/social-vibe',
         name: 'social-vibe',
         builder: (context, state) {
@@ -339,11 +395,12 @@ GoRouter router(RouterRef ref) {
       ),
       
       // Authentication
-      GoRoute(
-        path: '/login',
-        name: 'login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      // NOTE: Login screen removed - using magic link authentication instead
+      // GoRoute(
+      //   path: '/login',
+      //   name: 'login',
+      //   builder: (context, state) => const LoginScreen(),
+      // ),
       GoRoute(
         path: '/register',
         name: 'register',
@@ -405,8 +462,12 @@ GoRouter router(RouterRef ref) {
               }
               
               // Success - navigate to preferences
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                context.go('/preferences/communication');
+              // CRITICAL: Use a small delay to ensure SharedPreferences is written
+              Future.delayed(const Duration(milliseconds: 100), () {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  debugPrint('✅ Navigating to preferences after magic link authentication');
+                  context.go('/preferences/communication');
+                });
               });
               
               return const Scaffold(
@@ -442,12 +503,17 @@ GoRouter router(RouterRef ref) {
       GoRoute(
         path: '/profile',
         name: 'profile',
-        builder: (context, state) => const ProfileScreen(),
+        builder: (context, state) => const profile.UserProfileScreen(),
       ),
       GoRoute(
         path: '/profile/edit',
         name: 'edit-profile',
         builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: '/share-profile',
+        name: 'share-profile',
+        builder: (context, state) => const ShareProfileScreen(),
       ),
       GoRoute(
         path: '/mood',
@@ -663,7 +729,41 @@ GoRouter router(RouterRef ref) {
       GoRoute(
         path: '/settings',
         name: 'settings',
-        builder: (context, state) => const SettingsScreen(),
+        builder: (context, state) => const ComprehensiveSettingsScreen(),
+      ),
+      
+      // Privacy & Security Settings
+      GoRoute(
+        path: '/settings/account-security',
+        name: 'account-security',
+        builder: (context, state) => const AccountSecurityScreen(),
+      ),
+      GoRoute(
+        path: '/settings/change-password',
+        name: 'change-password',
+        builder: (context, state) => const ChangePasswordScreen(),
+      ),
+      GoRoute(
+        path: '/settings/2fa',
+        name: '2fa',
+        builder: (context, state) => const TwoFactorAuthScreen(),
+      ),
+      GoRoute(
+        path: '/settings/sessions',
+        name: 'active-sessions',
+        builder: (context, state) => const ActiveSessionsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/privacy',
+        name: 'privacy',
+        builder: (context, state) => const PrivacySettingsScreen(),
+      ),
+      
+      // App Settings
+      GoRoute(
+        path: '/settings/notifications',
+        name: 'settings-notifications',
+        builder: (context, state) => const NotificationsScreen(),
       ),
       GoRoute(
         path: '/notifications',
@@ -671,9 +771,60 @@ GoRouter router(RouterRef ref) {
         builder: (context, state) => const NotificationsScreen(),
       ),
       GoRoute(
+        path: '/settings/location',
+        name: 'location-settings',
+        builder: (context, state) => const LocationSettingsScreen(),
+      ),
+      GoRoute(
         path: '/settings/language',
-        name: 'language',
-        builder: (context, state) => const LanguageScreen(),
+        name: 'language-settings',
+        builder: (context, state) => const LanguageSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/theme',
+        name: 'theme-settings',
+        builder: (context, state) => const ThemeSettingsScreen(),
+      ),
+      
+      // More Settings
+      GoRoute(
+        path: '/settings/achievements',
+        name: 'achievements-settings',
+        builder: (context, state) => const AchievementsSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/subscription',
+        name: 'subscription',
+        builder: (context, state) => const SubscriptionScreen(),
+      ),
+      GoRoute(
+        path: '/settings/data',
+        name: 'data-storage',
+        builder: (context, state) => const DataStorageScreen(),
+      ),
+      GoRoute(
+        path: '/settings/help',
+        name: 'help-support',
+        builder: (context, state) => const HelpSupportScreen(),
+      ),
+      
+      // Danger Zone
+      GoRoute(
+        path: '/settings/delete-account',
+        name: 'delete-account',
+        builder: (context, state) => const DeleteAccountScreen(),
+      ),
+      
+      // Legacy routes
+      GoRoute(
+        path: '/settings/preferences',
+        name: 'preferences',
+        builder: (context, state) => const PreferencesScreen(),
+      ),
+      // Convenience route alias for /preferences
+      GoRoute(
+        path: '/preferences',
+        redirect: (context, state) => '/settings/preferences',
       ),
       GoRoute(
         path: '/support',
@@ -708,10 +859,10 @@ GoRouter router(RouterRef ref) {
       debugPrint('🔍 Router redirect - Location: $currentLocation, Auth State: ${authState.runtimeType}');
       
       // Define route categories
-      final isAuthPage = currentLocation == '/login' || 
-                        currentLocation == '/register' ||
+      final isAuthPage = currentLocation == '/register' ||
                         currentLocation == '/auth/signup' ||
-                        currentLocation == '/auth/verify-email';
+                        currentLocation == '/auth/verify-email' ||
+                        currentLocation == '/auth/magic-link';
       
       final useNewFlow = ref.read(useNewOnboardingFlowProvider);
       
@@ -875,7 +1026,44 @@ GoRouter router(RouterRef ref) {
       if (isAuthenticated) {
         try {
           final prefs = await SharedPreferences.getInstance();
-          final hasCompletedPreferences = prefs.getBool('hasCompletedPreferences') ?? false;
+          
+          // OPTIMIZED: Check SharedPreferences first (fast), then database as fallback
+          // This reduces database calls while ensuring accuracy
+          bool hasCompletedPreferences = prefs.getBool('hasCompletedPreferences') ?? false;
+          
+          // Only check database if flag is missing or if we're on a critical route
+          // This prevents unnecessary database calls on every route change
+          if (!hasCompletedPreferences || isMainAppPage || currentLocation == '/' || currentLocation == '/home' || currentLocation == '/main') {
+            if (currentUser != null) {
+              try {
+                final response = await Supabase.instance.client
+                    .from('user_preferences')
+                    .select('has_completed_preferences')
+                    .eq('user_id', currentUser.id)
+                    .maybeSingle();
+                
+                if (response != null && response['has_completed_preferences'] == true) {
+                  hasCompletedPreferences = true;
+                  // Sync to local cache for future fast access
+                  await prefs.setBool('hasCompletedPreferences', true);
+                  debugPrint('✅ User has completed preferences in database - synced to local');
+                } else {
+                  hasCompletedPreferences = false;
+                  // Sync to local cache for future fast access
+                  await prefs.setBool('hasCompletedPreferences', false);
+                  debugPrint('🆕 User has NOT completed preferences in database - forcing preferences flow');
+                }
+              } catch (e) {
+                debugPrint('⚠️ Could not check preferences from database: $e');
+                // Use existing local cache value if database check fails
+                debugPrint('   Using cached value: $hasCompletedPreferences');
+              }
+            }
+          } else {
+            debugPrint('⚡ Using cached preferences flag (fast path)');
+          }
+
+          debugPrint('🔍 Authenticated user - hasCompletedPreferences: $hasCompletedPreferences, currentLocation: $currentLocation');
 
           // Check for bypass flag from booking flow
           final extra = state.extra as Map<String, dynamic>?;
@@ -886,20 +1074,34 @@ GoRouter router(RouterRef ref) {
             return null;
           }
 
-          // Always enforce the full preferences onboarding flow for new users
+          // CRITICAL: Always enforce the full preferences onboarding flow for new users
+          // This catches users who try to navigate to main app after magic link authentication
           if (!hasCompletedPreferences) {
-            if (!currentLocation.startsWith('/preferences/')) {
+            // Allow navigation within preferences flow
+            if (currentLocation.startsWith('/preferences/')) {
+              debugPrint('✅ User is in preferences flow - allowing navigation');
+              return null;
+            }
+            
+            // Block access to main app routes if preferences not completed
+            if (isMainAppPage || currentLocation == '/' || currentLocation == '/home' || currentLocation == '/main') {
+              debugPrint('🚫 Blocking access to main app - redirecting to preferences');
               return '/preferences/communication';
             }
-            // Allow navigation within preferences
-            return null;
+            
+            // For any other route, redirect to preferences
+            debugPrint('🚫 User has not completed preferences - redirecting to preferences');
+            return '/preferences/communication';
           }
+          
           // If preferences are complete, allow main app
+          debugPrint('✅ User has completed preferences - allowing navigation');
         } catch (e) {
           debugPrint('❌ Error checking preferences: $e');
-          if (isMainAppPage) {
-            final useNewFlow = ref.read(useNewOnboardingFlowProvider);
-            return useNewFlow ? '/intro' : '/onboarding';
+          // On error, if user is trying to access main app, redirect to preferences
+          if (isMainAppPage || currentLocation == '/' || currentLocation == '/home' || currentLocation == '/main') {
+            debugPrint('🚫 Error checking preferences but on main app - redirecting to preferences');
+            return '/preferences/communication';
           }
         }
       }

@@ -20,23 +20,29 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   String _viewMode = 'calendar'; // 'calendar' or 'list'
+  bool _hasInitialized = false; // ✅ Prevent infinite loop
   
   @override
   void initState() {
     super.initState();
     _selectedDay = DateTime.now();
     
-    // Force refresh activities when screen opens
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        print('🔄 Agenda: Screen opened, refreshing activities...');
-        ref.invalidate(cachedActivitySuggestionsProvider);
-      }
-    });
+    // ✅ FIXED: Only refresh once, not on every hot reload
+    if (!_hasInitialized) {
+      _hasInitialized = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          print('🔄 Agenda: Screen opened ONCE, refreshing activities...');
+          ref.invalidate(cachedActivitySuggestionsProvider);
+        }
+      });
+    }
   }
   
   @override
   Widget build(BuildContext context) {
+    // ✅ FIXED: Watch provider ONCE at top level of build
+    final activitiesAsyncValue = ref.watch(cachedActivitySuggestionsProvider);
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SwirlBackground(
@@ -122,10 +128,10 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
             
             // Content based on view mode
             if (_viewMode == 'calendar') ...[
-              _buildCalendarView(),
-              _buildSelectedDayActivities(),
+              _buildCalendarView(activitiesAsyncValue),
+              _buildSelectedDayActivities(activitiesAsyncValue),
             ] else ...[
-              _buildListView(),
+              _buildListView(activitiesAsyncValue),
             ],
             
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -135,7 +141,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     );
   }
   
-  Widget _buildCalendarView() {
+  Widget _buildCalendarView(AsyncValue<List<Map<String, dynamic>>> activitiesAsyncValue) {
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -158,7 +164,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
             selectedDayPredicate: (day) {
               return isSameDay(_selectedDay, day);
             },
-            eventLoader: _getEventsForDay,
+            eventLoader: (day) => _getEventsForDay(day, activitiesAsyncValue),
             calendarFormat: CalendarFormat.month,
             onDaySelected: (selectedDay, focusedDay) {
               setState(() {
@@ -226,9 +232,8 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     );
   }
   
-  Widget _buildSelectedDayActivities() {
-    final activitiesAsyncValue = ref.watch(cachedActivitySuggestionsProvider);
-    
+  Widget _buildSelectedDayActivities(AsyncValue<List<Map<String, dynamic>>> activitiesAsyncValue) {
+    // ✅ FIXED: Receive data as parameter instead of calling ref.watch
     return activitiesAsyncValue.when(
       data: (activities) {
         final selectedDate = _selectedDay ?? DateTime.now();
@@ -395,12 +400,11 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     );
   }
   
-  Widget _buildListView() {
-    final activitiesAsyncValue = ref.watch(cachedActivitySuggestionsProvider);
-    
+  Widget _buildListView(AsyncValue<List<Map<String, dynamic>>> activitiesAsyncValue) {
+    // ✅ FIXED: Receive data as parameter instead of calling ref.watch
     return activitiesAsyncValue.when(
       data: (activities) {
-        final upcomingActivities = _getUpcomingActivities();
+        final upcomingActivities = _getUpcomingActivities(activities);
         
         if (upcomingActivities.isEmpty) {
           return SliverToBoxAdapter(
@@ -865,8 +869,8 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     );
   }
   
-  List<Map<String, dynamic>> _getEventsForDay(DateTime day) {
-    final activitiesAsyncValue = ref.watch(cachedActivitySuggestionsProvider);
+  List<Map<String, dynamic>> _getEventsForDay(DateTime day, AsyncValue<List<Map<String, dynamic>>> activitiesAsyncValue) {
+    // ✅ FIXED: Receive data as parameter instead of calling ref.watch
     return activitiesAsyncValue.when(
       data: (activities) {
         return activities.where((activity) {
@@ -882,34 +886,28 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     );
   }
   
-  Map<DateTime, List<Map<String, dynamic>>> _getUpcomingActivities() {
-    final activitiesAsyncValue = ref.watch(cachedActivitySuggestionsProvider);
-    return activitiesAsyncValue.when(
-      data: (activities) {
-        final Map<DateTime, List<Map<String, dynamic>>> grouped = {};
-        
-        for (final activity in activities) {
-          final startTimeStr = activity['startTime'] as String?;
-          if (startTimeStr == null) continue;
-          
-          final activityDate = DateTime.parse(startTimeStr);
-          final dateKey = DateTime(activityDate.year, activityDate.month, activityDate.day);
-          
-          if (grouped[dateKey] == null) {
-            grouped[dateKey] = [];
-          }
-          grouped[dateKey]!.add(_transformActivityData(activity));
-        }
-        
-        // Sort by date
-        final sortedEntries = grouped.entries.toList()
-          ..sort((a, b) => a.key.compareTo(b.key));
-        
-        return Map.fromEntries(sortedEntries);
-      },
-      loading: () => {},
-      error: (error, stack) => {},
-    );
+  Map<DateTime, List<Map<String, dynamic>>> _getUpcomingActivities(List<Map<String, dynamic>> activities) {
+    // ✅ FIXED: Receive data as parameter instead of calling ref.watch
+    final Map<DateTime, List<Map<String, dynamic>>> grouped = {};
+    
+    for (final activity in activities) {
+      final startTimeStr = activity['startTime'] as String?;
+      if (startTimeStr == null) continue;
+      
+      final activityDate = DateTime.parse(startTimeStr);
+      final dateKey = DateTime(activityDate.year, activityDate.month, activityDate.day);
+      
+      if (grouped[dateKey] == null) {
+        grouped[dateKey] = [];
+      }
+      grouped[dateKey]!.add(_transformActivityData(activity));
+    }
+    
+    // Sort by date
+    final sortedEntries = grouped.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    
+    return Map.fromEntries(sortedEntries);
   }
   
   Map<String, dynamic> _transformActivityData(Map<String, dynamic> activity) {

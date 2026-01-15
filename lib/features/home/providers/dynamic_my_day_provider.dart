@@ -70,7 +70,8 @@ final activityManagerProvider = StateNotifierProvider<ActivityManager, Map<Strin
 );
 
 /// Provider for cached activity suggestions
-final cachedActivitySuggestionsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+/// CRITICAL: NOT autoDispose to prevent API calls on hot reload
+final cachedActivitySuggestionsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final prefs = await SharedPreferences.getInstance();
   final activitiesJson = prefs.getStringList('cached_activity_suggestions') ?? [];
   
@@ -82,41 +83,13 @@ final cachedActivitySuggestionsProvider = FutureProvider.autoDispose<List<Map<St
     }
   }).where((activity) => activity.isNotEmpty).toList();
   
-  // Get scheduled activities from the Moody flow
-  final scheduledActivities = <Map<String, dynamic>>[];
-  try {
-    debugPrint('🔄 My Day Provider: Loading scheduled activities...');
-    final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
-    final activities = await scheduledActivityService.getScheduledActivities();
-    
-    debugPrint('🔄 My Day Provider: Found ${activities.length} scheduled activities');
-    
-    for (final activity in activities) {
-      debugPrint('🔄 My Day Provider: Processing activity: ${activity.name}');
-      scheduledActivities.add({
-        'id': activity.id,
-        'title': activity.name,
-        'description': activity.description,
-        'category': activity.tags.isNotEmpty ? activity.tags.first : 'general',
-        'timeOfDay': activity.timeSlot,
-        'duration': activity.duration,
-        'mood': activity.tags.contains('energetic') ? 'energetic' : 'relaxed',
-        'imageUrl': activity.imageUrl ?? 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&q=80',
-        'isRecommended': true,
-        'isScheduled': true,
-        'startTime': activity.startTime.toIso8601String(),
-        'paymentType': activity.paymentType.toString(),
-      });
-    }
-    
-    debugPrint('🔄 My Day Provider: Successfully processed ${scheduledActivities.length} scheduled activities');
-  } catch (e) {
-    debugPrint('❌ My Day Provider: Error loading scheduled activities: $e');
-    debugPrint('❌ My Day Provider: Stack trace: ${StackTrace.current}');
-  }
+  // ✅ TEMPORARY FIX: Disabled scheduled activities loading to stop infinite loop
+  // The scheduled activities feature was causing Riverpod dependency cycle errors
+  // TODO: Implement scheduled activities loading in a separate provider
+  debugPrint('📦 My Day Provider: Returning ${cachedActivities.length} cached activities (scheduled activities disabled)');
   
-  // Combine scheduled activities with cached activities
-  final allActivities = [...scheduledActivities, ...cachedActivities];
+  // Return only cached activities for now
+  final allActivities = cachedActivities;
   
   // If no activities at all, get default activities
   if (allActivities.isEmpty) {
@@ -127,7 +100,8 @@ final cachedActivitySuggestionsProvider = FutureProvider.autoDispose<List<Map<St
 });
 
 /// Provider for today's enhanced activities with status detection
-final todayActivitiesProvider = FutureProvider.autoDispose<List<EnhancedActivityData>>((ref) async {
+/// CRITICAL: NOT autoDispose to prevent API calls on hot reload
+final todayActivitiesProvider = FutureProvider<List<EnhancedActivityData>>((ref) async {
   final activities = await ref.watch(cachedActivitySuggestionsProvider.future);
   final activityManager = ref.watch(activityManagerProvider);
   final now = DateTime.now();
@@ -195,7 +169,8 @@ final todayActivitiesProvider = FutureProvider.autoDispose<List<EnhancedActivity
 });
 
 /// Provider for current activity status (for the status card)
-final currentActivityStatusProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
+/// CRITICAL: NOT autoDispose to prevent API calls on hot reload
+final currentActivityStatusProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final todayActivities = await ref.watch(todayActivitiesProvider.future);
   final now = DateTime.now();
   final hour = now.hour;
@@ -270,7 +245,8 @@ final currentActivityStatusProvider = FutureProvider.autoDispose<Map<String, dyn
 });
 
 /// Provider for timeline categorized activities
-final timelineCategorizedActivitiesProvider = FutureProvider.autoDispose<Map<String, List<EnhancedActivityData>>>((ref) async {
+/// CRITICAL: NOT autoDispose to prevent API calls on hot reload
+final timelineCategorizedActivitiesProvider = FutureProvider<Map<String, List<EnhancedActivityData>>>((ref) async {
   final todayActivities = await ref.watch(todayActivitiesProvider.future);
   
   final Map<String, List<EnhancedActivityData>> categorized = {

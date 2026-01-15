@@ -523,6 +523,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Email notifications disabled'**
   String get emailNotificationsDisabled;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @privacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get privacy;
+
+  /// No description provided for @privateProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Private Profile'**
+  String get privateProfile;
+
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get loading;
+
+  /// No description provided for @appSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'App Settings'**
+  String get appSettings;
+
+  /// No description provided for @pushEmailInApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Push, email, and in-app'**
+  String get pushEmailInApp;
+
+  /// No description provided for @location.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get location;
+
+  /// No description provided for @autoDetectPermissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-detect and permissions'**
+  String get autoDetectPermissions;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get theme;
+
+  /// No description provided for @more.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get more;
+
+  /// No description provided for @achievements.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get achievements;
+
+  /// No description provided for @unlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'unlocked'**
+  String get unlocked;
+
+  /// No description provided for @subscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription'**
+  String get subscription;
+
+  /// No description provided for @free.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get free;
+
+  /// No description provided for @plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get plan;
+
+  /// No description provided for @premium.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium'**
+  String get premium;
+
+  /// No description provided for @dataStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Data & Storage'**
+  String get dataStorage;
+
+  /// No description provided for @exportClearCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Export data and clear cache'**
+  String get exportClearCache;
+
+  /// No description provided for @helpSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & Support'**
+  String get helpSupport;
+
+  /// No description provided for @faqContactUs.
+  ///
+  /// In en, this message translates to:
+  /// **'FAQ and contact us'**
+  String get faqContactUs;
+
+  /// No description provided for @dangerZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Danger Zone'**
+  String get dangerZone;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccount;
+
+  /// No description provided for @permanentlyDeleteYourData.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently delete your data'**
+  String get permanentlyDeleteYourData;
+
+  /// No description provided for @signOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get signOut;
+
+  /// No description provided for @logOutOfYourAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out of your account'**
+  String get logOutOfYourAccount;
 }
 
 class _AppLocalizationsDelegate
