@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
@@ -27,22 +28,52 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
   bool _showMoodOptions = false;
   String? _selectedMood;
   bool _showActivities = false;
+  String? _tappedMoodKey; // For tap animation on mood cards
   
   late AnimationController _fadeController;
 
+  /// Rainbow colors for chat bubble left borders (bright & vibrant)
+  static const List<Color> _rainbowBubbleColors = [
+    Color(0xFFFF6B6B), // coral red
+    Color(0xFFFF9F43), // vibrant orange
+    Color(0xFFFECA57), // sunny yellow
+    Color(0xFF1DD1A1), // mint green
+    Color(0xFF00D2D3), // bright teal
+    Color(0xFF54A0FF), // sky blue
+    Color(0xFFA55EEA), // bright purple
+    Color(0xFFFD79A8), // hot pink
+    Color(0xFFFDCB6E), // sunflower
+  ];
+
+  /// Demo mood cards – vibrant, light palette (matching main app vibe but brighter). Label is localized via l10n.
+  static const List<Map<String, dynamic>> _demoMoodConfig = [
+    {'key': 'adventurous', 'emoji': '🏃', 'colorHex': '#4CAF50'},
+    {'key': 'relaxed', 'emoji': '😌', 'colorHex': '#80CBC4'},
+    {'key': 'romantic', 'emoji': '💕', 'colorHex': '#F8BBD9'},
+    {'key': 'cultural', 'emoji': '🎨', 'colorHex': '#B39DDB'},
+    {'key': 'foodie', 'emoji': '🍕', 'colorHex': '#FFAB91'},
+    {'key': 'social', 'emoji': '🎉', 'colorHex': '#FFF59D'},
+  ];
+
   final List<_DemoMessage> _messages = [];
+  bool _demoStarted = false;
 
   @override
   void initState() {
     super.initState();
-    
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 400),
       vsync: this,
     );
-    
-    // Start the demo conversation
-    _startDemo();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_demoStarted && mounted) {
+      _demoStarted = true;
+      _startDemo();
+    }
   }
 
   @override
@@ -52,214 +83,113 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
   }
 
   Future<void> _startDemo() async {
+    final l10n = AppLocalizations.of(context)!;
     await Future.delayed(const Duration(milliseconds: 500));
-    
     if (!mounted) return;
-    
-    // Moody's greeting
-    setState(() {
-      _isTyping = true;
-    });
-    
+    setState(() => _isTyping = true);
     await Future.delayed(const Duration(milliseconds: 1200));
-    
     if (!mounted) return;
-    
     setState(() {
       _isTyping = false;
-      _messages.add(_DemoMessage(
-        text: "Hey there! 👋 I'm Moody, your travel buddy.",
-        isFromMoody: true,
-      ));
+      _messages.add(_DemoMessage(text: l10n.demoMoodyGreeting, isFromMoody: true));
     });
-    
     await Future.delayed(const Duration(milliseconds: 800));
-    
     if (!mounted) return;
-    
-    setState(() {
-      _isTyping = true;
-    });
-    
+    setState(() => _isTyping = true);
     await Future.delayed(const Duration(milliseconds: 1000));
-    
     if (!mounted) return;
-    
     setState(() {
       _isTyping = false;
-      _messages.add(_DemoMessage(
-        text: "I help you discover amazing places based on how you're feeling. What's your vibe today?",
-        isFromMoody: true,
-      ));
+      _messages.add(_DemoMessage(text: l10n.demoMoodyAskVibe, isFromMoody: true));
       _showMoodOptions = true;
     });
   }
 
   Future<void> _selectMood(String mood) async {
     if (!mounted) return;
-    
+    final l10n = AppLocalizations.of(context)!;
+    HapticFeedback.mediumImpact();
+    setState(() => _tappedMoodKey = mood);
+    await Future.delayed(const Duration(milliseconds: 120));
+    if (!mounted) return;
+    setState(() => _tappedMoodKey = null);
+    await Future.delayed(const Duration(milliseconds: 80));
+    if (!mounted) return;
     setState(() {
       _selectedMood = mood;
       _showMoodOptions = false;
-      _messages.add(_DemoMessage(
-        text: "I'm feeling $mood",
-        isFromMoody: false,
-      ));
+      _messages.add(_DemoMessage(text: l10n.demoUserFeeling(mood), isFromMoody: false));
     });
-    
     await Future.delayed(const Duration(milliseconds: 600));
-    
     if (!mounted) return;
-    
-    setState(() {
-      _isTyping = true;
-    });
-    
+    setState(() => _isTyping = true);
     await Future.delayed(const Duration(milliseconds: 1500));
-    
     if (!mounted) return;
-    
-    // Get mood-specific response
-    final response = _getMoodyResponse(mood);
-    
+    final response = _getMoodyResponse(l10n, mood);
     setState(() {
       _isTyping = false;
-      _messages.add(_DemoMessage(
-        text: response,
-        isFromMoody: true,
-      ));
+      _messages.add(_DemoMessage(text: response, isFromMoody: true));
     });
-    
     await Future.delayed(const Duration(milliseconds: 800));
-    
     if (!mounted) return;
-    
-    setState(() {
-      _showActivities = true;
-    });
+    setState(() => _showActivities = true);
   }
 
-  String _getMoodyResponse(String mood) {
+  String _getMoodyResponse(AppLocalizations l10n, String mood) {
     switch (mood.toLowerCase()) {
-      case 'adventurous':
-        return "Love that energy! 🔥 Here are some exciting spots that match your adventurous spirit...";
-      case 'relaxed':
-        return "Ah, a chill day! ☕ Let me find you some peaceful spots to unwind...";
-      case 'romantic':
-        return "How lovely! 💕 I've got some beautiful places perfect for romance...";
-      case 'cultural':
-        return "A curious explorer! 🎨 Check out these fascinating cultural gems...";
-      default:
-        return "Great choice! 🌟 Here are some perfect spots for your mood...";
+      case 'adventurous': return l10n.demoMoodyResponseAdventurous;
+      case 'relaxed': return l10n.demoMoodyResponseRelaxed;
+      case 'romantic': return l10n.demoMoodyResponseRomantic;
+      case 'cultural': return l10n.demoMoodyResponseCultural;
+      case 'foodie': return l10n.demoMoodyResponseFoodie;
+      case 'social': return l10n.demoMoodyResponseSocial;
+      default: return l10n.demoMoodyResponseDefault;
     }
   }
 
-  List<_DemoActivity> _getActivitiesForMood(String? mood) {
+  List<_DemoActivity> _getActivitiesForMood(String? mood, AppLocalizations l10n) {
     switch (mood?.toLowerCase()) {
       case 'adventurous':
         return [
-          _DemoActivity(
-            emoji: '🏔️',
-            title: 'Mountain Trail Hike',
-            subtitle: 'Scenic adventure • 3.2 km away',
-            matchPercent: 95,
-          ),
-          _DemoActivity(
-            emoji: '🚴',
-            title: 'City Bike Tour',
-            subtitle: 'Active exploration • 1.8 km away',
-            matchPercent: 88,
-          ),
-          _DemoActivity(
-            emoji: '🧗',
-            title: 'Indoor Climbing',
-            subtitle: 'Thrilling experience • 2.5 km away',
-            matchPercent: 82,
-          ),
+          _DemoActivity(emoji: '🏔️', title: l10n.demoActTitleMountainTrailHike, subtitle: l10n.demoActSubScenic32, matchPercent: 95),
+          _DemoActivity(emoji: '🚴', title: l10n.demoActTitleCityBikeTour, subtitle: l10n.demoActSubActive18, matchPercent: 88),
+          _DemoActivity(emoji: '🧗', title: l10n.demoActTitleIndoorClimbing, subtitle: l10n.demoActSubThrilling25, matchPercent: 82),
         ];
       case 'relaxed':
         return [
-          _DemoActivity(
-            emoji: '☕',
-            title: 'Cozy Corner Café',
-            subtitle: 'Perfect for unwinding • 0.8 km away',
-            matchPercent: 96,
-          ),
-          _DemoActivity(
-            emoji: '🌳',
-            title: 'Botanical Garden',
-            subtitle: 'Peaceful escape • 2.1 km away',
-            matchPercent: 91,
-          ),
-          _DemoActivity(
-            emoji: '🛁',
-            title: 'Wellness Spa',
-            subtitle: 'Total relaxation • 3.4 km away',
-            matchPercent: 85,
-          ),
+          _DemoActivity(emoji: '☕', title: l10n.demoActTitleCozyCornerCafe, subtitle: l10n.demoActSubUnwinding08, matchPercent: 96),
+          _DemoActivity(emoji: '🌳', title: l10n.demoActTitleBotanicalGarden, subtitle: l10n.demoActSubPeaceful21, matchPercent: 91),
+          _DemoActivity(emoji: '🛁', title: l10n.demoActTitleWellnessSpa, subtitle: l10n.demoActSubRelaxation34, matchPercent: 85),
         ];
       case 'romantic':
         return [
-          _DemoActivity(
-            emoji: '🌅',
-            title: 'Sunset Viewpoint',
-            subtitle: 'Magical atmosphere • 1.5 km away',
-            matchPercent: 94,
-          ),
-          _DemoActivity(
-            emoji: '🍷',
-            title: 'Wine & Dine',
-            subtitle: 'Intimate setting • 0.9 km away',
-            matchPercent: 90,
-          ),
-          _DemoActivity(
-            emoji: '🌸',
-            title: 'Rose Garden Walk',
-            subtitle: 'Beautiful stroll • 2.3 km away',
-            matchPercent: 86,
-          ),
+          _DemoActivity(emoji: '🌅', title: l10n.demoActTitleSunsetViewpoint, subtitle: l10n.demoActSubMagical15, matchPercent: 94),
+          _DemoActivity(emoji: '🍷', title: l10n.demoActTitleWineAndDine, subtitle: l10n.demoActSubIntimate09, matchPercent: 90),
+          _DemoActivity(emoji: '🌸', title: l10n.demoActTitleRoseGardenWalk, subtitle: l10n.demoActSubStroll23, matchPercent: 86),
         ];
       case 'cultural':
         return [
-          _DemoActivity(
-            emoji: '🏛️',
-            title: 'History Museum',
-            subtitle: 'Fascinating exhibits • 1.2 km away',
-            matchPercent: 93,
-          ),
-          _DemoActivity(
-            emoji: '🎭',
-            title: 'Local Theater',
-            subtitle: 'Live performances • 1.8 km away',
-            matchPercent: 87,
-          ),
-          _DemoActivity(
-            emoji: '🎨',
-            title: 'Art Gallery',
-            subtitle: 'Contemporary art • 0.7 km away',
-            matchPercent: 84,
-          ),
+          _DemoActivity(emoji: '🏛️', title: l10n.demoActTitleHistoryMuseum, subtitle: l10n.demoActSubExhibits12, matchPercent: 93),
+          _DemoActivity(emoji: '🎭', title: l10n.demoActTitleLocalTheater, subtitle: l10n.demoActSubLive18, matchPercent: 87),
+          _DemoActivity(emoji: '🎨', title: l10n.demoActTitleArtGallery, subtitle: l10n.demoActSubContemporary07, matchPercent: 84),
+        ];
+      case 'foodie':
+        return [
+          _DemoActivity(emoji: '🍕', title: l10n.demoActTitleLocalFavorite, subtitle: l10n.demoActSubTopReviewed05, matchPercent: 94),
+          _DemoActivity(emoji: '☕', title: l10n.demoActTitleCozyCafe, subtitle: l10n.demoActSubBrunch09, matchPercent: 88),
+          _DemoActivity(emoji: '🍷', title: l10n.demoActTitleWineBar, subtitle: l10n.demoActSubSmallPlates12, matchPercent: 85),
+        ];
+      case 'social':
+        return [
+          _DemoActivity(emoji: '🎉', title: l10n.demoActTitleRooftopBar, subtitle: l10n.demoActSubVibes11, matchPercent: 92),
+          _DemoActivity(emoji: '🎮', title: l10n.demoActTitleArcadeLounge, subtitle: l10n.demoActSubGames07, matchPercent: 87),
+          _DemoActivity(emoji: '🎵', title: l10n.demoActTitleLiveMusicSpot, subtitle: l10n.demoActSubTonightsGig15, matchPercent: 84),
         ];
       default:
         return [
-          _DemoActivity(
-            emoji: '🌟',
-            title: 'Popular Spot',
-            subtitle: 'Highly rated • 1.0 km away',
-            matchPercent: 90,
-          ),
-          _DemoActivity(
-            emoji: '🎉',
-            title: 'Fun Activity',
-            subtitle: 'Great for today • 1.5 km away',
-            matchPercent: 85,
-          ),
-          _DemoActivity(
-            emoji: '🍽️',
-            title: 'Local Favorite',
-            subtitle: 'Top reviewed • 0.8 km away',
-            matchPercent: 82,
-          ),
+          _DemoActivity(emoji: '🌟', title: l10n.demoActTitlePopularSpot, subtitle: l10n.demoActSubHighlyRated10, matchPercent: 90),
+          _DemoActivity(emoji: '🎉', title: l10n.demoActTitleFunActivity, subtitle: l10n.demoActSubGreatToday15, matchPercent: 85),
+          _DemoActivity(emoji: '🍽️', title: l10n.demoActTitleLocalFavorite, subtitle: l10n.demoActSubTopReviewed08, matchPercent: 82),
         ];
     }
   }
@@ -324,13 +254,13 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: const Color(0xFFFFE0B2)),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.play_circle_outline, size: 16, color: Color(0xFFE65100)),
-                SizedBox(width: 4),
+                const Icon(Icons.play_circle_outline, size: 16, color: Color(0xFFE65100)),
+                const SizedBox(width: 4),
                 Text(
-                  'Demo Mode',
+                  AppLocalizations.of(context)!.demoMode,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -347,7 +277,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
           TextButton(
             onPressed: _onSignUp,
             child: Text(
-              'Skip',
+              AppLocalizations.of(context)!.introSkip,
               style: TextStyle(
                 color: Colors.grey[600],
                 fontSize: 16,
@@ -376,7 +306,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                'Moody',
+                AppLocalizations.of(context)!.demoMoodyName,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -389,8 +319,8 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
         
         const SizedBox(height: 24),
         
-        // Messages
-        ..._messages.map((msg) => _buildMessage(msg)),
+        // Messages (with index for Moody bubble left-border color)
+        ..._messages.asMap().entries.map((e) => _buildMessage(e.value, messageIndex: e.key)),
         
         // Typing indicator
         if (_isTyping) _buildTypingIndicator(),
@@ -398,7 +328,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
         // Activity cards
         if (_showActivities) ...[
           const SizedBox(height: 16),
-          ..._getActivitiesForMood(_selectedMood).map((activity) => 
+          ..._getActivitiesForMood(_selectedMood, AppLocalizations.of(context)!).map((activity) => 
             _buildActivityCard(activity)
           ),
         ],
@@ -408,9 +338,12 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
     );
   }
 
-  Widget _buildMessage(_DemoMessage message) {
-    // Trigger haptic feedback when message appears
+  Widget _buildMessage(_DemoMessage message, {int? messageIndex}) {
     HapticFeedback.lightImpact();
+
+    // Every bubble gets a rainbow left border (different color per message index)
+    final int index = messageIndex ?? 0;
+    final Color leftBorderColor = _rainbowBubbleColors[index % _rainbowBubbleColors.length];
     
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -424,7 +357,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
           Flexible(
             flex: 8,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.only(left: 20, right: 16, top: 12, bottom: 12),
               decoration: BoxDecoration(
                 gradient: message.isFromMoody 
                     ? null
@@ -439,6 +372,9 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
                   topRight: const Radius.circular(20),
                   bottomLeft: Radius.circular(message.isFromMoody ? 4 : 20),
                   bottomRight: Radius.circular(message.isFromMoody ? 20 : 4),
+                ),
+                border: Border(
+                  left: BorderSide(color: leftBorderColor, width: 4),
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -617,40 +553,37 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
   Widget _buildBottomSection() {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
       child: SafeArea(
         top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (_showMoodOptions) ...[
-              // Mood selection buttons
               Text(
-                'Tap to select your mood:',
+                AppLocalizations.of(context)!.demoTapToSelectMood,
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey[600],
                 ),
               ),
               const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                alignment: WrapAlignment.center,
+              Row(
                 children: [
-                  _buildMoodButton('Adventurous', '🏃'),
-                  _buildMoodButton('Relaxed', '😌'),
-                  _buildMoodButton('Romantic', '💕'),
-                  _buildMoodButton('Cultural', '🎨'),
+                  Expanded(child: _buildMoodCard(_demoMoodConfig[0])),
+                  const SizedBox(width: 8),
+                  Expanded(child: _buildMoodCard(_demoMoodConfig[1])),
+                  const SizedBox(width: 8),
+                  Expanded(child: _buildMoodCard(_demoMoodConfig[2])),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(child: _buildMoodCard(_demoMoodConfig[3])),
+                  const SizedBox(width: 8),
+                  Expanded(child: _buildMoodCard(_demoMoodConfig[4])),
+                  const SizedBox(width: 8),
+                  Expanded(child: _buildMoodCard(_demoMoodConfig[5])),
                 ],
               ),
             ] else if (_showActivities) ...[
@@ -671,9 +604,9 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
                       borderRadius: BorderRadius.circular(26),
                     ),
                   ),
-                  child: const Text(
-                    'Explore More ✨',
-                    style: TextStyle(
+                  child: Text(
+                    '${AppLocalizations.of(context)!.demoExploreMore} ✨',
+                    style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w600,
                     ),
@@ -683,9 +616,9 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
               const SizedBox(height: 12),
               TextButton(
                 onPressed: _onSignUp,
-                child: const Text(
-                  'Ready to sign up? Start now →',
-                  style: TextStyle(
+                child: Text(
+                  AppLocalizations.of(context)!.demoReadyToSignUp,
+                  style: const TextStyle(
                     fontSize: 15,
                     color: Color(0xFF4CAF50),
                     fontWeight: FontWeight.w500,
@@ -711,41 +644,88 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
     );
   }
 
-  Widget _buildMoodButton(String mood, String emoji) {
-    return Material(
-      color: const Color(0xFFFFF8E1),
-      borderRadius: BorderRadius.circular(24),
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.mediumImpact();
-          _selectMood(mood);
-        },
-        borderRadius: BorderRadius.circular(24),
-        splashColor: const Color(0xFF4CAF50).withOpacity(0.2),
-        highlightColor: const Color(0xFF4CAF50).withOpacity(0.1),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: const Color(0xFFFFE0B2),
-              width: 1.5,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(emoji, style: const TextStyle(fontSize: 18)),
-              const SizedBox(width: 6),
-              Text(
-                mood,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[800],
-                ),
+  Color _colorFromHex(String hex) {
+    String h = hex.startsWith('#') ? hex.substring(1) : hex;
+    if (h.length == 6) h = 'FF$h';
+    return Color(int.parse(h, radix: 16));
+  }
+
+  String _moodLabel(AppLocalizations l10n, String key) {
+    switch (key) {
+      case 'adventurous': return l10n.demoMoodAdventurous;
+      case 'relaxed': return l10n.demoMoodRelaxed;
+      case 'romantic': return l10n.demoMoodRomantic;
+      case 'cultural': return l10n.demoMoodCultural;
+      case 'foodie': return l10n.demoMoodFoodie;
+      case 'social': return l10n.demoMoodSocial;
+      default: return key;
+    }
+  }
+
+  Widget _buildMoodCard(Map<String, dynamic> config) {
+    final String key = config['key'] as String;
+    final String emoji = config['emoji'] as String;
+    final Color moodColor = _colorFromHex(config['colorHex'] as String);
+    final l10n = AppLocalizations.of(context)!;
+    final String label = _moodLabel(l10n, key);
+    final bool isTapped = _tappedMoodKey == key;
+
+    return AnimatedScale(
+      scale: isTapped ? 0.92 : 1.0,
+      duration: const Duration(milliseconds: 80),
+      curve: Curves.easeInOut,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: () => _selectMood(key),
+          borderRadius: BorderRadius.circular(16),
+          splashColor: moodColor.withOpacity(0.3),
+          highlightColor: moodColor.withOpacity(0.15),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  moodColor.withOpacity(1.0),
+                  moodColor.withOpacity(0.8),
+                ],
               ),
-            ],
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: moodColor.withOpacity(0.5),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: moodColor.withOpacity(0.3),
+                  blurRadius: 5,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(emoji, style: const TextStyle(fontSize: 26)),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ),
       ),

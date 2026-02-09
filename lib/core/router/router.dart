@@ -5,7 +5,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/adventure/presentation/screens/adventure_plan_screen.dart';
 // import '../../features/auth/presentation/screens/login_screen.dart'; // Removed - using magic link instead
-import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/email_verification_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/onboarding/presentation/screens/communication_preference_screen.dart';
@@ -34,6 +33,7 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/user_profile_screen.dart' as profile;
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/share_profile_screen.dart';
+import '../../features/profile/presentation/screens/globe_screen.dart';
 import '../../features/profile/presentation/screens/notifications_screen.dart';
 import '../../features/profile/presentation/screens/language_screen.dart';
 import '../../features/profile/presentation/screens/comprehensive_settings_screen.dart';
@@ -205,32 +205,25 @@ Future<void> _handleEmailVerification(Uri uri) async {
     // Store user state in SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     
-    // CRITICAL: Check database to see if user has completed preferences
-    // This is the SINGLE SOURCE OF TRUTH for new signups
-    bool hasCompletedPrefsInDb = false;
-    try {
-      final response = await Supabase.instance.client
-          .from('user_preferences')
-          .select('has_completed_preferences')
-          .eq('user_id', user.id)
-          .maybeSingle();
-      
-      if (response != null && response['has_completed_preferences'] == true) {
-        hasCompletedPrefsInDb = true;
-        debugPrint('✅ User has completed preferences in database - syncing to local');
-      } else {
-        debugPrint('🆕 User has NOT completed preferences in database - forcing preferences flow');
-      }
-    } catch (e) {
-      debugPrint('⚠️ Could not check preferences from database: $e');
-      debugPrint('   Defaulting to false (user must complete preferences)');
-      // Default to false for safety - user must complete preferences
-      hasCompletedPrefsInDb = false;
-    }
+    // CRITICAL: After magic link verification, always send user through onboarding preferences.
+    // Do not trust DB here: existing rows (e.g. from a previous test) may have
+    // has_completed_preferences true; we want magic-link signups to always see the flow.
+    const bool hasCompletedPrefsInDb = false;
+    debugPrint('🆕 Magic link verification: forcing preferences flow (user must complete onboarding)');
     
-    // CRITICAL: Set SharedPreferences flag based on database (SINGLE SOURCE OF TRUTH)
-    // This ensures new signups always go through preferences, even if local cache says otherwise
     await prefs.setBool('hasCompletedPreferences', hasCompletedPrefsInDb);
+    
+    // Keep DB in sync so router/splash don't override: set has_completed_preferences to false
+    try {
+      await Supabase.instance.client
+          .from('user_preferences')
+          .update({'has_completed_preferences': false, 'updated_at': DateTime.now().toIso8601String()})
+          .eq('user_id', user.id);
+      debugPrint('✅ Reset has_completed_preferences to false in database for preferences flow');
+    } catch (e) {
+      // Row may not exist yet (settings provider creates it later) - ignore
+      debugPrint('⚠️ Could not update preferences in database (row may not exist yet): $e');
+    }
     await prefs.setBool('has_seen_onboarding', true); // CRITICAL: Mark onboarding as seen so router doesn't redirect back
     await prefs.setInt('last_auth_timestamp', DateTime.now().millisecondsSinceEpoch);
     
@@ -239,7 +232,7 @@ Future<void> _handleEmailVerification(Uri uri) async {
     debugPrint('   ✅ currentSession != null');
     debugPrint('   ✅ accessToken != null');
     debugPrint('   ✅ Email confirmed');
-    debugPrint('   ✅ hasCompletedPreferences set to: $hasCompletedPrefsInDb (from database)');
+    debugPrint('   ✅ hasCompletedPreferences set to false (magic link → preferences flow)');
   } catch (e) {
     debugPrint('❌ Email verification error: $e');
     rethrow;
@@ -404,12 +397,12 @@ GoRouter router(RouterRef ref) {
       GoRoute(
         path: '/register',
         name: 'register',
-        builder: (context, state) => const RegisterScreen(),
+        builder: (context, state) => const MagicLinkSignupScreen(),
       ),
       GoRoute(
         path: '/auth/signup',
         name: 'auth-signup',
-        builder: (context, state) => const RegisterScreen(),
+        builder: (context, state) => const MagicLinkSignupScreen(),
       ),
       GoRoute(
         path: '/auth/verify-email',
@@ -514,6 +507,11 @@ GoRouter router(RouterRef ref) {
         path: '/share-profile',
         name: 'share-profile',
         builder: (context, state) => const ShareProfileScreen(),
+      ),
+      GoRoute(
+        path: '/profile/globe',
+        name: 'globe',
+        builder: (context, state) => const GlobeScreen(),
       ),
       GoRoute(
         path: '/mood',

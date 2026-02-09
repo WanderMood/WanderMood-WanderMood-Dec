@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
@@ -139,7 +140,7 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                     child: TextButton(
                       onPressed: _onSkip,
                       child: Text(
-                        'Skip',
+                        AppLocalizations.of(context)!.introSkip,
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 16,
@@ -164,13 +165,13 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                 
                 const SizedBox(height: 48),
                 
-                // Three words - staggered animation
+                // Two-line title (localized) - same colours as before: line 1 dark gray, line 2 green
                 SlideTransition(
                   position: _slideAnimation1,
                   child: FadeTransition(
                     opacity: _fadeAnimation,
                     child: Text(
-                      'Mood-Based',
+                      AppLocalizations.of(context)!.introTitleLine1,
                       style: TextStyle(
                         fontSize: 42,
                         fontWeight: FontWeight.w300,
@@ -189,7 +190,7 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                   child: FadeTransition(
                     opacity: _fadeAnimation,
                     child: Text(
-                      'Travel',
+                      AppLocalizations.of(context)!.introTitleLine2,
                       style: TextStyle(
                         fontSize: 48,
                         fontWeight: FontWeight.w600,
@@ -201,32 +202,13 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                   ),
                 ),
                 
-                const SizedBox(height: 8),
-                
-                SlideTransition(
-                  position: _slideAnimation3,
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Text(
-                      'Buddy',
-                      style: TextStyle(
-                        fontSize: 42,
-                        fontWeight: FontWeight.w300,
-                        color: Colors.grey[800],
-                        letterSpacing: 2,
-                        height: 1.2,
-                      ),
-                    ),
-                  ),
-                ),
-                
                 const SizedBox(height: 24),
                 
-                // Subtle tagline
+                // Subtle tagline (localized)
                 FadeTransition(
                   opacity: _fadeAnimation,
                   child: Text(
-                    'Your vibe. Your day. Your adventure.',
+                    AppLocalizations.of(context)!.introTagline,
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[600],
@@ -254,11 +236,11 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                           borderRadius: BorderRadius.circular(28),
                         ),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'See How It Works',
+                            AppLocalizations.of(context)!.introSeeHowItWorks,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,

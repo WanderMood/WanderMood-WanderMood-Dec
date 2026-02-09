@@ -61,6 +61,7 @@ dependencies:
   map_launcher: ^3.5.0
   url_launcher: ^6.3.2
   share_plus: ^11.0.0
+  webview_flutter: ^4.4.2
   
   # Storage
   hive: ^2.2.3
@@ -139,6 +140,7 @@ flutter:
     - assets/images/weather_icons/
     - assets/animations/
     - assets/sounds/
+    - assets/globe/
     - images/Onboarding_meetmoody.png
     - images/Onboarding_travelbymood.png
     - images/Onboarding_yourdayyourway.png

@@ -315,4 +315,530 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get logOutOfYourAccount => 'Log out of your account';
+
+  @override
+  String get introTagline => 'Ton humeur. Ta journée. Ton aventure.';
+
+  @override
+  String get introTitleLine1 => 'Ton humeur,';
+
+  @override
+  String get introTitleLine2 => 'Ton aventure';
+
+  @override
+  String get introSkip => 'Passer';
+
+  @override
+  String get introSeeHowItWorks => 'Voir comment ça marche';
+
+  @override
+  String get demoMoodyGreeting =>
+      'Salut ! 👋 Je suis Moody, ton compagnon de voyage.';
+
+  @override
+  String get demoMoodyAskVibe =>
+      'Je t\'aide à découvrir des endroits selon ton humeur. C\'est quoi ton humeur aujourd\'hui ?';
+
+  @override
+  String demoUserFeeling(String mood) {
+    return 'Je me sens $mood';
+  }
+
+  @override
+  String get demoMoodyResponseAdventurous =>
+      'Belle énergie ! 🔥 Voici des spots qui matchent ton esprit aventureux...';
+
+  @override
+  String get demoMoodyResponseRelaxed =>
+      'Un jour chill ! ☕ Voici des endroits pour te détendre...';
+
+  @override
+  String get demoMoodyResponseRomantic =>
+      'Comme c\'est doux ! 💕 Voici des lieux parfaits pour la romance...';
+
+  @override
+  String get demoMoodyResponseCultural =>
+      'Explorateur curieux ! 🎨 Découvre ces pépites culturelles...';
+
+  @override
+  String get demoMoodyResponseFoodie =>
+      'Miam ! 🍕 Voici des spots qui vont régaler tes papilles...';
+
+  @override
+  String get demoMoodyResponseSocial =>
+      'C\'est parti ! 🎉 Voici des lieux sympas pour sortir avec des amis...';
+
+  @override
+  String get demoMoodyResponseDefault =>
+      'Super choix ! 🌟 Voici des spots parfaits pour ton humeur...';
+
+  @override
+  String get demoMoodAdventurous => 'Aventurier';
+
+  @override
+  String get demoMoodRelaxed => 'Détendu';
+
+  @override
+  String get demoMoodRomantic => 'Romantique';
+
+  @override
+  String get demoMoodCultural => 'Culturel';
+
+  @override
+  String get demoMoodFoodie => 'Foodie';
+
+  @override
+  String get demoMoodSocial => 'Social';
+
+  @override
+  String get demoExploreMore => 'Explorer plus';
+
+  @override
+  String get demoMode => 'Mode démo';
+
+  @override
+  String get demoMoodyName => 'Moody';
+
+  @override
+  String get demoTapToSelectMood => 'Appuie pour choisir ton humeur :';
+
+  @override
+  String get demoReadyToSignUp => 'Prêt à t\'inscrire ? C\'est parti →';
+
+  @override
+  String get guestExplorePlaces => 'Explorer les lieux';
+
+  @override
+  String get guestPreviewMode => 'Aperçu • Fonctions limitées';
+
+  @override
+  String get guestGuest => 'Invité';
+
+  @override
+  String get guestSignUpFree => 'S\'inscrire gratuitement';
+
+  @override
+  String get guestLovingWhatYouSee => 'Tu aimes ce que tu vois ?';
+
+  @override
+  String get guestSignUpSaveFavorites =>
+      'Inscris-toi pour sauvegarder des favoris et créer des plans';
+
+  @override
+  String get guestSignUp => 'S\'inscrire';
+
+  @override
+  String get guestSignUpToSaveFavorites =>
+      'Inscris-toi pour sauvegarder tes favoris !';
+
+  @override
+  String get guestNoPlacesMatchFilters =>
+      'Aucun lieu ne correspond aux filtres';
+
+  @override
+  String get guestTryDifferentCategory => 'Essaie une autre catégorie';
+
+  @override
+  String get guestMoodySays => 'Moody dit...';
+
+  @override
+  String get guestGreatChoice => 'Bon choix pour ton humeur du jour !';
+
+  @override
+  String get guestSignUpToUnlock => 'S\'inscrire pour débloquer';
+
+  @override
+  String get guestSignUpUnlockDescription =>
+      'Sauvegarder des favoris, créer des plans et des recommandations personnalisées';
+
+  @override
+  String get guestSignUpFreeSparkle => 'S\'inscrire gratuitement ✨';
+
+  @override
+  String get guestExploringLikePro => 'Tu explores comme un pro !';
+
+  @override
+  String get guestReadyToSaveFavorites =>
+      'Prêt à sauvegarder des favoris et créer des plans ?';
+
+  @override
+  String get guestMaybeLater => 'Plus tard';
+
+  @override
+  String get guestFilterHalal => 'Halal';
+
+  @override
+  String get guestFilterBlackOwned => 'Entreprise noire';
+
+  @override
+  String get guestFilterAesthetic => 'Esthétique';
+
+  @override
+  String get guestFilterLgbtq => 'LGBTQ+';
+
+  @override
+  String get guestFilterVegan => 'Végan';
+
+  @override
+  String get guestFilterVegetarian => 'Végétarien';
+
+  @override
+  String get guestFilterWheelchair => 'Accessible';
+
+  @override
+  String get guestCategoryAll => 'Tout';
+
+  @override
+  String get guestCategoryRestaurants => 'Restaurants';
+
+  @override
+  String get guestCategoryCafes => 'Cafés';
+
+  @override
+  String get guestCategoryParks => 'Parcs';
+
+  @override
+  String get guestCategoryMuseums => 'Musées';
+
+  @override
+  String get guestCategoryNightlife => 'Vie nocturne';
+
+  @override
+  String get demoActTitleMountainTrailHike => 'Randonnée en montagne';
+
+  @override
+  String get demoActTitleCityBikeTour => 'Tour à vélo en ville';
+
+  @override
+  String get demoActTitleIndoorClimbing => 'Escalade indoor';
+
+  @override
+  String get demoActTitleCozyCornerCafe => 'Café cosy';
+
+  @override
+  String get demoActTitleBotanicalGarden => 'Jardin botanique';
+
+  @override
+  String get demoActTitleWellnessSpa => 'Spa bien-être';
+
+  @override
+  String get demoActTitleSunsetViewpoint => 'Point de vue coucher de soleil';
+
+  @override
+  String get demoActTitleWineAndDine => 'Vin & dîner';
+
+  @override
+  String get demoActTitleRoseGardenWalk => 'Promenade au jardin des roses';
+
+  @override
+  String get demoActTitleHistoryMuseum => 'Musée d\'histoire';
+
+  @override
+  String get demoActTitleLocalTheater => 'Théâtre local';
+
+  @override
+  String get demoActTitleArtGallery => 'Galerie d\'art';
+
+  @override
+  String get demoActTitleLocalFavorite => 'Favori du coin';
+
+  @override
+  String get demoActTitleCozyCafe => 'Café cosy';
+
+  @override
+  String get demoActTitleWineBar => 'Bar à vins';
+
+  @override
+  String get demoActTitleRooftopBar => 'Bar sur le toit';
+
+  @override
+  String get demoActTitleArcadeLounge => 'Arcade lounge';
+
+  @override
+  String get demoActTitleLiveMusicSpot => 'Spot de musique live';
+
+  @override
+  String get demoActTitlePopularSpot => 'Spot populaire';
+
+  @override
+  String get demoActTitleFunActivity => 'Activité fun';
+
+  @override
+  String get demoActSubScenic32 => 'Aventure pittoresque • 3,2 km';
+
+  @override
+  String get demoActSubActive18 => 'Exploration active • 1,8 km';
+
+  @override
+  String get demoActSubThrilling25 => 'Expérience intense • 2,5 km';
+
+  @override
+  String get demoActSubUnwinding08 => 'Parfait pour décompresser • 0,8 km';
+
+  @override
+  String get demoActSubPeaceful21 => 'Évasion paisible • 2,1 km';
+
+  @override
+  String get demoActSubRelaxation34 => 'Détente totale • 3,4 km';
+
+  @override
+  String get demoActSubMagical15 => 'Ambiance magique • 1,5 km';
+
+  @override
+  String get demoActSubIntimate09 => 'Cadre intime • 0,9 km';
+
+  @override
+  String get demoActSubStroll23 => 'Belle balade • 2,3 km';
+
+  @override
+  String get demoActSubExhibits12 => 'Expos fascinantes • 1,2 km';
+
+  @override
+  String get demoActSubLive18 => 'Spectacles live • 1,8 km';
+
+  @override
+  String get demoActSubContemporary07 => 'Art contemporain • 0,7 km';
+
+  @override
+  String get demoActSubTopReviewed05 => 'Très bien noté • 0,5 km';
+
+  @override
+  String get demoActSubBrunch09 => 'Super brunch • 0,9 km';
+
+  @override
+  String get demoActSubSmallPlates12 => 'Petites assiettes • 1,2 km';
+
+  @override
+  String get demoActSubVibes11 => 'Ambiance & vue • 1,1 km';
+
+  @override
+  String get demoActSubGames07 => 'Jeux & boissons • 0,7 km';
+
+  @override
+  String get demoActSubTonightsGig15 => 'Concert ce soir • 1,5 km';
+
+  @override
+  String get demoActSubHighlyRated10 => 'Très bien noté • 1,0 km';
+
+  @override
+  String get demoActSubGreatToday15 => 'Parfait pour aujourd\'hui • 1,5 km';
+
+  @override
+  String get demoActSubTopReviewed08 => 'Très bien noté • 0,8 km';
+
+  @override
+  String get guestPlaceNameCozyCorner => 'Le Coin Cosy';
+
+  @override
+  String get guestPlaceNameSunsetTerrace => 'Terrasse coucher de soleil';
+
+  @override
+  String get guestPlaceNameCityArtMuseum => 'Musée d\'art urbain';
+
+  @override
+  String get guestPlaceNameGreenPark => 'Parc vert';
+
+  @override
+  String get guestPlaceNameJazzLounge => 'Jazz lounge';
+
+  @override
+  String get guestPlaceNameRooftopBar => 'Bar sur le toit';
+
+  @override
+  String get guestPlaceNameFreshKitchen => 'Cuisine fraîche';
+
+  @override
+  String get guestPlaceNameHistoryMuseum => 'Musée d\'histoire';
+
+  @override
+  String get guestPlaceNameSpiceRoute => 'Route des épices';
+
+  @override
+  String get guestPlaceNameSoulKitchen => 'Soul kitchen';
+
+  @override
+  String get guestPlaceNameStudioCafe => 'Café studio';
+
+  @override
+  String get guestPlaceDescCozyCorner =>
+      'Un café de quartier chaleureux avec café de spécialité et pâtisseries fraîches.';
+
+  @override
+  String get guestPlaceDescSunsetTerrace =>
+      'Dîner en terrasse avec vue et ambiance soirée détendue.';
+
+  @override
+  String get guestPlaceDescCityArtMuseum =>
+      'Art moderne et expositions temporaires dans un bâtiment remarquable.';
+
+  @override
+  String get guestPlaceDescGreenPark =>
+      'Espace vert parfait pour une balade ou un pique-nique.';
+
+  @override
+  String get guestPlaceDescJazzLounge =>
+      'Jazz live, cocktails et intérieur cosy.';
+
+  @override
+  String get guestPlaceDescRooftopBar =>
+      'Vue sur la skyline et cocktails à l\'heure dorée.';
+
+  @override
+  String get guestPlaceDescFreshKitchen =>
+      'Bowls healthy et colorés avec ingrédients frais.';
+
+  @override
+  String get guestPlaceDescHistoryMuseum =>
+      'Histoire locale et patrimoine dans un bâtiment historique.';
+
+  @override
+  String get guestPlaceDescSpiceRoute =>
+      'Saveurs halal et portions généreuses.';
+
+  @override
+  String get guestPlaceDescSoulKitchen =>
+      'Comfort food et musique live dans un lieu accueillant.';
+
+  @override
+  String get guestPlaceDescStudioCafe =>
+      'Intérieur minimaliste et belle lumière pour travailler ou se retrouver.';
+
+  @override
+  String get guestOpenNow => 'Ouvert';
+
+  @override
+  String get guestClosed => 'Fermé';
+
+  @override
+  String get guestFree => 'Gratuit';
+
+  @override
+  String get guestPaid => 'Payant';
+
+  @override
+  String guestDistanceAway(String distance) {
+    return 'À $distance';
+  }
+
+  @override
+  String get guestHours => 'Horaires';
+
+  @override
+  String get signupJoinWanderMood => 'Rejoins WanderMood';
+
+  @override
+  String get signupSubtitle =>
+      'Entre ton email pour commencer.\nPas de mot de passe !';
+
+  @override
+  String get signupEmailLabel => 'Email';
+
+  @override
+  String get signupEmailHint => 'toi@exemple.fr';
+
+  @override
+  String get signupEmailRequired => 'Entre ton email';
+
+  @override
+  String get signupEmailInvalid => 'Entre un email valide';
+
+  @override
+  String get signupSendMagicLink => 'Envoyer le magic link';
+
+  @override
+  String get signupErrorGeneric => 'Une erreur s\'est produite. Réessaie.';
+
+  @override
+  String get signupWhatYouGet => 'Ce que tu obtiens';
+
+  @override
+  String get signupBenefitPersonalized => 'Recommandations personnalisées';
+
+  @override
+  String get signupBenefitFavorites => 'Sauvegarde tes lieux favoris';
+
+  @override
+  String get signupBenefitDayPlans => 'Crée des plans de journée';
+
+  @override
+  String get signupBenefitMoodMatching => 'Activités selon ton humeur';
+
+  @override
+  String get signupTerms =>
+      'En continuant, tu acceptes nos CGU et Politique de confidentialité';
+
+  @override
+  String get signupCheckEmail => 'Vérifie tes emails !';
+
+  @override
+  String get signupWeSentLinkTo => 'On a envoyé un magic link à';
+
+  @override
+  String get signupClickLinkInEmail =>
+      'Clique sur le lien dans l\'email pour te connecter';
+
+  @override
+  String get signupLinkExpires => 'Le lien expire dans 24 h';
+
+  @override
+  String get signupCheckSpam => 'Vérifie les spams si tu ne le vois pas';
+
+  @override
+  String get signupTryAgain => 'Pas reçu l\'email ? Réessaie';
+
+  @override
+  String signupAlmostThere(String city) {
+    return 'Presque fini ! Un clic pour des aventures selon ton humeur à $city ✨';
+  }
+
+  @override
+  String get signupAlmostThereTitle => 'Presque fini !';
+
+  @override
+  String signupAlmostThereBody(String city) {
+    return 'Un clic pour des aventures selon ton humeur à $city ✨';
+  }
+
+  @override
+  String signupJoinTravelersInCity(String count, String city) {
+    return 'Rejoins $count voyageurs à $city !';
+  }
+
+  @override
+  String signupJoinTravelers(String count) {
+    return 'Rejoins $count voyageurs !';
+  }
+
+  @override
+  String get signupWhatYouUnlock => 'Ce que tu débloques';
+
+  @override
+  String get signupUnlockPersonalized => 'Recommandations personnalisées';
+
+  @override
+  String get signupUnlockFavorites => 'Sauvegarde tes lieux favoris';
+
+  @override
+  String get signupUnlockDayPlans => 'Crée des plans de journée';
+
+  @override
+  String get signupUnlockMoodMatching => 'Activités selon ton humeur';
+
+  @override
+  String get signupRating => '4,9/5 note';
+
+  @override
+  String get signupLoveIt => '98 % adorent';
+
+  @override
+  String get signupTestimonial =>
+      'WanderMood m\'a fait découvrir des endroits que je ne connaissais pas !';
+
+  @override
+  String signupTestimonialBy(String city) {
+    return '– Sarah, $city';
+  }
+
+  @override
+  String get signupDefaultCity => 'Rotterdam';
 }

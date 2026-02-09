@@ -250,6 +250,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 _buildMoodJourneyCard(),
                 const SizedBox(height: 24),
                 
+                // Travel Globe
+                _buildTravelGlobeCard(),
+                const SizedBox(height: 24),
+                
                 // Preferences
                 _buildPreferencesCard(),
                 const SizedBox(height: 24),
@@ -471,6 +475,86 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             style: GoogleFonts.poppins(fontSize: 14),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTravelGlobeCard() {
+    return GestureDetector(
+      onTap: () => context.push('/profile/globe'),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF0F172A), // slate-900
+              Color(0xFF1E293B), // slate-800
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+              spreadRadius: -2,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.public,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Your Travel Globe',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Explore your travel journey',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white70,
+              size: 20,
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -10,9 +10,11 @@ class ApiKeys {
   static String get googlePlacesKey {
     // Try .env file first (dotenv must be loaded before accessing)
     try {
-      final envKey = dotenv.env['GOOGLE_PLACES_API_KEY'];
-      if (envKey != null && envKey.isNotEmpty && envKey != 'YOUR_GOOGLE_PLACES_API_KEY_HERE') {
-        return envKey;
+      if (dotenv.isInitialized) {
+        final envKey = dotenv.env['GOOGLE_PLACES_API_KEY'];
+        if (envKey != null && envKey.isNotEmpty && envKey != 'YOUR_GOOGLE_PLACES_API_KEY_HERE') {
+          return envKey;
+        }
       }
     } catch (e) {
       // dotenv might not be loaded yet, continue to next option
@@ -41,9 +43,11 @@ class ApiKeys {
   static String get openAiKey {
     // Try .env file first (dotenv must be loaded before accessing)
     try {
-      final envKey = dotenv.env['OPENAI_API_KEY'];
-      if (envKey != null && envKey.isNotEmpty && envKey != 'YOUR_OPENAI_API_KEY_HERE') {
-        return envKey;
+      if (dotenv.isInitialized) {
+        final envKey = dotenv.env['OPENAI_API_KEY'];
+        if (envKey != null && envKey.isNotEmpty && envKey != 'YOUR_OPENAI_API_KEY_HERE') {
+          return envKey;
+        }
       }
     } catch (e) {
       // dotenv might not be loaded yet, continue to next option
@@ -70,9 +74,11 @@ class ApiKeys {
   static String get openWeather {
     // Try .env file first (dotenv must be loaded before accessing)
     try {
-      final envKey = dotenv.env['OPENWEATHER_API_KEY'];
-      if (envKey != null && envKey.isNotEmpty && envKey != 'YOUR_OPENWEATHER_API_KEY_HERE') {
-        return envKey;
+      if (dotenv.isInitialized) {
+        final envKey = dotenv.env['OPENWEATHER_API_KEY'];
+        if (envKey != null && envKey.isNotEmpty && envKey != 'YOUR_OPENWEATHER_API_KEY_HERE') {
+          return envKey;
+        }
       }
     } catch (e) {
       // dotenv might not be loaded yet, continue to next option
@@ -101,9 +107,11 @@ class ApiKeys {
   static String get supabaseUrl {
     // Try .env file first (dotenv must be loaded before accessing)
     try {
-      final envUrl = dotenv.env['SUPABASE_URL'];
-      if (envUrl != null && envUrl.isNotEmpty && envUrl != 'YOUR_SUPABASE_URL_HERE') {
-        return envUrl;
+      if (dotenv.isInitialized) {
+        final envUrl = dotenv.env['SUPABASE_URL'];
+        if (envUrl != null && envUrl.isNotEmpty && envUrl != 'YOUR_SUPABASE_URL_HERE') {
+          return envUrl;
+        }
       }
     } catch (e) {
       // dotenv might not be loaded yet, continue to next option
@@ -121,7 +129,12 @@ class ApiKeys {
     // Fallback only for development
     if (kDebugMode) {
       debugPrint('⚠️ WARNING: Using fallback Supabase URL. Set SUPABASE_URL in .env or build args.');
-      return 'https://ymxehzmgeqccuvbvjwtq.supabase.co';
+      if (dotenv.isInitialized) {
+        debugPrint('⚠️ Attempted to load from dotenv: ${dotenv.env['SUPABASE_URL']}');
+      } else {
+        debugPrint('⚠️ dotenv is not initialized - .env file not found or not loaded');
+      }
+      return 'https://oojpipspxwdmiyaymldo.supabase.co';
     }
     
     throw Exception('SUPABASE_URL not found. Set it in .env file or build arguments.');
@@ -132,9 +145,11 @@ class ApiKeys {
   static String get supabaseAnonKey {
     // Try .env file first (dotenv must be loaded before accessing)
     try {
-      final envKey = dotenv.env['SUPABASE_ANON_KEY'];
-      if (envKey != null && envKey.isNotEmpty && envKey != 'YOUR_SUPABASE_ANON_KEY_HERE') {
-        return envKey;
+      if (dotenv.isInitialized) {
+        final envKey = dotenv.env['SUPABASE_ANON_KEY'];
+        if (envKey != null && envKey.isNotEmpty && envKey != 'YOUR_SUPABASE_ANON_KEY_HERE') {
+          return envKey;
+        }
       }
     } catch (e) {
       // dotenv might not be loaded yet, continue to next option
@@ -152,7 +167,12 @@ class ApiKeys {
     // Fallback only for development
     if (kDebugMode) {
       debugPrint('⚠️ WARNING: Using fallback Supabase anon key. Set SUPABASE_ANON_KEY in .env or build args.');
-      return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteGVoem1nZXFjY3V2YnZqd3RxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4ODU4NzIsImV4cCI6MjA4MTQ2MTg3Mn0.qTUcVZxl8PP_S48t9XQKBYvuF4QWtdKvzYPsAKr0isc';
+      if (dotenv.isInitialized) {
+        debugPrint('⚠️ Attempted to load from dotenv: ${dotenv.env['SUPABASE_ANON_KEY']}');
+      } else {
+        debugPrint('⚠️ dotenv is not initialized - .env file not found or not loaded');
+      }
+      return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vanBpcHNweHdkbWl5YXltbGRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYxNjkzMzEsImV4cCI6MjA4MTc0NTMzMX0.zFlCGZw-EjmyLi4E9v3S5V7DAmwXqbcBE-JMxBpotQg';
     }
     
     throw Exception('SUPABASE_ANON_KEY not found. Set it in .env file or build arguments.');
@@ -166,9 +186,11 @@ class ApiKeys {
   static String get googleMapsKey {
     // Try .env file first (dotenv must be loaded before accessing)
     try {
-      final envKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
-      if (envKey != null && envKey.isNotEmpty && envKey != 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
-        return envKey;
+      if (dotenv.isInitialized) {
+        final envKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
+        if (envKey != null && envKey.isNotEmpty && envKey != 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
+          return envKey;
+        }
       }
     } catch (e) {
       // dotenv might not be loaded yet, continue to next option

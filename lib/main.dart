@@ -183,8 +183,14 @@ Future<void> main() async {
     try {
       await dotenv.load(fileName: '.env');
       debugPrint('✅ Loaded .env file');
+      if (dotenv.isInitialized) {
+        debugPrint('🔍 SUPABASE_URL from .env: ${dotenv.env['SUPABASE_URL']}');
+        debugPrint('🔍 SUPABASE_ANON_KEY from .env: ${dotenv.env['SUPABASE_ANON_KEY']?.substring(0, 20)}...');
+      }
     } catch (e) {
       debugPrint('⚠️ Could not load .env file: $e');
+      debugPrint('⚠️ Error details: ${e.toString()}');
+      debugPrint('⚠️ Will use fallback values or build-time environment variables');
       // Continue - will use build-time environment variables
     }
     

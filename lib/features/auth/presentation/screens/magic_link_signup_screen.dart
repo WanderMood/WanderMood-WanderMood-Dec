@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
+import '../../../../core/providers/traveler_count_provider.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../home/domain/enums/moody_feature.dart';
+import '../../../location/providers/location_provider.dart';
 
 /// Magic Link Signup Screen
 /// 
@@ -92,14 +95,10 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Something went wrong. Please try again.';
+          _errorMessage = AppLocalizations.of(context)!.signupErrorGeneric;
         });
       }
     }
-  }
-
-  void _usePasswordInstead() {
-    context.go('/auth/signup');
   }
 
   void _goBack() {
@@ -150,12 +149,12 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
             ),
           ),
           
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           
           // Title
           Center(
             child: Text(
-              'Join WanderMood',
+              AppLocalizations.of(context)!.signupJoinWanderMood,
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
@@ -169,7 +168,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
           // Subtitle
           Center(
             child: Text(
-              'Enter your email to get started.\nNo password needed!',
+              AppLocalizations.of(context)!.signupSubtitle,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -179,7 +178,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
             ),
           ),
           
-          const SizedBox(height: 40),
+          const SizedBox(height: 24),
           
           // Form
           Form(
@@ -193,8 +192,8 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                   textInputAction: TextInputAction.done,
                   autofillHints: const [AutofillHints.email],
                   decoration: InputDecoration(
-                    labelText: 'Email',
-                    hintText: 'you@example.com',
+                    labelText: AppLocalizations.of(context)!.signupEmailLabel,
+                    hintText: AppLocalizations.of(context)!.signupEmailHint,
                     prefixIcon: Icon(Icons.email_outlined, color: Colors.grey[600]),
                     filled: true,
                     fillColor: Colors.white,
@@ -217,10 +216,10 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
+                      return AppLocalizations.of(context)!.signupEmailRequired;
                     }
                     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                      return 'Please enter a valid email';
+                      return AppLocalizations.of(context)!.signupEmailInvalid;
                     }
                     return null;
                   },
@@ -280,14 +279,14 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
-                        : const Row(
+                        : Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.auto_awesome, size: 22),
-                              SizedBox(width: 8),
+                              const Icon(Icons.auto_awesome, size: 22),
+                              const SizedBox(width: 8),
                               Text(
-                                'Send Magic Link',
-                                style: TextStyle(
+                                AppLocalizations.of(context)!.signupSendMagicLink,
+                                style: const TextStyle(
                                   fontSize: 17,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -296,66 +295,21 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                           ),
                   ),
                 ),
-                
-                const SizedBox(height: 16),
-                
-                // Divider
-                Row(
-                  children: [
-                    Expanded(child: Divider(color: Colors.grey[300])),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'or',
-                        style: TextStyle(
-                          color: Colors.grey[500],
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    Expanded(child: Divider(color: Colors.grey[300])),
-                  ],
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Use password instead
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: OutlinedButton(
-                    onPressed: _usePasswordInstead,
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.grey[400]!),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: Text(
-                      'Use email & password instead',
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.grey[700],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
           
           const SizedBox(height: 32),
           
-          // Benefits
-          _buildBenefits(),
+          // What you'll unlock + rating & testimonial
+          _buildWhatYouUnlock(context),
           
           const SizedBox(height: 24),
           
           // Terms
           Center(
             child: Text(
-              'By continuing, you agree to our Terms of Service and Privacy Policy',
+              AppLocalizations.of(context)!.signupTerms,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
@@ -368,154 +322,254 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
     );
   }
 
-  Widget _buildSuccessState() {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Success animation
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.green[50],
-            ),
-            child: const Center(
-              child: Text('✉️', style: TextStyle(fontSize: 60)),
-            ),
-          ),
-          
-          const SizedBox(height: 32),
-          
-          Text(
-            'Check your email!',
+  Widget _buildJoinTravelersBanner(BuildContext context) {
+    final locationAsync = ref.watch(locationNotifierProvider);
+    final countAsync = ref.watch(travelerCountProvider);
+    final l10n = AppLocalizations.of(context)!;
+    final countStr = countAsync.when(
+      data: (count) => formatTravelerCount(count),
+      loading: () => kFallbackTravelerCountFormatted,
+      error: (_, __) => kFallbackTravelerCountFormatted,
+    );
+    final String bannerText = locationAsync.when(
+      data: (city) => city != null && city.isNotEmpty
+          ? l10n.signupJoinTravelersInCity(countStr, city)
+          : l10n.signupJoinTravelers(countStr),
+      loading: () => l10n.signupJoinTravelers(countStr),
+      error: (_, __) => l10n.signupJoinTravelers(countStr),
+    );
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
             style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              color: Colors.grey[800],
+              fontSize: 13,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+            children: [
+              const TextSpan(text: '🧑 ✈️ '),
+              TextSpan(text: bannerText),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSuccessState() {
+    final l10n = AppLocalizations.of(context)!;
+    final city = ref.watch(locationNotifierProvider).valueOrNull ?? l10n.signupDefaultCity;
+    final minHeight = MediaQuery.of(context).size.height -
+        MediaQuery.of(context).padding.top -
+        MediaQuery.of(context).padding.bottom -
+        48;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: minHeight),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+          // Moody character (replaces envelope)
+          const Center(
+            child: MoodyCharacter(
+              size: 100,
+              mood: 'happy',
+              currentFeature: MoodyFeature.none,
             ),
           ),
-          
+          const SizedBox(height: 20),
+          // Title
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l10n.signupCheckEmail,
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.grey[800],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(width: 8),
+              Text('📬', style: TextStyle(fontSize: 26, color: Colors.grey[700])),
+            ],
+          ),
           const SizedBox(height: 12),
-          
           Text(
-            'We sent a magic link to',
+            l10n.signupWeSentLinkTo,
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey[600],
             ),
+            textAlign: TextAlign.center,
           ),
-          
           const SizedBox(height: 8),
-          
-          Text(
-            _emailController.text,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF4CAF50),
+          Center(
+            child: Text(
+              _emailController.text,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF4CAF50),
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
-          
-          const SizedBox(height: 32),
-          
+          const SizedBox(height: 24),
+          // Instruction cards (three separate cards with colored left border, real emojis)
+          _buildSuccessInstructionCard(
+            context,
+            emoji: '✅',
+            iconColor: const Color(0xFF4CAF50),
+            borderColor: const Color(0xFF4CAF50),
+            text: l10n.signupClickLinkInEmail,
+          ),
+          const SizedBox(height: 10),
+          _buildSuccessInstructionCard(
+            context,
+            emoji: '⏰',
+            iconColor: Colors.amber[700]!,
+            borderColor: Colors.amber[700]!,
+            text: l10n.signupLinkExpires,
+          ),
+          const SizedBox(height: 10),
+          _buildSuccessInstructionCard(
+            context,
+            emoji: '📁',
+            iconColor: Colors.blue[600]!,
+            borderColor: Colors.blue[600]!,
+            text: l10n.signupCheckSpam,
+          ),
+          const SizedBox(height: 20),
+          // "You're almost there!" card – gradient, title + body, pink star
           Container(
-            padding: const EdgeInsets.all(20),
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFFFFF0F5), // light pink
+                  Color(0xFFFFF8E7), // light peach / warm yellow
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFFFB6C1), width: 1),
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 24),
-                    const SizedBox(width: 12),
+                    Icon(Icons.star_outline, color: Colors.pink[400], size: 26),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Click the link in the email to sign in',
+                        l10n.signupAlmostThereTitle,
                         style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey[700],
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.grey[800],
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Icon(Icons.schedule, color: Color(0xFF4CAF50), size: 24),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'The link expires in 24 hours',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey[700],
-                        ),
-                      ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.only(left: 36),
+                  child: Text(
+                    l10n.signupAlmostThereBody(city),
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.4,
+                      color: Colors.grey[800],
+                      fontWeight: FontWeight.w400,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Icon(Icons.folder_open, color: Colors.blue[600], size: 24),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Check spam folder if not in inbox',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
           ),
-          
-          const SizedBox(height: 32),
-          
-          // Resend button
-          TextButton(
+          const SizedBox(height: 24),
+          // Try again
+          TextButton.icon(
             onPressed: () {
               setState(() {
                 _emailSent = false;
               });
             },
-            child: const Text(
-              'Didn\'t receive email? Try again',
-              style: TextStyle(
+            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF4CAF50), size: 20),
+            label: Text(
+              l10n.signupTryAgain,
+              style: const TextStyle(
                 fontSize: 15,
                 color: Color(0xFF4CAF50),
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
-          
-          const SizedBox(height: 8),
-          
-          // Use password
-          TextButton(
-            onPressed: _usePasswordInstead,
+        ],
+      ),
+    ),
+    );
+  }
+
+  Widget _buildSuccessInstructionCard(
+    BuildContext context, {
+    required String emoji,
+    required Color iconColor,
+    required Color borderColor,
+    required String text,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border(
+          left: BorderSide(color: borderColor, width: 4),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Text(emoji, style: const TextStyle(fontSize: 20)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
             child: Text(
-              'Use email & password instead',
+              text,
               style: TextStyle(
                 fontSize: 15,
-                color: Colors.grey[600],
+                color: Colors.grey[700],
               ),
             ),
           ),
@@ -524,49 +578,176 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
     );
   }
 
-  Widget _buildBenefits() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.7),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          Text(
-            'What you\'ll get',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[800],
+  Widget _buildWhatYouUnlock(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locationAsync = ref.watch(locationNotifierProvider);
+    final defaultCity = l10n.signupDefaultCity;
+    final testimonialCity = locationAsync.when(
+      data: (c) => c ?? defaultCity,
+      loading: () => defaultCity,
+      error: (_, __) => defaultCity,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              l10n.signupWhatYouUnlock,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Colors.grey[800],
+              ),
             ),
           ),
-          const SizedBox(height: 16),
-          _buildBenefitItem('🌟', 'Personalized recommendations'),
-          const SizedBox(height: 8),
-          _buildBenefitItem('💾', 'Save your favorite places'),
-          const SizedBox(height: 8),
-          _buildBenefitItem('📅', 'Create custom day plans'),
-          const SizedBox(height: 8),
-          _buildBenefitItem('🎯', 'Mood-based activity matching'),
+        ),
+        _buildUnlockCard(context, '🎯', const Color(0xFFFF9800), l10n.signupUnlockPersonalized),
+        const SizedBox(height: 10),
+        _buildUnlockCard(context, '📍', const Color(0xFFFFC107), l10n.signupUnlockFavorites),
+        const SizedBox(height: 10),
+        _buildUnlockCard(context, '📅', const Color(0xFF4CAF50), l10n.signupUnlockDayPlans),
+        const SizedBox(height: 10),
+        _buildUnlockCard(context, '✨', const Color(0xFF673AB7), l10n.signupUnlockMoodMatching),
+        const SizedBox(height: 12),
+        _buildRatingTestimonialCard(context, l10n, testimonialCity),
+      ],
+    );
+  }
+
+  Widget _buildUnlockCard(BuildContext context, String emoji, Color color, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [color, color.withOpacity(0.7)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: color.withOpacity(0.6),
+                width: 1.5,
+              ),
+            ),
+            child: Text(emoji, style: const TextStyle(fontSize: 22)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[700],
+              ),
+            ),
+          ),
+          const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 22),
         ],
       ),
     );
   }
 
-  Widget _buildBenefitItem(String emoji, String text) {
-    return Row(
-      children: [
-        Text(emoji, style: const TextStyle(fontSize: 20)),
-        const SizedBox(width: 12),
-        Text(
-          text,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[700],
+  Widget _buildRatingTestimonialCard(BuildContext context, AppLocalizations l10n, String testimonialCity) {
+    const green = Color(0xFF4CAF50);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8F5E9),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: green.withOpacity(0.5), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: green.withOpacity(0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
-        ),
-      ],
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.star_rounded, color: Colors.amber[700], size: 22),
+                  const SizedBox(width: 6),
+                  Text(
+                    l10n.signupRating,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Icon(Icons.favorite_rounded, color: Colors.red[400], size: 22),
+                  const SizedBox(width: 6),
+                  Text(
+                    l10n.signupLoveIt,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '"${l10n.signupTestimonial}"',
+            style: TextStyle(
+              fontSize: 14,
+              height: 1.4,
+              color: Colors.grey[700],
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l10n.signupTestimonialBy(testimonialCity),
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
