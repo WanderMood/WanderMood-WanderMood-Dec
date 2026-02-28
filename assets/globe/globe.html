@@ -19,29 +19,37 @@
         #canvas-container {
             width: 100vw;
             height: 100vh;
-            position: relative;
+            position: relative; /* anchor for CSS2DRenderer overlay */
         }
         canvas {
             display: block;
         }
+        /* CSS2DRenderer handles position/transform — we only define visual styling here */
+        /* Base label — all labels share this */
         .globe-label {
-            position: absolute;
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
+            color: #ffffff;
             pointer-events: none;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5);
             white-space: nowrap;
-            transform: translate(-50%, -50%);
-            z-index: 100;
-            /* NO transition - prevents lag */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            user-select: none;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.6);
         }
-        .globe-label.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
+        /* Country labels — uppercase, letter-spaced (Apple Maps style) */
+        .globe-label.country       { text-transform: uppercase; letter-spacing: 0.8px; }
+        .globe-label.country.imp3  { font-size: 14px; font-weight: 700; }
+        .globe-label.country.imp2  { font-size: 12px; font-weight: 600; letter-spacing: 0.6px; }
+        .globe-label.country.imp1  { font-size: 10px; font-weight: 500; letter-spacing: 0.4px; }
+        /* City labels — sentence case, smaller */
+        .globe-label.city          { text-transform: none; letter-spacing: 0; }
+        .globe-label.city.imp3     { font-size: 13px; font-weight: 600; }
+        .globe-label.city.imp2     { font-size: 11px; font-weight: 500; }
+        .globe-label.city.imp1     { font-size: 10px; font-weight: 400; }
+        /* Island/territory labels */
+        .globe-label.island        { font-size: 9px; font-weight: 400; letter-spacing: 0; text-transform: none; }
+        /* Continent labels — large, prominent, shown only at full zoom-out */
+        .globe-label.continent     { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.95); }
+        /* Ocean labels — italic, light blue tint, wide letter-spacing */
+        .globe-label.ocean         { font-size: 11px; font-weight: 400; font-style: italic; text-transform: uppercase; letter-spacing: 2.5px; color: rgba(160,210,255,0.80); }
         #loading {
             position: absolute;
             top: 50%;
@@ -91,18 +99,22 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
     <script>
         // Globe configuration
         const globeRadius = 150;
-        let cameraDistance = 380; // Start zoomed out to see full globe
+        const baseCameraDistance = 820; // Fully zoomed out so globe fits on screen
+        let cameraDistance = baseCameraDistance;
         let targetZoom = 1.0;
         let zoomLevel = 1.0;
         
         // Rotation state
-        let rotationX = 0;
-        let rotationY = 0;
-        let targetRotationX = 0;
-        let targetRotationY = 0;
+        // Default view: Atlantic face — Americas left, Europe/Africa right.
+        // Computed via latLngToRotation(20, -30). Updated by setInitialLocation().
+        let rotationX = 0.35;
+        let rotationY = -0.95;
+        let targetRotationX = 0.35;
+        let targetRotationY = -0.95;
         let velocityX = 0;
         let velocityY = 0;
         let isDragging = false;
@@ -115,14 +127,503 @@
         let lastTouchX = 0;
         let lastTouchY = 0;
 
-        // Continent labels with positions
+        // Country labels: lat/lng = where the label appears on the globe (geographic center).
+        // Labels are projected to screen from these coords; refine lat/lng if a label
+        // appears off-center for oddly-shaped countries (e.g. Russia, Chile).
+        const countryLabels = [
+            { name: 'Afghanistan', lat: 33, lng: 66 },
+            { name: 'Albania', lat: 41, lng: 20 },
+            { name: 'Algeria', lat: 28, lng: 2 },
+            { name: 'Andorra', lat: 42.5, lng: 1.5 },
+            { name: 'Angola', lat: -12.3, lng: 17.5 },
+            { name: 'Antigua and Barbuda', lat: 17.2, lng: -61.8 },
+            { name: 'Argentina', lat: -34.6, lng: -58.4 },
+            { name: 'Armenia', lat: 40, lng: 45 },
+            { name: 'Australia', lat: -25.3, lng: 133.8 },
+            { name: 'Austria', lat: 47.5, lng: 14.5 },
+            { name: 'Azerbaijan', lat: 40.5, lng: 47.5 },
+            { name: 'Bahamas', lat: 24.3, lng: -76 },
+            { name: 'Bahrain', lat: 26, lng: 50.5 },
+            { name: 'Bangladesh', lat: 24, lng: 90 },
+            { name: 'Barbados', lat: 13.2, lng: -59.5 },
+            { name: 'Belarus', lat: 53.5, lng: 28 },
+            { name: 'Belgium', lat: 50.5, lng: 4.5 },
+            { name: 'Belize', lat: 17.2, lng: -88.8 },
+            { name: 'Benin', lat: 9.3, lng: 2.3 },
+            { name: 'Bhutan', lat: 27.5, lng: 90.5 },
+            { name: 'Bolivia', lat: -17, lng: -65 },
+            { name: 'Bosnia and Herzegovina', lat: 44, lng: 18 },
+            { name: 'Botswana', lat: -22.3, lng: 24.7 },
+            { name: 'Brazil', lat: -14.2, lng: -51.9 },
+            { name: 'Brunei', lat: 4.5, lng: 114.7 },
+            { name: 'Bulgaria', lat: 43, lng: 25 },
+            { name: 'Burkina Faso', lat: 12.5, lng: -1.5 },
+            { name: 'Burundi', lat: -3.5, lng: 29.9 },
+            { name: 'Cambodia', lat: 12.6, lng: 105 },
+            { name: 'Cameroon', lat: 6.6, lng: 12.6 },
+            { name: 'Canada', lat: 56.1, lng: -106.3 },
+            { name: 'Cape Verde', lat: 16, lng: -24 },
+            { name: 'Central African Republic', lat: 7, lng: 21 },
+            { name: 'Chad', lat: 15, lng: 19 },
+            { name: 'Chile', lat: -33.0, lng: -70.5 },
+            { name: 'China', lat: 35.9, lng: 104.2 },
+            { name: 'Colombia', lat: 4.6, lng: -74.1 },
+            { name: 'Comoros', lat: -12.2, lng: 44.2 },
+            { name: 'Congo', lat: -1, lng: 15 },
+            { name: 'Costa Rica', lat: 10, lng: -84 },
+            { name: 'Croatia', lat: 45.2, lng: 15.5 },
+            { name: 'Cuba', lat: 21.5, lng: -78 },
+            { name: 'Cyprus', lat: 35, lng: 33 },
+            { name: 'Czech Republic', lat: 49.8, lng: 15.5 },
+            { name: 'DR Congo', lat: -2.9, lng: 23.7 },
+            { name: 'Denmark', lat: 56.3, lng: 9.5 },
+            { name: 'Djibouti', lat: 11.5, lng: 43 },
+            { name: 'Dominica', lat: 15.4, lng: -61.4 },
+            { name: 'Dominican Republic', lat: 19, lng: -70.5 },
+            { name: 'Ecuador', lat: -2, lng: -77.5 },
+            { name: 'Egypt', lat: 26.8, lng: 30.8 },
+            { name: 'El Salvador', lat: 13.7, lng: -88.9 },
+            { name: 'Equatorial Guinea', lat: 2, lng: 10 },
+            { name: 'Eritrea', lat: 15, lng: 39 },
+            { name: 'Estonia', lat: 59, lng: 26 },
+            { name: 'Eswatini', lat: -26.5, lng: 31.5 },
+            { name: 'Ethiopia', lat: 9, lng: 40.5 },
+            { name: 'Fiji', lat: -18, lng: 178 },
+            { name: 'Finland', lat: 64, lng: 26 },
+            { name: 'France', lat: 46.2, lng: 2.2 },
+            { name: 'Gabon', lat: -0.5, lng: 11.8 },
+            { name: 'Gambia', lat: 13.5, lng: -15.5 },
+            { name: 'Georgia', lat: 42, lng: 43.5 },
+            { name: 'Germany', lat: 51.2, lng: 10.5 },
+            { name: 'Ghana', lat: 7.9, lng: -1 },
+            { name: 'Greece', lat: 39.1, lng: 21.8 },
+            { name: 'Grenada', lat: 12.1, lng: -61.7 },
+            { name: 'Guatemala', lat: 15.5, lng: -90.3 },
+            { name: 'Guinea', lat: 11, lng: -10 },
+            { name: 'Guinea-Bissau', lat: 12, lng: -15 },
+            { name: 'Guyana', lat: 5, lng: -59 },
+            { name: 'Haiti', lat: 19, lng: -72.4 },
+            { name: 'Honduras', lat: 15, lng: -86.5 },
+            { name: 'Hungary', lat: 47.2, lng: 19.5 },
+            { name: 'Iceland', lat: 65, lng: -19 },
+            { name: 'India', lat: 20.6, lng: 78.9 },
+            { name: 'Indonesia', lat: -2.5, lng: 118 },
+            { name: 'Iran', lat: 32.5, lng: 53.7 },
+            { name: 'Iraq', lat: 33, lng: 44 },
+            { name: 'Ireland', lat: 53.4, lng: -8.2 },
+            { name: 'Israel', lat: 31.5, lng: 34.8 },
+            { name: 'Italy', lat: 42.8, lng: 12.6 },
+            { name: 'Ivory Coast', lat: 7.5, lng: -5.5 },
+            { name: 'Jamaica', lat: 18.2, lng: -77.3 },
+            { name: 'Japan', lat: 36.2, lng: 138.3 },
+            { name: 'Jordan', lat: 31, lng: 36.8 },
+            { name: 'Kazakhstan', lat: 48, lng: 68 },
+            { name: 'Kenya', lat: -0.02, lng: 37.9 },
+            { name: 'Kiribati', lat: 1.4, lng: 173 },
+            { name: 'Kosovo', lat: 42.6, lng: 21.0 },
+            { name: 'Kuwait', lat: 29.5, lng: 47.8 },
+            { name: 'Kyrgyzstan', lat: 41, lng: 75 },
+            { name: 'Laos', lat: 18, lng: 105 },
+            { name: 'Latvia', lat: 57, lng: 25 },
+            { name: 'Lebanon', lat: 33.8, lng: 35.8 },
+            { name: 'Lesotho', lat: -29.5, lng: 28.5 },
+            { name: 'Liberia', lat: 6.5, lng: -9.5 },
+            { name: 'Libya', lat: 27, lng: 17 },
+            { name: 'Liechtenstein', lat: 47.2, lng: 9.5 },
+            { name: 'Lithuania', lat: 56, lng: 24 },
+            { name: 'Luxembourg', lat: 49.6, lng: 6.1 },
+            { name: 'Madagascar', lat: -20, lng: 47 },
+            { name: 'Malawi', lat: -13.5, lng: 34 },
+            { name: 'Malaysia', lat: 4.2, lng: 101.7 },
+            { name: 'Maldives', lat: 3.2, lng: 73.2 },
+            { name: 'Mali', lat: 17.6, lng: -4 },
+            { name: 'Malta', lat: 35.9, lng: 14.5 },
+            { name: 'Marshall Islands', lat: 9, lng: 168 },
+            { name: 'Mauritania', lat: 20, lng: -12 },
+            { name: 'Mauritius', lat: -20.3, lng: 57.6 },
+            { name: 'Mexico', lat: 23.6, lng: -102.5 },
+            { name: 'Micronesia', lat: 6.9, lng: 158.2 },
+            { name: 'Moldova', lat: 47, lng: 29 },
+            { name: 'Monaco', lat: 43.7, lng: 7.4 },
+            { name: 'Mongolia', lat: 46, lng: 105 },
+            { name: 'Montenegro', lat: 42.8, lng: 19.2 },
+            { name: 'Morocco', lat: 31.8, lng: -7.1 },
+            { name: 'Mozambique', lat: -18.3, lng: 35.2 },
+            { name: 'Myanmar', lat: 21.9, lng: 96.1 },
+            { name: 'Namibia', lat: -22.6, lng: 17.1 },
+            { name: 'Nauru', lat: -0.5, lng: 166.9 },
+            { name: 'Nepal', lat: 28.2, lng: 84 },
+            { name: 'Netherlands', lat: 52.1, lng: 5.3 },
+            { name: 'New Zealand', lat: -40.9, lng: 174.9 },
+            { name: 'Nicaragua', lat: 13, lng: -85 },
+            { name: 'Niger', lat: 16, lng: 8 },
+            { name: 'Nigeria', lat: 9.1, lng: 8.7 },
+            { name: 'North Macedonia', lat: 41.6, lng: 21.7 },
+            { name: 'Norway', lat: 62, lng: 10 },
+            { name: 'Oman', lat: 21, lng: 56 },
+            { name: 'Pakistan', lat: 30.4, lng: 69.3 },
+            { name: 'Palau', lat: 7.5, lng: 134.5 },
+            { name: 'Palestine', lat: 31.9, lng: 35.2 },
+            { name: 'Panama', lat: 9, lng: -80 },
+            { name: 'Papua New Guinea', lat: -6, lng: 147 },
+            { name: 'Paraguay', lat: -23.4, lng: -58.4 },
+            { name: 'Peru', lat: -9.2, lng: -75 },
+            { name: 'Philippines', lat: 12.9, lng: 121.8 },
+            { name: 'Poland', lat: 52, lng: 19.4 },
+            { name: 'Portugal', lat: 39.5, lng: -8 },
+            { name: 'Qatar', lat: 25.3, lng: 51.5 },
+            { name: 'Romania', lat: 46, lng: 25 },
+            { name: 'Russia', lat: 61.5, lng: 105.3 },
+            { name: 'Rwanda', lat: -2, lng: 29.9 },
+            { name: 'Saint Kitts and Nevis', lat: 17.3, lng: -62.7 },
+            { name: 'Saint Lucia', lat: 13.9, lng: -61 },
+            { name: 'Saint Vincent and the Grenadines', lat: 13.2, lng: -61.2 },
+            { name: 'Samoa', lat: -13.8, lng: -172 },
+            { name: 'San Marino', lat: 43.9, lng: 12.5 },
+            { name: 'Sao Tome and Principe', lat: 0.3, lng: 6.7 },
+            { name: 'Saudi Arabia', lat: 24, lng: 45 },
+            { name: 'Senegal', lat: 14.7, lng: -14.5 },
+            { name: 'Serbia', lat: 44, lng: 21 },
+            { name: 'Seychelles', lat: -4.6, lng: 55.5 },
+            { name: 'Sierra Leone', lat: 8.5, lng: -11.8 },
+            { name: 'Singapore', lat: 1.35, lng: 103.8 },
+            { name: 'Slovakia', lat: 48.7, lng: 19.7 },
+            { name: 'Slovenia', lat: 46.1, lng: 14.8 },
+            { name: 'Solomon Islands', lat: -9.6, lng: 160.2 },
+            { name: 'Somalia', lat: 6, lng: 46 },
+            { name: 'South Africa', lat: -29, lng: 24 },
+            { name: 'South Korea', lat: 35.9, lng: 127.8 },
+            { name: 'South Sudan', lat: 7.5, lng: 30 },
+            { name: 'Spain', lat: 40.4, lng: -3.7 },
+            { name: 'Sri Lanka', lat: 7.9, lng: 80.8 },
+            { name: 'Sudan', lat: 15.5, lng: 30.5 },
+            { name: 'Suriname', lat: 4, lng: -56 },
+            { name: 'Sweden', lat: 62.2, lng: 17.6 },
+            { name: 'Switzerland', lat: 46.8, lng: 8.2 },
+            { name: 'Syria', lat: 35, lng: 38 },
+            { name: 'Taiwan', lat: 23.5, lng: 121 },
+            { name: 'Tajikistan', lat: 39, lng: 71 },
+            { name: 'Tanzania', lat: -6.4, lng: 34.9 },
+            { name: 'Thailand', lat: 15.9, lng: 101 },
+            { name: 'Timor-Leste', lat: -8.8, lng: 125.7 },
+            { name: 'Togo', lat: 8.6, lng: 0.8 },
+            { name: 'Tonga', lat: -21.2, lng: -175.2 },
+            { name: 'Trinidad and Tobago', lat: 10.7, lng: -61.5 },
+            { name: 'Tunisia', lat: 34, lng: 9.5 },
+            { name: 'Turkey', lat: 39, lng: 35 },
+            { name: 'Turkmenistan', lat: 39, lng: 59 },
+            { name: 'Tuvalu', lat: -8.5, lng: 179.2 },
+            { name: 'Uganda', lat: 1.4, lng: 32.3 },
+            { name: 'Ukraine', lat: 49, lng: 32 },
+            { name: 'United Arab Emirates', lat: 24, lng: 54 },
+            { name: 'United Kingdom', lat: 54.2, lng: -2.5 },
+            { name: 'United States', lat: 39.8, lng: -99.5 },
+            { name: 'Uruguay', lat: -32.5, lng: -55.8 },
+            { name: 'Uzbekistan', lat: 41.3, lng: 64.4 },
+            { name: 'Vanuatu', lat: -16, lng: 167 },
+            { name: 'Vatican City', lat: 41.9, lng: 12.5 },
+            { name: 'Venezuela', lat: 8, lng: -66 },
+            { name: 'Vietnam', lat: 14.1, lng: 108.3 },
+            { name: 'Yemen', lat: 15.5, lng: 48 },
+            { name: 'Zambia', lat: -13.1, lng: 27.8 },
+            { name: 'Zimbabwe', lat: -19, lng: 29.2 },
+        ];
+
+        // Main cities (capital + major cities per country)
+        const cityLabels = [
+            { name: 'Ottawa', lat: 45.4, lng: -75.7 },
+            { name: 'Toronto', lat: 43.7, lng: -79.4 },
+            { name: 'Vancouver', lat: 49.3, lng: -123.1 },
+            { name: 'Montreal', lat: 45.5, lng: -73.6 },
+            { name: 'Washington', lat: 38.9, lng: -77.0 },
+            { name: 'New York', lat: 40.7, lng: -74.0 },
+            { name: 'Los Angeles', lat: 34.1, lng: -118.2 },
+            { name: 'Chicago', lat: 41.9, lng: -87.6 },
+            { name: 'Houston', lat: 29.8, lng: -95.4 },
+            { name: 'Miami', lat: 25.8, lng: -80.2 },
+            { name: 'San Francisco', lat: 37.8, lng: -122.4 },
+            { name: 'Mexico City', lat: 19.4, lng: -99.1 },
+            { name: 'Brasília', lat: -15.8, lng: -47.9 },
+            { name: 'São Paulo', lat: -23.6, lng: -46.6 },
+            { name: 'Buenos Aires', lat: -34.6, lng: -58.4 },
+            { name: 'London', lat: 51.5, lng: -0.1 },
+            { name: 'Manchester', lat: 53.5, lng: -2.2 },
+            { name: 'Paris', lat: 48.9, lng: 2.4 },
+            { name: 'Lyon', lat: 45.8, lng: 4.8 },
+            { name: 'Berlin', lat: 52.5, lng: 13.4 },
+            { name: 'Munich', lat: 48.1, lng: 11.6 },
+            { name: 'Madrid', lat: 40.4, lng: -3.7 },
+            { name: 'Barcelona', lat: 41.4, lng: 2.2 },
+            { name: 'Rome', lat: 41.9, lng: 12.5 },
+            { name: 'Milan', lat: 45.5, lng: 9.2 },
+            { name: 'Amsterdam', lat: 52.4, lng: 4.9 },
+            { name: 'Brussels', lat: 50.8, lng: 4.4 },
+            { name: 'Vienna', lat: 48.2, lng: 16.4 },
+            { name: 'Warsaw', lat: 52.2, lng: 21.0 },
+            { name: 'Moscow', lat: 55.8, lng: 37.6 },
+            { name: 'St Petersburg', lat: 59.9, lng: 30.3 },
+            { name: 'Istanbul', lat: 41.0, lng: 29.0 },
+            { name: 'Ankara', lat: 39.9, lng: 32.9 },
+            { name: 'Cairo', lat: 30.0, lng: 31.2 },
+            { name: 'Johannesburg', lat: -26.2, lng: 28.0 },
+            { name: 'Cape Town', lat: -33.9, lng: 18.4 },
+            { name: 'Lagos', lat: 6.5, lng: 3.4 },
+            { name: 'Nairobi', lat: -1.3, lng: 36.8 },
+            { name: 'Beijing', lat: 39.9, lng: 116.4 },
+            { name: 'Shanghai', lat: 31.2, lng: 121.5 },
+            { name: 'Hong Kong', lat: 22.3, lng: 114.2 },
+            { name: 'Guangzhou', lat: 23.1, lng: 113.3 },
+            { name: 'Tokyo', lat: 35.7, lng: 139.7 },
+            { name: 'Osaka', lat: 34.7, lng: 135.5 },
+            { name: 'Kyoto', lat: 35.0, lng: 135.8 },
+            { name: 'Delhi', lat: 28.6, lng: 77.2 },
+            { name: 'Mumbai', lat: 19.1, lng: 72.9 },
+            { name: 'Bangalore', lat: 12.9, lng: 77.6 },
+            { name: 'Sydney', lat: -33.9, lng: 151.2 },
+            { name: 'Melbourne', lat: -37.8, lng: 145.0 },
+            { name: 'Jakarta', lat: -6.2, lng: 106.8 },
+            { name: 'Bangkok', lat: 13.8, lng: 100.5 },
+            { name: 'Singapore', lat: 1.35, lng: 103.8 },
+            { name: 'Seoul', lat: 37.6, lng: 127.0 },
+            { name: 'Dubai', lat: 25.2, lng: 55.3 },
+            { name: 'Riyadh', lat: 24.7, lng: 46.7 },
+            { name: 'Tehran', lat: 35.7, lng: 51.4 },
+            { name: 'Baghdad', lat: 33.3, lng: 44.4 },
+            { name: 'Jerusalem', lat: 31.8, lng: 35.2 },
+            { name: 'Athens', lat: 37.98, lng: 23.7 },
+            { name: 'Lisbon', lat: 38.7, lng: -9.1 },
+            { name: 'Dublin', lat: 53.3, lng: -6.3 },
+            { name: 'Stockholm', lat: 59.3, lng: 18.1 },
+            { name: 'Oslo', lat: 59.9, lng: 10.8 },
+            { name: 'Helsinki', lat: 60.2, lng: 24.9 },
+            { name: 'Copenhagen', lat: 55.7, lng: 12.6 },
+            { name: 'Prague', lat: 50.1, lng: 14.4 },
+            { name: 'Budapest', lat: 47.5, lng: 19.0 },
+            { name: 'Bucharest', lat: 44.4, lng: 26.1 },
+            { name: 'Kiev', lat: 50.5, lng: 30.5 },
+            { name: 'Santiago', lat: -33.4, lng: -70.7 },
+            { name: 'Lima', lat: -12.0, lng: -77.0 },
+            { name: 'Bogotá', lat: 4.6, lng: -74.1 },
+            { name: 'Caracas', lat: 10.5, lng: -66.9 },
+            { name: 'Havana', lat: 23.1, lng: -82.4 },
+
+            // --- Eastern Europe (major gap) ---
+            { name: 'Kraków', lat: 50.06, lng: 19.94 },
+            { name: 'Wrocław', lat: 51.11, lng: 17.03 },
+            { name: 'Gdańsk', lat: 54.35, lng: 18.65 },
+            { name: 'Poznań', lat: 52.41, lng: 16.93 },
+            { name: 'Brno', lat: 49.19, lng: 16.61 },
+            { name: 'Bratislava', lat: 48.15, lng: 17.11 },
+            { name: 'Belgrade', lat: 44.79, lng: 20.46 },
+            { name: 'Zagreb', lat: 45.81, lng: 15.98 },
+            { name: 'Ljubljana', lat: 46.06, lng: 14.51 },
+            { name: 'Sarajevo', lat: 43.85, lng: 18.36 },
+            { name: 'Tirana', lat: 41.33, lng: 19.82 },
+            { name: 'Skopje', lat: 41.99, lng: 21.43 },
+            { name: 'Sofia', lat: 42.70, lng: 23.32 },
+            { name: 'Plovdiv', lat: 42.14, lng: 24.74 },
+            { name: 'Chișinău', lat: 47.00, lng: 28.86 },
+            { name: 'Minsk', lat: 53.90, lng: 27.57 },
+            { name: 'Vilnius', lat: 54.69, lng: 25.28 },
+            { name: 'Riga', lat: 56.95, lng: 24.11 },
+            { name: 'Tallinn', lat: 59.44, lng: 24.75 },
+            { name: 'Kharkiv', lat: 49.99, lng: 36.24 },
+            { name: 'Lviv', lat: 49.84, lng: 24.03 },
+            { name: 'Odesa', lat: 46.47, lng: 30.74 },
+            { name: 'Cluj-Napoca', lat: 46.77, lng: 23.59 },
+            { name: 'Timișoara', lat: 45.75, lng: 21.23 },
+            { name: 'Thessaloniki', lat: 40.64, lng: 22.94 },
+            { name: 'Tampere', lat: 61.50, lng: 23.79 },
+
+            // --- Western Europe additions ---
+            { name: 'Edinburgh', lat: 55.95, lng: -3.19 },
+            { name: 'Birmingham', lat: 52.49, lng: -1.90 },
+            { name: 'Glasgow', lat: 55.86, lng: -4.26 },
+            { name: 'Hamburg', lat: 53.57, lng: 9.98 },
+            { name: 'Frankfurt', lat: 50.11, lng: 8.68 },
+            { name: 'Cologne', lat: 50.93, lng: 6.96 },
+            { name: 'Stuttgart', lat: 48.78, lng: 9.18 },
+            { name: 'Dresden', lat: 51.05, lng: 13.74 },
+            { name: 'Marseille', lat: 43.30, lng: 5.37 },
+            { name: 'Toulouse', lat: 43.60, lng: 1.44 },
+            { name: 'Nice', lat: 43.70, lng: 7.26 },
+            { name: 'Naples', lat: 40.85, lng: 14.27 },
+            { name: 'Turin', lat: 45.07, lng: 7.69 },
+            { name: 'Florence', lat: 43.77, lng: 11.25 },
+            { name: 'Venice', lat: 45.44, lng: 12.33 },
+            { name: 'Seville', lat: 37.38, lng: -5.99 },
+            { name: 'Valencia', lat: 39.47, lng: -0.38 },
+            { name: 'Porto', lat: 41.16, lng: -8.63 },
+            { name: 'Rotterdam', lat: 51.92, lng: 4.48 },
+            { name: 'Antwerp', lat: 51.22, lng: 4.40 },
+            { name: 'Zürich', lat: 47.38, lng: 8.54 },
+            { name: 'Geneva', lat: 46.20, lng: 6.15 },
+            { name: 'Graz', lat: 47.07, lng: 15.44 },
+
+            // --- Africa ---
+            { name: 'Casablanca', lat: 33.59, lng: -7.62 },
+            { name: 'Marrakech', lat: 31.63, lng: -7.99 },
+            { name: 'Algiers', lat: 36.74, lng: 3.06 },
+            { name: 'Tunis', lat: 36.82, lng: 10.17 },
+            { name: 'Tripoli', lat: 32.89, lng: 13.18 },
+            { name: 'Khartoum', lat: 15.55, lng: 32.53 },
+            { name: 'Addis Ababa', lat: 9.02, lng: 38.74 },
+            { name: 'Dar es Salaam', lat: -6.79, lng: 39.21 },
+            { name: 'Kampala', lat: 0.31, lng: 32.58 },
+            { name: 'Mombasa', lat: -4.06, lng: 39.67 },
+            { name: 'Accra', lat: 5.55, lng: -0.21 },
+            { name: 'Dakar', lat: 14.69, lng: -17.44 },
+            { name: 'Abuja', lat: 9.07, lng: 7.40 },
+            { name: 'Kano', lat: 12.00, lng: 8.52 },
+            { name: 'Pretoria', lat: -25.74, lng: 28.18 },
+            { name: 'Durban', lat: -29.86, lng: 30.99 },
+            { name: 'Harare', lat: -17.83, lng: 31.05 },
+            { name: 'Lusaka', lat: -15.42, lng: 28.28 },
+            { name: 'Maputo', lat: -25.97, lng: 32.58 },
+            { name: 'Antananarivo', lat: -18.91, lng: 47.54 },
+
+            // --- Middle East ---
+            { name: 'Tel Aviv', lat: 32.09, lng: 34.79 },
+            { name: 'Jeddah', lat: 21.49, lng: 39.19 },
+            { name: 'Medina', lat: 24.47, lng: 39.61 },
+            { name: 'Abu Dhabi', lat: 24.47, lng: 54.37 },
+            { name: 'Muscat', lat: 23.61, lng: 58.59 },
+            { name: 'Doha', lat: 25.29, lng: 51.53 },
+            { name: 'Amman', lat: 31.95, lng: 35.93 },
+            { name: 'Beirut', lat: 33.89, lng: 35.50 },
+            { name: 'Basra', lat: 30.51, lng: 47.82 },
+            { name: 'Izmir', lat: 38.42, lng: 27.14 },
+            { name: 'Bursa', lat: 40.19, lng: 29.06 },
+
+            // --- Central & South Asia ---
+            { name: 'Karachi', lat: 24.86, lng: 67.01 },
+            { name: 'Lahore', lat: 31.55, lng: 74.35 },
+            { name: 'Dhaka', lat: 23.72, lng: 90.41 },
+            { name: 'Kolkata', lat: 22.57, lng: 88.36 },
+            { name: 'Chennai', lat: 13.08, lng: 80.27 },
+            { name: 'Hyderabad', lat: 17.38, lng: 78.49 },
+            { name: 'Ahmedabad', lat: 23.03, lng: 72.59 },
+            { name: 'Pune', lat: 18.52, lng: 73.86 },
+            { name: 'Tashkent', lat: 41.30, lng: 69.24 },
+            { name: 'Almaty', lat: 43.24, lng: 76.91 },
+            { name: 'Astana', lat: 51.18, lng: 71.45 },
+            { name: 'Kathmandu', lat: 27.70, lng: 85.32 },
+            { name: 'Colombo', lat: 6.93, lng: 79.86 },
+            { name: 'Kabul', lat: 34.53, lng: 69.17 },
+            { name: 'Mashhad', lat: 36.30, lng: 59.61 },
+            { name: 'Isfahan', lat: 32.66, lng: 51.68 },
+
+            // --- East & Southeast Asia ---
+            { name: 'Chengdu', lat: 30.57, lng: 104.07 },
+            { name: 'Chongqing', lat: 29.56, lng: 106.55 },
+            { name: 'Wuhan', lat: 30.59, lng: 114.31 },
+            { name: 'Shenzhen', lat: 22.54, lng: 114.06 },
+            { name: 'Tianjin', lat: 39.14, lng: 117.18 },
+            { name: "Xi'an", lat: 34.27, lng: 108.95 },
+            { name: 'Shenyang', lat: 41.79, lng: 123.43 },
+            { name: 'Nanjing', lat: 32.06, lng: 118.79 },
+            { name: 'Nagoya', lat: 35.18, lng: 136.91 },
+            { name: 'Sapporo', lat: 43.06, lng: 141.35 },
+            { name: 'Fukuoka', lat: 33.60, lng: 130.42 },
+            { name: 'Busan', lat: 35.18, lng: 129.08 },
+            { name: 'Hanoi', lat: 21.03, lng: 105.80 },
+            { name: 'Ho Chi Minh City', lat: 10.82, lng: 106.63 },
+            { name: 'Manila', lat: 14.60, lng: 120.98 },
+            { name: 'Kuala Lumpur', lat: 3.14, lng: 101.69 },
+            { name: 'Yangon', lat: 16.87, lng: 96.20 },
+            { name: 'Phnom Penh', lat: 11.56, lng: 104.92 },
+            { name: 'Vientiane', lat: 17.97, lng: 102.60 },
+            { name: 'Ulaanbaatar', lat: 47.91, lng: 106.92 },
+            { name: 'Taipei', lat: 25.04, lng: 121.56 },
+
+            // --- Americas ---
+            { name: 'Seattle', lat: 47.61, lng: -122.33 },
+            { name: 'Denver', lat: 39.74, lng: -104.98 },
+            { name: 'Atlanta', lat: 33.75, lng: -84.39 },
+            { name: 'Phoenix', lat: 33.45, lng: -112.07 },
+            { name: 'Dallas', lat: 32.78, lng: -96.80 },
+            { name: 'Boston', lat: 42.36, lng: -71.06 },
+            { name: 'Detroit', lat: 42.33, lng: -83.05 },
+            { name: 'Las Vegas', lat: 36.17, lng: -115.14 },
+            { name: 'Minneapolis', lat: 44.98, lng: -93.27 },
+            { name: 'Portland', lat: 45.52, lng: -122.68 },
+            { name: 'Calgary', lat: 51.05, lng: -114.07 },
+            { name: 'Edmonton', lat: 53.55, lng: -113.49 },
+            { name: 'Guadalajara', lat: 20.67, lng: -103.35 },
+            { name: 'Monterrey', lat: 25.69, lng: -100.32 },
+            { name: 'Rio de Janeiro', lat: -22.91, lng: -43.17 },
+            { name: 'Salvador', lat: -12.97, lng: -38.50 },
+            { name: 'Fortaleza', lat: -3.72, lng: -38.54 },
+            { name: 'Manaus', lat: -3.10, lng: -60.02 },
+            { name: 'Curitiba', lat: -25.43, lng: -49.27 },
+            { name: 'Porto Alegre', lat: -30.03, lng: -51.23 },
+            { name: 'Medellín', lat: 6.25, lng: -75.56 },
+            { name: 'Cali', lat: 3.44, lng: -76.52 },
+            { name: 'Córdoba', lat: -31.42, lng: -64.18 },
+            { name: 'Rosario', lat: -32.95, lng: -60.64 },
+            { name: 'Quito', lat: -0.18, lng: -78.47 },
+            { name: 'Guayaquil', lat: -2.19, lng: -79.90 },
+            { name: 'La Paz', lat: -16.50, lng: -68.15 },
+            { name: 'Arequipa', lat: -16.41, lng: -71.54 },
+
+            // --- Oceania ---
+            { name: 'Brisbane', lat: -27.47, lng: 153.03 },
+            { name: 'Perth', lat: -31.95, lng: 115.86 },
+            { name: 'Adelaide', lat: -34.93, lng: 138.60 },
+            { name: 'Wellington', lat: -41.29, lng: 174.78 },
+            { name: 'Christchurch', lat: -43.53, lng: 172.64 },
+            { name: 'Auckland', lat: -36.87, lng: 174.76 },
+        ];
+
+        // Island / territory labels — only appear at higher zoom (minZoom property).
+        // These are non-sovereign territories not in countryLabels.
+        const islandLabels = [
+            // ABC islands — close together, rely on dynamic declutter at high zoom
+            { name: 'Curaçao',         lat: 12.17, lng: -68.99, minZoom: 1.8 },
+            { name: 'Aruba',           lat: 12.52, lng: -69.97, minZoom: 1.8 },
+            { name: 'Bonaire',         lat: 12.15, lng: -68.27, minZoom: 2.0 },
+            // Caribbean territories
+            { name: 'Sint Maarten',    lat: 18.05, lng: -63.07, minZoom: 2.5 },
+            { name: 'St Barthélemy',   lat: 17.90, lng: -62.83, minZoom: 3.0 },
+            { name: 'Martinique',      lat: 14.65, lng: -61.02, minZoom: 2.0 },
+            { name: 'Guadeloupe',      lat: 16.27, lng: -61.55, minZoom: 2.0 },
+            { name: 'Puerto Rico',     lat: 18.22, lng: -66.59, minZoom: 1.8 },
+            { name: 'Jamaica',         lat: 18.10, lng: -77.30, minZoom: 1.8 },
+            // Pacific
+            { name: 'Hawaii',          lat: 20.80, lng: -156.33, minZoom: 1.6 },
+            { name: 'Honolulu',        lat: 21.31, lng: -157.80, minZoom: 2.5 },
+            { name: 'Tahiti',          lat: -17.65, lng: -149.43, minZoom: 2.0 },
+            { name: 'Guam',            lat: 13.44, lng: 144.79, minZoom: 2.5 },
+            // Indian Ocean
+            { name: 'Réunion',         lat: -21.13, lng: 55.53, minZoom: 2.0 },
+            { name: 'Mauritius',       lat: -20.35, lng: 57.55, minZoom: 2.0 },
+            // Atlantic
+            { name: 'Tenerife',        lat: 28.47, lng: -16.25, minZoom: 2.0 },
+            { name: 'Gran Canaria',    lat: 28.10, lng: -15.41, minZoom: 2.5 },
+            { name: 'Madeira',         lat: 32.65, lng: -16.90, minZoom: 2.0 },
+            { name: 'Azores',          lat: 37.74, lng: -25.67, minZoom: 2.0 },
+        ];
+
+        // Continent labels — only visible at full zoom out (maxZoom: 1.2)
+        // Placed in the geographic centre of each continent, away from coasts.
         const continentLabels = [
-            { name: 'NORTH AMERICA', lat: 45, lng: -100 },
-            { name: 'SOUTH AMERICA', lat: -15, lng: -60 },
-            { name: 'EUROPE', lat: 50, lng: 10 },
-            { name: 'AFRICA', lat: 5, lng: 20 },
-            { name: 'ASIA', lat: 45, lng: 90 },
-            { name: 'AUSTRALIA', lat: -25, lng: 135 },
+            { name: 'North America', lat: 50,  lng: -102 },
+            { name: 'South America', lat: -14, lng:  -57 },
+            { name: 'Europe',        lat: 54,  lng:   18 },
+            { name: 'Africa',        lat:  3,  lng:   22 },
+            { name: 'Asia',          lat: 42,  lng:   88 },
+            { name: 'Australia',     lat: -25, lng:  132 },
+            { name: 'Antarctica',    lat: -82, lng:    0 },
+        ];
+
+        // Ocean labels — visible at low-to-medium zoom (maxZoom: 2.2)
+        // Positioned in open deep-water areas, well away from coastlines.
+        const oceanLabels = [
+            { name: 'Pacific Ocean',   lat:  10, lng: -155 },
+            { name: 'Atlantic Ocean',  lat:   5, lng:  -28 },
+            { name: 'Indian Ocean',    lat: -18, lng:   76 },
+            { name: 'Arctic Ocean',    lat:  83, lng:    0 },
+            { name: 'Southern Ocean',  lat: -62, lng:   20 },
         ];
 
         // Visited places
@@ -137,6 +638,17 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         container.appendChild(renderer.domElement);
+
+        // CSS2DRenderer: renders label divs as children of the earth mesh in 3D space.
+        // Labels are projected from their 3D world position each frame by Three.js —
+        // no manual screen-position math needed.
+        const css2dRenderer = new THREE.CSS2DRenderer();
+        css2dRenderer.setSize(window.innerWidth, window.innerHeight);
+        css2dRenderer.domElement.style.position = 'absolute';
+        css2dRenderer.domElement.style.top = '0';
+        css2dRenderer.domElement.style.left = '0';
+        css2dRenderer.domElement.style.pointerEvents = 'none';
+        container.appendChild(css2dRenderer.domElement);
 
         // Create stars
         function createStars() {
@@ -154,65 +666,282 @@
         }
         createStars();
 
-        // Create Earth globe
+        // ── Day / Night Live Shader ───────────────────────────────────────────────
+        // The earth uses a ShaderMaterial that blends between a day texture and a
+        // city-lights night texture based on the real-time position of the sun.
+        // Sun position is recomputed every frame from UTC time (moves ~0.004°/frame
+        // at 60fps — imperceptible, but the terminator is always accurate).
+        // ─────────────────────────────────────────────────────────────────────────
         const earthGeometry = new THREE.SphereGeometry(globeRadius, 64, 64);
-        
-        // Earth texture with gradient
-        const canvas2d = document.createElement('canvas');
-        canvas2d.width = 1024;
-        canvas2d.height = 512;
-        const ctx = canvas2d.getContext('2d');
-        
-        // Ocean gradient
-        const oceanGradient = ctx.createLinearGradient(0, 0, 0, 512);
-        oceanGradient.addColorStop(0, '#1E3A5F');
-        oceanGradient.addColorStop(0.5, '#0D47A1');
-        oceanGradient.addColorStop(1, '#1E3A5F');
-        ctx.fillStyle = oceanGradient;
-        ctx.fillRect(0, 0, 1024, 512);
-        
-        // Add some landmass shapes (simplified)
-        ctx.fillStyle = '#2E7D32';
-        
-        // North America
-        ctx.beginPath();
-        ctx.ellipse(200, 150, 80, 60, 0, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // South America
-        ctx.beginPath();
-        ctx.ellipse(280, 320, 40, 70, 0.3, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Europe
-        ctx.beginPath();
-        ctx.ellipse(520, 140, 50, 40, 0, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Africa
-        ctx.beginPath();
-        ctx.ellipse(540, 280, 50, 70, 0, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Asia
-        ctx.beginPath();
-        ctx.ellipse(700, 160, 100, 60, 0, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Australia
-        ctx.beginPath();
-        ctx.ellipse(820, 340, 45, 35, 0, 0, Math.PI * 2);
-        ctx.fill();
-        
-        const earthTexture = new THREE.CanvasTexture(canvas2d);
-        const earthMaterial = new THREE.MeshPhongMaterial({
-            map: earthTexture,
-            shininess: 25,
-            specular: new THREE.Color(0x333333),
+        const textureLoader = new THREE.TextureLoader();
+
+        function makeBlankTex(hex) {
+            const c = document.createElement('canvas');
+            c.width = 2; c.height = 1;
+            c.getContext('2d').fillStyle = hex;
+            c.getContext('2d').fillRect(0, 0, 2, 1);
+            return new THREE.CanvasTexture(c);
+        }
+
+        const earthMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                dayTexture:   { value: makeBlankTex('#0D47A1') }, // dark blue until loaded
+                nightTexture: { value: makeBlankTex('#000005') }, // near-black until city lights load
+                sunDirection: { value: new THREE.Vector3(1, 0, 0) },
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                varying vec3 vWorldNormal;
+                void main() {
+                    vUv = uv;
+                    // World-space normal so sun direction comparison is rotation-independent
+                    vWorldNormal = normalize(mat3(modelMatrix) * normal);
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform sampler2D dayTexture;
+                uniform sampler2D nightTexture;
+                uniform vec3 sunDirection;
+                varying vec2 vUv;
+                varying vec3 vWorldNormal;
+                void main() {
+                    float cosAngle = dot(normalize(vWorldNormal), normalize(sunDirection));
+                    // Smooth terminator — 24° twilight band
+                    float dayMix = smoothstep(-0.2, 0.2, cosAngle);
+                    vec4 day   = texture2D(dayTexture, vUv);
+                    vec4 night = texture2D(nightTexture, vUv) * 1.8; // boost city lights
+                    gl_FragColor = mix(night, day, dayMix);
+                }
+            `,
         });
-        
+
         const earth = new THREE.Mesh(earthGeometry, earthMaterial);
         scene.add(earth);
+
+        // Computes current real-world sun direction as a normalised 3D vector
+        // using the same coordinate system as latLngToSphere().
+        function getSunDirectionWorld() {
+            const now = new Date();
+            const dayOfYear = Math.floor(
+                (now - new Date(Date.UTC(now.getUTCFullYear(), 0, 0))) / 864e5
+            );
+            // Solar declination — angle of sun above/below equator (±23.45°)
+            const decl = -23.45 * Math.cos(2 * Math.PI * (dayOfYear + 10) / 365) * Math.PI / 180;
+            // Sub-solar longitude — the point where the sun is directly overhead
+            const lng  = (12 - (now.getUTCHours() + now.getUTCMinutes() / 60)) * 15;
+            const phi   = (Math.PI / 2) - decl;
+            const theta = (lng + 180) * Math.PI / 180;
+            return new THREE.Vector3(
+                -Math.sin(phi) * Math.cos(theta),
+                 Math.cos(phi),
+                 Math.sin(phi) * Math.sin(theta)
+            );
+        }
+
+        function applyTextureSettings(tex) {
+            tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+            tex.minFilter  = THREE.LinearMipmapLinearFilter;
+            tex.magFilter  = THREE.LinearFilter;
+            tex.needsUpdate = true;
+        }
+
+        // Load city-lights night texture from CDN (non-blocking)
+        textureLoader.load(
+            'https://cdn.jsdelivr.net/npm/three-globe@2.31.0/example/img/earth-night.jpg',
+            function(nightTex) {
+                applyTextureSettings(nightTex);
+                earthMaterial.uniforms.nightTexture.value = nightTex;
+            }
+        );
+
+        window.setEarthTexture = function(dataUrl) {
+            textureLoader.load(dataUrl, function(bundledTex) {
+                applyTextureSettings(bundledTex);
+                earthMaterial.uniforms.dayTexture.value = bundledTex;
+            });
+            // Attempt to upgrade to high-res CDN texture in the background
+            const hiResUrls = [
+                'https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57752/land_shallow_topo_8192.jpg',
+                'https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57752/land_shallow_topo_2048.jpg',
+                'https://cdn.jsdelivr.net/npm/three-globe@2.31.0/example/img/earth-day.jpg',
+            ];
+            (function tryNext(i) {
+                if (i >= hiResUrls.length) return;
+                textureLoader.load(
+                    hiResUrls[i],
+                    function(tex) { applyTextureSettings(tex); earthMaterial.uniforms.dayTexture.value = tex; },
+                    undefined,
+                    function() { tryNext(i + 1); }
+                );
+            })(0);
+        };
+
+        // Country borders (loaded from GeoJSON, drawn on sphere)
+        const borderRadius = globeRadius * 1.001;
+        const bordersGroup = new THREE.Group();
+        scene.add(bordersGroup);
+
+        // Convert lat/lng to a 3D point on a sphere of given radius.
+        // Used for both border geometry AND label attachment points — same formula.
+        function latLngToSphere(lat, lng, r) {
+            const phi = (90 - lat) * (Math.PI / 180);
+            const theta = (lng + 180) * (Math.PI / 180);
+            return new THREE.Vector3(
+                -r * Math.sin(phi) * Math.cos(theta),
+                 r * Math.cos(phi),
+                 r * Math.sin(phi) * Math.sin(theta)
+            );
+        }
+
+        function lngLatToVector3(lng, lat) {
+            const phi = (90 - lat) * (Math.PI / 180);
+            const theta = (lng + 180) * (Math.PI / 180);
+            const x = -borderRadius * Math.sin(phi) * Math.cos(theta);
+            const y = borderRadius * Math.cos(phi);
+            const z = borderRadius * Math.sin(phi) * Math.sin(theta);
+            return new THREE.Vector3(x, y, z);
+        }
+
+        // Trip visualization: line + markers that follow the globe
+        const tripRadius = globeRadius * 1.003;
+        const tripGroup = new THREE.Group();
+        scene.add(tripGroup);
+
+        function surfacePointForTrip(lat, lng) {
+            const base = lngLatToVector3(lng, lat);
+            const scale = tripRadius / borderRadius;
+            return base.multiplyScalar(scale);
+        }
+
+        function clearTrip() {
+            while (tripGroup.children.length > 0) {
+                const obj = tripGroup.children.pop();
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material && !obj.material.isShaderMaterial) obj.material.dispose();
+            }
+        }
+
+        // ── Mood colour palette ───────────────────────────────────────────────────
+        const MOOD_COLORS = {
+            happy: 0xFFD600, adventurous: 0xFF5252, relaxed: 0x4DD0E1,
+            energetic: 0x29B6F6, romantic: 0xFF4081, social: 0xFFD54F,
+            cultural: 0x7E57C2, curious: 0xFF7043, cozy: 0xEF5350,
+            excited: 0x26A69A, foody: 0xFF8A65, surprise: 0xFFFFCA28,
+            // Check-in moods (from Moody Hub)
+            great: 0xFFD600, tired: 0x7B68EE, amazing: 0xFF6B9D,
+            okay: 0x94A3B8, thoughtful: 0x6366F1, chill: 0x12B347,
+            // Fallbacks for old data
+            joyful: 0xFFD600, sad: 0x42A5F5, anxious: 0xAB47BC,
+            stressed: 0xAB47BC, love: 0xFF4081, nostalgic: 0xFF7043,
+            peaceful: 0x4DD0E1, calm: 0x4DD0E1
+        };
+        function moodColor(mood) {
+            return MOOD_COLORS[(mood || '').toLowerCase()] || 0xFFFFFF;
+        }
+
+        // Marker groups — one per visited place, stored for raycasting
+        const markerMeshes = []; // { mesh, placeData }
+
+        function buildTripVisualization() {
+            clearTrip();
+            markerMeshes.length = 0;
+            if (!visitedPlaces || visitedPlaces.length === 0) return;
+
+            visitedPlaces.forEach(function(p, i) {
+                if (typeof p.lat !== 'number' || typeof p.lng !== 'number') return;
+                const pos = surfacePointForTrip(p.lat, p.lng);
+                const col = moodColor(p.mood);
+
+                // Outer glow sphere (semi-transparent)
+                const glowMesh = new THREE.Mesh(
+                    new THREE.SphereGeometry(3.2, 16, 16),
+                    new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.25 })
+                );
+                glowMesh.position.copy(pos);
+                tripGroup.add(glowMesh);
+
+                // Inner solid core
+                const coreMesh = new THREE.Mesh(
+                    new THREE.SphereGeometry(1.8, 16, 16),
+                    new THREE.MeshBasicMaterial({ color: col })
+                );
+                coreMesh.position.copy(pos);
+                coreMesh._placeIndex = i; // used by raycaster
+                tripGroup.add(coreMesh);
+
+                markerMeshes.push({ core: coreMesh, glow: glowMesh, placeData: p });
+            });
+        }
+
+        // ── Tap detection ─────────────────────────────────────────────────────────
+        const _raycaster = new THREE.Raycaster();
+        _raycaster.params.Mesh.threshold = 2;
+        let _tapStartX = 0, _tapStartY = 0;
+
+        function handleGlobeTap(clientX, clientY) {
+            if (markerMeshes.length === 0) return;
+            const ndcX = (clientX / window.innerWidth)  *  2 - 1;
+            const ndcY = (clientY / window.innerHeight) * -2 + 1;
+            _raycaster.setFromCamera({ x: ndcX, y: ndcY }, camera);
+            const coreMeshes = markerMeshes.map(function(m) { return m.core; });
+            const hits = _raycaster.intersectObjects(coreMeshes);
+            if (hits.length > 0) {
+                const idx = hits[0].object._placeIndex;
+                const place = visitedPlaces[idx];
+                if (place && typeof WanderMoodChannel !== 'undefined') {
+                    WanderMoodChannel.postMessage(JSON.stringify({
+                        type: 'markerTap',
+                        place: place,
+                    }));
+                }
+            }
+        }
+
+        // Pulse animation for glow spheres (runs in animate loop)
+        let _pulseT = 0;
+        function pulseMarkers() {
+            _pulseT += 0.04;
+            const scale = 1 + 0.25 * Math.sin(_pulseT);
+            markerMeshes.forEach(function(m) { m.glow.scale.setScalar(scale); });
+        }
+
+        function addBordersFromGeoJSON(geojson) {
+            const points = [];
+            const features = geojson.features || [];
+            features.forEach(function(f) {
+                const geom = f.geometry;
+                if (!geom) return;
+                const coords = geom.type === 'MultiPolygon' ? geom.coordinates : [geom.coordinates];
+                coords.forEach(function(poly) {
+                    const rings = Array.isArray(poly[0][0]) ? poly : [poly];
+                    rings.forEach(function(ring) {
+                        for (let i = 0; i < ring.length - 1; i++) {
+                            const a = ring[i], b = ring[i + 1];
+                            const v1 = lngLatToVector3(a[0], a[1]);
+                            const v2 = lngLatToVector3(b[0], b[1]);
+                            points.push(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
+                        }
+                    });
+                });
+            });
+            if (points.length === 0) return;
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
+            geometry.computeBoundingSphere();
+            const line = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({
+                color: 0xffffff,
+                opacity: 0.35,
+                transparent: true,
+            }));
+            bordersGroup.add(line);
+        }
+
+        // 50m resolution includes small islands (Curaçao, Aruba, etc.) unlike 110m
+        fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson')
+            .then(function(r) { return r.json(); })
+            .then(addBordersFromGeoJSON)
+            .catch(function() { /* no borders if fetch fails */ });
 
         // Atmosphere glow
         const atmosphereGeometry = new THREE.SphereGeometry(globeRadius * 1.05, 64, 64);
@@ -250,64 +979,298 @@
         backLight.position.set(-5, -3, -5);
         scene.add(backLight);
 
-        // Create continent label elements
-        const labelElements = {};
-        continentLabels.forEach(label => {
-            const div = document.createElement('div');
-            div.className = 'globe-label';
-            div.textContent = label.name;
-            div.id = `label-${label.name.replace(/\s/g, '-')}`;
-            container.appendChild(div);
-            labelElements[label.name] = div;
+        // Label importance: bigger = more likely to show when zoomed out
+        const labelImportance = {
+            // Continents / very large or popular countries
+            'United States': 3,
+            'Canada': 3,
+            'Mexico': 2,
+            'Brazil': 3,
+            'Argentina': 2,
+            'Chile': 2,
+            'United Kingdom': 3,
+            'Ireland': 2,
+            'France': 3,
+            'Germany': 3,
+            'Spain': 3,
+            'Portugal': 2,
+            'Italy': 3,
+            'Netherlands': 2,
+            'Belgium': 2,
+            'Switzerland': 2,
+            'Austria': 2,
+            'Greece': 2,
+            'Turkey': 2,
+            'Russia': 3,
+            'Norway': 2,
+            'Sweden': 2,
+            'Finland': 2,
+            'Poland': 2,
+            'Czech Republic': 1,
+            'Hungary': 1,
+            'Romania': 1,
+            'Ukraine': 2,
+            'China': 3,
+            'Japan': 3,
+            'India': 3,
+            'Indonesia': 2,
+            'Thailand': 2,
+            'Vietnam': 2,
+            'Philippines': 2,
+            'Saudi Arabia': 2,
+            'United Arab Emirates': 2,
+            'South Africa': 3,
+            'Nigeria': 2,
+            'Kenya': 2,
+            'Egypt': 3,
+            'Morocco': 2,
+            'Australia': 3,
+            'New Zealand': 2,
+
+            // Major cities
+            'New York': 3,
+            'Los Angeles': 2,
+            'Chicago': 2,
+            'Houston': 1,
+            'Miami': 2,
+            'San Francisco': 2,
+            'Washington': 2,
+            'Toronto': 2,
+            'Vancouver': 2,
+            'Montreal': 2,
+            'Mexico City': 2,
+            'London': 3,
+            'Manchester': 1,
+            'Paris': 3,
+            'Lyon': 1,
+            'Berlin': 2,
+            'Munich': 2,
+            'Madrid': 2,
+            'Barcelona': 2,
+            'Rome': 2,
+            'Milan': 2,
+            'Amsterdam': 2,
+            'Brussels': 2,
+            'Vienna': 2,
+            'Warsaw': 2,
+            'Moscow': 3,
+            'St Petersburg': 2,
+            'Cairo': 3,
+            'Johannesburg': 2,
+            'Cape Town': 2,
+            'Lagos': 2,
+            'Nairobi': 2,
+            'Beijing': 3,
+            'Shanghai': 3,
+            'Hong Kong': 3,
+            'Guangzhou': 1,
+            'Tokyo': 3,
+            'Osaka': 2,
+            'Kyoto': 2,
+            'Delhi': 3,
+            'Mumbai': 3,
+            'Bangalore': 2,
+            'Sydney': 3,
+            'Melbourne': 2,
+            'Jakarta': 2,
+            'Bangkok': 3,
+            'Singapore': 3,
+            'Seoul': 3,
+            'Dubai': 3,
+            'Riyadh': 2,
+            'Tehran': 2,
+            'Baghdad': 2,
+            'Jerusalem': 2,
+            'Athens': 2,
+            'Lisbon': 2,
+            'Dublin': 2,
+            'Stockholm': 2,
+            'Oslo': 2,
+            'Helsinki': 2,
+            'Copenhagen': 2,
+            'Prague': 2,
+            'Budapest': 2,
+            'Bucharest': 2,
+            'Kiev': 2,
+            'Santiago': 2,
+            'Lima': 2,
+            'Bogotá': 2,
+            'Caracas': 2,
+            'Havana': 2
+        };
+
+        // Build label data list
+        const allLabelData = [];
+        countryLabels.forEach(function(l) {
+            allLabelData.push({ name: l.name, lat: l.lat, lng: l.lng, isCity: false, importance: labelImportance[l.name] || 1 });
+        });
+        cityLabels.forEach(function(l) {
+            allLabelData.push({ name: l.name, lat: l.lat, lng: l.lng, isCity: true, importance: labelImportance[l.name] || 1 });
+        });
+        islandLabels.forEach(function(l) {
+            allLabelData.push({ name: l.name, lat: l.lat, lng: l.lng, isCity: true, isIsland: true, minZoom: l.minZoom, importance: 2 });
+        });
+        continentLabels.forEach(function(l) {
+            allLabelData.push({ name: l.name, lat: l.lat, lng: l.lng, isContinent: true, maxZoom: 1.25, importance: 4 });
+        });
+        oceanLabels.forEach(function(l) {
+            allLabelData.push({ name: l.name, lat: l.lat, lng: l.lng, isOcean: true, maxZoom: 2.5, importance: 3 });
         });
 
-        // Convert lat/lng to screen position - FIXED VERSION
-        function latLngToScreen(lat, lng) {
-            const latRad = lat * (Math.PI / 180);
-            const lngRad = lng * (Math.PI / 180);
-            
-            // Use EXACT same formula as markers (no negative z, no rotation matrix)
-            const x = (globeRadius + 8) * Math.cos(latRad) * Math.cos(-lngRad);
-            const y = (globeRadius + 8) * Math.sin(latRad);
-            const z = (globeRadius + 8) * Math.cos(latRad) * Math.sin(-lngRad);
-            
-            const worldPosition = new THREE.Vector3(x, y, z);
-            
-            // Apply globe rotation
-            worldPosition.applyAxisAngle(new THREE.Vector3(1, 0, 0), rotationX);
-            worldPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), rotationY);
-            
-            const vector = worldPosition.clone();
-            vector.project(camera);
-            
-            const screenX = (vector.x * 0.5 + 0.5) * window.innerWidth;
-            const screenY = (vector.y * -0.5 + 0.5) * window.innerHeight;
-            
-            // Check if on front of globe
-            const isVisible = vector.z < 1 && 
-                             isFinite(screenX) && isFinite(screenY) &&
-                             screenX > -100 && screenX < window.innerWidth + 100 &&
-                             screenY > -100 && screenY < window.innerHeight + 100;
-            
-            return { x: screenX, y: screenY, visible: isVisible, depth: vector.z };
-        }
+        // Create CSS2DObjects and attach them as children of the earth mesh.
+        // Because they are children of earth, Three.js applies earth's rotation to their
+        // world matrix automatically — labels are truly anchored to the globe surface.
+        allLabelData.forEach(function(d) {
+            const div = document.createElement('div');
+            const imp = d.importance || 1;
+            const impClass = ' imp' + Math.min(imp, 3);
+            if (d.isContinent) {
+                div.className = 'globe-label continent';
+            } else if (d.isOcean) {
+                div.className = 'globe-label ocean';
+            } else if (d.isIsland) {
+                div.className = 'globe-label city island';
+            } else if (d.isCity) {
+                div.className = 'globe-label city' + impClass;
+            } else {
+                div.className = 'globe-label country' + impClass;
+            }
+            div.textContent = d.name;
+            div.style.visibility = 'hidden'; // hidden until visibility pass
 
-        // Update label positions
-        function updateLabels() {
-            continentLabels.forEach(label => {
-                const pos = latLngToScreen(label.lat, label.lng);
-                const element = labelElements[label.name];
-                
-                if (pos.visible) {
-                    element.style.left = pos.x + 'px';
-                    element.style.top = pos.y + 'px';
-                    element.classList.remove('hidden');
-                    // Fade based on depth
-                    const opacity = Math.max(0, Math.min(1, 1 - pos.depth * 0.8));
-                    element.style.opacity = opacity;
+            const labelObject = new THREE.CSS2DObject(div);
+            // Place label 2 units above globe surface to avoid z-fighting
+            const pos = latLngToSphere(d.lat, d.lng, globeRadius + 2);
+            labelObject.position.set(pos.x, pos.y, pos.z);
+            earth.add(labelObject); // rotates with the globe automatically
+
+            d.labelDiv = div;
+            d.labelObject = labelObject;
+        });
+
+        // Small island nations only visible when zoomed in (avoids labels floating over ocean)
+        const smallCountries = new Set(['Cape Verde', 'Maldives', 'Comoros', 'Seychelles', 'Mauritius',
+            'Antigua and Barbuda', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines',
+            'Dominica', 'Grenada', 'Barbados', 'Bahamas', 'Palau', 'Nauru', 'Tuvalu', 'Kiribati',
+            'Marshall Islands', 'Micronesia', 'Samoa', 'Tonga', 'Vanuatu', 'Solomon Islands']);
+
+        // Reusable vector to avoid allocations in the hot path
+        const _labelWorldPos = new THREE.Vector3();
+        const _labelProjPos = new THREE.Vector3();
+
+        // Show/hide each label based on:
+        // 1. Whether its surface normal faces the camera (back-face culling)
+        // 2. Zoom-based importance filtering
+        // 3. Screen-space decluttering (no overlapping labels)
+        // Position is handled entirely by CSS2DRenderer + Three.js scene graph.
+        // Large countries always show their label even at deep zoom for orientation
+        const LARGE_COUNTRIES = new Set(['Russia', 'Canada', 'United States', 'China', 'Brazil',
+            'Australia', 'India', 'Argentina', 'Kazakhstan', 'Algeria', 'Sudan', 'Greenland']);
+
+        function updateLabelVisibility() {
+            const z = zoomLevel;
+
+            // ── Zoom progression ──────────────────────────────────────────────────────
+            // Tier 1  z < 1.4   Global:      continents + oceans ONLY
+            // Tier 2  z < 1.9   Continental: major countries (imp≥2) + world capitals
+            // Tier 3  z < 2.8   Country:     all countries + major cities + some islands
+            // Tier 4  z < 4.2   Regional:    medium countries + all cities + islands
+            // Tier 5  z ≥ 4.2   City view:   landmark countries only + all cities + islands
+            // ──────────────────────────────────────────────────────────────────────────
+            const continentOnlyMode = z < 1.4; // hard block on ALL country + city labels
+            let minCountryImp, minCityImp, showIslands, showSmallCountries;
+            if (continentOnlyMode) {
+                minCountryImp = 99; minCityImp = 99; showIslands = false; showSmallCountries = false;
+            } else if (z < 1.9) {
+                minCountryImp = 2;  minCityImp = 3;  showIslands = false; showSmallCountries = false;
+            } else if (z < 2.8) {
+                minCountryImp = 1;  minCityImp = 2;  showIslands = true;  showSmallCountries = false;
+            } else if (z < 4.2) {
+                minCountryImp = 2;  minCityImp = 1;  showIslands = true;  showSmallCountries = true;
+            } else {
+                minCountryImp = 99; minCityImp = 1;  showIslands = true;  showSmallCountries = true;
+            }
+            // Landmark countries (Russia, US, etc.) show for orientation — but NOT in continent-only mode
+            const showLandmark = !continentOnlyMode && z < 5.0;
+
+            // Declutter distances shrink as you zoom so more labels fit on screen
+            const minDistCountry = z > 2 ? 40 : 55;
+            const minDistCity    = z > 4 ? 12 : z > 2.5 ? 18 : z > 1.6 ? 26 : 38;
+            const minDistIsland  = z > 4 ? 8  : z > 2.5 ? 12 : 18;
+
+            const candidates = [];
+
+            allLabelData.forEach(function(d) {
+                const importance = d.importance || 1;
+
+                // minZoom / maxZoom gates
+                if (d.minZoom && z < d.minZoom) { d.labelDiv.style.visibility = 'hidden'; return; }
+                if (d.maxZoom && z > d.maxZoom) { d.labelDiv.style.visibility = 'hidden'; return; }
+
+                if (d.isContinent || d.isOcean) {
+                    // Continents/oceans: only the maxZoom gate above controls them.
+                } else if (!d.isCity) {
+                    // Country label visibility
+                    const isLandmark = LARGE_COUNTRIES.has(d.name);
+                    const isSmall    = smallCountries.has(d.name);
+                    if (isSmall && !showSmallCountries) { d.labelDiv.style.visibility = 'hidden'; return; }
+                    if (isLandmark && showLandmark) {
+                        // Landmark countries always pass importance gate
+                    } else if (importance < minCountryImp) {
+                        d.labelDiv.style.visibility = 'hidden'; return;
+                    }
+                } else if (d.isIsland) {
+                    if (!showIslands) { d.labelDiv.style.visibility = 'hidden'; return; }
                 } else {
-                    element.classList.add('hidden');
+                    // City label visibility
+                    if (importance < minCityImp) { d.labelDiv.style.visibility = 'hidden'; return; }
                 }
+
+                // Back-face culling: hide labels on back of globe or near limb
+                d.labelObject.getWorldPosition(_labelWorldPos);
+                const nx = _labelWorldPos.x / globeRadius;
+                const ny = _labelWorldPos.y / globeRadius;
+                const nz = _labelWorldPos.z / globeRadius;
+                const toCamZ   = baseCameraDistance - _labelWorldPos.z;
+                const toCamLen = Math.sqrt(_labelWorldPos.x * _labelWorldPos.x +
+                                           _labelWorldPos.y * _labelWorldPos.y +
+                                           toCamZ * toCamZ);
+                const facing = (nx * (-_labelWorldPos.x / toCamLen) +
+                                ny * (-_labelWorldPos.y / toCamLen) +
+                                nz * (toCamZ / toCamLen));
+                if (facing < 0.2) { d.labelDiv.style.visibility = 'hidden'; return; }
+
+                // Project to screen for declutter
+                _labelProjPos.copy(_labelWorldPos).project(camera);
+                d._sx = (_labelProjPos.x * 0.5 + 0.5) * window.innerWidth;
+                d._sy = (-_labelProjPos.y * 0.5 + 0.5) * window.innerHeight;
+                d._facing = facing;
+                candidates.push(d);
+            });
+
+            // Higher importance labels claim screen space first
+            candidates.sort(function(a, b) { return (b.importance || 1) - (a.importance || 1); });
+
+            const placed = [];
+            candidates.forEach(function(d) {
+                const minDist = (d.isContinent || d.isOcean) ? 70
+                              : d.isIsland ? minDistIsland
+                              : d.isCity   ? minDistCity
+                              : minDistCountry;
+                const hasConflict = placed.some(function(p) {
+                    const dx = p.x - d._sx, dy = p.y - d._sy;
+                    return dx * dx + dy * dy < minDist * minDist;
+                });
+
+                if (hasConflict) {
+                    d.labelDiv.style.visibility = 'hidden';
+                    return;
+                }
+
+                placed.push({ x: d._sx, y: d._sy });
+                d.labelDiv.style.visibility = 'visible';
+                // Fade labels near the limb for a natural look
+                d.labelDiv.style.opacity = Math.min(1.0, (d._facing - 0.2) / 0.35).toFixed(2);
             });
         }
 
@@ -318,10 +1281,16 @@
             earth.rotation.y = rotationY;
             atmosphere.rotation.x = rotationX;
             atmosphere.rotation.y = rotationY;
-            
-            // Clamp camera distance for safety
-            cameraDistance = Math.max(180, Math.min(550, cameraDistance));
-            camera.position.set(0, 0, cameraDistance);
+            bordersGroup.rotation.x = rotationX;
+            bordersGroup.rotation.y = rotationY;
+            tripGroup.rotation.x = rotationX;
+            tripGroup.rotation.y = rotationY;
+
+            // Camera stays fixed — zoom is done by narrowing FOV so the entire scene
+            // (globe + labels) scales uniformly. Labels stay perfectly pinned to countries.
+            camera.position.set(0, 0, baseCameraDistance);
+            camera.fov = 45 / zoomLevel;
+            camera.updateProjectionMatrix();
             camera.lookAt(0, 0, 0);
         }
 
@@ -330,6 +1299,8 @@
             isDragging = true;
             previousMouseX = e.clientX;
             previousMouseY = e.clientY;
+            _tapStartX = e.clientX;
+            _tapStartY = e.clientY;
             velocityX = 0;
             velocityY = 0;
         }
@@ -339,19 +1310,27 @@
             
             const deltaX = e.clientX - previousMouseX;
             const deltaY = e.clientY - previousMouseY;
+            // Scale sensitivity inversely with zoom: more zoomed in = slower rotation
+            const sens = 0.005 / Math.max(1, zoomLevel);
             
-            targetRotationY += deltaX * 0.005;
-            targetRotationX += deltaY * 0.005;
+            targetRotationY += deltaX * sens;
+            targetRotationX += deltaY * sens;
             targetRotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, targetRotationX));
             
-            velocityX = deltaY * 0.005;
-            velocityY = deltaX * 0.005;
+            velocityX = deltaY * sens;
+            velocityY = deltaX * sens;
             
             previousMouseX = e.clientX;
             previousMouseY = e.clientY;
         }
 
-        function onMouseUp() {
+        function onMouseUp(e) {
+            // Fire tap on click if barely moved (simulator / desktop testing)
+            const dx = e.clientX - (_tapStartX || e.clientX);
+            const dy = e.clientY - (_tapStartY || e.clientY);
+            if (Math.sqrt(dx * dx + dy * dy) < 8) {
+                handleGlobeTap(e.clientX, e.clientY);
+            }
             isDragging = false;
         }
 
@@ -359,7 +1338,7 @@
             e.preventDefault();
             // Use targetZoom for smooth zoom
             targetZoom -= e.deltaY * 0.001;
-            targetZoom = Math.max(0.6, Math.min(2.5, targetZoom));
+            targetZoom = Math.max(0.6, Math.min(6.0, targetZoom));
         }
 
         function onTouchStart(e) {
@@ -367,6 +1346,8 @@
                 isDragging = true;
                 lastTouchX = e.touches[0].clientX;
                 lastTouchY = e.touches[0].clientY;
+                _tapStartX = e.touches[0].clientX;
+                _tapStartY = e.touches[0].clientY;
                 velocityX = 0;
                 velocityY = 0;
             } else if (e.touches.length === 2) {
@@ -383,13 +1364,15 @@
             if (e.touches.length === 1 && isDragging) {
                 const deltaX = e.touches[0].clientX - lastTouchX;
                 const deltaY = e.touches[0].clientY - lastTouchY;
+                // Scale sensitivity inversely with zoom: more zoomed in = slower rotation
+                const sens = 0.005 / Math.max(1, zoomLevel);
                 
-                targetRotationY += deltaX * 0.005;
-                targetRotationX += deltaY * 0.005;
+                targetRotationY += deltaX * sens;
+                targetRotationX += deltaY * sens;
                 targetRotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, targetRotationX));
                 
-                velocityX = deltaY * 0.005;
-                velocityY = deltaX * 0.005;
+                velocityX = deltaY * sens;
+                velocityY = deltaX * sens;
                 
                 lastTouchX = e.touches[0].clientX;
                 lastTouchY = e.touches[0].clientY;
@@ -402,7 +1385,7 @@
                     const scale = distance / initialPinchDistance;
                     // Use targetZoom with safe bounds
                     targetZoom *= scale;
-                    targetZoom = Math.max(0.6, Math.min(2.5, targetZoom));
+                    targetZoom = Math.max(0.6, Math.min(6.0, targetZoom));
                     initialPinchDistance = distance;
                 }
             }
@@ -410,6 +1393,14 @@
 
         function onTouchEnd(e) {
             if (e.touches.length === 0) {
+                // Fire tap only if finger barely moved (not a drag)
+                if (e.changedTouches.length > 0) {
+                    const dx = e.changedTouches[0].clientX - _tapStartX;
+                    const dy = e.changedTouches[0].clientY - _tapStartY;
+                    if (Math.sqrt(dx * dx + dy * dy) < 8) {
+                        handleGlobeTap(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                    }
+                }
                 isDragging = false;
             }
             initialPinchDistance = 0;
@@ -430,16 +1421,19 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            css2dRenderer.setSize(window.innerWidth, window.innerHeight);
         });
 
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
             
-            // Apply inertia when not dragging
+            // Apply inertia when not dragging.
+            // Decay faster when zoomed in so the globe doesn't over-spin on small details.
             if (!isDragging) {
-                velocityX *= 0.92;
-                velocityY *= 0.92;
+                const inertiaDamping = zoomLevel > 2 ? 0.80 : 0.92;
+                velocityX *= inertiaDamping;
+                velocityY *= inertiaDamping;
                 targetRotationX += velocityX;
                 targetRotationY += velocityY;
                 targetRotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, targetRotationX));
@@ -454,13 +1448,19 @@
             rotationX += (targetRotationX - rotationX) * 0.08;
             rotationY += (targetRotationY - rotationY) * 0.08;
             
-            // Smooth interpolation for zoom
+            // Smooth interpolation for zoom (FOV-based; camera stays fixed)
             zoomLevel += (targetZoom - zoomLevel) * 0.1;
-            cameraDistance = 380 / zoomLevel;
             
+            // Update live day/night terminator
+            earthMaterial.uniforms.sunDirection.value.copy(getSunDirectionWorld());
+
+            // Pulse glow on mood markers
+            pulseMarkers();
+
             updateCameraPosition();
-            updateLabels();
+            updateLabelVisibility();
             renderer.render(scene, camera);
+            css2dRenderer.render(scene, camera);
         }
 
         // Hide loading
@@ -471,8 +1471,8 @@
 
         // API for Flutter
         window.addVisitedPlaces = function(places) {
-            visitedPlaces = places;
-            // Could add markers here
+            visitedPlaces = Array.isArray(places) ? places : [];
+            buildTripVisualization();
         };
 
         window.setAutoRotate = function(enabled) {
@@ -480,10 +1480,39 @@
         };
 
         window.resetCamera = function() {
-            targetRotationX = 0;
-            targetRotationY = 0;
+            targetRotationX = 0.35;  // back to Atlantic default
+            targetRotationY = -0.95;
             targetZoom = 1.0;
-            cameraDistance = 380;
+        };
+
+        // Centre the globe on a lat/lng — called from Dart with the user's location.
+        // Derives the exact Two-step Euler rotation (XYZ order) so the given point
+        // faces the camera precisely, then animates there via the existing interpolation.
+        window.setInitialLocation = function(lat, lng) {
+            // Convert lat/lng to local sphere unit vector
+            const phi   = (90 - lat) * Math.PI / 180;
+            const theta = (lng + 180) * Math.PI / 180;
+            const lx = -Math.sin(phi) * Math.cos(theta);
+            const ly =  Math.cos(phi);
+            const lz =  Math.sin(phi) * Math.sin(theta);
+
+            // Step 1: rotX that zeroes the y component after Rx rotation
+            const newRotX = Math.atan2(ly, lz);
+            // Step 2: rotY that zeroes the x component after Ry rotation
+            const zp      = Math.sqrt(ly * ly + lz * lz);
+            const newRotY = Math.atan2(-lx, zp);
+
+            // Clamp rotX to avoid flipping past the poles
+            const clampedRotX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, newRotX));
+
+            // Take the shortest angular path for rotY to avoid spinning the long way
+            let dy = newRotY - targetRotationY;
+            while (dy >  Math.PI) dy -= 2 * Math.PI;
+            while (dy < -Math.PI) dy += 2 * Math.PI;
+
+            targetRotationX = clampedRotX;
+            targetRotationY = targetRotationY + dy;
+            // Don't reset zoom — keep wherever user was
         };
     </script>
 </body>

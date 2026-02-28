@@ -3,6 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import '../../../profile/data/providers/visited_places_provider.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../home/providers/dynamic_my_day_provider.dart';
 import '../../providers/daily_mood_state_provider.dart';
@@ -30,11 +33,11 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   bool _isSending = false;
   String _greeting = "Hey! How's your day going?";
   int _streak = 0;
-  
+
   late AnimationController _moodyAnimationController;
   late Animation<double> _moodyScaleAnimation;
   late AnimationController _floatController;
-  
+
   // Quick mood options with more personality
   final List<Map<String, dynamic>> _quickMoods = [
     {
@@ -80,7 +83,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       'gradient': [const Color(0xFF12B347), const Color(0xFF6DE89A)],
     },
   ];
-  
+
   // Quick activity tags
   final List<String> _activityTags = [
     'Explored places',
@@ -92,7 +95,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     'Adventure',
     'Self-care',
   ];
-  
+
   // Quick reactions (like FaceTime reactions)
   final List<Map<String, dynamic>> _quickReactions = [
     {'emoji': '❤️', 'label': 'Loved it'},
@@ -110,7 +113,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       vsync: this,
       duration: const Duration(milliseconds: 2000),
     )..repeat(reverse: true);
-    
+
     _moodyScaleAnimation = Tween<double>(
       begin: 1.0,
       end: 1.08,
@@ -118,12 +121,12 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       parent: _moodyAnimationController,
       curve: Curves.easeInOut,
     ));
-    
+
     _floatController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 3000),
     )..repeat();
-    
+
     // Load previous check-in to personalize greeting
     _loadPreviousCheckIn();
     _loadStreak();
@@ -140,7 +143,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   // Get time-based gradient colors
   List<Color> _getTimeBasedGradient() {
     final hour = DateTime.now().hour;
-    
+
     if (hour >= 5 && hour < 12) {
       // Morning - Sunrise gradient
       return [
@@ -182,12 +185,102 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     }
   }
 
+  Future<Map<String, dynamic>?> _getLocationData() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        debugPrint('🌍 Location: service disabled, using fallback');
+        return _getSimulatorFallback();
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          debugPrint('🌍 Location: permission denied, using fallback');
+          return _getSimulatorFallback();
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        debugPrint('🌍 Location: permission denied forever, using fallback');
+        return _getSimulatorFallback();
+      }
+
+      Position? position;
+      try {
+        position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+          timeLimit: const Duration(seconds: 5),
+        );
+      } catch (e) {
+        debugPrint('🌍 Location: getCurrentPosition failed: $e');
+        position = await Geolocator.getLastKnownPosition();
+      }
+
+      if (position == null) {
+        debugPrint('🌍 Location: no position, using fallback (Amsterdam)');
+        return _getSimulatorFallback();
+      }
+
+      String? city;
+      String? country;
+      String? placeName;
+
+      try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+
+        if (placemarks.isNotEmpty) {
+          final place = placemarks.first;
+          city = place.locality ?? place.subLocality;
+          country = place.country;
+          placeName = place.name;
+
+          if (placeName != null && RegExp(r'^[0-9]+$').hasMatch(placeName)) {
+            placeName = city;
+          }
+        }
+      } catch (e) {
+        debugPrint('🌍 Geocoding failed: $e');
+      }
+
+      debugPrint('🌍 Location OK: ${position.latitude}, ${position.longitude} → $city, $country');
+      return {
+        'lat': position.latitude,
+        'lng': position.longitude,
+        'city': city,
+        'country': country,
+        'placeName': placeName ?? city,
+      };
+    } catch (e) {
+      debugPrint('🌍 Location failed: $e, using fallback');
+      return _getSimulatorFallback();
+    }
+  }
+
+  /// Fallback when GPS fails (e.g. simulator) — use Amsterdam so user sees a marker
+  Map<String, dynamic> _getSimulatorFallback() {
+    return {
+      'lat': 52.3676,
+      'lng': 4.9041,
+      'city': 'Amsterdam',
+      'country': 'Netherlands',
+      'placeName': 'Amsterdam',
+    };
+  }
+
   void _handleSend() async {
     if (_isSending) return;
-    
+
     setState(() => _isSending = true);
-    
+
     try {
+      // Get location data for the globe
+      final locationData = await _getLocationData();
+
       // Save check-in to memory
       final userId = Supabase.instance.client.auth.currentUser?.id;
       if (userId != null) {
@@ -197,21 +290,34 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           mood: _selectedMood,
           activities: _selectedActivity != null ? [_selectedActivity!] : [],
           reactions: _selectedReactions,
-          text: _textController.text.trim().isNotEmpty ? _textController.text.trim() : null,
+          text: _textController.text.trim().isNotEmpty
+              ? _textController.text.trim()
+              : null,
           timestamp: DateTime.now(),
         );
-        
+
         final checkInService = CheckInService(Supabase.instance.client);
-        await checkInService.saveCheckIn(checkIn);
+        await checkInService.saveCheckIn(
+          checkIn,
+          lat: locationData?['lat'],
+          lng: locationData?['lng'],
+          city: locationData?['city'],
+          country: locationData?['country'],
+          placeName: locationData?['placeName'],
+        );
+        
+        // Force refresh the globe data
+        ref.invalidate(visitedPlacesProvider);
+        
         if (kDebugMode) debugPrint('✅ Check-in saved: ${checkIn.id}');
       }
     } catch (e) {
       if (kDebugMode) debugPrint('⚠️ Failed to save check-in: $e');
     }
-    
+
     // Small delay for UX
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     if (mounted) {
       // Show Moody's response
       _showMoodyResponse();
@@ -221,18 +327,19 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   void _showMoodyResponse() async {
     // Get pending activities for rating
     final pendingActivities = await _getPendingActivities();
-    
+
     // Generate AI response
-    final response = await _getMoodyResponse(pendingActivities: pendingActivities);
-    
+    final response =
+        await _getMoodyResponse(pendingActivities: pendingActivities);
+
     if (!mounted) return;
-    
+
     // Show rating sheets for completed activities first
     if (pendingActivities.isNotEmpty) {
       await _showActivityRatings(pendingActivities);
       if (!mounted) return;
     }
-    
+
     showDialog(
       context: context,
       barrierColor: Colors.black.withOpacity(0.7),
@@ -345,11 +452,12 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     );
   }
 
-  Future<String> _getMoodyResponse({List<ActivityRating>? pendingActivities}) async {
+  Future<String> _getMoodyResponse(
+      {List<ActivityRating>? pendingActivities}) async {
     try {
       // Use AI service for intelligent, contextual responses
       final aiService = ref.read(moodyAIServiceProvider);
-      
+
       return await aiService.generateCheckInResponse(
         userText: _textController.text.trim(),
         mood: _selectedMood ?? 'neutral',
@@ -363,38 +471,39 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       return 'Thanks for checking in! I love hearing about your day 💛';
     }
   }
-  
+
   /// Get activities that were scheduled for today and could be rated
   Future<List<ActivityRating>> _getPendingActivities() async {
     try {
       // Get today's activities from today activities provider
       final dayState = ref.read(todayActivitiesProvider);
-      
+
       if (dayState is! AsyncData) return [];
-      
+
       final activities = dayState.value ?? [];
       final today = DateTime.now();
-      
+
       // Find activities that are scheduled for today and haven't been rated
       final ratingService = ref.read(activityRatingServiceProvider);
       final pendingRatings = <ActivityRating>[];
-      
+
       for (final activity in activities) {
         // Check if activity is for today or in the past
         final activityTime = activity.startTime;
         if (activityTime.day == today.day &&
             activityTime.month == today.month &&
             activityTime.year == today.year) {
-          
-          final activityId = activity.rawData['id']?.toString() ?? DateTime.now().toString();
-          final activityName = activity.rawData['name'] as String? ?? 
-                              activity.rawData['title'] as String? ?? 
-                              'Activity';
+          final activityId = activity.rawData['id']?.toString() ??
+              DateTime.now().toString();
+          final activityName = activity.rawData['name'] as String? ??
+              activity.rawData['title'] as String? ??
+              'Activity';
           final location = activity.rawData['location'] as String?;
-          
+
           // Check if already rated
-          final existingRating = await ratingService.getRatingForActivity(activityId);
-          
+          final existingRating =
+              await ratingService.getRatingForActivity(activityId);
+
           if (existingRating == null) {
             // Create a placeholder rating for UI
             pendingRatings.add(ActivityRating(
@@ -412,19 +521,19 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           }
         }
       }
-      
+
       return pendingRatings;
     } catch (e) {
       print('⚠️ Failed to get pending activities: $e');
       return [];
     }
   }
-  
+
   /// Show rating sheets for completed activities
   Future<void> _showActivityRatings(List<ActivityRating> activities) async {
     for (final activity in activities) {
       if (!mounted) return;
-      
+
       await showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -444,10 +553,10 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     final checkInService = CheckInService(Supabase.instance.client);
     final lastCheckIn = await checkInService.getLastCheckIn();
     final yesterdayCheckIn = await checkInService.getYesterdayCheckIn();
-    
+
     final hour = DateTime.now().hour;
     final isMorning = hour < 12;
-    
+
     if (mounted) {
       setState(() {
         if (isMorning && yesterdayCheckIn != null) {
@@ -469,7 +578,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     final dailyState = ref.watch(dailyMoodStateNotifierProvider);
     final currentMood = dailyState.currentMood ?? 'exploring';
     final gradientColors = _getTimeBasedGradient();
-    
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -484,7 +593,8 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             children: [
               // Modern header
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.9),
                   boxShadow: [
@@ -528,7 +638,8 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                     // Streak indicator
                     if (_streak > 0)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFFFF9A00), Color(0xFFFFD166)],
@@ -563,14 +674,14 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   ],
                 ),
               ),
-              
+
               // Main content - Scrollable
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
                       const SizedBox(height: 28),
-                      
+
                       // Floating Moody character - more subtle
                       AnimatedBuilder(
                         animation: _floatController,
@@ -578,7 +689,8 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                           return Transform.translate(
                             offset: Offset(
                               0,
-                              math.sin(_floatController.value * 2 * math.pi) * 6,
+                              math.sin(_floatController.value * 2 * math.pi) *
+                                  6,
                             ),
                             child: child,
                           );
@@ -599,7 +711,8 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF12B347).withOpacity(0.3),
+                                  color:
+                                      const Color(0xFF12B347).withOpacity(0.3),
                                   blurRadius: 30,
                                   spreadRadius: 5,
                                 ),
@@ -614,9 +727,9 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Greeting with personality - more compact
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -638,9 +751,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            
                             const SizedBox(height: 8),
-                            
                             Text(
                               "Tell me everything! 💚",
                               style: GoogleFonts.poppins(
@@ -659,9 +770,9 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Card-based mood selection - more compact
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -691,34 +802,35 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                               crossAxisSpacing: 12,
                               childAspectRatio: 0.85,
                               children: _quickMoods.map((mood) {
-                                final isSelected = _selectedMood == mood['value'];
+                                final isSelected =
+                                    _selectedMood == mood['value'];
                                 return _buildMoodCard(mood, isSelected);
                               }).toList(),
                             ),
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 28),
-                      
+
                       // Activity tags (continued on next part due to length...)
                       _buildActivitiesSection(),
-                      
+
                       const SizedBox(height: 28),
-                      
+
                       // Quick reactions
                       _buildReactionsSection(),
-                      
+
                       const SizedBox(height: 28),
-                      
+
                       // Free text input
                       _buildTextInputSection(),
-                      
+
                       const SizedBox(height: 28),
-                      
+
                       // Send button
                       _buildSendButton(),
-                      
+
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -843,7 +955,8 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                     });
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 12),
                     decoration: BoxDecoration(
                       gradient: isSelected
                           ? const LinearGradient(
@@ -872,8 +985,11 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                       tag,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                        color: isSelected ? Colors.white : const Color(0xFF4A5568),
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.w500,
+                        color: isSelected
+                            ? Colors.white
+                            : const Color(0xFF4A5568),
                       ),
                     ),
                   ),
@@ -918,7 +1034,8 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               spacing: 10,
               runSpacing: 10,
               children: _quickReactions.map((reaction) {
-                final isSelected = _selectedReactions.contains(reaction['label']);
+                final isSelected =
+                    _selectedReactions.contains(reaction['label']);
                 final colors = [
                   [const Color(0xFFFF6B9D), const Color(0xFFFFA06B)],
                   [const Color(0xFFF59E0B), const Color(0xFFFBBF24)],
@@ -929,7 +1046,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                 ];
                 final colorIndex = _quickReactions.indexOf(reaction);
                 final gradient = colors[colorIndex % colors.length];
-                
+
                 return GestureDetector(
                   onTap: () {
                     setState(() {
@@ -941,7 +1058,8 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                     });
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 12),
                     decoration: BoxDecoration(
                       gradient: isSelected
                           ? LinearGradient(colors: gradient)
@@ -949,7 +1067,9 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                       color: isSelected ? null : const Color(0xFFF7FAFC),
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
-                        color: isSelected ? Colors.transparent : const Color(0xFFE2E8F0),
+                        color: isSelected
+                            ? Colors.transparent
+                            : const Color(0xFFE2E8F0),
                         width: 1.5,
                       ),
                       boxShadow: isSelected
@@ -974,8 +1094,11 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                           reaction['label'] as String,
                           style: GoogleFonts.poppins(
                             fontSize: 14,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                            color: isSelected ? Colors.white : const Color(0xFF4A5568),
+                            fontWeight:
+                                isSelected ? FontWeight.bold : FontWeight.w500,
+                            color: isSelected
+                                ? Colors.white
+                                : const Color(0xFF4A5568),
                           ),
                         ),
                       ],

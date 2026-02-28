@@ -13,6 +13,8 @@ import 'package:wandermood/features/places/providers/explore_places_provider.dar
 import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_card.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_grid_card.dart';
+import 'package:wandermood/features/places/presentation/widgets/book_with_gyg_section.dart';
+import 'package:wandermood/features/places/providers/gyg_links_provider.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -862,7 +864,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               ),
             ];
           },
-          body: explorePlacesAsync.when(
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              BookWithGygSection(
+                cityName: locationAsync.value ?? 'Rotterdam',
+                links: ref.watch(gygLinksProvider(locationAsync.value ?? 'Rotterdam')).valueOrNull ?? [],
+              ),
+              Expanded(
+                child: explorePlacesAsync.when(
                   data: (allPlaces) {
                     // Get city name for filtering
                     final currentCity = locationAsync.value ?? 'Rotterdam';
@@ -1201,6 +1211,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     ),
                     );
                   },
+                ),
+              ),
+            ],
           ),
         ),
       ),
