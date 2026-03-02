@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 /// Vibe data model
 class VibeData {
@@ -121,6 +122,7 @@ class FavoriteVibesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -148,7 +150,7 @@ class FavoriteVibesCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Your Favorite Vibes',
+                l10n.profileFavoriteVibesTitle,
                 style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -160,7 +162,7 @@ class FavoriteVibesCard extends StatelessWidget {
                 child: Row(
                   children: [
                     Text(
-                      'Edit',
+                      l10n.profileFavoriteVibesEdit,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -224,7 +226,7 @@ class FavoriteVibesCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(50),
                   ),
                   child: Text(
-                    '+ Add Vibe',
+                    l10n.profileFavoriteVibesAdd,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -324,10 +326,11 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
       
       if (mounted) {
         Navigator.pop(context);
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Vibes updated! 🎉',
+              l10n.profileVibesUpdated,
               style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
             ),
             backgroundColor: const Color(0xFFF97316),
@@ -340,9 +343,10 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
     } catch (e) {
       debugPrint('Error saving vibes: $e');
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to save vibes: $e'),
+            content: Text(l10n.profileVibesSaveFailed(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -360,6 +364,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: const Color(0xFFFFF7ED),
       body: Column(
@@ -381,7 +386,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                   ),
                   Expanded(
                     child: Text(
-                      'Edit Favorite Vibes',
+                      l10n.profileVibesEditTitle,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 20,
@@ -414,7 +419,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                               ),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         child: Text(
-                          'Save',
+                          l10n.profileVibesSave,
                           style: GoogleFonts.poppins(
                             color: _hasChanges && _selectedVibes.isNotEmpty
                                 ? Colors.white
@@ -440,7 +445,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Info Card
-                  _buildInfoCard(),
+                  _buildInfoCard(context),
                   const SizedBox(height: 24),
                   
                   // Selected Count
@@ -448,7 +453,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Selected (${_selectedVibes.length}/5)',
+                        l10n.profileVibesSelectedCount(_selectedVibes.length.toString()),
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -457,7 +462,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                       ),
                       if (_selectedVibes.length == 5)
                         Text(
-                          'Maximum reached',
+                          l10n.profileVibesMaxReached,
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -470,13 +475,13 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                   
                   // Current Vibes (removable)
                   if (_selectedVibes.isNotEmpty) ...[
-                    _buildCurrentVibes(),
+                    _buildCurrentVibes(context),
                     const SizedBox(height: 24),
                   ],
                   
                   // Available Vibes Grid
                   Text(
-                    _selectedVibes.isEmpty ? 'Choose Your Vibes' : 'Add More Vibes',
+                    _selectedVibes.isEmpty ? l10n.profileVibesChooseTitle : l10n.profileVibesAddMore,
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -500,7 +505,8 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
     );
   }
 
-  Widget _buildInfoCard() {
+  Widget _buildInfoCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -528,7 +534,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Choose Your Vibes',
+                  l10n.profileVibesChooseTitle,
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.bold,
                     color: Colors.grey[800],
@@ -536,7 +542,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Select up to 5 vibes that match your personality. We\'ll use these to personalize your recommendations!',
+                  l10n.profileVibesSubtitle,
                   style: GoogleFonts.poppins(
                     fontSize: 13,
                     color: Colors.grey[700],
@@ -551,7 +557,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
     );
   }
 
-  Widget _buildCurrentVibes() {
+  Widget _buildCurrentVibes(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -569,7 +575,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'YOUR CURRENT VIBES',
+            AppLocalizations.of(context)!.profileVibesCurrentTitle,
             style: GoogleFonts.poppins(
               fontSize: 11,
               fontWeight: FontWeight.w600,

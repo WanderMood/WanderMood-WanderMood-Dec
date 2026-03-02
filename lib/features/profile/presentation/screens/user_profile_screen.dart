@@ -1,113 +1,33 @@
 // =============================================================================
-// Enhanced User Profile Screen - Redesigned to match design
+// User Profile Screen - uses CurrentUserProfileProvider (single source of truth)
 // =============================================================================
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import '../../domain/models/current_user_profile.dart';
+import '../../domain/providers/current_user_profile_provider.dart';
 import '../widgets/edit_favorite_vibes.dart';
 import '../widgets/travel_mode_toggle.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import '../widgets/profile_stats_cards.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 
-class UserProfileScreen extends StatefulWidget {
+class UserProfileScreen extends ConsumerStatefulWidget {
   const UserProfileScreen({Key? key}) : super(key: key);
 
   @override
-  State<UserProfileScreen> createState() => _UserProfileScreenState();
+  ConsumerState<UserProfileScreen> createState() => _UserProfileScreenState();
 }
 
-class _UserProfileScreenState extends State<UserProfileScreen> {
-  final supabase = Supabase.instance.client;
+class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
+  final _supabase = Supabase.instance.client;
   final ImagePicker _imagePicker = ImagePicker();
-  
-  // User data
-  String? _userName;
-  String? _username;
-  String? _bio;
-  String? _avatarUrl;
-  String? _ageGroup;
-  bool _isLocalMode = true;
-  List<String> _selectedVibes = [];
-  
-  // Preferences
-  String? _budgetLevel;
-  String? _socialVibe;
-  List<String> _dietaryRestrictions = [];
-  
-  bool _isLoading = true;
   bool _isUploadingImage = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserData();
-  }
-
-  Future<void> _loadUserData() async {
-    try {
-      final userId = supabase.auth.currentUser?.id;
-      if (userId == null) return;
-
-      final profileResponse = await supabase
-          .from('profiles')
-          .select('full_name, username, bio, avatar_url')
-          .eq('id', userId)
-          .maybeSingle();
-
-      final prefsResponse = await supabase
-          .from('user_preferences')
-          .select('home_base, age_group, selected_moods, budget_level, social_vibe, dietary_restrictions, activity_pace, time_available, interests')
-          .eq('user_id', userId)
-          .maybeSingle();
-
-      if (mounted) {
-        setState(() {
-          _userName = profileResponse?['full_name'] as String?;
-          _username = profileResponse?['username'] as String?;
-          _bio = profileResponse?['bio'] as String?;
-          _avatarUrl = profileResponse?['avatar_url'] as String?;
-          
-          // Load age_group from preferences
-          _ageGroup = prefsResponse?['age_group'] as String?;
-          
-          // Load travel mode
-          final homeBase = prefsResponse?['home_base'] as String?;
-          _isLocalMode = homeBase == null ? true : (homeBase == 'Local Explorer');
-          
-          // Load selected moods
-          _selectedVibes = prefsResponse?['selected_moods'] != null
-              ? List<String>.from(prefsResponse!['selected_moods'] as List)
-              : <String>[];
-          
-          // Load preferences
-          _budgetLevel = prefsResponse?['budget_level'] as String?;
-          
-          // Handle social_vibe
-          final socialVibeData = prefsResponse?['social_vibe'];
-          if (socialVibeData is List && socialVibeData.isNotEmpty) {
-            _socialVibe = socialVibeData.first.toString();
-          } else if (socialVibeData is String && socialVibeData.isNotEmpty) {
-            _socialVibe = socialVibeData;
-          } else {
-            _socialVibe = null;
-          }
-          
-          _dietaryRestrictions = prefsResponse?['dietary_restrictions'] != null
-              ? List<String>.from(prefsResponse!['dietary_restrictions'] as List)
-              : <String>[];
-
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading user data: $e');
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
 
   Future<void> _changeProfilePicture() async {
     try {
@@ -117,164 +37,147 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         maxWidth: 512,
         maxHeight: 512,
       );
-
       if (image == null) return;
 
       setState(() => _isUploadingImage = true);
-
-      final userId = supabase.auth.currentUser?.id;
+      final userId = _supabase.auth.currentUser?.id;
       if (userId == null) return;
 
-      // Upload to Supabase Storage
       final file = File(image.path);
       final fileExt = image.path.split('.').last;
       final fileName = '$userId/avatar.$fileExt';
-      
-      await supabase.storage
+      await _supabase.storage
           .from('avatars')
-          .upload(fileName, file, fileOptions: const FileOptions(
-            upsert: true,
-            cacheControl: '3600',
-          ));
+          .upload(fileName, file, fileOptions: const FileOptions(upsert: true, cacheControl: '3600'));
+      final imageUrl = _supabase.storage.from('avatars').getPublicUrl(fileName);
+      // Write to both avatar_url and image_url so all profile UIs (old and new)
+      // resolve to the same avatar and there is a single visual source of truth.
+      await _supabase.from('profiles').update({
+        'avatar_url': imageUrl,
+        'image_url': imageUrl,
+      }).eq('id', userId);
 
-      final imageUrl = supabase.storage.from('avatars').getPublicUrl(fileName);
-
-      // Update profile
-      await supabase
-          .from('profiles')
-          .update({'avatar_url': imageUrl})
-          .eq('id', userId);
-
-      setState(() {
-        _avatarUrl = imageUrl;
-        _isUploadingImage = false;
-      });
-
+      ref.read(currentUserProfileProvider.notifier).refresh();
       if (mounted) {
+        setState(() => _isUploadingImage = false);
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profile picture updated!'),
-            backgroundColor: Color(0xFF5BB32A),
-          ),
+          SnackBar(content: Text(l10n.profileSnackAvatarUpdated), backgroundColor: const Color(0xFF5BB32A)),
         );
       }
     } catch (e) {
       debugPrint('Error uploading profile picture: $e');
-      setState(() => _isUploadingImage = false);
       if (mounted) {
+        setState(() => _isUploadingImage = false);
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to update picture: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(l10n.profileSnackAvatarFailed(e.toString())), backgroundColor: Colors.red),
         );
       }
     }
   }
 
   Future<void> _updateTravelMode(bool isLocal) async {
-    try {
-      final userId = supabase.auth.currentUser?.id;
-      if (userId == null) return;
-
-      await supabase.from('user_preferences').update({
-        'home_base': isLocal ? 'Local Explorer' : 'Traveler',
-      }).eq('user_id', userId);
-
-      setState(() => _isLocalMode = isLocal);
-    } catch (e) {
-      debugPrint('Error updating travel mode: $e');
-    }
+    await ref.read(currentUserProfileProvider.notifier).updateTravelMode(isLocal);
   }
 
   void _handleVibesUpdated(List<String> updatedVibes) {
-    setState(() {
-      _selectedVibes = updatedVibes;
-    });
-    _loadUserData();
+    ref.read(currentUserProfileProvider.notifier).updateVibes(updatedVibes);
+    ref.read(currentUserProfileProvider.notifier).refresh();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
+    final l10n = AppLocalizations.of(context)!;
+    final profileAsync = ref.watch(currentUserProfileProvider);
+
+    return profileAsync.when(
+      loading: () => const Scaffold(
         backgroundColor: Color(0xFFFFF7ED),
         body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF7ED),
-      body: SwirlBackground(
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header with profile picture, name, handle, settings
-                _buildProfileHeader(),
-                const SizedBox(height: 24),
-                
-                // Age group tag (if available)
-                if (_ageGroup != null && _ageGroup!.isNotEmpty) ...[
-                  _buildAgeGroupTag(),
-                  const SizedBox(height: 12),
-                ],
-                
-                // Bio (if available)
-                if (_bio != null && _bio!.isNotEmpty) ...[
-                  _buildBio(),
-                  const SizedBox(height: 24),
-                ],
-                
-                // Travel Mode Toggle
-                TravelModeToggle(
-                  isLocal: _isLocalMode,
-                  onModeChanged: _updateTravelMode,
-                ),
-                const SizedBox(height: 24),
-                
-                // Stats Cards
-                const ProfileStatsCards(),
-                const SizedBox(height: 24),
-                
-                // Favorite Vibes
-                FavoriteVibesCard(
-                  selectedVibes: _selectedVibes,
-                  onEditTap: () => _navigateToEditVibes(),
-                ),
-                const SizedBox(height: 24),
-                
-                // Mood Journey
-                _buildMoodJourneyCard(),
-                const SizedBox(height: 24),
-                
-                // Travel Globe
-                _buildTravelGlobeCard(),
-                const SizedBox(height: 24),
-                
-                // Preferences
-                _buildPreferencesCard(),
-                const SizedBox(height: 24),
-                
-                // Action Buttons
-                _buildActionButtons(),
-              ],
-            ),
+      ),
+      error: (_, __) => Scaffold(
+        backgroundColor: const Color(0xFFFFF7ED),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const SizedBox(height: 16),
+              Text(l10n.profileErrorLoad, style: GoogleFonts.poppins()),
+              TextButton(
+                onPressed: () => ref.read(currentUserProfileProvider.notifier).refresh(),
+                child: Text(l10n.profileRetry),
+              ),
+            ],
           ),
         ),
       ),
+      data: (CurrentUserProfile? profile) {
+        if (profile == null) {
+          return const Scaffold(
+            backgroundColor: Color(0xFFFFF7ED),
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return Scaffold(
+          backgroundColor: const Color(0xFFFFF7ED),
+          body: SwirlBackground(
+            child: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildProfileHeader(context, profile),
+                    const SizedBox(height: 24),
+                    if (profile.ageGroup != null && profile.ageGroup!.isNotEmpty) ...[
+                      _buildAgeGroupTag(profile.ageGroup!),
+                      const SizedBox(height: 12),
+                    ],
+                    if (profile.bio != null && profile.bio!.isNotEmpty) ...[
+                      _buildBio(profile.bio!),
+                      const SizedBox(height: 24),
+                    ],
+                    TravelModeToggle(
+                      isLocal: profile.isLocalMode,
+                      onModeChanged: _updateTravelMode,
+                    ),
+                    const SizedBox(height: 24),
+                    const ProfileStatsCards(),
+                    const SizedBox(height: 24),
+                    FavoriteVibesCard(
+                      selectedVibes: profile.selectedMoods,
+                      onEditTap: () => _navigateToEditVibes(profile.selectedMoods),
+                    ),
+                    const SizedBox(height: 24),
+                    _buildMoodJourneyCard(context),
+                    const SizedBox(height: 24),
+                    _buildTravelGlobeCard(context),
+                    const SizedBox(height: 24),
+                    _buildPreferencesCard(context, profile),
+                    const SizedBox(height: 24),
+                    _buildActionButtons(context),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(BuildContext context, CurrentUserProfile profile) {
+    final l10n = AppLocalizations.of(context)!;
+    final avatarUrl = profile.avatarUrl;
+    final userName = profile.fullName ?? l10n.profileFallbackUser;
+    final username = profile.username;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Profile Picture with edit button
         GestureDetector(
-          onTap: _changeProfilePicture,
+          onTap: () => context.push('/profile/edit'),
           child: Stack(
             children: [
               Container(
@@ -282,124 +185,82 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 height: 80,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFF5BB32A), // Green border
-                    width: 3,
-                  ),
+                  border: Border.all(color: const Color(0xFF5BB32A), width: 3),
                 ),
                 child: ClipOval(
-                  child: _avatarUrl != null && _avatarUrl!.isNotEmpty
+                  child: (avatarUrl != null && avatarUrl.isNotEmpty)
                       ? Image.network(
-                          _avatarUrl!,
+                          avatarUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => _buildAvatarPlaceholder(),
+                          errorBuilder: (_, __, ___) => _buildAvatarPlaceholder(userName, username),
                         )
-                      : _buildAvatarPlaceholder(),
+                      : _buildAvatarPlaceholder(userName, username),
                 ),
               ),
-              // Camera icon overlay
               Positioned(
                 bottom: 0,
                 right: 0,
                 child: Container(
                   width: 28,
                   height: 28,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF5BB32A),
-                    shape: BoxShape.circle,
-                  ),
+                  decoration: const BoxDecoration(color: Color(0xFF5BB32A), shape: BoxShape.circle),
                   child: _isUploadingImage
                       ? const Padding(
                           padding: EdgeInsets.all(6),
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
                         )
-                      : const Icon(
-                          Icons.camera_alt,
-                          color: Colors.white,
-                          size: 16,
-                        ),
+                      : const Icon(Icons.camera_alt, color: Colors.white, size: 16),
                 ),
               ),
             ],
           ),
         ),
         const SizedBox(width: 16),
-        
-        // Name and Handle
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                _userName ?? 'User',
-                style: GoogleFonts.poppins(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                ),
+                userName,
+                style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.grey[800]),
               ),
-              if (_username != null) ...[
+              if (username != null && username.isNotEmpty) ...[
                 const SizedBox(height: 4),
-                Text(
-                  '@$_username',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                ),
+                Text('@$username', style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600])),
               ],
             ],
           ),
         ),
-        
-        // Settings Icon (only one)
         GestureDetector(
           onTap: () => context.push('/settings'),
           child: Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.settings,
-              color: Colors.grey[700],
-              size: 22,
-            ),
+            decoration: BoxDecoration(color: Colors.grey[200], shape: BoxShape.circle),
+            child: Icon(Icons.settings, color: Colors.grey[700], size: 22),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildAvatarPlaceholder() {
-    final initial = (_userName?.isNotEmpty == true 
-        ? _userName!.substring(0, 1).toUpperCase()
-        : (_username?.isNotEmpty == true 
-            ? _username!.substring(0, 1).toUpperCase()
-            : '?'));
-    
+  Widget _buildAvatarPlaceholder(String? userName, String? username) {
+    final initial = (userName?.isNotEmpty == true
+        ? userName!.substring(0, 1).toUpperCase()
+        : (username?.isNotEmpty == true ? username!.substring(0, 1).toUpperCase() : '?'));
     return Container(
       color: Colors.grey[200],
       child: Center(
         child: Text(
           initial,
-          style: GoogleFonts.poppins(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey[600],
-          ),
+          style: GoogleFonts.poppins(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.grey[600]),
         ),
       ),
     );
   }
 
-  Widget _buildAgeGroupTag() {
-    final formattedAge = _formatAgeGroup(_ageGroup);
+  Widget _buildAgeGroupTag(String ageGroup) {
+    final formattedAge = _formatAgeGroup(ageGroup);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -428,58 +289,48 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _buildBio() {
+  Widget _buildBio(String bio) {
     return Text(
-      _bio!,
-      style: GoogleFonts.poppins(
-        fontSize: 15,
-        color: Colors.grey[700],
-        height: 1.4,
-      ),
+      bio,
+      style: GoogleFonts.poppins(fontSize: 15, color: Colors.grey[700], height: 1.4),
     );
   }
 
-  Widget _buildMoodJourneyCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-            spreadRadius: -2,
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Text(
-            'Your Mood Journey',
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+  Widget _buildMoodJourneyCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return GestureDetector(
+      onTap: () => context.push('/moods/history'),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 24, offset: const Offset(0, 8), spreadRadius: 0),
+            BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 12, offset: const Offset(0, 4), spreadRadius: -2),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l10n.profileMoodJourneyTitle, style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  Text(l10n.profileMoodJourneySubtitle, style: GoogleFonts.poppins(fontSize: 14)),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Start checking in to see your mood history!',
-            style: GoogleFonts.poppins(fontSize: 14),
-          ),
-        ],
+            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildTravelGlobeCard() {
+  Widget _buildTravelGlobeCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: () => context.push('/profile/globe'),
       child: Container(
@@ -530,7 +381,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Your Travel Globe',
+                    l10n.profileTravelGlobeTitle,
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -539,7 +390,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Explore your travel journey',
+                    l10n.profileTravelGlobeSubtitle,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: Colors.white70,
@@ -559,25 +410,20 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _buildPreferencesCard() {
+  Widget _buildPreferencesCard(BuildContext context, CurrentUserProfile profile) {
+    final l10n = AppLocalizations.of(context)!;
+    final hasAny = (profile.budgetLevel != null && profile.budgetLevel!.isNotEmpty) ||
+        (profile.socialVibe != null && profile.socialVibe!.isNotEmpty) ||
+        profile.dietaryRestrictions.isNotEmpty;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-            spreadRadius: -2,
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 24, offset: const Offset(0, 8), spreadRadius: 0),
+          BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 12, offset: const Offset(0, 4), spreadRadius: -2),
         ],
       ),
       child: Column(
@@ -585,72 +431,41 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Your Preferences',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text(l10n.profilePreferencesTitle, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
               GestureDetector(
                 onTap: () async {
                   await context.push('/preferences');
-                  if (mounted) {
-                    _loadUserData();
-                  }
+                  if (mounted) ref.read(currentUserProfileProvider.notifier).refresh();
                 },
                 child: Row(
                   children: [
                     const Icon(Icons.edit, size: 16, color: Color(0xFF4CAF50)),
                     const SizedBox(width: 4),
-                    Text(
-                      'Edit All',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF4CAF50),
-                      ),
-                    ),
+                    Text(l10n.profilePreferencesEditAll, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF4CAF50))),
                   ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          if (_ageGroup != null && _ageGroup!.isNotEmpty) ...[
-            _buildPrefButton('Age Group', _formatAgeGroup(_ageGroup), const Color(0xFF4CAF50)),
+          if (profile.budgetLevel != null && profile.budgetLevel!.isNotEmpty) ...[
+            _buildPrefButton(l10n.profilePreferencesBudgetStyle, _formatBudget(l10n, profile.budgetLevel), const Color(0xFFFFB74D)),
             const SizedBox(height: 12),
           ],
-          if (_budgetLevel != null && _budgetLevel!.isNotEmpty) ...[
-            _buildPrefButton('Budget Style', _formatBudget(_budgetLevel), const Color(0xFFFFB74D)),
+          if (profile.socialVibe != null && profile.socialVibe!.isNotEmpty) ...[
+            _buildPrefButton(l10n.profilePreferencesSocialVibe, _formatSocialVibe(l10n, profile.socialVibe), const Color(0xFFEF5350)),
             const SizedBox(height: 12),
           ],
-          if (_socialVibe != null && _socialVibe!.isNotEmpty) ...[
-            _buildPrefButton('Social Vibe', _formatSocialVibe(_socialVibe), const Color(0xFFEF5350)),
+          if (profile.dietaryRestrictions.isNotEmpty) ...[
+            _buildPrefButton(l10n.profilePreferencesFoodPreferences, _formatFoodPreferences(profile.dietaryRestrictions), const Color(0xFFF97316), endColor: const Color(0xFFEC4899)),
             const SizedBox(height: 12),
           ],
-          if (_dietaryRestrictions.isNotEmpty) ...[
-            _buildPrefButton(
-              'Food Preferences',
-              _formatFoodPreferences(_dietaryRestrictions),
-              const Color(0xFFF97316),
-              endColor: const Color(0xFFEC4899),
-            ),
-            const SizedBox(height: 12),
-          ],
-          if ((_ageGroup == null || _ageGroup!.isEmpty) &&
-              (_budgetLevel == null || _budgetLevel!.isEmpty) &&
-              (_socialVibe == null || _socialVibe!.isEmpty) &&
-              _dietaryRestrictions.isEmpty)
+          if (!hasAny)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Text(
-                'Tap "Edit All" to set your preferences',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                  fontStyle: FontStyle.italic,
-                ),
+                l10n.profilePreferencesEmptyHint,
+                style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600], fontStyle: FontStyle.italic),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -702,33 +517,34 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  void _navigateToEditVibes() async {
+  void _navigateToEditVibes(List<String> initialVibes) async {
     await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => EditFavoriteVibesScreen(
-          initialVibes: _selectedVibes,
+          initialVibes: initialVibes,
           onSave: _handleVibesUpdated,
         ),
       ),
     );
-    _loadUserData();
+    ref.read(currentUserProfileProvider.notifier).refresh();
   }
 
   String _formatAgeGroup(String? ageGroup) {
+    final l10n = AppLocalizations.of(context)!;
     if (ageGroup == null || ageGroup.isEmpty) return '';
     
-    // Format to "20s Adventurer" style
+    // Format to localized "20s Adventurer" style
     if (ageGroup.contains('18-24') || ageGroup.contains('18') || ageGroup.contains('20')) {
-      return '20s Adventurer';
+      return l10n.profileAgeGroup20s;
     } else if (ageGroup.contains('25-34') || ageGroup.contains('25') || ageGroup.contains('30')) {
-      return '30s Adventurer';
+      return l10n.profileAgeGroup30s;
     } else if (ageGroup.contains('35-44') || ageGroup.contains('35') || ageGroup.contains('40')) {
-      return '40s Adventurer';
+      return l10n.profileAgeGroup40s;
     } else if (ageGroup.contains('45-54') || ageGroup.contains('45') || ageGroup.contains('50')) {
-      return '50s Adventurer';
+      return l10n.profileAgeGroup50s;
     } else if (ageGroup.contains('55+') || ageGroup.contains('55')) {
-      return '55+ Adventurer';
+      return l10n.profileAgeGroup55Plus;
     }
     
     // If it already has "Adventurer" or similar, return as is
@@ -742,31 +558,31 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return '$ageGroup Adventurer';
   }
 
-  String _formatBudget(String? budget) {
+  String _formatBudget(AppLocalizations l10n, String? budget) {
     if (budget == null || budget.isEmpty) return '';
     
     final budgetLower = budget.toLowerCase();
     if (budgetLower.contains('low') || budgetLower.contains('budget') || budget == '\$') {
-      return '\$ Budget';
+      return l10n.profileBudgetLow;
     }
     if (budgetLower.contains('mid') || budgetLower.contains('moderate') || budget == '\$\$') {
-      return '\$\$ Moderate';
+      return l10n.profileBudgetMid;
     }
     if (budgetLower.contains('high') || budgetLower.contains('luxury') || budget == '\$\$\$' || budget == '\$\$\$\$') {
-      return '\$\$\$ Luxury';
+      return l10n.profileBudgetHigh;
     }
     return budget;
   }
 
-  String _formatSocialVibe(String? vibe) {
+  String _formatSocialVibe(AppLocalizations l10n, String? vibe) {
     if (vibe == null || vibe.isEmpty) return '';
     
     final vibeLower = vibe.toLowerCase();
-    if (vibeLower == 'solo' || vibeLower == 'solo-friendly') return 'Solo';
-    if (vibeLower == 'couple') return 'Couple';
-    if (vibeLower == 'group' || vibeLower == 'small-group') return 'Group';
-    if (vibeLower == 'mix' || vibeLower == 'mixed') return 'Mix';
-    if (vibeLower == 'social' || vibeLower == 'social-scene') return 'Social';
+    if (vibeLower == 'solo' || vibeLower == 'solo-friendly') return l10n.profileSocialSolo;
+    if (vibeLower == 'couple') return l10n.profileSocialCouple;
+    if (vibeLower == 'group' || vibeLower == 'small-group') return l10n.profileSocialGroup;
+    if (vibeLower == 'mix' || vibeLower == 'mixed') return l10n.profileSocialMix;
+    if (vibeLower == 'social' || vibeLower == 'social-scene') return l10n.profileSocialSocial;
     
     return vibe.split('-').map((word) => 
       word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1)
@@ -782,7 +598,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return '${restrictions.first} +${restrictions.length - 1}';
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
@@ -809,7 +626,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               onPressed: () => context.push('/profile/edit'),
               icon: const Icon(Icons.edit, color: Colors.white, size: 20),
               label: Text(
-                'Edit',
+                l10n.profileActionEdit,
                 style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -852,7 +669,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               onPressed: () => context.push('/share-profile'),
               icon: const Icon(Icons.share, color: Colors.white, size: 20),
               label: Text(
-                'Share',
+                l10n.profileActionShare,
                 style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,

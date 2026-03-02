@@ -123,21 +123,9 @@ final cachedActivitySuggestionsProvider = FutureProvider<List<Map<String, dynami
     }
   }).where((activity) => activity.isNotEmpty).toList();
   
-  // ✅ TEMPORARY FIX: Disabled scheduled activities loading to stop infinite loop
-  // The scheduled activities feature was causing Riverpod dependency cycle errors
-  // TODO: Implement scheduled activities loading in a separate provider
-  debugPrint('📦 My Day Provider: Returning ${cachedActivities.length} cached activities (scheduled activities disabled)');
-  
-  // Return only cached activities for now
+  // Return only cached activities (scheduled activities loading disabled to avoid rebuild loops).
   final allActivities = cachedActivities;
-  
-  // If no activities at all, return empty list (no fake activities)
-  // The UI will show an empty state instead
-  if (allActivities.isEmpty) {
-    debugPrint('📭 My Day Provider: No activities found - returning empty list for empty state');
-    return [];
-  }
-  
+  if (allActivities.isEmpty) return [];
   return allActivities;
 });
 

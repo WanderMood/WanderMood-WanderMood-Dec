@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/domain/models/user_preferences.dart';
 import 'package:wandermood/features/settings/presentation/providers/user_preferences_provider.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -21,6 +22,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SwirlBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -28,7 +30,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           backgroundColor: Colors.transparent,
         elevation: 0,
           title: Text(
-            'App Settings',
+            l10n.appSettings,
             style: GoogleFonts.museoModerno(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -47,12 +49,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionHeader('General'),
+                  _buildSectionHeader(l10n.settingsSectionGeneral),
                   
                   // Notifications
                   _buildSwitchTile(
-                    title: 'Notifications',
-                    subtitle: 'Enable push notifications',
+                    title: l10n.settingsNotificationsTitle,
+                    subtitle: l10n.settingsNotificationsSubtitle,
                     value: _notificationsEnabled,
           onChanged: (value) {
                       setState(() {
@@ -63,8 +65,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   
                   // Location Tracking
                   _buildSwitchTile(
-                    title: 'Location Tracking',
-                    subtitle: 'Allow app to track your location',
+                    title: l10n.settingsLocationTrackingTitle,
+                    subtitle: l10n.settingsLocationTrackingSubtitle,
                     value: _locationTrackingEnabled,
           onChanged: (value) {
                       setState(() {
@@ -75,8 +77,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   
                   // Dark Mode
                   _buildSwitchTile(
-                    title: 'Dark Mode',
-                    subtitle: 'Use dark theme throughout the app',
+                    title: l10n.settingsDarkModeTitle,
+                    subtitle: l10n.settingsDarkModeSubtitle,
                     value: _darkModeEnabled,
           onChanged: (value) {
                       setState(() {
@@ -86,12 +88,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   
                   const SizedBox(height: 16),
-                  _buildSectionHeader('Discovery'),
+                  _buildSectionHeader(l10n.settingsSectionDiscovery),
                   
                   // Distance Radius Slider
                   ListTile(
                     title: Text(
-                      'Discovery Radius',
+                      l10n.settingsDiscoveryRadiusTitle,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -101,7 +103,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Show places within ${_distanceRadius.toStringAsFixed(1)} km',
+                          l10n.settingsDiscoveryRadiusSubtitle(
+                            _distanceRadius.toStringAsFixed(1),
+                          ),
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -124,20 +128,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   
                   const SizedBox(height: 16),
-                  _buildSectionHeader('Data & Privacy'),
+                  _buildSectionHeader(l10n.settingsSectionDataPrivacy),
                   
                   // Clear Cache
         ListTile(
                     leading: const Icon(Icons.cleaning_services_outlined, color: Color(0xFF12B347)),
                     title: Text(
-                      'Clear App Cache',
+                      l10n.settingsClearCacheTitle,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     subtitle: Text(
-                      'Free up space by removing cached images and data',
+                      l10n.settingsClearCacheSubtitle,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -150,14 +154,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ListTile(
                     leading: const Icon(Icons.privacy_tip_outlined, color: Color(0xFF12B347)),
                     title: Text(
-                      'Privacy Policy',
+                      l10n.settingsPrivacyPolicyTitle,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     subtitle: Text(
-                      'Read our privacy policy',
+                      l10n.settingsPrivacyPolicySubtitle,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -170,14 +174,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ListTile(
                     leading: const Icon(Icons.gavel_outlined, color: Color(0xFF12B347)),
                     title: Text(
-                      'Terms of Service',
+                      l10n.settingsTermsOfServiceTitle,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     subtitle: Text(
-                      'Read our terms of service',
+                      l10n.settingsTermsOfServiceSubtitle,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -202,7 +206,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       ),
                       child: Text(
-                        'Save Settings',
+                        l10n.settingsSaveButton,
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -270,18 +274,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   
   // Show confirmation dialog for clearing cache
   void _showClearCacheDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          'Clear Cache?',
+          l10n.settingsClearCacheDialogTitle,
           style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
         ),
         content: Text(
-          'This will remove all cached data. Your saved places and settings will not be affected.',
+          l10n.settingsClearCacheDialogBody,
           style: GoogleFonts.poppins(
             fontSize: 14,
           ),
@@ -290,7 +295,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'Cancel',
+              l10n.settingsDialogCancel,
               style: GoogleFonts.poppins(
                 color: Colors.grey[700],
                 ),
@@ -301,8 +306,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               // Clear cache logic here
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Cache cleared successfully'),
+                SnackBar(
+                  content: Text(l10n.settingsCacheCleared),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -311,7 +316,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               backgroundColor: const Color(0xFF12B347),
             ),
             child: Text(
-              'Clear',
+              l10n.settingsDialogConfirmClear,
               style: GoogleFonts.poppins(
                 color: Colors.white,
               ),
@@ -324,10 +329,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   
   // Save settings method
   void _saveSettings() {
+    final l10n = AppLocalizations.of(context)!;
     // Save settings logic here
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Settings saved'),
+      SnackBar(
+        content: Text(l10n.settingsSaved),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -335,6 +341,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   /// Open Privacy Policy in external browser
   Future<void> _openPrivacyPolicy() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final url = Uri.parse('https://wandermood.app/privacy-policy');
       if (await canLaunchUrl(url)) {
@@ -342,9 +349,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Unable to open Privacy Policy. Please check your internet connection.'),
-              duration: Duration(seconds: 3),
+            SnackBar(
+              content: Text(l10n.settingsOpenPrivacyNetworkError),
+              duration: const Duration(seconds: 3),
             ),
           );
         }
@@ -353,7 +360,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error opening Privacy Policy: $e'),
+            content: Text(l10n.settingsOpenPrivacyError(e.toString())),
             duration: const Duration(seconds: 3),
           ),
         );
@@ -363,6 +370,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   /// Open Terms of Service in external browser
   Future<void> _openTermsOfService() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final url = Uri.parse('https://wandermood.app/terms-of-service');
       if (await canLaunchUrl(url)) {
@@ -370,9 +378,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Unable to open Terms of Service. Please check your internet connection.'),
-              duration: Duration(seconds: 3),
+            SnackBar(
+              content: Text(l10n.settingsOpenTermsNetworkError),
+              duration: const Duration(seconds: 3),
             ),
           );
         }
@@ -381,7 +389,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error opening Terms of Service: $e'),
+            content: Text(l10n.settingsOpenTermsError(e.toString())),
             duration: const Duration(seconds: 3),
           ),
         );

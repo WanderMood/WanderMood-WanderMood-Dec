@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../../../features/plans/data/services/scheduled_activity_service.dart';
-import 'default_activities_provider.dart';
 
 // Enum for activity status
 enum ActivityStatus {
@@ -83,19 +82,12 @@ final cachedActivitySuggestionsProvider = FutureProvider<List<Map<String, dynami
     }
   }).where((activity) => activity.isNotEmpty).toList();
   
-  // ✅ TEMPORARY FIX: Disabled scheduled activities loading to stop infinite loop
-  // The scheduled activities feature was causing Riverpod dependency cycle errors
-  // TODO: Implement scheduled activities loading in a separate provider
-  debugPrint('📦 My Day Provider: Returning ${cachedActivities.length} cached activities (scheduled activities disabled)');
-  
-  // Return only cached activities for now
+  // Return only cached activities. Do NOT ref.watch(defaultActivitiesProvider) here:
+  // that dependency caused repeated rebuilds (loop) with autoDispose FutureProvider.
   final allActivities = cachedActivities;
-  
-  // If no activities at all, get default activities
   if (allActivities.isEmpty) {
-    return ref.watch(defaultActivitiesProvider).value ?? [];
+    return [];
   }
-  
   return allActivities;
 });
 

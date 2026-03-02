@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import '../providers/settings_providers.dart';
 import '../widgets/settings_screen_template.dart';
 
@@ -71,6 +72,7 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
 
   Future<void> _exportData() async {
     setState(() => _isExporting = true);
+    final l10n = AppLocalizations.of(context)!;
     try {
       final supabase = Supabase.instance.client;
       final user = supabase.auth.currentUser;
@@ -86,12 +88,12 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
       final tempDir = await getTemporaryDirectory();
       final file = File('${tempDir.path}/wandermood_data_export.json');
       await file.writeAsString(jsonString);
-      await Share.shareXFiles([XFile(file.path)], text: 'My WanderMood Data Export');
+      await Share.shareXFiles([XFile(file.path)], text: l10n.dataStorageExportFileTitle);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Data exported successfully'),
+          SnackBar(
+            content: Text(l10n.dataStorageExportSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -100,7 +102,7 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Export failed: $e'),
+            content: Text(l10n.dataStorageExportFailed(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -122,17 +124,18 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
       await _calculateStorageSize();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cache cleared successfully'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.dataStorageCacheCleared),
             backgroundColor: Colors.green,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to clear cache: $e'),
+            content: Text(l10n.dataStorageCacheFailed(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -146,8 +149,9 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SettingsScreenTemplate(
-      title: 'Data & Storage',
+      title: l10n.dataStorageTitle,
       onBack: () => context.pop(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,7 +173,7 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Storage Used',
+                        l10n.dataStorageStorageUsedLabel,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -199,23 +203,16 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
           const SizedBox(height: 16),
           _buildSettingCard(
             icon: Icons.download,
-            title: 'Export My Data',
-            subtitle: 'Download all your data (GDPR)',
+            title: l10n.dataStorageExportTitle,
+            subtitle: l10n.dataStorageExportSubtitle,
             onTap: _isExporting ? null : _exportData,
           ),
           const SizedBox(height: 16),
           _buildSettingCard(
             icon: Icons.delete_outline,
-            title: 'Clear Cache',
-            subtitle: 'Free up 12.3 MB',
+            title: l10n.dataStorageClearCacheTitle,
+            subtitle: l10n.dataStorageClearCacheSubtitle,
             onTap: _isClearing ? null : _clearCache,
-          ),
-          const SizedBox(height: 16),
-          _buildSettingCard(
-            icon: Icons.download,
-            title: 'Download History',
-            subtitle: 'View past exports',
-            onTap: () {},
           ),
         ],
       ),

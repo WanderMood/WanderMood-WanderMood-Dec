@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import '../../domain/providers/profile_provider.dart';
 import '../widgets/settings_screen_template.dart';
 
@@ -62,14 +63,15 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SettingsScreenTemplate(
-      title: 'Notifications',
+      title: l10n.settingsNotificationsTitle,
       onBack: () => context.pop(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Notification Methods',
+            l10n.notificationsMethodsTitle,
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -78,8 +80,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           ),
           const SizedBox(height: 12),
           _buildToggleOption(
-            label: 'Push Notifications',
-            subtitle: 'Receive push notifications on this device',
+            label: l10n.notificationsPushTitle,
+            subtitle: l10n.notificationsPushSubtitle,
             checked: _pushNotifications,
             onChange: () {
               setState(() => _pushNotifications = !_pushNotifications);
@@ -88,8 +90,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           ),
           const SizedBox(height: 12),
           _buildToggleOption(
-            label: 'Email Notifications',
-            subtitle: 'Receive updates via email',
+            label: l10n.notificationsEmailTitle,
+            subtitle: l10n.notificationsEmailSubtitle,
             checked: _emailNotifications,
             onChange: () {
               setState(() => _emailNotifications = !_emailNotifications);
@@ -98,8 +100,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           ),
           const SizedBox(height: 12),
           _buildToggleOption(
-            label: 'In-App Notifications',
-            subtitle: 'See notifications inside the app',
+            label: l10n.notificationsInAppTitle,
+            subtitle: l10n.notificationsInAppSubtitle,
             checked: _inAppNotifications,
             onChange: () {
               setState(() => _inAppNotifications = !_inAppNotifications);
@@ -108,7 +110,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            'What to Notify',
+            l10n.notificationsWhatToNotifyTitle,
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -117,8 +119,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           ),
           const SizedBox(height: 12),
           _buildToggleOption(
-            label: 'New Activities',
-            subtitle: 'When new activities match your vibe',
+            label: l10n.notificationsNewActivitiesTitle,
+            subtitle: l10n.notificationsNewActivitiesSubtitle,
             checked: _newActivities,
             onChange: () {
               setState(() => _newActivities = !_newActivities);
@@ -127,8 +129,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           ),
           const SizedBox(height: 12),
           _buildToggleOption(
-            label: 'Nearby Events',
-            subtitle: 'Events happening around you',
+            label: l10n.notificationsNearbyEventsTitle,
+            subtitle: l10n.notificationsNearbyEventsSubtitle,
             checked: _nearbyEvents,
             onChange: () {
               setState(() => _nearbyEvents = !_nearbyEvents);
@@ -137,8 +139,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           ),
           const SizedBox(height: 12),
           _buildToggleOption(
-            label: 'Friend Activity',
-            subtitle: 'When friends share or like something',
+            label: l10n.notificationsFriendActivityTitle,
+            subtitle: l10n.notificationsFriendActivitySubtitle,
             checked: _friendActivity,
             onChange: () {
               setState(() => _friendActivity = !_friendActivity);

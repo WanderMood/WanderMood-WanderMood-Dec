@@ -28,7 +28,9 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
     profileAsync.whenData((profile) {
       if (mounted && profile != null) {
         setState(() {
-          _selectedVisibility = profile.isPublic ? 'public' : 'private';
+          _selectedVisibility = profile.profileVisibility;
+          _showEmail = profile.showEmail;
+          _showAge = profile.showAge;
         });
       }
     });
@@ -38,7 +40,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
     setState(() => _selectedVisibility = value);
     try {
       await ref.read(profileProvider.notifier).updateProfile(
-        isPublic: value == 'public',
+        profileVisibility: value,
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -50,6 +52,58 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
       }
     } catch (e) {
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _updateShowEmail(bool value) async {
+    setState(() => _showEmail = value);
+    try {
+      await ref.read(profileProvider.notifier).updateProfile(showEmail: value);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(value ? 'Email will be visible to others' : 'Email is now hidden'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _showEmail = !value);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _updateShowAge(bool value) async {
+    setState(() => _showAge = value);
+    try {
+      await ref.read(profileProvider.notifier).updateProfile(showAge: value);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(value ? 'Age will be visible to others' : 'Age is now hidden'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _showAge = !value);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
@@ -113,13 +167,13 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
           _buildToggleOption(
             label: 'Show Email Address',
             checked: _showEmail,
-            onChange: () => setState(() => _showEmail = !_showEmail),
+            onChange: () => _updateShowEmail(!_showEmail),
           ),
           const SizedBox(height: 12),
           _buildToggleOption(
             label: 'Show Age',
             checked: _showAge,
-            onChange: () => setState(() => _showAge = !_showAge),
+            onChange: () => _updateShowAge(!_showAge),
           ),
         ],
       ),

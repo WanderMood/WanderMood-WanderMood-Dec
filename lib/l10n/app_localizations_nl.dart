@@ -838,4 +838,986 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get signupDefaultCity => 'Rotterdam';
+
+  @override
+  String get profileSnackAvatarUpdated => 'Profielafbeelding bijgewerkt!';
+
+  @override
+  String profileSnackAvatarFailed(String error) {
+    return 'Foto bijwerken mislukt: $error';
+  }
+
+  @override
+  String get profileErrorLoad => 'Profiel laden mislukt';
+
+  @override
+  String get profileRetry => 'Opnieuw';
+
+  @override
+  String get profileFallbackUser => 'Gebruiker';
+
+  @override
+  String get profileStatsTitle => 'Jouw statistieken';
+
+  @override
+  String get profileStatsCheckinsTitle => 'Check-ins';
+
+  @override
+  String get profileStatsPlacesTitle => 'Plekken';
+
+  @override
+  String get profileStatsPlacesSubtitle => 'Tik om te ontdekken';
+
+  @override
+  String get profileStatsTopMoodTitle => 'Top stemming';
+
+  @override
+  String get profileFavoriteVibesTitle => 'Jouw favoriete vibes';
+
+  @override
+  String get profileFavoriteVibesEdit => 'Bewerken';
+
+  @override
+  String get profileFavoriteVibesAdd => '+ Vibe toevoegen';
+
+  @override
+  String get profileMoodJourneyTitle => 'Jouw stemmingsreis';
+
+  @override
+  String get profileMoodJourneySubtitle => 'Bekijk je stemmingsgeschiedenis';
+
+  @override
+  String get profileTravelGlobeTitle => 'Jouw reisglobe';
+
+  @override
+  String get profileTravelGlobeSubtitle => 'Ontdek je reisverhaal';
+
+  @override
+  String get profilePreferencesTitle => 'Jouw voorkeuren';
+
+  @override
+  String get profilePreferencesEditAll => 'Alles bewerken';
+
+  @override
+  String get profilePreferencesBudgetStyle => 'Budgetstijl';
+
+  @override
+  String get profilePreferencesSocialVibe => 'Sociale vibe';
+
+  @override
+  String get profilePreferencesFoodPreferences => 'Voedselvoorkeuren';
+
+  @override
+  String get profilePreferencesEmptyHint =>
+      'Tik op \"Alles bewerken\" om je voorkeuren in te stellen';
+
+  @override
+  String get profileActionEdit => 'Bewerken';
+
+  @override
+  String get profileActionShare => 'Delen';
+
+  @override
+  String get profileAgeGroup20s => '20er avonturier';
+
+  @override
+  String get profileAgeGroup30s => '30er avonturier';
+
+  @override
+  String get profileAgeGroup40s => '40er avonturier';
+
+  @override
+  String get profileAgeGroup50s => '50er avonturier';
+
+  @override
+  String get profileAgeGroup55Plus => '55+ avonturier';
+
+  @override
+  String get profileBudgetLow => '\$ Budget';
+
+  @override
+  String get profileBudgetMid => '\$\$ Gemiddeld';
+
+  @override
+  String get profileBudgetHigh => '\$\$\$ Luxe';
+
+  @override
+  String get profileSocialSolo => 'Solo';
+
+  @override
+  String get profileSocialCouple => 'Stel';
+
+  @override
+  String get profileSocialGroup => 'Groep';
+
+  @override
+  String get profileSocialMix => 'Mix';
+
+  @override
+  String get profileSocialSocial => 'Sociaal';
+
+  @override
+  String get profileEditTitle => 'Edit Profile';
+
+  @override
+  String get profileEditProfilePhoto => 'Profile Photo';
+
+  @override
+  String get profileEditProfilePhotoTap => 'Tap to change';
+
+  @override
+  String get profileEditNameLabel => 'Full Name';
+
+  @override
+  String get profileEditUsernameLabel => 'Username';
+
+  @override
+  String get profileEditEmailLabel => 'Email';
+
+  @override
+  String get profileEditBioLabel => 'Bio';
+
+  @override
+  String get profileEditSelectDate => 'Select date';
+
+  @override
+  String get profileEditUsernameHint => 'username';
+
+  @override
+  String get profileEditEmailHint => 'email@example.com';
+
+  @override
+  String get profileEditNameHint => 'Enter your name';
+
+  @override
+  String get profileEditBioHint => 'Tell us about yourself...';
+
+  @override
+  String get profileEditLocationLabel => 'Location';
+
+  @override
+  String get profileEditLocationHint => 'City, Country';
+
+  @override
+  String get profileEditBirthdayLabel => 'Birthday';
+
+  @override
+  String get profileEditSave => 'Save';
+
+  @override
+  String get profileEditNoChanges => 'No Changes';
+
+  @override
+  String get profileEditFavoriteVibesTitle => 'Favoriete vibes';
+
+  @override
+  String get profileEditFavoriteVibesEdit => 'Bewerken';
+
+  @override
+  String get profileEditFavoriteVibesSubtitle =>
+      'Kies je favoriete vibes om je aanbevelingen te personaliseren';
+
+  @override
+  String get profileEditPhotoTake => 'Take Photo';
+
+  @override
+  String get profileEditPhotoChoose => 'Choose from Gallery';
+
+  @override
+  String get profileEditPhotoRemove => 'Remove Photo';
+
+  @override
+  String get profileEditVibesTitle => 'Favoriete vibes bewerken';
+
+  @override
+  String get profileEditVibesDone => 'Klaar';
+
+  @override
+  String get profileEditUpdated => 'Profile updated successfully';
+
+  @override
+  String profileEditUpdateFailed(String error) {
+    return 'Failed to update profile: $error';
+  }
+
+  @override
+  String profileEditErrorLoading(String error) {
+    return 'Error loading profile: $error';
+  }
+
+  @override
+  String get profileVibesUpdated => 'Vibes bijgewerkt! 🎉';
+
+  @override
+  String profileVibesSaveFailed(String error) {
+    return 'Opslaan van vibes mislukt: $error';
+  }
+
+  @override
+  String get profileVibesEditTitle => 'Favoriete vibes bewerken';
+
+  @override
+  String get profileVibesSave => 'Opslaan';
+
+  @override
+  String profileVibesSelectedCount(String count) {
+    return 'Geselecteerd ($count/5)';
+  }
+
+  @override
+  String get profileVibesMaxReached => 'Maximum bereikt';
+
+  @override
+  String get profileVibesChooseTitle => 'Kies je vibes';
+
+  @override
+  String get profileVibesAddMore => 'Meer vibes toevoegen';
+
+  @override
+  String get profileVibesSubtitle =>
+      'Kies tot 5 vibes die bij jou passen. We gebruiken ze om je aanbevelingen te personaliseren.';
+
+  @override
+  String get profileVibesCurrentTitle => 'JE HUIDIGE VIBES';
+
+  @override
+  String get shareProfileTitle => 'Profiel delen';
+
+  @override
+  String shareProfileShareTextMy(String url) {
+    return 'Bekijk mijn profiel op WanderMood! 🧳✨\n\n$url';
+  }
+
+  @override
+  String shareProfileShareTextNamed(String name, String url) {
+    return 'Bekijk het profiel van $name op WanderMood! 🧳✨\n\n$url';
+  }
+
+  @override
+  String get shareProfileMy => 'mijn';
+
+  @override
+  String get shareProfileDefaultUsername => 'reiziger';
+
+  @override
+  String get shareProfileEmailSubject => 'Bekijk mijn WanderMood-profiel';
+
+  @override
+  String shareProfileFailedToShare(String error) {
+    return 'Delen mislukt: $error';
+  }
+
+  @override
+  String get shareProfileDefaultBio =>
+      'Altijd op zoek naar zonsondergangen en goede vibes ✨';
+
+  @override
+  String get shareProfileDayStreak => 'Dagenreeks';
+
+  @override
+  String get shareProfileQRCode => 'QR-code';
+
+  @override
+  String get shareProfileScanToConnect => 'Scan om te verbinden';
+
+  @override
+  String get shareProfileCopyLink => 'Link kopiëren';
+
+  @override
+  String get shareProfileShareAnywhere => 'Deel overal';
+
+  @override
+  String get shareProfileShareVia => 'Deel via';
+
+  @override
+  String get shareProfileInstagram => 'Instagram';
+
+  @override
+  String get shareProfileWhatsApp => 'WhatsApp';
+
+  @override
+  String get shareProfileTwitter => 'Twitter';
+
+  @override
+  String get shareProfileEmail => 'E-mail';
+
+  @override
+  String get shareProfilePublicProfile => 'Openbaar profiel';
+
+  @override
+  String get shareProfileAnyoneCanView => 'Iedereen kan je profiel bekijken';
+
+  @override
+  String shareProfileUpdateFailed(String error) {
+    return 'Bijwerken mislukt: $error';
+  }
+
+  @override
+  String get shareProfileMyQRCode => 'Mijn QR-code';
+
+  @override
+  String get shareProfileHowItWorks => 'Hoe het werkt';
+
+  @override
+  String get shareProfileQRInstructions =>
+      'Vraag iemand om deze code te scannen met de WanderMood-app om direct te verbinden en je profiel te delen!';
+
+  @override
+  String get shareProfileDownloaded => 'Gedownload!';
+
+  @override
+  String get shareProfileSaveQRCode => 'QR-code opslaan';
+
+  @override
+  String shareProfileShareMessage(String url) {
+    return 'Bekijk mijn WanderMood-profiel! $url';
+  }
+
+  @override
+  String get shareProfileShareQRImage => 'QR-afbeelding delen';
+
+  @override
+  String get shareProfileShareLinkTitle => 'Link delen';
+
+  @override
+  String get shareProfileYourProfileLink => 'JE PROFIELLINK';
+
+  @override
+  String get shareProfileLinkCopied => 'Link gekopieerd!';
+
+  @override
+  String get shareProfileQuickShare => 'SNEL DELEN';
+
+  @override
+  String get shareProfileLinkInfo =>
+      'Iedereen met deze link kan je openbare profiel bekijken. Je kunt je privacy-instellingen altijd wijzigen.';
+
+  @override
+  String get drawerYourJourney => 'Your Journey';
+
+  @override
+  String get drawerSettings => 'Settings';
+
+  @override
+  String get drawerAccount => 'Account';
+
+  @override
+  String get drawerMoodHistory => 'Mood History';
+
+  @override
+  String get drawerSavedPlaces => 'Saved Places';
+
+  @override
+  String get drawerMyBookings => 'My Bookings';
+
+  @override
+  String get drawerAppSettings => 'App Settings';
+
+  @override
+  String get drawerNotifications => 'Notifications';
+
+  @override
+  String get drawerLanguage => 'Language';
+
+  @override
+  String get drawerHelpSupport => 'Help & Support';
+
+  @override
+  String get drawerProfile => 'Profile';
+
+  @override
+  String get drawerLogOut => 'Log Out';
+
+  @override
+  String get drawerErrorLoadingProfile => 'Error loading profile';
+
+  @override
+  String drawerErrorSigningOut(String error) {
+    return 'Error signing out: $error';
+  }
+
+  @override
+  String get drawerNewExplorer => 'New Explorer';
+
+  @override
+  String get drawerMasterWanderer => 'Master Wanderer';
+
+  @override
+  String get drawerAdventureExpert => 'Adventure Expert';
+
+  @override
+  String get drawerSeasonedExplorer => 'Seasoned Explorer';
+
+  @override
+  String get drawerTravelEnthusiast => 'Travel Enthusiast';
+
+  @override
+  String drawerDayStreak(String count) {
+    return '$count Day Streak';
+  }
+
+  @override
+  String get profileModeLocal => 'Lokale modus';
+
+  @override
+  String get profileModeTravel => 'Op reis';
+
+  @override
+  String get profileModeWhatDoesThisDo => 'Wat doet dit?';
+
+  @override
+  String get profileModeSwitchToLocal => 'Schakel naar lokale modus';
+
+  @override
+  String get profileModeSwitchToTravel => 'Schakel naar reismodus';
+
+  @override
+  String get profileModeCancel => 'Annuleren';
+
+  @override
+  String get profileModeChangeAnytime => 'Je kunt dit altijd wijzigen';
+
+  @override
+  String get profileModeUpdated => 'Modus bijgewerkt!';
+
+  @override
+  String get profileModeUpdating => 'Je aanbevelingen worden bijgewerkt...';
+
+  @override
+  String get profileModeTravelModesExplained => 'Reismodi uitgelegd';
+
+  @override
+  String get profileModeLocalTitle => 'Lokale modus';
+
+  @override
+  String get profileModeLocalDescription =>
+      'Verborgen pareltjes in je buurt ontdekken';
+
+  @override
+  String get profileModeLocalFeature1 => 'Lokale cafés en verborgen plekjes';
+
+  @override
+  String get profileModeLocalFeature2 => 'Buurtfavorieten';
+
+  @override
+  String get profileModeLocalFeature3 => 'Minder toeristische plekken';
+
+  @override
+  String get profileModeTravelTitle => 'Reismodus';
+
+  @override
+  String get profileModeTravelDescription =>
+      'Ontdek must-see bezienswaardigheden als reiziger';
+
+  @override
+  String get profileModeTravelFeature1 => 'Beroemde bezienswaardigheden';
+
+  @override
+  String get profileModeTravelFeature2 => 'Must-see attracties';
+
+  @override
+  String get profileModeTravelFeature3 => 'Toeristvriendelijke plekken';
+
+  @override
+  String get profileModeLocalExplainer =>
+      'Perfect als je thuis bent of je eigen stad verkent. Ontdek plekken die locals liefhebben!';
+
+  @override
+  String get profileModeLocalExample =>
+      'Bijvoorbeeld: in plaats van de Eiffeltoren zie je de gezellige boulangerie om de hoek waar Parijzenaars echt naartoe gaan.';
+
+  @override
+  String get profileModeTravelExplainer =>
+      'Perfect als je op reis bent of een nieuwe stad bezoekt. Zie alle iconische plekken!';
+
+  @override
+  String get profileModeTravelExample =>
+      'Bijvoorbeeld: in Parijs zie je de Eiffeltoren, het Louvre en de Arc de Triomphe – alle klassiekers!';
+
+  @override
+  String get profileModeSwitchAnytime =>
+      'Wissel wanneer je wilt! Op vakantie? Schakel naar reismodus. Thuis? Schakel naar lokale modus. Je aanbevelingen passen zich direct aan!';
+
+  @override
+  String get profileModeGotIt => 'Begrepen!';
+
+  @override
+  String get profileModeProTip => 'Pro-tip';
+
+  @override
+  String get profileModeLocalGem1 => 'Verborgen buurtpareltjes';
+
+  @override
+  String get profileModeLocalGem2 => 'Lokale cafés en restaurants';
+
+  @override
+  String get profileModeLocalGem3 => 'Minder drukke plekken';
+
+  @override
+  String get profileModeLocalGem4 => 'Authentieke lokale ervaringen';
+
+  @override
+  String get profileModeTravelSpot1 => 'Beroemde bezienswaardigheden';
+
+  @override
+  String get profileModeTravelSpot2 => 'Must-see toeristenplekken';
+
+  @override
+  String get profileModeTravelSpot3 => 'Populaire bestemmingen';
+
+  @override
+  String get profileModeTravelSpot4 => 'Toeristvriendelijke locaties';
+
+  @override
+  String get settingsSectionGeneral => 'General';
+
+  @override
+  String get settingsSectionDiscovery => 'Discovery';
+
+  @override
+  String get settingsSectionDataPrivacy => 'Data & Privacy';
+
+  @override
+  String get settingsNotificationsTitle => 'Notifications';
+
+  @override
+  String get settingsNotificationsSubtitle => 'Enable push notifications';
+
+  @override
+  String get settingsLocationTrackingTitle => 'Location Tracking';
+
+  @override
+  String get settingsLocationTrackingSubtitle =>
+      'Allow app to track your location';
+
+  @override
+  String get settingsDarkModeTitle => 'Dark Mode';
+
+  @override
+  String get settingsDarkModeSubtitle => 'Use dark theme throughout the app';
+
+  @override
+  String get settingsDiscoveryRadiusTitle => 'Discovery Radius';
+
+  @override
+  String settingsDiscoveryRadiusSubtitle(String distance) {
+    return 'Show places within $distance km';
+  }
+
+  @override
+  String get settingsClearCacheTitle => 'Clear App Cache';
+
+  @override
+  String get settingsClearCacheSubtitle =>
+      'Free up space by removing cached images and data';
+
+  @override
+  String get settingsPrivacyPolicyTitle => 'Privacy Policy';
+
+  @override
+  String get settingsPrivacyPolicySubtitle => 'Read our privacy policy';
+
+  @override
+  String get settingsTermsOfServiceTitle => 'Terms of Service';
+
+  @override
+  String get settingsTermsOfServiceSubtitle => 'Read our terms of service';
+
+  @override
+  String get settingsSaveButton => 'Save Settings';
+
+  @override
+  String get settingsClearCacheDialogTitle => 'Clear Cache?';
+
+  @override
+  String get settingsClearCacheDialogBody =>
+      'This will remove all cached data. Your saved places and settings will not be affected.';
+
+  @override
+  String get settingsDialogCancel => 'Cancel';
+
+  @override
+  String get settingsDialogConfirmClear => 'Clear';
+
+  @override
+  String get settingsCacheCleared => 'Cache cleared successfully';
+
+  @override
+  String get settingsSaved => 'Settings saved';
+
+  @override
+  String get settingsHubTitle => 'Instellingen';
+
+  @override
+  String get settingsQuickTipTitle => 'Snelle tip';
+
+  @override
+  String get settingsQuickTipBody =>
+      'Om je profiel of voorkeuren te bewerken, ga terug naar je profielscherm.';
+
+  @override
+  String get settingsSectionPrivacySecurity => 'Privacy & beveiliging';
+
+  @override
+  String get settingsSectionAppSettings => 'App-instellingen';
+
+  @override
+  String get settingsSectionMore => 'Meer';
+
+  @override
+  String get settingsSectionDangerZone => 'Gevarenzone';
+
+  @override
+  String get settingsAccountSecurityTitle => 'Accountbeveiliging';
+
+  @override
+  String get settingsAccountSecuritySubtitle => '2FA';
+
+  @override
+  String get settingsTwoFactorTitle => 'Twee-factorauthenticatie';
+
+  @override
+  String get settingsTwoFactorEnabled => 'Ingeschakeld';
+
+  @override
+  String get settingsTwoFactorNotEnabled => 'Niet ingeschakeld';
+
+  @override
+  String get settingsTwoFactorBadgeRecommended => 'Aanbevolen';
+
+  @override
+  String get settingsActiveSessionsTitle => 'Actieve sessies';
+
+  @override
+  String settingsActiveSessionsSubtitle(String count) {
+    return '$count apparaten';
+  }
+
+  @override
+  String get settingsPrivacyTitle => 'Privacy';
+
+  @override
+  String get settingsPrivacySubtitle => 'Profielzichtbaarheid, data';
+
+  @override
+  String get settingsHubNotificationsSubtitle => 'Push, e-mail, in-app';
+
+  @override
+  String get settingsLocationLabel => 'Location';
+
+  @override
+  String get settingsLocationSubtitle => 'Automatisch bepalen, rechten';
+
+  @override
+  String get settingsLanguageLabel => 'Language';
+
+  @override
+  String get settingsThemeLabel => 'Theme';
+
+  @override
+  String get settingsThemeValueSystem => 'System';
+
+  @override
+  String get settingsAchievementsLabel => 'Achievements';
+
+  @override
+  String settingsAchievementsSubtitle(String count) {
+    return '$count unlocked';
+  }
+
+  @override
+  String get settingsSubscriptionLabel => 'Subscription';
+
+  @override
+  String get settingsSubscriptionSubtitleFree => 'Free Plan';
+
+  @override
+  String get settingsSubscriptionBadgeFree => 'Free';
+
+  @override
+  String get settingsDataStorageLabel => 'Data & Storage';
+
+  @override
+  String get settingsDataStorageSubtitle => 'Export, clear cache';
+
+  @override
+  String get settingsHelpSupportLabel => 'Help & Support';
+
+  @override
+  String get settingsHelpSupportSubtitle => 'FAQ, neem contact op';
+
+  @override
+  String get settingsDangerDeleteAccountLabel => 'Delete Account';
+
+  @override
+  String get settingsDangerDeleteAccountSubtitle =>
+      'Permanently delete your data';
+
+  @override
+  String get settingsDangerSignOutLabel => 'Sign Out';
+
+  @override
+  String get settingsDangerSignOutSubtitle => 'Log out of your account';
+
+  @override
+  String settingsAppVersion(String version) {
+    return 'WanderMood v$version';
+  }
+
+  @override
+  String get settingsAppTagline => 'Made with ❤️ for travelers';
+
+  @override
+  String get settingsSignOutTitle => 'Sign Out';
+
+  @override
+  String get settingsSignOutMessage => 'Are you sure you want to sign out?';
+
+  @override
+  String get settingsSignOutConfirm => 'Sign Out';
+
+  @override
+  String get settingsOpenPrivacyNetworkError =>
+      'Unable to open Privacy Policy. Please check your internet connection.';
+
+  @override
+  String settingsOpenPrivacyError(String error) {
+    return 'Error opening Privacy Policy: $error';
+  }
+
+  @override
+  String get settingsOpenTermsNetworkError =>
+      'Unable to open Terms of Service. Please check your internet connection.';
+
+  @override
+  String settingsOpenTermsError(String error) {
+    return 'Error opening Terms of Service: $error';
+  }
+
+  @override
+  String get notificationsMethodsTitle => 'Meldingsmethoden';
+
+  @override
+  String get notificationsPushTitle => 'Pushmeldingen';
+
+  @override
+  String get notificationsPushSubtitle =>
+      'Ontvang pushmeldingen op dit apparaat';
+
+  @override
+  String get notificationsEmailTitle => 'E-mailmeldingen';
+
+  @override
+  String get notificationsEmailSubtitle => 'Ontvang updates per e-mail';
+
+  @override
+  String get notificationsInAppTitle => 'In-app meldingen';
+
+  @override
+  String get notificationsInAppSubtitle => 'Bekijk meldingen in de app';
+
+  @override
+  String get notificationsWhatToNotifyTitle => 'Wat wil je melden';
+
+  @override
+  String get notificationsNewActivitiesTitle => 'Nieuwe activiteiten';
+
+  @override
+  String get notificationsNewActivitiesSubtitle =>
+      'Wanneer nieuwe activiteiten bij je vibe passen';
+
+  @override
+  String get notificationsNearbyEventsTitle => 'Evenementen in de buurt';
+
+  @override
+  String get notificationsNearbyEventsSubtitle =>
+      'Evenementen die om je heen plaatsvinden';
+
+  @override
+  String get notificationsFriendActivityTitle => 'Vriendenactiviteit';
+
+  @override
+  String get notificationsFriendActivitySubtitle =>
+      'Wanneer vrienden iets delen of leuk vinden';
+
+  @override
+  String get locationScreenTitle => 'Locatie';
+
+  @override
+  String get locationCurrentLocationTitle => 'Huidige locatie';
+
+  @override
+  String get locationCurrentLocationValue => 'Rotterdam, Nederland';
+
+  @override
+  String get locationSectionSettingsTitle => 'Locatie-instellingen';
+
+  @override
+  String get locationAutoDetectTitle => 'Locatie automatisch bepalen';
+
+  @override
+  String get locationAutoDetectSubtitle =>
+      'Bepaal automatisch je huidige locatie';
+
+  @override
+  String get locationSectionDefaultTitle => 'Standaardlocatie';
+
+  @override
+  String get locationDefaultCityLabel => 'Rotterdam';
+
+  @override
+  String get locationDefaultUsedWhenOff =>
+      'Gebruikt als locatie is uitgeschakeld';
+
+  @override
+  String get locationPermissionsTitle => 'Locatierechten';
+
+  @override
+  String get locationPermissionsSubtitle => 'Beheer in systeeminstellingen';
+
+  @override
+  String get locationSnackbarUpdated => 'Locatie-instellingen bijgewerkt';
+
+  @override
+  String locationSnackbarError(String error) {
+    return 'Fout bij bijwerken van locatie-instellingen: $error';
+  }
+
+  @override
+  String get languageUpdated => 'Taal bijgewerkt';
+
+  @override
+  String get subscriptionScreenTitle => 'Abonnement';
+
+  @override
+  String get subscriptionCurrentPlanLabel => 'Huidig abonnement';
+
+  @override
+  String get subscriptionPlanFree => 'Gratis';
+
+  @override
+  String get subscriptionPlanPremium => 'Premium';
+
+  @override
+  String get subscriptionUpgradeHeading => 'Upgrade naar';
+
+  @override
+  String get subscriptionUpgradeTitle => 'Premium';
+
+  @override
+  String get subscriptionFeatureUnlimitedSuggestions =>
+      'Onbeperkte activiteitenvoorstellen';
+
+  @override
+  String get subscriptionFeatureAdvancedMoodMatching =>
+      'Geavanceerde mood-matching';
+
+  @override
+  String get subscriptionFeaturePrioritySupport => 'Prioriteitsondersteuning';
+
+  @override
+  String get subscriptionFeatureNoAds => 'Geen advertenties';
+
+  @override
+  String get subscriptionUpgradeCta => 'Upgrade voor €4,99 per maand';
+
+  @override
+  String get dataStorageTitle => 'Data & opslag';
+
+  @override
+  String get dataStorageStorageUsedLabel => 'Gebruikte opslag';
+
+  @override
+  String get dataStorageExportTitle => 'Mijn data exporteren';
+
+  @override
+  String get dataStorageExportSubtitle => 'Download al je data (AVG)';
+
+  @override
+  String get dataStorageClearCacheTitle => 'Cache legen';
+
+  @override
+  String get dataStorageClearCacheSubtitle => 'Maak opslagruimte vrij';
+
+  @override
+  String get dataStorageDownloadHistoryTitle => 'Downloadgeschiedenis';
+
+  @override
+  String get dataStorageDownloadHistorySubtitle => 'Bekijk eerdere exports';
+
+  @override
+  String get dataStorageExportFileTitle => 'Mijn WanderMood data-export';
+
+  @override
+  String get dataStorageExportSuccess => 'Data succesvol geëxporteerd';
+
+  @override
+  String dataStorageExportFailed(String error) {
+    return 'Export mislukt: $error';
+  }
+
+  @override
+  String get dataStorageCacheCleared => 'Cache succesvol geleegd';
+
+  @override
+  String dataStorageCacheFailed(String error) {
+    return 'Cache legen mislukt: $error';
+  }
+
+  @override
+  String get helpSupportScreenTitle => 'Help & Support';
+
+  @override
+  String get helpSupportSearchHint => 'Zoek in helpartikelen...';
+
+  @override
+  String get helpSupportQuickLinksTitle => 'Snelle links';
+
+  @override
+  String get helpSupportFaqTitle => 'FAQ';
+
+  @override
+  String get helpSupportFaqSubtitle => 'Veelgestelde vragen';
+
+  @override
+  String get helpSupportContactTitle => 'Contact';
+
+  @override
+  String get helpSupportContactSubtitle => 'Stuur ons een e-mail';
+
+  @override
+  String get helpSupportLiveChatTitle => 'Livechat';
+
+  @override
+  String get helpSupportLiveChatSubtitle => 'Chat met support';
+
+  @override
+  String get helpSupportLiveChatBadgeOnline => 'Online';
+
+  @override
+  String get helpSupportReportBugTitle => 'Melding maken';
+
+  @override
+  String get helpSupportReportBugSubtitle => 'Help ons verbeteren';
+
+  @override
+  String get helpSupportLegalTitle => 'Juridisch';
+
+  @override
+  String get helpSupportPrivacyTitle => 'Privacybeleid';
+
+  @override
+  String get helpSupportPrivacySubtitle => 'Hoe we met je data omgaan';
+
+  @override
+  String get helpSupportTermsTitle => 'Gebruiksvoorwaarden';
+
+  @override
+  String get helpSupportTermsSubtitle => 'Voorwaarden en regels';
+
+  @override
+  String get helpSupportEmailAddress => 'support@wandermood.com';
+
+  @override
+  String get helpSupportEmailSubject => 'WanderMood support';
 }

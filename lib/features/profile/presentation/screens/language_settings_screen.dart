@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import '../../domain/providers/profile_provider.dart';
 import '../../../../core/presentation/providers/language_provider.dart';
 import '../widgets/settings_screen_template.dart';
@@ -36,14 +37,15 @@ class _LanguageSettingsScreenState extends ConsumerState<LanguageSettingsScreen>
   Future<void> _updateLanguage(String code) async {
     setState(() => _selectedLanguage = code);
     try {
+      final l10n = AppLocalizations.of(context)!;
       await ref.read(localeProvider.notifier).setLocale(Locale(code));
       await ref.read(profileProvider.notifier).updateProfile(
         languagePreference: code,
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Language updated'),
+          SnackBar(
+            content: Text(l10n.languageUpdated),
             backgroundColor: Colors.green,
           ),
         );
@@ -55,8 +57,9 @@ class _LanguageSettingsScreenState extends ConsumerState<LanguageSettingsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SettingsScreenTemplate(
-      title: 'Language',
+      title: l10n.languageSettings,
       onBack: () => context.pop(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

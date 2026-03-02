@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import '../../domain/providers/profile_provider.dart';
 import '../../../../core/presentation/providers/local_theme_provider.dart';
 import '../widgets/settings_screen_template.dart';
@@ -34,14 +35,23 @@ class _ThemeSettingsScreenState extends ConsumerState<ThemeSettingsScreen> {
   Future<void> _updateTheme(String theme) async {
     setState(() => _selectedTheme = theme);
     try {
+      final l10n = AppLocalizations.of(context)!;
       await ref.read(localThemeProvider.notifier).setThemeFromString(theme);
       await ref.read(profileProvider.notifier).updateProfile(
         themePreference: theme,
       );
       if (mounted) {
+        String themeLabel;
+        if (theme == 'light') {
+          themeLabel = l10n.lightTheme;
+        } else if (theme == 'dark') {
+          themeLabel = l10n.darkTheme;
+        } else {
+          themeLabel = l10n.system;
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Theme updated'),
+          SnackBar(
+            content: Text(l10n.themeUpdatedTo(themeLabel)),
             backgroundColor: Colors.green,
           ),
         );
@@ -53,35 +63,36 @@ class _ThemeSettingsScreenState extends ConsumerState<ThemeSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SettingsScreenTemplate(
-      title: 'Theme',
+      title: l10n.themeSettings,
       onBack: () => context.pop(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildRadioOption(
-            label: 'Light',
-            subtitle: 'Always use light theme',
+            label: l10n.light,
+            subtitle: l10n.lightTheme,
             value: 'light',
             selected: _selectedTheme == 'light',
             onTap: () => _updateTheme('light'),
           ),
           const SizedBox(height: 8),
           _buildRadioOption(
-            label: 'Dark',
-            subtitle: 'Always use dark theme',
+            label: l10n.dark,
+            subtitle: l10n.darkTheme,
             value: 'dark',
             selected: _selectedTheme == 'dark',
             onTap: () => _updateTheme('dark'),
           ),
           const SizedBox(height: 8),
           _buildRadioOption(
-            label: 'System',
-            subtitle: 'Match your device settings',
+            label: l10n.system,
+            subtitle: l10n.followSystemTheme,
             value: 'system',
             selected: _selectedTheme == 'system',
             onTap: () => _updateTheme('system'),
-            badge: 'Recommended',
+            badge: l10n.settingsTwoFactorBadgeRecommended,
           ),
         ],
       ),

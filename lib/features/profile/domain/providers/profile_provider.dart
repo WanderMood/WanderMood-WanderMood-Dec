@@ -33,7 +33,7 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
       // Select specific columns to avoid errors if some columns don't exist
       final response = await supabase
           .from('profiles')
-          .select('id, email, username, full_name, image_url, date_of_birth, bio, favorite_mood, mood_streak, followers_count, following_count, is_public, notification_preferences, theme_preference, language_preference, achievements, created_at, updated_at')
+          .select('id, email, username, full_name, image_url, date_of_birth, bio, favorite_mood, mood_streak, followers_count, following_count, is_public, profile_visibility, show_email, show_age, notification_preferences, theme_preference, language_preference, achievements, created_at, updated_at')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -85,6 +85,9 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
     String? username,
     String? favoriteMood,
     bool? isPublic,
+    String? profileVisibility,
+    bool? showEmail,
+    bool? showAge,
     Map<String, bool>? notificationPreferences,
     String? themePreference,
     String? languagePreference,
@@ -107,7 +110,10 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
         bio: bio ?? currentProfile.bio,
         username: username ?? currentProfile.username,
         favoriteMood: favoriteMood ?? currentProfile.favoriteMood,
-        isPublic: isPublic ?? currentProfile.isPublic,
+        isPublic: isPublic ?? (profileVisibility == null ? currentProfile.isPublic : profileVisibility == 'public'),
+        profileVisibility: profileVisibility ?? currentProfile.profileVisibility,
+        showEmail: showEmail ?? currentProfile.showEmail,
+        showAge: showAge ?? currentProfile.showAge,
         notificationPreferences: notificationPreferences ?? currentProfile.notificationPreferences,
         themePreference: themePreference ?? currentProfile.themePreference,
         languagePreference: languagePreference ?? currentProfile.languagePreference,

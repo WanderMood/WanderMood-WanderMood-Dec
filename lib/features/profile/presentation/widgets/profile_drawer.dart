@@ -7,21 +7,24 @@ import 'package:wandermood/features/profile/presentation/screens/language_settin
 import 'package:wandermood/features/profile/presentation/screens/help_support_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class ProfileDrawer extends ConsumerWidget {
   const ProfileDrawer({Key? key}) : super(key: key);
 
-  String _getTravellerLevel(int? moodStreak) {
-    if (moodStreak == null) return 'New Explorer';
-    if (moodStreak > 100) return 'Master Wanderer';
-    if (moodStreak > 50) return 'Adventure Expert';
-    if (moodStreak > 20) return 'Seasoned Explorer';
-    if (moodStreak > 10) return 'Travel Enthusiast';
-    return 'New Explorer';
+  String _getTravellerLevel(BuildContext context, int? moodStreak) {
+    final l10n = AppLocalizations.of(context)!;
+    if (moodStreak == null) return l10n.drawerNewExplorer;
+    if (moodStreak > 100) return l10n.drawerMasterWanderer;
+    if (moodStreak > 50) return l10n.drawerAdventureExpert;
+    if (moodStreak > 20) return l10n.drawerSeasonedExplorer;
+    if (moodStreak > 10) return l10n.drawerTravelEnthusiast;
+    return l10n.drawerNewExplorer;
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final profileData = ref.watch(profileProvider);
     final mediaQuery = MediaQuery.of(context);
 
@@ -106,7 +109,7 @@ class ProfileDrawer extends ConsumerWidget {
                                         : null,
                                     child: profile?.imageUrl == null
                                         ? Text(
-                                            profile?.fullName?.substring(0, 1).toUpperCase() ?? 'U',
+                                            profile?.fullName?.substring(0, 1).toUpperCase() ?? l10n.profileFallbackUser.substring(0, 1).toUpperCase(),
                                             style: GoogleFonts.poppins(
                                               fontSize: 24, // Reduced from 28
                                               fontWeight: FontWeight.bold,
@@ -145,7 +148,7 @@ class ProfileDrawer extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8), // Reduced from 12
                           Text(
-                            profile?.fullName ?? 'User',
+                            profile?.fullName ?? l10n.profileFallbackUser,
                             style: GoogleFonts.poppins(
                               color: Colors.white,
                               fontSize: 18, // Reduced from 20
@@ -200,7 +203,7 @@ class ProfileDrawer extends ConsumerWidget {
                                     ),
                                     const SizedBox(width: 3), // Reduced from 4
                                     Text(
-                                      _getTravellerLevel(profile?.moodStreak),
+                                      _getTravellerLevel(context, profile?.moodStreak),
                                       style: GoogleFonts.poppins(
                                         color: Colors.white,
                                         fontSize: 10, // Reduced from 11
@@ -230,7 +233,7 @@ class ProfileDrawer extends ConsumerWidget {
                                     ),
                                     const SizedBox(width: 3), // Reduced from 4
                                     Text(
-                                      '${profile?.moodStreak ?? 0} Day Streak',
+                                      l10n.drawerDayStreak('${profile?.moodStreak ?? 0}'),
                                       style: GoogleFonts.poppins(
                                         color: Colors.white,
                                         fontSize: 10, // Reduced from 11
@@ -279,7 +282,7 @@ class ProfileDrawer extends ConsumerWidget {
                       ),
                       const SizedBox(height: 6), // Reduced from 8
                       Text(
-                        'Error loading profile',
+                        l10n.drawerErrorLoadingProfile,
                         style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontSize: 12, // Reduced from 14
@@ -297,11 +300,11 @@ class ProfileDrawer extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const SizedBox(height: 8),
-                    _buildSectionHeader('Your Journey'),
+                    _buildSectionHeader(l10n.drawerYourJourney),
                     _buildDrawerItem(
                       context,
                       icon: Icons.history,
-                      title: 'Mood History',
+                      title: l10n.drawerMoodHistory,
                       onTap: () {
                         Navigator.pop(context);
                         context.push('/moods/history');
@@ -310,7 +313,7 @@ class ProfileDrawer extends ConsumerWidget {
                     _buildDrawerItem(
                       context,
                       icon: Icons.favorite_border,
-                      title: 'Saved Places',
+                      title: l10n.drawerSavedPlaces,
                       onTap: () {
                         Navigator.pop(context);
                         context.push('/places/saved');
@@ -319,18 +322,18 @@ class ProfileDrawer extends ConsumerWidget {
                     _buildDrawerItem(
                       context,
                       icon: Icons.map_outlined,
-                      title: 'My Bookings',
+                      title: l10n.drawerMyBookings,
                       onTap: () {
                         Navigator.pop(context);
                         context.push('/plans');
                       },
                     ),
                     const SizedBox(height: 8),
-                    _buildSectionHeader('Settings'),
+                    _buildSectionHeader(l10n.drawerSettings),
                     _buildDrawerItem(
                       context,
                       icon: Icons.settings_outlined,
-                      title: 'App Settings',
+                      title: l10n.drawerAppSettings,
                       onTap: () {
                         Navigator.pop(context);
                         // Route to Profile settings (the main settings hub)
@@ -340,7 +343,7 @@ class ProfileDrawer extends ConsumerWidget {
                     _buildDrawerItem(
                       context,
                       icon: Icons.notifications_outlined,
-                      title: 'Notifications',
+                      title: l10n.drawerNotifications,
                       onTap: () {
                         Navigator.pop(context);
                         context.push('/notifications');
@@ -349,7 +352,7 @@ class ProfileDrawer extends ConsumerWidget {
                     _buildDrawerItem(
                       context,
                       icon: Icons.language,
-                      title: 'Language',
+                      title: l10n.drawerLanguage,
                       onTap: () {
                         Navigator.pop(context);
                         // Route directly to Profile's Language Settings (the working one)
@@ -364,7 +367,7 @@ class ProfileDrawer extends ConsumerWidget {
                     _buildDrawerItem(
                       context,
                       icon: Icons.help_outline,
-                      title: 'Help & Support',
+                      title: l10n.drawerHelpSupport,
                       onTap: () {
                         Navigator.pop(context);
                         // Route to Profile's Help & Support (the comprehensive one)
@@ -377,11 +380,11 @@ class ProfileDrawer extends ConsumerWidget {
                       },
                     ),
                     const SizedBox(height: 8),
-                    _buildSectionHeader('Account'),
+                    _buildSectionHeader(l10n.drawerAccount),
                     _buildDrawerItem(
                       context,
                       icon: Icons.person_outline,
-                      title: 'Profile',
+                      title: l10n.drawerProfile,
                       onTap: () {
                         Navigator.pop(context);
                         // Navigate to main profile screen (source of truth in bottom nav)
@@ -391,7 +394,7 @@ class ProfileDrawer extends ConsumerWidget {
                     _buildDrawerItem(
                       context,
                       icon: Icons.logout,
-                      title: 'Log Out',
+                      title: l10n.drawerLogOut,
                       onTap: () async {
                         try {
                           await Supabase.instance.client.auth.signOut();
@@ -402,7 +405,7 @@ class ProfileDrawer extends ConsumerWidget {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Error signing out: $e'),
+                                content: Text(AppLocalizations.of(context)!.drawerErrorSigningOut(e.toString())),
                                 backgroundColor: Colors.red,
                                 duration: const Duration(seconds: 2),
                               ),

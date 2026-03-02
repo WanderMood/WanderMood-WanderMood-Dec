@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/mood/services/check_in_service.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class ProfileStatsCards extends ConsumerStatefulWidget {
   const ProfileStatsCards({super.key});
@@ -72,6 +73,7 @@ class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_isLoading) {
       return const SizedBox(
         height: 140,
@@ -85,7 +87,7 @@ class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Text(
-            'Your Stats',
+            l10n.profileStatsTitle,
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -120,6 +122,7 @@ class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
   }
 
   Widget _buildCheckInsCard() {
+    final l10n = AppLocalizations.of(context)!;
     return InkWell(
       onTap: () {
         context.push('/moods/history');
@@ -202,7 +205,7 @@ class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
             ),
           ),
           Text(
-            'Check-ins',
+            l10n.profileStatsCheckinsTitle,
             style: GoogleFonts.poppins(
               fontSize: 12,
               color: Colors.grey[600],
@@ -215,6 +218,7 @@ class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
   }
 
   Widget _buildPlacesCard() {
+    final l10n = AppLocalizations.of(context)!;
     return InkWell(
       onTap: () {
         context.push('/places/saved');
@@ -301,7 +305,7 @@ class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
               ),
             ),
             Text(
-              'Places',
+              l10n.profileStatsPlacesTitle,
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 color: Colors.grey[600],
@@ -309,7 +313,7 @@ class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Tap to explore →',
+              '${l10n.profileStatsPlacesSubtitle} →',
               style: GoogleFonts.poppins(
                 fontSize: 10,
                 color: Colors.blue.shade600,
@@ -323,6 +327,7 @@ class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
   }
 
   Widget _buildTopMoodCard() {
+    final l10n = AppLocalizations.of(context)!;
     return InkWell(
       onTap: () {
         context.push('/moods/history');
@@ -381,7 +386,7 @@ class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
             overflow: TextOverflow.ellipsis,
           ),
           Text(
-            'Top Mood',
+            l10n.profileStatsTopMoodTitle,
             style: GoogleFonts.poppins(
               fontSize: 12,
               color: Colors.grey[600],
@@ -394,6 +399,7 @@ class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
   }
 
   Widget _buildExploreJourneyCard() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -417,7 +423,7 @@ class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
       child: Column(
         children: [
           Text(
-            'Your Mood Journey',
+            l10n.profileMoodJourneyTitle,
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -425,7 +431,7 @@ class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Start checking in to see your mood history!',
+            l10n.profileMoodJourneySubtitle,
             style: GoogleFonts.poppins(fontSize: 14),
           ),
         ],

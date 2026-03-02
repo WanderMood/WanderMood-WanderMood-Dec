@@ -298,6 +298,446 @@
   "signupTestimonial": "WanderMood helped me discover places I never knew existed!",
   "signupTestimonialBy": "– Sarah, {city}",
   "@signupTestimonialBy": { "placeholders": { "city": { "type": "String" } } },
-  "signupDefaultCity": "Rotterdam"
+  "signupDefaultCity": "Rotterdam",
+
+  "profileSnackAvatarUpdated": "Profile picture updated!",
+  "profileSnackAvatarFailed": "Failed to update picture: {error}",
+  "@profileSnackAvatarFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "profileErrorLoad": "Could not load profile",
+  "profileRetry": "Retry",
+  "profileFallbackUser": "User",
+
+  "profileStatsTitle": "Your Stats",
+  "profileStatsCheckinsTitle": "Check-ins",
+  "profileStatsPlacesTitle": "Places",
+  "profileStatsPlacesSubtitle": "Tap to explore",
+  "profileStatsTopMoodTitle": "Top Mood",
+
+  "profileFavoriteVibesTitle": "Your Favorite Vibes",
+  "profileFavoriteVibesEdit": "Edit",
+  "profileFavoriteVibesAdd": "+ Add Vibe",
+
+  "profileMoodJourneyTitle": "Your Mood Journey",
+  "profileMoodJourneySubtitle": "View your mood history",
+
+  "profileTravelGlobeTitle": "Your Travel Globe",
+  "profileTravelGlobeSubtitle": "Explore your travel journey",
+
+  "profilePreferencesTitle": "Your Preferences",
+  "profilePreferencesEditAll": "Edit All",
+  "profilePreferencesBudgetStyle": "Budget Style",
+  "profilePreferencesSocialVibe": "Social Vibe",
+  "profilePreferencesFoodPreferences": "Food Preferences",
+  "profilePreferencesEmptyHint": "Tap \"Edit All\" to set your preferences",
+
+  "profileActionEdit": "Edit",
+  "profileActionShare": "Share",
+
+  "profileAgeGroup20s": "20s Adventurer",
+  "profileAgeGroup30s": "30s Adventurer",
+  "profileAgeGroup40s": "40s Adventurer",
+  "profileAgeGroup50s": "50s Adventurer",
+  "profileAgeGroup55Plus": "55+ Adventurer",
+
+  "profileBudgetLow": "$ Budget",
+  "profileBudgetMid": "$$ Moderate",
+  "profileBudgetHigh": "$$$ Luxury",
+
+  "profileSocialSolo": "Solo",
+  "profileSocialCouple": "Couple",
+  "profileSocialGroup": "Group",
+  "profileSocialMix": "Mix",
+  "profileSocialSocial": "Social",
+
+  "profileEditTitle": "Edit Profile",
+  "profileEditProfilePhoto": "Profile Photo",
+  "profileEditProfilePhotoTap": "Tap to change",
+  "profileEditNameLabel": "Full Name",
+  "profileEditUsernameLabel": "Username",
+  "profileEditEmailLabel": "Email",
+  "profileEditBioLabel": "Bio",
+  "profileEditSelectDate": "Select date",
+  "profileEditUsernameHint": "username",
+  "profileEditEmailHint": "email@example.com",
+  "profileEditNameHint": "Enter your name",
+  "profileEditBioHint": "Tell us about yourself...",
+  "profileEditLocationLabel": "Location",
+  "profileEditLocationHint": "City, Country",
+  "profileEditBirthdayLabel": "Birthday",
+  "profileEditSave": "Save",
+  "profileEditNoChanges": "No Changes",
+  "profileEditFavoriteVibesTitle": "Favorite Vibes",
+  "profileEditFavoriteVibesEdit": "Edit",
+  "profileEditFavoriteVibesSubtitle": "Select your favorite vibes to personalize your recommendations",
+  "profileEditPhotoTake": "Take Photo",
+  "profileEditPhotoChoose": "Choose from Gallery",
+  "profileEditPhotoRemove": "Remove Photo",
+  "profileEditVibesTitle": "Edit Favorite Vibes",
+  "profileEditVibesDone": "Done",
+  "profileEditUpdated": "Profile updated successfully",
+  "profileEditUpdateFailed": "Failed to update profile: {error}",
+  "@profileEditUpdateFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "profileEditErrorLoading": "Error loading profile: {error}",
+  "@profileEditErrorLoading": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "profileVibesUpdated": "Vibes updated! 🎉",
+  "profileVibesSaveFailed": "Failed to save vibes: {error}",
+  "@profileVibesSaveFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "profileVibesEditTitle": "Edit Favorite Vibes",
+  "profileVibesSave": "Save",
+  "profileVibesSelectedCount": "Selected ({count}/5)",
+  "@profileVibesSelectedCount": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+  "profileVibesMaxReached": "Maximum reached",
+  "profileVibesChooseTitle": "Choose Your Vibes",
+  "profileVibesAddMore": "Add More Vibes",
+  "profileVibesSubtitle": "Select up to 5 vibes that match your personality. We'll use these to personalize your recommendations!",
+  "profileVibesCurrentTitle": "YOUR CURRENT VIBES",
+
+  "shareProfileTitle": "Share Profile",
+  "shareProfileShareTextMy": "Check out my profile on WanderMood! 🧳✨\n\n{url}",
+  "@shareProfileShareTextMy": { "placeholders": { "url": { "type": "String" } } },
+  "shareProfileShareTextNamed": "Check out {name}'s profile on WanderMood! 🧳✨\n\n{url}",
+  "@shareProfileShareTextNamed": { "placeholders": { "name": { "type": "String" }, "url": { "type": "String" } } },
+  "shareProfileMy": "my",
+  "shareProfileDefaultUsername": "wanderer",
+  "shareProfileEmailSubject": "Check out my WanderMood profile",
+  "shareProfileFailedToShare": "Failed to share: {error}",
+  "@shareProfileFailedToShare": { "placeholders": { "error": { "type": "String" } } },
+  "shareProfileDefaultBio": "Always chasing sunsets & good vibes ✨",
+  "shareProfileDayStreak": "Day Streak",
+  "shareProfileQRCode": "QR Code",
+  "shareProfileScanToConnect": "Scan to connect",
+  "shareProfileCopyLink": "Copy Link",
+  "shareProfileShareAnywhere": "Share anywhere",
+  "shareProfileShareVia": "Share via",
+  "shareProfileInstagram": "Instagram",
+  "shareProfileWhatsApp": "WhatsApp",
+  "shareProfileTwitter": "Twitter",
+  "shareProfileEmail": "Email",
+  "shareProfilePublicProfile": "Public Profile",
+  "shareProfileAnyoneCanView": "Anyone can view your profile",
+  "shareProfileUpdateFailed": "Failed to update: {error}",
+  "@shareProfileUpdateFailed": { "placeholders": { "error": { "type": "String" } } },
+  "shareProfileMyQRCode": "My QR Code",
+  "shareProfileHowItWorks": "How it works",
+  "shareProfileQRInstructions": "Ask someone to scan this code with their WanderMood app to instantly connect and share your profile!",
+  "shareProfileDownloaded": "Downloaded!",
+  "shareProfileSaveQRCode": "Save QR Code",
+  "shareProfileShareMessage": "Check out my WanderMood profile! {url}",
+  "@shareProfileShareMessage": { "placeholders": { "url": { "type": "String" } } },
+  "shareProfileShareQRImage": "Share QR Image",
+  "shareProfileShareLinkTitle": "Share Link",
+  "shareProfileYourProfileLink": "YOUR PROFILE LINK",
+  "shareProfileLinkCopied": "Link Copied!",
+  "shareProfileQuickShare": "QUICK SHARE",
+  "shareProfileLinkInfo": "Anyone with this link can view your public profile. You can change your privacy settings anytime.",
+
+  "drawerYourJourney": "Your Journey",
+  "drawerSettings": "Settings",
+  "drawerAccount": "Account",
+  "drawerMoodHistory": "Mood History",
+  "drawerSavedPlaces": "Saved Places",
+  "drawerMyBookings": "My Bookings",
+  "drawerAppSettings": "App Settings",
+  "drawerNotifications": "Notifications",
+  "drawerLanguage": "Language",
+  "drawerHelpSupport": "Help & Support",
+  "drawerProfile": "Profile",
+  "drawerLogOut": "Log Out",
+  "drawerErrorLoadingProfile": "Error loading profile",
+  "drawerErrorSigningOut": "Error signing out: {error}",
+  "@drawerErrorSigningOut": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "drawerNewExplorer": "New Explorer",
+  "drawerMasterWanderer": "Master Wanderer",
+  "drawerAdventureExpert": "Adventure Expert",
+  "drawerSeasonedExplorer": "Seasoned Explorer",
+  "drawerTravelEnthusiast": "Travel Enthusiast",
+  "drawerDayStreak": "{count} Day Streak",
+  "@drawerDayStreak": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+
+  "profileModeLocal": "Local Mode",
+  "profileModeTravel": "Traveling",
+  "profileModeWhatDoesThisDo": "What does this do?",
+  "profileModeSwitchToLocal": "Switch to Local Mode",
+  "profileModeSwitchToTravel": "Switch to Travel Mode",
+  "profileModeCancel": "Cancel",
+  "profileModeChangeAnytime": "You can change this anytime",
+  "profileModeUpdated": "Mode Updated!",
+  "profileModeUpdating": "Your recommendations are updating...",
+  "profileModeTravelModesExplained": "Travel Modes Explained",
+  "profileModeLocalTitle": "Local Mode",
+  "profileModeLocalDescription": "Discovering hidden gems in your neighborhood",
+  "profileModeLocalFeature1": "Local cafes & hidden spots",
+  "profileModeLocalFeature2": "Neighborhood favorites",
+  "profileModeLocalFeature3": "Less touristy places",
+  "profileModeTravelTitle": "Travel Mode",
+  "profileModeTravelDescription": "Explore must-see attractions as a traveler",
+  "profileModeTravelFeature1": "Famous landmarks",
+  "profileModeTravelFeature2": "Must-see attractions",
+  "profileModeTravelFeature3": "Tourist-friendly spots",
+  "profileModeLocalExplainer": "Perfect for when you're at home or exploring your own city. Discover places locals love!",
+  "profileModeLocalExample": "Example: Instead of the Eiffel Tower, you'll see the cozy boulangerie around the corner that Parisians actually go to.",
+  "profileModeTravelExplainer": "Perfect for when you're traveling or visiting a new city. See all the iconic spots!",
+  "profileModeTravelExample": "Example: In Paris, you'll see the Eiffel Tower, Louvre Museum, and Arc de Triomphe - all the classics!",
+  "profileModeSwitchAnytime": "Switch between modes anytime! Going on vacation? Switch to Travel Mode. Back home? Switch to Local Mode. Your recommendations adapt instantly!",
+  "profileModeGotIt": "Got it!",
+  "profileModeProTip": "Pro Tip",
+  "profileModeLocalGem1": "Hidden neighborhood gems",
+  "profileModeLocalGem2": "Local cafes & restaurants",
+  "profileModeLocalGem3": "Less crowded spots",
+  "profileModeLocalGem4": "Authentic local experiences",
+  "profileModeTravelSpot1": "Famous landmarks & attractions",
+  "profileModeTravelSpot2": "Must-see tourist spots",
+  "profileModeTravelSpot3": "Popular destinations",
+  "profileModeTravelSpot4": "Tourist-friendly locations",
+
+  "settingsSectionGeneral": "General",
+  "settingsSectionDiscovery": "Discovery",
+  "settingsSectionDataPrivacy": "Data & Privacy",
+
+  "settingsNotificationsTitle": "Notifications",
+  "settingsNotificationsSubtitle": "Enable push notifications",
+
+  "settingsLocationTrackingTitle": "Location Tracking",
+  "settingsLocationTrackingSubtitle": "Allow app to track your location",
+
+  "settingsDarkModeTitle": "Dark Mode",
+  "settingsDarkModeSubtitle": "Use dark theme throughout the app",
+
+  "settingsDiscoveryRadiusTitle": "Discovery Radius",
+  "settingsDiscoveryRadiusSubtitle": "Show places within {distance} km",
+  "@settingsDiscoveryRadiusSubtitle": {
+    "placeholders": {
+      "distance": { "type": "String" }
+    }
+  },
+
+  "settingsClearCacheTitle": "Clear App Cache",
+  "settingsClearCacheSubtitle": "Free up space by removing cached images and data",
+
+  "settingsPrivacyPolicyTitle": "Privacy Policy",
+  "settingsPrivacyPolicySubtitle": "Read our privacy policy",
+
+  "settingsTermsOfServiceTitle": "Terms of Service",
+  "settingsTermsOfServiceSubtitle": "Read our terms of service",
+
+  "settingsSaveButton": "Save Settings",
+
+  "settingsClearCacheDialogTitle": "Clear Cache?",
+  "settingsClearCacheDialogBody": "This will remove all cached data. Your saved places and settings will not be affected.",
+  "settingsDialogCancel": "Cancel",
+  "settingsDialogConfirmClear": "Clear",
+
+  "settingsCacheCleared": "Cache cleared successfully",
+  "settingsSaved": "Settings saved",
+
+  "settingsHubTitle": "Settings",
+
+  "settingsQuickTipTitle": "Quick Tip",
+  "settingsQuickTipBody": "To edit your profile or preferences, go back to your profile screen!",
+
+  "settingsSectionPrivacySecurity": "Privacy & Security",
+  "settingsSectionAppSettings": "App Settings",
+  "settingsSectionMore": "More",
+  "settingsSectionDangerZone": "Danger Zone",
+
+  "settingsAccountSecurityTitle": "Account Security",
+  "settingsAccountSecuritySubtitle": "Password, 2FA",
+
+  "settingsTwoFactorTitle": "Two-Factor Authentication",
+  "settingsTwoFactorEnabled": "Enabled",
+  "settingsTwoFactorNotEnabled": "Not enabled",
+  "settingsTwoFactorBadgeRecommended": "Recommended",
+  "settingsActiveSessionsTitle": "Active Sessions",
+  "settingsActiveSessionsSubtitle": "{count} devices",
+  "@settingsActiveSessionsSubtitle": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+
+  "settingsPrivacyTitle": "Privacy",
+  "settingsPrivacySubtitle": "Profile visibility, data",
+
+  "settingsHubNotificationsSubtitle": "Push, email, in-app",
+
+  "settingsLocationLabel": "Location",
+  "settingsLocationSubtitle": "Auto-detect, permissions",
+
+  "settingsLanguageLabel": "Language",
+
+  "settingsThemeLabel": "Theme",
+  "settingsThemeValueSystem": "System",
+
+  "settingsAchievementsLabel": "Achievements",
+  "settingsAchievementsSubtitle": "{count} unlocked",
+  "@settingsAchievementsSubtitle": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+
+  "settingsSubscriptionLabel": "Subscription",
+  "settingsSubscriptionSubtitleFree": "Free Plan",
+  "settingsSubscriptionBadgeFree": "Free",
+
+  "settingsDataStorageLabel": "Data & Storage",
+  "settingsDataStorageSubtitle": "Export, clear cache",
+
+  "settingsHelpSupportLabel": "Help & Support",
+  "settingsHelpSupportSubtitle": "FAQ, contact us",
+
+  "settingsDangerDeleteAccountLabel": "Delete Account",
+  "settingsDangerDeleteAccountSubtitle": "Permanently delete your data",
+
+  "settingsDangerSignOutLabel": "Sign Out",
+  "settingsDangerSignOutSubtitle": "Log out of your account",
+
+  "settingsAppVersion": "WanderMood v{version}",
+  "@settingsAppVersion": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "settingsAppTagline": "Made with ❤️ for travelers",
+
+  "settingsSignOutTitle": "Sign Out",
+  "settingsSignOutMessage": "Are you sure you want to sign out?",
+  "settingsSignOutConfirm": "Sign Out",
+
+  "settingsOpenPrivacyNetworkError": "Unable to open Privacy Policy. Please check your internet connection.",
+  "settingsOpenPrivacyError": "Error opening Privacy Policy: {error}",
+  "@settingsOpenPrivacyError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "settingsOpenTermsNetworkError": "Unable to open Terms of Service. Please check your internet connection.",
+  "settingsOpenTermsError": "Error opening Terms of Service: {error}",
+  "@settingsOpenTermsError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "notificationsMethodsTitle": "Notification Methods",
+  "notificationsPushTitle": "Push Notifications",
+  "notificationsPushSubtitle": "Receive push notifications on this device",
+  "notificationsEmailTitle": "Email Notifications",
+  "notificationsEmailSubtitle": "Receive updates via email",
+  "notificationsInAppTitle": "In-App Notifications",
+  "notificationsInAppSubtitle": "See notifications inside the app",
+  "notificationsWhatToNotifyTitle": "What to Notify",
+  "notificationsNewActivitiesTitle": "New Activities",
+  "notificationsNewActivitiesSubtitle": "When new activities match your vibe",
+  "notificationsNearbyEventsTitle": "Nearby Events",
+  "notificationsNearbyEventsSubtitle": "Events happening around you",
+  "notificationsFriendActivityTitle": "Friend Activity",
+  "notificationsFriendActivitySubtitle": "When friends share or like something",
+
+  "locationScreenTitle": "Location",
+  "locationCurrentLocationTitle": "Current Location",
+  "locationCurrentLocationValue": "Rotterdam, Netherlands",
+  "locationSectionSettingsTitle": "Location Settings",
+  "locationAutoDetectTitle": "Auto-Detect Location",
+  "locationAutoDetectSubtitle": "Automatically detect your current location",
+  "locationSectionDefaultTitle": "Default Location",
+  "locationDefaultCityLabel": "Rotterdam",
+  "locationDefaultUsedWhenOff": "Used when location is off",
+  "locationPermissionsTitle": "Location Permissions",
+  "locationPermissionsSubtitle": "Manage in system settings",
+  "locationSnackbarUpdated": "Location settings updated",
+  "locationSnackbarError": "Error updating location settings: {error}",
+  "@locationSnackbarError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "languageUpdated": "Language updated",
+
+  "subscriptionScreenTitle": "Subscription",
+  "subscriptionCurrentPlanLabel": "Current Plan",
+  "subscriptionPlanFree": "Free",
+  "subscriptionPlanPremium": "Premium",
+  "subscriptionUpgradeHeading": "Upgrade to",
+  "subscriptionUpgradeTitle": "Premium",
+  "subscriptionFeatureUnlimitedSuggestions": "Unlimited activity suggestions",
+  "subscriptionFeatureAdvancedMoodMatching": "Advanced mood matching",
+  "subscriptionFeaturePrioritySupport": "Priority support",
+  "subscriptionFeatureNoAds": "No ads",
+  "subscriptionUpgradeCta": "Upgrade for €4.99/month",
+
+  "dataStorageTitle": "Data & Storage",
+  "dataStorageStorageUsedLabel": "Storage Used",
+  "dataStorageExportTitle": "Export My Data",
+  "dataStorageExportSubtitle": "Download all your data (GDPR)",
+  "dataStorageClearCacheTitle": "Clear Cache",
+  "dataStorageClearCacheSubtitle": "Free up storage space",
+  "dataStorageDownloadHistoryTitle": "Download History",
+  "dataStorageDownloadHistorySubtitle": "View past exports",
+  "dataStorageExportFileTitle": "My WanderMood Data Export",
+  "dataStorageExportSuccess": "Data exported successfully",
+  "dataStorageExportFailed": "Export failed: {error}",
+  "@dataStorageExportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "dataStorageCacheCleared": "Cache cleared successfully",
+  "dataStorageCacheFailed": "Failed to clear cache: {error}",
+  "@dataStorageCacheFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "helpSupportScreenTitle": "Help & Support",
+  "helpSupportSearchHint": "Search help articles...",
+  "helpSupportQuickLinksTitle": "Quick Links",
+  "helpSupportFaqTitle": "FAQs",
+  "helpSupportFaqSubtitle": "Frequently asked questions",
+  "helpSupportContactTitle": "Contact Us",
+  "helpSupportContactSubtitle": "Send us an email",
+  "helpSupportLiveChatTitle": "Live Chat",
+  "helpSupportLiveChatSubtitle": "Chat with support",
+  "helpSupportLiveChatBadgeOnline": "Online",
+  "helpSupportReportBugTitle": "Report a Bug",
+  "helpSupportReportBugSubtitle": "Help us improve",
+  "helpSupportLegalTitle": "Legal",
+  "helpSupportPrivacyTitle": "Privacy Policy",
+  "helpSupportPrivacySubtitle": "How we protect your data",
+  "helpSupportTermsTitle": "Terms of Service",
+  "helpSupportTermsSubtitle": "Terms and conditions",
+  "helpSupportEmailAddress": "support@wandermood.com",
+  "helpSupportEmailSubject": "WanderMood Support"
 }
 

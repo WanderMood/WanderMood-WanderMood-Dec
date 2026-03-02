@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import 'dart:ui';
 
 class TravelModeToggle extends ConsumerStatefulWidget {
@@ -81,6 +82,7 @@ class _TravelModeToggleState extends ConsumerState<TravelModeToggle> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         // Toggle buttons
@@ -108,7 +110,7 @@ class _TravelModeToggleState extends ConsumerState<TravelModeToggle> {
                     Expanded(
                       child: _ToggleButton(
                         icon: Icons.home,
-                        label: 'Local Mode',
+                        label: l10n.profileModeLocal,
                         isActive: widget.isLocal,
                         activeGradient: const [Color(0xFF5BB32A), Color(0xFF4CAF50)], // Match splash screen color
                         onTap: () => _handleToggleTap(true),
@@ -119,7 +121,7 @@ class _TravelModeToggleState extends ConsumerState<TravelModeToggle> {
                     Expanded(
                       child: _ToggleButton(
                         icon: Icons.map,
-                        label: 'Traveling',
+                        label: l10n.profileModeTravel,
                         isActive: !widget.isLocal,
                         activeGradient: const [Color(0xFFF97316), Color(0xFFEC4899)],
                         onTap: () => _handleToggleTap(false),
@@ -139,7 +141,7 @@ class _TravelModeToggleState extends ConsumerState<TravelModeToggle> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'ℹ️ What does this do?',
+                'ℹ️ ${l10n.profileModeWhatDoesThisDo}',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -268,7 +270,8 @@ class _ConfirmationOverlayState extends State<_ConfirmationOverlay>
 
   @override
   Widget build(BuildContext context) {
-    final modeData = _getModeData(widget.isLocal);
+    final l10n = AppLocalizations.of(context)!;
+    final modeData = _getModeData(context, widget.isLocal);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -329,7 +332,7 @@ class _ConfirmationOverlayState extends State<_ConfirmationOverlay>
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        widget.isLocal ? 'Local Mode' : 'Travel Mode',
+                        widget.isLocal ? l10n.profileModeLocalTitle : l10n.profileModeTravelTitle,
                         style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontSize: 28,
@@ -424,8 +427,8 @@ class _ConfirmationOverlayState extends State<_ConfirmationOverlay>
                               const SizedBox(width: 8),
                               Text(
                                 widget.isLocal
-                                    ? 'Switch to Local Mode'
-                                    : 'Switch to Travel Mode',
+                                    ? l10n.profileModeSwitchToLocal
+                                    : l10n.profileModeSwitchToTravel,
                                 style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
@@ -449,7 +452,7 @@ class _ConfirmationOverlayState extends State<_ConfirmationOverlay>
                             ),
                           ),
                           child: Text(
-                            'Cancel',
+                            l10n.profileModeCancel,
                             style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
@@ -466,7 +469,7 @@ class _ConfirmationOverlayState extends State<_ConfirmationOverlay>
                 Padding(
                   padding: const EdgeInsets.only(bottom: 24),
                   child: Text(
-                    'You can change this anytime',
+                    l10n.profileModeChangeAnytime,
                     style: GoogleFonts.poppins(
                       color: Colors.white.withOpacity(0.8),
                       fontSize: 12,
@@ -481,29 +484,30 @@ class _ConfirmationOverlayState extends State<_ConfirmationOverlay>
     );
   }
 
-  _ModeData _getModeData(bool isLocal) {
+  _ModeData _getModeData(BuildContext context, bool isLocal) {
+    final l10n = AppLocalizations.of(context)!;
     if (isLocal) {
       return _ModeData(
         icon: Icons.home,
-        title: '🏠 Local Mode',
-        description: 'Discovering hidden gems in your neighborhood',
+        title: l10n.profileModeLocalTitle,
+        description: l10n.profileModeLocalDescription,
         gradient: [const Color(0xFF10B981), Color(0xFF059669)],
         features: [
-          _Feature(Icons.coffee, 'Local cafes & hidden spots'),
-          _Feature(Icons.auto_awesome, 'Neighborhood favorites'),
-          _Feature(Icons.check, 'Less touristy places'),
+          _Feature(Icons.coffee, l10n.profileModeLocalFeature1),
+          _Feature(Icons.auto_awesome, l10n.profileModeLocalFeature2),
+          _Feature(Icons.check, l10n.profileModeLocalFeature3),
         ],
       );
     } else {
       return _ModeData(
         icon: Icons.map,
-        title: '✈️ Travel Mode',
-        description: 'Explore must-see attractions as a traveler',
+        title: l10n.profileModeTravelTitle,
+        description: l10n.profileModeTravelDescription,
         gradient: [const Color(0xFFF97316), Color(0xFFEC4899)],
         features: [
-          _Feature(Icons.account_balance, 'Famous landmarks'),
-          _Feature(Icons.explore, 'Must-see attractions'),
-          _Feature(Icons.check, 'Tourist-friendly spots'),
+          _Feature(Icons.account_balance, l10n.profileModeTravelFeature1),
+          _Feature(Icons.explore, l10n.profileModeTravelFeature2),
+          _Feature(Icons.check, l10n.profileModeTravelFeature3),
         ],
       );
     }
@@ -561,7 +565,8 @@ class _SuccessAnimationOverlayState extends State<_SuccessAnimationOverlay>
 
   @override
   Widget build(BuildContext context) {
-    final modeData = _getModeData(widget.isLocal);
+    final l10n = AppLocalizations.of(context)!;
+    final modeData = _getModeData(context, widget.isLocal);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -607,7 +612,7 @@ class _SuccessAnimationOverlayState extends State<_SuccessAnimationOverlay>
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Mode Updated!',
+                  l10n.profileModeUpdated,
                   style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 24,
@@ -616,7 +621,7 @@ class _SuccessAnimationOverlayState extends State<_SuccessAnimationOverlay>
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Your recommendations are updating...',
+                  l10n.profileModeUpdating,
                   style: GoogleFonts.poppins(
                     color: Colors.white.withOpacity(0.9),
                     fontSize: 16,
@@ -631,29 +636,30 @@ class _SuccessAnimationOverlayState extends State<_SuccessAnimationOverlay>
     );
   }
 
-  _ModeData _getModeData(bool isLocal) {
+  _ModeData _getModeData(BuildContext context, bool isLocal) {
+    final l10n = AppLocalizations.of(context)!;
     if (isLocal) {
       return _ModeData(
         icon: Icons.home,
-        title: '🏠 Local Mode',
-        description: 'Discovering hidden gems in your neighborhood',
+        title: l10n.profileModeLocalTitle,
+        description: l10n.profileModeLocalDescription,
         gradient: [const Color(0xFF10B981), Color(0xFF059669)],
         features: [
-          _Feature(Icons.coffee, 'Local cafes & hidden spots'),
-          _Feature(Icons.auto_awesome, 'Neighborhood favorites'),
-          _Feature(Icons.check, 'Less touristy places'),
+          _Feature(Icons.coffee, l10n.profileModeLocalFeature1),
+          _Feature(Icons.auto_awesome, l10n.profileModeLocalFeature2),
+          _Feature(Icons.check, l10n.profileModeLocalFeature3),
         ],
       );
     } else {
       return _ModeData(
         icon: Icons.map,
-        title: '✈️ Travel Mode',
-        description: 'Explore must-see attractions as a traveler',
+        title: l10n.profileModeTravelTitle,
+        description: l10n.profileModeTravelDescription,
         gradient: [const Color(0xFFF97316), Color(0xFFEC4899)],
         features: [
-          _Feature(Icons.account_balance, 'Famous landmarks'),
-          _Feature(Icons.explore, 'Must-see attractions'),
-          _Feature(Icons.check, 'Tourist-friendly spots'),
+          _Feature(Icons.account_balance, l10n.profileModeTravelFeature1),
+          _Feature(Icons.explore, l10n.profileModeTravelFeature2),
+          _Feature(Icons.check, l10n.profileModeTravelFeature3),
         ],
       );
     }
@@ -705,7 +711,7 @@ class _ModeOverlayState extends State<_ModeOverlay>
 
   @override
   Widget build(BuildContext context) {
-    final modeData = _getModeData(widget.isLocal);
+    final modeData = _getModeData(context, widget.isLocal);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -837,29 +843,30 @@ class _ModeOverlayState extends State<_ModeOverlay>
     );
   }
 
-  _ModeData _getModeData(bool isLocal) {
+  _ModeData _getModeData(BuildContext context, bool isLocal) {
+    final l10n = AppLocalizations.of(context)!;
     if (isLocal) {
       return _ModeData(
         icon: Icons.home,
-        title: '🏠 Local Mode',
-        description: 'Discovering hidden gems in your neighborhood',
+        title: l10n.profileModeLocalTitle,
+        description: l10n.profileModeLocalDescription,
         gradient: [const Color(0xFF10B981), Color(0xFF059669)],
         features: [
-          _Feature(Icons.coffee, 'Local cafes & hidden spots'),
-          _Feature(Icons.auto_awesome, 'Neighborhood favorites'),
-          _Feature(Icons.check, 'Less touristy places'),
+          _Feature(Icons.coffee, l10n.profileModeLocalFeature1),
+          _Feature(Icons.auto_awesome, l10n.profileModeLocalFeature2),
+          _Feature(Icons.check, l10n.profileModeLocalFeature3),
         ],
       );
     } else {
       return _ModeData(
         icon: Icons.map,
-        title: '✈️ Travel Mode',
-        description: 'Explore must-see attractions as a traveler',
+        title: l10n.profileModeTravelTitle,
+        description: l10n.profileModeTravelDescription,
         gradient: [const Color(0xFFF97316), Color(0xFFEC4899)],
         features: [
-          _Feature(Icons.account_balance, 'Famous landmarks'),
-          _Feature(Icons.explore, 'Must-see attractions'),
-          _Feature(Icons.check, 'Tourist-friendly spots'),
+          _Feature(Icons.account_balance, l10n.profileModeTravelFeature1),
+          _Feature(Icons.explore, l10n.profileModeTravelFeature2),
+          _Feature(Icons.check, l10n.profileModeTravelFeature3),
         ],
       );
     }
@@ -870,6 +877,7 @@ class _ModeOverlayState extends State<_ModeOverlay>
 class TravelModeExplanationModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -885,7 +893,7 @@ class TravelModeExplanationModal extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Travel Modes Explained',
+                  l10n.profileModeTravelModesExplained,
                   style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -939,7 +947,7 @@ class TravelModeExplanationModal extends StatelessWidget {
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              '🏠 Local Mode',
+                              l10n.profileModeLocalTitle,
                               style: GoogleFonts.poppins(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -950,7 +958,7 @@ class TravelModeExplanationModal extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Perfect for when you\'re at home or exploring your own city. Discover places locals love!',
+                          l10n.profileModeLocalExplainer,
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             color: Colors.grey[700],
@@ -958,10 +966,10 @@ class TravelModeExplanationModal extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _buildFeatureItem(Icons.check, Colors.green[600]!, 'Hidden neighborhood gems'),
-                        _buildFeatureItem(Icons.check, Colors.green[600]!, 'Local cafes & restaurants'),
-                        _buildFeatureItem(Icons.check, Colors.green[600]!, 'Less crowded spots'),
-                        _buildFeatureItem(Icons.check, Colors.green[600]!, 'Authentic local experiences'),
+                        _buildFeatureItem(Icons.check, Colors.green[600]!, l10n.profileModeLocalGem1),
+                        _buildFeatureItem(Icons.check, Colors.green[600]!, l10n.profileModeLocalGem2),
+                        _buildFeatureItem(Icons.check, Colors.green[600]!, l10n.profileModeLocalGem3),
+                        _buildFeatureItem(Icons.check, Colors.green[600]!, l10n.profileModeLocalGem4),
                         const SizedBox(height: 16),
                         Container(
                           padding: const EdgeInsets.all(12),
@@ -970,7 +978,7 @@ class TravelModeExplanationModal extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            'Example: Instead of the Eiffel Tower, you\'ll see the cozy boulangerie around the corner that Parisians actually go to.',
+                            l10n.profileModeLocalExample,
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -1015,7 +1023,7 @@ class TravelModeExplanationModal extends StatelessWidget {
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              '✈️ Travel Mode',
+                              l10n.profileModeTravelTitle,
                               style: GoogleFonts.poppins(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -1026,7 +1034,7 @@ class TravelModeExplanationModal extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Perfect for when you\'re traveling or visiting a new city. See all the iconic spots!',
+                          l10n.profileModeTravelExplainer,
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             color: Colors.grey[700],
@@ -1034,10 +1042,10 @@ class TravelModeExplanationModal extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _buildFeatureItem(Icons.check, Colors.orange[600]!, 'Famous landmarks & attractions'),
-                        _buildFeatureItem(Icons.check, Colors.orange[600]!, 'Must-see tourist spots'),
-                        _buildFeatureItem(Icons.check, Colors.orange[600]!, 'Popular destinations'),
-                        _buildFeatureItem(Icons.check, Colors.orange[600]!, 'Tourist-friendly locations'),
+                        _buildFeatureItem(Icons.check, Colors.orange[600]!, l10n.profileModeTravelSpot1),
+                        _buildFeatureItem(Icons.check, Colors.orange[600]!, l10n.profileModeTravelSpot2),
+                        _buildFeatureItem(Icons.check, Colors.orange[600]!, l10n.profileModeTravelSpot3),
+                        _buildFeatureItem(Icons.check, Colors.orange[600]!, l10n.profileModeTravelSpot4),
                         const SizedBox(height: 16),
                         Container(
                           padding: const EdgeInsets.all(12),
@@ -1046,7 +1054,7 @@ class TravelModeExplanationModal extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            'Example: In Paris, you\'ll see the Eiffel Tower, Louvre Museum, and Arc de Triomphe - all the classics!',
+                            l10n.profileModeTravelExample,
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -1084,7 +1092,7 @@ class TravelModeExplanationModal extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '💡 Pro Tip',
+                                '💡 ${l10n.profileModeProTip}',
                                 style: GoogleFonts.poppins(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -1093,7 +1101,7 @@ class TravelModeExplanationModal extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Switch between modes anytime! Going on vacation? Switch to Travel Mode. Back home? Switch to Local Mode. Your recommendations adapt instantly!',
+                                l10n.profileModeSwitchAnytime,
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   color: Colors.grey[700],
@@ -1135,7 +1143,7 @@ class TravelModeExplanationModal extends StatelessWidget {
                   elevation: 4,
                 ),
                 child: Text(
-                  'Got it!',
+                  l10n.profileModeGotIt,
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,

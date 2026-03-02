@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import '../providers/settings_providers.dart';
 import '../widgets/settings_screen_template.dart';
 
@@ -11,19 +12,20 @@ class SubscriptionScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final subscriptionAsync = ref.watch(subscriptionProvider);
+    final l10n = AppLocalizations.of(context)!;
     
     return SettingsScreenTemplate(
-      title: 'Subscription',
+      title: l10n.subscriptionScreenTitle,
       onBack: () => context.pop(),
       child: subscriptionAsync.when(
-        data: (subscription) => _buildContent(context, subscription),
+        data: (subscription) => _buildContent(context, subscription, l10n),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => _buildContent(context, null),
+        error: (_, __) => _buildContent(context, null, l10n),
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context, subscription) {
+  Widget _buildContent(BuildContext context, subscription, AppLocalizations l10n) {
     final isPremium = subscription?.planType == 'premium';
 
     return Column(
@@ -66,7 +68,7 @@ class SubscriptionScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Current Plan',
+                      l10n.subscriptionCurrentPlanLabel,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -75,7 +77,7 @@ class SubscriptionScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      isPremium ? 'Premium' : 'Free',
+                      isPremium ? l10n.subscriptionPlanPremium : l10n.subscriptionPlanFree,
                       style: GoogleFonts.poppins(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -113,7 +115,7 @@ class SubscriptionScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Upgrade to',
+                          l10n.subscriptionUpgradeHeading,
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -121,7 +123,7 @@ class SubscriptionScreen extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            'Premium',
+                            l10n.subscriptionUpgradeTitle,
                             style: GoogleFonts.poppins(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -135,10 +137,10 @@ class SubscriptionScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildFeature('Unlimited activity suggestions'),
-                _buildFeature('Advanced mood matching'),
-                _buildFeature('Priority support'),
-                _buildFeature('No ads'),
+                _buildFeature(l10n.subscriptionFeatureUnlimitedSuggestions),
+                _buildFeature(l10n.subscriptionFeatureAdvancedMoodMatching),
+                _buildFeature(l10n.subscriptionFeaturePrioritySupport),
+                _buildFeature(l10n.subscriptionFeatureNoAds),
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
@@ -154,7 +156,7 @@ class SubscriptionScreen extends ConsumerWidget {
                       elevation: 0,
                     ),
                     child: Text(
-                      'Upgrade for €4.99/month',
+                      l10n.subscriptionUpgradeCta,
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,

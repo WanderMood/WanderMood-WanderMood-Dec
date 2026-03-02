@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import '../widgets/settings_screen_template.dart';
 
 class HelpSupportScreen extends ConsumerWidget {
@@ -10,8 +11,9 @@ class HelpSupportScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return SettingsScreenTemplate(
-      title: 'Help & Support',
+      title: l10n.helpSupportScreenTitle,
       onBack: () => context.pop(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,7 +29,7 @@ class HelpSupportScreen extends ConsumerWidget {
             ),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Search help articles...',
+                hintText: l10n.helpSupportSearchHint,
                 hintStyle: GoogleFonts.poppins(
                   color: const Color(0xFF9CA3AF),
                 ),
@@ -42,7 +44,7 @@ class HelpSupportScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            'Quick Links',
+            l10n.helpSupportQuickLinksTitle,
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -52,35 +54,35 @@ class HelpSupportScreen extends ConsumerWidget {
           const SizedBox(height: 8),
           _buildSettingCard(
             icon: Icons.help_outline,
-            title: 'FAQs',
-            subtitle: 'Frequently asked questions',
+            title: l10n.helpSupportFaqTitle,
+            subtitle: l10n.helpSupportFaqSubtitle,
             onTap: () {},
           ),
           const SizedBox(height: 8),
           _buildSettingCard(
             icon: Icons.mail,
-            title: 'Contact Us',
-            subtitle: 'Send us an email',
-            onTap: _sendEmail,
+            title: l10n.helpSupportContactTitle,
+            subtitle: l10n.helpSupportContactSubtitle,
+            onTap: () => _sendEmail(context),
           ),
           const SizedBox(height: 8),
           _buildSettingCard(
             icon: Icons.message,
-            title: 'Live Chat',
-            subtitle: 'Chat with support',
-            badge: 'Online',
+            title: l10n.helpSupportLiveChatTitle,
+            subtitle: l10n.helpSupportLiveChatSubtitle,
+            badge: l10n.helpSupportLiveChatBadgeOnline,
             onTap: () {},
           ),
           const SizedBox(height: 8),
           _buildSettingCard(
             icon: Icons.phone,
-            title: 'Report a Bug',
-            subtitle: 'Help us improve',
+            title: l10n.helpSupportReportBugTitle,
+            subtitle: l10n.helpSupportReportBugSubtitle,
             onTap: () {},
           ),
           const SizedBox(height: 24),
           Text(
-            'Legal',
+            l10n.helpSupportLegalTitle,
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -90,15 +92,15 @@ class HelpSupportScreen extends ConsumerWidget {
           const SizedBox(height: 8),
           _buildSettingCard(
             icon: Icons.shield,
-            title: 'Privacy Policy',
-            subtitle: 'How we protect your data',
+            title: l10n.helpSupportPrivacyTitle,
+            subtitle: l10n.helpSupportPrivacySubtitle,
             onTap: () {},
           ),
           const SizedBox(height: 8),
           _buildSettingCard(
             icon: Icons.shield,
-            title: 'Terms of Service',
-            subtitle: 'Terms and conditions',
+            title: l10n.helpSupportTermsTitle,
+            subtitle: l10n.helpSupportTermsSubtitle,
             onTap: () {},
           ),
         ],
@@ -206,11 +208,12 @@ class HelpSupportScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _sendEmail() async {
+  Future<void> _sendEmail(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final uri = Uri(
       scheme: 'mailto',
-      path: 'support@wandermood.com',
-      query: 'subject=WanderMood Support',
+      path: l10n.helpSupportEmailAddress,
+      query: 'subject=${Uri.encodeComponent(l10n.helpSupportEmailSubject)}',
     );
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);

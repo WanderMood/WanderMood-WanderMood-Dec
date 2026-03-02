@@ -29,7 +29,6 @@ import '../../core/config/supabase_config.dart';
 // Removed mood_page.dart import - page has been archived
 import '../../features/weather/presentation/pages/weather_page.dart';
 import '../../features/recommendations/presentation/pages/recommendations_page.dart';
-import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/user_profile_screen.dart' as profile;
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/share_profile_screen.dart';
@@ -39,7 +38,6 @@ import '../../features/profile/presentation/screens/language_screen.dart';
 import '../../features/profile/presentation/screens/comprehensive_settings_screen.dart';
 import '../../features/profile/presentation/screens/preferences_screen.dart';
 import '../../features/profile/presentation/screens/account_security_screen.dart';
-import '../../features/profile/presentation/screens/change_password_screen.dart';
 import '../../features/profile/presentation/screens/privacy_settings_screen.dart';
 import '../../features/profile/presentation/screens/location_settings_screen.dart';
 import '../../features/profile/presentation/screens/language_settings_screen.dart';
@@ -735,11 +733,6 @@ GoRouter router(RouterRef ref) {
         path: '/settings/account-security',
         name: 'account-security',
         builder: (context, state) => const AccountSecurityScreen(),
-      ),
-      GoRoute(
-        path: '/settings/change-password',
-        name: 'change-password',
-        builder: (context, state) => const ChangePasswordScreen(),
       ),
       GoRoute(
         path: '/settings/2fa',

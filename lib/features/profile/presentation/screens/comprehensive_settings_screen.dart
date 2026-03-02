@@ -84,7 +84,7 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                       ),
                       Expanded(
                         child: Text(
-                          'Settings',
+                          l10n.settingsHubTitle,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.poppins(
                             fontSize: 17,
@@ -109,16 +109,16 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                   padding: const EdgeInsets.all(24),
                   children: [
                   // Quick Tip Banner
-                  _buildQuickTipBanner(),
+                  _buildQuickTipBanner(l10n),
                   const SizedBox(height: 32), // space-y-8
                   
                   // Privacy & Security Section
-                  _buildSectionHeader('Privacy & Security'),
+                  _buildSectionHeader(l10n.settingsSectionPrivacySecurity),
                   const SizedBox(height: 12), // mb-3
                   _buildSettingButton(
                     icon: Icons.lock,
-                    label: 'Account Security',
-                    subtitle: 'Password, 2FA',
+                    label: l10n.settingsAccountSecurityTitle,
+                    subtitle: l10n.settingsAccountSecuritySubtitle,
                     iconBgColor: const Color(0xFFFEE2E2), // red-100
                     iconColor: const Color(0xFFDC2626), // red-600
                     onTap: () => context.push('/settings/account-security'),
@@ -126,8 +126,8 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                   const SizedBox(height: 12), // space-y-3
                   _buildSettingButton(
                     icon: Icons.shield,
-                    label: 'Privacy',
-                    subtitle: 'Profile visibility, data',
+                    label: l10n.settingsPrivacyTitle,
+                    subtitle: l10n.settingsPrivacySubtitle,
                     iconBgColor: const Color(0xFFDCFCE7), // green-100
                     iconColor: const Color(0xFF16A34A), // green-600
                     onTap: () => context.push('/settings/privacy'),
@@ -136,12 +136,12 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                   const SizedBox(height: 32), // space-y-8
                   
                   // App Settings Section
-                  _buildSectionHeader('App Settings'),
+                  _buildSectionHeader(l10n.settingsSectionAppSettings),
                   const SizedBox(height: 12), // mb-3
                   _buildSettingButton(
                     icon: Icons.notifications,
-                    label: 'Notifications',
-                    subtitle: 'Push, email, in-app',
+                    label: l10n.settingsNotificationsTitle,
+                    subtitle: l10n.settingsHubNotificationsSubtitle,
                     iconBgColor: const Color(0xFFDBEAFE), // blue-100
                     iconColor: const Color(0xFF2563EB), // blue-600
                     onTap: () => context.push('/settings/notifications'),
@@ -149,8 +149,8 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                   const SizedBox(height: 12), // space-y-3
                   _buildSettingButton(
                     icon: Icons.location_on,
-                    label: 'Location',
-                    subtitle: 'Auto-detect, permissions',
+                    label: l10n.settingsLocationLabel,
+                    subtitle: l10n.settingsLocationSubtitle,
                     iconBgColor: const Color(0xFFF3E8FF), // purple-100
                     iconColor: const Color(0xFF9333EA), // purple-600
                     onTap: () => context.push('/settings/location'),
@@ -158,8 +158,8 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                   const SizedBox(height: 12), // space-y-3
                   _buildSettingButton(
                     icon: Icons.language,
-                    label: 'Language',
-                    subtitle: 'EN',
+                    label: l10n.settingsLanguageLabel,
+                    subtitle: Localizations.localeOf(context).languageCode.toUpperCase(),
                     iconBgColor: const Color(0xFFE0E7FF), // indigo-100
                     iconColor: const Color(0xFF4F46E5), // indigo-600
                     onTap: () => context.push('/settings/language'),
@@ -167,8 +167,8 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                   const SizedBox(height: 12), // space-y-3
                   _buildSettingButton(
                     icon: Icons.palette,
-                    label: 'Theme',
-                    subtitle: 'System',
+                    label: l10n.settingsThemeLabel,
+                    subtitle: l10n.settingsThemeValueSystem,
                     iconBgColor: const Color(0xFFFCE7F3), // pink-100
                     iconColor: const Color(0xFFEC4899), // pink-600
                     onTap: () => context.push('/settings/theme'),
@@ -177,52 +177,42 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                   const SizedBox(height: 32), // space-y-8
                   
                   // More Section
-                  _buildSectionHeader('More'),
+                  _buildSectionHeader(l10n.settingsSectionMore),
                   const SizedBox(height: 12), // mb-3
-                  _buildSettingButton(
-                    icon: Icons.emoji_events,
-                    label: 'Achievements',
-                    subtitle: '$unlockedCount unlocked',
-                    iconBgColor: const Color(0xFFFEF3C7), // yellow-100
-                    iconColor: const Color(0xFFF59E0B), // yellow-600
-                    badge: '$unlockedCount',
-                    onTap: () => context.push('/settings/achievements'),
-                  ),
-                  const SizedBox(height: 12), // space-y-3
                   subscriptionAsync.when(
                     data: (subscription) => _buildSettingButton(
                       icon: Icons.credit_card,
-                      label: 'Subscription',
-                      subtitle: 'Free Plan',
+                      label: l10n.settingsSubscriptionLabel,
+                      subtitle: l10n.settingsSubscriptionSubtitleFree,
                       iconBgColor: const Color(0xFFD1FAE5), // emerald-100
                       iconColor: const Color(0xFF10B981), // emerald-600
-                      badge: 'Free',
+                      badge: l10n.settingsSubscriptionBadgeFree,
                       onTap: () => context.push('/settings/subscription'),
                     ),
                     loading: () => _buildSettingButton(
                       icon: Icons.credit_card,
-                      label: 'Subscription',
-                      subtitle: 'Free Plan',
+                      label: l10n.settingsSubscriptionLabel,
+                      subtitle: l10n.settingsSubscriptionSubtitleFree,
                       iconBgColor: const Color(0xFFD1FAE5),
                       iconColor: const Color(0xFF10B981),
-                      badge: 'Free',
+                      badge: l10n.settingsSubscriptionBadgeFree,
                       onTap: () => context.push('/settings/subscription'),
                     ),
                     error: (_, __) => _buildSettingButton(
                       icon: Icons.credit_card,
-                      label: 'Subscription',
-                      subtitle: 'Free Plan',
+                      label: l10n.settingsSubscriptionLabel,
+                      subtitle: l10n.settingsSubscriptionSubtitleFree,
                       iconBgColor: const Color(0xFFD1FAE5),
                       iconColor: const Color(0xFF10B981),
-                      badge: 'Free',
+                      badge: l10n.settingsSubscriptionBadgeFree,
                       onTap: () => context.push('/settings/subscription'),
                     ),
                   ),
                   const SizedBox(height: 12), // space-y-3
                   _buildSettingButton(
                     icon: Icons.download,
-                    label: 'Data & Storage',
-                    subtitle: 'Export, clear cache',
+                    label: l10n.settingsDataStorageLabel,
+                    subtitle: l10n.settingsDataStorageSubtitle,
                     iconBgColor: const Color(0xFFCFFAFE), // cyan-100
                     iconColor: const Color(0xFF06B6D4), // cyan-600
                     onTap: () => context.push('/settings/data'),
@@ -230,8 +220,8 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                   const SizedBox(height: 12), // space-y-3
                   _buildSettingButton(
                     icon: Icons.help_outline,
-                    label: 'Help & Support',
-                    subtitle: 'FAQ, contact us',
+                    label: l10n.settingsHelpSupportLabel,
+                    subtitle: l10n.settingsHelpSupportSubtitle,
                     iconBgColor: const Color(0xFFCCFBF1), // teal-100
                     iconColor: const Color(0xFF14B8A6), // teal-600
                     onTap: () => context.push('/settings/help'),
@@ -240,12 +230,12 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                   const SizedBox(height: 32), // space-y-8
                   
                   // Danger Zone
-                  _buildSectionHeader('Danger Zone', isDanger: true),
+                  _buildSectionHeader(l10n.settingsSectionDangerZone, isDanger: true),
                   const SizedBox(height: 12), // mb-3
                   _buildSettingButton(
                     icon: Icons.delete_outline,
-                    label: 'Delete Account',
-                    subtitle: 'Permanently delete your data',
+                    label: l10n.settingsDangerDeleteAccountLabel,
+                    subtitle: l10n.settingsDangerDeleteAccountSubtitle,
                     iconBgColor: const Color(0xFFFEE2E2), // red-100
                     iconColor: const Color(0xFFDC2626), // red-600
                     isDanger: true,
@@ -254,8 +244,8 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                   const SizedBox(height: 12), // space-y-3
                   _buildSettingButton(
                     icon: Icons.logout,
-                    label: 'Sign Out',
-                    subtitle: 'Log out of your account',
+                    label: l10n.settingsDangerSignOutLabel,
+                    subtitle: l10n.settingsDangerSignOutSubtitle,
                     iconBgColor: const Color(0xFFFEE2E2), // red-100
                     iconColor: const Color(0xFFDC2626), // red-600
                     isDanger: true,
@@ -276,7 +266,7 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
     );
   }
 
-  Widget _buildQuickTipBanner() {
+  Widget _buildQuickTipBanner(AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -327,7 +317,7 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '💡 Quick Tip',
+                  '💡 ${l10n.settingsQuickTipTitle}',
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -336,7 +326,7 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'To edit your profile or preferences, go back to your profile screen!',
+                  l10n.settingsQuickTipBody,
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     color: const Color(0xFF374151), // gray-700
@@ -486,11 +476,12 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
   }
 
   Widget _buildAppVersion() {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         children: [
           Text(
-            'WanderMood v${_appVersion ?? '1.0.0'}',
+            l10n.settingsAppVersion(_appVersion ?? '1.0.0'),
             style: GoogleFonts.poppins(
               fontSize: 14,
               color: const Color(0xFF9CA3AF), // gray-400
@@ -498,7 +489,7 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
           ),
           const SizedBox(height: 4),
           Text(
-            'Made with ❤️ for travelers',
+            l10n.settingsAppTagline,
             style: GoogleFonts.poppins(
               fontSize: 12,
               color: const Color(0xFF9CA3AF), // gray-400
@@ -510,6 +501,7 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
   }
 
   Future<void> _handleSignOut(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final shouldSignOut = await showDialog<bool>(
       context: context,
@@ -518,17 +510,17 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Text(
-            'Sign Out',
+            AppLocalizations.of(dialogContext)!.settingsSignOutTitle,
             style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
           ),
           content: Text(
-            'Are you sure you want to sign out?',
+            AppLocalizations.of(dialogContext)!.settingsSignOutMessage,
             style: GoogleFonts.poppins(),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text('Cancel', style: GoogleFonts.poppins()),
+              child: Text(AppLocalizations.of(dialogContext)!.settingsDialogCancel, style: GoogleFonts.poppins()),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -536,7 +528,7 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                 backgroundColor: dialogTheme.colorScheme.error,
                 foregroundColor: dialogTheme.colorScheme.onError,
               ),
-              child: Text('Sign Out', style: GoogleFonts.poppins()),
+              child: Text(AppLocalizations.of(dialogContext)!.settingsSignOutConfirm, style: GoogleFonts.poppins()),
             ),
           ],
         );
@@ -553,7 +545,7 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error signing out: $e'),
+              content: Text(l10n.drawerErrorSigningOut(e.toString())),
               backgroundColor: theme.colorScheme.error,
             ),
           );

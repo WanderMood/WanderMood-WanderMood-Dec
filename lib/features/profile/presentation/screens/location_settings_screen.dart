@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import '../widgets/settings_screen_template.dart';
 
 class LocationSettingsScreen extends ConsumerStatefulWidget {
@@ -46,6 +47,7 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
   Future<void> _updateAutoDetectLocation(bool value) async {
     setState(() => _autoDetectLocation = value);
     try {
+      final l10n = AppLocalizations.of(context)!;
       final supabase = Supabase.instance.client;
       final user = supabase.auth.currentUser;
       if (user != null) {
@@ -57,8 +59,8 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Location settings updated'),
+            SnackBar(
+              content: Text(l10n.locationSnackbarUpdated),
               backgroundColor: Colors.green,
             ),
           );
@@ -66,9 +68,10 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text(l10n.locationSnackbarError(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -78,9 +81,9 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
 
   @override
   Widget build(BuildContext context) {
-    
+    final l10n = AppLocalizations.of(context)!;
     return SettingsScreenTemplate(
-      title: 'Location',
+      title: l10n.settingsLocationLabel,
       onBack: () => context.pop(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,7 +111,7 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Current Location',
+                        l10n.locationCurrentLocationTitle,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -117,7 +120,7 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Rotterdam, Netherlands',
+                        l10n.locationCurrentLocationValue,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: const Color(0xFF374151),
@@ -131,7 +134,7 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
           ),
           const SizedBox(height: 24),
           Text(
-            'Location Settings',
+            l10n.locationSectionSettingsTitle,
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -140,14 +143,14 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
           ),
           const SizedBox(height: 12),
           _buildToggleOption(
-            label: 'Auto-Detect Location',
-            subtitle: 'Automatically detect your current location',
+            label: l10n.locationAutoDetectTitle,
+            subtitle: l10n.locationAutoDetectSubtitle,
             checked: _autoDetectLocation,
             onChange: () => _updateAutoDetectLocation(!_autoDetectLocation),
           ),
           const SizedBox(height: 24),
           Text(
-            'Default Location',
+            l10n.locationSectionDefaultTitle,
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -173,7 +176,7 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Rotterdam',
+                          l10n.locationDefaultCityLabel,
                           style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w600,
                             fontSize: 16,
@@ -182,7 +185,7 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Used when location is off',
+                          l10n.locationDefaultUsedWhenOff,
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             color: const Color(0xFF6B7280),
@@ -241,7 +244,7 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Location Permissions',
+                              l10n.locationPermissionsTitle,
                               style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 16,
@@ -250,7 +253,7 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Manage in system settings',
+                              l10n.locationPermissionsSubtitle,
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 color: const Color(0xFF6B7280),

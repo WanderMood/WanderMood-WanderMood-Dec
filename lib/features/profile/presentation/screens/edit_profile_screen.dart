@@ -4,10 +4,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
+import 'package:wandermood/features/profile/domain/providers/current_user_profile_provider.dart';
 import 'package:wandermood/features/places/application/places_service.dart';
 import 'package:wandermood/features/places/domain/models/place.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import '../widgets/edit_favorite_vibes.dart' show allVibes, VibeData;
 import 'dart:io';
 import 'dart:async';
@@ -154,24 +156,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     try {
       final placesService = ref.read(placesServiceProvider.notifier);
-      
-      // Get user's current location for better suggestions
-      double? lat;
-      double? lng;
-      final locationAsync = ref.read(userLocationProvider);
-      locationAsync.whenData((position) {
-        if (position != null) {
-          lat = position.latitude;
-          lng = position.longitude;
-        }
-      });
 
-      final suggestions = await placesService.getAutocomplete(
-        query,
-        latitude: lat,
-        longitude: lng,
-        radius: 50000, // 50km radius
-      );
+      // Use text-based autocomplete so cities like "Rotterdam" always appear,
+      // regardless of current GPS radius.
+      final suggestions = await placesService.getAutocomplete(query);
 
       if (mounted) {
         setState(() {
@@ -389,6 +377,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           })
           .eq('id', userId);
 
+      // Keep user_preferences in sync so the main profile (CurrentUserProfile)
+      // immediately reflects updated vibes.
+      await supabase
+          .from('user_preferences')
+          .upsert({
+            'user_id': userId,
+            'selected_moods': _favoriteVibes,
+            'updated_at': DateTime.now().toIso8601String(),
+          }, onConflict: 'user_id');
+
       // Update email in auth if changed
       if (_emailController.text != _originalData['email']) {
         await supabase.auth.updateUser(
@@ -396,17 +394,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         );
       }
 
-      // Refresh profile provider to update main profile screen
+      // Refresh both legacy profile provider and the new current user profile
+      // so all profile UIs stay in sync after editing.
       ref.invalidate(profileProvider);
-      
-      // Wait a moment for the refresh to complete
-      await Future.delayed(const Duration(milliseconds: 100));
+      await ref.read(currentUserProfileProvider.notifier).refresh();
 
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Profile updated successfully',
+              l10n.profileEditUpdated,
               style: GoogleFonts.poppins(),
             ),
             backgroundColor: const Color(0xFFF97316),
@@ -416,10 +414,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Failed to update profile: ${e.toString()}',
+              l10n.profileEditUpdateFailed(e.toString()),
               style: GoogleFonts.poppins(),
             ),
             backgroundColor: Colors.red,
@@ -472,6 +471,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget _buildEditScreen() {
+    final l10n = AppLocalizations.of(context)!;
     final profileState = ref.watch(profileProvider);
     
     return Scaffold(
@@ -490,9 +490,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 bottom: false,
                 child: Row(
                   children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 20,
+                        color: Color(0xFF4B5563),
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
                     Expanded(
                       child: Text(
-                        'Edit Profile',
+                        AppLocalizations.of(context)!.profileEditTitle,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           fontSize: 18,
@@ -528,7 +536,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 ),
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                           child: Text(
-                            'Save',
+                            AppLocalizations.of(context)!.profileEditSave,
                             style: GoogleFonts.poppins(
                               color: _hasChanges ? Colors.white : Colors.grey[400],
                               fontWeight: FontWeight.w600,
@@ -568,7 +576,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       
                       // Full Name
                       _buildInputCard(
-                        label: 'Full Name',
+                        label: l10n.profileEditNameLabel,
                         child: TextFormField(
                           controller: _nameController,
                           onChanged: (_) => _checkForChanges(),
@@ -578,7 +586,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             color: Colors.grey[800],
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Enter your name',
+                            hintText: l10n.profileEditNameHint,
                             hintStyle: GoogleFonts.poppins(color: Colors.grey[400]),
                             filled: true,
                             fillColor: const Color(0xFFF9FAFB),
@@ -602,7 +610,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       
                       // Username
                       _buildInputCard(
-                        label: 'Username',
+                        label: l10n.profileEditUsernameLabel,
                         child: Row(
                           children: [
                             Text(
@@ -623,7 +631,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                   color: Colors.grey[800],
                                 ),
                                 decoration: InputDecoration(
-                                  hintText: 'username',
+                                  hintText: l10n.profileEditUsernameHint,
                                   hintStyle: GoogleFonts.poppins(color: Colors.grey[400]),
                                   filled: true,
                                   fillColor: const Color(0xFFF9FAFB),
@@ -650,7 +658,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       
                       // Email
                       _buildInputCard(
-                        label: 'Email',
+                        label: l10n.profileEditEmailLabel,
                         child: Row(
                           children: [
                             const Icon(Icons.email_outlined, color: Color(0xFF9CA3AF), size: 20),
@@ -666,7 +674,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                   color: Colors.grey[800],
                                 ),
                                 decoration: InputDecoration(
-                                  hintText: 'email@example.com',
+                                  hintText: l10n.profileEditEmailHint,
                                   hintStyle: GoogleFonts.poppins(color: Colors.grey[400]),
                                   filled: true,
                                   fillColor: const Color(0xFFF9FAFB),
@@ -693,7 +701,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       
                       // Bio
                       _buildInputCard(
-                        label: 'Bio',
+                        label: l10n.profileEditBioLabel,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -707,7 +715,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 color: Colors.grey[800],
                               ),
                               decoration: InputDecoration(
-                                hintText: 'Tell us about yourself...',
+                                hintText: l10n.profileEditBioHint,
                                 hintStyle: GoogleFonts.poppins(color: Colors.grey[400]),
                                 filled: true,
                                 fillColor: const Color(0xFFF9FAFB),
@@ -748,7 +756,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       
                       // Birthday
                       _buildInputCard(
-                        label: 'Birthday',
+                        label: l10n.profileEditBirthdayLabel,
                         child: InkWell(
                           onTap: () => _selectDate(context),
                           child: Row(
@@ -759,7 +767,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 child: Text(
                                   _dateOfBirth != null
                                       ? DateFormat('yyyy-MM-dd').format(_dateOfBirth!)
-                                      : 'Select date',
+                                      : l10n.profileEditSelectDate,
                                   style: GoogleFonts.poppins(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
@@ -790,7 +798,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         ),
         error: (error, stack) => Center(
           child: Text(
-            'Error loading profile: $error',
+            AppLocalizations.of(context)!.profileEditErrorLoading(error.toString()),
             style: GoogleFonts.poppins(color: Colors.red),
           ),
         ),
@@ -864,7 +872,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Profile Photo',
+                  AppLocalizations.of(context)!.profileEditProfilePhoto,
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -873,7 +881,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Tap to change',
+                  AppLocalizations.of(context)!.profileEditProfilePhotoTap,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: Colors.grey[500],
@@ -957,7 +965,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Location',
+            AppLocalizations.of(context)!.profileEditLocationLabel,
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -980,7 +988,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       color: Colors.grey[800],
                     ),
                     decoration: InputDecoration(
-                      hintText: 'City, Country',
+                      hintText: AppLocalizations.of(context)!.profileEditLocationHint,
                       hintStyle: GoogleFonts.poppins(color: Colors.grey[400]),
                       filled: true,
                       fillColor: const Color(0xFFF9FAFB),
@@ -1054,7 +1062,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   const Icon(Icons.auto_awesome, color: Color(0xFFF97316), size: 20),
                   const SizedBox(width: 8),
                   Text(
-                    'Favorite Vibes',
+                    AppLocalizations.of(context)!.profileEditFavoriteVibesTitle,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -1068,7 +1076,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 child: Row(
                   children: [
                     Text(
-                      'Edit',
+                      AppLocalizations.of(context)!.profileEditFavoriteVibesEdit,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -1123,10 +1131,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget _buildPhotoScreen() {
+    final l10n = AppLocalizations.of(context)!;
     final initial = _nameController.text.isNotEmpty
         ? _nameController.text[0].toUpperCase()
         : '?';
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFF7ED),
       body: Column(
@@ -1148,7 +1157,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   ),
                   Expanded(
                     child: Text(
-                      'Profile Photo',
+                      l10n.profileEditProfilePhoto,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 20,
@@ -1238,7 +1247,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         onPressed: () => _pickImage(fromCamera: true),
                         icon: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
                         label: Text(
-                          'Take Photo',
+                          l10n.profileEditPhotoTake,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -1279,7 +1288,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         onPressed: () => _pickImage(fromCamera: false),
                         icon: const Icon(Icons.person, color: Colors.white, size: 20),
                         label: Text(
-                          'Choose from Gallery',
+                          l10n.profileEditPhotoChoose,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -1307,7 +1316,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         onPressed: _removePhoto,
                         icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
                         label: Text(
-                          'Remove Photo',
+                          l10n.profileEditPhotoRemove,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -1334,6 +1343,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget _buildVibesScreen() {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: const Color(0xFFFFF7ED),
       body: Column(
@@ -1355,7 +1365,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   ),
                   Expanded(
                     child: Text(
-                      'Edit Favorite Vibes',
+                      l10n.profileEditVibesTitle,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 20,
@@ -1388,7 +1398,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         child: Text(
-                          'Done',
+                          l10n.profileEditVibesDone,
                           style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
@@ -1412,7 +1422,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Select your favorite vibes to personalize your recommendations',
+                    l10n.profileEditFavoriteVibesSubtitle,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: Colors.grey[600],

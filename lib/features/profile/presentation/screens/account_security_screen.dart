@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../providers/settings_providers.dart';
 import '../widgets/settings_screen_template.dart';
 
@@ -10,10 +11,11 @@ class AccountSecurityScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final accountSecurityAsync = ref.watch(accountSecurityProvider);
-    
+
     return SettingsScreenTemplate(
-      title: 'Account Security',
+      title: l10n.settingsAccountSecurityTitle,
       onBack: () => context.pop(),
       child: accountSecurityAsync.when(
         data: (security) => _buildContent(context, security),
@@ -24,7 +26,7 @@ class AccountSecurityScreen extends ConsumerWidget {
   }
 
   Widget _buildContent(BuildContext context, accountSecurity) {
-    final passwordChangedAt = accountSecurity?.passwordChangedAt;
+    final l10n = AppLocalizations.of(context)!;
     final twoFactorEnabled = accountSecurity?.twoFactorEnabled ?? false;
 
     return Column(
@@ -32,28 +34,18 @@ class AccountSecurityScreen extends ConsumerWidget {
       children: [
         _buildSettingCard(
           context: context,
-          icon: Icons.lock,
-          title: 'Change Password',
-          subtitle: passwordChangedAt != null
-              ? 'Last changed ${_formatDate(passwordChangedAt)}'
-              : 'Last changed 3 months ago',
-          onTap: () => context.push('/settings/change-password'),
-        ),
-        const SizedBox(height: 16),
-        _buildSettingCard(
-          context: context,
           icon: Icons.shield,
-          title: 'Two-Factor Authentication',
-          subtitle: twoFactorEnabled ? 'Enabled' : 'Not enabled',
-          badge: twoFactorEnabled ? null : 'Recommended',
+          title: l10n.settingsTwoFactorTitle,
+          subtitle: twoFactorEnabled ? l10n.settingsTwoFactorEnabled : l10n.settingsTwoFactorNotEnabled,
+          badge: twoFactorEnabled ? null : l10n.settingsTwoFactorBadgeRecommended,
           onTap: () => context.push('/settings/2fa'),
         ),
         const SizedBox(height: 16),
         _buildSettingCard(
           context: context,
           icon: Icons.visibility,
-          title: 'Active Sessions',
-          subtitle: '3 devices',
+          title: l10n.settingsActiveSessionsTitle,
+          subtitle: l10n.settingsActiveSessionsSubtitle('3'),
           onTap: () => context.push('/settings/sessions'),
         ),
       ],
@@ -159,27 +151,5 @@ class AccountSecurityScreen extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays == 0) {
-      return 'Today';
-    } else if (difference.inDays == 1) {
-      return 'Yesterday';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
-    } else if (difference.inDays < 30) {
-      final weeks = (difference.inDays / 7).floor();
-      return '$weeks ${weeks == 1 ? 'week' : 'weeks'} ago';
-    } else if (difference.inDays < 365) {
-      final months = (difference.inDays / 30).floor();
-      return '$months ${months == 1 ? 'month' : 'months'} ago';
-    } else {
-      final years = (difference.inDays / 365).floor();
-      return '$years ${years == 1 ? 'year' : 'years'} ago';
-    }
   }
 }

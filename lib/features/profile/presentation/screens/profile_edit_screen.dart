@@ -1196,7 +1196,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                   ),
                   Expanded(
                     child: Text(
-                      'Edit Favorite Vibes',
+                      AppLocalizations.of(context)!.profileEditVibesTitle,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 20,
@@ -1229,7 +1229,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         child: Text(
-                          'Done',
+                          AppLocalizations.of(context)!.profileEditVibesDone,
                           style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,

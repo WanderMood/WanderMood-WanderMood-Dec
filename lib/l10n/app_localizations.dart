@@ -1645,6 +1645,1830 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rotterdam'**
   String get signupDefaultCity;
+
+  /// No description provided for @profileSnackAvatarUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile picture updated!'**
+  String get profileSnackAvatarUpdated;
+
+  /// No description provided for @profileSnackAvatarFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update picture: {error}'**
+  String profileSnackAvatarFailed(String error);
+
+  /// No description provided for @profileErrorLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load profile'**
+  String get profileErrorLoad;
+
+  /// No description provided for @profileRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get profileRetry;
+
+  /// No description provided for @profileFallbackUser.
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
+  String get profileFallbackUser;
+
+  /// No description provided for @profileStatsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Stats'**
+  String get profileStatsTitle;
+
+  /// No description provided for @profileStatsCheckinsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-ins'**
+  String get profileStatsCheckinsTitle;
+
+  /// No description provided for @profileStatsPlacesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Places'**
+  String get profileStatsPlacesTitle;
+
+  /// No description provided for @profileStatsPlacesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to explore'**
+  String get profileStatsPlacesSubtitle;
+
+  /// No description provided for @profileStatsTopMoodTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Mood'**
+  String get profileStatsTopMoodTitle;
+
+  /// No description provided for @profileFavoriteVibesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Favorite Vibes'**
+  String get profileFavoriteVibesTitle;
+
+  /// No description provided for @profileFavoriteVibesEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get profileFavoriteVibesEdit;
+
+  /// No description provided for @profileFavoriteVibesAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Add Vibe'**
+  String get profileFavoriteVibesAdd;
+
+  /// No description provided for @profileMoodJourneyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Mood Journey'**
+  String get profileMoodJourneyTitle;
+
+  /// No description provided for @profileMoodJourneySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View your mood history'**
+  String get profileMoodJourneySubtitle;
+
+  /// No description provided for @profileTravelGlobeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Travel Globe'**
+  String get profileTravelGlobeTitle;
+
+  /// No description provided for @profileTravelGlobeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore your travel journey'**
+  String get profileTravelGlobeSubtitle;
+
+  /// No description provided for @profilePreferencesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Preferences'**
+  String get profilePreferencesTitle;
+
+  /// No description provided for @profilePreferencesEditAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit All'**
+  String get profilePreferencesEditAll;
+
+  /// No description provided for @profilePreferencesBudgetStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget Style'**
+  String get profilePreferencesBudgetStyle;
+
+  /// No description provided for @profilePreferencesSocialVibe.
+  ///
+  /// In en, this message translates to:
+  /// **'Social Vibe'**
+  String get profilePreferencesSocialVibe;
+
+  /// No description provided for @profilePreferencesFoodPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Food Preferences'**
+  String get profilePreferencesFoodPreferences;
+
+  /// No description provided for @profilePreferencesEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap \"Edit All\" to set your preferences'**
+  String get profilePreferencesEmptyHint;
+
+  /// No description provided for @profileActionEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get profileActionEdit;
+
+  /// No description provided for @profileActionShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get profileActionShare;
+
+  /// No description provided for @profileAgeGroup20s.
+  ///
+  /// In en, this message translates to:
+  /// **'20s Adventurer'**
+  String get profileAgeGroup20s;
+
+  /// No description provided for @profileAgeGroup30s.
+  ///
+  /// In en, this message translates to:
+  /// **'30s Adventurer'**
+  String get profileAgeGroup30s;
+
+  /// No description provided for @profileAgeGroup40s.
+  ///
+  /// In en, this message translates to:
+  /// **'40s Adventurer'**
+  String get profileAgeGroup40s;
+
+  /// No description provided for @profileAgeGroup50s.
+  ///
+  /// In en, this message translates to:
+  /// **'50s Adventurer'**
+  String get profileAgeGroup50s;
+
+  /// No description provided for @profileAgeGroup55Plus.
+  ///
+  /// In en, this message translates to:
+  /// **'55+ Adventurer'**
+  String get profileAgeGroup55Plus;
+
+  /// No description provided for @profileBudgetLow.
+  ///
+  /// In en, this message translates to:
+  /// **'\$ Budget'**
+  String get profileBudgetLow;
+
+  /// No description provided for @profileBudgetMid.
+  ///
+  /// In en, this message translates to:
+  /// **'\$\$ Moderate'**
+  String get profileBudgetMid;
+
+  /// No description provided for @profileBudgetHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'\$\$\$ Luxury'**
+  String get profileBudgetHigh;
+
+  /// No description provided for @profileSocialSolo.
+  ///
+  /// In en, this message translates to:
+  /// **'Solo'**
+  String get profileSocialSolo;
+
+  /// No description provided for @profileSocialCouple.
+  ///
+  /// In en, this message translates to:
+  /// **'Couple'**
+  String get profileSocialCouple;
+
+  /// No description provided for @profileSocialGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Group'**
+  String get profileSocialGroup;
+
+  /// No description provided for @profileSocialMix.
+  ///
+  /// In en, this message translates to:
+  /// **'Mix'**
+  String get profileSocialMix;
+
+  /// No description provided for @profileSocialSocial.
+  ///
+  /// In en, this message translates to:
+  /// **'Social'**
+  String get profileSocialSocial;
+
+  /// No description provided for @profileEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get profileEditTitle;
+
+  /// No description provided for @profileEditProfilePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile Photo'**
+  String get profileEditProfilePhoto;
+
+  /// No description provided for @profileEditProfilePhotoTap.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to change'**
+  String get profileEditProfilePhotoTap;
+
+  /// No description provided for @profileEditNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get profileEditNameLabel;
+
+  /// No description provided for @profileEditUsernameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get profileEditUsernameLabel;
+
+  /// No description provided for @profileEditEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get profileEditEmailLabel;
+
+  /// No description provided for @profileEditBioLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get profileEditBioLabel;
+
+  /// No description provided for @profileEditSelectDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select date'**
+  String get profileEditSelectDate;
+
+  /// No description provided for @profileEditUsernameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'username'**
+  String get profileEditUsernameHint;
+
+  /// No description provided for @profileEditEmailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'email@example.com'**
+  String get profileEditEmailHint;
+
+  /// No description provided for @profileEditNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your name'**
+  String get profileEditNameHint;
+
+  /// No description provided for @profileEditBioHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about yourself...'**
+  String get profileEditBioHint;
+
+  /// No description provided for @profileEditLocationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get profileEditLocationLabel;
+
+  /// No description provided for @profileEditLocationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'City, Country'**
+  String get profileEditLocationHint;
+
+  /// No description provided for @profileEditBirthdayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Birthday'**
+  String get profileEditBirthdayLabel;
+
+  /// No description provided for @profileEditSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get profileEditSave;
+
+  /// No description provided for @profileEditNoChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'No Changes'**
+  String get profileEditNoChanges;
+
+  /// No description provided for @profileEditFavoriteVibesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite Vibes'**
+  String get profileEditFavoriteVibesTitle;
+
+  /// No description provided for @profileEditFavoriteVibesEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get profileEditFavoriteVibesEdit;
+
+  /// No description provided for @profileEditFavoriteVibesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your favorite vibes to personalize your recommendations'**
+  String get profileEditFavoriteVibesSubtitle;
+
+  /// No description provided for @profileEditPhotoTake.
+  ///
+  /// In en, this message translates to:
+  /// **'Take Photo'**
+  String get profileEditPhotoTake;
+
+  /// No description provided for @profileEditPhotoChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from Gallery'**
+  String get profileEditPhotoChoose;
+
+  /// No description provided for @profileEditPhotoRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Photo'**
+  String get profileEditPhotoRemove;
+
+  /// No description provided for @profileEditVibesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Favorite Vibes'**
+  String get profileEditVibesTitle;
+
+  /// No description provided for @profileEditVibesDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get profileEditVibesDone;
+
+  /// No description provided for @profileEditUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated successfully'**
+  String get profileEditUpdated;
+
+  /// No description provided for @profileEditUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update profile: {error}'**
+  String profileEditUpdateFailed(String error);
+
+  /// No description provided for @profileEditErrorLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading profile: {error}'**
+  String profileEditErrorLoading(String error);
+
+  /// No description provided for @profileVibesUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibes updated! 🎉'**
+  String get profileVibesUpdated;
+
+  /// No description provided for @profileVibesSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save vibes: {error}'**
+  String profileVibesSaveFailed(String error);
+
+  /// No description provided for @profileVibesEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Favorite Vibes'**
+  String get profileVibesEditTitle;
+
+  /// No description provided for @profileVibesSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get profileVibesSave;
+
+  /// No description provided for @profileVibesSelectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected ({count}/5)'**
+  String profileVibesSelectedCount(String count);
+
+  /// No description provided for @profileVibesMaxReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum reached'**
+  String get profileVibesMaxReached;
+
+  /// No description provided for @profileVibesChooseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Your Vibes'**
+  String get profileVibesChooseTitle;
+
+  /// No description provided for @profileVibesAddMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Add More Vibes'**
+  String get profileVibesAddMore;
+
+  /// No description provided for @profileVibesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select up to 5 vibes that match your personality. We\'ll use these to personalize your recommendations!'**
+  String get profileVibesSubtitle;
+
+  /// No description provided for @profileVibesCurrentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR CURRENT VIBES'**
+  String get profileVibesCurrentTitle;
+
+  /// No description provided for @shareProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Profile'**
+  String get shareProfileTitle;
+
+  /// No description provided for @shareProfileShareTextMy.
+  ///
+  /// In en, this message translates to:
+  /// **'Check out my profile on WanderMood! 🧳✨\n\n{url}'**
+  String shareProfileShareTextMy(String url);
+
+  /// No description provided for @shareProfileShareTextNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'Check out {name}\'s profile on WanderMood! 🧳✨\n\n{url}'**
+  String shareProfileShareTextNamed(String name, String url);
+
+  /// No description provided for @shareProfileMy.
+  ///
+  /// In en, this message translates to:
+  /// **'my'**
+  String get shareProfileMy;
+
+  /// No description provided for @shareProfileDefaultUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'wanderer'**
+  String get shareProfileDefaultUsername;
+
+  /// No description provided for @shareProfileEmailSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Check out my WanderMood profile'**
+  String get shareProfileEmailSubject;
+
+  /// No description provided for @shareProfileFailedToShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to share: {error}'**
+  String shareProfileFailedToShare(String error);
+
+  /// No description provided for @shareProfileDefaultBio.
+  ///
+  /// In en, this message translates to:
+  /// **'Always chasing sunsets & good vibes ✨'**
+  String get shareProfileDefaultBio;
+
+  /// No description provided for @shareProfileDayStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Day Streak'**
+  String get shareProfileDayStreak;
+
+  /// No description provided for @shareProfileQRCode.
+  ///
+  /// In en, this message translates to:
+  /// **'QR Code'**
+  String get shareProfileQRCode;
+
+  /// No description provided for @shareProfileScanToConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan to connect'**
+  String get shareProfileScanToConnect;
+
+  /// No description provided for @shareProfileCopyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Link'**
+  String get shareProfileCopyLink;
+
+  /// No description provided for @shareProfileShareAnywhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Share anywhere'**
+  String get shareProfileShareAnywhere;
+
+  /// No description provided for @shareProfileShareVia.
+  ///
+  /// In en, this message translates to:
+  /// **'Share via'**
+  String get shareProfileShareVia;
+
+  /// No description provided for @shareProfileInstagram.
+  ///
+  /// In en, this message translates to:
+  /// **'Instagram'**
+  String get shareProfileInstagram;
+
+  /// No description provided for @shareProfileWhatsApp.
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp'**
+  String get shareProfileWhatsApp;
+
+  /// No description provided for @shareProfileTwitter.
+  ///
+  /// In en, this message translates to:
+  /// **'Twitter'**
+  String get shareProfileTwitter;
+
+  /// No description provided for @shareProfileEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get shareProfileEmail;
+
+  /// No description provided for @shareProfilePublicProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Public Profile'**
+  String get shareProfilePublicProfile;
+
+  /// No description provided for @shareProfileAnyoneCanView.
+  ///
+  /// In en, this message translates to:
+  /// **'Anyone can view your profile'**
+  String get shareProfileAnyoneCanView;
+
+  /// No description provided for @shareProfileUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update: {error}'**
+  String shareProfileUpdateFailed(String error);
+
+  /// No description provided for @shareProfileMyQRCode.
+  ///
+  /// In en, this message translates to:
+  /// **'My QR Code'**
+  String get shareProfileMyQRCode;
+
+  /// No description provided for @shareProfileHowItWorks.
+  ///
+  /// In en, this message translates to:
+  /// **'How it works'**
+  String get shareProfileHowItWorks;
+
+  /// No description provided for @shareProfileQRInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask someone to scan this code with their WanderMood app to instantly connect and share your profile!'**
+  String get shareProfileQRInstructions;
+
+  /// No description provided for @shareProfileDownloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded!'**
+  String get shareProfileDownloaded;
+
+  /// No description provided for @shareProfileSaveQRCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Save QR Code'**
+  String get shareProfileSaveQRCode;
+
+  /// No description provided for @shareProfileShareMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Check out my WanderMood profile! {url}'**
+  String shareProfileShareMessage(String url);
+
+  /// No description provided for @shareProfileShareQRImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Share QR Image'**
+  String get shareProfileShareQRImage;
+
+  /// No description provided for @shareProfileShareLinkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Link'**
+  String get shareProfileShareLinkTitle;
+
+  /// No description provided for @shareProfileYourProfileLink.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR PROFILE LINK'**
+  String get shareProfileYourProfileLink;
+
+  /// No description provided for @shareProfileLinkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Link Copied!'**
+  String get shareProfileLinkCopied;
+
+  /// No description provided for @shareProfileQuickShare.
+  ///
+  /// In en, this message translates to:
+  /// **'QUICK SHARE'**
+  String get shareProfileQuickShare;
+
+  /// No description provided for @shareProfileLinkInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Anyone with this link can view your public profile. You can change your privacy settings anytime.'**
+  String get shareProfileLinkInfo;
+
+  /// No description provided for @drawerYourJourney.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Journey'**
+  String get drawerYourJourney;
+
+  /// No description provided for @drawerSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get drawerSettings;
+
+  /// No description provided for @drawerAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get drawerAccount;
+
+  /// No description provided for @drawerMoodHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood History'**
+  String get drawerMoodHistory;
+
+  /// No description provided for @drawerSavedPlaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved Places'**
+  String get drawerSavedPlaces;
+
+  /// No description provided for @drawerMyBookings.
+  ///
+  /// In en, this message translates to:
+  /// **'My Bookings'**
+  String get drawerMyBookings;
+
+  /// No description provided for @drawerAppSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'App Settings'**
+  String get drawerAppSettings;
+
+  /// No description provided for @drawerNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get drawerNotifications;
+
+  /// No description provided for @drawerLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get drawerLanguage;
+
+  /// No description provided for @drawerHelpSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & Support'**
+  String get drawerHelpSupport;
+
+  /// No description provided for @drawerProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get drawerProfile;
+
+  /// No description provided for @drawerLogOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out'**
+  String get drawerLogOut;
+
+  /// No description provided for @drawerErrorLoadingProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading profile'**
+  String get drawerErrorLoadingProfile;
+
+  /// No description provided for @drawerErrorSigningOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Error signing out: {error}'**
+  String drawerErrorSigningOut(String error);
+
+  /// No description provided for @drawerNewExplorer.
+  ///
+  /// In en, this message translates to:
+  /// **'New Explorer'**
+  String get drawerNewExplorer;
+
+  /// No description provided for @drawerMasterWanderer.
+  ///
+  /// In en, this message translates to:
+  /// **'Master Wanderer'**
+  String get drawerMasterWanderer;
+
+  /// No description provided for @drawerAdventureExpert.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventure Expert'**
+  String get drawerAdventureExpert;
+
+  /// No description provided for @drawerSeasonedExplorer.
+  ///
+  /// In en, this message translates to:
+  /// **'Seasoned Explorer'**
+  String get drawerSeasonedExplorer;
+
+  /// No description provided for @drawerTravelEnthusiast.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel Enthusiast'**
+  String get drawerTravelEnthusiast;
+
+  /// No description provided for @drawerDayStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Day Streak'**
+  String drawerDayStreak(String count);
+
+  /// No description provided for @profileModeLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Mode'**
+  String get profileModeLocal;
+
+  /// No description provided for @profileModeTravel.
+  ///
+  /// In en, this message translates to:
+  /// **'Traveling'**
+  String get profileModeTravel;
+
+  /// No description provided for @profileModeWhatDoesThisDo.
+  ///
+  /// In en, this message translates to:
+  /// **'What does this do?'**
+  String get profileModeWhatDoesThisDo;
+
+  /// No description provided for @profileModeSwitchToLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to Local Mode'**
+  String get profileModeSwitchToLocal;
+
+  /// No description provided for @profileModeSwitchToTravel.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to Travel Mode'**
+  String get profileModeSwitchToTravel;
+
+  /// No description provided for @profileModeCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get profileModeCancel;
+
+  /// No description provided for @profileModeChangeAnytime.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change this anytime'**
+  String get profileModeChangeAnytime;
+
+  /// No description provided for @profileModeUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Mode Updated!'**
+  String get profileModeUpdated;
+
+  /// No description provided for @profileModeUpdating.
+  ///
+  /// In en, this message translates to:
+  /// **'Your recommendations are updating...'**
+  String get profileModeUpdating;
+
+  /// No description provided for @profileModeTravelModesExplained.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel Modes Explained'**
+  String get profileModeTravelModesExplained;
+
+  /// No description provided for @profileModeLocalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Mode'**
+  String get profileModeLocalTitle;
+
+  /// No description provided for @profileModeLocalDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovering hidden gems in your neighborhood'**
+  String get profileModeLocalDescription;
+
+  /// No description provided for @profileModeLocalFeature1.
+  ///
+  /// In en, this message translates to:
+  /// **'Local cafes & hidden spots'**
+  String get profileModeLocalFeature1;
+
+  /// No description provided for @profileModeLocalFeature2.
+  ///
+  /// In en, this message translates to:
+  /// **'Neighborhood favorites'**
+  String get profileModeLocalFeature2;
+
+  /// No description provided for @profileModeLocalFeature3.
+  ///
+  /// In en, this message translates to:
+  /// **'Less touristy places'**
+  String get profileModeLocalFeature3;
+
+  /// No description provided for @profileModeTravelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel Mode'**
+  String get profileModeTravelTitle;
+
+  /// No description provided for @profileModeTravelDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore must-see attractions as a traveler'**
+  String get profileModeTravelDescription;
+
+  /// No description provided for @profileModeTravelFeature1.
+  ///
+  /// In en, this message translates to:
+  /// **'Famous landmarks'**
+  String get profileModeTravelFeature1;
+
+  /// No description provided for @profileModeTravelFeature2.
+  ///
+  /// In en, this message translates to:
+  /// **'Must-see attractions'**
+  String get profileModeTravelFeature2;
+
+  /// No description provided for @profileModeTravelFeature3.
+  ///
+  /// In en, this message translates to:
+  /// **'Tourist-friendly spots'**
+  String get profileModeTravelFeature3;
+
+  /// No description provided for @profileModeLocalExplainer.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfect for when you\'re at home or exploring your own city. Discover places locals love!'**
+  String get profileModeLocalExplainer;
+
+  /// No description provided for @profileModeLocalExample.
+  ///
+  /// In en, this message translates to:
+  /// **'Example: Instead of the Eiffel Tower, you\'ll see the cozy boulangerie around the corner that Parisians actually go to.'**
+  String get profileModeLocalExample;
+
+  /// No description provided for @profileModeTravelExplainer.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfect for when you\'re traveling or visiting a new city. See all the iconic spots!'**
+  String get profileModeTravelExplainer;
+
+  /// No description provided for @profileModeTravelExample.
+  ///
+  /// In en, this message translates to:
+  /// **'Example: In Paris, you\'ll see the Eiffel Tower, Louvre Museum, and Arc de Triomphe - all the classics!'**
+  String get profileModeTravelExample;
+
+  /// No description provided for @profileModeSwitchAnytime.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch between modes anytime! Going on vacation? Switch to Travel Mode. Back home? Switch to Local Mode. Your recommendations adapt instantly!'**
+  String get profileModeSwitchAnytime;
+
+  /// No description provided for @profileModeGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it!'**
+  String get profileModeGotIt;
+
+  /// No description provided for @profileModeProTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro Tip'**
+  String get profileModeProTip;
+
+  /// No description provided for @profileModeLocalGem1.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden neighborhood gems'**
+  String get profileModeLocalGem1;
+
+  /// No description provided for @profileModeLocalGem2.
+  ///
+  /// In en, this message translates to:
+  /// **'Local cafes & restaurants'**
+  String get profileModeLocalGem2;
+
+  /// No description provided for @profileModeLocalGem3.
+  ///
+  /// In en, this message translates to:
+  /// **'Less crowded spots'**
+  String get profileModeLocalGem3;
+
+  /// No description provided for @profileModeLocalGem4.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentic local experiences'**
+  String get profileModeLocalGem4;
+
+  /// No description provided for @profileModeTravelSpot1.
+  ///
+  /// In en, this message translates to:
+  /// **'Famous landmarks & attractions'**
+  String get profileModeTravelSpot1;
+
+  /// No description provided for @profileModeTravelSpot2.
+  ///
+  /// In en, this message translates to:
+  /// **'Must-see tourist spots'**
+  String get profileModeTravelSpot2;
+
+  /// No description provided for @profileModeTravelSpot3.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular destinations'**
+  String get profileModeTravelSpot3;
+
+  /// No description provided for @profileModeTravelSpot4.
+  ///
+  /// In en, this message translates to:
+  /// **'Tourist-friendly locations'**
+  String get profileModeTravelSpot4;
+
+  /// No description provided for @settingsSectionGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get settingsSectionGeneral;
+
+  /// No description provided for @settingsSectionDiscovery.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovery'**
+  String get settingsSectionDiscovery;
+
+  /// No description provided for @settingsSectionDataPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Data & Privacy'**
+  String get settingsSectionDataPrivacy;
+
+  /// No description provided for @settingsNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get settingsNotificationsTitle;
+
+  /// No description provided for @settingsNotificationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable push notifications'**
+  String get settingsNotificationsSubtitle;
+
+  /// No description provided for @settingsLocationTrackingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location Tracking'**
+  String get settingsLocationTrackingTitle;
+
+  /// No description provided for @settingsLocationTrackingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow app to track your location'**
+  String get settingsLocationTrackingSubtitle;
+
+  /// No description provided for @settingsDarkModeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark Mode'**
+  String get settingsDarkModeTitle;
+
+  /// No description provided for @settingsDarkModeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use dark theme throughout the app'**
+  String get settingsDarkModeSubtitle;
+
+  /// No description provided for @settingsDiscoveryRadiusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovery Radius'**
+  String get settingsDiscoveryRadiusTitle;
+
+  /// No description provided for @settingsDiscoveryRadiusSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show places within {distance} km'**
+  String settingsDiscoveryRadiusSubtitle(String distance);
+
+  /// No description provided for @settingsClearCacheTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear App Cache'**
+  String get settingsClearCacheTitle;
+
+  /// No description provided for @settingsClearCacheSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Free up space by removing cached images and data'**
+  String get settingsClearCacheSubtitle;
+
+  /// No description provided for @settingsPrivacyPolicyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get settingsPrivacyPolicyTitle;
+
+  /// No description provided for @settingsPrivacyPolicySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Read our privacy policy'**
+  String get settingsPrivacyPolicySubtitle;
+
+  /// No description provided for @settingsTermsOfServiceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get settingsTermsOfServiceTitle;
+
+  /// No description provided for @settingsTermsOfServiceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Read our terms of service'**
+  String get settingsTermsOfServiceSubtitle;
+
+  /// No description provided for @settingsSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Settings'**
+  String get settingsSaveButton;
+
+  /// No description provided for @settingsClearCacheDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Cache?'**
+  String get settingsClearCacheDialogTitle;
+
+  /// No description provided for @settingsClearCacheDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will remove all cached data. Your saved places and settings will not be affected.'**
+  String get settingsClearCacheDialogBody;
+
+  /// No description provided for @settingsDialogCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get settingsDialogCancel;
+
+  /// No description provided for @settingsDialogConfirmClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get settingsDialogConfirmClear;
+
+  /// No description provided for @settingsCacheCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache cleared successfully'**
+  String get settingsCacheCleared;
+
+  /// No description provided for @settingsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings saved'**
+  String get settingsSaved;
+
+  /// No description provided for @settingsHubTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsHubTitle;
+
+  /// No description provided for @settingsQuickTipTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Tip'**
+  String get settingsQuickTipTitle;
+
+  /// No description provided for @settingsQuickTipBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To edit your profile or preferences, go back to your profile screen!'**
+  String get settingsQuickTipBody;
+
+  /// No description provided for @settingsSectionPrivacySecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & Security'**
+  String get settingsSectionPrivacySecurity;
+
+  /// No description provided for @settingsSectionAppSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'App Settings'**
+  String get settingsSectionAppSettings;
+
+  /// No description provided for @settingsSectionMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get settingsSectionMore;
+
+  /// No description provided for @settingsSectionDangerZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Danger Zone'**
+  String get settingsSectionDangerZone;
+
+  /// No description provided for @settingsAccountSecurityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Security'**
+  String get settingsAccountSecurityTitle;
+
+  /// No description provided for @settingsAccountSecuritySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Password, 2FA'**
+  String get settingsAccountSecuritySubtitle;
+
+  /// No description provided for @settingsTwoFactorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Two-Factor Authentication'**
+  String get settingsTwoFactorTitle;
+
+  /// No description provided for @settingsTwoFactorEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get settingsTwoFactorEnabled;
+
+  /// No description provided for @settingsTwoFactorNotEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enabled'**
+  String get settingsTwoFactorNotEnabled;
+
+  /// No description provided for @settingsTwoFactorBadgeRecommended.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended'**
+  String get settingsTwoFactorBadgeRecommended;
+
+  /// No description provided for @settingsActiveSessionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Sessions'**
+  String get settingsActiveSessionsTitle;
+
+  /// No description provided for @settingsActiveSessionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} devices'**
+  String settingsActiveSessionsSubtitle(String count);
+
+  /// No description provided for @settingsPrivacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get settingsPrivacyTitle;
+
+  /// No description provided for @settingsPrivacySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile visibility, data'**
+  String get settingsPrivacySubtitle;
+
+  /// No description provided for @settingsHubNotificationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Push, email, in-app'**
+  String get settingsHubNotificationsSubtitle;
+
+  /// No description provided for @settingsLocationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get settingsLocationLabel;
+
+  /// No description provided for @settingsLocationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-detect, permissions'**
+  String get settingsLocationSubtitle;
+
+  /// No description provided for @settingsLanguageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguageLabel;
+
+  /// No description provided for @settingsThemeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsThemeLabel;
+
+  /// No description provided for @settingsThemeValueSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsThemeValueSystem;
+
+  /// No description provided for @settingsAchievementsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get settingsAchievementsLabel;
+
+  /// No description provided for @settingsAchievementsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} unlocked'**
+  String settingsAchievementsSubtitle(String count);
+
+  /// No description provided for @settingsSubscriptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription'**
+  String get settingsSubscriptionLabel;
+
+  /// No description provided for @settingsSubscriptionSubtitleFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free Plan'**
+  String get settingsSubscriptionSubtitleFree;
+
+  /// No description provided for @settingsSubscriptionBadgeFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get settingsSubscriptionBadgeFree;
+
+  /// No description provided for @settingsDataStorageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Data & Storage'**
+  String get settingsDataStorageLabel;
+
+  /// No description provided for @settingsDataStorageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Export, clear cache'**
+  String get settingsDataStorageSubtitle;
+
+  /// No description provided for @settingsHelpSupportLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & Support'**
+  String get settingsHelpSupportLabel;
+
+  /// No description provided for @settingsHelpSupportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'FAQ, contact us'**
+  String get settingsHelpSupportSubtitle;
+
+  /// No description provided for @settingsDangerDeleteAccountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get settingsDangerDeleteAccountLabel;
+
+  /// No description provided for @settingsDangerDeleteAccountSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently delete your data'**
+  String get settingsDangerDeleteAccountSubtitle;
+
+  /// No description provided for @settingsDangerSignOutLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get settingsDangerSignOutLabel;
+
+  /// No description provided for @settingsDangerSignOutSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out of your account'**
+  String get settingsDangerSignOutSubtitle;
+
+  /// No description provided for @settingsAppVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'WanderMood v{version}'**
+  String settingsAppVersion(String version);
+
+  /// No description provided for @settingsAppTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Made with ❤️ for travelers'**
+  String get settingsAppTagline;
+
+  /// No description provided for @settingsSignOutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get settingsSignOutTitle;
+
+  /// No description provided for @settingsSignOutMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to sign out?'**
+  String get settingsSignOutMessage;
+
+  /// No description provided for @settingsSignOutConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get settingsSignOutConfirm;
+
+  /// No description provided for @settingsOpenPrivacyNetworkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to open Privacy Policy. Please check your internet connection.'**
+  String get settingsOpenPrivacyNetworkError;
+
+  /// No description provided for @settingsOpenPrivacyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error opening Privacy Policy: {error}'**
+  String settingsOpenPrivacyError(String error);
+
+  /// No description provided for @settingsOpenTermsNetworkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to open Terms of Service. Please check your internet connection.'**
+  String get settingsOpenTermsNetworkError;
+
+  /// No description provided for @settingsOpenTermsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error opening Terms of Service: {error}'**
+  String settingsOpenTermsError(String error);
+
+  /// No description provided for @notificationsMethodsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Methods'**
+  String get notificationsMethodsTitle;
+
+  /// No description provided for @notificationsPushTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Push Notifications'**
+  String get notificationsPushTitle;
+
+  /// No description provided for @notificationsPushSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive push notifications on this device'**
+  String get notificationsPushSubtitle;
+
+  /// No description provided for @notificationsEmailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Notifications'**
+  String get notificationsEmailTitle;
+
+  /// No description provided for @notificationsEmailSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive updates via email'**
+  String get notificationsEmailSubtitle;
+
+  /// No description provided for @notificationsInAppTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'In-App Notifications'**
+  String get notificationsInAppTitle;
+
+  /// No description provided for @notificationsInAppSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'See notifications inside the app'**
+  String get notificationsInAppSubtitle;
+
+  /// No description provided for @notificationsWhatToNotifyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What to Notify'**
+  String get notificationsWhatToNotifyTitle;
+
+  /// No description provided for @notificationsNewActivitiesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New Activities'**
+  String get notificationsNewActivitiesTitle;
+
+  /// No description provided for @notificationsNewActivitiesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When new activities match your vibe'**
+  String get notificationsNewActivitiesSubtitle;
+
+  /// No description provided for @notificationsNearbyEventsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearby Events'**
+  String get notificationsNearbyEventsTitle;
+
+  /// No description provided for @notificationsNearbyEventsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Events happening around you'**
+  String get notificationsNearbyEventsSubtitle;
+
+  /// No description provided for @notificationsFriendActivityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Friend Activity'**
+  String get notificationsFriendActivityTitle;
+
+  /// No description provided for @notificationsFriendActivitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When friends share or like something'**
+  String get notificationsFriendActivitySubtitle;
+
+  /// No description provided for @locationScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get locationScreenTitle;
+
+  /// No description provided for @locationCurrentLocationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Location'**
+  String get locationCurrentLocationTitle;
+
+  /// No description provided for @locationCurrentLocationValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotterdam, Netherlands'**
+  String get locationCurrentLocationValue;
+
+  /// No description provided for @locationSectionSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location Settings'**
+  String get locationSectionSettingsTitle;
+
+  /// No description provided for @locationAutoDetectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-Detect Location'**
+  String get locationAutoDetectTitle;
+
+  /// No description provided for @locationAutoDetectSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically detect your current location'**
+  String get locationAutoDetectSubtitle;
+
+  /// No description provided for @locationSectionDefaultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Default Location'**
+  String get locationSectionDefaultTitle;
+
+  /// No description provided for @locationDefaultCityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotterdam'**
+  String get locationDefaultCityLabel;
+
+  /// No description provided for @locationDefaultUsedWhenOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Used when location is off'**
+  String get locationDefaultUsedWhenOff;
+
+  /// No description provided for @locationPermissionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location Permissions'**
+  String get locationPermissionsTitle;
+
+  /// No description provided for @locationPermissionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage in system settings'**
+  String get locationPermissionsSubtitle;
+
+  /// No description provided for @locationSnackbarUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Location settings updated'**
+  String get locationSnackbarUpdated;
+
+  /// No description provided for @locationSnackbarError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error updating location settings: {error}'**
+  String locationSnackbarError(String error);
+
+  /// No description provided for @languageUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Language updated'**
+  String get languageUpdated;
+
+  /// No description provided for @subscriptionScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription'**
+  String get subscriptionScreenTitle;
+
+  /// No description provided for @subscriptionCurrentPlanLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Plan'**
+  String get subscriptionCurrentPlanLabel;
+
+  /// No description provided for @subscriptionPlanFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get subscriptionPlanFree;
+
+  /// No description provided for @subscriptionPlanPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium'**
+  String get subscriptionPlanPremium;
+
+  /// No description provided for @subscriptionUpgradeHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade to'**
+  String get subscriptionUpgradeHeading;
+
+  /// No description provided for @subscriptionUpgradeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium'**
+  String get subscriptionUpgradeTitle;
+
+  /// No description provided for @subscriptionFeatureUnlimitedSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited activity suggestions'**
+  String get subscriptionFeatureUnlimitedSuggestions;
+
+  /// No description provided for @subscriptionFeatureAdvancedMoodMatching.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced mood matching'**
+  String get subscriptionFeatureAdvancedMoodMatching;
+
+  /// No description provided for @subscriptionFeaturePrioritySupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority support'**
+  String get subscriptionFeaturePrioritySupport;
+
+  /// No description provided for @subscriptionFeatureNoAds.
+  ///
+  /// In en, this message translates to:
+  /// **'No ads'**
+  String get subscriptionFeatureNoAds;
+
+  /// No description provided for @subscriptionUpgradeCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade for €4.99/month'**
+  String get subscriptionUpgradeCta;
+
+  /// No description provided for @dataStorageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data & Storage'**
+  String get dataStorageTitle;
+
+  /// No description provided for @dataStorageStorageUsedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage Used'**
+  String get dataStorageStorageUsedLabel;
+
+  /// No description provided for @dataStorageExportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Export My Data'**
+  String get dataStorageExportTitle;
+
+  /// No description provided for @dataStorageExportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download all your data (GDPR)'**
+  String get dataStorageExportSubtitle;
+
+  /// No description provided for @dataStorageClearCacheTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Cache'**
+  String get dataStorageClearCacheTitle;
+
+  /// No description provided for @dataStorageClearCacheSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Free up storage space'**
+  String get dataStorageClearCacheSubtitle;
+
+  /// No description provided for @dataStorageDownloadHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download History'**
+  String get dataStorageDownloadHistoryTitle;
+
+  /// No description provided for @dataStorageDownloadHistorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View past exports'**
+  String get dataStorageDownloadHistorySubtitle;
+
+  /// No description provided for @dataStorageExportFileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My WanderMood Data Export'**
+  String get dataStorageExportFileTitle;
+
+  /// No description provided for @dataStorageExportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Data exported successfully'**
+  String get dataStorageExportSuccess;
+
+  /// No description provided for @dataStorageExportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Export failed: {error}'**
+  String dataStorageExportFailed(String error);
+
+  /// No description provided for @dataStorageCacheCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache cleared successfully'**
+  String get dataStorageCacheCleared;
+
+  /// No description provided for @dataStorageCacheFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to clear cache: {error}'**
+  String dataStorageCacheFailed(String error);
+
+  /// No description provided for @helpSupportScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & Support'**
+  String get helpSupportScreenTitle;
+
+  /// No description provided for @helpSupportSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search help articles...'**
+  String get helpSupportSearchHint;
+
+  /// No description provided for @helpSupportQuickLinksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Links'**
+  String get helpSupportQuickLinksTitle;
+
+  /// No description provided for @helpSupportFaqTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'FAQs'**
+  String get helpSupportFaqTitle;
+
+  /// No description provided for @helpSupportFaqSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequently asked questions'**
+  String get helpSupportFaqSubtitle;
+
+  /// No description provided for @helpSupportContactTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Us'**
+  String get helpSupportContactTitle;
+
+  /// No description provided for @helpSupportContactSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send us an email'**
+  String get helpSupportContactSubtitle;
+
+  /// No description provided for @helpSupportLiveChatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Chat'**
+  String get helpSupportLiveChatTitle;
+
+  /// No description provided for @helpSupportLiveChatSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat with support'**
+  String get helpSupportLiveChatSubtitle;
+
+  /// No description provided for @helpSupportLiveChatBadgeOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get helpSupportLiveChatBadgeOnline;
+
+  /// No description provided for @helpSupportReportBugTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report a Bug'**
+  String get helpSupportReportBugTitle;
+
+  /// No description provided for @helpSupportReportBugSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Help us improve'**
+  String get helpSupportReportBugSubtitle;
+
+  /// No description provided for @helpSupportLegalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal'**
+  String get helpSupportLegalTitle;
+
+  /// No description provided for @helpSupportPrivacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get helpSupportPrivacyTitle;
+
+  /// No description provided for @helpSupportPrivacySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How we protect your data'**
+  String get helpSupportPrivacySubtitle;
+
+  /// No description provided for @helpSupportTermsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get helpSupportTermsTitle;
+
+  /// No description provided for @helpSupportTermsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms and conditions'**
+  String get helpSupportTermsSubtitle;
+
+  /// No description provided for @helpSupportEmailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'support@wandermood.com'**
+  String get helpSupportEmailAddress;
+
+  /// No description provided for @helpSupportEmailSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'WanderMood Support'**
+  String get helpSupportEmailSubject;
 }
 
 class _AppLocalizationsDelegate

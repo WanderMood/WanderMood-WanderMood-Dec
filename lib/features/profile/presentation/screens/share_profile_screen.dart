@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
 import 'package:wandermood/core/extensions/string_extensions.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 enum ShareProfileScreenType { main, qr, link }
 
@@ -59,12 +60,15 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
   }
 
   Future<void> _shareToSocial(String platform) async {
+    final l10n = AppLocalizations.of(context)!;
     final profile = ref.read(profileProvider).valueOrNull;
-    final shareText = 'Check out ${profile?.fullName ?? 'my'} profile on WanderMood! 🧳✨\n\nhttps://$_profileUrl';
-    
+    final url = 'https://$_profileUrl';
+    final shareText = profile?.fullName != null && profile!.fullName!.isNotEmpty
+        ? l10n.shareProfileShareTextNamed(profile.fullName!, url)
+        : l10n.shareProfileShareTextMy(url);
     try {
       if (platform == 'email') {
-        final uri = Uri.parse('mailto:?subject=Check out my WanderMood profile&body=$shareText');
+        final uri = Uri.parse('mailto:?subject=${Uri.encodeComponent(l10n.shareProfileEmailSubject)}&body=${Uri.encodeComponent(shareText)}');
         if (await canLaunchUrl(uri)) {
           await launchUrl(uri);
         }
@@ -75,7 +79,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to share: $e'),
+            content: Text(l10n.shareProfileFailedToShare(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -96,7 +100,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
       error: (error, stack) => Scaffold(
         backgroundColor: const Color(0xFFFFF7ED),
         body: Center(
-          child: Text('Error loading profile: $error'),
+          child: Text(AppLocalizations.of(context)!.profileErrorLoad),
         ),
       ),
     );
@@ -114,9 +118,10 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
   }
 
   Widget _buildMainScreen(profile) {
-    final userName = profile?.fullName ?? 'User';
-    final username = profile?.username ?? 'wanderer';
-    final bio = profile?.bio ?? 'Always chasing sunsets & good vibes ✨';
+    final l10n = AppLocalizations.of(context)!;
+    final userName = profile?.fullName ?? l10n.profileFallbackUser;
+    final username = profile?.username ?? l10n.shareProfileDefaultUsername;
+    final bio = profile?.bio ?? l10n.shareProfileDefaultBio;
     final streak = profile?.moodStreak ?? 0;
     final isPublic = profile?.isPublic ?? true;
     
@@ -138,7 +143,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Share Profile',
+          l10n.shareProfileTitle,
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -244,9 +249,9 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildMiniStat(streak.toString(), 'Day Streak'),
-                        _buildMiniStat(placesCount.toString(), 'Places'),
-                        _buildMiniStat(_capitalizeString(topMood), 'Top Mood'),
+                        _buildMiniStat(streak.toString(), l10n.shareProfileDayStreak),
+                        _buildMiniStat(placesCount.toString(), l10n.profileStatsPlacesTitle),
+                        _buildMiniStat(_capitalizeString(topMood), l10n.profileStatsTopMoodTitle),
                       ],
                     ),
                   ),
@@ -260,8 +265,8 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                 Expanded(
                   child: _buildQuickActionButton(
                     icon: Icons.qr_code,
-                    label: 'QR Code',
-                    subtitle: 'Scan to connect',
+                    label: l10n.shareProfileQRCode,
+                    subtitle: l10n.shareProfileScanToConnect,
                     gradient: const [Color(0xFFFF7E5F), Color(0xFFF5609F)],
                     onTap: () => setState(() => _currentScreen = ShareProfileScreenType.qr),
                   ),
@@ -270,8 +275,8 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                 Expanded(
                   child: _buildQuickActionButton(
                     icon: Icons.link,
-                    label: 'Copy Link',
-                    subtitle: 'Share anywhere',
+                    label: l10n.shareProfileCopyLink,
+                    subtitle: l10n.shareProfileShareAnywhere,
                     gradient: const [Color(0xFF3B82F6), Color(0xFFA855F7)],
                     onTap: () => setState(() => _currentScreen = ShareProfileScreenType.link),
                   ),
@@ -281,7 +286,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
             const SizedBox(height: 24),
             // Share Via
             Text(
-              'Share via',
+              l10n.shareProfileShareVia,
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -291,28 +296,28 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
             const SizedBox(height: 12),
             _buildShareOption(
               icon: Icons.camera_alt,
-              label: 'Instagram',
+              label: l10n.shareProfileInstagram,
               gradient: const [Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFFF97316)],
               onTap: () => _shareToSocial('instagram'),
             ),
             const SizedBox(height: 12),
             _buildShareOption(
               icon: Icons.message,
-              label: 'WhatsApp',
+              label: l10n.shareProfileWhatsApp,
               gradient: const [Color(0xFF10B981), Color(0xFF059669)],
               onTap: () => _shareToSocial('whatsapp'),
             ),
             const SizedBox(height: 12),
             _buildShareOption(
               icon: Icons.alternate_email,
-              label: 'Twitter',
+              label: l10n.shareProfileTwitter,
               gradient: const [Color(0xFF3B82F6), Color(0xFF2563EB)],
               onTap: () => _shareToSocial('twitter'),
             ),
             const SizedBox(height: 12),
             _buildShareOption(
               icon: Icons.email,
-              label: 'Email',
+              label: l10n.shareProfileEmail,
               gradient: const [Color(0xFF6B7280), Color(0xFF374151)],
               onTap: () => _shareToSocial('email'),
             ),
@@ -340,7 +345,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Public Profile',
+                          l10n.shareProfilePublicProfile,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -349,7 +354,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Anyone can view your profile',
+                          l10n.shareProfileAnyoneCanView,
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             color: Colors.grey[500],
@@ -366,7 +371,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Profile visibility updated'),
+                              content: Text(l10n.profileVisibilityUpdated),
                               backgroundColor: const Color(0xFF4CAF50),
                             ),
                           );
@@ -375,7 +380,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Failed to update: $e'),
+                              content: Text(l10n.shareProfileUpdateFailed(e.toString())),
                               backgroundColor: Colors.red,
                             ),
                           );
@@ -521,8 +526,9 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
   }
 
   Widget _buildQRScreen(profile) {
-    final userName = profile?.fullName ?? 'User';
-    final username = profile?.username ?? 'wanderer';
+    final l10n = AppLocalizations.of(context)!;
+    final userName = profile?.fullName ?? l10n.profileFallbackUser;
+    final username = profile?.username ?? l10n.shareProfileDefaultUsername;
     final qrData = 'https://$_profileUrl';
 
     return Scaffold(
@@ -535,7 +541,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
           onPressed: () => setState(() => _currentScreen = ShareProfileScreenType.main),
         ),
         title: Text(
-          'My QR Code',
+          l10n.shareProfileMyQRCode,
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -623,7 +629,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'How it works',
+                          l10n.shareProfileHowItWorks,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -632,7 +638,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Ask someone to scan this code with their WanderMood app to instantly connect and share your profile!',
+                          l10n.shareProfileQRInstructions,
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -669,7 +675,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      _qrDownloaded ? 'Downloaded!' : 'Save QR Code',
+                      _qrDownloaded ? l10n.shareProfileDownloaded : l10n.shareProfileSaveQRCode,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -685,7 +691,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () async {
-                  await Share.share('Check out my WanderMood profile! https://$_profileUrl');
+                  await Share.share(l10n.shareProfileShareMessage('https://$_profileUrl'));
                 },
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -700,7 +706,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                     const Icon(Icons.share, color: Colors.grey),
                     const SizedBox(width: 8),
                     Text(
-                      'Share QR Image',
+                      l10n.shareProfileShareQRImage,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -718,9 +724,10 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
   }
 
   Widget _buildLinkScreen(profile) {
-    final userName = profile?.fullName ?? 'User';
-    final username = profile?.username ?? 'wanderer';
-    final bio = profile?.bio ?? 'Always chasing sunsets & good vibes ✨';
+    final l10n = AppLocalizations.of(context)!;
+    final userName = profile?.fullName ?? l10n.profileFallbackUser;
+    final username = profile?.username ?? l10n.shareProfileDefaultUsername;
+    final bio = profile?.bio ?? l10n.shareProfileDefaultBio;
     final profileLink = 'https://$_profileUrl';
 
     return Scaffold(
@@ -733,7 +740,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
           onPressed: () => setState(() => _currentScreen = ShareProfileScreenType.main),
         ),
         title: Text(
-          'Share Link',
+          l10n.shareProfileShareLinkTitle,
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -834,7 +841,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'YOUR PROFILE LINK',
+                    l10n.shareProfileYourProfileLink,
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -895,7 +902,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      _copied ? 'Link Copied!' : 'Copy Link',
+                      _copied ? l10n.shareProfileLinkCopied : l10n.shareProfileCopyLink,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -909,7 +916,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
             const SizedBox(height: 24),
             // Quick Share
             Text(
-              'QUICK SHARE',
+              l10n.shareProfileQuickShare,
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -923,7 +930,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                 Expanded(
                   child: _buildQuickShareButton(
                     icon: Icons.camera_alt,
-                    label: 'Instagram',
+                    label: l10n.shareProfileInstagram,
                     gradient: const [Color(0xFF8B5CF6), Color(0xFFEC4899)],
                     onTap: () => _shareToSocial('instagram'),
                   ),
@@ -932,7 +939,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                 Expanded(
                   child: _buildQuickShareButton(
                     icon: Icons.message,
-                    label: 'WhatsApp',
+                    label: l10n.shareProfileWhatsApp,
                     gradient: const [Color(0xFF10B981), Color(0xFF059669)],
                     onTap: () => _shareToSocial('whatsapp'),
                   ),
@@ -945,7 +952,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                 Expanded(
                   child: _buildQuickShareButton(
                     icon: Icons.alternate_email,
-                    label: 'Twitter',
+                    label: l10n.shareProfileTwitter,
                     gradient: const [Color(0xFF3B82F6), Color(0xFF2563EB)],
                     onTap: () => _shareToSocial('twitter'),
                   ),
@@ -954,7 +961,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                 Expanded(
                   child: _buildQuickShareButton(
                     icon: Icons.email,
-                    label: 'Email',
+                    label: l10n.shareProfileEmail,
                     gradient: const [Color(0xFF6B7280), Color(0xFF374151)],
                     onTap: () => _shareToSocial('email'),
                   ),
@@ -984,7 +991,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Anyone with this link can view your public profile. You can change your privacy settings anytime.',
+                      l10n.shareProfileLinkInfo,
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         color: const Color(0xFF1E40AF),
