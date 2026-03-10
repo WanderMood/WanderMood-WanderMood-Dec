@@ -39,6 +39,8 @@ class Activity {
   final TimeSlot timeSlotEnum;
   final LatLng location;
   final String? priceLevel;
+  /// Google Place ID for fetching opening_hours (open_now) from Places API.
+  final String? placeId;
   final List<DietaryOption> dietaryOptions;
   final List<InclusivityTag> inclusivityTags;
   int refreshCount;
@@ -65,6 +67,7 @@ class Activity {
     required this.timeSlotEnum,
     required this.location,
     this.priceLevel,
+    this.placeId,
     this.refreshCount = 0,
     this.dietaryOptions = const [],
     this.inclusivityTags = const [],
@@ -130,6 +133,7 @@ class Activity {
     TimeSlot? timeSlotEnum,
     LatLng? location,
     String? priceLevel,
+    String? placeId,
     int? refreshCount,
     List<DietaryOption>? dietaryOptions,
     List<InclusivityTag>? inclusivityTags,
@@ -156,6 +160,7 @@ class Activity {
       timeSlotEnum: timeSlotEnum ?? this.timeSlotEnum,
       location: location ?? this.location,
       priceLevel: priceLevel ?? this.priceLevel,
+      placeId: placeId ?? this.placeId,
       refreshCount: refreshCount ?? this.refreshCount,
       dietaryOptions: dietaryOptions ?? this.dietaryOptions,
       inclusivityTags: inclusivityTags ?? this.inclusivityTags,

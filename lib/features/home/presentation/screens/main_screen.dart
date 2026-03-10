@@ -7,13 +7,16 @@ import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_scr
 import 'package:wandermood/features/plans/widgets/activity_detail_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/free_time_activities_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/mood_home_screen.dart';
-import 'package:wandermood/features/home/providers/dynamic_my_day_provider.dart';
+import 'package:wandermood/features/home/presentation/screens/redesigned_moody_hub.dart';
+import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.dart';
 import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/utils/auth_helper.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 // Create a Provider for the tab controller
 final mainTabProvider = StateProvider<int>((ref) => 0);
@@ -138,6 +141,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         
         // If refresh flag is set, invalidate providers to force refresh
         if (shouldRefresh) {
+          ref.invalidate(scheduledActivitiesForTodayProvider);
           ref.invalidate(cachedActivitySuggestionsProvider);
           ref.invalidate(todayActivitiesProvider);
         }
@@ -149,7 +153,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   final List<Widget> screens = [
     const DynamicMyDayScreen(),  // My Day is now first - using dynamic screen
     const ExploreScreen(),
-    const MoodHomeScreen(), // Moody tab now uses MoodHomeScreen
+    const RedesignedMoodyHub(), // Redesigned two-state Moody Hub
             const SizedBox.shrink(), // Placeholder - Feed is now a standalone route
             const SizedBox.shrink(), // Placeholder - Profile navigates directly to profile screen
   ];
@@ -184,67 +188,122 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFFFFDF5), // Match app's beige background
       drawer: const ProfileDrawer(),
-      extendBody: false, // Prevent body from extending behind bottom nav bar
+      extendBody: true, // Allow body to extend behind the floating nav bar
       body: screens[selectedIndex],
-      bottomNavigationBar: shouldHideBottomNav ? null : Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 4,
-              offset: Offset(0, -2),
+      bottomNavigationBar: shouldHideBottomNav
+          ? null
+          : Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8), // Reduced bottom padding to 8
+              child: SafeArea(
+                top: false,
+                bottom: false, // Keep false to manually control position
+                child: Container(
+                  padding: const EdgeInsets.only(top: 8, left: 6, right: 6, bottom: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: const Color(0xFFF3F4F6), width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 24,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildRegularNavItem(context, ref, selectedIndex, 0, 'My Day', Icons.calendar_today_outlined, Icons.calendar_today, const Color(0xFFF97316), const Color(0xFFFFF7ED)),
+                      _buildRegularNavItem(context, ref, selectedIndex, 1, 'Explore', Icons.explore_outlined, Icons.explore, const Color(0xFF3B82F6), const Color(0xFFEFF6FF)),
+                      _buildCenterMoodyButton(context, ref, selectedIndex),
+                      _buildRegularNavItem(context, ref, selectedIndex, 3, 'WanderFeed', Icons.people_outline, Icons.people, const Color(0xFFA855F7), const Color(0xFFF5F3FF)),
+                      _buildRegularNavItem(context, ref, selectedIndex, 4, 'Profile', Icons.person_outline, Icons.person, const Color(0xFFEC4899), const Color(0xFFFDF2F8)),
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ],
-        ),
-        child: SafeArea(
-          top: false,
-          bottom: true, // CRITICAL: Ensure nav bar extends to device bottom
-          child: BottomNavigationBar(
-            currentIndex: selectedIndex,
-            onTap: (index) {
-              // Handle special cases for Feed and Profile
-              if (index == 3) {
-                // Navigate to Feed screen
-                context.push('/diaries');
-                return;
-              } else if (index == 4) {
-                // Navigate directly to Profile screen
-                context.push('/profile');
-                return;
-              }
-              
-              // Update the tab provider for normal tabs
-              ref.read(mainTabProvider.notifier).state = index;
-            },
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            selectedItemColor: Theme.of(context).primaryColor,
-            unselectedItemColor: Colors.grey,
-            selectedFontSize: 10.0,
-            unselectedFontSize: 10.0,
-            iconSize: 20.0,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.calendar_today),
-                label: 'My Day',
+    );
+  }
+
+  Widget _buildRegularNavItem(
+    BuildContext context,
+    WidgetRef ref,
+    int selectedIndex,
+    int index,
+    String label,
+    IconData icon,
+    IconData selectedIcon,
+    Color activeColor,
+    Color activeBgColor,
+  ) {
+    final isSelected = selectedIndex == index;
+    // Special handling: if we are on Explore (index 1), My Day (index 0) should NOT be highlighted.
+    // The default logic `selectedIndex == index` handles this correctly, as selectedIndex will be 1.
+    
+    final onTap = () {
+      if (index == 3) {
+        // For WanderFeed, update state first so UI reflects it, then navigate
+        ref.read(mainTabProvider.notifier).state = index;
+        // Small delay to let the animation play before pushing the new route
+        Future.delayed(const Duration(milliseconds: 100), () {
+          context.push('/diaries');
+        });
+        return;
+      }
+      if (index == 4) {
+        // For Profile, update state first so UI reflects it, then navigate
+        ref.read(mainTabProvider.notifier).state = index;
+        Future.delayed(const Duration(milliseconds: 100), () {
+          context.push('/profile');
+        });
+        return;
+      }
+      ref.read(mainTabProvider.notifier).state = index;
+    };
+
+    return Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(999),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: isSelected ? activeBgColor : Colors.transparent,
+                  shape: BoxShape.circle,
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: activeColor.withOpacity(0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Icon(
+                  isSelected ? selectedIcon : icon,
+                  size: 20,
+                  color: isSelected ? activeColor : Colors.grey.shade400,
+                ),
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.explore),
-                label: 'Explore',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.mood),
-                label: 'Moody',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.people),
-                label: 'WanderFeed',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                label: 'Profile',
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: 9,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected ? activeColor : Colors.grey.shade500,
+                ),
               ),
             ],
           ),
@@ -253,6 +312,54 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     );
   }
 
-  // Profile menu removed - now navigates directly to profile screen
+  Widget _buildCenterMoodyButton(BuildContext context, WidgetRef ref, int selectedIndex) {
+    final isSelected = selectedIndex == 2;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => ref.read(mainTabProvider.notifier).state = 2,
+        customBorder: const CircleBorder(),
+        child: Transform.translate(
+          offset: const Offset(0, -6),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isSelected ? const Color(0xFF12B347).withOpacity(0.12) : Colors.grey.shade100,
+                  border: isSelected ? Border.all(color: const Color(0xFF12B347).withOpacity(0.4), width: 1.5) : null,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: MoodyCharacter(
+                    size: 28,
+                    mood: isSelected ? 'happy' : 'default',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Moody',
+                style: GoogleFonts.poppins(
+                  fontSize: 9,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected ? const Color(0xFF059669) : Colors.grey.shade500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
  

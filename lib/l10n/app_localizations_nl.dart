@@ -12,6 +12,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get appTitle => 'WanderMood';
 
   @override
+  String get splashTagline => 'Je reisgezel op basis van je stemming';
+
+  @override
   String get welcome => 'Welkom';
 
   @override
@@ -38,6 +41,85 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get skipForNow => 'Sla nu over';
+
+  @override
+  String moodyIntroGreeting(String name) {
+    return 'Hoi $name! 👋';
+  }
+
+  @override
+  String get moodyIntroImMoody => 'Ik ben Moody.';
+
+  @override
+  String get moodyIntroSubtext =>
+      'Ik help je dagen te plannen die passen bij je stemming, energie en vibe.';
+
+  @override
+  String get moodyIntroSuggestActivities => 'Ik stel activiteiten voor zoals:';
+
+  @override
+  String get moodyIntroTakesLessThan =>
+      'Kost minder dan een minuut • Gebruikt je voorkeuren';
+
+  @override
+  String get moodyIntroNameFallback => 'daar';
+
+  @override
+  String get moodyIntroActLocalRestaurant => 'Lokaal restaurant ontdekken';
+
+  @override
+  String get moodyIntroActMuseum => 'Museum- of galeriebezoek';
+
+  @override
+  String get moodyIntroActLocalMarket => 'Lokale markt verkennen';
+
+  @override
+  String get moodyIntroActNature => 'Natuurwandeling of parkbezoek';
+
+  @override
+  String get moodyIntroActNightlife => 'Avondbar of lounge';
+
+  @override
+  String get moodyIntroActSpa => 'Spa- of wellnesservaring';
+
+  @override
+  String get moodyIntroActCoffee => 'Ochtendkoffieplek';
+
+  @override
+  String get moodyIntroActAdventure => 'Actief buitenavontuur';
+
+  @override
+  String get moodyIntroActPeacefulWalk => 'Rustige avondwandeling';
+
+  @override
+  String get moodyIntroActHistorical => 'Historische plek bezoeken';
+
+  @override
+  String get moodyIntroActRomantic => 'Romantische dining';
+
+  @override
+  String get moodyIntroActSocial => 'Plek voor sociale activiteiten';
+
+  @override
+  String get moodyIntroActScenic => 'Mooi uitzichtpunt';
+
+  @override
+  String get moodyIntroActEarlyMorning => 'Vroege ochtendervaring';
+
+  @override
+  String get moodyIntroActEvening => 'Avondentertainment';
+
+  @override
+  String get moodyIntroActAfternoon => 'Middagactiviteit';
+
+  @override
+  String get moodyIntroActSurprise => 'Verrassende ontdekking';
+
+  @override
+  String get moodyIntroActMarketVisit => 'Lokale markt bezoeken';
+
+  @override
+  String get moodyIntroActEveningWalk => 'Avondwandeling met uitzicht';
 
   @override
   String get saveChanges => 'Wijzigingen opslaan';
@@ -247,6 +329,67 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get loading => 'Loading...';
+
+  @override
+  String get loadingTitle => 'We zetten je perfecte dag klaar!';
+
+  @override
+  String get loadingSubtitle =>
+      'We bereiden persoonlijke activiteiten,\nplekken en inzichten speciaal voor jou!';
+
+  @override
+  String get loadingStep0 => 'We bereiden je persoonlijke ervaring voor...';
+
+  @override
+  String get loadingStep1 => 'Je voorkeuren laden...';
+
+  @override
+  String get loadingStep2 => 'Activiteiten zoeken die je leuk vindt...';
+
+  @override
+  String get loadingStep3 => 'Perfecte activiteiten voor jou samenstellen...';
+
+  @override
+  String get loadingStep4 => 'Bijna klaar! Je dashboard wordt ingesteld...';
+
+  @override
+  String get loadingStep5 => 'Je persoonlijke dashboard voorbereiden...';
+
+  @override
+  String get loadingStep6 =>
+      'Klaar om te ontdekken! (Sommige data laadt onderweg)';
+
+  @override
+  String get loadingFact0 =>
+      'Wist je dat? Er zijn 195 landen, elk met unieke culturen en tradities!';
+
+  @override
+  String get loadingFact1 =>
+      'De drukste luchthaven ter wereld verwerkt meer dan 100 miljoen passagiers per jaar!';
+
+  @override
+  String get loadingFact2 =>
+      'Er zijn meer dan 1.500 UNESCO-werelderfgoedlocaties over de hele wereld!';
+
+  @override
+  String get loadingFact3 =>
+      'De Chinese Muur is vanuit de ruimte zichtbaar en strekt zich uit over meer dan 21.000 km!';
+
+  @override
+  String get loadingFact4 =>
+      'Er worden meer dan 6.900 talen gesproken over de hele wereld!';
+
+  @override
+  String get loadingFact5 =>
+      'Het Amazone-regenwoud produceert 20% van de zuurstof in de wereld!';
+
+  @override
+  String get loadingFact6 =>
+      'Mount Everest wordt elk jaar ongeveer 4 mm hoger door geologische krachten!';
+
+  @override
+  String get loadingFact7 =>
+      'De Sahara is groter dan de hele Verenigde Staten!';
 
   @override
   String get appSettings => 'App Settings';
@@ -1820,4 +1963,719 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get helpSupportEmailSubject => 'WanderMood support';
+
+  @override
+  String get prefCommunicationTitle => 'Hoe wil je dat ik tegen je praat? 💬';
+
+  @override
+  String get prefCommunicationIntro =>
+      'Om onze reis samen leuker te maken, wil ik graag weten hoe ik het beste met je kan communiceren.';
+
+  @override
+  String get prefCommunicationSubtitle =>
+      'Zo kan ik mijn toon en stijl perfect op jouw voorkeuren afstemmen! 🎯';
+
+  @override
+  String get prefStyleFriendly => 'Vriendelijk';
+
+  @override
+  String get prefStyleFriendlyDesc => 'Informeel en warm';
+
+  @override
+  String get prefStyleProfessional => 'Professioneel';
+
+  @override
+  String get prefStyleProfessionalDesc => 'Helder en formeel';
+
+  @override
+  String get prefStyleEnergetic => 'Energiek';
+
+  @override
+  String get prefStyleEnergeticDesc => 'Leuk en enthousiast';
+
+  @override
+  String get prefStyleDirect => 'Direct';
+
+  @override
+  String get prefStyleDirectDesc => 'Gewoon to the point';
+
+  @override
+  String get prefMoodAdventurous => 'Avontuurlijk';
+
+  @override
+  String get prefMoodPeaceful => 'Rustig';
+
+  @override
+  String get prefMoodSocial => 'Sociaal';
+
+  @override
+  String get prefMoodCultural => 'Cultureel';
+
+  @override
+  String get prefMoodFoody => 'Foody';
+
+  @override
+  String get prefMoodSpontaneous => 'Spontaan';
+
+  @override
+  String get prefMoodTitleFriendly => 'Wat is je reisgevoel? 😊';
+
+  @override
+  String get prefMoodTitleEnergetic => 'Laten we onze vibes matchen! ✨';
+
+  @override
+  String get prefMoodTitleProfessional => 'Voorkeuren reisgevoel';
+
+  @override
+  String get prefMoodTitleDirect => 'Kies je stemmingen';
+
+  @override
+  String get prefMoodSubtitleFriendly =>
+      'Wat inspireert je om eropuit te gaan?';
+
+  @override
+  String get prefMoodSubtitleEnergetic =>
+      'Welke stemmingen zetten je in beweging?';
+
+  @override
+  String get prefMoodSubtitleProfessional =>
+      'Welke ervaringen spreken je het meest aan?';
+
+  @override
+  String get prefMoodSubtitleDirect => 'Kies je voorkeurservaringen:';
+
+  @override
+  String get prefMultipleHintFriendly => 'Je kunt meerdere opties kiezen ✨';
+
+  @override
+  String get prefMultipleHintEnergetic =>
+      'Je kunt er meerdere kiezen – ga ervoor! ✨';
+
+  @override
+  String get prefMultipleHintProfessional => 'Meerdere selecties mogelijk';
+
+  @override
+  String get prefMultipleHintDirect => 'Meerdere selecties toegestaan';
+
+  @override
+  String get prefInterestStays => 'Overnachten & uitjes';
+
+  @override
+  String get prefInterestStaysDesc => 'Sfeervolle hotels en droomplekken';
+
+  @override
+  String get prefInterestFood => 'Eten & drinken';
+
+  @override
+  String get prefInterestFoodDesc => 'Lokale keuken en unieke restaurants';
+
+  @override
+  String get prefInterestArts => 'Kunst & cultuur';
+
+  @override
+  String get prefInterestArtsDesc => 'Musea, galeries en theaters';
+
+  @override
+  String get prefInterestShopping => 'Winkelen & markten';
+
+  @override
+  String get prefInterestShoppingDesc => 'Lokale markten en winkelstraten';
+
+  @override
+  String get prefInterestSports => 'Sport & activiteiten';
+
+  @override
+  String get prefInterestSportsDesc => 'Actieve ervaringen en sportlocaties';
+
+  @override
+  String get prefInterestsTitleFriendly => 'Wat vind je leuk? 🌟';
+
+  @override
+  String get prefInterestsTitleEnergetic => 'Wat maakt je enthousiast? 🔥';
+
+  @override
+  String get prefInterestsTitleProfessional => 'Categorieën reisinteresses';
+
+  @override
+  String get prefInterestsTitleDirect => 'Kies interesses';
+
+  @override
+  String get prefInterestsSubtitleFriendly =>
+      'Kies activiteiten die je leuk lijken';
+
+  @override
+  String get prefInterestsSubtitleEnergetic =>
+      'Kies alles wat je hart sneller laat kloppen!';
+
+  @override
+  String get prefInterestsSubtitleProfessional =>
+      'Selecteer je voorkeurscategorieën';
+
+  @override
+  String get prefInterestsSubtitleDirect => 'Kies activiteitstypes:';
+
+  @override
+  String get prefTravelTitleFriendly => 'Vertel over je reisstijl ✈️';
+
+  @override
+  String get prefTravelTitleEnergetic => 'Vertel over je reisstijl ✈️';
+
+  @override
+  String get prefTravelTitleProfessional => 'Vertel over je reisstijl ✈️';
+
+  @override
+  String get prefTravelTitleDirect => 'Vertel over je reisstijl ✈️';
+
+  @override
+  String get prefTravelSubtitleFriendly =>
+      'Een paar korte vragen om je ervaring persoonlijk te maken';
+
+  @override
+  String get prefTravelSubtitleEnergetic =>
+      'Een paar korte vragen om je ervaring persoonlijk te maken';
+
+  @override
+  String get prefTravelSubtitleProfessional =>
+      'Een paar korte vragen om je ervaring persoonlijk te maken';
+
+  @override
+  String get prefTravelSubtitleDirect =>
+      'Een paar korte vragen om je ervaring persoonlijk te maken';
+
+  @override
+  String get prefSectionSocialVibe => 'Sociale vibe 👥';
+
+  @override
+  String get prefSectionPlanningPace => 'Planningsritme ⏰';
+
+  @override
+  String get prefSectionTravelStyle => 'Reisstijl 🎯';
+
+  @override
+  String prefSelectUpToStyles(int count) {
+    return 'Kies maximaal $count stijlen';
+  }
+
+  @override
+  String get prefSocialSolo => 'Solo-avonturen';
+
+  @override
+  String get prefSocialSoloDesc => 'Tijd voor mezelf is het beste';
+
+  @override
+  String get prefSocialSmallGroups => 'Kleine groepen';
+
+  @override
+  String get prefSocialSmallGroupsDesc => 'Goede vrienden, intieme sfeer';
+
+  @override
+  String get prefSocialButterfly => 'Sociale vlinder';
+
+  @override
+  String get prefSocialButterflyDesc => 'Hou van nieuwe mensen ontmoeten';
+
+  @override
+  String get prefSocialMoodDependent => 'Afhankelijk van stemming';
+
+  @override
+  String get prefSocialMoodDependentDesc => 'Soms solo, soms sociaal';
+
+  @override
+  String get prefPaceRightNow => 'Right now-vibes';
+
+  @override
+  String get prefPaceRightNowDesc => 'Wat kan ik nu doen?';
+
+  @override
+  String get prefPaceSameDay => 'Zelfde-dag-planner';
+
+  @override
+  String get prefPaceSameDayDesc => '’s Ochtends plannen voor de dag';
+
+  @override
+  String get prefPaceWeekend => 'Weekendplanner';
+
+  @override
+  String get prefPaceWeekendDesc => 'Een paar dagen van tevoren plannen';
+
+  @override
+  String get prefPaceMaster => 'Masterplanner';
+
+  @override
+  String get prefPaceMasterDesc => 'Graag weken van tevoren plannen';
+
+  @override
+  String get prefTravelStyleSpontaneous => 'Spontaan';
+
+  @override
+  String get prefTravelStyleSpontaneousDesc =>
+      'Met de flow meegaan, verrassingen omarmen';
+
+  @override
+  String get prefTravelStylePlanned => 'Gepland';
+
+  @override
+  String get prefTravelStylePlannedDesc =>
+      'Georganiseerde routes, geplande bezoeken';
+
+  @override
+  String get prefTravelStyleLocal => 'Lokale ervaring';
+
+  @override
+  String get prefTravelStyleLocalDesc =>
+      'Leven als een local, authentieke plekken';
+
+  @override
+  String get prefTravelStyleLuxury => 'Luxezoeker';
+
+  @override
+  String get prefTravelStyleLuxuryDesc =>
+      'Premium ervaringen, high-end plekken';
+
+  @override
+  String get prefTravelStyleBudget => 'Budgetbewust';
+
+  @override
+  String get prefTravelStyleBudgetDesc => 'Goede waarde, slim uitgeven';
+
+  @override
+  String get prefTravelStyleTouristHighlights => 'Toeristische hoogtepunten';
+
+  @override
+  String get prefTravelStyleTouristHighlightsDesc =>
+      'Must-see bezienswaardigheden, populaire plekken';
+
+  @override
+  String get prefTravelStyleOffBeatenPath => 'Van de gebaande paden';
+
+  @override
+  String get prefTravelStyleOffBeatenPathDesc =>
+      'Verborgen parels, unieke ervaringen';
+
+  @override
+  String get dayPlanTodayItinerary => 'ITINERAIRE VANDAAG';
+
+  @override
+  String get dayPlanBasedOn => 'Je dagplan gebaseerd op:';
+
+  @override
+  String get dayPlanEditMoods => 'Stemmingen bewerken →';
+
+  @override
+  String get dayPlanAddToMyDay => 'Toevoegen aan Mijn Dag';
+
+  @override
+  String get dayPlanPlanAddedToMyDay => 'Plan toegevoegd aan Mijn Dag!';
+
+  @override
+  String get dayPlanAddPlanFailed =>
+      'Plan kon niet worden toegevoegd. Probeer het opnieuw.';
+
+  @override
+  String get dayPlanAllAlternativesUsed =>
+      'Je hebt alle 3 alternatieven voor deze activiteit gebruikt!';
+
+  @override
+  String dayPlanFindingOptions(String name) {
+    return 'Zoeken naar nieuwe opties voor $name...';
+  }
+
+  @override
+  String get dayPlanNoOptionsFound =>
+      'Geen andere opties voor dit tijdvak. Probeer een andere stemming!';
+
+  @override
+  String get dayPlanFindOptionsFailed =>
+      'Geen nieuwe opties gevonden. Probeer het later opnieuw.';
+
+  @override
+  String get dayPlanAllOptionsUsed => 'Alle opties gebruikt';
+
+  @override
+  String get dayPlanNotFeelingThis => 'Niets voor jou?';
+
+  @override
+  String dayPlanTryAgainLeft(String count) {
+    return 'Opnieuw proberen? ($count over)';
+  }
+
+  @override
+  String get dayPlanMorning => 'OCHTEND';
+
+  @override
+  String get dayPlanAfternoon => 'MIDDAG';
+
+  @override
+  String get dayPlanEvening => 'AVOND';
+
+  @override
+  String get dayPlanThemeExploreDiscover => 'Ontdekken & verkennen';
+
+  @override
+  String get dayPlanThemeTrueLocalFind => 'Een echte lokale vondst';
+
+  @override
+  String get dayPlanThemeWindDownCulture => 'Uitblazen & cultuur';
+
+  @override
+  String get dayPlanThemeCulturalDeepDive => 'Culturele verdieping';
+
+  @override
+  String get dayPlanThemeFoodieFind => 'Een echte foodie-vondst';
+
+  @override
+  String get dayPlanThemeSunsetVibes => 'Zonsondergang & cultuur';
+
+  @override
+  String get dayPlanThemeWindDownRelax => 'Uitblazen & ontspannen';
+
+  @override
+  String get dayPlanThemeAdventureAwaits => 'Avontuur wacht';
+
+  @override
+  String get dayPlanThemeOutdoorNature => 'Buiten & natuur';
+
+  @override
+  String get dayPlanThemeCreativeVibes => 'Creatieve vibes';
+
+  @override
+  String get dayPlanThemeRomanticMoments => 'Romantische momenten';
+
+  @override
+  String get dayPlanThemeYourVibe => 'Jouw vibe';
+
+  @override
+  String get dayPlanCardActivity => 'Activiteit';
+
+  @override
+  String get dayPlanCardFree => 'Gratis';
+
+  @override
+  String get dayPlanCardOpenNow => 'Nu open';
+
+  @override
+  String get dayPlanCardClosed => 'Gesloten';
+
+  @override
+  String get dayPlanCardNotFeelingThis => 'Niets voor jou?';
+
+  @override
+  String get dayPlanCardDirections => 'Route';
+
+  @override
+  String get dayPlanCardSeeActivity => 'Bekijk activiteit';
+
+  @override
+  String get dayPlanCardUnableToOpenDirections =>
+      'Route kon niet worden geopend';
+
+  @override
+  String get dayPlanCardFailedToShare => 'Delen mislukt';
+
+  @override
+  String dayPlanCardRemovedFromSaved(String name) {
+    return '$name verwijderd uit opgeslagen plekken';
+  }
+
+  @override
+  String dayPlanCardFailedToRemove(String name) {
+    return '$name kon niet worden verwijderd';
+  }
+
+  @override
+  String get dayPlanCardCouldNotSaveMoodyHub =>
+      'Opslaan in Moody Hub mislukt. Inloggen kan nodig zijn.';
+
+  @override
+  String get dayPlanCardCouldNotAddMyDay =>
+      'Toevoegen aan Mijn Dag mislukt. Inloggen kan nodig zijn.';
+
+  @override
+  String dayPlanCardSavedToMoodyHubAndMyDay(String name) {
+    return '$name opgeslagen! Vind het in Moody Hub (opgeslagen) en Mijn Dag.';
+  }
+
+  @override
+  String dayPlanCardSavedToMoodyHub(String name) {
+    return '$name opgeslagen in Moody Hub.';
+  }
+
+  @override
+  String dayPlanCardAddedToMyDay(String name) {
+    return '$name toegevoegd aan Mijn Dag.';
+  }
+
+  @override
+  String dayPlanCardMatch(String percent) {
+    return '$percent% match';
+  }
+
+  @override
+  String moodHubGreetingFriendly(String name) {
+    return 'Hoi, $name!';
+  }
+
+  @override
+  String moodHubGreetingBestie(String name) {
+    return 'Hoi, $name! 😊';
+  }
+
+  @override
+  String moodHubGreetingProfessional(String greeting, String name) {
+    return '$greeting, $name';
+  }
+
+  @override
+  String moodHubGreetingDirect(String name) {
+    return 'Hoi, $name';
+  }
+
+  @override
+  String get moodHubGreetingHeyThere => 'Hoi!';
+
+  @override
+  String get moodHubGreetingHi => 'Hoi';
+
+  @override
+  String get moodHubWhatIsYourMood => 'Wat is je stemming';
+
+  @override
+  String get moodHubThisMorning => 'vanmorgen?';
+
+  @override
+  String get moodHubThisAfternoon => 'vanmiddag?';
+
+  @override
+  String get moodHubThisEvening => 'vanavond?';
+
+  @override
+  String get moodHubTonight => 'vannacht?';
+
+  @override
+  String get moodHubBannerMorning => 'Ochtend — laten we de toon zetten.';
+
+  @override
+  String get moodHubBannerAfternoon => 'Middag — tijd om je vibe te matchen.';
+
+  @override
+  String get moodHubBannerEvening => 'Avond — wat is je vibe?';
+
+  @override
+  String get moodHubBannerNight =>
+      'Late avond — laten we iets passends vinden.';
+
+  @override
+  String get moodHubCreatePlan => 'Maak je perfecte plan! 🎯';
+
+  @override
+  String get moodHubBackToHub => 'Terug naar Hub';
+
+  @override
+  String moodHubSelectUpTo(String max) {
+    return 'Je kunt maximaal $max stemmingen kiezen';
+  }
+
+  @override
+  String get moodHubSelectedMoods => 'Gekozen stemmingen: ';
+
+  @override
+  String get moodHubNoMoodOptions => 'Geen stemmingsopties beschikbaar';
+
+  @override
+  String get moodHubMoodyThinking => 'Moody is aan het nadenken...';
+
+  @override
+  String get moodHubMoodHappy => 'Blij';
+
+  @override
+  String get moodHubMoodAdventurous => 'Avontuurlijk';
+
+  @override
+  String get moodHubMoodRelaxed => 'Ontspannen';
+
+  @override
+  String get moodHubMoodEnergetic => 'Energiek';
+
+  @override
+  String get moodHubMoodRomantic => 'Romantisch';
+
+  @override
+  String get moodHubMoodSocial => 'Sociaal';
+
+  @override
+  String get moodHubMoodCultural => 'Cultureel';
+
+  @override
+  String get moodHubMoodCurious => 'Nieuwsgierig';
+
+  @override
+  String get moodHubMoodCozy => 'Gezellig';
+
+  @override
+  String get moodHubMoodExcited => 'Opgewonden';
+
+  @override
+  String get moodHubMoodFoody => 'Foodie';
+
+  @override
+  String get moodHubMoodSurprise => 'Verrassing';
+
+  @override
+  String get planLoadingErrorTitle => 'Oeps! Er ging iets mis';
+
+  @override
+  String get planLoadingTryAgain => 'Opnieuw proberen';
+
+  @override
+  String get planLoadingErrorGeneric =>
+      'Kon geen activiteiten genereren. Probeer opnieuw of kies andere stemmingen.';
+
+  @override
+  String get planLoadingErrorNetwork =>
+      'Netwerkfout. Controleer je internetverbinding.';
+
+  @override
+  String get planLoadingErrorLocation =>
+      'Locatietoegang nodig. Schakel locatie in.';
+
+  @override
+  String get planLoadingErrorService =>
+      'Service tijdelijk niet beschikbaar. Probeer het over een paar minuten.';
+
+  @override
+  String get planLoadingErrorApiKey =>
+      'Configuratiefout. Neem contact op met support.';
+
+  @override
+  String get planLoadingErrorNotFound =>
+      'Service niet beschikbaar. Probeer het later opnieuw.';
+
+  @override
+  String get planLoadingErrorNoActivities =>
+      'Geen activiteiten gevonden. Probeer andere stemmingen of controleer je locatie.';
+
+  @override
+  String get getReadyTitle => 'Maak je klaar';
+
+  @override
+  String getReadyLeaveBy(String time) {
+    return 'Vertrek uiterlijk om $time';
+  }
+
+  @override
+  String getReadyTripSummary(String mode, int minutes) {
+    return '$mode · ~$minutes min reistijd';
+  }
+
+  @override
+  String getReadyWeatherAt(String time) {
+    return 'Weer om $time';
+  }
+
+  @override
+  String get getReadyWeatherTipDefault =>
+      'Het lijkt een goed moment om te vertrekken.';
+
+  @override
+  String get getReadyWeatherTipCool =>
+      'Het kan wat fris zijn – neem een lichte jas mee.';
+
+  @override
+  String get getReadyWeatherTipRain =>
+      'Er wordt regen verwacht – misschien een paraplu meenemen.';
+
+  @override
+  String get getReadyChecklistTitle => 'Wat neem je mee';
+
+  @override
+  String get getReadyItemWallet => 'Portemonnee & betaalmiddel';
+
+  @override
+  String get getReadyItemPhoneCharged => 'Telefoon opgeladen';
+
+  @override
+  String get getReadyItemReusableBag => 'Herbruikbare tas of bakje';
+
+  @override
+  String get getReadyItemShoes => 'Comfortabele wandelschoenen';
+
+  @override
+  String get getReadyItemWater => 'Waterfles';
+
+  @override
+  String get getReadyItemId => 'ID / OV-kaart indien nodig';
+
+  @override
+  String get getReadyReminderTitle => 'Herinner me om te vertrekken';
+
+  @override
+  String get getReadyReminderSubtitle =>
+      'We geven je een seintje een paar minuten van tevoren.';
+
+  @override
+  String get getReadyQuickActions => 'Snelle acties';
+
+  @override
+  String get getReadyQuickShare => 'Delen';
+
+  @override
+  String get getReadyQuickCalendar => 'Agenda';
+
+  @override
+  String get getReadyQuickParking => 'Parkeren';
+
+  @override
+  String get getReadyPrimaryCta => 'Ik ben er klaar voor! 🚀';
+
+  @override
+  String get getReadyLetsGo => 'Let\'s go!';
+
+  @override
+  String get getReadyAdventureStartsIn => 'Het avontuur begint over…';
+
+  @override
+  String get getReadyHours => 'UUR';
+
+  @override
+  String get getReadyMins => 'MIN';
+
+  @override
+  String get getReadyRoute => 'Route';
+
+  @override
+  String get getReadyYourAdventureEnergy => 'Jouw avontuur-energie';
+
+  @override
+  String get getReadyBoostEnergyHint =>
+      'Vink de punten aan om je energie te boosten!';
+
+  @override
+  String get getReadyPackEssentials => 'Pak je essentials';
+
+  @override
+  String get getReadyVibePlaylist => 'Vibe-playlist';
+
+  @override
+  String getReadyGetInMood(String mood) {
+    return 'Kom in de $mood-stemming!';
+  }
+
+  @override
+  String getReadyPlaylistLabel(String theme) {
+    return 'Happy $theme Beats';
+  }
+
+  @override
+  String get getReadyPlay => 'Afspelen';
+
+  @override
+  String get getReadyNudgeMe => 'Herinner me wanneer het zo ver is!';
+
+  @override
+  String getReadyReminderAt(String time) {
+    return 'We herinneren je om $time';
+  }
+
+  @override
+  String get getReadyCantWait => 'Benieuwd wat je gaat ontdekken!';
 }

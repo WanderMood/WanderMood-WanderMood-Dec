@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
-import 'package:wandermood/features/plans/presentation/screens/plan_result_screen.dart';
-
 class ActivityDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> activity;
   final Function(String) onAddToPlanner;

@@ -31,9 +31,10 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
     try {
       // First try to fetch the profile
       // Select specific columns to avoid errors if some columns don't exist
+      // Select only columns that exist in profiles table (avoid 42703 errors)
       final response = await supabase
           .from('profiles')
-          .select('id, email, username, full_name, image_url, date_of_birth, bio, favorite_mood, mood_streak, followers_count, following_count, is_public, profile_visibility, show_email, show_age, notification_preferences, theme_preference, language_preference, achievements, created_at, updated_at')
+          .select('id, email, username, full_name, image_url, avatar_url, date_of_birth, bio, favorite_mood, mood_streak, is_public, created_at, updated_at')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -41,7 +42,7 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
         return Profile.fromSupabase(response);
       }
 
-      // If no profile exists, create one with default values
+      // If no profile exists, create one with default values (core columns only)
       final defaultProfile = {
         'id': user.id,
         'email': user.email,
@@ -49,17 +50,8 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
         'full_name': user.userMetadata?['name'] ?? 'New User',
         'bio': 'Hello! I\'m new to WanderMood 👋',
         'mood_streak': 0,
-        'followers_count': 0,
-        'following_count': 0,
         'is_public': true,
-        'notification_preferences': {
-          'push': true,
-          'email': true
-        },
-        'theme_preference': 'system',
-        'language_preference': 'en',
-        'created_at': DateTime.now().toIso8601String(),
-        'updated_at': DateTime.now().toIso8601String()
+        'updated_at': DateTime.now().toIso8601String(),
       };
 
       final result = await supabase

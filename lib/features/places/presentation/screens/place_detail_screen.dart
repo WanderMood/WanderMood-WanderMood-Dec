@@ -245,16 +245,10 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         child: IconButton(
           icon: Icon(Icons.arrow_back, color: iconColor),
           onPressed: () {
-            // Pop back to previous screen (Explore screen)
-            // This maintains the navigation stack and preserves the selected city
-            // The locationNotifierProvider maintains the selected city state across navigation
-            if (Navigator.of(context).canPop()) {
-              context.pop();
-            } else {
-              // Fallback: Navigate to Explore tab if no previous route exists
-              // This preserves the selected city since locationNotifierProvider is stateful
-              context.goNamed('main', extra: {'tab': 1});
-            }
+            // Always return to Explore tab (index 1). Tapping a place card comes from Explore,
+            // but the route stack keeps the original /main tab (e.g. 2 from splash), so pop()
+            // would wrongly land on Mood or My Day. Going to main with tab 1 ensures back = Explore.
+            context.goNamed('main', extra: {'tab': 1});
           },
         ),
       ),

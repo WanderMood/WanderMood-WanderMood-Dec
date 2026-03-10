@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../providers/daily_mood_state_provider.dart';
 import '../../providers/mood_options_provider.dart';
 import '../../models/mood_option.dart';
-import '../../../home/providers/dynamic_my_day_provider.dart';
+import '../../../home/presentation/screens/dynamic_my_day_provider.dart';
 import '../../../places/models/place.dart';
 import '../../../../core/services/wandermood_ai_service.dart';
 import '../../services/trending_activities_service.dart';
@@ -39,6 +39,23 @@ import '../../../home/presentation/screens/main_screen.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import '../../../profile/domain/providers/profile_provider.dart';
 import 'dart:ui';
+
+// Day hero state for Moody Hub hero card (My Day)
+enum _DayHeroState {
+  noPlan,
+  planScheduledLater,
+  upcomingSoon,
+  activeNow,
+  recentlyCompleted,
+}
+
+// Lightweight context object describing what the hero should focus on
+class _HeroStateContext {
+  final _DayHeroState state;
+  final EnhancedActivityData? focusActivity;
+
+  const _HeroStateContext(this.state, this.focusActivity);
+}
 
 class MoodyHubScreen extends ConsumerStatefulWidget {
   final VoidCallback? onChangeMood;
@@ -929,19 +946,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       final locationAsync = ref.read(locationNotifierProvider);
       final city = locationAsync.value ?? 'Rotterdam';
 
-      double latitude = 51.9244;
-      double longitude = 4.4777;
-
-      try {
-        final position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.low,
-          timeLimit: const Duration(seconds: 3),
-        );
-        latitude = position.latitude;
-        longitude = position.longitude;
-      } catch (_) {
-        // fallback to defaults
-      }
+      final position = await ref.read(userLocationProvider.future);
+      final latitude = position?.latitude ?? 51.9225;
+      final longitude = position?.longitude ?? 4.4792;
 
       // ONLY make API call when user explicitly sends a message
       final response = await WanderMoodAIService.chat(
@@ -1438,135 +1445,83 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     }
   }
 
-  // Primary CTA button for inside the hero card - Creates or updates day plan
-  Widget _buildPrimaryCTAButton() {
-    final scheduledActivitiesAsync = ref.watch(todayActivitiesProvider);
-    
-    return FutureBuilder<bool>(
-      future: _hasCompletedFirstPlan(),
-      builder: (context, firstPlanSnapshot) {
-        final hasCompletedFirstPlan = firstPlanSnapshot.data ?? false;
-        
-        return scheduledActivitiesAsync.when(
-          data: (activities) {
-            // Only show "Update my day" if:
-            // 1. User has completed their first plan (they understand the flow)
-            // 2. AND they have activities for today
-            final hasPlan = hasCompletedFirstPlan && activities.isNotEmpty;
-            final buttonText = hasPlan ? 'Update my day' : 'Create my day ✨';
-        
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF12B347),
-                Color(0xFF6DE89A),
+  // Primary CTA button for inside the hero card - state-driven
+  Widget _buildPrimaryCTAButton(_DayHeroState state) {
+    late final String buttonText;
+    late final VoidCallback? onTap;
+
+    switch (state) {
+      case _DayHeroState.noPlan:
+        buttonText = 'Create my day ✨';
+        onTap = widget.onChangeMood;
+        break;
+      case _DayHeroState.planScheduledLater:
+        buttonText = 'View my plan';
+        onTap = widget.onChangeMood;
+        break;
+      case _DayHeroState.upcomingSoon:
+        buttonText = 'Add warm-up';
+        onTap = widget.onChangeMood;
+        break;
+      case _DayHeroState.activeNow:
+        buttonText = 'Check in now';
+        onTap = () => _showCheckInScreen(context);
+        break;
+      case _DayHeroState.recentlyCompleted:
+        buttonText = 'Rate & reflect';
+        onTap = () => _showCheckInScreen(context);
+        break;
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF12B347),
+            Color(0xFF6DE89A),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF12B347).withOpacity(0.3),
+            blurRadius: 12,
+            spreadRadius: 1,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  buttonText,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ],
             ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF12B347).withOpacity(0.3),
-                blurRadius: 12,
-                spreadRadius: 1,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => widget.onChangeMood?.call(),
-              borderRadius: BorderRadius.circular(16),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      buttonText,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(
-                      Icons.arrow_forward_rounded,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-          },
-          loading: () => Container(
-        height: 50,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: Colors.grey[200],
-        ),
-        child: const Center(
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
-            ),
           ),
         ),
       ),
-      error: (_, __) => Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF12B347),
-              Color(0xFF6DE89A),
-            ],
-          ),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => widget.onChangeMood?.call(),
-            borderRadius: BorderRadius.circular(16),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Create my day ✨',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Icon(
-                    Icons.arrow_forward_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-        );
-      },
     );
   }
 
@@ -1827,26 +1782,109 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     );
   }
 
-  // Dynamic moment card that rotates content
+  _HeroStateContext _deriveHeroContext(
+    List<EnhancedActivityData> activities,
+    DateTime now,
+  ) {
+    if (activities.isEmpty) {
+      return _HeroStateContext(_DayHeroState.noPlan, null);
+    }
+
+    final active = activities
+        .where((a) => a.status == ActivityStatus.activeNow)
+        .firstOrNull;
+    if (active != null) {
+      return _HeroStateContext(_DayHeroState.activeNow, active);
+    }
+
+    final recentCompleted = activities
+        .where(
+          (a) =>
+              a.status == ActivityStatus.completed &&
+              now.difference(a.endTime).inMinutes <= 60,
+        )
+        .lastOrNull;
+
+    final upcoming = activities
+        .where((a) => a.status == ActivityStatus.upcoming)
+        .toList()
+      ..sort((a, b) => a.startTime.compareTo(b.startTime));
+    if (upcoming.isNotEmpty) {
+      final next = upcoming.first;
+      final diff = next.startTime.difference(now);
+      if (!diff.isNegative && diff <= const Duration(hours: 2)) {
+        return _HeroStateContext(_DayHeroState.upcomingSoon, next);
+      }
+      return _HeroStateContext(_DayHeroState.planScheduledLater, next);
+    }
+
+    if (recentCompleted != null) {
+      return _HeroStateContext(_DayHeroState.recentlyCompleted, recentCompleted);
+    }
+
+    // Fallback: plan exists but nothing active/upcoming soon
+    return _HeroStateContext(_DayHeroState.planScheduledLater, null);
+  }
+
+  String _currentCityLabel() {
+    final asyncCity = ref.watch(locationNotifierProvider);
+    final city = asyncCity.maybeWhen(
+      data: (value) => value?.trim(),
+      orElse: () => null,
+    );
+    // Never return null to keep copy safe
+    if (city == null || city.isEmpty) {
+      return 'your city';
+    }
+    return city;
+  }
+
+  // State-driven hero card based on today's plan
   Widget _buildStatusCard(DailyMoodState dailyState) {
     final currentMood = dailyState.currentMood ?? 'exploring';
-    final hour = DateTime.now().hour;
-    final contentService = ref.watch(moodyHubContentServiceProvider);
-    
-    return FutureBuilder<MomentCard>(
-      future: contentService.generateMomentCard(
-        mood: currentMood,
-        hour: hour,
-        location: null, // TODO: Pass actual location
-      ),
-      builder: (context, snapshot) {
-        final momentCard = snapshot.data;
-        
-        // Default card while loading
-        if (!snapshot.hasData) {
-          return _buildLoadingMomentCard(currentMood);
+    final todayActivitiesAsync = ref.watch(todayActivitiesProvider);
+
+    return todayActivitiesAsync.when(
+      data: (activities) {
+        final now = DateTime.now();
+        final heroContext = _deriveHeroContext(activities, now);
+        final city = _currentCityLabel();
+
+        String emoji = '✨';
+        String line1 = '';
+        String line2 = '';
+
+        final focusTitle =
+            heroContext.focusActivity?.rawData['title'] as String? ?? 'this activity';
+
+        switch (heroContext.state) {
+          case _DayHeroState.noPlan:
+            emoji = '✨';
+            line1 = 'Your day in $city is wide open.';
+            line2 = 'Want me to put a plan together for you?';
+            break;
+          case _DayHeroState.planScheduledLater:
+            emoji = '📅';
+            line1 = 'You\'ve got a plan lined up later today in $city.';
+            line2 = 'Want to take a quick look at what\'s coming?';
+            break;
+          case _DayHeroState.upcomingSoon:
+            emoji = '⏰';
+            line1 = 'Soon: $focusTitle in $city.';
+            line2 = 'Want a small warm-up or tweak before it starts?';
+            break;
+          case _DayHeroState.activeNow:
+            emoji = '⚡️';
+            line1 = 'Right now you\'re at $focusTitle.';
+            line2 = 'Want to check in while you\'re in the moment?';
+            break;
+          case _DayHeroState.recentlyCompleted:
+            emoji = '✅';
+            line1 = 'You just wrapped $focusTitle.';
+            line2 = 'Want to jot it down before we plan the next thing?';
+            break;
         }
-        
+
         return Container(
           width: double.infinity,
           padding: const EdgeInsets.all(24),
@@ -1878,61 +1916,49 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           ),
           child: Row(
             children: [
-              // Left side: Dynamic moment content
+              // Left side: State-driven hero content
               Expanded(
                 child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-                    // Emoji indicator
-        Text(
-                      momentCard!.emoji,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      emoji,
                       style: const TextStyle(fontSize: 28),
                     ),
                     const SizedBox(height: 8),
-                    // Conversational intro
                     Text(
-                      momentCard.intro,
-          style: GoogleFonts.poppins(
+                      line1,
+                      style: GoogleFonts.poppins(
                         fontSize: 15,
                         color: const Color(0xFF4A5568),
                         fontWeight: FontWeight.w500,
-                        fontStyle: FontStyle.italic,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    // Main title (mood-implicit)
+                    const SizedBox(height: 6),
                     Text(
-                      momentCard.title,
+                      line2,
                       style: GoogleFonts.poppins(
-                        fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF1A202C),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1A202C),
                         height: 1.3,
-          ),
-        ),
-                    if (momentCard.subtitle != null) ...[
-                      const SizedBox(height: 8),
-        Text(
-                        momentCard.subtitle!,
-          style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          color: const Color(0xFF718096),
-          ),
-        ),
-                    ],
+                      ),
+                    ),
                     const SizedBox(height: 16),
-                    // Primary CTA button - Create or Update day plan (moved inside hero card)
-                    _buildPrimaryCTAButton(),
-      ],
+                    // Primary CTA button - changes per state
+                    _buildPrimaryCTAButton(heroContext.state),
+                  ],
                 ),
               ),
               const SizedBox(width: 16),
               // Right side: Floating Moody character (tappable)
-              _buildFloatingMoodyCharacter(currentMood, momentCard: momentCard),
+              _buildFloatingMoodyCharacter(currentMood),
             ],
           ),
         );
       },
+      loading: () => _buildLoadingMomentCard(currentMood),
+      error: (_, __) => _buildLoadingMomentCard(currentMood),
     );
   }
   
@@ -4102,51 +4128,74 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     );
   }
 
-  // Action cards: Check in, Change Mood (smaller, less prominent)
+  // Action cards: Check in, Talk to Moody, Change mood (clear entry to pick moods / new plan)
   Widget _buildActionCards(AsyncValue<List<MoodOption>> moodOptionsAsync) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
+      child: Column(
         children: [
-          // Check in card
-          Expanded(
-            child: _buildModernActionCard(
+          Row(
+            children: [
+              // Check in card
+              Expanded(
+                child: _buildModernActionCard(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFFFF6B9D), // Warm pink
+                      Color(0xFFFFA06B), // Warm orange
+                    ],
+                  ),
+                  icon: Icons.videocam,
+                  title: 'Check in',
+                  subtitle: 'Tell Moody about your day',
+                  emoji: '📹',
+                  accentColor: const Color(0xFFFF6B9D),
+                  onTap: () => _showCheckInScreen(context),
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Talk to Moody card
+              Expanded(
+                child: _buildModernActionCard(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF12B347), // WanderMood green
+                      Color(0xFF6DE89A), // Light green
+                    ],
+                  ),
+                  icon: Icons.chat_bubble_rounded,
+                  title: 'Talk to Moody',
+                  subtitle: 'Ask me anything',
+                  emoji: '💬',
+                  accentColor: const Color(0xFF12B347),
+                  onTap: () => widget.onShowChat?.call(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Change mood card - full width so user can easily find "change mood"
+          if (widget.onChangeMood != null)
+            _buildModernActionCard(
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFFFF6B9D), // Warm pink
-                  Color(0xFFFFA06B), // Warm orange
+                  Color(0xFF7C4DFF), // Soft purple
+                  Color(0xFFB388FF), // Lighter purple
                 ],
               ),
-              icon: Icons.videocam,
-              title: 'Check in',
-              subtitle: 'Tell Moody about your day',
-              emoji: '📹',
-              accentColor: const Color(0xFFFF6B9D),
-              onTap: () => _showCheckInScreen(context),
+              icon: Icons.mood,
+              title: 'Change mood',
+              subtitle: 'Pick moods & create a new day plan',
+              emoji: '✨',
+              accentColor: const Color(0xFF7C4DFF),
+              onTap: () => widget.onChangeMood!(),
             ),
-          ),
-          const SizedBox(width: 16),
-          // Talk to Moody card
-          Expanded(
-            child: _buildModernActionCard(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF12B347), // WanderMood green
-                  Color(0xFF6DE89A), // Light green
-                ],
-              ),
-              icon: Icons.chat_bubble_rounded,
-              title: 'Talk to Moody',
-              subtitle: 'Ask me anything',
-              emoji: '💬',
-              accentColor: const Color(0xFF12B347),
-              onTap: () => widget.onShowChat?.call(),
-            ),
-          ),
         ],
       ),
     );
@@ -4997,6 +5046,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       
       // Invalidate providers to refresh My Day screen
       ref.invalidate(scheduledActivityServiceProvider);
+      ref.invalidate(scheduledActivitiesForTodayProvider);
       ref.invalidate(todayActivitiesProvider);
       
       if (kDebugMode) debugPrint('✅ Successfully added ${place.name} to $timePeriod schedule');

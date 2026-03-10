@@ -21,7 +21,6 @@ import '../../features/onboarding/presentation/screens/travel_style_screen.dart'
 import '../../features/onboarding/presentation/screens/combined_travel_preferences_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_loading_screen.dart';
 // import '../../features/dev/reset_screen.dart'; // Removed - debug only
-import '../../features/plans/presentation/screens/plan_generation_screen.dart';
 import '../../features/plans/presentation/screens/plan_loading_screen.dart';
 import '../../features/plans/presentation/screens/day_plan_screen.dart';
 import '../../features/plans/domain/models/activity.dart';
@@ -543,9 +542,6 @@ GoRouter router(RouterRef ref) {
           final selectedMoods = state.extra as List<String>;
           return PlanLoadingScreen(
             selectedMoods: selectedMoods,
-            onLoadingComplete: () {
-              // This callback is handled inside PlanLoadingScreen
-            },
           );
         },
       ),
@@ -553,9 +549,13 @@ GoRouter router(RouterRef ref) {
         path: '/day-plan',
         name: 'day-plan',
         builder: (context, state) {
-          final activities = state.extra as List<Activity>;
+          final extra = state.extra as Map<String, dynamic>?;
+          if (extra == null) return const DayPlanScreen(activities: [], selectedMoods: []);
+          final activities = extra['activities'] as List<Activity>? ?? [];
+          final moods = (extra['moods'] as List<dynamic>?)?.cast<String>() ?? <String>[];
           return DayPlanScreen(
             activities: activities,
+            selectedMoods: moods,
           );
         },
       ),

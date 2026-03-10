@@ -16,7 +16,10 @@ class CurrentUserProfile {
     this.activityPace,
     this.timeAvailable,
     this.interests,
+    this.moodStreak = 0,
   });
+
+  final int moodStreak;
 
   final String userId;
   final String? fullName;
@@ -50,6 +53,7 @@ class CurrentUserProfile {
     String? activityPace,
     String? timeAvailable,
     dynamic interests,
+    int? moodStreak,
   }) {
     return CurrentUserProfile(
       userId: userId ?? this.userId,
@@ -66,6 +70,7 @@ class CurrentUserProfile {
       activityPace: activityPace ?? this.activityPace,
       timeAvailable: timeAvailable ?? this.timeAvailable,
       interests: interests ?? this.interests,
+      moodStreak: moodStreak ?? this.moodStreak,
     );
   }
 }

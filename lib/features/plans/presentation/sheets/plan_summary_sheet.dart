@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
-import 'package:wandermood/features/plans/presentation/screens/confirm_plan_screen.dart';
 
 class PlanSummarySheet extends StatelessWidget {
   final List<Activity> selectedActivities;
@@ -115,17 +114,7 @@ class PlanSummarySheet extends StatelessWidget {
               ],
             ),
             child: ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ConfirmPlanScreen(
-                      activities: selectedActivities,
-                    ),
-                  ),
-                );
-              },
+              onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4CAF50),
                 foregroundColor: Colors.white,
@@ -138,7 +127,7 @@ class PlanSummarySheet extends StatelessWidget {
                 minimumSize: const Size(double.infinity, 56),
               ),
               child: Text(
-                'Continue to Booking',
+                'Done',
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

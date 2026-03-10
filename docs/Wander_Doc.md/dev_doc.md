@@ -157,24 +157,21 @@ final supabaseClientProvider = Provider<SupabaseClient>((ref) {
 
 ### 2. Authentication
 ```dart
-// Sign in with email and password
-final response = await supabase.auth.signInWithPassword(
+// Passwordless magic-link (email OTP) authentication
+await supabase.auth.signInWithOtp(
   email: email,
-  password: password,
+  emailRedirectTo: 'io.supabase.wandermood://auth-callback',
 );
 
-// Sign up
-final response = await supabase.auth.signUp(
-  email: email,
-  password: password,
-  data: {'name': name},
-);
-
-// Social login
-final response = await supabase.auth.signInWithOAuth(
-  Provider.google,
-  redirectTo: 'io.supabase.wandermood://login-callback/',
-);
+// Auth state changes are handled in router.dart (PKCE flow)
+Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+  final session = data.session;
+  if (session != null) {
+    // Navigate user into the main app
+  } else {
+    // Navigate back to auth / onboarding flow
+  }
+});
 
 // Sign out
 await supabase.auth.signOut();
@@ -465,47 +462,33 @@ ref.read(mainTabProvider.notifier).state = 4; // Always go to ProfileScreen
 ```
 
 #### 2. Complete Profile Screen Functionality
-**Location:** `lib/features/profile/presentation/screens/profile_screen.dart`
+**Location:** `lib/features/profile/presentation/screens/user_profile_screen.dart`
 
 **Features:**
-- User profile display with avatar and bio
-- Day streak tracking
-- Follower/following counts
-- Profile sharing capability
-- Settings menu with proper navigation
+- Unified user profile view with avatar, @username, bio
+- Travel mode toggle (Local mode / Travel mode)
+- Stats cards (check-ins, places, top mood)
+- Favorite Vibes card with inline edit entry point
+- Mood Journey card linking to mood history
+- Travel Globe card linking to the 3D globe experience
+- Preferences summary (budget, social vibe, food, etc.)
+- Settings gear icon that opens the comprehensive Settings hub
 
-#### 3. New Help & Support Screen
+#### 3. Help & Support Screen
 **Location:** `lib/features/profile/presentation/screens/help_support_screen.dart`
 
-**Features:**
-- **Quick Actions:**
-  - Contact Us (email integration)
-  - Live Chat (coming soon message)
-- **FAQ Section:**
-  - Expandable questions and answers
-  - Common user inquiries covered
-- **App Information:**
-  - App version display
-  - Privacy Policy navigation
-  - Terms of Service navigation
-- **Troubleshooting Tools:**
-  - Report a Bug functionality
-  - Reset App Data option
+**Features (current v1):**
+- Search bar for future help-article search
+- Quick links:
+  - FAQs (UI placeholder, content TBD)
+  - Contact (opens mail composer to support@wandermood.com)
+  - Live Chat (UI placeholder, backend TBD)
+  - Report a Bug (UI placeholder)
+- Legal section:
+  - Privacy Policy (placeholder navigation)
+  - Terms of Service (placeholder navigation)
 
-**Email Integration:**
-```dart
-Future<void> _launchEmail() async {
-  final Uri emailLaunchUri = Uri(
-    scheme: 'mailto',
-    path: 'support@wandermood.com',
-    query: 'subject=WanderMood Support Request',
-  );
-  
-  if (await canLaunchUrl(emailLaunchUri)) {
-    await launchUrl(emailLaunchUri);
-  }
-}
-```
+All user-facing text on this screen is driven by `AppLocalizations` and translated in `app_*.arb` (en/nl/de/fr/es).
 
 #### 4. Fixed Settings Navigation
 **Issues Fixed:**
@@ -523,29 +506,68 @@ case 'theme':
   context.push('/theme-settings'); // Existing ThemeSettingsScreen
 ```
 
-### Profile Screen Menu Options
-1. **Achievements** - Trophy icon, shows user progress
-2. **Notifications** - Bell icon, manages notification preferences  
-3. **Language** - Globe icon, language selection
-4. **Theme** - Paintbrush icon, theme customization
-5. **Privacy** - Lock icon, privacy settings
-6. **Help & Support** - Question mark icon, comprehensive help system
-7. **Legal** - Document icon, terms and privacy
-8. **About** - Info icon, app information
+### Settings Hub Structure (ComprehensiveSettingsScreen)
+
+The settings gear on the profile header opens the unified settings hub:
+
+1. **Privacy & Security**
+   - **Account Security**: 2FA and active sessions
+   - **Privacy**: profile visibility and what others can see
+2. **App Settings**
+   - **Notifications**: push / email / in-app toggles and categories
+   - **Location**: auto-detect, default location, permissions info
+   - **Language**: override app language (en/nl/de/fr/es)
+   - **Theme**: light / dark / system theme
+3. **More**
+   - **Subscription**: current plan, premium upsell (future billing integration)
+   - **Data & Storage**: export basic account data, clear cache
+   - **Help & Support**: quick links + legal
+4. **Danger Zone**
+   - **Delete Account**: account deletion flow (via Supabase + cleanup)
+   - **Sign Out**: signs out current session
+
+> Note: Achievements are currently hidden in the UI while the gamification system is being iterated.
 
 ### Profile Data Structure
+The profile header and preferences on the new `UserProfileScreen` are backed by a combined
+`CurrentUserProfile` model which merges profile and preference data into a single source of truth:
+
 ```dart
-class UserProfile {
-  final String id;
-  final String? name;
+/// Combined profile + preferences for the current user profile screen.
+class CurrentUserProfile {
+  const CurrentUserProfile({
+    required this.userId,
+    this.fullName,
+    this.username,
+    this.bio,
+    this.avatarUrl,
+    this.ageGroup,
+    this.homeBase,
+    this.selectedMoods = const [],
+    this.budgetLevel,
+    this.socialVibe,
+    this.dietaryRestrictions = const [],
+    this.activityPace,
+    this.timeAvailable,
+    this.interests,
+  });
+
+  final String userId;
+  final String? fullName;
+  final String? username;
   final String? bio;
   final String? avatarUrl;
-  final int dayStreak;
-  final int followerCount;
-  final int followingCount;
-  final String? favoritmood;
-  final Map<String, dynamic>? preferences;
-  // ... other fields
+  final String? ageGroup;
+  final String? homeBase;
+  final List<String> selectedMoods;
+  final String? budgetLevel;
+  final String? socialVibe;
+  final List<String> dietaryRestrictions;
+  final String? activityPace;
+  final String? timeAvailable;
+  final dynamic interests;
+
+  bool get isLocalMode => homeBase == null || homeBase == 'Local Explorer';
 }
 ```
 

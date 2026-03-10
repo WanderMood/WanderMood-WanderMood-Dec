@@ -4,8 +4,17 @@ import '../models/mood_option.dart';
 class MoodOptionsService {
   static final SupabaseClient _supabase = Supabase.instance.client;
 
+  // 🚨 ZERO API CALLS: toggle to completely skip Supabase for mood options
+  static const bool _enableApiCalls = false;
+
   /// Fetch all mood options
   static Future<List<MoodOption>> getMoodOptions() async {
+    if (!_enableApiCalls) {
+      // Let the UI fall back to rich offline mood options
+      // (see _getFallbackMoodOptions in mood_home_screen.dart)
+      return [];
+    }
+
     try {
       final response = await _supabase
           .from('mood_options')
@@ -14,7 +23,6 @@ class MoodOptionsService {
           .order('display_order', ascending: true);
 
       if (response.isEmpty) {
-        print('⚠️ No mood options found in database');
         return [];
       }
 
@@ -22,12 +30,10 @@ class MoodOptionsService {
           .map((json) => MoodOption.fromJson(json))
           .toList();
 
-      print('✅ Loaded ${moodOptions.length} mood options from database');
       return moodOptions;
-    } catch (e, stackTrace) {
-      print('❌ Error fetching mood options: $e');
-      print('Stack trace: $stackTrace');
-      rethrow;
+    } catch (_) {
+      // On any error, surface no results so the UI uses its local fallback list
+      return [];
     }
   }
 

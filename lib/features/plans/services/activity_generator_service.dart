@@ -358,6 +358,7 @@ class ActivityGeneratorService {
         tags: _generateTags(moods, place.types),
         startTime: startTime,
         priceLevel: _getPriceLevel(place.priceLevel),
+        placeId: place.placeId,
       );
 
       activities.add(activity);
@@ -928,6 +929,7 @@ class ActivityGeneratorService {
       tags: _generateTags(moods, place.types),
       startTime: startTime, // Keep original start time
       priceLevel: _getPriceLevel(place.priceLevel),
+      placeId: place.placeId,
       refreshCount: 0, // Reset refresh count for new activity
     );
   }

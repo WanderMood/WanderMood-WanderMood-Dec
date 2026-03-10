@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../profile/domain/providers/profile_provider.dart';
 import '../../../../core/providers/preferences_provider.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 /// Overlay widget that introduces Moody to first-time users
 /// Shows as a centered modal on top of blurred Moody Hub background
@@ -24,20 +25,21 @@ class MoodyIntroOverlay extends ConsumerWidget {
     final profileAsync = ref.watch(profileProvider);
     final preferences = ref.watch(preferencesProvider);
     
+    final l10n = AppLocalizations.of(context)!;
     final userName = profileAsync.when(
       data: (profile) {
         final fullName = profile?.fullName;
         if (fullName != null && fullName.isNotEmpty) {
           return fullName.split(' ').first;
         }
-        return 'there';
+        return l10n.moodyIntroNameFallback;
       },
-      loading: () => 'there',
-      error: (_, __) => 'there',
+      loading: () => l10n.moodyIntroNameFallback,
+      error: (_, __) => l10n.moodyIntroNameFallback,
     );
 
     // Generate personalized preview activities based on preferences
-    final previewActivities = _generatePreviewActivities(preferences);
+    final previewActivities = _generatePreviewActivities(preferences, l10n);
 
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -104,7 +106,7 @@ class MoodyIntroOverlay extends ConsumerWidget {
 
                 // Greeting
                 Text(
-                  'Hey $userName! 👋',
+                  l10n.moodyIntroGreeting(userName),
                   style: GoogleFonts.poppins(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
@@ -114,7 +116,7 @@ class MoodyIntroOverlay extends ConsumerWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'I\'m Moody.',
+                  l10n.moodyIntroImMoody,
                   style: GoogleFonts.poppins(
                     fontSize: 22,
                     fontWeight: FontWeight.w600,
@@ -126,7 +128,7 @@ class MoodyIntroOverlay extends ConsumerWidget {
 
                 // Subtext
                 Text(
-                  'I\'m here to help you plan days that match your mood, energy, and vibe.',
+                  l10n.moodyIntroSubtext,
                   style: GoogleFonts.poppins(
                     fontSize: 15,
                     color: const Color(0xFF4A5568),
@@ -152,7 +154,7 @@ class MoodyIntroOverlay extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'I\'ll suggest activities like:',
+                        l10n.moodyIntroSuggestActivities,
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           color: const Color(0xFF4A5568),
@@ -175,7 +177,7 @@ class MoodyIntroOverlay extends ConsumerWidget {
 
                 // Main Question
                 Text(
-                  'Ready to create your first day?',
+                  l10n.readyToCreateYourFirstDay,
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -207,7 +209,7 @@ class MoodyIntroOverlay extends ConsumerWidget {
                         const SizedBox(width: 8),
                         Flexible(
                           child: Text(
-                            'Create my first day',
+                            l10n.createMyFirstDay,
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -224,7 +226,7 @@ class MoodyIntroOverlay extends ConsumerWidget {
 
                 // Micro-copy
                 Text(
-                  'Takes less than a minute • Uses your preferences',
+                  l10n.moodyIntroTakesLessThan,
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     color: const Color(0xFF718096),
@@ -241,7 +243,7 @@ class MoodyIntroOverlay extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   ),
                   child: Text(
-                    'Skip for now',
+                    l10n.skipForNow,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: const Color(0xFF718096),
@@ -283,64 +285,59 @@ class MoodyIntroOverlay extends ConsumerWidget {
   }
 
   /// Generate personalized preview activities based on user preferences
-  List<Map<String, String>> _generatePreviewActivities(UserPreferences prefs) {
+  List<Map<String, String>> _generatePreviewActivities(UserPreferences prefs, AppLocalizations l10n) {
     final activities = <Map<String, String>>[];
     
-    // Map travel interests to activity examples
+    // Map travel interests to activity examples (keys match provider: Food, Arts, etc. or legacy Food & Dining)
     final interests = prefs.travelInterests;
     final styles = prefs.travelStyles;
     
-    // Generate activities based on preferences
-    if (interests.contains('Food & Dining')) {
-      activities.add({'emoji': '🍽️', 'text': 'Local restaurant discovery'});
-    } else if (interests.contains('Arts & Culture')) {
-      activities.add({'emoji': '🎨', 'text': 'Museum or gallery visit'});
-    } else if (interests.contains('Shopping & Markets')) {
-      activities.add({'emoji': '🛍️', 'text': 'Local market exploration'});
+    if (interests.contains('Food') || interests.contains('Food & Dining')) {
+      activities.add({'emoji': '🍽️', 'text': l10n.moodyIntroActLocalRestaurant});
+    } else if (interests.contains('Arts') || interests.contains('Arts & Culture')) {
+      activities.add({'emoji': '🎨', 'text': l10n.moodyIntroActMuseum});
+    } else if (interests.contains('Shopping') || interests.contains('Shopping & Markets')) {
+      activities.add({'emoji': '🛍️', 'text': l10n.moodyIntroActLocalMarket});
     } else if (interests.contains('Nature & Outdoors')) {
-      activities.add({'emoji': '🌲', 'text': 'Nature walk or park visit'});
+      activities.add({'emoji': '🌲', 'text': l10n.moodyIntroActNature});
     } else if (interests.contains('Nightlife')) {
-      activities.add({'emoji': '🍸', 'text': 'Evening bar or lounge'});
+      activities.add({'emoji': '🍸', 'text': l10n.moodyIntroActNightlife});
     } else if (interests.contains('Wellness & Relaxation')) {
-      activities.add({'emoji': '🧘', 'text': 'Spa or wellness experience'});
+      activities.add({'emoji': '🧘', 'text': l10n.moodyIntroActSpa});
     } else {
-      activities.add({'emoji': '☕', 'text': 'Morning coffee spot'});
+      activities.add({'emoji': '☕', 'text': l10n.moodyIntroActCoffee});
     }
     
-    // Add activity based on travel styles
-    if (styles.contains('Adventurous')) {
-      activities.add({'emoji': '🏃', 'text': 'Active outdoor adventure'});
+    if (styles.contains('Adventurous') || styles.contains('Spontaneous')) {
+      activities.add({'emoji': '🏃', 'text': l10n.moodyIntroActAdventure});
     } else if (styles.contains('Relaxed')) {
-      activities.add({'emoji': '🌅', 'text': 'Peaceful evening walk'});
-    } else if (styles.contains('Cultural')) {
-      activities.add({'emoji': '🏛️', 'text': 'Historical site visit'});
+      activities.add({'emoji': '🌅', 'text': l10n.moodyIntroActPeacefulWalk});
+    } else if (styles.contains('Cultural') || styles.contains('Local Experience')) {
+      activities.add({'emoji': '🏛️', 'text': l10n.moodyIntroActHistorical});
     } else if (styles.contains('Romantic')) {
-      activities.add({'emoji': '💕', 'text': 'Romantic dining experience'});
+      activities.add({'emoji': '💕', 'text': l10n.moodyIntroActRomantic});
     } else if (styles.contains('Social')) {
-      activities.add({'emoji': '👥', 'text': 'Social gathering spot'});
+      activities.add({'emoji': '👥', 'text': l10n.moodyIntroActSocial});
     } else {
-      activities.add({'emoji': '🌆', 'text': 'Scenic viewpoint'});
+      activities.add({'emoji': '🌆', 'text': l10n.moodyIntroActScenic});
     }
     
-    // Add a third activity based on preferred time slots
-  if (prefs.preferredTimeSlots.contains('morning')) {
-      activities.add({'emoji': '🌄', 'text': 'Early morning experience'});
+    if (prefs.preferredTimeSlots.contains('morning')) {
+      activities.add({'emoji': '🌄', 'text': l10n.moodyIntroActEarlyMorning});
     } else if (prefs.preferredTimeSlots.contains('evening')) {
-      activities.add({'emoji': '🌃', 'text': 'Evening entertainment'});
+      activities.add({'emoji': '🌃', 'text': l10n.moodyIntroActEvening});
     } else if (prefs.preferredTimeSlots.contains('afternoon')) {
-      activities.add({'emoji': '🎭', 'text': 'Afternoon activity'});
+      activities.add({'emoji': '🎭', 'text': l10n.moodyIntroActAfternoon});
     } else {
-      activities.add({'emoji': '✨', 'text': 'Surprise discovery'});
+      activities.add({'emoji': '✨', 'text': l10n.moodyIntroActSurprise});
     }
     
-    // Ensure we have exactly 3 activities (fill with defaults if needed)
-    final defaultActivities = _getDefaultPreviewActivities();
+    final defaultActivities = _getDefaultPreviewActivities(l10n);
     while (activities.length < 3) {
       final defaultToAdd = defaultActivities[activities.length % defaultActivities.length];
       if (!activities.any((a) => a['text'] == defaultToAdd['text'])) {
         activities.add(defaultToAdd);
       } else {
-        // If duplicate, add a different default
         final nextDefault = defaultActivities[(activities.length + 1) % defaultActivities.length];
         activities.add(nextDefault);
       }
@@ -350,11 +347,11 @@ class MoodyIntroOverlay extends ConsumerWidget {
   }
 
   /// Default preview activities when preferences are not available
-  List<Map<String, String>> _getDefaultPreviewActivities() {
+  List<Map<String, String>> _getDefaultPreviewActivities(AppLocalizations l10n) {
     return [
-      {'emoji': '☕', 'text': 'Morning coffee spot'},
-      {'emoji': '🛍️', 'text': 'Local market visit'},
-      {'emoji': '🌅', 'text': 'Evening walk with a view'},
+      {'emoji': '☕', 'text': l10n.moodyIntroActCoffee},
+      {'emoji': '🛍️', 'text': l10n.moodyIntroActMarketVisit},
+      {'emoji': '🌅', 'text': l10n.moodyIntroActEveningWalk},
     ];
   }
 }

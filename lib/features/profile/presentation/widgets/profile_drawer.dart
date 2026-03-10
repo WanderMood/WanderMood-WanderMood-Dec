@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wandermood/features/auth/providers/user_provider.dart';
-import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
+import 'package:wandermood/features/profile/domain/providers/current_user_profile_provider.dart';
 import 'package:wandermood/features/profile/presentation/screens/language_settings_screen.dart';
 import 'package:wandermood/features/profile/presentation/screens/help_support_screen.dart';
 import 'package:go_router/go_router.dart';
@@ -25,8 +24,8 @@ class ProfileDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final profileData = ref.watch(profileProvider);
-    final mediaQuery = MediaQuery.of(context);
+    final profileData = ref.watch(currentUserProfileProvider);
+    final email = Supabase.instance.client.auth.currentUser?.email ?? '';
 
     return Drawer(
       backgroundColor: const Color(0xFFFDF6EC),
@@ -45,7 +44,7 @@ class ProfileDrawer extends ConsumerWidget {
             SizedBox(
               height: 180, // Reduced from 200
               child: profileData.when(
-                data: (profile) => Stack(
+                data: (currentProfile) => Stack(
                   children: [
                     // Background gradient and pattern
                     Container(
@@ -104,12 +103,12 @@ class ProfileDrawer extends ConsumerWidget {
                                   child: CircleAvatar(
                                     radius: 32, // Slightly reduced from 35
                                     backgroundColor: Colors.white,
-                                    backgroundImage: profile?.imageUrl != null
-                                        ? NetworkImage(profile!.imageUrl!)
+                                    backgroundImage: (currentProfile?.avatarUrl ?? '').isNotEmpty
+                                        ? NetworkImage(currentProfile!.avatarUrl!)
                                         : null,
-                                    child: profile?.imageUrl == null
+                                    child: (currentProfile?.avatarUrl ?? '').isEmpty
                                         ? Text(
-                                            profile?.fullName?.substring(0, 1).toUpperCase() ?? l10n.profileFallbackUser.substring(0, 1).toUpperCase(),
+                                            ((currentProfile?.fullName ?? currentProfile?.username) ?? l10n.profileFallbackUser).substring(0, 1).toUpperCase(),
                                             style: GoogleFonts.poppins(
                                               fontSize: 24, // Reduced from 28
                                               fontWeight: FontWeight.bold,
@@ -148,7 +147,7 @@ class ProfileDrawer extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8), // Reduced from 12
                           Text(
-                            profile?.fullName ?? l10n.profileFallbackUser,
+                            currentProfile?.fullName ?? currentProfile?.username ?? l10n.profileFallbackUser,
                             style: GoogleFonts.poppins(
                               color: Colors.white,
                               fontSize: 18, // Reduced from 20
@@ -164,7 +163,7 @@ class ProfileDrawer extends ConsumerWidget {
                           ),
                           const SizedBox(height: 2), // Reduced from 4
                           Text(
-                            profile?.email ?? '',
+                            email.isNotEmpty ? email : (currentProfile?.username != null ? '@${currentProfile!.username}' : ''),
                             style: GoogleFonts.poppins(
                               color: Colors.white.withOpacity(0.9),
                               fontSize: 12, // Reduced from 14
@@ -203,7 +202,7 @@ class ProfileDrawer extends ConsumerWidget {
                                     ),
                                     const SizedBox(width: 3), // Reduced from 4
                                     Text(
-                                      _getTravellerLevel(context, profile?.moodStreak),
+                                      _getTravellerLevel(context, currentProfile?.moodStreak),
                                       style: GoogleFonts.poppins(
                                         color: Colors.white,
                                         fontSize: 10, // Reduced from 11
@@ -233,7 +232,7 @@ class ProfileDrawer extends ConsumerWidget {
                                     ),
                                     const SizedBox(width: 3), // Reduced from 4
                                     Text(
-                                      l10n.drawerDayStreak('${profile?.moodStreak ?? 0}'),
+                                      l10n.drawerDayStreak('${currentProfile?.moodStreak ?? 0}'),
                                       style: GoogleFonts.poppins(
                                         color: Colors.white,
                                         fontSize: 10, // Reduced from 11

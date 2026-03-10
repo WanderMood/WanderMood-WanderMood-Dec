@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:math' as math;
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../../core/providers/preferences_provider.dart';
 import '../../../../core/providers/communication_style_provider.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class SwirlingGradientPainter extends CustomPainter {
   @override
@@ -127,38 +127,43 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
   final Set<String> _selectedInterests = {};
   static const int maxInterestSelections = 3;
 
-  final List<Map<String, dynamic>> _interests = [
-    {
-      'name': 'Stays & Getaways',
-      'emoji': '🛏️',
-      'color': const Color(0xFF9575CD), // Purple
-      'description': 'Charming hotels and dreamy places'
-    },
-    {
-      'name': 'Food & Dining',
-      'emoji': '🍜',
-      'color': const Color(0xFFFF9800), // Orange
-      'description': 'Local cuisine and unique restaurants'
-    },
-    {
-      'name': 'Arts & Culture',
-      'emoji': '🎨',
-      'color': const Color(0xFF9C27B0), // Purple
-      'description': 'Museums, galleries, and theaters'
-    },
-    {
-      'name': 'Shopping & Markets',
-      'emoji': '🛍️',
-      'color': const Color(0xFF64B5F6), // Light Blue
-      'description': 'Local markets and shopping districts'
-    },
-    {
-      'name': 'Sports & Activities',
-      'emoji': '🎾',
-      'color': const Color(0xFF7CB342), // Green
-      'description': 'Active experiences and sports venues'
-    },
-  ];
+  List<Map<String, dynamic>> _interests(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      {'key': 'Stays', 'name': l10n.prefInterestStays, 'emoji': '🛏️', 'color': const Color(0xFF9575CD), 'description': l10n.prefInterestStaysDesc},
+      {'key': 'Food', 'name': l10n.prefInterestFood, 'emoji': '🍜', 'color': const Color(0xFFFF9800), 'description': l10n.prefInterestFoodDesc},
+      {'key': 'Arts', 'name': l10n.prefInterestArts, 'emoji': '🎨', 'color': const Color(0xFF9C27B0), 'description': l10n.prefInterestArtsDesc},
+      {'key': 'Shopping', 'name': l10n.prefInterestShopping, 'emoji': '🛍️', 'color': const Color(0xFF64B5F6), 'description': l10n.prefInterestShoppingDesc},
+      {'key': 'Sports', 'name': l10n.prefInterestSports, 'emoji': '🎾', 'color': const Color(0xFF7CB342), 'description': l10n.prefInterestSportsDesc},
+    ];
+  }
+
+  String _interestsTitle(AppLocalizations l10n, String styleKey) {
+    switch (styleKey) {
+      case 'energetic': return l10n.prefInterestsTitleEnergetic;
+      case 'professional': return l10n.prefInterestsTitleProfessional;
+      case 'direct': return l10n.prefInterestsTitleDirect;
+      default: return l10n.prefInterestsTitleFriendly;
+    }
+  }
+
+  String _interestsSubtitle(AppLocalizations l10n, String styleKey) {
+    switch (styleKey) {
+      case 'energetic': return l10n.prefInterestsSubtitleEnergetic;
+      case 'professional': return l10n.prefInterestsSubtitleProfessional;
+      case 'direct': return l10n.prefInterestsSubtitleDirect;
+      default: return l10n.prefInterestsSubtitleFriendly;
+    }
+  }
+
+  String _multipleHint(AppLocalizations l10n, String styleKey) {
+    switch (styleKey) {
+      case 'energetic': return l10n.prefMultipleHintEnergetic;
+      case 'professional': return l10n.prefMultipleHintProfessional;
+      case 'direct': return l10n.prefMultipleHintDirect;
+      default: return l10n.prefMultipleHintFriendly;
+    }
+  }
 
   @override
   void initState() {
@@ -211,14 +216,15 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
     super.dispose();
   }
 
-  Widget _buildInterestCard(Map<String, dynamic> interest) {
-    final bool isSelected = _selectedInterests.contains(interest['name']);
+  Widget _buildInterestCard(BuildContext context, Map<String, dynamic> interest) {
+    final String key = interest['key'] as String;
+    final bool isSelected = _selectedInterests.contains(key);
     final color = interest['color'] as Color;
     
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: GestureDetector(
-        onTap: () => _toggleInterest(interest['name']),
+        onTap: () => _toggleInterest(key),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           height: 100, // Fixed height to prevent expansion - increased to accommodate text
@@ -281,7 +287,7 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        interest['name'],
+                        interest['name'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -291,7 +297,7 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                         ),
                       ),
                       Text(
-                        interest['description'],
+                        interest['description'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: isSelected
@@ -423,7 +429,8 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                             builder: (context, ref, child) {
                               final communicationState = ref.watch(communicationStyleProvider);
                               final styleKey = communicationState.style.toString().split('.').last;
-                              final title = communicationState.texts['interests']?[styleKey] ?? 'Now the fun part! ✨';
+                              final l10n = AppLocalizations.of(context)!;
+                              final title = _interestsTitle(l10n, styleKey);
                               return Text(
                                 title,
                                 style: GoogleFonts.museoModerno(
@@ -451,7 +458,8 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                             builder: (context, ref, child) {
                               final communicationState = ref.watch(communicationStyleProvider);
                               final styleKey = communicationState.style.toString().split('.').last;
-                              final subtitle = communicationState.texts['interests_subtitle']?[styleKey] ?? 'What catches your eye?';
+                              final l10n = AppLocalizations.of(context)!;
+                              final subtitle = _interestsSubtitle(l10n, styleKey);
                               return Text(
                                 subtitle,
                                 style: GoogleFonts.poppins(
@@ -468,9 +476,9 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                     const SizedBox(height: 40),
                     Expanded(
                       child: ListView.builder(
-                        itemCount: _interests.length,
+                        itemCount: _interests(context).length,
                         itemBuilder: (context, index) {
-                          return _buildInterestCard(_interests[index]);
+                          return _buildInterestCard(context, _interests(context)[index]);
                         },
                       ),
                     ),
@@ -495,7 +503,7 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                           ),
                         ),
                         child: Text(
-                          'Continue',
+                          AppLocalizations.of(context)!.continueButton,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -505,11 +513,12 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen> w
                     ),
                     const SizedBox(height: 8),
                     Center(
-                      child:                       Consumer(
+                      child: Consumer(
                         builder: (context, ref, child) {
                           final communicationState = ref.watch(communicationStyleProvider);
                           final styleKey = communicationState.style.toString().split('.').last;
-                          final hintText = communicationState.texts['multiple_selection_hint']?[styleKey] ?? 'You can select multiple options ✨';
+                          final l10n = AppLocalizations.of(context)!;
+                          final hintText = _multipleHint(l10n, styleKey);
                           return Text(
                             hintText,
                             style: GoogleFonts.poppins(

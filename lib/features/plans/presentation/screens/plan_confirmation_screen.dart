@@ -76,6 +76,7 @@ class PlanConfirmationScreen extends ConsumerWidget {
             tags: activity.tags,
             startTime: todayStartTime, // 🔧 Use today's date
             priceLevel: activity.priceLevel,
+            placeId: activity.placeId,
             refreshCount: activity.refreshCount,
           );
         }).toList();
@@ -91,8 +92,8 @@ class PlanConfirmationScreen extends ConsumerWidget {
         // CRITICAL: Invalidate providers in correct order to ensure fresh data
         debugPrint('🔄 Invalidating providers for fresh My Day data...');
         ref.invalidate(scheduledActivityServiceProvider);
+        ref.invalidate(scheduledActivitiesForTodayProvider);
         ref.invalidate(cachedActivitySuggestionsProvider);
-        // Also invalidate My Day providers to refresh the screen
         ref.invalidate(todayActivitiesProvider);
         ref.invalidate(timelineCategorizedActivitiesProvider);
         // Refresh daily mood state to update plannedActivities

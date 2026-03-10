@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/mood_option.dart';
-import '../../home/providers/dynamic_my_day_provider.dart';
+import '../../home/presentation/screens/dynamic_my_day_provider.dart';
 
 part 'daily_mood_state_provider.freezed.dart';
 part 'daily_mood_state_provider.g.dart';

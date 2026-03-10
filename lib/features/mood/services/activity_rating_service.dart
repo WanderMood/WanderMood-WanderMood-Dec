@@ -8,6 +8,13 @@ final activityRatingServiceProvider = Provider<ActivityRatingService>((ref) {
   return ActivityRatingService(Supabase.instance.client);
 });
 
+/// Watch the current user's rating for a specific activity.
+final activityRatingForActivityProvider =
+    FutureProvider.family<ActivityRating?, String>((ref, activityId) async {
+  final service = ref.watch(activityRatingServiceProvider);
+  return service.getRatingForActivity(activityId);
+});
+
 class ActivityRatingService {
   final SupabaseClient _client;
 

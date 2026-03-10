@@ -53,7 +53,7 @@ class BookWithGygSection extends StatelessWidget {
         .toList();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

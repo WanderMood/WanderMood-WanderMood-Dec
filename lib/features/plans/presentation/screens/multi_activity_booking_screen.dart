@@ -745,6 +745,7 @@ class _MultiActivityBookingScreenState extends ConsumerState<MultiActivityBookin
               // Invalidate providers FIRST for fresh data
               debugPrint('🔄 Invalidating providers for fresh data');
               ref.invalidate(scheduledActivityServiceProvider);
+              ref.invalidate(scheduledActivitiesForTodayProvider);
               ref.invalidate(cachedActivitySuggestionsProvider);
               debugPrint('✅ Providers invalidated');
               

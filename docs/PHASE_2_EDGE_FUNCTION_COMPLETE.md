@@ -102,14 +102,24 @@ The Edge Function `moody` has been created with `get_explore` action that fetche
 
 ## Environment Variables Required
 
-**Set in Supabase Dashboard → Edge Functions → `moody` → Settings → Secrets:**
+**Option A – Supabase CLI (project must be linked):**
+```bash
+supabase secrets set GOOGLE_PLACES_API_KEY=your-google-key
+supabase secrets set OPENAI_API_KEY=your-openai-key
+```
+
+**Option B – Supabase Dashboard:**  
+Go to **Edge Functions** → **moody** → **Settings** → **Secrets**, then add:
 
 1. `GOOGLE_PLACES_API_KEY` - Your Google Places API key
    - Get from: Google Cloud Console → APIs & Services → Credentials
    - Must have Places API enabled
 
-2. `SUPABASE_URL` - Auto-provided by Supabase
-3. `SUPABASE_ANON_KEY` - Auto-provided by Supabase
+2. `OPENAI_API_KEY` - Your OpenAI API key (for `create_day_plan` AI-generated search queries)
+   - Get from: https://platform.openai.com/api-keys
+   - If unset, the function falls back to fixed mood→query mapping (no OpenAI call).
+
+3. `SUPABASE_URL` / `SUPABASE_ANON_KEY` - Auto-provided by Supabase (do not set manually).
 
 ---
 

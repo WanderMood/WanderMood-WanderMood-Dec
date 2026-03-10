@@ -8,6 +8,7 @@ import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import '../../../../core/providers/preferences_provider.dart';
 import '../../../../core/providers/communication_style_provider.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class CombinedTravelPreferencesScreen extends ConsumerStatefulWidget {
   const CombinedTravelPreferencesScreen({super.key});
@@ -31,107 +32,56 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
   final Set<String> _selectedStyles = {};
   static const int maxStyleSelections = 3;
 
-  // Social Vibes options
-  final List<Map<String, dynamic>> _socialVibes = [
-    {
-      'name': 'Solo Adventures',
-      'emoji': '🧘‍♀️',
-      'description': 'Me time is the best time',
-      'color': const Color(0xFFFFB74D), // Orange
-    },
-    {
-      'name': 'Small Groups',
-      'emoji': '👥',
-      'description': 'Close friends, intimate vibes',
-      'color': const Color(0xFF66BB6A), // Green
-    },
-    {
-      'name': 'Social Butterfly',
-      'emoji': '🦋',
-      'description': 'Love meeting new people',
-      'color': const Color(0xFF42A5F5), // Blue
-    },
-    {
-      'name': 'Mood Dependent',
-      'emoji': '🎭',
-      'description': 'Sometimes solo, sometimes social',
-      'color': const Color(0xFFAB47BC), // Purple
-    },
-  ];
+  List<Map<String, dynamic>> _socialVibes(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      {'key': 'Solo Adventures', 'name': l10n.prefSocialSolo, 'emoji': '🧘‍♀️', 'description': l10n.prefSocialSoloDesc, 'color': const Color(0xFFFFB74D)},
+      {'key': 'Small Groups', 'name': l10n.prefSocialSmallGroups, 'emoji': '👥', 'description': l10n.prefSocialSmallGroupsDesc, 'color': const Color(0xFF66BB6A)},
+      {'key': 'Social Butterfly', 'name': l10n.prefSocialButterfly, 'emoji': '🦋', 'description': l10n.prefSocialButterflyDesc, 'color': const Color(0xFF42A5F5)},
+      {'key': 'Mood Dependent', 'name': l10n.prefSocialMoodDependent, 'emoji': '🎭', 'description': l10n.prefSocialMoodDependentDesc, 'color': const Color(0xFFAB47BC)},
+    ];
+  }
 
-  // Planning Paces options
-  final List<Map<String, dynamic>> _planningPaces = [
-    {
-      'name': 'Right Now Vibes',
-      'emoji': '⚡',
-      'description': 'What should I do right now?',
-      'color': const Color(0xFFFFB74D), // Orange
-    },
-    {
-      'name': 'Same Day Planner',
-      'emoji': '🌅',
-      'description': 'Plan in the morning for the day',
-      'color': const Color(0xFF66BB6A), // Green
-    },
-    {
-      'name': 'Weekend Prepper',
-      'emoji': '📅',
-      'description': 'Plan a few days ahead',
-      'color': const Color(0xFF8D6E63), // Brown
-    },
-    {
-      'name': 'Master Planner',
-      'emoji': '📋',
-      'description': 'Love planning weeks ahead',
-      'color': const Color(0xFF78909C), // Blue Grey
-    },
-  ];
+  List<Map<String, dynamic>> _planningPaces(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      {'key': 'Right Now Vibes', 'name': l10n.prefPaceRightNow, 'emoji': '⚡', 'description': l10n.prefPaceRightNowDesc, 'color': const Color(0xFFFFB74D)},
+      {'key': 'Same Day Planner', 'name': l10n.prefPaceSameDay, 'emoji': '🌅', 'description': l10n.prefPaceSameDayDesc, 'color': const Color(0xFF66BB6A)},
+      {'key': 'Weekend Prepper', 'name': l10n.prefPaceWeekend, 'emoji': '📅', 'description': l10n.prefPaceWeekendDesc, 'color': const Color(0xFF8D6E63)},
+      {'key': 'Master Planner', 'name': l10n.prefPaceMaster, 'emoji': '📋', 'description': l10n.prefPaceMasterDesc, 'color': const Color(0xFF78909C)},
+    ];
+  }
 
-  // Travel Styles options
-  final List<Map<String, dynamic>> _travelStyles = [
-    {
-      'name': 'Spontaneous',
-      'emoji': '🎯',
-      'description': 'Go with the flow, embrace surprises',
-      'color': const Color(0xFFFFB74D), // Soft Orange
-    },
-    {
-      'name': 'Planned',
-      'emoji': '📅',
-      'description': 'Organized itineraries, scheduled visits',
-      'color': const Color(0xFF64B5F6), // Soft Blue
-    },
-    {
-      'name': 'Local Experience',
-      'emoji': '🏡',
-      'description': 'Live like a local, authentic spots',
-      'color': const Color(0xFF7CB342), // Soft Green
-    },
-    {
-      'name': 'Luxury Seeker',
-      'emoji': '✨',
-      'description': 'Premium experiences, high-end spots',
-      'color': const Color(0xFFEC407A), // Soft Pink
-    },
-    {
-      'name': 'Budget Conscious',
-      'emoji': '💰',
-      'description': 'Great value, smart spending',
-      'color': const Color(0xFF66BB6A), // Soft Green
-    },
-    {
-      'name': 'Tourist Highlights',
-      'emoji': '🗺️',
-      'description': 'Must-see attractions, popular spots',
-      'color': const Color(0xFFEC407A), // Soft Pink
-    },
-    {
-      'name': 'Off the Beaten Path',
-      'emoji': '⭐',
-      'description': 'Hidden gems, unique experiences',
-      'color': const Color(0xFF9575CD), // Soft Purple
-    },
-  ];
+  List<Map<String, dynamic>> _travelStyles(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      {'key': 'Spontaneous', 'name': l10n.prefTravelStyleSpontaneous, 'emoji': '🎯', 'description': l10n.prefTravelStyleSpontaneousDesc, 'color': const Color(0xFFFFB74D)},
+      {'key': 'Planned', 'name': l10n.prefTravelStylePlanned, 'emoji': '📅', 'description': l10n.prefTravelStylePlannedDesc, 'color': const Color(0xFF64B5F6)},
+      {'key': 'Local Experience', 'name': l10n.prefTravelStyleLocal, 'emoji': '🏡', 'description': l10n.prefTravelStyleLocalDesc, 'color': const Color(0xFF7CB342)},
+      {'key': 'Luxury Seeker', 'name': l10n.prefTravelStyleLuxury, 'emoji': '✨', 'description': l10n.prefTravelStyleLuxuryDesc, 'color': const Color(0xFFEC407A)},
+      {'key': 'Budget Conscious', 'name': l10n.prefTravelStyleBudget, 'emoji': '💰', 'description': l10n.prefTravelStyleBudgetDesc, 'color': const Color(0xFF66BB6A)},
+      {'key': 'Tourist Highlights', 'name': l10n.prefTravelStyleTouristHighlights, 'emoji': '🗺️', 'description': l10n.prefTravelStyleTouristHighlightsDesc, 'color': const Color(0xFFEC407A)},
+      {'key': 'Off the Beaten Path', 'name': l10n.prefTravelStyleOffBeatenPath, 'emoji': '⭐', 'description': l10n.prefTravelStyleOffBeatenPathDesc, 'color': const Color(0xFF9575CD)},
+    ];
+  }
+
+  String _travelTitle(AppLocalizations l10n, String styleKey) {
+    switch (styleKey) {
+      case 'energetic': return l10n.prefTravelTitleEnergetic;
+      case 'professional': return l10n.prefTravelTitleProfessional;
+      case 'direct': return l10n.prefTravelTitleDirect;
+      default: return l10n.prefTravelTitleFriendly;
+    }
+  }
+
+  String _travelSubtitle(AppLocalizations l10n, String styleKey) {
+    switch (styleKey) {
+      case 'energetic': return l10n.prefTravelSubtitleEnergetic;
+      case 'professional': return l10n.prefTravelSubtitleProfessional;
+      case 'direct': return l10n.prefTravelSubtitleDirect;
+      default: return l10n.prefTravelSubtitleFriendly;
+    }
+  }
 
   @override
   void initState() {
@@ -210,13 +160,14 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
   }
 
   Widget _buildSocialVibeCard(Map<String, dynamic> vibe) {
-    final bool isSelected = _selectedVibes.contains(vibe['name']);
+    final String key = vibe['key'] as String;
+    final bool isSelected = _selectedVibes.contains(key);
     final color = vibe['color'] as Color;
     
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: GestureDetector(
-        onTap: () => _toggleSocialVibe(vibe['name']),
+        onTap: () => _toggleSocialVibe(key),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           height: 80,
@@ -265,7 +216,7 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        vibe['name'],
+                        vibe['name'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -273,7 +224,7 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
                         ),
                       ),
                       Text(
-                        vibe['description'],
+                        vibe['description'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: isSelected
@@ -307,13 +258,14 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
   }
 
   Widget _buildPlanningPaceCard(Map<String, dynamic> pace) {
-    final bool isSelected = _selectedPace == pace['name'];
+    final String key = pace['key'] as String;
+    final bool isSelected = _selectedPace == key;
     final color = pace['color'] as Color;
     
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: GestureDetector(
-        onTap: () => _selectPlanningPace(pace['name']),
+        onTap: () => _selectPlanningPace(key),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           height: 80,
@@ -362,7 +314,7 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        pace['name'],
+                        pace['name'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -370,7 +322,7 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
                         ),
                       ),
                       Text(
-                        pace['description'],
+                        pace['description'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: isSelected
@@ -404,13 +356,14 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
   }
 
   Widget _buildStyleCard(Map<String, dynamic> style) {
-    final bool isSelected = _selectedStyles.contains(style['name']);
+    final String key = style['key'] as String;
+    final bool isSelected = _selectedStyles.contains(key);
     final color = style['color'] as Color;
     
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: () => _toggleStyle(style['name']),
+        onTap: () => _toggleStyle(key),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           height: 80,
@@ -459,7 +412,7 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        style['name'],
+                        style['name'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -467,7 +420,7 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
                         ),
                       ),
                       Text(
-                        style['description'],
+                        style['description'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: isSelected
@@ -580,7 +533,8 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
                             builder: (context, ref, child) {
                               final communicationState = ref.watch(communicationStyleProvider);
                               final styleKey = communicationState.style.toString().split('.').last;
-                              final title = communicationState.texts['travel_preferences']?[styleKey] ?? 'Tell us about your travel style ✈️';
+                              final l10n = AppLocalizations.of(context)!;
+                              final title = _travelTitle(l10n, styleKey);
                               return Text(
                                 title,
                                 style: GoogleFonts.museoModerno(
@@ -608,7 +562,8 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
                             builder: (context, ref, child) {
                               final communicationState = ref.watch(communicationStyleProvider);
                               final styleKey = communicationState.style.toString().split('.').last;
-                              final subtitle = communicationState.texts['travel_preferences_subtitle']?[styleKey] ?? 'A few quick questions to personalize your experience';
+                              final l10n = AppLocalizations.of(context)!;
+                              final subtitle = _travelSubtitle(l10n, styleKey);
                               return Text(
                                 subtitle,
                                 style: GoogleFonts.poppins(
@@ -632,7 +587,7 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
                           children: [
                             // Section 1: Social Vibe
                             Text(
-                              'Social Vibe 👥',
+                              AppLocalizations.of(context)!.prefSectionSocialVibe,
                               style: GoogleFonts.poppins(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
@@ -640,13 +595,13 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
                               ),
                             ),
                             const SizedBox(height: 12),
-                            ..._socialVibes.map((vibe) => _buildSocialVibeCard(vibe)),
+                            ..._socialVibes(context).map((vibe) => _buildSocialVibeCard(vibe)),
                             
                             const SizedBox(height: 32),
                             
                             // Section 2: Planning Pace
                             Text(
-                              'Planning Pace ⏰',
+                              AppLocalizations.of(context)!.prefSectionPlanningPace,
                               style: GoogleFonts.poppins(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
@@ -654,13 +609,13 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
                               ),
                             ),
                             const SizedBox(height: 12),
-                            ..._planningPaces.map((pace) => _buildPlanningPaceCard(pace)),
+                            ..._planningPaces(context).map((pace) => _buildPlanningPaceCard(pace)),
                             
                             const SizedBox(height: 32),
                             
                             // Section 3: Travel Style
                             Text(
-                              'Travel Style 🎯',
+                              AppLocalizations.of(context)!.prefSectionTravelStyle,
                               style: GoogleFonts.poppins(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
@@ -669,14 +624,14 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Select up to ${maxStyleSelections} styles',
+                              AppLocalizations.of(context)!.prefSelectUpToStyles(maxStyleSelections),
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 color: Colors.black54,
                               ),
                             ),
                             const SizedBox(height: 12),
-                            ..._travelStyles.map((style) => _buildStyleCard(style)),
+                            ..._travelStyles(context).map((style) => _buildStyleCard(style)),
                             
                             const SizedBox(height: 24),
                           ],
@@ -708,7 +663,7 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
                             elevation: 0,
                           ),
                           child: Text(
-                            'Continue',
+                            AppLocalizations.of(context)!.continueButton,
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,

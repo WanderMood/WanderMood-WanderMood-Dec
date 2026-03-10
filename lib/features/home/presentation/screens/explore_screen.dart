@@ -820,10 +820,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   children: [
                     Text(
                       'Explore',
-                      style: GoogleFonts.museoModerno(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF12B347),
+                      style: GoogleFonts.poppins(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.grey[900],
                       ),
                     ),
                     const Spacer(),
@@ -864,15 +864,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               ),
             ];
           },
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              BookWithGygSection(
-                cityName: locationAsync.value ?? 'Rotterdam',
-                links: ref.watch(gygLinksProvider(locationAsync.value ?? 'Rotterdam')).valueOrNull ?? [],
-              ),
-              Expanded(
-                child: explorePlacesAsync.when(
+          body: explorePlacesAsync.when(
                   data: (allPlaces) {
                     // Get city name for filtering
                     final currentCity = locationAsync.value ?? 'Rotterdam';
@@ -918,48 +910,62 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     // If filters reduce results too much, user can manually refresh or adjust filters
                     if (filteredPlaces.length < 5 && allPlaces.length >= 50) {
                       debugPrint('⚠️ Filters reduced results to ${filteredPlaces.length} places (${allPlaces.length} unfiltered).');
-                      // User can adjust filters or pull to refresh manually
                     }
-                    
-                    if (filteredPlaces.isEmpty && !_isMapView) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.search_off,
-                              size: 64,
-                              color: Colors.grey[400],
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No places found',
-                              style: GoogleFonts.poppins(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                            if (_searchQuery.isNotEmpty)
-                              Text(
-                                'Try different search terms',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  color: Colors.grey[500],
-                                ),
-                              ),
-                          ],
-                        ),
+
+                    // Map view: GYG at top, then full map
+                    if (_isMapView) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          BookWithGygSection(
+                            cityName: currentCity,
+                            links: ref.watch(gygLinksProvider(currentCity)).valueOrNull ?? [],
+                          ),
+                          Expanded(
+                            child: _buildMapView(placesForMap, userLocationAsync.value),
+                          ),
+                        ],
                       );
                     }
                     
-                    return Column(
-                      children: [
-                        // Conversational Results Header
-                        if (_currentExplanation.isNotEmpty)
-                          Container(
+                    if (filteredPlaces.isEmpty) {
+                      return CustomScrollView(
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: BookWithGygSection(
+                              cityName: currentCity,
+                              links: ref.watch(gygLinksProvider(currentCity)).valueOrNull ?? [],
+                            ),
+                          ),
+                          const SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.search_off, size: 64, color: Colors.grey),
+                                  SizedBox(height: 16),
+                                  Text('No places found', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+
+                    // List/Grid: one scroll so GYG scrolls away with places
+                    final gygSliver = SliverToBoxAdapter(
+                      child: BookWithGygSection(
+                        cityName: currentCity,
+                        links: ref.watch(gygLinksProvider(currentCity)).valueOrNull ?? [],
+                      ),
+                    );
+                    final explanationSliver = _currentExplanation.isNotEmpty
+                        ? SliverToBoxAdapter(
+                            child: Container(
                             width: double.infinity,
-                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -1027,127 +1033,55 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                 ),
                               ],
                             ),
-                          ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2, end: 0),
-                        
-                        // AI Recommendations Banner
-                                        if (false) // Removed AI recommendations
-                          Container(
-                            width: double.infinity,
-                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  const Color(0xFF12B347).withOpacity(0.1),
-                                  const Color(0xFF12B347).withOpacity(0.05),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: const Color(0xFF12B347).withOpacity(0.2),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF12B347),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                            child: const Icon(Icons.recommend, size: 16, color: Colors.white),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'AI Recommendations Active',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: const Color(0xFF12B347),
-                                        ),
-                                      ),
-                                      Text(
-                                  'Places matching your search are highlighted',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 12,
-                                          color: Colors.grey[600],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      // Removed AI recommendations functionality
-                                    });
-                                  },
-                                  icon: Icon(
-                                    Icons.close,
-                                    size: 20,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        
-                  // Places List/Grid/Map
-                        Expanded(
-                    child: _isMapView
-                      ? _buildMapView(placesForMap, userLocationAsync.value)
-                      : _isGridView 
-                        ? GridView.builder(
-                            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 100),
+                          ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2, end: 0)
+                        )
+                        : null;
+
+                    final placesSliver = _isGridView
+                        ? SliverGrid(
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               childAspectRatio: 0.75,
                               crossAxisSpacing: 12,
                               mainAxisSpacing: 12,
                             ),
-                            itemCount: filteredPlaces.length,
-                            itemBuilder: (context, index) {
-                              final place = filteredPlaces[index];
-                              final userLocation = userLocationAsync.value;
-                              
-                              return PlaceGridCard(
-                                place: place,
-                                userLocation: userLocation,
-                                cityName: locationAsync.value ?? 'Rotterdam',
-                                onTap: () {
-                                  context.push('/place/${place.id}');
-                                },
-                              ).animate().fadeIn(
-                                duration: 300.ms,
-                                delay: Duration(milliseconds: index * 30),
-                              );
-                            },
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final place = filteredPlaces[index];
+                                final userLocation = userLocationAsync.value;
+                                return PlaceGridCard(
+                                  place: place,
+                                  userLocation: userLocation,
+                                  cityName: currentCity,
+                                  onTap: () => context.push('/place/${place.id}'),
+                                ).animate().fadeIn(duration: 300.ms, delay: Duration(milliseconds: index * 30));
+                              },
+                              childCount: filteredPlaces.length,
+                            ),
                           )
-                        : ListView.builder(
-                            padding: const EdgeInsets.only(bottom: 100),
-                            itemCount: filteredPlaces.length,
-                            itemBuilder: (context, index) {
-                              final place = filteredPlaces[index];
-                              final userLocation = userLocationAsync.value;
-                              final currentCity = locationAsync.value ?? 'Rotterdam';
-                              
-                              return PlaceCard(
-                                place: place,
-                                userLocation: userLocation,
-                                cityName: currentCity,
-                                onTap: () {
-                                  context.push('/place/${place.id}');
-                                },
-                              ).animate().fadeIn(
-                                duration: 300.ms,
-                                delay: Duration(milliseconds: index * 50),
-                              );
-                            },
-                          ),
+                        : SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final place = filteredPlaces[index];
+                                final userLocation = userLocationAsync.value;
+                                return PlaceCard(
+                                  place: place,
+                                  userLocation: userLocation,
+                                  cityName: currentCity,
+                                  onTap: () => context.push('/place/${place.id}'),
+                                ).animate().fadeIn(duration: 300.ms, delay: Duration(milliseconds: index * 50));
+                              },
+                              childCount: filteredPlaces.length,
+                            ),
+                          );
+
+                    return CustomScrollView(
+                      slivers: [
+                        gygSliver,
+                        if (explanationSliver != null) explanationSliver,
+                        SliverPadding(
+                          padding: const EdgeInsets.only(left: 8, right: 8, bottom: 100),
+                          sliver: placesSliver,
                         ),
                       ],
                     );
@@ -1163,57 +1097,52 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                           errorMessage.contains('location services');
                     
                     return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
                             isLocationError ? Icons.location_off : Icons.error_outline,
-                          size: 64,
-                          color: Colors.red[300],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                            isLocationError ? 'Location Required' : 'Error loading places',
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.red[700],
+                            size: 64,
+                            color: Colors.red[300],
                           ),
-                        ),
+                          const SizedBox(height: 16),
+                          Text(
+                            isLocationError ? 'Location Required' : 'Error loading places',
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.red[700],
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 32.0),
                             child: Text(
-                              isLocationError 
-                                ? 'Please enable location services or set your location in settings to discover places near you.'
-                                : errorMessage,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: Colors.grey[700],
-                          ),
-                          textAlign: TextAlign.center,
+                              isLocationError
+                                  ? 'Please enable location services or set your location in settings to discover places near you.'
+                                  : errorMessage,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: Colors.grey[700],
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                              // Invalidate the correct provider
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton(
+                            onPressed: () {
                               ref.invalidate(moodyExploreAutoProvider);
-                              // Also try to refresh location
                               if (isLocationError) {
                                 ref.read(locationNotifierProvider.notifier).retryLocationAccess();
                                 ref.read(userLocationProvider.notifier).refreshLocation();
                               }
-                          },
+                            },
                             child: Text(isLocationError ? 'Enable Location' : 'Try Again'),
-                        ),
-                      ],
-                    ),
+                          ),
+                        ],
+                      ),
                     );
                   },
-                ),
-              ),
-            ],
           ),
         ),
       ),
@@ -2634,7 +2563,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     }
     
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         boxShadow: [

@@ -11,7 +11,7 @@ import '../../../plans/domain/models/activity.dart';
 import '../../../plans/domain/enums/time_slot.dart';
 import '../../../plans/domain/enums/payment_type.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../../../home/providers/dynamic_my_day_provider.dart';
+import '../../../home/presentation/screens/dynamic_my_day_provider.dart';
 import '../../../home/presentation/screens/main_screen.dart';
 import '../../../places/services/saved_places_service.dart';
 
@@ -410,6 +410,7 @@ class MoodBasedCarousel extends ConsumerWidget {
       
       // Invalidate providers to refresh My Day screen
       ref.invalidate(scheduledActivityServiceProvider);
+      ref.invalidate(scheduledActivitiesForTodayProvider);
       ref.invalidate(todayActivitiesProvider);
       
       if (context.mounted) {

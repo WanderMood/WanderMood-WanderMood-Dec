@@ -16,12 +16,16 @@ class LocaleNotifier extends StateNotifier<Locale?> {
   
   LocaleNotifier(this._ref) : super(null) { // Start with null (system default)
     _loadLocale();
-    // Watch profile changes to update locale when user changes language preference
+    // Only apply profile language when the user has explicitly set a language in the app.
+    // Otherwise keep device locale so the app follows the phone language (e.g. Dutch on a Dutch phone).
     _ref.listen(profileProvider, (previous, next) {
-      next.whenData((profile) {
-        if (profile?.languagePreference != null) {
-          _updateLocaleFromProfile(profile!.languagePreference!);
-        }
+      next.whenData((profile) async {
+        if (profile?.languagePreference == null) return;
+        final prefs = await SharedPreferences.getInstance();
+        final useSystem = prefs.getBool(_useSystemKey) ?? false;
+        final hasSetLanguage = prefs.containsKey(_localeKey);
+        if (!hasSetLanguage || useSystem) return; // Prefer device locale until user chooses in app
+        _updateLocaleFromProfile(profile!.languagePreference!);
       });
     });
   }

@@ -11,6 +11,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../domain/models/current_user_profile.dart';
 import '../../domain/providers/current_user_profile_provider.dart';
+import '../../domain/providers/profile_provider.dart';
 import '../widgets/edit_favorite_vibes.dart';
 import '../widgets/travel_mode_toggle.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
@@ -57,7 +58,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         'image_url': imageUrl,
       }).eq('id', userId);
 
-      ref.read(currentUserProfileProvider.notifier).refresh();
+      ref.invalidate(profileProvider);
+      await ref.read(currentUserProfileProvider.notifier).refresh();
       if (mounted) {
         setState(() => _isUploadingImage = false);
         final l10n = AppLocalizations.of(context)!;

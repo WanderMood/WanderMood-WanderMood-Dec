@@ -9,10 +9,13 @@ import 'package:wandermood/features/plans/providers/selected_activities_provider
 
 class ActivityDetailScreen extends ConsumerStatefulWidget {
   final Activity activity;
+  /// Optional distance string (e.g. "1.2 km") when opened from Day Plan.
+  final String? distanceKm;
 
   const ActivityDetailScreen({
     super.key,
     required this.activity,
+    this.distanceKm,
   });
 
   @override
@@ -22,6 +25,8 @@ class ActivityDetailScreen extends ConsumerStatefulWidget {
 class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  int _currentImageIndex = 0;
+  static const double _imageHeight = 380;
 
   @override
   void initState() {
@@ -38,42 +43,77 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFDF5), // Warm cream background
-      body: CustomScrollView(
-        slivers: [
-          _buildAppBar(),
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                _buildMainInfo(),
-                const SizedBox(height: 16), // Padding between image and tabs
-                _buildTabBar(),
-              ],
-            ),
+      backgroundColor: const Color(0xFFFFFBF5),
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              _buildImageGalleryHeader(),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 140),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    _buildTitleAndRating(),
+                    _buildQuickInfoCards(),
+                    _buildAboutSection(),
+                    _buildHighlightsSection(),
+                    _buildLocationSection(),
+                  ]),
+                ),
+              ),
+            ],
           ),
-          SliverFillRemaining(
-            hasScrollBody: true,
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildOverviewTab(),
-                _buildReviewsTab(),
-                _buildImagesTab(),
-              ],
-            ),
-          ),
+          _buildBottomBar(),
         ],
       ),
-      floatingActionButton: _buildFloatingButtons(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
-  Widget _buildAppBar() {
+  /// React-style image gallery header: image, gradient, back/save/share, mood match & category badges, photo count.
+  Widget _buildImageGalleryHeader() {
     return SliverAppBar(
-      expandedHeight: 300,
+      expandedHeight: _imageHeight,
       pinned: true,
-      backgroundColor: const Color(0xFF5C6BC0),
+      backgroundColor: Colors.grey[200],
+      leading: IconButton(
+        icon: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.95),
+            shape: BoxShape.circle,
+            boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8, offset: const Offset(0, 2))],
+          ),
+          child: const Icon(Icons.chevron_left, color: Colors.black87, size: 28),
+        ),
+        onPressed: () => Navigator.pop(context),
+      ),
+      actions: [
+        IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.95),
+              shape: BoxShape.circle,
+              boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8, offset: const Offset(0, 2))],
+            ),
+            child: const Icon(Icons.favorite_border, color: Colors.black87, size: 22),
+          ),
+          onPressed: () {},
+        ),
+        IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.95),
+              shape: BoxShape.circle,
+              boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8, offset: const Offset(0, 2))],
+            ),
+            child: const Icon(Icons.share, color: Colors.black87, size: 22),
+          ),
+          onPressed: () {},
+        ),
+        const SizedBox(width: 8),
+      ],
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,
@@ -81,77 +121,364 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
             Image.network(
               widget.activity.imageUrl,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: Colors.grey[300],
-                  child: const Icon(
-                    Icons.place,
-                    size: 100,
-                    color: Colors.grey,
-                  ),
-                );
-              },
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Container(
-                  color: Colors.grey[200],
-                  child: const Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF5C6BC0)),
-                    ),
-                  ),
-                );
-              },
+              errorBuilder: (_, __, ___) => Container(color: Colors.grey[300], child: const Icon(Icons.place, size: 80, color: Colors.grey)),
             ),
-            Container(
+            DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.7),
+                  colors: [Colors.black.withValues(alpha: 0.4), Colors.transparent, Colors.black.withValues(alpha: 0.6)],
+                ),
+              ),
+            ),
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 56,
+              left: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0xFF4ADE80), Color(0xFF10B981)]),
+                  borderRadius: BorderRadius.circular(999),
+                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8, offset: const Offset(0, 2))],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('✨', style: TextStyle(fontSize: 14)),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${85 + (widget.activity.id.hashCode % 15)}% Match',
+                      style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
                   ],
                 ),
               ),
             ),
-            // Activity name overlay
             Positioned(
-              bottom: 20,
-              left: 16,
-              right: 80,
-              child: _buildActivityNameOverlay(),
-            ),
-            // Rating chip overlay
-            Positioned(
-              bottom: 20,
+              top: MediaQuery.of(context).padding.top + 56,
               right: 16,
-              child: _buildRatingChip(),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0xFFA78BFA), Color(0xFF6366F1)]),
+                  borderRadius: BorderRadius.circular(999),
+                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8, offset: const Offset(0, 2))],
+                ),
+                child: Text(
+                  (widget.activity.tags.isNotEmpty ? widget.activity.tags.first : 'Activity').toUpperCase(),
+                  style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5, color: Colors.white),
+                ),
+              ),
             ),
-            // Tag overlays
             Positioned(
-              top: 60,
+              bottom: 16,
               right: 16,
-              child: _buildImageTagOverlays(),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.photo_camera, size: 14, color: Colors.white),
+                    const SizedBox(width: 6),
+                    Text('1 photo', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
       ),
-      leading: IconButton(
-        icon: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.3),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.arrow_back, color: Colors.white),
+    );
+  }
+
+  Widget _buildTitleAndRating() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.activity.name,
+          style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w900, color: const Color(0xFF111827)),
         ),
-        onPressed: () => Navigator.pop(context),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFBEB),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.star, size: 20, color: Color(0xFFFBBF24)),
+                  const SizedBox(width: 4),
+                  Text(
+                    widget.activity.rating.toStringAsFixed(1),
+                    style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF111827)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Exceptional',
+              style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF059669)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: widget.activity.tags.take(4).map((tag) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [Color(0xFFA78BFA), Color(0xFF6366F1)]),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                tag,
+                style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildQuickInfoCards() {
+    final durationText = widget.activity.duration >= 60
+        ? '${widget.activity.duration ~/ 60}h'
+        : '${widget.activity.duration} min';
+    return Row(
+      children: [
+        Expanded(
+          child: _quickInfoCard(
+            icon: Icons.schedule,
+            label: 'Duration',
+            value: durationText,
+            color: const Color(0xFFEA580C),
+            bgColor: const Color(0xFFFFF7ED),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _quickInfoCard(
+            icon: Icons.euro,
+            label: 'Price',
+            value: widget.activity.priceLevel ?? '—',
+            color: const Color(0xFF059669),
+            bgColor: const Color(0xFFECFDF5),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _quickInfoCard(
+            icon: Icons.location_on,
+            label: 'Distance',
+            value: widget.distanceKm ?? '—',
+            color: const Color(0xFF0284C7),
+            bgColor: const Color(0xFFEFF6FF),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _quickInfoCard({required IconData icon, required String label, required String value, required Color color, required Color bgColor}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 22, color: color),
+          const SizedBox(height: 6),
+          Text(label, style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey[700])),
+          const SizedBox(height: 2),
+          Text(value, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFF1F2937))),
+        ],
       ),
     );
   }
 
-    Widget _buildMainInfo() {
+  Widget _buildAboutSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('About', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
+        const SizedBox(height: 12),
+        Text(
+          widget.activity.description,
+          style: GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF374151), height: 1.5),
+        ),
+        const SizedBox(height: 28),
+      ],
+    );
+  }
+
+  Widget _buildHighlightsSection() {
+    final highlights = widget.activity.tags.take(6).map((t) => '• $t').toList();
+    if (highlights.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Highlights', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: highlights.map((h) => Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F3FF),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFA78BFA).withValues(alpha: 0.3)),
+            ),
+            child: Text(h, style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF374151))),
+          )).toList(),
+        ),
+        const SizedBox(height: 28),
+      ],
+    );
+  }
+
+  Widget _buildLocationSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Location', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
+        const SizedBox(height: 12),
+        Container(
+          height: 180,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: const LinearGradient(colors: [Color(0xFFBFDBFE), Color(0xFFE9D5FF)]),
+          ),
+          child: const Center(child: Icon(Icons.map, size: 48, color: Colors.white54)),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(16)),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.location_on, size: 22, color: Colors.grey[700]),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _getFormattedAddress(),
+                      style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500, color: const Color(0xFF1F2937)),
+                    ),
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: () => _openDirections(context),
+                      child: Text('Get Directions →', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF2563EB))),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 28),
+      ],
+    );
+  }
+
+  void _openDirections(BuildContext context) {
+    final lat = widget.activity.location.latitude;
+    final lng = widget.activity.location.longitude;
+    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+    launchUrl(url, mode: LaunchMode.externalApplication);
+  }
+
+  Widget _buildBottomBar() {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(20, 16, 20, 16 + MediaQuery.of(context).padding.bottom),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: Colors.grey[200]!)),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 16, offset: const Offset(0, -4))],
+        ),
+        child: Row(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('From', style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600])),
+                Text(
+                  widget.activity.priceLevel ?? '—',
+                  style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w900, color: const Color(0xFF111827)),
+                ),
+                Text('per person', style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[500])),
+              ],
+            ),
+            const Spacer(),
+            TextButton.icon(
+              onPressed: () => _openDirections(context),
+              icon: const Icon(Icons.directions, size: 20),
+              label: const Text('Directions'),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF374151),
+                side: BorderSide(color: Colors.grey[300]!),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {},
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [Color(0xFFA78BFA), Color(0xFF6366F1)]),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.4), blurRadius: 12, offset: const Offset(0, 4))],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🗓️', style: TextStyle(fontSize: 18)),
+                      const SizedBox(width: 8),
+                      Text('Book Now', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMainInfo() {
     if (widget.activity.priceLevel == null) {
       return const SizedBox(); // Don't show anything if no price info
     }
@@ -1190,7 +1517,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
       children: [
         FloatingActionButton.extended(
           heroTag: "directions_${widget.activity.id}",
-          onPressed: _openDirections,
+          onPressed: () => _openDirections(context),
           backgroundColor: const Color(0xFF5C6BC0),
           foregroundColor: Colors.white,
           icon: const Text('🧭', style: TextStyle(fontSize: 18)),
@@ -1215,23 +1542,6 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
         ),
       ],
     );
-  }
-
-  Future<void> _openDirections() async {
-    final lat = widget.activity.location.latitude;
-    final lng = widget.activity.location.longitude;
-    final url = 'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng';
-    
-    try {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        _showErrorSnackBar('Could not open directions 😅');
-      }
-    } catch (e) {
-      _showErrorSnackBar('Error opening directions: $e');
-    }
   }
 
   void _addToPlan() {

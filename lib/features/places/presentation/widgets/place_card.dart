@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/core/services/distance_service.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
@@ -9,15 +10,22 @@ import 'package:wandermood/features/places/services/sharing_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'dart:convert';
+import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
+import 'package:wandermood/features/plans/domain/models/activity.dart';
+import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
+import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
+import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 
 class PlaceCard extends ConsumerWidget {
   final Place place;
   final VoidCallback onTap;
   final Position? userLocation;
   final String? cityName; // City name for fallback distance calculation
+  /// When false, hides the "Add to My Day" overlay button (e.g. when used on Day Plan).
+  final bool showAddToMyDayButton;
+  /// When true, shows a "See activity" label (e.g. on Day Plan where we don't book yet).
+  final bool showSeeActivityLabel;
 
   const PlaceCard({
     Key? key,
@@ -25,6 +33,8 @@ class PlaceCard extends ConsumerWidget {
     required this.onTap,
     this.userLocation,
     this.cityName,
+    this.showAddToMyDayButton = true,
+    this.showSeeActivityLabel = false,
   }) : super(key: key);
 
   // Cache distance calculation to prevent spam
@@ -841,6 +851,39 @@ class PlaceCard extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
+                        // Add to My Day button (hidden when card is used on Day Plan)
+                        if (showAddToMyDayButton) ...[
+                          GestureDetector(
+                            onTap: () => _addToMyDay(context, ref),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.9),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.15),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                    spreadRadius: 0,
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                    spreadRadius: -1,
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                Icons.calendar_today,
+                                color: const Color(0xFF12B347),
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
                         // Favorite button
                         GestureDetector(
                           onTap: () async {
@@ -1165,12 +1208,26 @@ class PlaceCard extends ConsumerWidget {
                       }
                     },
                   ),
-                  
-                  // No category pills here - they're shown in the card already
-                  
-                  // Removed action buttons - whole card is now tappable
-                  // Directions, Share, and Favorite are available as floating buttons in image overlay
-                  
+
+                  // "See activity" label when used on Day Plan (we don't book yet)
+                  if (showSeeActivityLabel) ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(Icons.visibility_outlined, size: 18, color: const Color(0xFF12B347)),
+                        const SizedBox(width: 6),
+                        Text(
+                          'See activity',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF12B347),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+
                   // Add bottom padding to prevent overflow
                   const SizedBox(height: 4),
                 ],
@@ -1457,66 +1514,83 @@ class PlaceCard extends ConsumerWidget {
     return false;
   }
   
-  // Add to My Day functionality
-  Future<void> _addToMyDay(BuildContext context) async {
+  // Add to My Day: saves to Supabase (scheduled_activities) so My Day shows it.
+  Future<void> _addToMyDay(BuildContext context, WidgetRef ref) async {
     try {
-      // Get current user
       final user = Supabase.instance.client.auth.currentUser;
       if (user == null) {
         _showErrorSnackBar(context, 'Please sign in to add activities to My Day');
         return;
       }
 
-      // Create activity data for My Day
-      final activityData = {
-        'id': 'place_${place.id}_${DateTime.now().millisecondsSinceEpoch}',
-        'title': place.name,
-        'description': place.description ?? 'Explore ${place.name}',
-        'category': place.types.isNotEmpty ? place.types.first : 'general',
-        'timeOfDay': _getRecommendedTimeOfDay(),
-        'duration': _getEstimatedDuration(),
-        'mood': 'adventurous',
-        'imageUrl': place.photos.isNotEmpty ? place.photos.first : 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80',
-        'isRecommended': false,
-        'isScheduled': false,
-        'startTime': _getDefaultStartTime().toIso8601String(),
-        'paymentType': 'unpaid',
-        'placeId': place.id,
-        'location': {
-          'lat': place.location.lat,
-          'lng': place.location.lng,
-          'address': place.address,
-        },
-      };
+      final timeOfDay = _getRecommendedTimeOfDay();
+      final duration = _getEstimatedDuration();
+      final startTime = _getDefaultStartTimeForToday(timeOfDay);
+      final timeSlotEnum = timeOfDay == 'morning'
+          ? TimeSlot.morning
+          : timeOfDay == 'afternoon'
+              ? TimeSlot.afternoon
+              : TimeSlot.evening;
 
-      // Save to cache for My Day screen
-      final prefs = await SharedPreferences.getInstance();
-      final existingActivities = prefs.getStringList('cached_activity_suggestions') ?? [];
-      
-      // Check if already added
-      final activityExists = existingActivities.any((activityJson) {
-        try {
-          final activity = jsonDecode(activityJson) as Map<String, dynamic>;
-          return activity['placeId'] == place.id;
-        } catch (e) {
-          return false;
-        }
-      });
-
-      if (activityExists) {
-        _showInfoSnackBar(context, '${place.name} is already in My Day');
-        return;
+      PaymentType paymentType = PaymentType.free;
+      if (place.types.contains('restaurant') ||
+          place.types.contains('spa') ||
+          place.types.contains('museum') ||
+          place.types.contains('tourist_attraction')) {
+        paymentType = PaymentType.reservation;
       }
 
-      // Add new activity
-      existingActivities.add(jsonEncode(activityData));
-      await prefs.setStringList('cached_activity_suggestions', existingActivities);
+      final imageUrl = place.photos.isNotEmpty
+          ? place.photos.first
+          : 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80';
 
-      _showSuccessSnackBar(context, 'Added ${place.name} to My Day!');
-      
+      final activity = Activity(
+        id: 'place_${place.id}_${DateTime.now().millisecondsSinceEpoch}',
+        name: place.name,
+        description: place.description ?? 'Explore ${place.name}',
+        imageUrl: imageUrl,
+        rating: place.rating > 0 ? place.rating : 4.5,
+        startTime: startTime,
+        duration: duration,
+        timeSlot: timeOfDay,
+        timeSlotEnum: timeSlotEnum,
+        tags: place.types.isNotEmpty ? place.types : ['explore'],
+        location: LatLng(place.location.lat, place.location.lng),
+        paymentType: paymentType,
+        priceLevel: place.priceRange,
+      );
+
+      final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
+      await scheduledActivityService.saveScheduledActivities([activity], isConfirmed: false);
+
+      ref.invalidate(scheduledActivityServiceProvider);
+      ref.invalidate(scheduledActivitiesForTodayProvider);
+      ref.invalidate(todayActivitiesProvider);
+
+      if (context.mounted) {
+        _showSuccessSnackBar(context, 'Added ${place.name} to My Day!');
+      }
     } catch (e) {
       debugPrint('Error adding to My Day: $e');
-      _showErrorSnackBar(context, 'Failed to add ${place.name} to My Day');
+      if (context.mounted) {
+        _showErrorSnackBar(context, 'Failed to add ${place.name} to My Day');
+      }
+    }
+  }
+
+  /// Default start time for today so the activity appears in My Day (today filter).
+  DateTime _getDefaultStartTimeForToday(String timeOfDay) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    switch (timeOfDay) {
+      case 'morning':
+        return today.add(const Duration(hours: 9));
+      case 'afternoon':
+        return today.add(const Duration(hours: 14));
+      case 'evening':
+        return today.add(const Duration(hours: 18));
+      default:
+        return today.add(const Duration(hours: 14));
     }
   }
 

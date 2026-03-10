@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../../../plans/data/services/scheduled_activity_service.dart';
+import '../../../plans/domain/models/activity.dart';
 
 // Enum for activity status
 enum ActivityStatus {
@@ -109,6 +110,45 @@ final activityManagerProvider = StateNotifierProvider<ActivityManagerNotifier, A
   return ActivityManagerNotifier();
 });
 
+/// Converts a plan [Activity] to the rawData map format expected by My Day UI.
+Map<String, dynamic> _activityToRawData(Activity activity) {
+  return {
+    'id': activity.id,
+    'title': activity.name,
+    'description': activity.description,
+    'category': activity.tags.isNotEmpty ? activity.tags.first : 'activity',
+    'timeOfDay': activity.timeSlot,
+    'duration': activity.duration,
+    'imageUrl': activity.imageUrl,
+    'isRecommended': true,
+    'isScheduled': true,
+    'startTime': activity.startTime.toIso8601String(),
+    'paymentType': activity.paymentType.toString(),
+    'location': '${activity.location.latitude},${activity.location.longitude}',
+    'price': activity.price ?? 0.0,
+    'rating': activity.rating,
+  };
+}
+
+/// Provider for today's scheduled activities from Supabase (single source of truth for My Day).
+/// When invalidated (e.g. after plan save), My Day refreshes from the database.
+final scheduledActivitiesForTodayProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final service = ref.watch(scheduledActivityServiceProvider);
+  final activities = await service.getScheduledActivities();
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+
+  final todayMaps = <Map<String, dynamic>>[];
+  for (final activity in activities) {
+    final start = activity.startTime;
+    if (start.year != today.year || start.month != today.month || start.day != today.day) {
+      continue;
+    }
+    todayMaps.add(_activityToRawData(activity));
+  }
+  return todayMaps;
+});
+
 /// Provider for cached activity suggestions from the prefetch loading screen
 /// CRITICAL: NOT autoDispose to prevent API calls on hot reload
 final cachedActivitySuggestionsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
@@ -129,35 +169,36 @@ final cachedActivitySuggestionsProvider = FutureProvider<List<Map<String, dynami
   return allActivities;
 });
 
-/// Provider for today's enhanced activities with status detection
+/// Provider for today's enhanced activities with status detection.
+/// Reads from Supabase (scheduled_activities) as single source of truth for My Day.
 /// CRITICAL: NOT autoDispose to prevent API calls on hot reload
 final todayActivitiesProvider = FutureProvider<List<EnhancedActivityData>>((ref) async {
-  final activities = await ref.watch(cachedActivitySuggestionsProvider.future);
-  final activityManager = ref.watch(activityManagerProvider);
+  final activities = await ref.watch(scheduledActivitiesForTodayProvider.future);
+  final activityManagerState = ref.watch(activityManagerProvider);
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
-  
+
   final enhancedActivities = <EnhancedActivityData>[];
-  
+
   for (final activity in activities) {
     try {
       final startTimeStr = activity['startTime'] as String?;
       if (startTimeStr == null) continue;
-      
+
       final startTime = DateTime.parse(startTimeStr);
       final duration = activity['duration'] as int? ?? 60;
       final endTime = startTime.add(Duration(minutes: duration));
-      
+
       // Only process activities for today
-      if (startTime.year != today.year || 
-          startTime.month != today.month || 
+      if (startTime.year != today.year ||
+          startTime.month != today.month ||
           startTime.day != today.day) {
         continue;
       }
-      
+
       // Check if activity has been cancelled
       final activityId = activity['id'] as String? ?? activity['title'] as String? ?? '';
-      final managerStatus = activityManager.statusUpdates[activityId];
+      final managerStatus = activityManagerState.statusUpdates[activityId];
       
       if (managerStatus == ActivityStatus.cancelled) {
         // Add cancelled activity

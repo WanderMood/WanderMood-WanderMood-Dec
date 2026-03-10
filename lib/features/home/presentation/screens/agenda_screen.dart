@@ -33,6 +33,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           print('🔄 Agenda: Screen opened ONCE, refreshing activities...');
+          ref.invalidate(scheduledActivitiesForTodayProvider);
           ref.invalidate(cachedActivitySuggestionsProvider);
         }
       });

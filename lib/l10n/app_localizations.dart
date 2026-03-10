@@ -110,6 +110,12 @@ abstract class AppLocalizations {
   /// **'WanderMood'**
   String get appTitle;
 
+  /// No description provided for @splashTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Your mood-based travel companion'**
+  String get splashTagline;
+
   /// No description provided for @welcome.
   ///
   /// In en, this message translates to:
@@ -163,6 +169,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Skip for now'**
   String get skipForNow;
+
+  /// No description provided for @moodyIntroGreeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Hey {name}! 👋'**
+  String moodyIntroGreeting(String name);
+
+  /// No description provided for @moodyIntroImMoody.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m Moody.'**
+  String get moodyIntroImMoody;
+
+  /// No description provided for @moodyIntroSubtext.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m here to help you plan days that match your mood, energy, and vibe.'**
+  String get moodyIntroSubtext;
+
+  /// No description provided for @moodyIntroSuggestActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ll suggest activities like:'**
+  String get moodyIntroSuggestActivities;
+
+  /// No description provided for @moodyIntroTakesLessThan.
+  ///
+  /// In en, this message translates to:
+  /// **'Takes less than a minute • Uses your preferences'**
+  String get moodyIntroTakesLessThan;
+
+  /// No description provided for @moodyIntroNameFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'there'**
+  String get moodyIntroNameFallback;
+
+  /// No description provided for @moodyIntroActLocalRestaurant.
+  ///
+  /// In en, this message translates to:
+  /// **'Local restaurant discovery'**
+  String get moodyIntroActLocalRestaurant;
+
+  /// No description provided for @moodyIntroActMuseum.
+  ///
+  /// In en, this message translates to:
+  /// **'Museum or gallery visit'**
+  String get moodyIntroActMuseum;
+
+  /// No description provided for @moodyIntroActLocalMarket.
+  ///
+  /// In en, this message translates to:
+  /// **'Local market exploration'**
+  String get moodyIntroActLocalMarket;
+
+  /// No description provided for @moodyIntroActNature.
+  ///
+  /// In en, this message translates to:
+  /// **'Nature walk or park visit'**
+  String get moodyIntroActNature;
+
+  /// No description provided for @moodyIntroActNightlife.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening bar or lounge'**
+  String get moodyIntroActNightlife;
+
+  /// No description provided for @moodyIntroActSpa.
+  ///
+  /// In en, this message translates to:
+  /// **'Spa or wellness experience'**
+  String get moodyIntroActSpa;
+
+  /// No description provided for @moodyIntroActCoffee.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning coffee spot'**
+  String get moodyIntroActCoffee;
+
+  /// No description provided for @moodyIntroActAdventure.
+  ///
+  /// In en, this message translates to:
+  /// **'Active outdoor adventure'**
+  String get moodyIntroActAdventure;
+
+  /// No description provided for @moodyIntroActPeacefulWalk.
+  ///
+  /// In en, this message translates to:
+  /// **'Peaceful evening walk'**
+  String get moodyIntroActPeacefulWalk;
+
+  /// No description provided for @moodyIntroActHistorical.
+  ///
+  /// In en, this message translates to:
+  /// **'Historical site visit'**
+  String get moodyIntroActHistorical;
+
+  /// No description provided for @moodyIntroActRomantic.
+  ///
+  /// In en, this message translates to:
+  /// **'Romantic dining experience'**
+  String get moodyIntroActRomantic;
+
+  /// No description provided for @moodyIntroActSocial.
+  ///
+  /// In en, this message translates to:
+  /// **'Social gathering spot'**
+  String get moodyIntroActSocial;
+
+  /// No description provided for @moodyIntroActScenic.
+  ///
+  /// In en, this message translates to:
+  /// **'Scenic viewpoint'**
+  String get moodyIntroActScenic;
+
+  /// No description provided for @moodyIntroActEarlyMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Early morning experience'**
+  String get moodyIntroActEarlyMorning;
+
+  /// No description provided for @moodyIntroActEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening entertainment'**
+  String get moodyIntroActEvening;
+
+  /// No description provided for @moodyIntroActAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon activity'**
+  String get moodyIntroActAfternoon;
+
+  /// No description provided for @moodyIntroActSurprise.
+  ///
+  /// In en, this message translates to:
+  /// **'Surprise discovery'**
+  String get moodyIntroActSurprise;
+
+  /// No description provided for @moodyIntroActMarketVisit.
+  ///
+  /// In en, this message translates to:
+  /// **'Local market visit'**
+  String get moodyIntroActMarketVisit;
+
+  /// No description provided for @moodyIntroActEveningWalk.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening walk with a view'**
+  String get moodyIntroActEveningWalk;
 
   /// No description provided for @saveChanges.
   ///
@@ -547,6 +703,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Loading...'**
   String get loading;
+
+  /// No description provided for @loadingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Setting up your\nperfect day!'**
+  String get loadingTitle;
+
+  /// No description provided for @loadingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'re preparing personalized activities,\nplaces, and insights just for you!'**
+  String get loadingSubtitle;
+
+  /// No description provided for @loadingStep0.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing your personalized experience...'**
+  String get loadingStep0;
+
+  /// No description provided for @loadingStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading your preferences...'**
+  String get loadingStep1;
+
+  /// No description provided for @loadingStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding activities you\'ll love...'**
+  String get loadingStep2;
+
+  /// No description provided for @loadingStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Curating perfect activities for you...'**
+  String get loadingStep3;
+
+  /// No description provided for @loadingStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'Almost ready! Setting up your dashboard...'**
+  String get loadingStep4;
+
+  /// No description provided for @loadingStep5.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing your personalized dashboard...'**
+  String get loadingStep5;
+
+  /// No description provided for @loadingStep6.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to explore! (Some data will load as you go)'**
+  String get loadingStep6;
+
+  /// No description provided for @loadingFact0.
+  ///
+  /// In en, this message translates to:
+  /// **'Did you know? There are 195 countries in the world, each with unique cultures and traditions!'**
+  String get loadingFact0;
+
+  /// No description provided for @loadingFact1.
+  ///
+  /// In en, this message translates to:
+  /// **'The world\'s busiest airport serves over 100 million passengers annually!'**
+  String get loadingFact1;
+
+  /// No description provided for @loadingFact2.
+  ///
+  /// In en, this message translates to:
+  /// **'There are over 1,500 UNESCO World Heritage Sites across the globe!'**
+  String get loadingFact2;
+
+  /// No description provided for @loadingFact3.
+  ///
+  /// In en, this message translates to:
+  /// **'The Great Wall of China is visible from space and stretches over 13,000 miles!'**
+  String get loadingFact3;
+
+  /// No description provided for @loadingFact4.
+  ///
+  /// In en, this message translates to:
+  /// **'There are more than 6,900 languages spoken around the world!'**
+  String get loadingFact4;
+
+  /// No description provided for @loadingFact5.
+  ///
+  /// In en, this message translates to:
+  /// **'The Amazon rainforest produces 20% of the world\'s oxygen!'**
+  String get loadingFact5;
+
+  /// No description provided for @loadingFact6.
+  ///
+  /// In en, this message translates to:
+  /// **'Mount Everest grows about 4mm taller each year due to geological forces!'**
+  String get loadingFact6;
+
+  /// No description provided for @loadingFact7.
+  ///
+  /// In en, this message translates to:
+  /// **'The Sahara Desert is larger than the entire United States!'**
+  String get loadingFact7;
 
   /// No description provided for @appSettings.
   ///
@@ -3469,6 +3727,1278 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'WanderMood Support'**
   String get helpSupportEmailSubject;
+
+  /// No description provided for @prefCommunicationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How should I talk to you? 💬'**
+  String get prefCommunicationTitle;
+
+  /// No description provided for @prefCommunicationIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'To make our journey together more enjoyable, I\'d love to know how you prefer me to communicate with you.'**
+  String get prefCommunicationIntro;
+
+  /// No description provided for @prefCommunicationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This helps me adjust my tone and style to match your preferences perfectly! 🎯'**
+  String get prefCommunicationSubtitle;
+
+  /// No description provided for @prefStyleFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Friendly'**
+  String get prefStyleFriendly;
+
+  /// No description provided for @prefStyleFriendlyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Casual and warm communication'**
+  String get prefStyleFriendlyDesc;
+
+  /// No description provided for @prefStyleProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'Professional'**
+  String get prefStyleProfessional;
+
+  /// No description provided for @prefStyleProfessionalDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear and formal communication'**
+  String get prefStyleProfessionalDesc;
+
+  /// No description provided for @prefStyleEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Energetic'**
+  String get prefStyleEnergetic;
+
+  /// No description provided for @prefStyleEnergeticDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fun and enthusiastic communication'**
+  String get prefStyleEnergeticDesc;
+
+  /// No description provided for @prefStyleDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Direct'**
+  String get prefStyleDirect;
+
+  /// No description provided for @prefStyleDirectDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Straight to the point'**
+  String get prefStyleDirectDesc;
+
+  /// No description provided for @prefMoodAdventurous.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventurous'**
+  String get prefMoodAdventurous;
+
+  /// No description provided for @prefMoodPeaceful.
+  ///
+  /// In en, this message translates to:
+  /// **'Peaceful'**
+  String get prefMoodPeaceful;
+
+  /// No description provided for @prefMoodSocial.
+  ///
+  /// In en, this message translates to:
+  /// **'Social'**
+  String get prefMoodSocial;
+
+  /// No description provided for @prefMoodCultural.
+  ///
+  /// In en, this message translates to:
+  /// **'Cultural'**
+  String get prefMoodCultural;
+
+  /// No description provided for @prefMoodFoody.
+  ///
+  /// In en, this message translates to:
+  /// **'Foody'**
+  String get prefMoodFoody;
+
+  /// No description provided for @prefMoodSpontaneous.
+  ///
+  /// In en, this message translates to:
+  /// **'Spontaneous'**
+  String get prefMoodSpontaneous;
+
+  /// No description provided for @prefMoodTitleFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s your travel mood? 😊'**
+  String get prefMoodTitleFriendly;
+
+  /// No description provided for @prefMoodTitleEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s sync our vibes! ✨'**
+  String get prefMoodTitleEnergetic;
+
+  /// No description provided for @prefMoodTitleProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel Mood Preferences'**
+  String get prefMoodTitleProfessional;
+
+  /// No description provided for @prefMoodTitleDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your moods'**
+  String get prefMoodTitleDirect;
+
+  /// No description provided for @prefMoodSubtitleFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'What inspires you to get out and explore?'**
+  String get prefMoodSubtitleFriendly;
+
+  /// No description provided for @prefMoodSubtitleEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'What moods inspire you to explore?'**
+  String get prefMoodSubtitleEnergetic;
+
+  /// No description provided for @prefMoodSubtitleProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'What type of experiences appeal to you most?'**
+  String get prefMoodSubtitleProfessional;
+
+  /// No description provided for @prefMoodSubtitleDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your preferred experience types:'**
+  String get prefMoodSubtitleDirect;
+
+  /// No description provided for @prefMultipleHintFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'You can select multiple options ✨'**
+  String get prefMultipleHintFriendly;
+
+  /// No description provided for @prefMultipleHintEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'You can pick multiple - go wild! ✨'**
+  String get prefMultipleHintEnergetic;
+
+  /// No description provided for @prefMultipleHintProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiple selections are permitted'**
+  String get prefMultipleHintProfessional;
+
+  /// No description provided for @prefMultipleHintDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiple selections allowed'**
+  String get prefMultipleHintDirect;
+
+  /// No description provided for @prefInterestStays.
+  ///
+  /// In en, this message translates to:
+  /// **'Stays & Getaways'**
+  String get prefInterestStays;
+
+  /// No description provided for @prefInterestStaysDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Charming hotels and dreamy places'**
+  String get prefInterestStaysDesc;
+
+  /// No description provided for @prefInterestFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Food & Dining'**
+  String get prefInterestFood;
+
+  /// No description provided for @prefInterestFoodDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Local cuisine and unique restaurants'**
+  String get prefInterestFoodDesc;
+
+  /// No description provided for @prefInterestArts.
+  ///
+  /// In en, this message translates to:
+  /// **'Arts & Culture'**
+  String get prefInterestArts;
+
+  /// No description provided for @prefInterestArtsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Museums, galleries, and theaters'**
+  String get prefInterestArtsDesc;
+
+  /// No description provided for @prefInterestShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping & Markets'**
+  String get prefInterestShopping;
+
+  /// No description provided for @prefInterestShoppingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Local markets and shopping districts'**
+  String get prefInterestShoppingDesc;
+
+  /// No description provided for @prefInterestSports.
+  ///
+  /// In en, this message translates to:
+  /// **'Sports & Activities'**
+  String get prefInterestSports;
+
+  /// No description provided for @prefInterestSportsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Active experiences and sports venues'**
+  String get prefInterestSportsDesc;
+
+  /// No description provided for @prefInterestsTitleFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'What catches your interest? 🌟'**
+  String get prefInterestsTitleFriendly;
+
+  /// No description provided for @prefInterestsTitleEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'What gets you hyped? 🔥'**
+  String get prefInterestsTitleEnergetic;
+
+  /// No description provided for @prefInterestsTitleProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel Interest Categories'**
+  String get prefInterestsTitleProfessional;
+
+  /// No description provided for @prefInterestsTitleDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select interests'**
+  String get prefInterestsTitleDirect;
+
+  /// No description provided for @prefInterestsSubtitleFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the activities that sound fun to you'**
+  String get prefInterestsSubtitleFriendly;
+
+  /// No description provided for @prefInterestsSubtitleEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick all the things that make your heart race!'**
+  String get prefInterestsSubtitleEnergetic;
+
+  /// No description provided for @prefInterestsSubtitleProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your preferred activity categories'**
+  String get prefInterestsSubtitleProfessional;
+
+  /// No description provided for @prefInterestsSubtitleDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose activity types:'**
+  String get prefInterestsSubtitleDirect;
+
+  /// No description provided for @prefTravelTitleFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about your travel style ✈️'**
+  String get prefTravelTitleFriendly;
+
+  /// No description provided for @prefTravelTitleEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about your travel style ✈️'**
+  String get prefTravelTitleEnergetic;
+
+  /// No description provided for @prefTravelTitleProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about your travel style ✈️'**
+  String get prefTravelTitleProfessional;
+
+  /// No description provided for @prefTravelTitleDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about your travel style ✈️'**
+  String get prefTravelTitleDirect;
+
+  /// No description provided for @prefTravelSubtitleFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'A few quick questions to personalize your experience'**
+  String get prefTravelSubtitleFriendly;
+
+  /// No description provided for @prefTravelSubtitleEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'A few quick questions to personalize your experience'**
+  String get prefTravelSubtitleEnergetic;
+
+  /// No description provided for @prefTravelSubtitleProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'A few quick questions to personalize your experience'**
+  String get prefTravelSubtitleProfessional;
+
+  /// No description provided for @prefTravelSubtitleDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'A few quick questions to personalize your experience'**
+  String get prefTravelSubtitleDirect;
+
+  /// No description provided for @prefSectionSocialVibe.
+  ///
+  /// In en, this message translates to:
+  /// **'Social Vibe 👥'**
+  String get prefSectionSocialVibe;
+
+  /// No description provided for @prefSectionPlanningPace.
+  ///
+  /// In en, this message translates to:
+  /// **'Planning Pace ⏰'**
+  String get prefSectionPlanningPace;
+
+  /// No description provided for @prefSectionTravelStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel Style 🎯'**
+  String get prefSectionTravelStyle;
+
+  /// No description provided for @prefSelectUpToStyles.
+  ///
+  /// In en, this message translates to:
+  /// **'Select up to {count} styles'**
+  String prefSelectUpToStyles(int count);
+
+  /// No description provided for @prefSocialSolo.
+  ///
+  /// In en, this message translates to:
+  /// **'Solo Adventures'**
+  String get prefSocialSolo;
+
+  /// No description provided for @prefSocialSoloDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Me time is the best time'**
+  String get prefSocialSoloDesc;
+
+  /// No description provided for @prefSocialSmallGroups.
+  ///
+  /// In en, this message translates to:
+  /// **'Small Groups'**
+  String get prefSocialSmallGroups;
+
+  /// No description provided for @prefSocialSmallGroupsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Close friends, intimate vibes'**
+  String get prefSocialSmallGroupsDesc;
+
+  /// No description provided for @prefSocialButterfly.
+  ///
+  /// In en, this message translates to:
+  /// **'Social Butterfly'**
+  String get prefSocialButterfly;
+
+  /// No description provided for @prefSocialButterflyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Love meeting new people'**
+  String get prefSocialButterflyDesc;
+
+  /// No description provided for @prefSocialMoodDependent.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood Dependent'**
+  String get prefSocialMoodDependent;
+
+  /// No description provided for @prefSocialMoodDependentDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Sometimes solo, sometimes social'**
+  String get prefSocialMoodDependentDesc;
+
+  /// No description provided for @prefPaceRightNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Right Now Vibes'**
+  String get prefPaceRightNow;
+
+  /// No description provided for @prefPaceRightNowDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'What should I do right now?'**
+  String get prefPaceRightNowDesc;
+
+  /// No description provided for @prefPaceSameDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Same Day Planner'**
+  String get prefPaceSameDay;
+
+  /// No description provided for @prefPaceSameDayDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan in the morning for the day'**
+  String get prefPaceSameDayDesc;
+
+  /// No description provided for @prefPaceWeekend.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend Prepper'**
+  String get prefPaceWeekend;
+
+  /// No description provided for @prefPaceWeekendDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan a few days ahead'**
+  String get prefPaceWeekendDesc;
+
+  /// No description provided for @prefPaceMaster.
+  ///
+  /// In en, this message translates to:
+  /// **'Master Planner'**
+  String get prefPaceMaster;
+
+  /// No description provided for @prefPaceMasterDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Love planning weeks ahead'**
+  String get prefPaceMasterDesc;
+
+  /// No description provided for @prefTravelStyleSpontaneous.
+  ///
+  /// In en, this message translates to:
+  /// **'Spontaneous'**
+  String get prefTravelStyleSpontaneous;
+
+  /// No description provided for @prefTravelStyleSpontaneousDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Go with the flow, embrace surprises'**
+  String get prefTravelStyleSpontaneousDesc;
+
+  /// No description provided for @prefTravelStylePlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned'**
+  String get prefTravelStylePlanned;
+
+  /// No description provided for @prefTravelStylePlannedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Organized itineraries, scheduled visits'**
+  String get prefTravelStylePlannedDesc;
+
+  /// No description provided for @prefTravelStyleLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Experience'**
+  String get prefTravelStyleLocal;
+
+  /// No description provided for @prefTravelStyleLocalDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Live like a local, authentic spots'**
+  String get prefTravelStyleLocalDesc;
+
+  /// No description provided for @prefTravelStyleLuxury.
+  ///
+  /// In en, this message translates to:
+  /// **'Luxury Seeker'**
+  String get prefTravelStyleLuxury;
+
+  /// No description provided for @prefTravelStyleLuxuryDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium experiences, high-end spots'**
+  String get prefTravelStyleLuxuryDesc;
+
+  /// No description provided for @prefTravelStyleBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget Conscious'**
+  String get prefTravelStyleBudget;
+
+  /// No description provided for @prefTravelStyleBudgetDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Great value, smart spending'**
+  String get prefTravelStyleBudgetDesc;
+
+  /// No description provided for @prefTravelStyleTouristHighlights.
+  ///
+  /// In en, this message translates to:
+  /// **'Tourist Highlights'**
+  String get prefTravelStyleTouristHighlights;
+
+  /// No description provided for @prefTravelStyleTouristHighlightsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Must-see attractions, popular spots'**
+  String get prefTravelStyleTouristHighlightsDesc;
+
+  /// No description provided for @prefTravelStyleOffBeatenPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Off the Beaten Path'**
+  String get prefTravelStyleOffBeatenPath;
+
+  /// No description provided for @prefTravelStyleOffBeatenPathDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden gems, unique experiences'**
+  String get prefTravelStyleOffBeatenPathDesc;
+
+  /// No description provided for @dayPlanTodayItinerary.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY\'S ITINERARY'**
+  String get dayPlanTodayItinerary;
+
+  /// No description provided for @dayPlanBasedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Day Plan based on:'**
+  String get dayPlanBasedOn;
+
+  /// No description provided for @dayPlanEditMoods.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Moods →'**
+  String get dayPlanEditMoods;
+
+  /// No description provided for @dayPlanAddToMyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to My Day'**
+  String get dayPlanAddToMyDay;
+
+  /// No description provided for @dayPlanPlanAddedToMyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan added to My Day!'**
+  String get dayPlanPlanAddedToMyDay;
+
+  /// No description provided for @dayPlanAddPlanFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t add plan. Try again.'**
+  String get dayPlanAddPlanFailed;
+
+  /// No description provided for @dayPlanAllAlternativesUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve used all 3 alternative options for this activity!'**
+  String get dayPlanAllAlternativesUsed;
+
+  /// No description provided for @dayPlanFindingOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding new options for {name}...'**
+  String dayPlanFindingOptions(String name);
+
+  /// No description provided for @dayPlanNoOptionsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No other options found for this time slot. Try a different mood!'**
+  String get dayPlanNoOptionsFound;
+
+  /// No description provided for @dayPlanFindOptionsFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to find new options. Please try again later.'**
+  String get dayPlanFindOptionsFailed;
+
+  /// No description provided for @dayPlanAllOptionsUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'All options used'**
+  String get dayPlanAllOptionsUsed;
+
+  /// No description provided for @dayPlanNotFeelingThis.
+  ///
+  /// In en, this message translates to:
+  /// **'Not feeling this?'**
+  String get dayPlanNotFeelingThis;
+
+  /// No description provided for @dayPlanTryAgainLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again? ({count} left)'**
+  String dayPlanTryAgainLeft(String count);
+
+  /// No description provided for @dayPlanMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'MORNING'**
+  String get dayPlanMorning;
+
+  /// No description provided for @dayPlanAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'AFTERNOON'**
+  String get dayPlanAfternoon;
+
+  /// No description provided for @dayPlanEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'EVENING'**
+  String get dayPlanEvening;
+
+  /// No description provided for @dayPlanThemeExploreDiscover.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore & Discover'**
+  String get dayPlanThemeExploreDiscover;
+
+  /// No description provided for @dayPlanThemeTrueLocalFind.
+  ///
+  /// In en, this message translates to:
+  /// **'A True Local Find'**
+  String get dayPlanThemeTrueLocalFind;
+
+  /// No description provided for @dayPlanThemeWindDownCulture.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind Down & Culture'**
+  String get dayPlanThemeWindDownCulture;
+
+  /// No description provided for @dayPlanThemeCulturalDeepDive.
+  ///
+  /// In en, this message translates to:
+  /// **'Cultural Deep Dive'**
+  String get dayPlanThemeCulturalDeepDive;
+
+  /// No description provided for @dayPlanThemeFoodieFind.
+  ///
+  /// In en, this message translates to:
+  /// **'A True \'Foodie\' Find'**
+  String get dayPlanThemeFoodieFind;
+
+  /// No description provided for @dayPlanThemeSunsetVibes.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunset Vibes & Culture'**
+  String get dayPlanThemeSunsetVibes;
+
+  /// No description provided for @dayPlanThemeWindDownRelax.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind Down & Relax'**
+  String get dayPlanThemeWindDownRelax;
+
+  /// No description provided for @dayPlanThemeAdventureAwaits.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventure Awaits'**
+  String get dayPlanThemeAdventureAwaits;
+
+  /// No description provided for @dayPlanThemeOutdoorNature.
+  ///
+  /// In en, this message translates to:
+  /// **'Outdoor & Nature'**
+  String get dayPlanThemeOutdoorNature;
+
+  /// No description provided for @dayPlanThemeCreativeVibes.
+  ///
+  /// In en, this message translates to:
+  /// **'Creative Vibes'**
+  String get dayPlanThemeCreativeVibes;
+
+  /// No description provided for @dayPlanThemeRomanticMoments.
+  ///
+  /// In en, this message translates to:
+  /// **'Romantic Moments'**
+  String get dayPlanThemeRomanticMoments;
+
+  /// No description provided for @dayPlanThemeYourVibe.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Vibe'**
+  String get dayPlanThemeYourVibe;
+
+  /// No description provided for @dayPlanCardActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get dayPlanCardActivity;
+
+  /// No description provided for @dayPlanCardFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get dayPlanCardFree;
+
+  /// No description provided for @dayPlanCardOpenNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Open now'**
+  String get dayPlanCardOpenNow;
+
+  /// No description provided for @dayPlanCardClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get dayPlanCardClosed;
+
+  /// No description provided for @dayPlanCardNotFeelingThis.
+  ///
+  /// In en, this message translates to:
+  /// **'Not feeling this?'**
+  String get dayPlanCardNotFeelingThis;
+
+  /// No description provided for @dayPlanCardDirections.
+  ///
+  /// In en, this message translates to:
+  /// **'Directions'**
+  String get dayPlanCardDirections;
+
+  /// No description provided for @dayPlanCardSeeActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'See activity'**
+  String get dayPlanCardSeeActivity;
+
+  /// No description provided for @dayPlanCardUnableToOpenDirections.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to open directions'**
+  String get dayPlanCardUnableToOpenDirections;
+
+  /// No description provided for @dayPlanCardFailedToShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to share'**
+  String get dayPlanCardFailedToShare;
+
+  /// No description provided for @dayPlanCardRemovedFromSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} removed from saved places'**
+  String dayPlanCardRemovedFromSaved(String name);
+
+  /// No description provided for @dayPlanCardFailedToRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to remove {name}'**
+  String dayPlanCardFailedToRemove(String name);
+
+  /// No description provided for @dayPlanCardCouldNotSaveMoodyHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save to Moody Hub. Sign in may be required.'**
+  String get dayPlanCardCouldNotSaveMoodyHub;
+
+  /// No description provided for @dayPlanCardCouldNotAddMyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add to My Day. Sign in may be required.'**
+  String get dayPlanCardCouldNotAddMyDay;
+
+  /// No description provided for @dayPlanCardSavedToMoodyHubAndMyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} saved! Find it in Moody Hub (saved) and My Day.'**
+  String dayPlanCardSavedToMoodyHubAndMyDay(String name);
+
+  /// No description provided for @dayPlanCardSavedToMoodyHub.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} saved to Moody Hub.'**
+  String dayPlanCardSavedToMoodyHub(String name);
+
+  /// No description provided for @dayPlanCardAddedToMyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added to My Day.'**
+  String dayPlanCardAddedToMyDay(String name);
+
+  /// No description provided for @dayPlanCardMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% Match'**
+  String dayPlanCardMatch(String percent);
+
+  /// No description provided for @moodHubGreetingFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Hey, {name}!'**
+  String moodHubGreetingFriendly(String name);
+
+  /// No description provided for @moodHubGreetingBestie.
+  ///
+  /// In en, this message translates to:
+  /// **'Hey bestie, {name}! 😊'**
+  String moodHubGreetingBestie(String name);
+
+  /// No description provided for @moodHubGreetingProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'{greeting}, {name}'**
+  String moodHubGreetingProfessional(String greeting, String name);
+
+  /// No description provided for @moodHubGreetingDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi, {name}'**
+  String moodHubGreetingDirect(String name);
+
+  /// No description provided for @moodHubGreetingHeyThere.
+  ///
+  /// In en, this message translates to:
+  /// **'Hey there!'**
+  String get moodHubGreetingHeyThere;
+
+  /// No description provided for @moodHubGreetingHi.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi'**
+  String get moodHubGreetingHi;
+
+  /// No description provided for @moodHubWhatIsYourMood.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s your mood'**
+  String get moodHubWhatIsYourMood;
+
+  /// No description provided for @moodHubThisMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'this morning?'**
+  String get moodHubThisMorning;
+
+  /// No description provided for @moodHubThisAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'this afternoon?'**
+  String get moodHubThisAfternoon;
+
+  /// No description provided for @moodHubThisEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'this evening?'**
+  String get moodHubThisEvening;
+
+  /// No description provided for @moodHubTonight.
+  ///
+  /// In en, this message translates to:
+  /// **'tonight?'**
+  String get moodHubTonight;
+
+  /// No description provided for @moodHubBannerMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning vibes — let\'s set the tone.'**
+  String get moodHubBannerMorning;
+
+  /// No description provided for @moodHubBannerAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon\'s here — time to match your vibe.'**
+  String get moodHubBannerAfternoon;
+
+  /// No description provided for @moodHubBannerEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening\'s here — what\'s your vibe?'**
+  String get moodHubBannerEvening;
+
+  /// No description provided for @moodHubBannerNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Late night energy — let\'s find something that fits.'**
+  String get moodHubBannerNight;
+
+  /// No description provided for @moodHubCreatePlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s create your perfect plan! 🎯'**
+  String get moodHubCreatePlan;
+
+  /// No description provided for @moodHubBackToHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Hub'**
+  String get moodHubBackToHub;
+
+  /// No description provided for @moodHubSelectUpTo.
+  ///
+  /// In en, this message translates to:
+  /// **'You can select up to {max} moods'**
+  String moodHubSelectUpTo(String max);
+
+  /// No description provided for @moodHubSelectedMoods.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected moods: '**
+  String get moodHubSelectedMoods;
+
+  /// No description provided for @moodHubNoMoodOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'No mood options available'**
+  String get moodHubNoMoodOptions;
+
+  /// No description provided for @moodHubMoodyThinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody is thinking...'**
+  String get moodHubMoodyThinking;
+
+  /// No description provided for @moodHubMoodHappy.
+  ///
+  /// In en, this message translates to:
+  /// **'Happy'**
+  String get moodHubMoodHappy;
+
+  /// No description provided for @moodHubMoodAdventurous.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventurous'**
+  String get moodHubMoodAdventurous;
+
+  /// No description provided for @moodHubMoodRelaxed.
+  ///
+  /// In en, this message translates to:
+  /// **'Relaxed'**
+  String get moodHubMoodRelaxed;
+
+  /// No description provided for @moodHubMoodEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Energetic'**
+  String get moodHubMoodEnergetic;
+
+  /// No description provided for @moodHubMoodRomantic.
+  ///
+  /// In en, this message translates to:
+  /// **'Romantic'**
+  String get moodHubMoodRomantic;
+
+  /// No description provided for @moodHubMoodSocial.
+  ///
+  /// In en, this message translates to:
+  /// **'Social'**
+  String get moodHubMoodSocial;
+
+  /// No description provided for @moodHubMoodCultural.
+  ///
+  /// In en, this message translates to:
+  /// **'Cultural'**
+  String get moodHubMoodCultural;
+
+  /// No description provided for @moodHubMoodCurious.
+  ///
+  /// In en, this message translates to:
+  /// **'Curious'**
+  String get moodHubMoodCurious;
+
+  /// No description provided for @moodHubMoodCozy.
+  ///
+  /// In en, this message translates to:
+  /// **'Cozy'**
+  String get moodHubMoodCozy;
+
+  /// No description provided for @moodHubMoodExcited.
+  ///
+  /// In en, this message translates to:
+  /// **'Excited'**
+  String get moodHubMoodExcited;
+
+  /// No description provided for @moodHubMoodFoody.
+  ///
+  /// In en, this message translates to:
+  /// **'Foody'**
+  String get moodHubMoodFoody;
+
+  /// No description provided for @moodHubMoodSurprise.
+  ///
+  /// In en, this message translates to:
+  /// **'Surprise'**
+  String get moodHubMoodSurprise;
+
+  /// No description provided for @planLoadingErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Oops! Something went wrong'**
+  String get planLoadingErrorTitle;
+
+  /// No description provided for @planLoadingTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get planLoadingTryAgain;
+
+  /// No description provided for @planLoadingErrorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to generate activities. Please try again or select different moods.'**
+  String get planLoadingErrorGeneric;
+
+  /// No description provided for @planLoadingErrorNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Network connection error. Please check your internet connection and try again.'**
+  String get planLoadingErrorNetwork;
+
+  /// No description provided for @planLoadingErrorLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location access required. Please enable location services and try again.'**
+  String get planLoadingErrorLocation;
+
+  /// No description provided for @planLoadingErrorService.
+  ///
+  /// In en, this message translates to:
+  /// **'Service temporarily unavailable. Please try again in a few minutes.'**
+  String get planLoadingErrorService;
+
+  /// No description provided for @planLoadingErrorApiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Configuration error. Please contact support if this persists.'**
+  String get planLoadingErrorApiKey;
+
+  /// No description provided for @planLoadingErrorNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Service unavailable. Please try again later.'**
+  String get planLoadingErrorNotFound;
+
+  /// No description provided for @planLoadingErrorNoActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'No activities found for your selected moods and location. Please try different moods or check your location settings.'**
+  String get planLoadingErrorNoActivities;
+
+  /// No description provided for @getReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Ready'**
+  String get getReadyTitle;
+
+  /// No description provided for @getReadyLeaveBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave by {time}'**
+  String getReadyLeaveBy(String time);
+
+  /// No description provided for @getReadyTripSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{mode} · ~{minutes} min trip'**
+  String getReadyTripSummary(String mode, int minutes);
+
+  /// No description provided for @getReadyWeatherAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather at {time}'**
+  String getReadyWeatherAt(String time);
+
+  /// No description provided for @getReadyWeatherTipDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Looks like a great time to head out.'**
+  String get getReadyWeatherTipDefault;
+
+  /// No description provided for @getReadyWeatherTipCool.
+  ///
+  /// In en, this message translates to:
+  /// **'It might be a bit chilly – bring a light jacket.'**
+  String get getReadyWeatherTipCool;
+
+  /// No description provided for @getReadyWeatherTipRain.
+  ///
+  /// In en, this message translates to:
+  /// **'Rain is expected – consider bringing an umbrella.'**
+  String get getReadyWeatherTipRain;
+
+  /// No description provided for @getReadyChecklistTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What to bring'**
+  String get getReadyChecklistTitle;
+
+  /// No description provided for @getReadyItemWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet & payment method'**
+  String get getReadyItemWallet;
+
+  /// No description provided for @getReadyItemPhoneCharged.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone fully charged'**
+  String get getReadyItemPhoneCharged;
+
+  /// No description provided for @getReadyItemReusableBag.
+  ///
+  /// In en, this message translates to:
+  /// **'Reusable bag or container'**
+  String get getReadyItemReusableBag;
+
+  /// No description provided for @getReadyItemShoes.
+  ///
+  /// In en, this message translates to:
+  /// **'Comfortable walking shoes'**
+  String get getReadyItemShoes;
+
+  /// No description provided for @getReadyItemWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Water bottle'**
+  String get getReadyItemWater;
+
+  /// No description provided for @getReadyItemId.
+  ///
+  /// In en, this message translates to:
+  /// **'ID / travel card if needed'**
+  String get getReadyItemId;
+
+  /// No description provided for @getReadyReminderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remind me to leave'**
+  String get getReadyReminderTitle;
+
+  /// No description provided for @getReadyReminderSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll send a gentle nudge a few minutes before.'**
+  String get getReadyReminderSubtitle;
+
+  /// No description provided for @getReadyQuickActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick actions'**
+  String get getReadyQuickActions;
+
+  /// No description provided for @getReadyQuickShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get getReadyQuickShare;
+
+  /// No description provided for @getReadyQuickCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get getReadyQuickCalendar;
+
+  /// No description provided for @getReadyQuickParking.
+  ///
+  /// In en, this message translates to:
+  /// **'Parking'**
+  String get getReadyQuickParking;
+
+  /// No description provided for @getReadyPrimaryCta.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m ready! 🚀'**
+  String get getReadyPrimaryCta;
+
+  /// No description provided for @getReadyLetsGo.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s Go!'**
+  String get getReadyLetsGo;
+
+  /// No description provided for @getReadyAdventureStartsIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventure starts in…'**
+  String get getReadyAdventureStartsIn;
+
+  /// No description provided for @getReadyHours.
+  ///
+  /// In en, this message translates to:
+  /// **'HOURS'**
+  String get getReadyHours;
+
+  /// No description provided for @getReadyMins.
+  ///
+  /// In en, this message translates to:
+  /// **'MINS'**
+  String get getReadyMins;
+
+  /// No description provided for @getReadyRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Route'**
+  String get getReadyRoute;
+
+  /// No description provided for @getReadyYourAdventureEnergy.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Adventure Energy'**
+  String get getReadyYourAdventureEnergy;
+
+  /// No description provided for @getReadyBoostEnergyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Check off items below to boost your energy!'**
+  String get getReadyBoostEnergyHint;
+
+  /// No description provided for @getReadyPackEssentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Pack Your Essentials'**
+  String get getReadyPackEssentials;
+
+  /// No description provided for @getReadyVibePlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibe Playlist'**
+  String get getReadyVibePlaylist;
+
+  /// No description provided for @getReadyGetInMood.
+  ///
+  /// In en, this message translates to:
+  /// **'Get in the {mood} mood!'**
+  String getReadyGetInMood(String mood);
+
+  /// No description provided for @getReadyPlaylistLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Happy {theme} Beats'**
+  String getReadyPlaylistLabel(String theme);
+
+  /// No description provided for @getReadyPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get getReadyPlay;
+
+  /// No description provided for @getReadyNudgeMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Nudge me when it\'s time!'**
+  String get getReadyNudgeMe;
+
+  /// No description provided for @getReadyReminderAt.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll remind you at {time}'**
+  String getReadyReminderAt(String time);
+
+  /// No description provided for @getReadyCantWait.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t wait to see what you discover!'**
+  String get getReadyCantWait;
 }
 
 class _AppLocalizationsDelegate

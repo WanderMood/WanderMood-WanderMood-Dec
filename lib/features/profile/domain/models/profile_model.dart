@@ -67,27 +67,22 @@ class Profile with _$Profile {
   const Profile._();
 
   Map<String, dynamic> toSupabase() {
-    return {
-      'id': id,
-      'email': email,
+    // Only write columns that exist in profiles table (avoid 42703 errors)
+    final map = <String, dynamic>{
       'username': username,
       'full_name': fullName,
-      'image_url': imageUrl,
       'date_of_birth': dateOfBirth?.toIso8601String(),
       'bio': bio,
       'favorite_mood': favoriteMood,
       'mood_streak': moodStreak,
-      'followers_count': followersCount,
-      'following_count': followingCount,
       'is_public': profileVisibility == 'public',
-      'profile_visibility': profileVisibility,
-      'show_email': showEmail,
-      'show_age': showAge,
-      'notification_preferences': notificationPreferences,
-      'theme_preference': themePreference,
-      'language_preference': languagePreference,
-      'achievements': achievements,
       'updated_at': DateTime.now().toIso8601String(),
     };
+    // Write to BOTH avatar_url and image_url so all UIs (profile, edit, drawer) stay in sync
+    if (imageUrl != null && imageUrl!.isNotEmpty) {
+      map['image_url'] = imageUrl;
+      map['avatar_url'] = imageUrl;
+    }
+    return map;
   }
 } 

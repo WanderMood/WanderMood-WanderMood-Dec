@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../../core/providers/preferences_provider.dart';
 import '../widgets/swirling_gradient_painter.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import '../../../plans/services/activity_generator_service.dart';
 import '../../../places/providers/moody_explore_provider.dart';
 import '../../../location/services/location_service.dart';
@@ -44,59 +45,28 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
   String _currentStep = 'Preparing your personalized experience...';
   double _progress = 0.0;
   
-  final List<String> _loadingSteps = [
-    'Analyzing your travel preferences...',
-    'Finding activities you\'ll love...',
-    'Discovering amazing places nearby...',
-    'Getting the latest weather updates...',
-    'Preparing your personalized dashboard...',
-    'Almost ready!'
-  ];
+  static const int _loadingStepsCount = 6;
   
   int _currentStepIndex = 0;
   int _currentFactIndex = 0;
   
   // Fun travel facts that rotate during loading - will be populated based on user location
-  List<Map<String, String>> _travelFacts = [];
+  List<Map<String, dynamic>> _travelFacts = [];
   
-  // Default general travel facts as fallback
-  final List<Map<String, String>> _defaultTravelFacts = [
-    {
-      'fact': 'Did you know? There are 195 countries in the world, each with unique cultures and traditions!',
-      'emoji': '🌍'
-    },
-    {
-      'fact': 'The world\'s busiest airport serves over 100 million passengers annually!',
-      'emoji': '✈️'
-    },
-    {
-      'fact': 'There are over 1,500 UNESCO World Heritage Sites across the globe!',
-      'emoji': '🏛️'
-    },
-    {
-      'fact': 'The Great Wall of China is visible from space and stretches over 13,000 miles!',
-      'emoji': '🏯'
-    },
-    {
-      'fact': 'There are more than 6,900 languages spoken around the world!',
-      'emoji': '🗣️'
-    },
-    {
-      'fact': 'The Amazon rainforest produces 20% of the world\'s oxygen!',
-      'emoji': '🌳'
-    },
-    {
-      'fact': 'Mount Everest grows about 4mm taller each year due to geological forces!',
-      'emoji': '🏔️'
-    },
-    {
-      'fact': 'The Sahara Desert is larger than the entire United States!',
-      'emoji': '🏜️'
-    },
+  // Default general travel facts as fallback (factIndex used for l10n lookup)
+  static const List<Map<String, dynamic>> _defaultTravelFacts = [
+    {'emoji': '🌍', 'factIndex': 0},
+    {'emoji': '✈️', 'factIndex': 1},
+    {'emoji': '🏛️', 'factIndex': 2},
+    {'emoji': '🏯', 'factIndex': 3},
+    {'emoji': '🗣️', 'factIndex': 4},
+    {'emoji': '🌳', 'factIndex': 5},
+    {'emoji': '🏔️', 'factIndex': 6},
+    {'emoji': '🏜️', 'factIndex': 7},
   ];
   
-  // Location-specific travel facts
-  Map<String, List<Map<String, String>>> _locationFacts = {
+  // Location-specific travel facts (English copy; default facts use l10n via factIndex)
+  Map<String, List<Map<String, dynamic>>> _locationFacts = {
     'Netherlands': [
       {
         'fact': 'The Netherlands has more museums per square mile than any other country!',
@@ -371,7 +341,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.microtask(() {
         if (mounted) {
-          _startPrefetching();
+          _startPrefetching(context);
         }
       });
     });
@@ -402,7 +372,8 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
     });
   }
 
-  Future<void> _startPrefetching() async {
+  Future<void> _startPrefetching(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       // Load user preferences for personalization
       final prefs = await SharedPreferences.getInstance();
@@ -414,7 +385,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
       }
 
       // Step 1: Load user preferences (20%)
-      await _updateProgress(0, 'Loading your preferences...');
+      await _updateProgress(0, l10n.loadingStep1);
       Map<String, dynamic>? userPreferences;
       try {
         final response = await ref.read(supabaseClientProvider)
@@ -429,7 +400,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
       }
 
       // Step 2: Get user location (40%)
-      await _updateProgress(1, "Finding activities you'll love...");
+      await _updateProgress(1, l10n.loadingStep2);
       final position = await LocationService.getCurrentLocation();
       debugPrint('📍 User location: ${position.latitude}, ${position.longitude}');
       
@@ -439,7 +410,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
       await Future.delayed(const Duration(milliseconds: 800));
 
       // Step 3: Generate personalized activity suggestions (60%)
-      await _updateProgress(2, 'Curating perfect activities for you...');
+      await _updateProgress(2, l10n.loadingStep3);
       try {
         final activitySuggestions = await _generatePersonalizedActivities(
           userPreferences: userPreferences,
@@ -458,11 +429,11 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
 
       // Step 4: Skip places prefetch here - moved to MainScreen for better timing
       // Places will be prefetched in background after MainScreen loads (user is authenticated, session established)
-      await _updateProgress(3, 'Almost ready! Setting up your dashboard...');
+      await _updateProgress(3, l10n.loadingStep4);
       await Future.delayed(const Duration(milliseconds: 600));
 
       // Step 5: Fetch weather data (90%)
-      await _updateProgress(4, 'Preparing your personalized dashboard...');
+      await _updateProgress(4, l10n.loadingStep5);
       try {
         final weatherLocation = WeatherLocation(
           id: 'current_location',
@@ -478,7 +449,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
       await Future.delayed(const Duration(milliseconds: 600));
 
       // Step 6: Finalize and prepare dashboard (100%)
-      await _updateProgress(5, 'Almost ready! Setting up your dashboard...');
+      await _updateProgress(5, l10n.loadingStep4);
       
       // Mark preferences as completed in local storage
       await prefs.setBool('hasCompletedPreferences', true);
@@ -533,7 +504,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
     setState(() {
       _currentStepIndex = stepIndex;
       _currentStep = stepText;
-      _progress = (stepIndex + 1) / _loadingSteps.length;
+      _progress = (stepIndex + 1) / _loadingStepsCount;
     });
     
     _progressController.reset();
@@ -565,12 +536,27 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
     
     if (mounted) {
       setState(() {
-        _currentStep = 'Ready to explore! (Some data will load as you go)';
+        _currentStep = AppLocalizations.of(context)!.loadingStep6;
         _progress = 1.0;
       });
       
       await Future.delayed(const Duration(milliseconds: 1500));
       context.goNamed('main', extra: {'tab': 0});
+    }
+  }
+
+  static String _getFactText(BuildContext context, int index) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (index) {
+      case 0: return l10n.loadingFact0;
+      case 1: return l10n.loadingFact1;
+      case 2: return l10n.loadingFact2;
+      case 3: return l10n.loadingFact3;
+      case 4: return l10n.loadingFact4;
+      case 5: return l10n.loadingFact5;
+      case 6: return l10n.loadingFact6;
+      case 7: return l10n.loadingFact7;
+      default: return '';
     }
   }
 
@@ -738,7 +724,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
                           const SizedBox(width: 8),
                           Flexible(
                             child: Text(
-                              'Setting up your\nperfect day!',
+                              AppLocalizations.of(context)!.loadingTitle,
                               style: GoogleFonts.museoModerno(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
@@ -763,7 +749,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
                       
                       // Subtitle with typewriter effect
                       Text(
-                        'We\'re preparing personalized activities,\nplaces, and insights just for you!',
+                        AppLocalizations.of(context)!.loadingSubtitle,
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           color: Colors.black87,
@@ -889,7 +875,9 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
                             ],
                           ),
                           child: Text(
-                            _currentStep,
+                            _currentStep == 'Preparing your personalized experience...'
+                                ? AppLocalizations.of(context)!.loadingStep0
+                                : _currentStep,
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               color: Colors.black87,
@@ -933,7 +921,9 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
                                    .rotate(duration: 3000.ms),
                                   const SizedBox(height: 12),
                                   Text(
-                                    currentFact['fact']!,
+                                    currentFact.containsKey('factIndex')
+                                        ? _getFactText(context, currentFact['factIndex'] as int)
+                                        : currentFact['fact']! as String,
                           style: GoogleFonts.poppins(
                                       fontSize: 13,
                                       color: Colors.black87,

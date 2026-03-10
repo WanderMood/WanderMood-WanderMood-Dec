@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,24 +6,32 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
-import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:intl/intl.dart';
-import 'package:wandermood/features/plans/presentation/sheets/plan_summary_sheet.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/plans/widgets/activity_detail_screen.dart';
-import 'package:wandermood/features/plans/providers/selected_activities_provider.dart';
 import 'package:wandermood/features/plans/services/activity_generator_service.dart';
 import 'package:wandermood/core/services/wandermood_ai_service.dart' as ai_service;
 import 'package:wandermood/core/models/ai_recommendation.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/core/extensions/string_extensions.dart';
+import 'package:go_router/go_router.dart';
+import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
+import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
+import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
+import 'package:wandermood/features/plans/presentation/widgets/day_plan_activity_card.dart';
+import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
+import 'package:wandermood/core/providers/user_location_provider.dart';
+import 'package:wandermood/core/services/distance_service.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class DayPlanScreen extends ConsumerStatefulWidget {
   final List<Activity> activities;
+  final List<String> selectedMoods;
 
   const DayPlanScreen({
     super.key,
     required this.activities,
+    this.selectedMoods = const [],
   });
 
   @override
@@ -30,19 +39,13 @@ class DayPlanScreen extends ConsumerStatefulWidget {
 }
 
 class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
-  String _selectedTimeSlot = 'Morning';
+  /// Mutable list of exactly 3 activities (morning, afternoon, evening) for swap support.
+  late List<Activity> _activities;
 
-  String _getTimeBasedGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour >= 5 && hour < 12) {
-      return 'Good morning explorer 👋';
-    } else if (hour >= 12 && hour < 17) {
-      return 'Good afternoon explorer 👋';
-    } else if (hour >= 17 && hour < 22) {
-      return 'Good evening explorer 👋';
-    } else {
-      return 'Hi night owl explorer 🌙';
-    }
+  @override
+  void initState() {
+    super.initState();
+    _activities = List.from(widget.activities);
   }
 
   String _getFormattedDate() {
@@ -51,17 +54,57 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
     return formatter.format(now);
   }
 
-  void _toggleActivity(Activity activity) {
-    ref.read(selectedActivitiesProvider.notifier).toggleActivity(activity.id);
+  /// Saves the current plan (3 activities) to Supabase and navigates to My Day.
+  /// Replaces today's plan so the user has exactly these 3 activities (no accumulation).
+  Future<void> _addPlanToMyDay(WidgetRef ref) async {
+    if (_activities.isEmpty) return;
+    try {
+      final service = ref.read(scheduledActivityServiceProvider);
+      await service.clearAllScheduledActivities();
+      await service.saveScheduledActivities(_activities, isConfirmed: false);
+      ref.invalidate(scheduledActivityServiceProvider);
+      ref.invalidate(scheduledActivitiesForTodayProvider);
+      ref.invalidate(todayActivitiesProvider);
+      if (!mounted) return;
+      ref.read(mainTabProvider.notifier).state = 0;
+      context.goNamed('main', extra: {'tab': 0});
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.dayPlanPlanAddedToMyDay,
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+          ),
+          backgroundColor: const Color(0xFF12B347),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.dayPlanAddPlanFailed,
+            style: GoogleFonts.poppins(),
+          ),
+          backgroundColor: Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   void _refreshActivity(Activity activity) async {
     // Check if user has reached the limit
     if (activity.refreshCount >= 3) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'You\'ve used all 3 alternative options for this activity!',
+            l10n.dayPlanAllAlternativesUsed,
             style: GoogleFonts.poppins(),
           ),
           backgroundColor: Colors.orange.shade600,
@@ -77,6 +120,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
 
     try {
       // Show loading feedback
+      final l10nLoading = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -90,9 +134,11 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              Text(
-                'Finding new options for ${activity.name}...',
-                style: GoogleFonts.poppins(),
+              Expanded(
+                child: Text(
+                  l10nLoading.dayPlanFindingOptions(activity.name),
+                  style: GoogleFonts.poppins(),
+                ),
               ),
             ],
           ),
@@ -154,6 +200,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
             ],
             startTime: activity.startTime, // Keep same start time
             priceLevel: _parsePriceLevel(selectedRec.cost ?? '€€'),
+            placeId: null, // AI alternative has no Place ID
             refreshCount: 0, // Reset for new activity
           );
         }
@@ -171,10 +218,12 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
             refreshCount: activity.refreshCount + 1,
           );
           
-          // Replace the activity in the main list
-          final index = widget.activities.indexOf(activity);
-          if (index >= 0) {
-            widget.activities[index] = updatedActivity;
+          // Replace the activity in the slot
+          final index = _activities.indexOf(activity);
+          if (index >= 0 && index < _activities.length) {
+            setState(() {
+              _activities = List.from(_activities)..[index] = updatedActivity;
+            });
           }
         });
         
@@ -197,7 +246,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'No other options found for this time slot. Try a different mood!',
+              AppLocalizations.of(context)!.dayPlanNoOptionsFound,
               style: GoogleFonts.poppins(),
             ),
             backgroundColor: Colors.orange.shade600,
@@ -215,7 +264,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Failed to find new options. Please try again later.',
+            AppLocalizations.of(context)!.dayPlanFindOptionsFailed,
             style: GoogleFonts.poppins(),
           ),
           backgroundColor: Colors.red.shade600,
@@ -249,7 +298,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
             ),
             const SizedBox(width: 4),
             Text(
-              'All options used',
+              AppLocalizations.of(context)!.dayPlanAllOptionsUsed,
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey.shade500,
@@ -270,8 +319,8 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
       ),
       label: Text(
         remainingRefreshes == 3 
-          ? 'Not feeling this?' 
-          : 'Try again? ($remainingRefreshes left)',
+          ? AppLocalizations.of(context)!.dayPlanNotFeelingThis 
+          : AppLocalizations.of(context)!.dayPlanTryAgainLeft(remainingRefreshes.toString()),
         style: const TextStyle(
           fontSize: 14,
           color: Color(0xFF4CAF50),
@@ -283,20 +332,6 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
     );
-  }
-
-  Map<String, List<Activity>> _groupActivitiesByTimeSlot() {
-    final result = <String, List<Activity>>{};
-    
-    for (final activity in widget.activities) {
-      final timeSlot = activity.timeSlot;
-      if (!result.containsKey(timeSlot)) {
-        result[timeSlot] = [];
-      }
-      result[timeSlot]!.add(activity);
-    }
-    
-    return result;
   }
 
   // Helper methods for AI recommendation conversion
@@ -350,571 +385,391 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
     return imageMap[type.toLowerCase()] ?? 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400';
   }
 
+  static const List<String> _slotOrder = ['morning', 'afternoon', 'evening'];
+  static const List<String> _slotEmojis = ['☀️', '🌤️', '🌆'];
+
+  /// Mood-based theme line for section header (localized).
+  String _getThemeForSlot(BuildContext context, int slotIndex) {
+    final l10n = AppLocalizations.of(context)!;
+    final moods = widget.selectedMoods;
+    if (moods.isEmpty) {
+      final fallbacks = [l10n.dayPlanThemeExploreDiscover, l10n.dayPlanThemeTrueLocalFind, l10n.dayPlanThemeWindDownCulture];
+      return fallbacks[slotIndex.clamp(0, 2)];
+    }
+    String themeForMood(String m) {
+      final lower = m.toLowerCase();
+      if (lower.contains('cultural') || lower.contains('culture') || lower.contains('curious')) return l10n.dayPlanThemeCulturalDeepDive;
+      if (lower.contains('food') || lower.contains('foodie')) return l10n.dayPlanThemeFoodieFind;
+      if (lower.contains('social')) return l10n.dayPlanThemeSunsetVibes;
+      if (lower.contains('relax') || lower.contains('relaxed')) return l10n.dayPlanThemeWindDownRelax;
+      if (lower.contains('adventure') || lower.contains('adventurous')) return l10n.dayPlanThemeAdventureAwaits;
+      if (lower.contains('outdoor') || lower.contains('nature')) return l10n.dayPlanThemeOutdoorNature;
+      if (lower.contains('creative') || lower.contains('art')) return l10n.dayPlanThemeCreativeVibes;
+      if (lower.contains('romantic')) return l10n.dayPlanThemeRomanticMoments;
+      return l10n.dayPlanThemeYourVibe;
+    }
+    final moodIndex = slotIndex.clamp(0, moods.length - 1);
+    return themeForMood(moods[moodIndex]);
+  }
+
+  void _goBackToMoodyHub() {
+    // Reset so Moody tab shows mood selection screen (pick moods again), then go there
+    ref.read(dailyMoodStateNotifierProvider.notifier).resetMoodSelection();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.goNamed('main', extra: {'tab': 2});
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final groupedActivities = _groupActivitiesByTimeSlot();
-    final morningActivities = groupedActivities['morning'] ?? [];
-    final afternoonActivities = groupedActivities['afternoon'] ?? [];
-    final eveningActivities = groupedActivities['evening'] ?? [];
-
     return Scaffold(
       body: Stack(
         children: [
-          // Base swirl background with beige color
-          const SwirlBackground(
-            child: SizedBox.expand(),
-          ),
-          
-          // Green header background with curved bottom
+          const SwirlBackground(child: SizedBox.expand()),
+          // Dark header per design: gradient purple/indigo → dark, TODAY'S ITINERARY (orange), mood pills, Edit Moods
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            height: MediaQuery.of(context).padding.top + 140, // SafeArea top + header height
+            height: MediaQuery.of(context).padding.top + 200,
             child: Container(
-                      decoration: const BoxDecoration(
-                color: Color(0xFF4CAF50),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF2D1B4E), // Dark purple/indigo
+                    Color(0xFF1A0F2E),
+                    Color(0xFF0D0618), // Near black
+                  ],
+                ),
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(24),
                   bottomRight: Radius.circular(24),
-                          ),
-                        ),
-                      ),
-                    ),
-          
-          // Main content
+                ),
+              ),
+            ),
+          ),
           SafeArea(
             child: Column(
               children: [
-                // Header
+                // Header: back arrow, TODAY'S ITINERARY, Your Day Plan based on:, mood pills, Edit Moods
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                   child: Column(
-                      children: [
-                        Row(
-                          children: [
-                          IconButton(
-                            icon: const Icon(Icons.arrow_back, color: Colors.white),
-                            padding: EdgeInsets.zero,
-                            onPressed: () => Navigator.pop(context),
-                    ),
-                    const Spacer(),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.auto_awesome, size: 18, color: const Color(0xFFFFB74D)),
+                          const SizedBox(width: 8),
+                          Text(
+                            AppLocalizations.of(context)!.dayPlanTodayItinerary,
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFFFFB74D),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
                         ],
-                        ),
-                      const SizedBox(height: 0),
-                    Text(
-                      'Your Day Plan',
-                        style: GoogleFonts.museoModerno(
-                        fontSize: 32,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        AppLocalizations.of(context)!.dayPlanBasedOn,
+                        style: GoogleFonts.poppins(
+                          fontSize: 22,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
-                          height: 1.1,
                         ),
-                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 8),
-                    Text(
-                      _getFormattedDate(),
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white.withOpacity(0.95),
-                          letterSpacing: 0.2,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-                // Content area
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: ListView(
-                      children: [
-                        // Moody's greeting
-              Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                              const MoodyCharacter(
-                                size: 60,
-                                mood: 'happy',
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      const SizedBox(height: 12),
+                      // Mood pills: glassy gradient (frosted look)
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 8,
                         children: [
-                          Text(
-                            _getTimeBasedGreeting(),
-                                      style: GoogleFonts.museoModerno(
-                                        fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF4CAF50),
-                            ),
-                          ),
-                          Text(
-                                      "I've cooked up a day full of surprises! 🎭",
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.black54,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                        ),
-
-                        // Time section tabs
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                              _buildTimeTab('🌅 Morning', '(${morningActivities.length})', _selectedTimeSlot == 'Morning'),
-                              _buildTimeTab('😊 Afternoon', '(${afternoonActivities.length})', _selectedTimeSlot == 'Afternoon'),
-                              _buildTimeTab('🌙 Evening', '(${eveningActivities.length})', _selectedTimeSlot == 'Evening'),
-                  ],
-                ),
-              ),
-
-                        // Activities
-                        ...widget.activities.map((activity) {
-                          // Filter by selected time slot
-                          if (activity.timeSlot.toLowerCase() != _selectedTimeSlot.toLowerCase()) {
-                            return const SizedBox.shrink();
-                          }
-                          
-                          return _buildActivityCard(activity);
-                        }).toList(),
-                        
-                        // Add extra space at the bottom for the floating button
-                        const SizedBox(height: 80),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Review button at bottom
-          Consumer(
-            builder: (context, ref, child) {
-              final selectedActivityIds = ref.watch(selectedActivitiesProvider);
-              if (selectedActivityIds.isEmpty) return const SizedBox();
-              
-              // Get the actual activities from the selected IDs
-              final selectedActivities = widget.activities
-                  .where((activity) => selectedActivityIds.contains(activity.id))
-                  .toList();
-              
-              return Positioned(
-                bottom: 24,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Container(
-                    width: 220,
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                          spreadRadius: 0,
-                        ),
-                      ],
-                    ),
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        PlanSummarySheet.show(
-                          context,
-                          selectedActivities,
-                        );
-                    },
-                      icon: const Icon(
-                        Icons.check_circle_rounded,
-                        size: 20,
-                      ),
-                      label: Text(
-                        'Review selected (${selectedActivityIds.length})',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4CAF50),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        elevation: 0,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimeTab(String emoji, String count, bool isSelected) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedTimeSlot = emoji.split(' ')[1];
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF4CAF50) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? Colors.transparent : Colors.grey.shade300,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              emoji,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? Colors.white : Colors.black87,
-              ),
-            ),
-            const SizedBox(width: 2),
-            Text(
-              count,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: isSelected ? Colors.white.withOpacity(0.9) : Colors.grey,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActivityCard(Activity activity) {
-    final isSelected = ref.watch(selectedActivitiesProvider).contains(activity.id);
-    final startTime = activity.startTime;
-    final endTime = startTime.add(Duration(minutes: activity.duration));
-    final timeString = '${_formatTime(startTime)} - ${_formatTime(endTime)} (${activity.duration}min)';
-
-    return GestureDetector(
-      onTap: () => _openActivityDetail(activity),
-      child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Combined time header and card with proper rounded corners and floating effect
-        Container(
-          margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 2),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-              // Softer shadow underneath for depth
-              BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-                spreadRadius: 2,
-              ),
-              // Sharper shadow on top for definition
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 6,
-                offset: const Offset(0, 3),
-                spreadRadius: 0,
-              ),
-              // Light shadow on the sides
-              BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 3,
-                offset: const Offset(2, 0),
-                spreadRadius: 0,
-              ),
-          BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 3,
-                offset: const Offset(-2, 0),
-                spreadRadius: 0,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-              // Time header with rounded corners matching the card
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                  color: const Color(0xFFE8F5E9),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    topRight: Radius.circular(24),
-                  ),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                      Icons.access_time_rounded,
-                              size: 16,
-                      color: Color(0xFF4CAF50),
-                            ),
-                    const SizedBox(width: 8),
-                            Text(
-                      timeString,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF4CAF50),
-                                fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const Spacer(),
-                    _buildRefreshButton(activity),
-                ],
-              ),
-              ),
-
-              // Activity image with no top rounding
-              ClipRRect(
-                child: activity.imageUrl.isEmpty 
-                  ? _buildPhotoPlaceholder(activity.name)
-                  : Image.network(
-                  activity.imageUrl,
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      height: 200,
-                      width: double.infinity,
-                      color: Colors.grey[200],
-                          child: const Center(
-                        child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
-                        ),
-                      ),
-                    );
-                  },
-                      errorBuilder: (context, error, stackTrace) {
-                        debugPrint('🖼️ Image failed to load: ${activity.imageUrl}');
-                        return _buildPhotoPlaceholder(activity.name);
-                      },
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                    // Activity title and rating
-                Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                        activity.name,
-                        style: GoogleFonts.poppins(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                              color: Colors.black87,
-                        ),
-                          ),
-                          if (activity.refreshCount > 0)
-                            Container(
-                              margin: const EdgeInsets.only(top: 4),
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.green.shade100,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '✨ Alternative option ${activity.refreshCount}',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  color: Colors.green.shade700,
-                                  fontWeight: FontWeight.w500,
+                          ...widget.selectedMoods.take(3).toList().asMap().entries.map((e) {
+                            final mood = e.value;
+                            final isOrange = e.key % 2 == 0;
+                            final gradient = isOrange
+                                ? LinearGradient(
+                                    colors: [
+                                      const Color(0xFFE65100).withOpacity(0.85),
+                                      const Color(0xFFFF9800).withOpacity(0.85),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  )
+                                : LinearGradient(
+                                    colors: [
+                                      const Color(0xFF7B1FA2).withOpacity(0.85),
+                                      const Color(0xFF9C27B0).withOpacity(0.85),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  );
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    gradient: gradient,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.35),
+                                      width: 1.2,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.2),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(_moodEmoji(mood), style: const TextStyle(fontSize: 20)),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        mood,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
+                            );
+                          }),
                         ],
                       ),
-                    ),
-                    Row(
-                      children: [
-                            const Icon(
-                              Icons.star,
-                              size: 18,
-                              color: Colors.amber,
-                            ),
-                        const SizedBox(width: 4),
-                        Text(
-                              activity.rating.toString(),
+                      const SizedBox(height: 14),
+                      // Edit Moods: underlined link back to mood selection (Moody tab)
+                      GestureDetector(
+                        onTap: _goBackToMoodyHub,
+                        child: Text(
+                          AppLocalizations.of(context)!.dayPlanEditMoods,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFFFFB74D),
+                            decoration: TextDecoration.underline,
+                            decorationColor: const Color(0xFFFFB74D),
                           ),
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-                    
-                const SizedBox(height: 8),
-                    
-                    // Description
-                    Text(
-                      activity.description,
+                // Content: 3 sections (Morning, Afternoon, Evening), one card + swap each
+                Expanded(
+                  child: Consumer(
+                    builder: (context, ref, _) {
+                      final userLocationAsync = ref.watch(userLocationProvider);
+                      final position = userLocationAsync.valueOrNull;
+                      return ListView(
+                        padding: const EdgeInsets.fromLTRB(6, 24, 6, 0),
+                        children: [
+                          for (int i = 0; i < 3; i++) ...[
+                            if (_activities.length > i) ...[
+                              _buildSectionHeader(context, i),
+                              _buildActivityCard(
+                                _activities[i],
+                                distanceKm: position != null
+                                    ? DistanceService.formatDistance(
+                                        DistanceService.calculateDistance(
+                                          position.latitude,
+                                          position.longitude,
+                                          _activities[i].location.latitude,
+                                          _activities[i].location.longitude,
+                                        ),
+                                      )
+                                    : null,
+                                locationLabel: _activities[i].description.isEmpty
+                                    ? null
+                                    : (_activities[i].description.length > 80
+                                        ? '${_activities[i].description.substring(0, 80)}...'
+                                        : _activities[i].description),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                          ],
+                          const SizedBox(height: 100),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Single CTA: Add to My Day
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                top: false,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _activities.isEmpty ? null : () => _addPlanToMyDay(ref),
+                    icon: const Text('🗓️', style: TextStyle(fontSize: 22)),
+                    label: Text(
+                      AppLocalizations.of(context)!.dayPlanAddToMyDay,
                       style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.black54,
-                        height: 1.4,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF12B347),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                    // Start time indicator (smaller)
-                    const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Icon(
-                          Icons.access_time_rounded,
-                          size: 14,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                          _formatTime(activity.startTime),
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.grey,
-                            fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
+  /// Actual Unicode emoji for mood pills (e.g. 🍜 Foody, 😀 Curious, 👥 Social).
+  String _moodEmoji(String mood) {
+    final m = mood.toLowerCase();
+    if (m.contains('food') || m.contains('foody')) return '🍜';
+    if (m.contains('cultural') || m.contains('culture')) return '🏛️';
+    if (m.contains('curious')) return '😀';
+    if (m.contains('relax')) return '🧘';
+    if (m.contains('adventure')) return '🏔️';
+    if (m.contains('social')) return '👥';
+    if (m.contains('creative')) return '🎨';
+    if (m.contains('romantic')) return '💕';
+    if (m.contains('energetic')) return '⚡';
+    if (m.contains('contemplative')) return '🌿';
+    return '✨';
+  }
+
+  /// Section header: circular period badge + MORNING/AFTERNOON/EVENING + mood-based theme (reference style).
+  Widget _buildSectionHeader(BuildContext context, int slotIndex) {
+    final l10n = AppLocalizations.of(context)!;
+    final labels = [l10n.dayPlanMorning, l10n.dayPlanAfternoon, l10n.dayPlanEvening];
+    final label = labels[slotIndex.clamp(0, 2)];
+    final emoji = _slotEmojis[slotIndex];
+    final theme = _getThemeForSlot(context, slotIndex);
+    return Padding(
+      padding: EdgeInsets.only(top: slotIndex == 0 ? 4 : 20, bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFE5E7EB), width: 4),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
-                    
-                    const SizedBox(height: 12),
-                    
-                    // Tags with different colors
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _buildColorfulTags(activity.tags),
-                    ),
-                    
-                const SizedBox(height: 16),
-                    
-                    // Action buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () {
-                              // Directions functionality
-                            },
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Color(0xFF4CAF50)),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: Text(
-                              'Directions',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: const Color(0xFF4CAF50),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () => _toggleActivity(activity),
-                            icon: Icon(
-                              isSelected ? Icons.remove : Icons.add,
-                              size: 18,
-                            ),
-                            label: Text(
-                              isSelected ? 'Remove from Plan' : 'Add to Plan',
+              ],
+            ),
+            alignment: Alignment.center,
+            child: Text(emoji, style: const TextStyle(fontSize: 16)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                    color: const Color(0xFF6B7280),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '· $theme',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                                fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w500,
+                    fontStyle: FontStyle.italic,
+                    color: const Color(0xFF4B5563),
                   ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isSelected ? Colors.grey : const Color(0xFF4CAF50),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 0,
-                            ),
-                          ),
-                        ),
-                  ],
                 ),
               ],
             ),
           ),
         ],
       ),
-        ).animate()
-         .fade(duration: 400.ms, delay: 100.ms, curve: Curves.easeOut)
-         .moveY(begin: 10, duration: 400.ms, delay: 100.ms, curve: Curves.easeOutQuad),
-      ],
-    ),
     );
   }
 
-  void _openActivityDetail(Activity activity) {
+  /// Day Plan card: reference design with gradient bar, mood match, category, Not feeling this? + See activity.
+  Widget _buildActivityCard(Activity activity, {String? distanceKm, String? locationLabel}) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 380),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+        // Day Plan card: Not feeling this? | See activity (time bar removed for now)
+        Padding(
+          padding: const EdgeInsets.only(top: 12, left: 0, right: 0, bottom: 12),
+          child: DayPlanActivityCard(
+            activity: activity,
+            onTap: (a, {String? distanceKm}) => _openActivityDetail(a, distanceKm: distanceKm),
+            onNotFeelingThis: () => _refreshActivity(activity),
+            distanceKm: distanceKm,
+            locationLabel: locationLabel,
+          ),
+        ),
+        ],
+      ),
+    );
+  }
+
+  void _openActivityDetail(Activity activity, {String? distanceKm}) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ActivityDetailScreen(activity: activity),
+        builder: (context) => ActivityDetailScreen(activity: activity, distanceKm: distanceKm),
       ),
     );
   }

@@ -8,6 +8,7 @@ import 'dart:math' as math;
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../../core/providers/preferences_provider.dart';
 import '../../../../core/providers/communication_style_provider.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 
 class SwirlingGradientPainter extends CustomPainter {
@@ -128,42 +129,44 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
   final Set<String> _selectedMoods = {};
   static const int maxMoodSelections = 3;
 
+  List<Map<String, dynamic>> _moods(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      {'key': 'Adventurous', 'name': l10n.prefMoodAdventurous, 'emoji': '🏃‍♂️', 'color': const Color(0xFF7CB342)},
+      {'key': 'Peaceful', 'name': l10n.prefMoodPeaceful, 'emoji': '🧘‍♀️', 'color': const Color(0xFF64B5F6)},
+      {'key': 'Social', 'name': l10n.prefMoodSocial, 'emoji': '🎉', 'color': const Color(0xFFFFB74D)},
+      {'key': 'Cultural', 'name': l10n.prefMoodCultural, 'emoji': '🎭', 'color': const Color(0xFFEC407A)},
+      {'key': 'Foody', 'name': l10n.prefMoodFoody, 'emoji': '🍽️', 'color': const Color(0xFF98D95A)},
+      {'key': 'Spontaneous', 'name': l10n.prefMoodSpontaneous, 'emoji': '✨', 'color': const Color(0xFF70D7FF)},
+    ];
+  }
 
+  String _moodTitle(AppLocalizations l10n, String styleKey) {
+    switch (styleKey) {
+      case 'energetic': return l10n.prefMoodTitleEnergetic;
+      case 'professional': return l10n.prefMoodTitleProfessional;
+      case 'direct': return l10n.prefMoodTitleDirect;
+      default: return l10n.prefMoodTitleFriendly;
+    }
+  }
 
-  final List<Map<String, dynamic>> _moods = [
-    {
-      'name': 'Adventurous',
-      'emoji': '🏃‍♂️',
-      'color': const Color(0xFF7CB342), // Softer Green
-    },
-    {
-      'name': 'Peaceful',
-      'emoji': '🧘‍♀️',
-      'color': const Color(0xFF64B5F6), // Softer Blue
-    },
-    {
-      'name': 'Social',
-      'emoji': '🎉',
-      'color': const Color(0xFFFFB74D), // Softer Orange
-    },
-    {
-      'name': 'Cultural',
-      'emoji': '🎭',
-      'color': const Color(0xFFEC407A), // Softer Pink
-    },
-    {
-      'name': 'Foody',
-      'emoji': '🍽️',
-      'color': const Color(0xFF98D95A),  // Softer green
-      'selectedColor': const Color(0xFF7CB518),
-    },
-    {
-      'name': 'Spontaneous',
-      'emoji': '✨',
-      'color': const Color(0xFF70D7FF),  // Softer blue
-      'selectedColor': const Color(0xFF00B4D8),
-    },
-  ];
+  String _moodSubtitle(AppLocalizations l10n, String styleKey) {
+    switch (styleKey) {
+      case 'energetic': return l10n.prefMoodSubtitleEnergetic;
+      case 'professional': return l10n.prefMoodSubtitleProfessional;
+      case 'direct': return l10n.prefMoodSubtitleDirect;
+      default: return l10n.prefMoodSubtitleFriendly;
+    }
+  }
+
+  String _multipleHint(AppLocalizations l10n, String styleKey) {
+    switch (styleKey) {
+      case 'energetic': return l10n.prefMultipleHintEnergetic;
+      case 'professional': return l10n.prefMultipleHintProfessional;
+      case 'direct': return l10n.prefMultipleHintDirect;
+      default: return l10n.prefMultipleHintFriendly;
+    }
+  }
 
   @override
   void initState() {
@@ -320,22 +323,23 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
                       child: FadeTransition(
                         opacity: _messageController,
                         child: Center(
-                                                     child: Consumer(
-                             builder: (context, ref, child) {
-                               final communicationState = ref.watch(communicationStyleProvider);
-                               final styleKey = communicationState.style.toString().split('.').last;
-                               final title = communicationState.texts['mood']?[styleKey] ?? 'Let\'s sync our vibes! ✨';
-                               return Text(
-                                 title,
-                                 style: GoogleFonts.museoModerno(
-                                   fontSize: 32,
-                                   fontWeight: FontWeight.bold,
-                                   color: const Color(0xFF5BB32A),
-                                 ),
-                                 textAlign: TextAlign.center,
-                               );
-                             },
-                           ),
+                          child: Consumer(
+                            builder: (context, ref, child) {
+                              final communicationState = ref.watch(communicationStyleProvider);
+                              final styleKey = communicationState.style.toString().split('.').last;
+                              final l10n = AppLocalizations.of(context)!;
+                              final title = _moodTitle(l10n, styleKey);
+                              return Text(
+                                title,
+                                style: GoogleFonts.museoModerno(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF5BB32A),
+                                ),
+                                textAlign: TextAlign.center,
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -348,30 +352,31 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
                       child: FadeTransition(
                         opacity: _messageController,
                         child: Center(
-                                                     child: Consumer(
-                             builder: (context, ref, child) {
-                               final communicationState = ref.watch(communicationStyleProvider);
-                               final styleKey = communicationState.style.toString().split('.').last;
-                               final subtitle = communicationState.texts['mood_subtitle']?[styleKey] ?? 'What moods inspire you to explore?';
-                               return Text(
-                                 subtitle,
-                                 style: GoogleFonts.poppins(
-                                   fontSize: 16,
-                                   color: Colors.black87,
-                                 ),
-                                 textAlign: TextAlign.center,
-                               );
-                             },
-                           ),
+                          child: Consumer(
+                            builder: (context, ref, child) {
+                              final communicationState = ref.watch(communicationStyleProvider);
+                              final styleKey = communicationState.style.toString().split('.').last;
+                              final l10n = AppLocalizations.of(context)!;
+                              final subtitle = _moodSubtitle(l10n, styleKey);
+                              return Text(
+                                subtitle,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.center,
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 40),
                     Expanded(
                       child: ListView.builder(
-                        itemCount: _moods.length,
+                        itemCount: _moods(context).length,
                         itemBuilder: (context, index) {
-                          final mood = _moods[index];
+                          final mood = _moods(context)[index];
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12),
                             child: _buildMoodListItem(mood),
@@ -400,7 +405,7 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
                           ),
                         ),
                         child: Text(
-                          'Continue',
+                          AppLocalizations.of(context)!.continueButton,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -410,11 +415,12 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
                     ),
                     const SizedBox(height: 8),
                     Center(
-                      child:                       Consumer(
+                      child: Consumer(
                         builder: (context, ref, child) {
                           final communicationState = ref.watch(communicationStyleProvider);
                           final styleKey = communicationState.style.toString().split('.').last;
-                          final hintText = communicationState.texts['multiple_selection_hint']?[styleKey] ?? 'You can select multiple options ✨';
+                          final l10n = AppLocalizations.of(context)!;
+                          final hintText = _multipleHint(l10n, styleKey);
                           return Text(
                             hintText,
                             style: GoogleFonts.poppins(
@@ -454,11 +460,12 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
   }
 
   Widget _buildMoodListItem(Map<String, dynamic> mood) {
-    final bool isSelected = _selectedMoods.contains(mood['name']);
-    final baseColor = mood['color'];
+    final String key = mood['key'] as String;
+    final bool isSelected = _selectedMoods.contains(key);
+    final baseColor = mood['color'] as Color;
     
     return GestureDetector(
-      onTap: () => _toggleMoodSelection(mood['name']),
+      onTap: () => _toggleMoodSelection(key),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         height: 70,
@@ -517,7 +524,7 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  mood['name'],
+                  mood['name'] as String,
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,

@@ -65,6 +65,7 @@ interface Activity {
   tags: string[]
   startTime: string // ISO 8601
   priceLevel?: string
+  placeId?: string // Google Place ID for photos, open_now, etc.
 }
 
 interface DayPlanResponse {
@@ -358,9 +359,21 @@ async function handleCreateDayPlan(
 
     console.log(`🎯 create_day_plan: moods=${moods.join(', ')}, location=${location}, coordinates=(${coordinates.lat}, ${coordinates.lng})`)
 
-    // 1. Fetch places using the same logic as get_explore
+    // 1. (Optional) Fetch user profile so Moody can consider preferences
+    let profile: { favorite_mood?: string; travel_style?: string; travel_vibes?: string; [key: string]: any } | null = null
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('favorite_mood, travel_style, travel_vibes, mood_preferences, travel_preferences')
+      .eq('id', userId)
+      .maybeSingle()
+    if (profileData) profile = profileData
+
+    // 2. Ask Moody (OpenAI) for search queries based on moods + user context; fallback to fixed map if unavailable
+    const moodyQueries = await getMoodySearchQueries(moods, location, profile)
     const filters = params.filters || {}
-    const places = await fetchPlacesFromGoogle(location, coordinates, moods[0], filters)
+
+    // 3. Fetch places from Google using Moody's queries (or fallback)
+    const places = await fetchPlacesFromGoogle(location, coordinates, moods[0], filters, moodyQueries)
 
     // 2. CRITICAL: If no places found, return structured empty state
     if (places.length === 0) {
@@ -560,7 +573,7 @@ async function handleGetExplore(
       fetchAttempts++
       console.log(`⚠️ Only found ${places.length} places, fetching more (attempt ${fetchAttempts}/${maxAttempts})...`)
       
-      const additionalPlaces = await fetchFallbackPlaces(location, coordinates)
+      const additionalPlaces = await fetchFallbackPlaces(location, coordinates, [mood])
       
       // Combine and remove duplicates
       const allPlaces = [...places, ...additionalPlaces]
@@ -572,7 +585,7 @@ async function handleGetExplore(
       
       // If we still don't have 50, try broader searches
       if (places.length < 50 && fetchAttempts < maxAttempts) {
-        const broaderPlaces = await fetchBroaderPlaces(location, coordinates)
+        const broaderPlaces = await fetchBroaderPlaces(location, coordinates, [mood])
         const allPlacesWithBroader = [...places, ...broaderPlaces]
         places = Array.from(
           new Map(allPlacesWithBroader.map(p => [p.id, p])).values()
@@ -667,7 +680,8 @@ async function fetchPlacesFromGoogle(
   location: string,
   coordinates: { lat: number; lng: number },
   mood: string,
-  filters: any
+  filters: any,
+  queriesOverride?: string[] | null
 ): Promise<PlaceCard[]> {
   const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY')
   if (!apiKey || apiKey.trim() === '') {
@@ -679,9 +693,9 @@ async function fetchPlacesFromGoogle(
   console.log(`🔑 API Key verified: ${apiKey.substring(0, 10)}...${apiKey.substring(apiKey.length - 4)}`)
   console.log(`📍 Using provided coordinates: (${coordinates.lat}, ${coordinates.lng})`)
   
-  // Build query based on mood
-  const moodQueries = getMoodQueries(mood)
-  console.log(`🎯 Mood queries for "${mood}":`, moodQueries)
+  // Use Moody-suggested queries when provided; otherwise fallback to fixed mood map
+  const moodQueries = (queriesOverride && queriesOverride.length > 0) ? queriesOverride : getMoodQueries(mood)
+  console.log(`🎯 Queries for "${mood}":`, moodQueries)
   const allPlaces: PlaceCard[] = []
 
   // Fetch places for each mood query (to get variety)
@@ -724,14 +738,13 @@ async function fetchPlacesFromGoogle(
   return uniquePlaces
 }
 
-async function fetchFallbackPlaces(location: string, coordinates: { lat: number; lng: number }): Promise<PlaceCard[]> {
+async function fetchFallbackPlaces(location: string, coordinates: { lat: number; lng: number }, moods: string[] = ['adventurous']): Promise<PlaceCard[]> {
   const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY')
   if (!apiKey || apiKey.trim() === '') {
     console.error('❌ GOOGLE_PLACES_API_KEY not set for fallback fetch')
     return []
   }
   
-  // Fetch popular/tourist attractions as fallback
   const queries = [
     'popular attractions',
     'tourist spots',
@@ -755,7 +768,7 @@ async function fetchFallbackPlaces(location: string, coordinates: { lat: number;
       const data = await response.json()
 
       if (data.status === 'OK' && data.results) {
-        const places = data.results.map((place: any) => transformPlace(place, [mood]))
+        const places = data.results.map((place: any) => transformPlace(place, moods))
         allPlaces.push(...places)
       }
 
@@ -765,7 +778,6 @@ async function fetchFallbackPlaces(location: string, coordinates: { lat: number;
     }
   }
 
-  // Remove duplicates
   const uniquePlaces = Array.from(
     new Map(allPlaces.map(p => [p.id, p])).values()
   )
@@ -773,13 +785,12 @@ async function fetchFallbackPlaces(location: string, coordinates: { lat: number;
   return uniquePlaces
 }
 
-async function fetchBroaderPlaces(location: string, coordinates: { lat: number; lng: number }): Promise<PlaceCard[]> {
+async function fetchBroaderPlaces(location: string, coordinates: { lat: number; lng: number }, moods: string[] = ['adventurous']): Promise<PlaceCard[]> {
   const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY')
   if (!apiKey || apiKey.trim() === '') {
     return []
   }
   
-  // Even broader searches with larger radius
   const queries = [
     'attractions',
     'landmarks',
@@ -798,14 +809,14 @@ async function fetchBroaderPlaces(location: string, coordinates: { lat: number; 
       const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?` +
         `query=${encodeURIComponent(query + ' in ' + location)}` +
         `&location=${coordinates.lat},${coordinates.lng}` +
-        `&radius=30000` + // Larger radius for broader search
+        `&radius=30000` +
         `&key=${apiKey}`
 
       const response = await fetch(url)
       const data = await response.json()
 
       if (data.status === 'OK' && data.results) {
-        const places = data.results.map((place: any) => transformPlace(place, [mood]))
+        const places = data.results.map((place: any) => transformPlace(place, moods))
         allPlaces.push(...places)
       }
 
@@ -815,7 +826,6 @@ async function fetchBroaderPlaces(location: string, coordinates: { lat: number; 
     }
   }
 
-  // Remove duplicates
   const uniquePlaces = Array.from(
     new Map(allPlaces.map(p => [p.id, p])).values()
   )
@@ -978,6 +988,69 @@ async function cachePlaces(
 
 // REMOVED: getLocationCoords() - coordinates must now be provided by client
 // This ensures location is always accurate and not hardcoded
+
+/** Ask Moody (OpenAI) for 5–8 Google Places search query strings from moods + location + optional profile. Returns null on missing key or failure. */
+async function getMoodySearchQueries(
+  moods: string[],
+  location: string,
+  profile: { favorite_mood?: string; travel_style?: string; travel_vibes?: string; [key: string]: any } | null
+): Promise<string[] | null> {
+  const openaiKey = Deno.env.get('OPENAI_API_KEY')
+  if (!openaiKey || openaiKey.trim() === '') {
+    console.log('⚠️ OPENAI_API_KEY not set; using fallback mood queries')
+    return null
+  }
+
+  const profileSnippet = profile
+    ? `User profile: favorite_mood=${profile.favorite_mood || 'any'}, travel_style=${profile.travel_style || 'any'}, travel_vibes=${profile.travel_vibes || 'any'}.`
+    : 'No user profile.'
+
+  const systemPrompt = `You are Moody, the WanderMood travel assistant. Given the user's moods and location, output exactly one JSON object with a single key "queries" whose value is an array of 5 to 8 short Google Places search query strings (e.g. "romantic restaurants", "sunset viewpoints", "food tours"). Each string should be a few words only, no full sentences. These will be used to search Google Places API in "${location}". Consider the user's profile when relevant. Output only valid JSON, no markdown.`
+
+  const userPrompt = `Moods: ${moods.join(', ')}. Location: ${location}. ${profileSnippet} Return JSON: { "queries": ["query1", "query2", ...] }`
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        max_tokens: 300,
+        temperature: 0.5,
+        response_format: { type: 'json_object' },
+      }),
+    })
+
+    if (!response.ok) {
+      const errText = await response.text()
+      console.error('❌ OpenAI error:', response.status, errText)
+      return null
+    }
+
+    const data = await response.json()
+    const content = data.choices?.[0]?.message?.content
+    if (!content || typeof content !== 'string') return null
+
+    const parsed = JSON.parse(content) as { queries?: unknown }
+    const queries = Array.isArray(parsed.queries)
+      ? (parsed.queries as unknown[]).filter((q): q is string => typeof q === 'string').slice(0, 8)
+      : []
+    if (queries.length === 0) return null
+
+    console.log('🤖 Moody suggested queries:', queries)
+    return queries
+  } catch (e) {
+    console.error('❌ getMoodySearchQueries error:', e)
+    return null
+  }
+}
 
 function getMoodQueries(mood: string): string[] {
   const moodMap: Record<string, string[]> = {
@@ -1182,6 +1255,7 @@ function createActivityFromPlace(
   // Generate tags
   const tags = generateTags(place.types, moods)
   
+  const placeId = place.id.startsWith('google_') ? place.id.substring(7) : place.id
   return {
     id: `activity_${Date.now()}_${place.id}`,
     name: place.name,
@@ -1198,6 +1272,7 @@ function createActivityFromPlace(
     tags: tags,
     startTime: startTime.toISOString(),
     priceLevel: priceLevel,
+    placeId: placeId,
   }
 }
 
@@ -1219,7 +1294,7 @@ function determinePaymentType(types: string[], priceLevel?: number): string {
   return 'reservation'
 }
 
-function getPriceLevelText(priceLevel: number): string {
+function getPriceLevelText(priceLevel: number): string | undefined {
   switch (priceLevel) {
     case 1: return '€'
     case 2: return '€€'

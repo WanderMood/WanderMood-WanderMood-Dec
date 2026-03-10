@@ -11,28 +11,21 @@ import 'package:wandermood/features/home/presentation/widgets/moody_character.da
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
-import 'package:wandermood/features/plans/services/activity_generator_service.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
-import 'package:wandermood/core/services/wandermood_ai_service.dart' as ai_service;
-import 'package:wandermood/features/location/services/location_service.dart';
-import 'package:wandermood/core/models/ai_recommendation.dart';
-import 'package:wandermood/features/plans/presentation/screens/day_plan_screen.dart';
-import 'package:wandermood/core/extensions/string_extensions.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/core/utils/auth_helper.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import 'dart:convert';
 
 class PlanLoadingScreen extends ConsumerStatefulWidget {
   final List<String> selectedMoods;
-  final Function() onLoadingComplete;
 
   const PlanLoadingScreen({
     super.key,
     required this.selectedMoods,
-    required this.onLoadingComplete,
   });
 
   @override
@@ -41,16 +34,10 @@ class PlanLoadingScreen extends ConsumerStatefulWidget {
 
 class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  int _currentMessageIndex = 0;
   int _currentGradientIndex = 0;
 
-  final List<String> _loadingMessages = [
-    "Scanning your vibes…🔍💫",
-    "Checking nearby gems you'd love…🗺️✨",
-    "Matching your mood with magic…🔮🧠",
-    "", // This will be filled dynamically
-    "Almost there… just polishing the final touches! 🌟"
-  ];
+  // Single message for planner-first flow (no rotating messages)
+  static const String _loadingMessage = "Building your plan…";
 
   // Onboarding gradients
   final List<List<Color>> _gradients = [
@@ -80,26 +67,21 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
       duration: const Duration(milliseconds: 500),
     );
 
-    // Set the dynamic message
-    _loadingMessages[3] = "Crafting the perfect plan for: ${widget.selectedMoods.join(", ")}! 🍔💖🎉";
-
     // Start the UI animations and API call
     _startLoadingProcess();
   }
 
   void _startLoadingProcess() {
-    // Start message and gradient animation
+    // Optional: subtle gradient animation (no message rotation)
     Future.doWhile(() async {
       await Future.delayed(const Duration(seconds: 2));
       if (!mounted) return false;
       setState(() {
-        _currentMessageIndex = (_currentMessageIndex + 1) % _loadingMessages.length;
         _currentGradientIndex = (_currentGradientIndex + 1) % _gradients.length;
       });
       return true;
     });
 
-    // Generate activities with guaranteed 6-8 second experience
     _generateActivitiesWithProperLoading();
   }
   
@@ -135,8 +117,8 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
   Future<void> _generateActivitiesWithProperLoading() async {
     debugPrint('🚀 Starting activity generation using Supabase Edge Function for moods: ${widget.selectedMoods}');
       
-    // Start the minimum loading timer (6-8 seconds)
-    final minimumLoadingDuration = const Duration(seconds: 6);
+    // Shorter loading for planner-first flow (2–3 seconds)
+    final minimumLoadingDuration = const Duration(seconds: 2);
     final loadingStartTime = DateTime.now();
     
     List<Activity> activities = [];
@@ -245,6 +227,7 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
       // 🔄 CRITICAL: Invalidate providers so My Day shows the new mood-generated activities
       debugPrint('🔄 Invalidating providers for mood-generated activities to appear in My Day...');
       ref.invalidate(scheduledActivityServiceProvider);
+      ref.invalidate(scheduledActivitiesForTodayProvider);
       ref.invalidate(cachedActivitySuggestionsProvider);
       debugPrint('✅ Providers invalidated - My Day will now show mood-generated activities');
 
@@ -282,7 +265,8 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
           tags: List<String>.from(activity['tags'] as List),
           startTime: todayStartTime, // 🔧 Use today's date instead of Edge Function date
           priceLevel: activity['priceLevel'] as String? ?? 'Free', // Handle null priceLevel
-        refreshCount: 0,
+          placeId: activity['placeId'] as String?,
+          refreshCount: 0,
         );
       }).toList();
 
@@ -298,7 +282,7 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
       
       // CRITICAL: No fallback - Edge Function is the only data authority
       // Show error state instead of generating fake data
-      final errorMessage = _getErrorMessage(e);
+        final errorMessage = _getErrorMessage(context, e);
         await _showErrorState(errorMessage);
         return;
     }
@@ -306,11 +290,11 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
     // CRITICAL: If Edge Function returned empty activities, show error state
     if (activities.isEmpty) {
       debugPrint('❌ Edge Function returned no activities');
-      await _showErrorState('No activities found for your selected moods and location. Please try different moods or check your location settings.');
+      await _showErrorState(AppLocalizations.of(context)!.planLoadingErrorNoActivities);
       return;
     }
 
-    // Wait for the remaining loading time to ensure 6-8 second experience
+    // Wait for remaining time so loading feels consistent
     final elapsed = DateTime.now().difference(loadingStartTime);
     final remainingTime = minimumLoadingDuration - elapsed;
     
@@ -319,50 +303,59 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
       await Future.delayed(remainingTime);
     }
 
-    debugPrint('✅ Loading complete! Navigating to day plan with ${activities.length} activities');
+    // Enforce exactly 3 activities: one per slot (morning, afternoon, evening)
+    final grouped = <String, List<Activity>>{};
+    for (final a in activities) {
+      final slot = a.timeSlot.toLowerCase();
+      grouped.putIfAbsent(slot, () => []).add(a);
+    }
+    final morning = (grouped['morning'] ?? []).isNotEmpty ? grouped['morning']!.first : null;
+    final afternoon = (grouped['afternoon'] ?? []).isNotEmpty ? grouped['afternoon']!.first : null;
+    final evening = (grouped['evening'] ?? []).isNotEmpty ? grouped['evening']!.first : null;
+    final threeActivities = <Activity>[
+      morning ?? afternoon ?? evening ?? activities.first,
+      afternoon ?? morning ?? evening ?? activities.first,
+      evening ?? afternoon ?? morning ?? activities.first,
+    ];
+
+    debugPrint('✅ Loading complete! Navigating to day plan with ${threeActivities.length} activities');
     
-    // Navigate to the day plan screen using go_router
+    // Navigate to the day plan screen with activities + moods for header
     if (mounted) {
-      context.goNamed('day-plan', extra: activities);
+      context.goNamed('day-plan', extra: {'activities': threeActivities, 'moods': widget.selectedMoods});
     }
   }
 
-  String _getErrorMessage(dynamic error) {
+  String _getErrorMessage(BuildContext context, dynamic error) {
+    final l10n = AppLocalizations.of(context)!;
     final errorString = error.toString().toLowerCase();
-    
     if (errorString.contains('api key') || errorString.contains('invalid key') || errorString.contains('unauthorized')) {
-      return 'API key configuration error. Please contact support if this persists.';
+      return l10n.planLoadingErrorApiKey;
     }
-    
     if (errorString.contains('network') || errorString.contains('connection') || errorString.contains('timeout')) {
-      return 'Network connection error. Please check your internet connection and try again.';
+      return l10n.planLoadingErrorNetwork;
     }
-    
     if (errorString.contains('rate limit') || errorString.contains('quota')) {
-      return 'Service temporarily unavailable due to high demand. Please try again in a few minutes.';
+      return l10n.planLoadingErrorService;
     }
-    
     if (errorString.contains('location') || errorString.contains('permission')) {
-      return 'Location access required. Please enable location services and try again.';
+      return l10n.planLoadingErrorLocation;
     }
-    
     if (errorString.contains('not found') || errorString.contains('404')) {
-      return 'Service unavailable. Please try again later or contact support.';
+      return l10n.planLoadingErrorNotFound;
     }
-    
-    // Generic error message
-    return 'Unable to generate activities. Please try again or select different moods.';
+    return l10n.planLoadingErrorGeneric;
   }
 
   Future<void> _showErrorState(String message) async {
     if (!mounted) return;
     
-    // Show error dialog
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Oops! Something went wrong'),
+        title: Text(l10n.planLoadingErrorTitle),
         content: Text(message),
         actions: [
           TextButton(
@@ -370,100 +363,11 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
               Navigator.of(context).pop(); // Close dialog
               Navigator.of(context).pop(); // Go back to mood selection
             },
-            child: const Text('Try Again'),
+            child: Text(l10n.planLoadingTryAgain),
           ),
         ],
       ),
     );
-  }
-
-  Future<List<Activity>> _generateDynamicActivities() async {
-    debugPrint('🔄 Generating dynamic activities using Google Places API...');
-    
-    try {
-      // Force Rotterdam coordinates for mood-based activity generation
-      final lat = 51.9225; // Rotterdam coordinates
-      final lng = 4.4792;
-      
-      debugPrint('📍 Using Rotterdam location for dynamic activities: ($lat, $lng)');
-      
-      // Use the improved ActivityGeneratorService to get REAL activities
-      final activities = await ActivityGeneratorService.generateActivities(
-        selectedMoods: widget.selectedMoods,
-        userLocation: 'Rotterdam',
-        lat: lat,
-        lng: lng,
-      );
-      
-      debugPrint('✅ Generated ${activities.length} dynamic activities');
-      
-      if (activities.isEmpty) {
-        debugPrint('❌ No activities generated - this should not happen with proper API integration');
-        throw Exception('No activities found for selected moods');
-      }
-      
-      return activities;
-    } catch (e) {
-      debugPrint('❌ Error generating dynamic activities: $e');
-      // Throw with specific error message
-      throw Exception(_getErrorMessage(e));
-    }
-  }
-  
-  String _getTimeEmoji(TimeSlot timeSlot) {
-    switch (timeSlot) {
-      case TimeSlot.morning:
-        return '🌅';
-      case TimeSlot.afternoon:
-        return '☀️';
-      case TimeSlot.evening:
-        return '🌆';
-      case TimeSlot.night:
-        return '🌙';
-    }
-  }
-
-  String _getCurrentMessage() {
-    if (_currentMessageIndex == 3) {
-      return "Crafting the perfect plan for: ${widget.selectedMoods.join(", ")}! 🍔💖🎉";
-    }
-    return _loadingMessages[_currentMessageIndex];
-  }
-
-  // Helper methods for AI recommendation conversion
-  String _getTimeSlot() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return 'morning';
-    if (hour < 17) return 'afternoon';
-    return 'evening';
-  }
-
-  LatLng _extractLocationFromRecommendation(AIRecommendation rec, double fallbackLat, double fallbackLng) {
-    // If the recommendation has location data, use it
-    if (rec.location != null) {
-      final lat = rec.location!['latitude'] as double?;
-      final lng = rec.location!['longitude'] as double?;
-      if (lat != null && lng != null) {
-        return LatLng(lat, lng);
-      }
-    }
-    
-    // Fall back to user location
-    return LatLng(fallbackLat, fallbackLng);
-  }
-
-  String _getFallbackImageForType(String type) {
-    final imageMap = {
-      'restaurant': 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400',
-      'cafe': 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400',
-      'bar': 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400',
-      'museum': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400',
-      'park': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400',
-      'attraction': 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400',
-      'shopping': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400',
-    };
-    
-    return imageMap[type.toLowerCase()] ?? 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400';
   }
 
   TimeSlot _parseTimeSlot(String timeSlotString) {
@@ -481,13 +385,6 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
     }
   }
 
-  int _parseDuration(String durationString) {
-    // Extract numbers from duration string (e.g., "90 minutes" -> 90)
-    final regex = RegExp(r'\d+');
-    final match = regex.firstMatch(durationString);
-    return match != null ? int.parse(match.group(0)!) : 90;
-  }
-
   PaymentType _parsePaymentType(String costString) {
     if (costString.toLowerCase().contains('free') || costString == '€') {
       return PaymentType.free;
@@ -495,34 +392,6 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
       return PaymentType.reservation;
     } else {
       return PaymentType.reservation;
-    }
-  }
-
-  DateTime _getStartTimeForSlot(TimeSlot timeSlot) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    
-    switch (timeSlot) {
-      case TimeSlot.morning:
-        return today.add(const Duration(hours: 9));
-      case TimeSlot.afternoon:
-        return today.add(const Duration(hours: 14));
-      case TimeSlot.evening:
-        return today.add(const Duration(hours: 19));
-      case TimeSlot.night:
-        return today.add(const Duration(hours: 22));
-    }
-  }
-
-  String _parsePriceLevel(String costString) {
-    if (costString.toLowerCase().contains('free') || costString == '€') {
-      return '0';
-    } else if (costString.contains('€€€')) {
-      return '3';
-    } else if (costString.contains('€€')) {
-      return '2';
-    } else {
-      return '1';
     }
   }
 
@@ -620,52 +489,27 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 16),
 
-                // Selected Moods Display
-                Text(
-                  "Creating your ${widget.selectedMoods.join(" & ")} plan",
-                  style: GoogleFonts.poppins(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                    height: 1.3,
-                    shadows: [
-                      Shadow(
-                        offset: const Offset(0, 1),
-                        blurRadius: 2.0,
-                        color: Colors.black.withOpacity(0.2),
-                      ),
-                    ],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-
-                const SizedBox(height: 12),
-
-                // Loading Message
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 500),
-                  child: Padding(
-                    key: ValueKey(_currentMessageIndex),
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Text(
-                      _getCurrentMessage(),
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
-                        height: 1.4,
-                        shadows: [
-                          Shadow(
-                            offset: const Offset(0, 1),
-                            blurRadius: 2.0,
-                            color: Colors.black.withOpacity(0.15),
-                          ),
-                        ],
-                      ),
-                      textAlign: TextAlign.center,
+                // Single message for planner-first flow (no "Creating your X plan" title)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    _loadingMessage,
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                      height: 1.3,
+                      shadows: [
+                        Shadow(
+                          offset: const Offset(0, 1),
+                          blurRadius: 2.0,
+                          color: Colors.black.withOpacity(0.15),
+                        ),
+                      ],
                     ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
 

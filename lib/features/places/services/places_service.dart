@@ -152,6 +152,7 @@ class PlacesService extends _$PlacesService {
           'types',
           'geometry',
           'price_level', // Add price level for booking logic
+          'opening_hours', // For open_now (uses device local time)
         ],
       ).timeout(const Duration(seconds: 5), onTimeout: () {
         debugPrint('⏱️ Place details API call timed out for ID: $placeId');
@@ -204,6 +205,9 @@ class PlacesService extends _$PlacesService {
       final geometry = result.geometry;
       final location = geometry?.location;
       
+      // open_now from Google uses device local time (correct for user's timezone e.g. NL)
+      final openNow = result.openingHours?.openNow ?? false;
+
       final details = {
         'name': result.name ?? '',
         'address': result.formattedAddress ?? '',
@@ -217,6 +221,7 @@ class PlacesService extends _$PlacesService {
           'lat': location.lat,
           'lng': location.lng,
         } : null,
+        'open_now': openNow,
       };
       
       debugPrint('✅ Got details for ${result.name} with ${photoReferences.length} photos and ${reviews.length} reviews');

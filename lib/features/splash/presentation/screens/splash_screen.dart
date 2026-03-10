@@ -10,6 +10,7 @@ import '../../../../core/providers/preferences_provider.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class SwirlingGradientPainter extends CustomPainter {
   @override
@@ -276,12 +277,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
       }
     } else if (finalCurrentUser == null) {
       // User has seen onboarding but is not authenticated
-      // If new flow is enabled, show new onboarding screens instead of login
-      if (useNewOnboarding) {
-        debugPrint('🚀 User not authenticated (NEW FLOW) - showing new onboarding flow');
+      // IMPORTANT:
+      // - If user has ALREADY completed preferences before (returning user),
+      //   always send them straight to the magic link screen (no intro again)
+      // - If user has NOT completed preferences yet (true first-time),
+      //   follow the new-vs-old onboarding flow logic
+      if (finalHasCompletedPreferences) {
+        debugPrint('🚀 Returning user without session - navigating to magic link');
+        context.go('/auth/magic-link');
+      } else if (useNewOnboarding) {
+        debugPrint('🚀 User not authenticated (NEW FLOW, no preferences yet) - showing new onboarding flow');
         context.go('/intro');
       } else {
-        debugPrint('🚀 User not authenticated (OLD FLOW) - navigating to magic link');
+        debugPrint('🚀 User not authenticated (OLD FLOW, no preferences yet) - navigating to magic link');
         context.go('/auth/magic-link');
       }
     } else if (!finalHasCompletedPreferences) {
@@ -338,7 +346,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
 
                     // Logo and title
                     Text(
-                      'WanderMood',
+                      AppLocalizations.of(context)!.appTitle,
                       style: GoogleFonts.museoModerno(
                         fontSize: 40,
                         fontWeight: FontWeight.bold,
@@ -351,7 +359,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                     const SizedBox(height: 8),
 
                     Text(
-                      'Your AI Travel Companion',
+                      AppLocalizations.of(context)!.splashTagline,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         color: Colors.black87,

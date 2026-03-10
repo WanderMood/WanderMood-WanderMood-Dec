@@ -89,12 +89,26 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
       try { await supabase.from('realtime_events').delete().eq('user_id', userId); } catch (_) {}
       try { await supabase.from('user_presence').delete().eq('user_id', userId); } catch (_) {}
       try { await supabase.from('profiles').delete().eq('id', userId); } catch (_) {}
-      
+
+      // Delete the auth user from Supabase (removes from Authentication → Users).
+      // Requires Edge Function with service_role; anon client cannot delete users.
+      final deleteUserResponse = await supabase.functions.invoke('delete-user');
+      final data = deleteUserResponse.data;
+      final hasError = deleteUserResponse.status != 200 ||
+          data == null ||
+          (data is Map && (data['error'] != null || data['success'] != true));
+      if (hasError) {
+        final errMsg = data is Map
+            ? (data['detail'] ?? data['error'] ?? 'Failed to delete account') as String?
+            : 'Failed to delete account';
+        throw Exception(errMsg ?? 'Failed to delete account');
+      }
+
       try {
         final prefs = await SharedPreferences.getInstance();
         await prefs.clear();
       } catch (_) {}
-      
+
       await supabase.auth.signOut();
 
       if (mounted) {
@@ -104,7 +118,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        context.go('/auth');
+        context.go('/');
       }
     } catch (e) {
       if (mounted) {

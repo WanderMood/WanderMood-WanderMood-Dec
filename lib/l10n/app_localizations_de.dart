@@ -12,6 +12,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get appTitle => 'WanderMood';
 
   @override
+  String get splashTagline => 'Dein Reisebegleiter nach Stimmung';
+
+  @override
   String get welcome => 'Willkommen';
 
   @override
@@ -38,6 +41,85 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get skipForNow => 'Jetzt überspringen';
+
+  @override
+  String moodyIntroGreeting(String name) {
+    return 'Hey $name! 👋';
+  }
+
+  @override
+  String get moodyIntroImMoody => 'Ich bin Moody.';
+
+  @override
+  String get moodyIntroSubtext =>
+      'Ich helfe dir, Tage zu planen, die zu deiner Stimmung, Energie und deinem Vibe passen.';
+
+  @override
+  String get moodyIntroSuggestActivities => 'Ich schlage Aktivitäten vor wie:';
+
+  @override
+  String get moodyIntroTakesLessThan =>
+      'Dauert weniger als eine Minute • Nutzt deine Präferenzen';
+
+  @override
+  String get moodyIntroNameFallback => 'dort';
+
+  @override
+  String get moodyIntroActLocalRestaurant => 'Lokales Restaurant entdecken';
+
+  @override
+  String get moodyIntroActMuseum => 'Museum- oder Galeriebesuch';
+
+  @override
+  String get moodyIntroActLocalMarket => 'Lokalen Markt erkunden';
+
+  @override
+  String get moodyIntroActNature => 'Spaziergang in der Natur oder Parkbesuch';
+
+  @override
+  String get moodyIntroActNightlife => 'Abendbar oder Lounge';
+
+  @override
+  String get moodyIntroActSpa => 'Spa- oder Wellnesserlebnis';
+
+  @override
+  String get moodyIntroActCoffee => 'Morgenkaffee-Spot';
+
+  @override
+  String get moodyIntroActAdventure => 'Aktives Outdoor-Abenteuer';
+
+  @override
+  String get moodyIntroActPeacefulWalk => 'Ruhiger Abendspaziergang';
+
+  @override
+  String get moodyIntroActHistorical => 'Historische Stätte besuchen';
+
+  @override
+  String get moodyIntroActRomantic => 'Romantisches Dinner';
+
+  @override
+  String get moodyIntroActSocial => 'Treffpunkt für soziale Aktivitäten';
+
+  @override
+  String get moodyIntroActScenic => 'Aussichtspunkt';
+
+  @override
+  String get moodyIntroActEarlyMorning => 'Frühes Morgenerlebnis';
+
+  @override
+  String get moodyIntroActEvening => 'Abendunterhaltung';
+
+  @override
+  String get moodyIntroActAfternoon => 'Nachmittagsaktivität';
+
+  @override
+  String get moodyIntroActSurprise => 'Überraschende Entdeckung';
+
+  @override
+  String get moodyIntroActMarketVisit => 'Lokalen Markt besuchen';
+
+  @override
+  String get moodyIntroActEveningWalk => 'Abendspaziergang mit Aussicht';
 
   @override
   String get saveChanges => 'Änderungen speichern';
@@ -247,6 +329,67 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get loading => 'Loading...';
+
+  @override
+  String get loadingTitle => 'Wir richten deinen perfekten Tag ein!';
+
+  @override
+  String get loadingSubtitle =>
+      'Wir bereiten personalisierte Aktivitäten,\nOrte und Einblicke nur für dich vor!';
+
+  @override
+  String get loadingStep0 => 'Wir bereiten dein persönliches Erlebnis vor...';
+
+  @override
+  String get loadingStep1 => 'Deine Einstellungen werden geladen...';
+
+  @override
+  String get loadingStep2 => 'Aktivitäten finden, die dir gefallen werden...';
+
+  @override
+  String get loadingStep3 => 'Perfekte Aktivitäten für dich zusammenstellen...';
+
+  @override
+  String get loadingStep4 => 'Fast fertig! Dein Dashboard wird eingerichtet...';
+
+  @override
+  String get loadingStep5 =>
+      'Dein personalisiertes Dashboard wird vorbereitet...';
+
+  @override
+  String get loadingStep6 =>
+      'Bereit zu erkunden! (Einige Daten laden unterwegs)';
+
+  @override
+  String get loadingFact0 =>
+      'Wusstest du? Es gibt 195 Länder, jedes mit einzigartigen Kulturen und Traditionen!';
+
+  @override
+  String get loadingFact1 =>
+      'Der verkehrsreichste Flughafen der Welt bedient jährlich über 100 Millionen Passagiere!';
+
+  @override
+  String get loadingFact2 =>
+      'Es gibt über 1.500 UNESCO-Welterbestätten auf der ganzen Welt!';
+
+  @override
+  String get loadingFact3 =>
+      'Die Chinesische Mauer ist aus dem Weltall sichtbar und erstreckt sich über 21.000 km!';
+
+  @override
+  String get loadingFact4 =>
+      'Weltweit werden mehr als 6.900 Sprachen gesprochen!';
+
+  @override
+  String get loadingFact5 =>
+      'Der Amazonas-Regenwald produziert 20 % des weltweiten Sauerstoffs!';
+
+  @override
+  String get loadingFact6 =>
+      'Der Mount Everest wächst jedes Jahr etwa 4 mm durch geologische Kräfte!';
+
+  @override
+  String get loadingFact7 => 'Die Sahara ist größer als die gesamten USA!';
 
   @override
   String get appSettings => 'App Settings';
@@ -1826,4 +1969,719 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get helpSupportEmailSubject => 'WanderMood Support';
+
+  @override
+  String get prefCommunicationTitle => 'How should I talk to you? 💬';
+
+  @override
+  String get prefCommunicationIntro =>
+      'To make our journey together more enjoyable, I\'d love to know how you prefer me to communicate with you.';
+
+  @override
+  String get prefCommunicationSubtitle =>
+      'This helps me adjust my tone and style to match your preferences perfectly! 🎯';
+
+  @override
+  String get prefStyleFriendly => 'Friendly';
+
+  @override
+  String get prefStyleFriendlyDesc => 'Casual and warm communication';
+
+  @override
+  String get prefStyleProfessional => 'Professional';
+
+  @override
+  String get prefStyleProfessionalDesc => 'Clear and formal communication';
+
+  @override
+  String get prefStyleEnergetic => 'Energetic';
+
+  @override
+  String get prefStyleEnergeticDesc => 'Fun and enthusiastic communication';
+
+  @override
+  String get prefStyleDirect => 'Direct';
+
+  @override
+  String get prefStyleDirectDesc => 'Straight to the point';
+
+  @override
+  String get prefMoodAdventurous => 'Adventurous';
+
+  @override
+  String get prefMoodPeaceful => 'Peaceful';
+
+  @override
+  String get prefMoodSocial => 'Social';
+
+  @override
+  String get prefMoodCultural => 'Cultural';
+
+  @override
+  String get prefMoodFoody => 'Foody';
+
+  @override
+  String get prefMoodSpontaneous => 'Spontaneous';
+
+  @override
+  String get prefMoodTitleFriendly => 'What\'s your travel mood? 😊';
+
+  @override
+  String get prefMoodTitleEnergetic => 'Let\'s sync our vibes! ✨';
+
+  @override
+  String get prefMoodTitleProfessional => 'Travel Mood Preferences';
+
+  @override
+  String get prefMoodTitleDirect => 'Select your moods';
+
+  @override
+  String get prefMoodSubtitleFriendly =>
+      'What inspires you to get out and explore?';
+
+  @override
+  String get prefMoodSubtitleEnergetic => 'What moods inspire you to explore?';
+
+  @override
+  String get prefMoodSubtitleProfessional =>
+      'What type of experiences appeal to you most?';
+
+  @override
+  String get prefMoodSubtitleDirect =>
+      'Choose your preferred experience types:';
+
+  @override
+  String get prefMultipleHintFriendly => 'You can select multiple options ✨';
+
+  @override
+  String get prefMultipleHintEnergetic => 'You can pick multiple - go wild! ✨';
+
+  @override
+  String get prefMultipleHintProfessional =>
+      'Multiple selections are permitted';
+
+  @override
+  String get prefMultipleHintDirect => 'Multiple selections allowed';
+
+  @override
+  String get prefInterestStays => 'Stays & Getaways';
+
+  @override
+  String get prefInterestStaysDesc => 'Charming hotels and dreamy places';
+
+  @override
+  String get prefInterestFood => 'Food & Dining';
+
+  @override
+  String get prefInterestFoodDesc => 'Local cuisine and unique restaurants';
+
+  @override
+  String get prefInterestArts => 'Arts & Culture';
+
+  @override
+  String get prefInterestArtsDesc => 'Museums, galleries, and theaters';
+
+  @override
+  String get prefInterestShopping => 'Shopping & Markets';
+
+  @override
+  String get prefInterestShoppingDesc => 'Local markets and shopping districts';
+
+  @override
+  String get prefInterestSports => 'Sports & Activities';
+
+  @override
+  String get prefInterestSportsDesc => 'Active experiences and sports venues';
+
+  @override
+  String get prefInterestsTitleFriendly => 'What catches your interest? 🌟';
+
+  @override
+  String get prefInterestsTitleEnergetic => 'What gets you hyped? 🔥';
+
+  @override
+  String get prefInterestsTitleProfessional => 'Travel Interest Categories';
+
+  @override
+  String get prefInterestsTitleDirect => 'Select interests';
+
+  @override
+  String get prefInterestsSubtitleFriendly =>
+      'Choose the activities that sound fun to you';
+
+  @override
+  String get prefInterestsSubtitleEnergetic =>
+      'Pick all the things that make your heart race!';
+
+  @override
+  String get prefInterestsSubtitleProfessional =>
+      'Select your preferred activity categories';
+
+  @override
+  String get prefInterestsSubtitleDirect => 'Choose activity types:';
+
+  @override
+  String get prefTravelTitleFriendly => 'Tell us about your travel style ✈️';
+
+  @override
+  String get prefTravelTitleEnergetic => 'Tell us about your travel style ✈️';
+
+  @override
+  String get prefTravelTitleProfessional =>
+      'Tell us about your travel style ✈️';
+
+  @override
+  String get prefTravelTitleDirect => 'Tell us about your travel style ✈️';
+
+  @override
+  String get prefTravelSubtitleFriendly =>
+      'A few quick questions to personalize your experience';
+
+  @override
+  String get prefTravelSubtitleEnergetic =>
+      'A few quick questions to personalize your experience';
+
+  @override
+  String get prefTravelSubtitleProfessional =>
+      'A few quick questions to personalize your experience';
+
+  @override
+  String get prefTravelSubtitleDirect =>
+      'A few quick questions to personalize your experience';
+
+  @override
+  String get prefSectionSocialVibe => 'Social Vibe 👥';
+
+  @override
+  String get prefSectionPlanningPace => 'Planning Pace ⏰';
+
+  @override
+  String get prefSectionTravelStyle => 'Travel Style 🎯';
+
+  @override
+  String prefSelectUpToStyles(int count) {
+    return 'Select up to $count styles';
+  }
+
+  @override
+  String get prefSocialSolo => 'Solo Adventures';
+
+  @override
+  String get prefSocialSoloDesc => 'Me time is the best time';
+
+  @override
+  String get prefSocialSmallGroups => 'Small Groups';
+
+  @override
+  String get prefSocialSmallGroupsDesc => 'Close friends, intimate vibes';
+
+  @override
+  String get prefSocialButterfly => 'Social Butterfly';
+
+  @override
+  String get prefSocialButterflyDesc => 'Love meeting new people';
+
+  @override
+  String get prefSocialMoodDependent => 'Mood Dependent';
+
+  @override
+  String get prefSocialMoodDependentDesc => 'Sometimes solo, sometimes social';
+
+  @override
+  String get prefPaceRightNow => 'Right Now Vibes';
+
+  @override
+  String get prefPaceRightNowDesc => 'What should I do right now?';
+
+  @override
+  String get prefPaceSameDay => 'Same Day Planner';
+
+  @override
+  String get prefPaceSameDayDesc => 'Plan in the morning for the day';
+
+  @override
+  String get prefPaceWeekend => 'Weekend Prepper';
+
+  @override
+  String get prefPaceWeekendDesc => 'Plan a few days ahead';
+
+  @override
+  String get prefPaceMaster => 'Master Planner';
+
+  @override
+  String get prefPaceMasterDesc => 'Love planning weeks ahead';
+
+  @override
+  String get prefTravelStyleSpontaneous => 'Spontaneous';
+
+  @override
+  String get prefTravelStyleSpontaneousDesc =>
+      'Go with the flow, embrace surprises';
+
+  @override
+  String get prefTravelStylePlanned => 'Planned';
+
+  @override
+  String get prefTravelStylePlannedDesc =>
+      'Organized itineraries, scheduled visits';
+
+  @override
+  String get prefTravelStyleLocal => 'Local Experience';
+
+  @override
+  String get prefTravelStyleLocalDesc => 'Live like a local, authentic spots';
+
+  @override
+  String get prefTravelStyleLuxury => 'Luxury Seeker';
+
+  @override
+  String get prefTravelStyleLuxuryDesc => 'Premium experiences, high-end spots';
+
+  @override
+  String get prefTravelStyleBudget => 'Budget Conscious';
+
+  @override
+  String get prefTravelStyleBudgetDesc => 'Great value, smart spending';
+
+  @override
+  String get prefTravelStyleTouristHighlights => 'Touristische Höhepunkte';
+
+  @override
+  String get prefTravelStyleTouristHighlightsDesc =>
+      'Must-see Sehenswürdigkeiten, beliebte Orte';
+
+  @override
+  String get prefTravelStyleOffBeatenPath => 'Abseits der ausgetretenen Pfade';
+
+  @override
+  String get prefTravelStyleOffBeatenPathDesc =>
+      'Versteckte Schätze, einzigartige Erlebnisse';
+
+  @override
+  String get dayPlanTodayItinerary => 'HEUTIGE ROUTE';
+
+  @override
+  String get dayPlanBasedOn => 'Dein Tagesplan basiert auf:';
+
+  @override
+  String get dayPlanEditMoods => 'Stimmungen bearbeiten →';
+
+  @override
+  String get dayPlanAddToMyDay => 'Zu Mein Tag hinzufügen';
+
+  @override
+  String get dayPlanPlanAddedToMyDay => 'Plan zu Mein Tag hinzugefügt!';
+
+  @override
+  String get dayPlanAddPlanFailed =>
+      'Plan konnte nicht hinzugefügt werden. Bitte erneut versuchen.';
+
+  @override
+  String get dayPlanAllAlternativesUsed =>
+      'Du hast alle 3 Alternativen für diese Aktivität genutzt!';
+
+  @override
+  String dayPlanFindingOptions(String name) {
+    return 'Suche neue Optionen für $name...';
+  }
+
+  @override
+  String get dayPlanNoOptionsFound =>
+      'Keine anderen Optionen für diesen Zeitraum. Probiere eine andere Stimmung!';
+
+  @override
+  String get dayPlanFindOptionsFailed =>
+      'Neue Optionen konnten nicht gefunden werden. Bitte später erneut versuchen.';
+
+  @override
+  String get dayPlanAllOptionsUsed => 'Alle Optionen aufgebraucht';
+
+  @override
+  String get dayPlanNotFeelingThis => 'Nicht dein Ding?';
+
+  @override
+  String dayPlanTryAgainLeft(String count) {
+    return 'Nochmal versuchen? ($count übrig)';
+  }
+
+  @override
+  String get dayPlanMorning => 'MORGEN';
+
+  @override
+  String get dayPlanAfternoon => 'NACHMITTAG';
+
+  @override
+  String get dayPlanEvening => 'ABEND';
+
+  @override
+  String get dayPlanThemeExploreDiscover => 'Entdecken & Erkunden';
+
+  @override
+  String get dayPlanThemeTrueLocalFind => 'Ein echter Geheimtipp';
+
+  @override
+  String get dayPlanThemeWindDownCulture => 'Ausklang & Kultur';
+
+  @override
+  String get dayPlanThemeCulturalDeepDive => 'Kulturelle Vertiefung';
+
+  @override
+  String get dayPlanThemeFoodieFind => 'Ein echter Foodie-Fund';
+
+  @override
+  String get dayPlanThemeSunsetVibes => 'Sunset-Vibes & Kultur';
+
+  @override
+  String get dayPlanThemeWindDownRelax => 'Ausklang & Entspannung';
+
+  @override
+  String get dayPlanThemeAdventureAwaits => 'Abenteuer wartet';
+
+  @override
+  String get dayPlanThemeOutdoorNature => 'Draußen & Natur';
+
+  @override
+  String get dayPlanThemeCreativeVibes => 'Kreative Vibes';
+
+  @override
+  String get dayPlanThemeRomanticMoments => 'Romantische Momente';
+
+  @override
+  String get dayPlanThemeYourVibe => 'Dein Vibe';
+
+  @override
+  String get dayPlanCardActivity => 'Aktivität';
+
+  @override
+  String get dayPlanCardFree => 'Kostenlos';
+
+  @override
+  String get dayPlanCardOpenNow => 'Jetzt geöffnet';
+
+  @override
+  String get dayPlanCardClosed => 'Geschlossen';
+
+  @override
+  String get dayPlanCardNotFeelingThis => 'Nicht dein Ding?';
+
+  @override
+  String get dayPlanCardDirections => 'Route';
+
+  @override
+  String get dayPlanCardSeeActivity => 'Aktivität ansehen';
+
+  @override
+  String get dayPlanCardUnableToOpenDirections =>
+      'Route konnte nicht geöffnet werden';
+
+  @override
+  String get dayPlanCardFailedToShare => 'Teilen fehlgeschlagen';
+
+  @override
+  String dayPlanCardRemovedFromSaved(String name) {
+    return '$name aus gespeicherten Orten entfernt';
+  }
+
+  @override
+  String dayPlanCardFailedToRemove(String name) {
+    return '$name konnte nicht entfernt werden';
+  }
+
+  @override
+  String get dayPlanCardCouldNotSaveMoodyHub =>
+      'Speichern in Moody Hub nicht möglich. Eventuell Anmeldung nötig.';
+
+  @override
+  String get dayPlanCardCouldNotAddMyDay =>
+      'Hinzufügen zu Mein Tag nicht möglich. Eventuell Anmeldung nötig.';
+
+  @override
+  String dayPlanCardSavedToMoodyHubAndMyDay(String name) {
+    return '$name gespeichert! Findest du in Moody Hub (gespeichert) und Mein Tag.';
+  }
+
+  @override
+  String dayPlanCardSavedToMoodyHub(String name) {
+    return '$name in Moody Hub gespeichert.';
+  }
+
+  @override
+  String dayPlanCardAddedToMyDay(String name) {
+    return '$name zu Mein Tag hinzugefügt.';
+  }
+
+  @override
+  String dayPlanCardMatch(String percent) {
+    return '$percent% Match';
+  }
+
+  @override
+  String moodHubGreetingFriendly(String name) {
+    return 'Hey, $name!';
+  }
+
+  @override
+  String moodHubGreetingBestie(String name) {
+    return 'Hey, $name! 😊';
+  }
+
+  @override
+  String moodHubGreetingProfessional(String greeting, String name) {
+    return '$greeting, $name';
+  }
+
+  @override
+  String moodHubGreetingDirect(String name) {
+    return 'Hi, $name';
+  }
+
+  @override
+  String get moodHubGreetingHeyThere => 'Hey!';
+
+  @override
+  String get moodHubGreetingHi => 'Hi';
+
+  @override
+  String get moodHubWhatIsYourMood => 'Wie ist deine Stimmung';
+
+  @override
+  String get moodHubThisMorning => 'heute Vormittag?';
+
+  @override
+  String get moodHubThisAfternoon => 'heute Nachmittag?';
+
+  @override
+  String get moodHubThisEvening => 'heute Abend?';
+
+  @override
+  String get moodHubTonight => 'heute Nacht?';
+
+  @override
+  String get moodHubBannerMorning =>
+      'Morgenstimmung — lass uns den Ton setzen.';
+
+  @override
+  String get moodHubBannerAfternoon => 'Nachmittag — Zeit für deine Stimmung.';
+
+  @override
+  String get moodHubBannerEvening => 'Abend — was ist deine Stimmung?';
+
+  @override
+  String get moodHubBannerNight => 'Spätabend — lass uns was Passendes finden.';
+
+  @override
+  String get moodHubCreatePlan => 'Erstelle deinen perfekten Plan! 🎯';
+
+  @override
+  String get moodHubBackToHub => 'Zurück zur Hub';
+
+  @override
+  String moodHubSelectUpTo(String max) {
+    return 'Du kannst bis zu $max Stimmungen wählen';
+  }
+
+  @override
+  String get moodHubSelectedMoods => 'Gewählte Stimmungen: ';
+
+  @override
+  String get moodHubNoMoodOptions => 'Keine Stimmungsoptionen verfügbar';
+
+  @override
+  String get moodHubMoodyThinking => 'Moody denkt nach...';
+
+  @override
+  String get moodHubMoodHappy => 'Fröhlich';
+
+  @override
+  String get moodHubMoodAdventurous => 'Abenteuerlich';
+
+  @override
+  String get moodHubMoodRelaxed => 'Entspannt';
+
+  @override
+  String get moodHubMoodEnergetic => 'Energetisch';
+
+  @override
+  String get moodHubMoodRomantic => 'Romantisch';
+
+  @override
+  String get moodHubMoodSocial => 'Gesellig';
+
+  @override
+  String get moodHubMoodCultural => 'Kulturell';
+
+  @override
+  String get moodHubMoodCurious => 'Neugierig';
+
+  @override
+  String get moodHubMoodCozy => 'Gemütlich';
+
+  @override
+  String get moodHubMoodExcited => 'Begeistert';
+
+  @override
+  String get moodHubMoodFoody => 'Foodie';
+
+  @override
+  String get moodHubMoodSurprise => 'Überraschung';
+
+  @override
+  String get planLoadingErrorTitle => 'Ups! Etwas ist schiefgelaufen';
+
+  @override
+  String get planLoadingTryAgain => 'Erneut versuchen';
+
+  @override
+  String get planLoadingErrorGeneric =>
+      'Aktivitäten konnten nicht erstellt werden. Bitte versuche es erneut oder wähle andere Stimmungen.';
+
+  @override
+  String get planLoadingErrorNetwork =>
+      'Netzwerkfehler. Bitte prüfe deine Internetverbindung.';
+
+  @override
+  String get planLoadingErrorLocation =>
+      'Standortzugriff erforderlich. Bitte aktiviere die Standortdienste.';
+
+  @override
+  String get planLoadingErrorService =>
+      'Der Dienst ist vorübergehend nicht verfügbar. Bitte versuche es in ein paar Minuten erneut.';
+
+  @override
+  String get planLoadingErrorApiKey =>
+      'Konfigurationsfehler. Bitte kontaktiere den Support.';
+
+  @override
+  String get planLoadingErrorNotFound =>
+      'Dienst nicht verfügbar. Bitte versuche es später erneut.';
+
+  @override
+  String get planLoadingErrorNoActivities =>
+      'Keine Aktivitäten für deine Stimmung und deinen Ort gefunden. Bitte andere Stimmungen wählen oder den Standort prüfen.';
+
+  @override
+  String get getReadyTitle => 'Bereit machen';
+
+  @override
+  String getReadyLeaveBy(String time) {
+    return 'Losgehen bis $time';
+  }
+
+  @override
+  String getReadyTripSummary(String mode, int minutes) {
+    return '$mode · ~$minutes Min. Weg';
+  }
+
+  @override
+  String getReadyWeatherAt(String time) {
+    return 'Wetter um $time';
+  }
+
+  @override
+  String get getReadyWeatherTipDefault =>
+      'Sieht nach einem guten Moment aus, um loszugehen.';
+
+  @override
+  String get getReadyWeatherTipCool =>
+      'Es könnte etwas kühl sein – nimm eine leichte Jacke mit.';
+
+  @override
+  String get getReadyWeatherTipRain =>
+      'Es ist Regen angesagt – vielleicht einen Regenschirm einpacken.';
+
+  @override
+  String get getReadyChecklistTitle => 'Was du mitnehmen solltest';
+
+  @override
+  String get getReadyItemWallet => 'Geldbörse & Zahlungsmittel';
+
+  @override
+  String get getReadyItemPhoneCharged => 'Handy voll aufgeladen';
+
+  @override
+  String get getReadyItemReusableBag =>
+      'Wiederverwendbare Tasche oder Behälter';
+
+  @override
+  String get getReadyItemShoes => 'Bequeme Schuhe';
+
+  @override
+  String get getReadyItemWater => 'Wasserflasche';
+
+  @override
+  String get getReadyItemId => 'Ausweis / Fahrkarte falls nötig';
+
+  @override
+  String get getReadyReminderTitle => 'Erinnere mich ans Losgehen';
+
+  @override
+  String get getReadyReminderSubtitle =>
+      'Wir schicken dir kurz vorher eine kleine Erinnerung.';
+
+  @override
+  String get getReadyQuickActions => 'Schnellaktionen';
+
+  @override
+  String get getReadyQuickShare => 'Teilen';
+
+  @override
+  String get getReadyQuickCalendar => 'Kalender';
+
+  @override
+  String get getReadyQuickParking => 'Parken';
+
+  @override
+  String get getReadyPrimaryCta => 'Ich bin bereit! 🚀';
+
+  @override
+  String get getReadyLetsGo => 'Los geht\'s!';
+
+  @override
+  String get getReadyAdventureStartsIn => 'Das Abenteuer beginnt in…';
+
+  @override
+  String get getReadyHours => 'STUNDEN';
+
+  @override
+  String get getReadyMins => 'MIN';
+
+  @override
+  String get getReadyRoute => 'Route';
+
+  @override
+  String get getReadyYourAdventureEnergy => 'Deine Abenteuer-Energie';
+
+  @override
+  String get getReadyBoostEnergyHint =>
+      'Hak die Punkte ab, um deine Energie zu steigern!';
+
+  @override
+  String get getReadyPackEssentials => 'Pack deine Basics';
+
+  @override
+  String get getReadyVibePlaylist => 'Vibe-Playlist';
+
+  @override
+  String getReadyGetInMood(String mood) {
+    return 'Komm in $mood-Stimmung!';
+  }
+
+  @override
+  String getReadyPlaylistLabel(String theme) {
+    return 'Happy $theme Beats';
+  }
+
+  @override
+  String get getReadyPlay => 'Abspielen';
+
+  @override
+  String get getReadyNudgeMe => 'Erinnere mich, wenn es so weit ist!';
+
+  @override
+  String getReadyReminderAt(String time) {
+    return 'Wir erinnern dich um $time';
+  }
+
+  @override
+  String get getReadyCantWait => 'Wir freuen uns auf deine Entdeckungen!';
 }

@@ -52,7 +52,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Future.microtask(() {
           if (mounted) {
-        ref.invalidate(cachedActivitySuggestionsProvider);
+            ref.invalidate(scheduledActivitiesForTodayProvider);
+            ref.invalidate(cachedActivitySuggestionsProvider);
           }
         });
       });
@@ -184,6 +185,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                                   if (_lastRefreshTime == null || now.difference(_lastRefreshTime!).inSeconds > 2) {
                                     _lastRefreshTime = now;
                                     debugPrint('🔄 My Day: Manual refresh triggered');
+                                    ref.invalidate(scheduledActivitiesForTodayProvider);
                                     ref.invalidate(cachedActivitySuggestionsProvider);
                                   } else {
                                     debugPrint('⏸️ My Day: Refresh blocked (debounced)');
@@ -1694,6 +1696,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               const SizedBox(height: 8),
               ElevatedButton(
                 onPressed: () {
+                  ref.invalidate(scheduledActivitiesForTodayProvider);
                   ref.invalidate(cachedActivitySuggestionsProvider);
                 },
                 style: ElevatedButton.styleFrom(

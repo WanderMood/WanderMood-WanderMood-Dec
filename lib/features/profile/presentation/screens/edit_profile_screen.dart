@@ -63,55 +63,66 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     
     try {
       final supabase = Supabase.instance.client;
-      final userId = supabase.auth.currentUser?.id;
+      final user = supabase.auth.currentUser;
+      final userId = user?.id;
       
       if (userId == null) {
-        setState(() => _isLoading = false);
+        if (mounted) setState(() => _isLoading = false);
         return;
       }
 
-      // Load profile data
-      final profileAsync = ref.read(profileProvider);
+      // Use currentUserProfileProvider - same source as profile screen (guarantees data consistency)
+      final currentProfile = await ref.read(currentUserProfileProvider.future);
       
-      profileAsync.whenData((profile) async {
-        if (profile != null && mounted) {
-          // Load travel_vibes from profiles table
-          final profileResponse = await supabase
-              .from('profiles')
-              .select('travel_vibes, currently_exploring')
-              .eq('id', userId)
-              .maybeSingle();
+      // Fetch extra fields from profiles (date_of_birth, currently_exploring, travel_vibes)
+      final profileResponse = await supabase
+          .from('profiles')
+          .select('travel_vibes, currently_exploring, date_of_birth')
+          .eq('id', userId)
+          .maybeSingle();
 
-          final travelVibes = profileResponse?['travel_vibes'] as List<dynamic>?;
+      final travelVibesRaw = profileResponse?['travel_vibes'];
+      final List<String> travelVibes = travelVibesRaw is List
+          ? travelVibesRaw.map((e) => e?.toString() ?? '').where((s) => s.isNotEmpty).toList()
+          : (travelVibesRaw is String ? [travelVibesRaw] : <String>[]);
+      
+      // Prefer travel_vibes from profiles; fall back to selectedMoods from user_preferences
+      final vibes = travelVibes.isNotEmpty ? travelVibes : (currentProfile?.selectedMoods ?? []);
+      
+      final dateOfBirthRaw = profileResponse?['date_of_birth'];
+      final DateTime? dateOfBirth = dateOfBirthRaw != null
+          ? (dateOfBirthRaw is String ? DateTime.tryParse(dateOfBirthRaw) : null)
+          : null;
+      
+      // Email from auth (profiles may not have it); avatar from currentProfile (image_url or avatar_url)
+      final email = user?.email ?? '';
+      final avatarUrl = currentProfile?.avatarUrl;
+      
+      if (mounted) {
+        setState(() {
+          _nameController.text = currentProfile?.fullName ?? '';
+          _usernameController.text = currentProfile?.username ?? '';
+          _emailController.text = email;
+          _bioController.text = currentProfile?.bio ?? '';
+          _dateOfBirth = dateOfBirth;
+          _profileImageUrl = avatarUrl;
+          _locationController.text = profileResponse?['currently_exploring'] as String? ?? '';
+          _favoriteVibes = vibes;
           
-          setState(() {
-            _nameController.text = profile.fullName ?? '';
-            _usernameController.text = profile.username ?? '';
-            _emailController.text = profile.email ?? '';
-            _bioController.text = profile.bio ?? '';
-            _dateOfBirth = profile.dateOfBirth;
-            _profileImageUrl = profile.imageUrl;
-            _locationController.text = profileResponse?['currently_exploring'] as String? ?? '';
-            _favoriteVibes = travelVibes != null 
-                ? List<String>.from(travelVibes)
-                : [];
-            
-            // Store original data
-            _originalData = {
-              'name': profile.fullName ?? '',
-              'username': profile.username ?? '',
-              'email': profile.email ?? '',
-              'bio': profile.bio ?? '',
-              'dateOfBirth': profile.dateOfBirth,
-              'imageUrl': profile.imageUrl,
-              'location': profileResponse?['currently_exploring'] as String? ?? '',
-              'vibes': List<String>.from(_favoriteVibes),
-            };
-            
-            _isLoading = false;
-          });
-        }
-      });
+          _originalData = {
+            'name': currentProfile?.fullName ?? '',
+            'username': currentProfile?.username ?? '',
+            'email': email,
+            'bio': currentProfile?.bio ?? '',
+            'dateOfBirth': dateOfBirth,
+            'imageUrl': avatarUrl,
+            'location': profileResponse?['currently_exploring'] as String? ?? '',
+            'vibes': List<String>.from(_favoriteVibes),
+          };
+          
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       debugPrint('Error loading profile: $e');
       if (mounted) {

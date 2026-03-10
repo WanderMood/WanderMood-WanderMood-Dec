@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -57,21 +59,53 @@ extension UserPreferencesExtension on UserPreferences {
 
 // Static factory method for creating from Supabase data
 class UserPreferencesHelper {
+  // Normalize a Supabase field that might be stored as a JSON array, Postgres array,
+  // plain string, or comma-separated string into a List<String>.
+  static List<String> _normalizeListField(dynamic value) {
+    if (value == null) return [];
+    if (value is List) {
+      return value.map((e) => e.toString()).toList();
+    }
+    if (value is String) {
+      // Try to parse JSON array first
+      try {
+        final decoded = jsonDecode(value);
+        if (decoded is List) {
+          return decoded.map((e) => e.toString()).toList();
+        }
+      } catch (_) {
+        // Not JSON, fall through to comma-separated parsing
+      }
+
+      return value
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
+    }
+    return [];
+  }
+
   static UserPreferences fromSupabaseJson(Map<String, dynamic> json) {
     return UserPreferences(
       communicationStyle: json['communication_style'] ?? 'friendly',
-      selectedMoods: (json['moods'] as List<dynamic>?)?.cast<String>() ?? [],
-      travelInterests: (json['interests'] as List<dynamic>?)?.cast<String>() ?? [],
+      selectedMoods: _normalizeListField(json['moods']),
+      travelInterests: _normalizeListField(json['interests']),
       homeBase: json['home_base'] ?? 'Local Explorer',
-      socialVibe: (json['social_vibe'] as List<dynamic>?)?.cast<String>() ?? [],
+      socialVibe: _normalizeListField(json['social_vibe']),
       planningPace: json['planning_pace'] ?? 'Same Day Planner',
-      travelStyles: (json['travel_styles'] as List<dynamic>?)?.cast<String>() ?? [],
+      travelStyles: _normalizeListField(json['travel_styles']),
       budgetLevel: 'Mid-Range', // Default since no budget screen
-      favoriteMoods: (json['moods'] as List<dynamic>?)?.cast<String>() ?? [],
-      preferredTimeSlots: ['morning', 'afternoon', 'evening'], // Default
+      favoriteMoods: _normalizeListField(json['moods']),
+      preferredTimeSlots:
+          _normalizeListField(json['preferred_time_slots']).isNotEmpty
+              ? _normalizeListField(json['preferred_time_slots'])
+              : const ['morning', 'afternoon', 'evening'],
       languagePreference: json['language_preference'] ?? 'en',
-      dietaryRestrictions: [], // Default since no dietary screen
-      mobilityRequirements: [], // Default since no mobility screen
+      dietaryRestrictions:
+          _normalizeListField(json['dietary_restrictions']), // Default flexible parsing
+      mobilityRequirements:
+          _normalizeListField(json['mobility_requirements']), // Default flexible parsing
       hasCompletedOnboarding: json['has_completed_onboarding'] ?? false,
       hasCompletedPreferences: json['has_completed_preferences'] ?? false,
     );

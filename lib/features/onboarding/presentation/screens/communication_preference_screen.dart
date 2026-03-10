@@ -7,6 +7,7 @@ import '../widgets/swirling_gradient_painter.dart';
 import '../../../../core/providers/preferences_provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/providers/communication_style_provider.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class CommunicationPreferenceScreen extends ConsumerStatefulWidget {
   const CommunicationPreferenceScreen({super.key});
@@ -18,35 +19,18 @@ class CommunicationPreferenceScreen extends ConsumerStatefulWidget {
 class _CommunicationPreferenceScreenState extends ConsumerState<CommunicationPreferenceScreen> {
   String? _selectedStyle;
 
-  final List<Map<String, dynamic>> _communicationStyles = [
-    {
-      'name': 'Friendly',
-      'emoji': '😊',
-      'description': 'Casual and warm communication',
-      'color': const Color(0xFFFFB74D), // Soft Orange
-    },
-    {
-      'name': 'Professional',
-      'emoji': '👔',
-      'description': 'Clear and formal communication',
-      'color': const Color(0xFF64B5F6), // Soft Blue
-    },
-    {
-      'name': 'Energetic',
-      'emoji': '⚡',
-      'description': 'Fun and enthusiastic communication',
-      'color': const Color(0xFF7CB342), // Soft Green
-    },
-    {
-      'name': 'Direct',
-      'emoji': '🎯',
-      'description': 'Straight to the point',
-      'color': const Color(0xFFEC407A), // Soft Pink
-    },
-  ];
+  List<Map<String, dynamic>> _communicationStyles(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      {'key': 'friendly', 'name': l10n.prefStyleFriendly, 'emoji': '😊', 'description': l10n.prefStyleFriendlyDesc, 'color': const Color(0xFFFFB74D)},
+      {'key': 'professional', 'name': l10n.prefStyleProfessional, 'emoji': '👔', 'description': l10n.prefStyleProfessionalDesc, 'color': const Color(0xFF64B5F6)},
+      {'key': 'energetic', 'name': l10n.prefStyleEnergetic, 'emoji': '⚡', 'description': l10n.prefStyleEnergeticDesc, 'color': const Color(0xFF7CB342)},
+      {'key': 'direct', 'name': l10n.prefStyleDirect, 'emoji': '🎯', 'description': l10n.prefStyleDirectDesc, 'color': const Color(0xFFEC407A)},
+    ];
+  }
 
   Widget _buildStyleCard(Map<String, dynamic> style) {
-    final bool isSelected = _selectedStyle == style['name'].toLowerCase();
+    final bool isSelected = _selectedStyle == style['key'];
     final color = style['color'] as Color;
     
     return Padding(
@@ -54,7 +38,7 @@ class _CommunicationPreferenceScreenState extends ConsumerState<CommunicationPre
       child: InkWell(
         onTap: () {
           setState(() {
-            _selectedStyle = style['name'].toLowerCase();
+            _selectedStyle = style['key'] as String;
           });
           ref.read(communicationStyleProvider.notifier).setCommunicationStyle(_selectedStyle!);
         },
@@ -112,7 +96,7 @@ class _CommunicationPreferenceScreenState extends ConsumerState<CommunicationPre
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        style['name'],
+                        style['name'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -120,7 +104,7 @@ class _CommunicationPreferenceScreenState extends ConsumerState<CommunicationPre
                         ),
                       ),
                       Text(
-                        style['description'],
+                        style['description'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: isSelected
@@ -205,7 +189,7 @@ class _CommunicationPreferenceScreenState extends ConsumerState<CommunicationPre
                       children: [
                         // Title
                         Text(
-                          'How should I talk to you? 💬',
+                          AppLocalizations.of(context)!.prefCommunicationTitle,
                           style: GoogleFonts.museoModerno(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
@@ -219,7 +203,7 @@ class _CommunicationPreferenceScreenState extends ConsumerState<CommunicationPre
                         
                         // Introduction text full width
                         Text(
-                          'To make our journey together more enjoyable, I\'d love to know how you prefer me to communicate with you.',
+                          AppLocalizations.of(context)!.prefCommunicationIntro,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             color: Colors.black87,
@@ -236,7 +220,7 @@ class _CommunicationPreferenceScreenState extends ConsumerState<CommunicationPre
                           children: [
                             Expanded(
                               child: Text(
-                                'This helps me adjust my tone and style to match your preferences perfectly! 🎯',
+                                AppLocalizations.of(context)!.prefCommunicationSubtitle,
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   color: Colors.black54,
@@ -267,7 +251,7 @@ class _CommunicationPreferenceScreenState extends ConsumerState<CommunicationPre
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: ListView(
-                        children: _communicationStyles.map((style) => _buildStyleCard(style)).toList(),
+                        children: _communicationStyles(context).map((style) => _buildStyleCard(style)).toList(),
                       ),
                     ),
                   ),
@@ -297,7 +281,7 @@ class _CommunicationPreferenceScreenState extends ConsumerState<CommunicationPre
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Continue',
+                              AppLocalizations.of(context)!.continueButton,
                               style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,

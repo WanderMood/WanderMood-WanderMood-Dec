@@ -235,8 +235,8 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
       // CRITICAL: Invalidate providers in correct order to ensure fresh data
       print('🔄 Invalidating providers for fresh My Agenda and My Day data...');
       ref.invalidate(scheduledActivityServiceProvider);
+      ref.invalidate(scheduledActivitiesForTodayProvider);
       ref.invalidate(cachedActivitySuggestionsProvider);
-      // Also invalidate My Day providers to refresh the screen
       ref.invalidate(todayActivitiesProvider);
       ref.invalidate(timelineCategorizedActivitiesProvider);
       // Refresh daily mood state to update plannedActivities

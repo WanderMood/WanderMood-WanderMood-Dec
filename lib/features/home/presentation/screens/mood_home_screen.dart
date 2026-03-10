@@ -6,9 +6,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/auth/providers/user_provider.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
+import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:wandermood/features/weather/providers/weather_provider.dart';
 import 'package:wandermood/features/plans/presentation/screens/plan_loading_screen.dart';
-import 'package:wandermood/features/plans/presentation/screens/plan_result_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/moody_conversation_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/features/gamification/providers/gamification_provider.dart';
@@ -26,6 +26,9 @@ import 'package:wandermood/features/mood/presentation/screens/moody_hub_screen.d
 import 'package:wandermood/features/mood/presentation/widgets/mood_action_choice_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
+import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/providers/communication_style_provider.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class MoodHomeScreen extends ConsumerStatefulWidget {
   const MoodHomeScreen({super.key});
@@ -109,6 +112,41 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     });
   }
   
+  /// Time-of-day phrase for the hero line (replaces "today?")
+  String _getTimeOfDayPhrase(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 12) return l10n.moodHubThisMorning;
+    if (hour >= 12 && hour < 17) return l10n.moodHubThisAfternoon;
+    if (hour >= 17 && hour < 21) return l10n.moodHubThisEvening;
+    return l10n.moodHubTonight;
+  }
+
+  /// Greeting text based on onboarding communication style (less formal options)
+  String _getStyleBasedGreeting(BuildContext context, CommunicationStyle style, String? firstName) {
+    final l10n = AppLocalizations.of(context)!;
+    final name = (firstName != null && firstName.isNotEmpty) ? firstName : null;
+    switch (style) {
+      case CommunicationStyle.energetic:
+        return name != null ? l10n.moodHubGreetingBestie(name) : l10n.moodHubGreetingBestie(l10n.moodyIntroNameFallback);
+      case CommunicationStyle.friendly:
+        return name != null ? l10n.moodHubGreetingFriendly(name) : l10n.moodHubGreetingHeyThere;
+      case CommunicationStyle.professional: {
+        final hour = DateTime.now().hour;
+        final greeting = hour >= 5 && hour < 12
+            ? l10n.goodMorning
+            : hour >= 12 && hour < 17
+                ? l10n.goodAfternoon
+                : hour >= 17 && hour < 21
+                    ? l10n.goodEvening
+                    : l10n.heyNightOwl;
+        return name != null ? l10n.moodHubGreetingProfessional(greeting, name) : greeting;
+      }
+      case CommunicationStyle.direct:
+        return name != null ? l10n.moodHubGreetingDirect(name) : l10n.moodHubGreetingHi;
+    }
+  }
+
   /// Generate contextual mood selection message
   /// Returns a statement (not a question) that guides the user
   String _getContextualMoodMessage() {
@@ -155,109 +193,182 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     }
   }
   
-  /// Get enhanced contextual Moody message - feels like Moody is speaking
-  /// Can be enhanced with AI later for more personalization
+  /// Get enhanced contextual Moody message - feels like Moody is speaking.
+  /// Varies by time of day, new vs returning user, last mood, and user's communication style from onboarding.
   Future<String> _getContextualMoodyMessage(DailyMoodState dailyMoodState) async {
     try {
       final hour = DateTime.now().hour;
       final isWeekend = DateTime.now().weekday >= 6;
       final isNewUser = !dailyMoodState.hasSelectedMoodToday && dailyMoodState.currentMood == null;
-      
-      // Get user's last mood if available
       final lastMood = dailyMoodState.currentMood;
-      
-      // Get weather context
-      final weatherAsync = ref.read(weatherProvider);
-      final weather = weatherAsync.valueOrNull;
-      
-      // Get location context
-      final locationAsync = ref.read(locationNotifierProvider);
-      final location = locationAsync.valueOrNull;
-      
-      // Build contextual message based on multiple factors
+      final style = ref.read(communicationStyleProvider).style;
+
+      // Build contextual message, then apply communication-style tone
       String message = '';
-      
+
       if (isNewUser) {
-        // First-time user messages - more welcoming
         if (hour >= 5 && hour < 12) {
-          message = "Good morning! Let's start your day with the right energy.";
+          message = _pickStyle(style, [
+            "Good morning! Let's start your day with the right energy. ✨",
+            "Good morning! Let's start your day with the right energy.",
+            "Good morning. How would you like to plan your day?",
+            "Morning. What's your mood?",
+          ]);
         } else if (hour >= 12 && hour < 17) {
-          message = "Afternoon's here — time to match your vibe.";
+          message = _pickStyle(style, [
+            "Afternoon's here — time to match your vibe! 🌟",
+            "Afternoon's here — time to match your vibe.",
+            "Good afternoon. What type of experience are you looking for?",
+            "Afternoon. What's your vibe?",
+          ]);
         } else if (hour >= 17 && hour < 21) {
-          message = "Evening's perfect for exploring — what feels right?";
+          message = _pickStyle(style, [
+            "Evening's perfect for exploring — what feels right? ✨",
+            "Evening's perfect for exploring — what feels right?",
+            "Good evening. What would you like to do today?",
+            "Evening. What's your mood?",
+          ]);
         } else {
-          message = "Late night energy — let's find something that fits.";
+          message = _pickStyle(style, [
+            "Late night energy — let's find something that fits. 🌙",
+            "Late night energy — let's find something that fits.",
+            "Good evening. How can I help you plan?",
+            "Late night. Your vibe?",
+          ]);
         }
       } else {
-        // Returning user - reference their last mood or time context
         if (lastMood != null) {
-          // Reference their previous mood
           if (hour >= 5 && hour < 12) {
             message = isWeekend
-                ? "Weekend morning — ready to switch it up from yesterday's $lastMood mood?"
-                : "Morning vibes — ready to try something different from $lastMood?";
+                ? _pickStyle(style, [
+                    "Weekend morning — ready to switch it up from $lastMood? ✨",
+                    "Weekend morning — ready to switch it up from yesterday's $lastMood mood?",
+                    "Weekend morning. Would you like to try something different from $lastMood?",
+                    "Weekend morning. Different from $lastMood?",
+                  ])
+                : _pickStyle(style, [
+                    "Morning vibes — try something different from $lastMood? 🌟",
+                    "Morning vibes — ready to try something different from $lastMood?",
+                    "Good morning. Interested in a different mood from $lastMood today?",
+                    "Morning. Different from $lastMood?",
+                  ]);
           } else if (hour >= 12 && hour < 17) {
-            message = "Afternoon's rolling in — what's calling to you today?";
+            message = _pickStyle(style, [
+              "Afternoon's rolling in — what's calling to you? ✨",
+              "Afternoon's rolling in — what's calling to you today?",
+              "Good afternoon. What would you like to do next?",
+              "Afternoon. What's calling to you?",
+            ]);
           } else if (hour >= 17 && hour < 21) {
             message = isWeekend
-                ? "Weekend evening — let's find something that fits."
-                : "Workday's done — what's your evening vibe?";
+                ? _pickStyle(style, [
+                    "Weekend evening — let's find something that fits. 🌟",
+                    "Weekend evening — let's find something that fits.",
+                    "Good evening. How would you like to spend your evening?",
+                    "Weekend evening. Your vibe?",
+                  ])
+                : _pickStyle(style, [
+                    "Workday's done — what's your evening vibe? ✨",
+                    "Workday's done — what's your evening vibe?",
+                    "Good evening. What type of evening would you prefer?",
+                    "Evening. Your vibe?",
+                  ]);
           } else {
-            message = "Late night energy — let's see what calls to you.";
+            message = _pickStyle(style, [
+              "Late night — what calls to you? 🌙",
+              "Late night energy — let's see what calls to you.",
+              "Good evening. What would you like to do?",
+              "Late night. Your mood?",
+            ]);
           }
         } else {
-          // No previous mood, use time-based
           if (hour >= 5 && hour < 12) {
             message = isWeekend
-                ? "Weekend morning — let's set the tone for your day."
-                : "Fresh start — what feels right today?";
+                ? _pickStyle(style, [
+                    "Weekend morning — let's set the tone! ✨",
+                    "Weekend morning — let's set the tone for your day.",
+                    "Good morning. How would you like to plan your day?",
+                    "Weekend morning. Set the tone?",
+                  ])
+                : _pickStyle(style, [
+                    "Fresh start — what feels right today? 🌟",
+                    "Fresh start — what feels right today?",
+                    "Good morning. What would you like to accomplish today?",
+                    "Morning. What feels right?",
+                  ]);
           } else if (hour >= 12 && hour < 17) {
-            message = "Afternoon's here — time to match your energy.";
+            message = _pickStyle(style, [
+              "Afternoon's here — time to match your energy! ✨",
+              "Afternoon's here — time to match your energy.",
+              "Good afternoon. What are you in the mood for?",
+              "Afternoon. Your energy?",
+            ]);
           } else if (hour >= 17 && hour < 21) {
             message = isWeekend
-                ? "Weekend evening — let's find something that fits."
-                : "Evening's perfect — what's your vibe?";
+                ? _pickStyle(style, [
+                    "Weekend evening — let's find something that fits! 🌟",
+                    "Weekend evening — let's find something that fits.",
+                    "Good evening. How would you like to spend your time?",
+                    "Weekend evening. Your vibe?",
+                  ])
+                : _pickStyle(style, [
+                    "Evening's perfect — what's your vibe? ✨",
+                    "Evening's perfect — what's your vibe?",
+                    "Good evening. What would you like to do today?",
+                    "Evening. Your vibe?",
+                  ]);
           } else {
-            message = "Late night energy — let's see what fits.";
+            message = _pickStyle(style, [
+              "Late night energy — let's see what fits! 🌙",
+              "Late night energy — let's see what fits.",
+              "Good evening. What can I help you with?",
+              "Late night. Your mood?",
+            ]);
           }
         }
       }
-      
-      // Add weather context if available
-      if (weather != null) {
-        final condition = weather.condition.toLowerCase();
-        if (condition.contains('rain') || condition.contains('storm') || condition.contains('drizzle')) {
-          message += " Perfect for indoor vibes today.";
-        } else if (condition.contains('sun') || condition.contains('clear')) {
-          message += " Great weather for exploring!";
-        } else if (condition.contains('cloud')) {
-          message += " Cloudy but still great for adventures.";
-        }
-      }
-      
-      // Add location context if available (optional, can be removed if too verbose)
-      // if (location != null && location.isNotEmpty) {
-      //   message += " Let's explore $location.";
-      // }
-      
+
       return message;
     } catch (e) {
       if (kDebugMode) debugPrint('⚠️ Error generating contextual Moody message: $e');
-      return _getContextualMoodMessage(); // Fallback to sync version
+      return _getContextualMoodMessage();
     }
   }
 
-  // Get AI-powered greeting based on weather and context
+  /// Pick message variant by communication style: [energetic, friendly, professional, direct]
+  String _pickStyle(CommunicationStyle style, List<String> variants) {
+    assert(variants.length == 4, 'Need 4 variants for energetic, friendly, professional, direct');
+    final index = style == CommunicationStyle.energetic
+        ? 0
+        : style == CommunicationStyle.friendly
+            ? 1
+            : style == CommunicationStyle.professional
+                ? 2
+                : 3;
+    return variants[index.clamp(0, variants.length - 1)];
+  }
+
+  /// Reads current GPS position + city from providers, with Rotterdam fallback.
+  Future<({double lat, double lng, String city})> _getUserLocation() async {
+    final position = await ref.read(userLocationProvider.future);
+    final city = ref.read(locationNotifierProvider).value ?? 'Rotterdam';
+    return (
+      lat: position?.latitude ?? 51.9225,
+      lng: position?.longitude ?? 4.4792,
+      city: city,
+    );
+  }
+
   Future<void> _getAIPersonalizedGreeting() async {
     try {
-      // This could call Moody AI to get a personalized greeting question for the user based on current time and weather
+      final loc = await _getUserLocation();
       final response = await WanderMoodAIService.chat(
         message: "Generate a short personalized greeting question for the user based on current time and weather",
-        conversationId: null, // No conversation yet
+        conversationId: null,
         moods: [],
-        latitude: 51.9244,
-        longitude: 4.4777, 
-        city: 'Rotterdam',
+        latitude: loc.lat,
+        longitude: loc.lng,
+        city: loc.city,
       );
 
       if (mounted && response.message.isNotEmpty && response.message.length < 50) {
@@ -266,8 +377,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         });
       }
     } catch (e) {
-      print('🤖 Could not get AI greeting: $e');
-      // Keep default greeting
+      debugPrint('🤖 Could not get AI greeting: $e');
     }
   }
 
@@ -283,7 +393,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'You can select up to 3 moods',
+              AppLocalizations.of(context)!.moodHubSelectUpTo('3'),
               style: GoogleFonts.poppins(),
             ),
             backgroundColor: Colors.red.shade400,
@@ -308,26 +418,12 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         conversationId: _conversationId,
       );
       
-      // Navigate to PlanLoadingScreen first
       if (context.mounted) {
-        print('🧭 Navigating to plan loading screen');
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => PlanLoadingScreen(
               selectedMoods: _selectedMoods.toList(),
-              onLoadingComplete: () {
-                print('✅ Plan loading complete, navigating to result screen');
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PlanResultScreen(
-                      selectedMoods: _selectedMoods.toList(),
-                      moodString: _selectedMoods.join(" & "),
-                    ),
-                  ),
-                );
-              },
             ),
           ),
         );
@@ -335,7 +431,6 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     }
   }
 
-  // Get AI recommendations for selected moods
   Future<void> _getAIRecommendations() async {
     setState(() {
       _isAILoading = true;
@@ -353,11 +448,12 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         print('📝 Including ${conversationContext.length} conversation messages');
       }
       
+      final loc = await _getUserLocation();
       final response = await WanderMoodAIService.getRecommendations(
         moods: _selectedMoods.toList(),
-        latitude: 51.9244, // Rotterdam coordinates (you can get this from location provider)
-        longitude: 4.4777,
-        city: 'Rotterdam',
+        latitude: loc.lat,
+        longitude: loc.lng,
+        city: loc.city,
         preferences: {
           'timeSlot': _getTimeSlot(),
           'groupSize': 1,
@@ -376,18 +472,6 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
           MaterialPageRoute(
             builder: (context) => PlanLoadingScreen(
               selectedMoods: _selectedMoods.toList(),
-              onLoadingComplete: () {
-                print('✅ Plan loading complete, navigating to result screen');
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PlanResultScreen(
-                      selectedMoods: _selectedMoods.toList(),
-                      moodString: _selectedMoods.join(" & "),
-                    ),
-                  ),
-                );
-              },
             ),
           ),
         );
@@ -1336,18 +1420,17 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       print('🔧 Conversation ID: $_conversationId');
       print('🎭 Selected moods: ${_selectedMoods.toList()}');
       
+      final loc = await _getUserLocation();
       final response = await WanderMoodAIService.chat(
         message: message.trim(),
         conversationId: _conversationId,
         moods: _selectedMoods.toList(),
-        latitude: 51.9244,
-        longitude: 4.4777,
-        city: 'Rotterdam',
+        latitude: loc.lat,
+        longitude: loc.lng,
+        city: loc.city,
       );
 
-      print('✅ Moody AI response received successfully');
-      print('📝 Response message: "${response.message}"');
-      print('🆔 Response conversation ID: ${response.conversationId}');
+      debugPrint('✅ Moody AI response received successfully');
 
       // Validate response
       if (response.message.isEmpty) {
@@ -1405,15 +1488,14 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     _chatController.clear();
 
     try {
-      print('💬 Sending message to Moody AI: $message');
-      
+      final loc = await _getUserLocation();
       final response = await WanderMoodAIService.chat(
         message: message.trim(),
         conversationId: _conversationId,
         moods: _selectedMoods.toList(),
-        latitude: 51.9244,
-        longitude: 4.4777,
-        city: 'Rotterdam',
+        latitude: loc.lat,
+        longitude: loc.lng,
+        city: loc.city,
       );
 
       print('✅ Moody AI response: ${response.message}');
@@ -1494,47 +1576,17 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     final userData = ref.watch(userDataProvider);
     final weatherAsync = ref.watch(weatherProvider);
     final dailyMoodState = ref.watch(dailyMoodStateNotifierProvider);
-    
-    // 🎯 Hub Logic: 
-    // 1. First check if user has seen intro overlay - if not, show hub with intro
-    // 2. Then check if user has selected mood today - if yes, show hub
-    // 3. Otherwise show mood selection screen
-    return FutureBuilder<bool>(
-      future: _hasSeenIntroOverlay(),
-      builder: (context, introSnapshot) {
-        final hasSeenIntro = introSnapshot.data ?? false;
-        
-        // If user hasn't seen intro overlay, always show hub (which will show intro)
-        if (!hasSeenIntro) {
-          return MoodyHubScreen(
-            onChangeMood: () {
-              // Reset mood selection and show full mood selection screen
-              ref.read(dailyMoodStateNotifierProvider.notifier).resetMoodSelection();
-            },
-            onShowChat: () {
-              // Show existing chat dialog with current context
-              _showMoodyTalkDialog(context);
-            },
-          );
-        }
-        
-        // If user has seen intro, check if they've selected mood today
-        if (dailyMoodState.hasSelectedMoodToday) {
-          return MoodyHubScreen(
-            onChangeMood: () {
-              // Show toggle dialog before mood selection
-              _showMoodActionChoiceDialog(context);
-            },
-            onShowChat: () {
-              // Show existing chat dialog with current context
-              _showMoodyTalkDialog(context);
-            },
-          );
-        }
-        
-        // User has seen intro but hasn't selected mood - show mood selection with "Back to Hub" button
-        return _buildMoodSelectionScreen(context, ref, locationAsync, userData, weatherAsync, dailyMoodState);
-      },
+
+    // Archived old Moody hub screen:
+    // For the standalone Moody route, always show the new mood selection
+    // experience with tiles instead of the previous hub UI.
+    return _buildMoodSelectionScreen(
+      context,
+      ref,
+      locationAsync,
+      userData,
+      weatherAsync,
+      dailyMoodState,
     );
   }
   
@@ -1566,186 +1618,103 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         Scaffold(
           key: _scaffoldKey,
           drawer: const ProfileDrawer(),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFFFDF5),  // Warm cream
-              Color(0xFFFFF3E0),  // Warm yellow
-            ],
-          ),
-        ),
+      body: SwirlBackground(
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with user avatar and location
+              // Row 1: location + weather (no pills, plain text + icons)
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
                 child: Row(
                   children: [
-                    // Profile button with drawer
-                    GestureDetector(
-                      onTap: () {
-                        _scaffoldKey.currentState?.openDrawer();
-                      },
-                      child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: const Color(0xFF12B347),
-                          width: 2,
-                        ),
-                      ),
-                        child: Consumer(
-                          builder: (context, ref, child) {
-                            final profileData = ref.watch(profileProvider);
-                            return profileData.when(
-                              data: (profile) => CircleAvatar(
-                                radius: 18,
-                                backgroundColor: Colors.transparent,
-                                backgroundImage: profile?.imageUrl != null
-                                    ? NetworkImage(profile!.imageUrl!)
-                                    : null,
-                                child: profile?.imageUrl == null
-                                    ? Text(
-                                        profile?.fullName?.substring(0, 1).toUpperCase() ?? 'U',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 20,
-                                          color: const Color(0xFF12B347),
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      )
-                                    : null,
-                              ),
-                              loading: () => const CircularProgressIndicator(
-                                color: Color(0xFF12B347),
-                                strokeWidth: 2,
-                              ),
-                              error: (_, __) => Text(
-                          'U',
-                          style: GoogleFonts.poppins(
-                            fontSize: 20,
-                            color: const Color(0xFF12B347),
-                            fontWeight: FontWeight.w600,
-                          ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Location dropdown - now clickable
                     Expanded(
                       child: InkWell(
                         onTap: () => _showLocationDialog(context, ref),
                         borderRadius: BorderRadius.circular(8),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          padding: const EdgeInsets.symmetric(vertical: 6),
                           child: Row(
                             children: [
                               const Icon(
                                 Icons.location_on,
                                 color: Color(0xFF12B347),
-                                size: 20,
+                                size: 18,
                               ),
-                              const SizedBox(width: 4),
-                              Consumer(
-                                builder: (context, ref, child) {
-                                  final locationAsync = ref.watch(locationNotifierProvider);
-                                  return locationAsync.when(
-                                    data: (location) => Text(
-                                      location ?? 'Getting location...',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 16,
-                                        color: Colors.black87,
-                                        fontWeight: FontWeight.w500,
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Consumer(
+                                  builder: (context, ref, child) {
+                                    final locationAsync = ref.watch(locationNotifierProvider);
+                                    return locationAsync.when(
+                                      data: (location) => Text(
+                                        location ?? '...',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 14,
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ),
-                                    loading: () => Text(
-                                      'Getting location...',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 16,
-                                        color: Colors.black87,
-                                        fontWeight: FontWeight.w500,
+                                      loading: () => Text(
+                                        '...',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 14,
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
-                                    ),
-                                    error: (_, __) => Text(
-                                      'Location unavailable',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 16,
-                                        color: Colors.black87,
-                                        fontWeight: FontWeight.w500,
+                                      error: (_, __) => Text(
+                                        'Location',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 14,
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
-                                    ),
-                                  );
-                                },
+                                    );
+                                  },
+                                ),
                               ),
                               const Icon(
                                 Icons.keyboard_arrow_down,
                                 color: Colors.black54,
+                                size: 18,
                               ),
                             ],
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    // Weather button - now clickable
                     InkWell(
-                      onTap: () {
-                        // Show weather details dialog
-                        _showWeatherDetails(context);
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.03),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
+                      onTap: () => _showWeatherDetails(context),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
                         child: Consumer(
                           builder: (context, ref, child) {
                             final weatherAsync = ref.watch(weatherProvider);
-                            
                             return weatherAsync.when(
                               data: (weather) {
                                 if (weather == null) return _buildDefaultWeather();
-                                
-                                // Extract the icon code from the iconUrl
-                                final iconCode = weather.iconUrl.split('/').last.replaceAll('@2x.png', '');
-                                
                                 return Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Image.network(
                                       weather.iconUrl,
-                                      width: 24,
-                                      height: 24,
-                                      errorBuilder: (context, error, stackTrace) => Icon(
+                                      width: 20,
+                                      height: 20,
+                                      errorBuilder: (_, __, ___) => Icon(
                                         _getWeatherIcon(weather.condition),
-                                        color: weather.condition.toLowerCase().contains('cloud') 
-                                            ? Colors.grey 
-                                            : const Color(0xFFFFB300),
-                                        size: 20,
+                                        color: const Color(0xFFFFB300),
+                                        size: 18,
                                       ),
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
                                       '${weather.temperature.round()}°',
                                       style: GoogleFonts.poppins(
-                                        fontSize: 16,
+                                        fontSize: 14,
                                         color: Colors.black87,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -1763,44 +1732,125 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                   ],
                 ),
               ),
-              
-              const SizedBox(height: 16),
-              
-              // Compact contextual Moody message - smaller greeting
-              FutureBuilder<String>(
-                future: _getContextualMoodyMessage(dailyMoodState),
-                builder: (context, snapshot) {
-                  final message = snapshot.data ?? _getContextualMoodMessage();
-                  
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 24),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10), // Reduced padding
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF12B347).withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(10), // Slightly smaller radius
-                      border: Border.all(
-                        color: const Color(0xFF12B347).withOpacity(0.2),
-                        width: 1,
+              // Greeting: based on onboarding communication style (e.g. "Hey bestie!" / "Hey, Name!" / "Good evening")
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                child: Consumer(
+                  builder: (context, ref, _) {
+                    final styleState = ref.watch(communicationStyleProvider);
+                    final profileData = ref.watch(profileProvider);
+                    final firstName = profileData.valueOrNull?.fullName?.split(' ').first;
+                    final text = _getStyleBasedGreeting(context, styleState.style, firstName);
+                    return Text(
+                      text,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.3,
+                        color: const Color(0xFF1A202C),
+                        height: 1.25,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 4),
+              // Hero: "What's your mood" + time-based "this morning/afternoon/evening/tonight?" (green, italic)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context)!.moodHubWhatIsYourMood,
+                            style: GoogleFonts.poppins(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF1A202C),
+                              height: 1.25,
+                            ),
+                          ),
+                          Text(
+                            _getTimeOfDayPhrase(context),
+                            style: GoogleFonts.poppins(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              fontStyle: FontStyle.italic,
+                              color: const Color(0xFF5BB32A),
+                              height: 1.25,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                    const SizedBox(width: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: MoodyCharacter(
+                        size: 96,
+                        mood: _selectedMoods.isEmpty ? 'default' : 'happy',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Contextual banner - time-based localized message
+              Builder(
+                builder: (context) {
+                  final l10n = AppLocalizations.of(context)!;
+                  final hour = DateTime.now().hour;
+                  final message = hour >= 5 && hour < 12
+                      ? l10n.moodHubBannerMorning
+                      : hour >= 12 && hour < 17
+                          ? l10n.moodHubBannerAfternoon
+                          : hour >= 17 && hour < 21
+                              ? l10n.moodHubBannerEvening
+                              : l10n.moodHubBannerNight;
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF26273A).withOpacity(0.9), // dark neutral, not green
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.12),
+                          blurRadius: 14,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const Text(
                           '😊',
-                          style: TextStyle(fontSize: 16), // Reduced from 18
+                          style: TextStyle(fontSize: 18),
                         ),
-                        const SizedBox(width: 8), // Reduced from 10
+                        const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             message,
                             style: GoogleFonts.poppins(
-                              fontSize: 13, // Reduced from 14
+                              fontSize: 13,
                               fontWeight: FontWeight.w500,
-                              color: const Color(0xFF1A202C),
+                              color: Colors.white, // white letters on dark card
                               height: 1.3,
                             ),
-                            textAlign: TextAlign.left,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1810,17 +1860,6 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                   );
                 },
               ),
-
-              const SizedBox(height: 16),
-
-              // Balanced Moody Character - better proportion with cards
-              Center(
-                child: MoodyCharacter(
-                  size: 100, // Increased from 80 to balance with cards
-                  mood: _selectedMoods.isEmpty ? 'default' : 'happy',
-                ),
-              ),
-
               const SizedBox(height: 16),
 
               // Put mood tiles and button in a single scrollable container
@@ -1840,7 +1879,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(
-                                'Selected moods: ',
+                                AppLocalizations.of(context)!.moodHubSelectedMoods,
                                 style: GoogleFonts.poppins(
                                   fontSize: 18,
                                   color: Colors.black54,
@@ -1888,7 +1927,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                         ),
                                         const SizedBox(height: 16),
                                         Text(
-                                          'No mood options available',
+                                          AppLocalizations.of(context)!.moodHubNoMoodOptions,
                                           style: GoogleFonts.poppins(
                                             fontSize: 16,
                                             color: Colors.grey[600],
@@ -1912,97 +1951,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                   final isSelected = _selectedMoods.contains(mood.label);
                                   return GestureDetector(
                                     onTap: () => _toggleMood(mood),
-                                    child: Container(
-                                      // Removed fixed constraints - let grid calculate size naturally
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            mood.color.withOpacity(1.0),
-                                            mood.color.withOpacity(0.8),
-                                          ],
-                                        ),
-                                        borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(
-                                          color: isSelected 
-                                            ? mood.color.withOpacity(0.9) 
-                                            : mood.color.withOpacity(0.4),
-                                          width: isSelected ? 2.5 : 1.0,
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: isSelected 
-                                              ? mood.color.withOpacity(0.6)
-                                              : mood.color.withOpacity(0.3),
-                                            blurRadius: isSelected ? 10 : 5,
-                                            offset: const Offset(0, 3),
-                                          )
-                                        ],
-                                      ),
-                                      child: Stack(
-                                        children: [
-                                          Center(
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Text(
-                                                  mood.emoji,
-                                                  style: const TextStyle(fontSize: 32), // Balanced size (between 28 and 36)
-                                                ),
-                                                const SizedBox(height: 5), // Balanced spacing
-                                                Padding(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 4), // Reduced from 6 to give more space
-                                                  child: Text(
-                                                    mood.label,
-                                                    style: GoogleFonts.poppins(
-                                                      fontSize: 11, // Reduced from 12 to fit longer words
-                                                      fontWeight: FontWeight.w500,
-                                                      color: Colors.black87,
-                                                    ),
-                                                    textAlign: TextAlign.center,
-                                                    maxLines: 2, // Allow 2 lines for longer words like "Adventurous"
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          if (isSelected)
-                                            Positioned(
-                                              top: 8,
-                                              right: 8,
-                                              child: Container(
-                                                width: 18,
-                                                height: 18,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  shape: BoxShape.circle,
-                                                  border: Border.all(
-                                                    color: mood.color.withOpacity(0.8),
-                                                    width: 1.5,
-                                                  ),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.black.withOpacity(0.1),
-                                                      blurRadius: 2,
-                                                      offset: const Offset(0, 1),
-                                                    ),
-                                                  ],
-                                                ),
-                                                child: const Center(
-                                                  child: Icon(
-                                                    Icons.check,
-                                                    size: 12,
-                                                    color: Color(0xFF12B347),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
+                                    child: _buildMoodTile(context, mood, isSelected),
                                   );
                                 }).toList(),
                               );
@@ -2055,7 +2004,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                   ),
                                   const SizedBox(width: 12),
                                   Text(
-                                    "🤖 Moody is thinking...",
+                                    AppLocalizations.of(context)!.moodHubMoodyThinking,
                                     style: GoogleFonts.poppins(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
@@ -2064,54 +2013,12 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                 ],
                               )
                             : Text(
-                            "Let's create your perfect plan! 🎯",
+                            AppLocalizations.of(context)!.moodHubCreatePlan,
                             style: GoogleFonts.poppins(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                        ),
-                      ),
-                      
-                      // Helpful tip below CTA button
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF12B347).withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: const Color(0xFF12B347).withOpacity(0.1),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF12B347).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.lightbulb_outline,
-                                size: 20,
-                                color: Color(0xFF12B347),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'Tip: Select up to 3 moods to create a personalized day plan that matches your vibe.',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400,
-                                  color: const Color(0xFF424242),
-                                  height: 1.4,
-                                ),
-                              ),
-                            ),
-                          ],
                         ),
                       ),
                       
@@ -2151,7 +2058,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Back to Hub',
+                                  AppLocalizations.of(context)!.moodHubBackToHub,
                                   style: GoogleFonts.poppins(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,
@@ -2181,14 +2088,145 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     );
   }
 
-  // Fallback mood options when database fails
+  /// Returns localized label for a mood (by English label key).
+  String _localizedMoodLabel(BuildContext context, String label) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (label.toLowerCase()) {
+      case 'happy': return l10n.moodHubMoodHappy;
+      case 'adventurous': return l10n.moodHubMoodAdventurous;
+      case 'relaxed': return l10n.moodHubMoodRelaxed;
+      case 'energetic': return l10n.moodHubMoodEnergetic;
+      case 'romantic': return l10n.moodHubMoodRomantic;
+      case 'social': return l10n.moodHubMoodSocial;
+      case 'cultural': return l10n.moodHubMoodCultural;
+      case 'curious': return l10n.moodHubMoodCurious;
+      case 'cozy': return l10n.moodHubMoodCozy;
+      case 'excited': return l10n.moodHubMoodExcited;
+      case 'foody': return l10n.moodHubMoodFoody;
+      case 'surprise': return l10n.moodHubMoodSurprise;
+      default: return label;
+    }
+  }
+
+  /// Builds a single mood tile with pastel base, frosted-glass overlay, and soft floating shadow.
+  Widget _buildMoodTile(BuildContext context, MoodOption mood, bool isSelected) {
+    const double tileRadius = 20;
+    // Use mood color as-is (pastel palette); glass overlay adds the sheen
+    final Color pastelBase = mood.color;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(tileRadius),
+        color: pastelBase,
+        border: Border.all(
+          color: isSelected
+              ? mood.color.withOpacity(0.7)
+              : Colors.white.withOpacity(0.6),
+          width: isSelected ? 2.5 : 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 18,
+            offset: const Offset(3, 4),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(1, 2),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(tileRadius),
+        child: Stack(
+          children: [
+            // Frosted glass overlay with top-left sheen
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withOpacity(0.35),
+                      Colors.white.withOpacity(0.08),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(mood.emoji, style: const TextStyle(fontSize: 32)),
+                  const SizedBox(height: 5),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Text(
+                      _localizedMoodLabel(context, mood.label),
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: mood.color.withOpacity(0.8),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 2,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.check,
+                      size: 12,
+                      color: Color(0xFF12B347),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Fallback mood options when database fails (pastel palette with glassy tiles)
   List<MoodOption> _getFallbackMoodOptions() {
     return [
       MoodOption(
         id: 'happy',
         label: 'Happy',
         emoji: '😊',
-        colorHex: '#FFD700',
+        colorHex: '#FCDF7E', // soft pale yellow
         displayOrder: 1,
         isActive: true,
         createdAt: DateTime.now(),
@@ -2198,7 +2236,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         id: 'adventurous',
         label: 'Adventurous',
         emoji: '🚀',
-        colorHex: '#FF6B6B',
+        colorHex: '#F79F9C', // muted light coral
         displayOrder: 2,
         isActive: true,
         createdAt: DateTime.now(),
@@ -2208,7 +2246,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         id: 'relaxed',
         label: 'Relaxed',
         emoji: '😌',
-        colorHex: '#4ECDC4',
+        colorHex: '#72DED5', // light teal aqua
         displayOrder: 3,
         isActive: true,
         createdAt: DateTime.now(),
@@ -2218,7 +2256,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         id: 'energetic',
         label: 'Energetic',
         emoji: '⚡',
-        colorHex: '#45B7D1',
+        colorHex: '#84C8F0', // gentle sky blue
         displayOrder: 4,
         isActive: true,
         createdAt: DateTime.now(),
@@ -2228,7 +2266,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         id: 'romantic',
         label: 'Romantic',
         emoji: '💕',
-        colorHex: '#FD79A8',
+        colorHex: '#F4A9D3', // soft light pink
         displayOrder: 5,
         isActive: true,
         createdAt: DateTime.now(),
@@ -2238,7 +2276,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         id: 'social',
         label: 'Social',
         emoji: '👥',
-        colorHex: '#FFEAA7',
+        colorHex: '#ECCBA3', // pale warm beige
         displayOrder: 6,
         isActive: true,
         createdAt: DateTime.now(),
@@ -2248,7 +2286,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         id: 'cultural',
         label: 'Cultural',
         emoji: '🎭',
-        colorHex: '#A29BFE',
+        colorHex: '#BFA8E0', // light pastel purple / lavender
         displayOrder: 7,
         isActive: true,
         createdAt: DateTime.now(),
@@ -2258,7 +2296,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         id: 'curious',
         label: 'Curious',
         emoji: '🔍',
-        colorHex: '#FF7675',
+        colorHex: '#EFB887', // muted light peach
         displayOrder: 8,
         isActive: true,
         createdAt: DateTime.now(),
@@ -2268,7 +2306,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         id: 'cozy',
         label: 'Cozy',
         emoji: '☕',
-        colorHex: '#D63031',
+        colorHex: '#D2A08B', // soft light brown / taupe
         displayOrder: 9,
         isActive: true,
         createdAt: DateTime.now(),
@@ -2278,7 +2316,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         id: 'excited',
         label: 'Excited',
         emoji: '🤩',
-        colorHex: '#00B894',
+        colorHex: '#A3E0A3', // soft pastel green
         displayOrder: 10,
         isActive: true,
         createdAt: DateTime.now(),
@@ -2288,7 +2326,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         id: 'foody',
         label: 'Foody',
         emoji: '🍽️',
-        colorHex: '#E17055',
+        colorHex: '#FFD3A3', // soft pastel orange / peach
         displayOrder: 11,
         isActive: true,
         createdAt: DateTime.now(),
@@ -2298,7 +2336,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         id: 'surprise',
         label: 'Surprise',
         emoji: '😲',
-        colorHex: '#FDCB6E',
+        colorHex: '#C0D3E0', // soft pastel blue / lavender
         displayOrder: 12,
         isActive: true,
         createdAt: DateTime.now(),
@@ -2323,97 +2361,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         final isSelected = _selectedMoods.contains(mood.label);
         return GestureDetector(
           onTap: () => _toggleMood(mood),
-          child: Container(
-            // Removed fixed constraints - let grid calculate size naturally
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  mood.color.withOpacity(1.0),
-                  mood.color.withOpacity(0.8),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isSelected 
-                  ? mood.color.withOpacity(0.9) 
-                  : mood.color.withOpacity(0.4),
-                width: isSelected ? 2.5 : 1.0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: isSelected 
-                    ? mood.color.withOpacity(0.6)
-                    : mood.color.withOpacity(0.3),
-                  blurRadius: isSelected ? 10 : 5,
-                  offset: const Offset(0, 3),
-                )
-              ],
-            ),
-            child: Stack(
-              children: [
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        mood.emoji,
-                        style: const TextStyle(fontSize: 32), // Balanced size (between 28 and 36)
-                      ),
-                      const SizedBox(height: 5), // Balanced spacing
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4), // Reduced from 6 to give more space
-                        child: Text(
-                          mood.label,
-                          style: GoogleFonts.poppins(
-                            fontSize: 11, // Reduced from 12 to fit longer words
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 2, // Allow 2 lines for longer words like "Adventurous"
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (isSelected)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      width: 18,
-                      height: 18,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: mood.color.withOpacity(0.8),
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 2,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.check,
-                          size: 12,
-                          color: Color(0xFF12B347),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
+          child: _buildMoodTile(context, mood, isSelected),
         );
       }).toList(),
     );

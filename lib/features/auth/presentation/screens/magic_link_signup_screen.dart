@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -85,12 +87,38 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
         ref.read(onboardingProgressProvider.notifier).markSignedUp();
       }
     } on AuthException catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = e.message;
-        });
+      if (!mounted) return;
+
+      // Supabase sometimes returns a JSON string like:
+      // {"code":"unexpected_failure","message":"Error sending magic link email"}
+      // Parse it and show a friendly, localized error instead of raw JSON.
+      String friendlyMessage;
+      try {
+        final dynamic decoded = e.message != null ? jsonDecode(e.message!) : null;
+        if (decoded is Map<String, dynamic>) {
+          final code = decoded['code'] as String?;
+          final serverMessage = decoded['message'] as String?;
+
+          if (code == 'unexpected_failure') {
+            // Generic "we couldn't send the email" message
+            friendlyMessage = AppLocalizations.of(context)!.signupErrorGeneric;
+          } else if (serverMessage != null && serverMessage.isNotEmpty) {
+            friendlyMessage = serverMessage;
+          } else {
+            friendlyMessage = AppLocalizations.of(context)!.signupErrorGeneric;
+          }
+        } else {
+          friendlyMessage = AppLocalizations.of(context)!.signupErrorGeneric;
+        }
+      } catch (_) {
+        // Fallback if message is not JSON
+        friendlyMessage = e.message ?? AppLocalizations.of(context)!.signupErrorGeneric;
       }
+
+      setState(() {
+        _isLoading = false;
+        _errorMessage = friendlyMessage;
+      });
     } catch (e) {
       if (mounted) {
         setState(() {

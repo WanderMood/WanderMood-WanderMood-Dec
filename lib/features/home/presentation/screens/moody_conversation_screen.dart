@@ -876,9 +876,6 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) => PlanLoadingScreen(
               selectedMoods: _detectedMoods.toList(),
-              onLoadingComplete: () {
-                // Handle loading complete event
-              },
             ),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               const begin = Offset(0.0, 1.0);

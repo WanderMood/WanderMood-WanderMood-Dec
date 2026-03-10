@@ -7,7 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import '../../../profile/data/providers/visited_places_provider.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
-import '../../../home/providers/dynamic_my_day_provider.dart';
+import '../../../home/presentation/screens/dynamic_my_day_provider.dart';
 import '../../providers/daily_mood_state_provider.dart';
 import '../../models/check_in.dart';
 import '../../models/activity_rating.dart';
