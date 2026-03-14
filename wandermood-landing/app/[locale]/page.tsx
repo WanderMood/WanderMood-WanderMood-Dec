@@ -65,6 +65,18 @@ const LOCALES = [
   { code: "fr", label: "FR" },
 ] as const;
 
+function NavLink({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onPress}
+      className="flex min-h-[48px] items-center rounded-xl px-4 text-left text-base font-medium text-zinc-800 hover:bg-zinc-100 active:bg-zinc-200"
+    >
+      {label}
+    </button>
+  );
+}
+
 export default function Home() {
   const tNav = useTranslations("nav");
   const tFooter = useTranslations("footer");
@@ -73,10 +85,12 @@ export default function Home() {
   const currentLocale = useLocale();
   const [activeIndex, setActiveIndex] = useState(0);
   const [navSolid, setNavSolid] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const scrollRef = useRef<HTMLElement | null>(null);
   const sectionRefs = useRef<(HTMLElement | null)[]>([]);
 
   const goTo = useCallback((index: number) => {
+    setMenuOpen(false);
     const el = document.getElementById(CARD_IDS[index]);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     window.history.replaceState(null, "", `#${CARD_IDS[index]}`);
@@ -141,20 +155,21 @@ export default function Home() {
           borderColor: navSolid ? "rgba(0,0,0,0.06)" : "transparent",
         }}
         transition={{ duration: 0.2 }}
-        className="fixed left-0 right-0 top-0 z-50 border-b backdrop-blur-sm"
+        className="fixed left-0 right-0 top-0 z-50 border-b backdrop-blur-sm safe-top"
       >
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+        <div className="mx-auto flex h-14 min-h-[44px] max-w-6xl items-center justify-between px-4 sm:px-6 md:h-16">
           <button
             type="button"
             onClick={() => goTo(0)}
-            className={`text-xl font-bold tracking-tight transition-colors ${
+            className={`text-lg font-bold tracking-tight transition-colors sm:text-xl ${
               !navSolid && activeIndex === 1 ? "text-white" : "text-zinc-900"
             }`}
             style={{ fontFamily: "var(--font-museo)" }}
           >
             {tNav("brand")}
           </button>
-          <div className={`flex items-center gap-4 text-sm font-medium transition-colors md:gap-6 ${
+          {/* Desktop nav */}
+          <div className={`hidden items-center gap-4 text-sm font-medium transition-colors md:flex md:gap-6 ${
             !navSolid && activeIndex === 1 ? "text-white/90 hover:text-white" : "text-zinc-600 hover:text-zinc-900"
           }`}>
             <button type="button" onClick={() => goTo(0)} className="hover:text-zinc-900">{tNav("theApp")}</button>
@@ -185,26 +200,85 @@ export default function Home() {
               {tNav("download")}
             </button>
           </div>
+          {/* Mobile: hamburger */}
+          <button
+            type="button"
+            onClick={() => setMenuOpen((o) => !o)}
+            className={`flex h-10 w-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-lg md:hidden ${
+              !navSolid && activeIndex === 1 ? "text-white hover:bg-white/10" : "text-zinc-700 hover:bg-zinc-100"
+            }`}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+          >
+            {menuOpen ? (
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            ) : (
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+            )}
+          </button>
         </div>
+        {/* Mobile menu overlay */}
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 top-[calc(3.5rem+env(safe-area-inset-top,0px))] z-40 bg-[#fffdf5] md:hidden"
+            aria-hidden="true"
+          >
+            <div className="flex flex-col gap-1 px-4 py-6">
+              <NavLink label={tNav("theApp")} onPress={() => goTo(0)} />
+              <NavLink label={tNav("experience")} onPress={() => goTo(2)} />
+              <NavLink label={tNav("moods")} onPress={() => goTo(3)} />
+              <NavLink label={tNav("howItWorks")} onPress={() => goTo(4)} />
+              <div className="my-4 flex flex-wrap gap-2">
+                {LOCALES.map(({ code, label }) => (
+                  <button
+                    key={code}
+                    type="button"
+                    onClick={() => router.replace(pathname, { locale: code })}
+                    className={`min-h-[44px] min-w-[44px] rounded-full px-3 text-sm font-medium transition-colors ${
+                      currentLocale === code ? "bg-emerald-100 text-emerald-800" : "bg-zinc-100 text-zinc-700"
+                    }`}
+                    aria-label={`Switch to ${label}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => goTo(5)}
+                className="mt-4 flex min-h-[48px] items-center justify-center rounded-full font-semibold text-white"
+                style={{ backgroundColor: BRAND_GREEN }}
+              >
+                {tNav("download")}
+              </button>
+            </div>
+          </motion.div>
+        )}
       </motion.nav>
 
-      <div className="fixed right-4 top-1/2 z-50 flex -translate-y-1/2 flex-col gap-2">
+      {/* Section dots: bottom center on mobile (touch-friendly), right side on desktop */}
+      <div className="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 flex-row gap-1 md:bottom-auto md:left-auto md:right-4 md:top-1/2 md:-translate-x-0 md:-translate-y-1/2 md:flex-col md:gap-2 safe-bottom">
         {CARD_IDS.map((_, i) => (
           <button
             key={i}
             type="button"
             onClick={() => goTo(i)}
-            className={`h-2 rounded-full transition-all ${
-              i === activeIndex ? "w-6 bg-zinc-900" : "w-2 bg-zinc-300 hover:bg-zinc-400"
-            }`}
+            className="flex min-h-[44px] min-w-[44px] flex-shrink-0 items-center justify-center rounded-full transition-colors md:min-h-0 md:min-w-0 md:py-2"
             aria-label={`Go to section ${i + 1}`}
-          />
+          >
+            <span className={`rounded-full transition-all ${
+              i === activeIndex ? "h-2 w-6 bg-zinc-900" : "h-2 w-2 bg-zinc-300 hover:bg-zinc-400"
+            }`} />
+          </button>
         ))}
       </div>
 
       <main
         ref={scrollRef}
-        className="h-screen overflow-y-auto overflow-x-hidden snap-y snap-mandatory bg-[#fffdf5] scroll-smooth pt-16"
+        className="h-screen overflow-y-auto overflow-x-hidden snap-y snap-mandatory bg-[#fffdf5] scroll-smooth pb-24 pt-16 md:pb-0"
         style={{ scrollSnapType: "y mandatory" }}
       >
         <section id={CARD_IDS[0]} ref={(el) => { sectionRefs.current[0] = el; }} className="min-h-screen w-full shrink-0 snap-start scroll-mt-16 bg-[#fffdf5]">
@@ -228,7 +302,7 @@ export default function Home() {
       </main>
 
       {activeIndex !== 0 && (
-        <footer className="fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-200/80 bg-[#fffdf5]/98 px-6 py-4 backdrop-blur-md">
+        <footer className="fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-200/80 bg-[#fffdf5]/98 px-4 py-4 backdrop-blur-md safe-bottom sm:px-6">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 text-sm">
             <span className="font-semibold" style={{ fontFamily: "var(--font-museo)", color: BRAND_GREEN }}>
               {tNav("brand")}
@@ -261,10 +335,10 @@ function HeroCard({ onNext }: { onNext: () => void }) {
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/60" />
       </div>
       <div className="relative z-10 flex flex-col items-center pt-20">
-        <h1 className="text-7xl font-extrabold tracking-tight text-white drop-shadow-lg md:text-8xl lg:text-9xl" style={{ fontFamily: "var(--font-museo)" }}>
+        <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-lg sm:text-5xl md:text-7xl lg:text-8xl xl:text-9xl" style={{ fontFamily: "var(--font-museo)" }}>
           {t("title")}
         </h1>
-        <p className="mt-6 max-w-xl text-lg font-medium text-white/90 drop-shadow-md md:text-2xl">{t("tagline")}</p>
+        <p className="mt-4 max-w-xl text-base font-medium text-white/90 drop-shadow-md sm:text-lg md:mt-6 md:text-2xl">{t("tagline")}</p>
         <motion.button
           type="button"
           onClick={onNext}
@@ -519,7 +593,7 @@ function BigPhoneMockup({ screenshot, alt }: { screenshot: string; alt: string }
   const [error, setError] = useState(false);
   return (
     <div className="overflow-hidden rounded-[2rem] border-[8px] border-zinc-700 bg-zinc-800 shadow-2xl" style={{ background: "linear-gradient(145deg, #52525b 0%, #27272a 50%, #52525b 100%)" }}>
-      <div className="relative aspect-[9/19] w-[280px] md:w-[320px]">
+      <div className="relative aspect-[9/19] w-full max-w-[280px] md:max-w-[320px]">
         {!error ? (
           <Image src={screenshot} alt={alt} fill className="object-cover object-top" sizes="320px" onError={() => setError(true)} />
         ) : (
@@ -558,14 +632,14 @@ function AppPreviewCard({ onNext }: { onNext: () => void }) {
       <p className="text-center text-sm font-semibold uppercase tracking-wider text-emerald-600">{t("eyebrow")}</p>
       <h2 className="mt-2 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: "var(--font-museo)", color: BRAND_GREEN }}>{t("title")}</h2>
       <p className="mt-3 text-center text-base text-zinc-600">{t("subtitle")}</p>
-      <div className="relative mx-auto mt-12 flex min-h-[420px] w-full max-w-5xl items-center justify-center md:min-h-[520px]">
-        <div className="absolute left-[4%] top-[58%] z-10 md:left-[6%]" style={{ transform: "translateY(-50%) rotate(-14deg)" }}>
+      <div className="relative mx-auto mt-8 flex min-h-[320px] w-full max-w-5xl items-center justify-center sm:min-h-[400px] md:mt-12 md:min-h-[520px]">
+        <div className="absolute left-0 top-[58%] z-10 w-[200px] sm:left-[2%] sm:w-[240px] md:left-[6%] md:w-auto" style={{ transform: "translateY(-50%) rotate(-14deg)" }}>
           <BigPhoneMockup screenshot={APP_PREVIEW_SCREENSHOTS[0]} alt={tPreviews("pickMood.label")} />
         </div>
-        <div className="relative z-20">
+        <div className="relative z-20 w-[220px] sm:w-[260px] md:w-auto">
           <BigPhoneMockup screenshot={APP_PREVIEW_SCREENSHOTS[1]} alt={tPreviews("myDay.label")} />
         </div>
-        <div className="absolute right-[4%] top-[58%] z-10 md:right-[6%]" style={{ transform: "translateY(-50%) rotate(14deg)" }}>
+        <div className="absolute right-0 top-[58%] z-10 w-[200px] sm:right-[2%] sm:w-[240px] md:right-[6%] md:w-auto" style={{ transform: "translateY(-50%) rotate(14deg)" }}>
           <BigPhoneMockup screenshot={APP_PREVIEW_SCREENSHOTS[2]} alt={tPreviews("wanderFeed.label")} />
         </div>
         <ReviewCard name={REVIEWS[0].name} rating={REVIEWS[0].rating} initials={REVIEWS[0].initials} avatar={REVIEWS[0].avatar} className="left-0 top-[8%] md:left-0 md:top-[12%]" />

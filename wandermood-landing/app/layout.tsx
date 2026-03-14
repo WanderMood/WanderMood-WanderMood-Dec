@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, MuseoModerno } from "next/font/google";
 import "./globals.css";
 
@@ -44,6 +44,13 @@ export const metadata: Metadata = {
     follow: true,
   },
   alternates: { canonical: SITE_URL },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
 };
 
 const jsonLd = {
