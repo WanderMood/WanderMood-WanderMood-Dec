@@ -1,0 +1,109 @@
+{
+  "nav": {
+    "brand": "WanderMood",
+    "theApp": "L'app",
+    "experience": "Expérience",
+    "moods": "Humeurs",
+    "howItWorks": "Comment ça marche",
+    "download": "Télécharger l'app"
+  },
+  "hero": {
+    "title": "WanderMood",
+    "tagline": "Planifiez votre journée parfaite selon votre humeur. Des plans personnalisés qui s'adaptent à la météo et à vos préférences.",
+    "cta": "Explorez votre vibe",
+    "imageAlt": "Belle ville côtière en Italie"
+  },
+  "appPreview": {
+    "eyebrow": "L'app",
+    "title": "Découvrez ce que vous obtenez",
+    "subtitle": "Explorez le monde avec notre app.",
+    "nextButton": "Suivant : Explorez votre vibe →"
+  },
+  "appPreviews": {
+    "pickMood": { "label": "Choisissez votre humeur", "description": "Choisissez comment vous vous sentez et obtenez un plan qui vous correspond." },
+    "myDay": { "label": "Ma journée", "description": "Votre timeline : maintenant, ensuite, terminé." },
+    "wanderFeed": { "label": "WanderFeed", "description": "Voyez ce que les autres explorent et partagez le vôtre." }
+  },
+  "experience": {
+    "eyebrow": "Vivez le monde autrement",
+    "title": "Des voyages à l'énergie de votre journée.",
+    "intro": "Moody vous aide à planifier votre journée selon comment vous vous sentez — un tap, et votre vibe devient votre plan. Les plans s'adaptent à la météo. Filtrez par régime, accessibilité et vos envies.",
+    "back": "Retour",
+    "nextButton": "Suivant : Humeurs →"
+  },
+  "featureCards": {
+    "pickMood": { "title": "Choisissez votre humeur", "line": "Un tap. Un plan personnalisé qui correspond à votre vibe." },
+    "getYourDay": { "title": "Obtenez votre journée", "line": "Maintenant, ensuite, terminé — et ça s'adapte à la météo." },
+    "wanderFeed": { "title": "WanderFeed", "line": "Voyez ce que les autres explorent et partagez le vôtre." },
+    "advancedFilters": { "title": "Filtres avancés", "line": "Régime, accessibilité, spots photo et plus — trouvez exactement ce que vous cherchez." }
+  },
+  "moods": {
+    "eyebrow": "Explorer par humeur",
+    "title": "Comment voulez-vous vous sentir aujourd'hui ?",
+    "subtitle": "Choisissez une ou plusieurs — on façonne votre journée autour.",
+    "back": "Retour",
+    "nextButton": "Suivant : Comment ça marche →"
+  },
+  "moodsGrid": {
+    "happy": "Heureux",
+    "adventurous": "Aventurier",
+    "relaxed": "Détendu",
+    "energetic": "Énergique",
+    "romantic": "Romantique",
+    "social": "Sociable",
+    "cultural": "Culturel",
+    "curious": "Curieux",
+    "cozy": "Cocooning",
+    "excited": "Enthousiaste",
+    "foody": "Foodie",
+    "surprise": "Surprise"
+  },
+  "howItWorks": {
+    "eyebrow": "Comment ça marche",
+    "title": "Votre journée en trois étapes",
+    "subtitle": "De l'humeur au plan en quelques secondes.",
+    "back": "Retour",
+    "nextButton": "Suivant : Télécharger →"
+  },
+  "steps": {
+    "step1Title": "Choisissez votre humeur",
+    "step1Subtitle": "Un tap. Aucun formulaire.",
+    "step2Title": "Obtenez votre journée",
+    "step2Subtitle": "Un plan qui correspond à votre énergie et à la météo.",
+    "step3Title": "Créez des souvenirs",
+    "step3Subtitle": "Explorez à votre façon."
+  },
+  "cta": {
+    "title": "Allons faire des souvenirs.",
+    "subtitle": "Téléchargez l'app et planifiez votre journée parfaite — humeur, météo et filtres inclus.",
+    "appStore": "App Store",
+    "googlePlay": "Google Play",
+    "downloadButton": "Télécharger l'app",
+    "backToHowItWorks": "← Retour à Comment ça marche"
+  },
+  "footer": {
+    "brand": "WanderMood",
+    "privacy": "Confidentialité",
+    "contact": "Contact"
+  },
+  "phoneMockup": {
+    "howDoYouFeel": "Comment vous sentez-vous ?",
+    "myDay": "Ma journée",
+    "moody": "Moody",
+    "feed": "Feed",
+    "more": "Plus",
+    "morning": "Matin",
+    "afternoon": "Après-midi",
+    "evening": "Soir",
+    "coffeeJordaan": "Café au Jordaan",
+    "rijksmuseum": "Rijksmuseum et canal",
+    "dinnerDrinks": "Dîner et verres"
+  },
+  "mockupMoods": {
+    "adventure": "Aventure",
+    "relaxed": "Détendu",
+    "foodie": "Foodie",
+    "cultural": "Culturel",
+    "nightOut": "Sortie nocturne"
+  }
+}

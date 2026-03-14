@@ -1,0 +1,109 @@
+{
+  "nav": {
+    "brand": "WanderMood",
+    "theApp": "The app",
+    "experience": "Experience",
+    "moods": "Moods",
+    "howItWorks": "How it works",
+    "download": "Download the app"
+  },
+  "hero": {
+    "title": "WanderMood",
+    "tagline": "Plan your perfect day based on your mood. Personalized plans that adapt to the weather and your preferences.",
+    "cta": "Explore your vibe",
+    "imageAlt": "Beautiful coastal town in Italy"
+  },
+  "appPreview": {
+    "eyebrow": "The app",
+    "title": "See what you get",
+    "subtitle": "Already explored the world with our app.",
+    "nextButton": "Next: Explore your vibe →"
+  },
+  "appPreviews": {
+    "pickMood": { "label": "Pick your mood", "description": "Choose how you feel and get a plan that fits." },
+    "myDay": { "label": "My Day", "description": "Your timeline: right now, up next, done." },
+    "wanderFeed": { "label": "WanderFeed", "description": "See what others are exploring and share yours." }
+  },
+  "experience": {
+    "eyebrow": "Experience the world differently",
+    "title": "Travel that matches your energy.",
+    "intro": "Moody helps you plan your day around how you feel — one tap, and your vibe becomes your plan. Plans adapt to the weather. Filter by diet, accessibility, and what you're in the mood for.",
+    "back": "Back",
+    "nextButton": "Next: Moods →"
+  },
+  "featureCards": {
+    "pickMood": { "title": "Pick your mood", "line": "One tap. Get a personalized plan that fits your vibe." },
+    "getYourDay": { "title": "Get your day", "line": "Right now, up next, done — and it adapts to the weather." },
+    "wanderFeed": { "title": "WanderFeed", "line": "See what others explore and share yours." },
+    "advancedFilters": { "title": "Advanced filters", "line": "Diet, accessibility, photo spots & more — find exactly what you're looking for." }
+  },
+  "moods": {
+    "eyebrow": "Explore by Mood",
+    "title": "How do you want to feel today?",
+    "subtitle": "Pick one or more — we'll shape your day around it.",
+    "back": "Back",
+    "nextButton": "Next: How it works →"
+  },
+  "moodsGrid": {
+    "happy": "Happy",
+    "adventurous": "Adventurous",
+    "relaxed": "Relaxed",
+    "energetic": "Energetic",
+    "romantic": "Romantic",
+    "social": "Social",
+    "cultural": "Cultural",
+    "curious": "Curious",
+    "cozy": "Cozy",
+    "excited": "Excited",
+    "foody": "Foody",
+    "surprise": "Surprise"
+  },
+  "howItWorks": {
+    "eyebrow": "How it works",
+    "title": "Your day, in three steps",
+    "subtitle": "From mood to plan in seconds.",
+    "back": "Back",
+    "nextButton": "Next: Download →"
+  },
+  "steps": {
+    "step1Title": "Pick your mood",
+    "step1Subtitle": "One tap. No forms.",
+    "step2Title": "Get your day",
+    "step2Subtitle": "A plan that matches your energy and the weather.",
+    "step3Title": "Make memories",
+    "step3Subtitle": "Go explore, your way."
+  },
+  "cta": {
+    "title": "Let's go make memories.",
+    "subtitle": "Get the app and plan your perfect day — mood, weather, and filters included.",
+    "appStore": "App Store",
+    "googlePlay": "Google Play",
+    "downloadButton": "Download the app",
+    "backToHowItWorks": "← Back to How it works"
+  },
+  "footer": {
+    "brand": "WanderMood",
+    "privacy": "Privacy",
+    "contact": "Contact"
+  },
+  "phoneMockup": {
+    "howDoYouFeel": "How do you feel?",
+    "myDay": "My Day",
+    "moody": "Moody",
+    "feed": "Feed",
+    "more": "More",
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "evening": "Evening",
+    "coffeeJordaan": "Coffee at Jordaan",
+    "rijksmuseum": "Rijksmuseum & canal",
+    "dinnerDrinks": "Dinner & drinks"
+  },
+  "mockupMoods": {
+    "adventure": "Adventure",
+    "relaxed": "Relaxed",
+    "foodie": "Foodie",
+    "cultural": "Cultural",
+    "nightOut": "Night Out"
+  }
+}
