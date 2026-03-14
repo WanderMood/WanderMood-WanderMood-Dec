@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fffdf5;
+  --foreground: #1a1a2e;
+  --wm-green: #4caf50;
+  --wm-green-dark: #16a34a;
+  --wm-orange: #f97316;
+  --wm-pink: #ec4899;
+  --wm-teal: #14b8a6;
+  --wm-violet: #9333ea;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-museo: "Museo Moderno", var(--font-sans);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}

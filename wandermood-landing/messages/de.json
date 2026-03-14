@@ -1,0 +1,109 @@
+{
+  "nav": {
+    "brand": "WanderMood",
+    "theApp": "Die App",
+    "experience": "Erlebnis",
+    "moods": "Stimmungen",
+    "howItWorks": "So funktioniert's",
+    "download": "App herunterladen"
+  },
+  "hero": {
+    "title": "WanderMood",
+    "tagline": "Plane deinen perfekten Tag nach deiner Stimmung. Personalisierte Pläne, die sich an Wetter und deine Vorlieben anpassen.",
+    "cta": "Entdecke deine Stimmung",
+    "imageAlt": "Schöne Küstenstadt in Italien"
+  },
+  "appPreview": {
+    "eyebrow": "Die App",
+    "title": "Sieh, was du bekommst",
+    "subtitle": "Entdecke die Welt schon mit unserer App.",
+    "nextButton": "Weiter: Entdecke deine Stimmung →"
+  },
+  "appPreviews": {
+    "pickMood": { "label": "Wähle deine Stimmung", "description": "Wähle, wie du dich fühlst, und erhalte einen passenden Plan." },
+    "myDay": { "label": "Mein Tag", "description": "Deine Timeline: jetzt, als Nächstes, erledigt." },
+    "wanderFeed": { "label": "WanderFeed", "description": "Sieh, was andere entdecken, und teile deins." }
+  },
+  "experience": {
+    "eyebrow": "Erlebe die Welt anders",
+    "title": "Reisen, die zu deiner Energie passen.",
+    "intro": "Moody hilft dir, deinen Tag nach deinem Gefühl zu planen — ein Tipp, und deine Stimmung wird dein Plan. Pläne passen sich dem Wetter an. Filtere nach Ernährung, Barrierefreiheit und worauf du Lust hast.",
+    "back": "Zurück",
+    "nextButton": "Weiter: Stimmungen →"
+  },
+  "featureCards": {
+    "pickMood": { "title": "Wähle deine Stimmung", "line": "Ein Tipp. Ein personalisierter Plan, der zu dir passt." },
+    "getYourDay": { "title": "Hol dir deinen Tag", "line": "Jetzt, als Nächstes, erledigt — und angepasst ans Wetter." },
+    "wanderFeed": { "title": "WanderFeed", "line": "Sieh, was andere entdecken, und teile deins." },
+    "advancedFilters": { "title": "Erweiterte Filter", "line": "Ernährung, Barrierefreiheit, Fotospots und mehr — finde genau, was du suchst." }
+  },
+  "moods": {
+    "eyebrow": "Nach Stimmung entdecken",
+    "title": "Wie möchtest du dich heute fühlen?",
+    "subtitle": "Wähle eine oder mehrere — wir gestalten deinen Tag danach.",
+    "back": "Zurück",
+    "nextButton": "Weiter: So funktioniert's →"
+  },
+  "moodsGrid": {
+    "happy": "Fröhlich",
+    "adventurous": "Abenteuerlustig",
+    "relaxed": "Entspannt",
+    "energetic": "Energetisch",
+    "romantic": "Romantisch",
+    "social": "Gesellig",
+    "cultural": "Kulturell",
+    "curious": "Neugierig",
+    "cozy": "Gemütlich",
+    "excited": "Begeistert",
+    "foody": "Foodie",
+    "surprise": "Überraschung"
+  },
+  "howItWorks": {
+    "eyebrow": "So funktioniert's",
+    "title": "Dein Tag in drei Schritten",
+    "subtitle": "Von der Stimmung zum Plan in Sekunden.",
+    "back": "Zurück",
+    "nextButton": "Weiter: Download →"
+  },
+  "steps": {
+    "step1Title": "Wähle deine Stimmung",
+    "step1Subtitle": "Ein Tipp. Keine Formulare.",
+    "step2Title": "Hol dir deinen Tag",
+    "step2Subtitle": "Ein Plan, der zu deiner Energie und dem Wetter passt.",
+    "step3Title": "Sammle Erinnerungen",
+    "step3Subtitle": "Entdecke auf deine Weise."
+  },
+  "cta": {
+    "title": "Lass uns Erinnerungen sammeln.",
+    "subtitle": "Hol dir die App und plane deinen perfekten Tag — Stimmung, Wetter und Filter inklusive.",
+    "appStore": "App Store",
+    "googlePlay": "Google Play",
+    "downloadButton": "App herunterladen",
+    "backToHowItWorks": "← Zurück zu So funktioniert's"
+  },
+  "footer": {
+    "brand": "WanderMood",
+    "privacy": "Datenschutz",
+    "contact": "Kontakt"
+  },
+  "phoneMockup": {
+    "howDoYouFeel": "Wie fühlst du dich?",
+    "myDay": "Mein Tag",
+    "moody": "Moody",
+    "feed": "Feed",
+    "more": "Mehr",
+    "morning": "Morgen",
+    "afternoon": "Nachmittag",
+    "evening": "Abend",
+    "coffeeJordaan": "Kaffee in der Jordaan",
+    "rijksmuseum": "Rijksmuseum & Gracht",
+    "dinnerDrinks": "Abendessen & Drinks"
+  },
+  "mockupMoods": {
+    "adventure": "Abenteuer",
+    "relaxed": "Entspannt",
+    "foodie": "Foodie",
+    "cultural": "Kulturell",
+    "nightOut": "Nacht unterwegs"
+  }
+}

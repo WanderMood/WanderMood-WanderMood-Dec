@@ -1,0 +1,109 @@
+{
+  "nav": {
+    "brand": "WanderMood",
+    "theApp": "La app",
+    "experience": "Experiencia",
+    "moods": "Estados de ánimo",
+    "howItWorks": "Cómo funciona",
+    "download": "Descargar la app"
+  },
+  "hero": {
+    "title": "WanderMood",
+    "tagline": "Planifica tu día perfecto según tu estado de ánimo. Planes personalizados que se adaptan al tiempo y a tus preferencias.",
+    "cta": "Explora tu vibe",
+    "imageAlt": "Pueblo costero en Italia"
+  },
+  "appPreview": {
+    "eyebrow": "La app",
+    "title": "Mira lo que obtienes",
+    "subtitle": "Descubre el mundo con nuestra app.",
+    "nextButton": "Siguiente: Explora tu vibe →"
+  },
+  "appPreviews": {
+    "pickMood": { "label": "Elige tu estado de ánimo", "description": "Elige cómo te sientes y obtén un plan a tu medida." },
+    "myDay": { "label": "Mi día", "description": "Tu línea de tiempo: ahora, después, hecho." },
+    "wanderFeed": { "label": "WanderFeed", "description": "Mira qué exploran otros y comparte lo tuyo." }
+  },
+  "experience": {
+    "eyebrow": "Experimenta el mundo de otra forma",
+    "title": "Viajes que encajan con tu energía.",
+    "intro": "Moody te ayuda a planificar tu día según cómo te sientes — un toque, y tu vibe se convierte en tu plan. Los planes se adaptan al tiempo. Filtra por dieta, accesibilidad y lo que te apetezca.",
+    "back": "Atrás",
+    "nextButton": "Siguiente: Estados de ánimo →"
+  },
+  "featureCards": {
+    "pickMood": { "title": "Elige tu estado de ánimo", "line": "Un toque. Un plan personalizado que encaja con tu vibe." },
+    "getYourDay": { "title": "Obtén tu día", "line": "Ahora, después, hecho — y se adapta al tiempo." },
+    "wanderFeed": { "title": "WanderFeed", "line": "Mira qué exploran otros y comparte lo tuyo." },
+    "advancedFilters": { "title": "Filtros avanzados", "line": "Dieta, accesibilidad, fotos y más — encuentra exactamente lo que buscas." }
+  },
+  "moods": {
+    "eyebrow": "Explora por estado de ánimo",
+    "title": "¿Cómo quieres sentirte hoy?",
+    "subtitle": "Elige uno o más — daremos forma a tu día.",
+    "back": "Atrás",
+    "nextButton": "Siguiente: Cómo funciona →"
+  },
+  "moodsGrid": {
+    "happy": "Feliz",
+    "adventurous": "Aventurero",
+    "relaxed": "Relajado",
+    "energetic": "Enérgico",
+    "romantic": "Romántico",
+    "social": "Social",
+    "cultural": "Cultural",
+    "curious": "Curioso",
+    "cozy": "Acogedor",
+    "excited": "Emocionado",
+    "foody": "Foodie",
+    "surprise": "Sorpresa"
+  },
+  "howItWorks": {
+    "eyebrow": "Cómo funciona",
+    "title": "Tu día, en tres pasos",
+    "subtitle": "Del estado de ánimo al plan en segundos.",
+    "back": "Atrás",
+    "nextButton": "Siguiente: Descargar →"
+  },
+  "steps": {
+    "step1Title": "Elige tu estado de ánimo",
+    "step1Subtitle": "Un toque. Sin formularios.",
+    "step2Title": "Obtén tu día",
+    "step2Subtitle": "Un plan que encaja con tu energía y el tiempo.",
+    "step3Title": "Crea recuerdos",
+    "step3Subtitle": "Explora a tu manera."
+  },
+  "cta": {
+    "title": "Vamos a crear recuerdos.",
+    "subtitle": "Descarga la app y planifica tu día perfecto — estado de ánimo, tiempo y filtros incluidos.",
+    "appStore": "App Store",
+    "googlePlay": "Google Play",
+    "downloadButton": "Descargar la app",
+    "backToHowItWorks": "← Volver a Cómo funciona"
+  },
+  "footer": {
+    "brand": "WanderMood",
+    "privacy": "Privacidad",
+    "contact": "Contacto"
+  },
+  "phoneMockup": {
+    "howDoYouFeel": "¿Cómo te sientes?",
+    "myDay": "Mi día",
+    "moody": "Moody",
+    "feed": "Feed",
+    "more": "Más",
+    "morning": "Mañana",
+    "afternoon": "Tarde",
+    "evening": "Noche",
+    "coffeeJordaan": "Café en Jordaan",
+    "rijksmuseum": "Rijksmuseum y canal",
+    "dinnerDrinks": "Cena y copas"
+  },
+  "mockupMoods": {
+    "adventure": "Aventura",
+    "relaxed": "Relajado",
+    "foodie": "Foodie",
+    "cultural": "Cultural",
+    "nightOut": "Salir de noche"
+  }
+}

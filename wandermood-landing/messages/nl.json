@@ -1,0 +1,109 @@
+{
+  "nav": {
+    "brand": "WanderMood",
+    "theApp": "De app",
+    "experience": "Ervaring",
+    "moods": "Stemmingen",
+    "howItWorks": "Hoe het werkt",
+    "download": "Download de app"
+  },
+  "hero": {
+    "title": "WanderMood",
+    "tagline": "Plan je perfecte dag op basis van je stemming. Persoonlijke plannen die zich aanpassen aan het weer en jouw voorkeuren.",
+    "cta": "Ontdek je vibe",
+    "imageAlt": "Prachtig kuststadje in Italië"
+  },
+  "appPreview": {
+    "eyebrow": "De app",
+    "title": "Zie wat je krijgt",
+    "subtitle": "Ontdek de wereld al met onze app.",
+    "nextButton": "Volgende: Ontdek je vibe →"
+  },
+  "appPreviews": {
+    "pickMood": { "label": "Kies je stemming", "description": "Kies hoe je je voelt en krijg een plan dat bij je past." },
+    "myDay": { "label": "Mijn dag", "description": "Je tijdlijn: nu, daarna, klaar." },
+    "wanderFeed": { "label": "WanderFeed", "description": "Zie wat anderen ontdekken en deel de jouwe." }
+  },
+  "experience": {
+    "eyebrow": "Ervaar de wereld anders",
+    "title": "Reizen die past bij je energie.",
+    "intro": "Moody helpt je je dag te plannen rond hoe je je voelt — één tik, en je vibe wordt je plan. Plannen passen zich aan het weer aan. Filter op dieet, toegankelijkheid en waar je zin in hebt.",
+    "back": "Terug",
+    "nextButton": "Volgende: Stemmingen →"
+  },
+  "featureCards": {
+    "pickMood": { "title": "Kies je stemming", "line": "Eén tik. Krijg een persoonlijk plan dat bij je vibe past." },
+    "getYourDay": { "title": "Krijg je dag", "line": "Nu, daarna, klaar — en het past zich aan het weer aan." },
+    "wanderFeed": { "title": "WanderFeed", "line": "Zie wat anderen ontdekken en deel de jouwe." },
+    "advancedFilters": { "title": "Geavanceerde filters", "line": "Dieet, toegankelijkheid, fotoplekken en meer — vind precies wat je zoekt." }
+  },
+  "moods": {
+    "eyebrow": "Verken op stemming",
+    "title": "Hoe wil je je vandaag voelen?",
+    "subtitle": "Kies één of meer — we vormen je dag eromheen.",
+    "back": "Terug",
+    "nextButton": "Volgende: Hoe het werkt →"
+  },
+  "moodsGrid": {
+    "happy": "Blij",
+    "adventurous": "Avontuurlijk",
+    "relaxed": "Ontspannen",
+    "energetic": "Energiek",
+    "romantic": "Romantisch",
+    "social": "Sociaal",
+    "cultural": "Cultureel",
+    "curious": "Nieuwsgierig",
+    "cozy": "Gezellig",
+    "excited": "Opgewonden",
+    "foody": "Foodie",
+    "surprise": "Verrassing"
+  },
+  "howItWorks": {
+    "eyebrow": "Hoe het werkt",
+    "title": "Je dag, in drie stappen",
+    "subtitle": "Van stemming naar plan in seconden.",
+    "back": "Terug",
+    "nextButton": "Volgende: Download →"
+  },
+  "steps": {
+    "step1Title": "Kies je stemming",
+    "step1Subtitle": "Eén tik. Geen formulieren.",
+    "step2Title": "Krijg je dag",
+    "step2Subtitle": "Een plan dat past bij je energie en het weer.",
+    "step3Title": "Maak herinneringen",
+    "step3Subtitle": "Ga op verkenning, op jouw manier."
+  },
+  "cta": {
+    "title": "Laten we herinneringen maken.",
+    "subtitle": "Download de app en plan je perfecte dag — stemming, weer en filters inbegrepen.",
+    "appStore": "App Store",
+    "googlePlay": "Google Play",
+    "downloadButton": "Download de app",
+    "backToHowItWorks": "← Terug naar Hoe het werkt"
+  },
+  "footer": {
+    "brand": "WanderMood",
+    "privacy": "Privacy",
+    "contact": "Contact"
+  },
+  "phoneMockup": {
+    "howDoYouFeel": "Hoe voel je je?",
+    "myDay": "Mijn dag",
+    "moody": "Moody",
+    "feed": "Feed",
+    "more": "Meer",
+    "morning": "Ochtend",
+    "afternoon": "Middag",
+    "evening": "Avond",
+    "coffeeJordaan": "Koffie in de Jordaan",
+    "rijksmuseum": "Rijksmuseum & gracht",
+    "dinnerDrinks": "Diner & drinks"
+  },
+  "mockupMoods": {
+    "adventure": "Avontuur",
+    "relaxed": "Ontspannen",
+    "foodie": "Foodie",
+    "cultural": "Cultureel",
+    "nightOut": "Uitgaan"
+  }
+}
