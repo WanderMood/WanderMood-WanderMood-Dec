@@ -593,14 +593,23 @@ function HowItWorksCard({ onBack, onNext }: { onBack: () => void; onNext: () => 
 function BigPhoneMockup({ screenshot, alt }: { screenshot: string; alt: string }) {
   const [error, setError] = useState(false);
   return (
-    <div className="overflow-hidden rounded-[2rem] border-[8px] border-zinc-700 bg-zinc-800 shadow-2xl" style={{ background: "linear-gradient(145deg, #52525b 0%, #27272a 50%, #52525b 100%)" }}>
-      <div className="relative aspect-[9/19] w-full max-w-[280px] md:max-w-[320px]">
-        {!error ? (
-          <Image src={screenshot} alt={alt} fill className="object-contain object-top" sizes="(max-width: 768px) 90vw, 320px" onError={() => setError(true)} />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-400">📱</div>
-        )}
-      </div>
+    <div
+      className="w-full overflow-hidden rounded-[2rem] border-[8px] border-zinc-700 bg-zinc-800 shadow-2xl"
+      style={{ background: "linear-gradient(145deg, #52525b 0%, #27272a 50%, #52525b 100%)" }}
+    >
+      {!error ? (
+        <Image
+          src={screenshot}
+          alt={alt}
+          width={1179}
+          height={2556}
+          className="h-auto w-full object-contain object-top"
+          sizes="(max-width: 767px) 90vw, (max-width: 1023px) 45vw, 30vw"
+          onError={() => setError(true)}
+        />
+      ) : (
+        <div className="flex aspect-[9/19] w-full items-center justify-center bg-zinc-100 text-zinc-400">📱</div>
+      )}
     </div>
   );
 }
@@ -636,11 +645,11 @@ function AppPreviewCard({ onNext }: { onNext: () => void }) {
         <p className="mt-3 text-center text-sm text-zinc-600 sm:text-base">{t("subtitle")}</p>
       </div>
 
-      {/* Mobile-first grid: 1 col mobile, 2 col tablet, 3 col desktop */}
-      <div className="wm-container mt-8 grid grid-cols-1 gap-8 md:grid-cols-2 lg:mt-12 lg:grid-cols-3">
+      {/* 1 col mobile, 2 col tablet, 3 col desktop */}
+      <div className="wm-container mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:mt-12 lg:grid-cols-3">
         {APP_PREVIEW_SCREENSHOTS.map((shot, i) => (
           <article key={shot} className="rounded-3xl border border-zinc-100 bg-white p-4 shadow-sm">
-            <div className="flex justify-center">
+            <div className="mx-auto w-full max-w-[240px] sm:max-w-[260px] md:max-w-[280px] lg:max-w-[300px]">
               <BigPhoneMockup screenshot={shot} alt={tPreviews(`${previewKeys[i]}.label`)} />
             </div>
             <p className="mt-4 text-center text-sm font-semibold text-zinc-800">{tPreviews(`${previewKeys[i]}.label`)}</p>
