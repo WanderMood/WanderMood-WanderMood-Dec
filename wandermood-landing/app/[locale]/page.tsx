@@ -157,7 +157,6 @@ export default function Home() {
       >
         <div className="wm-container flex h-14 min-h-[44px] items-center justify-between md:h-16">
           <button
-            <button
             type="button"
             onClick={() => goTo(0)}
             className="flex shrink-0 items-center focus:outline-none"
