@@ -8,10 +8,11 @@
     "download": "Download de app"
   },
   "hero": {
-    "title": "WanderMood",
-    "tagline": "Plan je perfecte dag op basis van je stemming. Persoonlijke plannen die zich aanpassen aan het weer en jouw voorkeuren.",
+    "title": "Plan je perfecte dag op basis van je stemming",
+    "tagline": "Persoonlijke activiteitentips die passen bij hoe jij je voelt - in elke stad, overal ter wereld.",
     "cta": "Ontdek je vibe",
-    "imageAlt": "Prachtig kuststadje in Italië"
+    "imageAlt": "Prachtig kuststadje in Italië",
+    "subtitle": "Van Amsterdam tot Tokio - ontdek activiteiten die passen bij je vibe, zich aanpassen aan het weer en elke dag memorabel maken."
   },
   "appPreview": {
     "eyebrow": "De app",
@@ -36,7 +37,7 @@
   "experience": {
     "eyebrow": "Ervaar de wereld anders",
     "title": "Reizen die past bij je energie.",
-    "intro": "Moody helpt je je dag te plannen rond hoe je je voelt — één tik, en je vibe wordt je plan. Plannen passen zich aan het weer aan. Filter op dieet, toegankelijkheid en waar je zin in hebt.",
+    "intro": "WanderMood helpt je je dag te plannen rond hoe je je voelt — één tik, en je vibe wordt je plan. Plannen passen zich aan het weer aan. Filter op dieet, toegankelijkheid en waar je zin in hebt.",
     "back": "Terug",
     "nextButton": "Volgende: Stemmingen →"
   },
@@ -60,6 +61,18 @@
     "moodMatch": {
       "title": "Mood Match Score",
       "line": "Zie per plan een match-percentage, zodat je meteen weet wat het beste bij je vibe past."
+    },
+    "worksAnywhere": {
+      "title": "Werkt overal",
+      "line": "Rotterdam, Parijs, Tokio of je eigen stad — gebruik WanderMood in elke stad die je ontdekt."
+    },
+    "weatherSmart": {
+      "title": "Weerslimme plannen",
+      "line": "Regenachtige dag? Plannen passen zich automatisch aan met indoor alternatieven."
+    },
+    "forEveryone": {
+      "title": "Voor iedereen",
+      "line": "Elk budget, elk dieet en elke toegankelijkheidsbehoefte — vind wat bij je past."
     }
   },
   "moods": {
@@ -105,7 +118,12 @@
     "googlePlay": "Google Play",
     "downloadButton": "Download de app",
     "backToHowItWorks": "← Terug naar Hoe het werkt",
-    "comingSoon": "Binnenkort beschikbaar"
+    "comingSoon": "Binnenkort beschikbaar",
+    "comingSoonAppStore": "Binnenkort in de App Store",
+    "comingSoonGooglePlay": "Binnenkort in Google Play",
+    "waitlistTitle": "Meld je aan voor de wachtlijst en krijg een seintje bij lancering",
+    "waitlistEmailPlaceholder": "E-mailadres",
+    "waitlistNotifyButton": "Houd me op de hoogte"
   },
   "footer": {
     "brand": "WanderMood",
@@ -158,5 +176,14 @@
     "messageLabel": "Bericht",
     "sendButton": "Verstuur bericht",
     "note": "Dit opent je e-mailapp en stuurt naar hello@wandermood.com."
+  },
+  "worldwide": {
+    "eyebrow": "Wereldwijd beschikbaar",
+    "title": "Werkt in jouw stad",
+    "subtitle": "WanderMood werkt in steden over de hele wereld en groeit elke week.",
+    "countries": "🇳🇱 Nederland • 🇫🇷 Frankrijk • 🇩🇪 Duitsland • 🇪🇸 Spanje • 🇬🇧 Verenigd Koninkrijk • 🇺🇸 Verenigde Staten • 🇯🇵 Japan",
+    "requestButton": "Vraag jouw stad aan →",
+    "back": "Terug",
+    "next": "Volgende: Download →"
   }
 }

@@ -8,10 +8,11 @@
     "download": "Descargar la app"
   },
   "hero": {
-    "title": "WanderMood",
-    "tagline": "Planifica tu día perfecto según tu estado de ánimo. Planes personalizados que se adaptan al tiempo y a tus preferencias.",
+    "title": "Planifica tu día perfecto según tu estado de ánimo",
+    "tagline": "Recomendaciones personalizadas que encajan con cómo te sientes - en cualquier ciudad del mundo.",
     "cta": "Explora tu vibe",
-    "imageAlt": "Pueblo costero en Italia"
+    "imageAlt": "Pueblo costero en Italia",
+    "subtitle": "De Ámsterdam a Tokio - descubre actividades que encajan con tu vibe, se adaptan al clima y hacen cada día memorable."
   },
   "appPreview": {
     "eyebrow": "La app",
@@ -36,7 +37,7 @@
   "experience": {
     "eyebrow": "Experimenta el mundo de otra forma",
     "title": "Viajes que encajan con tu energía.",
-    "intro": "Moody te ayuda a planificar tu día según cómo te sientes — un toque, y tu vibe se convierte en tu plan. Los planes se adaptan al tiempo. Filtra por dieta, accesibilidad y lo que te apetezca.",
+    "intro": "WanderMood te ayuda a planificar tu día según cómo te sientes — un toque y tu vibe se convierte en plan. Los planes se adaptan al clima. Filtra por dieta, accesibilidad y preferencias.",
     "back": "Atrás",
     "nextButton": "Siguiente: Estados de ánimo →"
   },
@@ -60,6 +61,18 @@
     "moodMatch": {
       "title": "Mood Match Score",
       "line": "Consulta el porcentaje de coincidencia de cada plan para saber al instante cuál encaja mejor contigo."
+    },
+    "worksAnywhere": {
+      "title": "Funciona en cualquier ciudad",
+      "line": "Róterdam, París, Tokio o tu ciudad — usa WanderMood donde quieras explorar."
+    },
+    "weatherSmart": {
+      "title": "Planes inteligentes por clima",
+      "line": "¿Día lluvioso? Los planes se adaptan automáticamente con alternativas en interior."
+    },
+    "forEveryone": {
+      "title": "Para todos",
+      "line": "Cada presupuesto, dieta y necesidad de accesibilidad — encuentra lo que te funciona."
     }
   },
   "moods": {
@@ -105,7 +118,12 @@
     "googlePlay": "Google Play",
     "downloadButton": "Descargar la app",
     "backToHowItWorks": "← Volver a Cómo funciona",
-    "comingSoon": "Próximamente"
+    "comingSoon": "Próximamente",
+    "comingSoonAppStore": "Próximamente en App Store",
+    "comingSoonGooglePlay": "Próximamente en Google Play",
+    "waitlistTitle": "Únete a la lista de espera para saber cuándo lanzamos",
+    "waitlistEmailPlaceholder": "Correo electrónico",
+    "waitlistNotifyButton": "Avísame"
   },
   "footer": {
     "brand": "WanderMood",
@@ -158,5 +176,14 @@
     "messageLabel": "Mensaje",
     "sendButton": "Enviar mensaje",
     "note": "Esto abre tu app de correo y envía a hello@wandermood.com."
+  },
+  "worldwide": {
+    "eyebrow": "Disponible en todo el mundo",
+    "title": "Funciona en tu ciudad",
+    "subtitle": "WanderMood funciona en ciudades de todo el mundo y sigue creciendo cada semana.",
+    "countries": "🇳🇱 Países Bajos • 🇫🇷 Francia • 🇩🇪 Alemania • 🇪🇸 España • 🇬🇧 Reino Unido • 🇺🇸 Estados Unidos • 🇯🇵 Japón",
+    "requestButton": "Solicita tu ciudad →",
+    "back": "Atrás",
+    "next": "Siguiente: Descargar →"
   }
 }
