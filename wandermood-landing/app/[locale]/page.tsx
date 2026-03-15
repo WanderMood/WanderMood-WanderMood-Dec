@@ -157,14 +157,22 @@ export default function Home() {
       >
         <div className="wm-container flex h-14 min-h-[44px] items-center justify-between md:h-16">
           <button
+            <button
             type="button"
             onClick={() => goTo(0)}
-            className={`text-lg font-bold tracking-tight transition-colors sm:text-xl ${
-              !navSolid && activeIndex === 1 ? "text-white" : "text-zinc-900"
-            }`}
-            style={{ fontFamily: "var(--font-museo)" }}
+            className="flex shrink-0 items-center focus:outline-none"
+            aria-label={tNav("brand")}
           >
-            {tNav("brand")}
+            <Image
+              src="/logo.png"
+              alt={tNav("brand")}
+              width={160}
+              height={40}
+              className={`h-8 w-auto object-contain sm:h-9 ${
+                !navSolid && activeIndex === 1 ? "brightness-0 invert" : ""
+              }`}
+              priority
+            />
           </button>
           {/* Desktop nav */}
           <div className={`hidden items-center gap-4 text-sm font-medium transition-colors md:flex md:gap-6 ${
@@ -312,9 +320,9 @@ export default function Home() {
 
       <footer className="border-t border-zinc-200/80 bg-[#fffdf5] px-4 py-4 sm:px-6">
         <div className="wm-container flex flex-wrap items-center justify-between gap-3 text-sm">
-          <span className="font-semibold" style={{ fontFamily: "var(--font-museo)", color: BRAND_GREEN }}>
-            {tNav("brand")}
-          </span>
+          <Link href="/" className="flex shrink-0 items-center" aria-label={tNav("brand")}>
+            <Image src="/logo.png" alt={tNav("brand")} width={140} height={36} className="h-8 w-auto object-contain" />
+          </Link>
           <nav className="flex items-center gap-6 text-zinc-500">
             <Link href="/privacy" className="hover:text-zinc-800">{tFooter("privacy")}</Link>
             <Link href="/terms" className="hover:text-zinc-800">{tFooter("terms")}</Link>
@@ -396,7 +404,7 @@ function StatusBar() {
 function AppHeader() {
   return (
     <div className="flex h-11 shrink-0 items-center justify-between border-b border-zinc-100 px-4">
-      <span className="text-sm font-bold tracking-tight" style={{ color: BRAND_GREEN, fontFamily: "var(--font-museo)" }}>WanderMood</span>
+      <Image src="/logo.png" alt="WanderMood" width={100} height={28} className="h-6 w-auto object-contain" />
       <button type="button" className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700" aria-label="Search">
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
       </button>
