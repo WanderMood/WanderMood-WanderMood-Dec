@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
 import { Link, useRouter, usePathname } from "@/i18n/navigation";
@@ -155,7 +155,7 @@ export default function Home() {
         transition={{ duration: 0.2 }}
         className="fixed left-0 right-0 top-0 z-50 border-b backdrop-blur-sm safe-top"
       >
-        <div className="wm-container flex h-14 min-h-[44px] items-center justify-between md:h-16">
+        <div className="wm-container flex h-16 min-h-[44px] items-center justify-between md:h-[4.5rem]">
           <button
             type="button"
             onClick={() => goTo(0)}
@@ -165,9 +165,9 @@ export default function Home() {
             <Image
               src="/logo.png"
               alt={tNav("brand")}
-              width={160}
-              height={40}
-              className={`h-8 w-auto object-contain sm:h-9 ${
+              width={280}
+              height={70}
+              className={`h-12 w-auto object-contain sm:h-14 ${
                 !navSolid && activeIndex === 1 ? "brightness-0 invert" : ""
               }`}
               priority
@@ -181,24 +181,23 @@ export default function Home() {
             <button type="button" onClick={() => goTo(2)} className="hover:text-zinc-900">{tNav("experience")}</button>
             <button type="button" onClick={() => goTo(3)} className="hover:text-zinc-900">{tNav("moods")}</button>
             <button type="button" onClick={() => goTo(4)} className="hover:text-zinc-900">{tNav("howItWorks")}</button>
-            <div className="relative">
+            <div className="relative flex h-10 w-12 items-center justify-center rounded-full border border-zinc-200 bg-white shadow-sm">
+              <span className="pointer-events-none text-xl" aria-hidden>
+                {LOCALES.find((l) => l.code === currentLocale)?.flag ?? "🌐"}
+              </span>
+              <span className="pointer-events-none ml-0.5 text-zinc-500" aria-hidden>▾</span>
               <label htmlFor="locale-select-desktop" className="sr-only">Select language</label>
               <select
                 id="locale-select-desktop"
                 value={currentLocale}
-                onChange={(event) => handleLocaleChange(event.target.value)}
-                className="h-10 min-w-[132px] appearance-none rounded-full border border-zinc-200 bg-white pl-4 pr-10 text-sm font-medium text-zinc-700 shadow-sm outline-none transition focus:border-emerald-300"
+                onChange={(e) => handleLocaleChange(e.target.value)}
+                className="absolute inset-0 cursor-pointer opacity-0"
                 aria-label="Select language"
               >
                 {LOCALES.map(({ code, short, label, flag }) => (
-                  <option key={code} value={code}>
-                    {`${flag} ${short} - ${label}`}
-                  </option>
+                  <option key={code} value={code}>{`${flag} ${short} - ${label}`}</option>
                 ))}
               </select>
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden>
-                ▾
-              </span>
             </div>
             <button
               type="button"
@@ -226,54 +225,67 @@ export default function Home() {
             )}
           </button>
         </div>
-        {/* Mobile menu overlay */}
-        {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 top-[calc(3.5rem+env(safe-area-inset-top,0px))] z-40 bg-[#fffdf5] md:hidden"
-            aria-hidden="true"
-          >
-            <div className="flex flex-col gap-1 px-4 py-6">
-              <NavLink label={tNav("theApp")} onPress={() => goTo(0)} />
-              <NavLink label={tNav("experience")} onPress={() => goTo(2)} />
-              <NavLink label={tNav("moods")} onPress={() => goTo(3)} />
-              <NavLink label={tNav("howItWorks")} onPress={() => goTo(4)} />
-              <div className="my-4">
-                <label htmlFor="locale-select-mobile" className="mb-2 block text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                  Language
-                </label>
-                <div className="relative">
-                  <select
-                    id="locale-select-mobile"
-                    value={currentLocale}
-                    onChange={(event) => handleLocaleChange(event.target.value)}
-                    className="h-12 w-full appearance-none rounded-2xl border border-zinc-200 bg-white px-4 pr-10 text-base font-medium text-zinc-700 outline-none transition focus:border-emerald-300"
-                    aria-label="Select language"
-                  >
-                    {LOCALES.map(({ code, short, label, flag }) => (
-                      <option key={code} value={code}>
-                        {`${flag} ${short} - ${label}`}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden>
-                    ▾
-                  </span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => goTo(6)}
-                className="mt-4 flex min-h-[48px] items-center justify-center rounded-full font-semibold text-white"
-                style={{ backgroundColor: BRAND_GREEN }}
+        {/* Mobile menu: backdrop + panel */}
+        <AnimatePresence>
+          {menuOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 z-40 bg-black/25 backdrop-blur-sm md:hidden"
+                aria-hidden="true"
+                onClick={() => setMenuOpen(false)}
+              />
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-x-0 top-[calc(4rem+env(safe-area-inset-top,0px))] bottom-0 z-50 overflow-y-auto bg-[#fffdf5] shadow-xl md:hidden"
+                aria-modal="true"
+                role="dialog"
+                aria-label="Menu"
               >
-                {tNav("download")}
-              </button>
-            </div>
-          </motion.div>
-        )}
+                <div className="flex flex-col gap-1 px-4 py-6">
+                  <NavLink label={tNav("theApp")} onPress={() => goTo(0)} />
+                  <NavLink label={tNav("experience")} onPress={() => goTo(2)} />
+                  <NavLink label={tNav("moods")} onPress={() => goTo(3)} />
+                  <NavLink label={tNav("howItWorks")} onPress={() => goTo(4)} />
+                  <div className="my-4 flex items-center gap-3">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Language</span>
+                    <div className="relative flex h-11 w-14 items-center justify-center rounded-full border border-zinc-200 bg-white">
+                      <span className="pointer-events-none text-2xl" aria-hidden>
+                        {LOCALES.find((l) => l.code === currentLocale)?.flag ?? "🌐"}
+                      </span>
+                      <span className="pointer-events-none ml-0.5 text-zinc-500" aria-hidden>▾</span>
+                      <select
+                        id="locale-select-mobile"
+                        value={currentLocale}
+                        onChange={(e) => handleLocaleChange(e.target.value)}
+                        className="absolute inset-0 cursor-pointer opacity-0"
+                        aria-label="Select language"
+                      >
+                        {LOCALES.map(({ code, short, label, flag }) => (
+                          <option key={code} value={code}>{`${flag} ${short} - ${label}`}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => goTo(6)}
+                    className="mt-4 flex min-h-[48px] items-center justify-center rounded-full font-semibold text-white"
+                    style={{ backgroundColor: BRAND_GREEN }}
+                  >
+                    {tNav("download")}
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </motion.nav>
 
       {/* Section dots: desktop only to keep mobile UI clean */}
@@ -293,7 +305,7 @@ export default function Home() {
         ))}
       </div>
 
-      <main className="scroll-container bg-[#fffdf5] pt-16">
+      <main className="scroll-container bg-[#fffdf5] pt-[4rem] md:pt-[4.5rem]">
         <section id={CARD_IDS[0]} ref={(el) => { sectionRefs.current[0] = el; }} className="scroll-mt-20 bg-[#fffdf5]">
           <AppPreviewCard onNext={() => goTo(1)} />
         </section>
@@ -320,7 +332,7 @@ export default function Home() {
       <footer className="border-t border-zinc-200/80 bg-[#fffdf5] px-4 py-4 sm:px-6">
         <div className="wm-container flex flex-wrap items-center justify-between gap-3 text-sm">
           <Link href="/" className="flex shrink-0 items-center" aria-label={tNav("brand")}>
-            <Image src="/logo.png" alt={tNav("brand")} width={140} height={36} className="h-8 w-auto object-contain" />
+            <Image src="/logo.png" alt={tNav("brand")} width={220} height={55} className="h-12 w-auto object-contain" />
           </Link>
           <nav className="flex items-center gap-6 text-zinc-500">
             <Link href="/privacy" className="hover:text-zinc-800">{tFooter("privacy")}</Link>
@@ -403,7 +415,7 @@ function StatusBar() {
 function AppHeader() {
   return (
     <div className="flex h-11 shrink-0 items-center justify-between border-b border-zinc-100 px-4">
-      <Image src="/logo.png" alt="WanderMood" width={100} height={28} className="h-6 w-auto object-contain" />
+      <Image src="/logo.png" alt="WanderMood" width={120} height={32} className="h-7 w-auto object-contain" />
       <button type="button" className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700" aria-label="Search">
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
       </button>
