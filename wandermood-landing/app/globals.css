@@ -23,6 +23,11 @@ body {
   color: var(--foreground);
 }
 
+/* Smoother scroll on touch devices */
+.scroll-container {
+  -webkit-overflow-scrolling: touch;
+}
+
 @supports (padding: env(safe-area-inset-top)) {
   .safe-top {
     padding-top: env(safe-area-inset-top);

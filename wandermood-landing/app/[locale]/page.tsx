@@ -259,14 +259,14 @@ export default function Home() {
         )}
       </motion.nav>
 
-      {/* Section dots: bottom center on mobile (touch-friendly), right side on desktop */}
-      <div className="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 flex-row gap-1 md:bottom-auto md:left-auto md:right-4 md:top-1/2 md:-translate-x-0 md:-translate-y-1/2 md:flex-col md:gap-2 safe-bottom">
+      {/* Section dots: always right side, vertical (phone + tablet + desktop) */}
+      <div className="fixed right-3 top-1/2 z-50 flex -translate-y-1/2 flex-col gap-2 safe-bottom sm:right-4">
         {CARD_IDS.map((_, i) => (
           <button
             key={i}
             type="button"
             onClick={() => goTo(i)}
-            className="flex min-h-[44px] min-w-[44px] flex-shrink-0 items-center justify-center rounded-full transition-colors md:min-h-0 md:min-w-0 md:py-2"
+            className="flex min-h-[44px] min-w-[44px] flex-shrink-0 items-center justify-center rounded-full transition-colors sm:min-h-0 sm:min-w-0 sm:py-2"
             aria-label={`Go to section ${i + 1}`}
           >
             <span className={`rounded-full transition-all ${
@@ -278,8 +278,7 @@ export default function Home() {
 
       <main
         ref={scrollRef}
-        className="h-screen overflow-y-auto overflow-x-hidden snap-y snap-mandatory bg-[#fffdf5] scroll-smooth pb-24 pt-16 md:pb-0"
-        style={{ scrollSnapType: "y mandatory" }}
+        className="scroll-container h-screen overflow-y-auto overflow-x-hidden snap-y snap-proximity bg-[#fffdf5] scroll-smooth pt-16"
       >
         <section id={CARD_IDS[0]} ref={(el) => { sectionRefs.current[0] = el; }} className="min-h-screen w-full shrink-0 snap-start scroll-mt-16 bg-[#fffdf5]">
           <AppPreviewCard onNext={() => goTo(1)} />
@@ -322,7 +321,7 @@ export default function Home() {
 function HeroCard({ onNext }: { onNext: () => void }) {
   const t = useTranslations("hero");
   return (
-    <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center" aria-label="Hero">
+    <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 text-center sm:px-6" aria-label="Hero">
       <div className="absolute inset-0 z-0">
         <Image
           src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?q=80&w=2574&auto=format&fit=crop"
@@ -466,10 +465,10 @@ function ExperienceCard({ onBack, onNext }: { onBack: () => void; onNext: () => 
     { icon: "🎛️", titleKey: "advancedFilters" as const },
   ];
   return (
-    <section className="min-h-[calc(100vh-5rem)] px-6 py-12 md:px-12 md:py-16">
-      <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-2 md:gap-16">
+    <section className="min-h-[calc(100vh-5rem)] px-4 py-10 sm:px-6 sm:py-12 md:px-12 md:py-16">
+      <div className="mx-auto grid max-w-6xl items-center gap-8 sm:gap-12 md:grid-cols-2 md:gap-16">
         <div className="flex justify-center">
-          <div className="w-[320px] md:w-[380px]">
+          <div className="w-[280px] sm:w-[320px] md:w-[380px]">
             <div className="relative overflow-hidden rounded-[2.75rem] border-[8px] border-zinc-700 p-1.5 shadow-2xl" style={{ background: "linear-gradient(145deg, #52525b 0%, #27272a 30%, #18181b 50%, #27272a 70%, #52525b 100%)" }}>
               <div className="absolute left-1/2 top-0 z-10 h-4 w-16 -translate-x-1/2 rounded-b-xl bg-zinc-800" aria-hidden />
               <div className="absolute left-0 top-0 z-10 h-full w-1.5 rounded-r-full bg-gradient-to-r from-zinc-400/60 via-zinc-500/25 to-transparent" aria-hidden />
@@ -488,8 +487,8 @@ function ExperienceCard({ onBack, onNext }: { onBack: () => void; onNext: () => 
         </div>
         <div>
           <p className="text-sm font-semibold uppercase tracking-wider text-emerald-600">{t("eyebrow")}</p>
-          <h2 className="mt-2 text-3xl font-bold leading-tight md:text-4xl" style={{ fontFamily: "var(--font-museo)", color: BRAND_GREEN }}>{t("title")}</h2>
-          <p className="mt-4 text-zinc-600">{t("intro")}</p>
+          <h2 className="mt-2 text-2xl font-bold leading-tight sm:text-3xl md:text-4xl" style={{ fontFamily: "var(--font-museo)", color: BRAND_GREEN }}>{t("title")}</h2>
+          <p className="mt-4 text-sm text-zinc-600 sm:text-base">{t("intro")}</p>
           <div className="mt-8 space-y-4">
             {featureCards.map((card) => (
               <div key={card.titleKey} className="flex items-start gap-4 rounded-2xl border border-zinc-100 bg-white p-5 shadow-sm">
@@ -515,12 +514,12 @@ function MoodsCard({ onBack, onNext }: { onBack: () => void; onNext: () => void 
   const t = useTranslations("moods");
   const tGrid = useTranslations("moodsGrid");
   return (
-    <section className="min-h-[calc(100vh-5rem)] px-6 py-12 md:px-12 md:py-16">
-      <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-2 md:gap-16">
+    <section className="min-h-[calc(100vh-5rem)] px-4 py-10 sm:px-6 sm:py-12 md:px-12 md:py-16">
+      <div className="mx-auto grid max-w-6xl items-center gap-8 sm:gap-12 md:grid-cols-2 md:gap-16">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wider text-emerald-600">{t("eyebrow")}</p>
-          <h2 className="mt-4 text-3xl font-bold leading-tight text-zinc-900 md:text-4xl">{t("title")}</h2>
-          <p className="mt-6 text-lg text-zinc-600">{t("subtitle")}</p>
+          <h2 className="mt-4 text-2xl font-bold leading-tight text-zinc-900 sm:text-3xl md:text-4xl">{t("title")}</h2>
+          <p className="mt-6 text-base text-zinc-600 sm:text-lg">{t("subtitle")}</p>
           <div className="mt-8 flex gap-4">
             <button type="button" onClick={onBack} className="text-sm font-medium text-zinc-500 underline hover:text-zinc-700">{t("back")}</button>
             <motion.button type="button" onClick={onNext} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="rounded-full px-6 py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: BRAND_GREEN }}>{t("nextButton")}</motion.button>
@@ -553,11 +552,11 @@ function HowItWorksCard({ onBack, onNext }: { onBack: () => void; onNext: () => 
     { icon: "✨", titleKey: "step3Title" as const, subtitleKey: "step3Subtitle" as const },
   ];
   return (
-    <section className="relative min-h-[calc(100vh-5rem)] px-6 py-12 md:px-12 md:py-16">
+    <section className="relative min-h-[calc(100vh-5rem)] px-4 py-10 sm:px-6 sm:py-12 md:px-12 md:py-16">
       <p className="text-center text-sm font-semibold uppercase tracking-wider text-emerald-600">{t("eyebrow")}</p>
-      <h2 className="mt-2 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: "var(--font-museo)", color: BRAND_GREEN }}>{t("title")}</h2>
-      <p className="mt-3 text-center text-zinc-600">{t("subtitle")}</p>
-      <div className="relative mx-auto mt-14 max-w-4xl">
+      <h2 className="mt-2 text-center text-2xl font-bold sm:text-3xl md:text-4xl" style={{ fontFamily: "var(--font-museo)", color: BRAND_GREEN }}>{t("title")}</h2>
+      <p className="mt-3 text-center text-sm text-zinc-600 sm:text-base">{t("subtitle")}</p>
+      <div className="relative mx-auto mt-10 max-w-4xl sm:mt-14">
         <div className="absolute left-0 right-0 top-[4.5rem] hidden h-0.5 md:block" aria-hidden>
           <div className="mx-auto h-full w-2/3 rounded-full bg-gradient-to-r from-emerald-200 via-emerald-300 to-emerald-200" />
         </div>
@@ -569,7 +568,7 @@ function HowItWorksCard({ onBack, onNext }: { onBack: () => void; onNext: () => 
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="relative rounded-2xl border border-zinc-100 bg-white p-8 text-center shadow-md transition-shadow hover:shadow-lg"
+              className="relative rounded-2xl border border-zinc-100 bg-white p-6 text-center shadow-md transition-shadow hover:shadow-lg sm:p-8"
             >
               <div className="flex flex-col items-center">
                 <span className="text-4xl" aria-hidden>{step.icon}</span>
@@ -628,25 +627,27 @@ function AppPreviewCard({ onNext }: { onNext: () => void }) {
   const tPreviews = useTranslations("appPreviews");
   const previewKeys = ["pickMood", "myDay", "wanderFeed"] as const;
   return (
-    <section className="relative min-h-[calc(100vh-5rem)] overflow-hidden px-6 py-12 md:px-12 md:py-16">
+    <section className="relative min-h-[calc(100vh-5rem)] overflow-hidden px-4 py-10 sm:px-6 sm:py-12 md:px-12 md:py-16">
       <p className="text-center text-sm font-semibold uppercase tracking-wider text-emerald-600">{t("eyebrow")}</p>
-      <h2 className="mt-2 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: "var(--font-museo)", color: BRAND_GREEN }}>{t("title")}</h2>
-      <p className="mt-3 text-center text-base text-zinc-600">{t("subtitle")}</p>
-      <div className="relative mx-auto mt-8 flex min-h-[320px] w-full max-w-5xl items-center justify-center sm:min-h-[400px] md:mt-12 md:min-h-[520px]">
-        <div className="absolute left-0 top-[58%] z-10 w-[200px] sm:left-[2%] sm:w-[240px] md:left-[6%] md:w-auto" style={{ transform: "translateY(-50%) rotate(-14deg)" }}>
+      <h2 className="mt-2 text-center text-2xl font-bold sm:text-3xl md:text-4xl" style={{ fontFamily: "var(--font-museo)", color: BRAND_GREEN }}>{t("title")}</h2>
+      <p className="mt-3 text-center text-sm text-zinc-600 sm:text-base">{t("subtitle")}</p>
+      <div className="relative mx-auto mt-6 flex min-h-[280px] w-full max-w-5xl items-center justify-center sm:min-h-[360px] md:mt-12 md:min-h-[520px]">
+        {/* Side phones: hidden on small screens to avoid overflow, visible from md */}
+        <div className="absolute left-0 top-[58%] z-10 hidden w-[200px] sm:left-[2%] sm:block sm:w-[240px] md:left-[6%] md:w-auto" style={{ transform: "translateY(-50%) rotate(-14deg)" }}>
           <BigPhoneMockup screenshot={APP_PREVIEW_SCREENSHOTS[0]} alt={tPreviews("pickMood.label")} />
         </div>
-        <div className="relative z-20 w-[220px] sm:w-[260px] md:w-auto">
+        <div className="relative z-20 w-[200px] sm:w-[260px] md:w-auto">
           <BigPhoneMockup screenshot={APP_PREVIEW_SCREENSHOTS[1]} alt={tPreviews("myDay.label")} />
         </div>
-        <div className="absolute right-0 top-[58%] z-10 w-[200px] sm:right-[2%] sm:w-[240px] md:right-[6%] md:w-auto" style={{ transform: "translateY(-50%) rotate(14deg)" }}>
+        <div className="absolute right-0 top-[58%] z-10 hidden w-[200px] sm:right-[2%] sm:block sm:w-[240px] md:right-[6%] md:w-auto" style={{ transform: "translateY(-50%) rotate(14deg)" }}>
           <BigPhoneMockup screenshot={APP_PREVIEW_SCREENSHOTS[2]} alt={tPreviews("wanderFeed.label")} />
         </div>
-        <ReviewCard name={REVIEWS[0].name} rating={REVIEWS[0].rating} initials={REVIEWS[0].initials} avatar={REVIEWS[0].avatar} className="left-0 top-[8%] md:left-0 md:top-[12%]" />
-        <ReviewCard name={REVIEWS[1].name} rating={REVIEWS[1].rating} initials={REVIEWS[1].initials} avatar={REVIEWS[1].avatar} className="right-0 top-[10%] md:right-0 md:top-[14%] translate-x-10 md:translate-x-16" />
-        <ReviewCard name={REVIEWS[2].name} rating={REVIEWS[2].rating} initials={REVIEWS[2].initials} avatar={REVIEWS[2].avatar} className="right-0 top-[55%] md:right-0" />
-        <ReviewCard name={REVIEWS[3].name} rating={REVIEWS[3].rating} initials={REVIEWS[3].initials} avatar={REVIEWS[3].avatar} className="left-0 bottom-[15%] md:left-0 md:bottom-[18%]" />
-        <ReviewCard name={REVIEWS[4].name} rating={REVIEWS[4].rating} initials={REVIEWS[4].initials} avatar={REVIEWS[4].avatar} className="right-0 bottom-[12%] md:right-0 md:bottom-[14%] translate-x-4 md:translate-x-8" />
+        {/* Review cards: safe insets on mobile so they don't get cut off */}
+        <ReviewCard name={REVIEWS[0].name} rating={REVIEWS[0].rating} initials={REVIEWS[0].initials} avatar={REVIEWS[0].avatar} className="left-2 top-[6%] max-w-[85%] md:left-0 md:top-[12%] md:max-w-none" />
+        <ReviewCard name={REVIEWS[1].name} rating={REVIEWS[1].rating} initials={REVIEWS[1].initials} avatar={REVIEWS[1].avatar} className="right-2 top-[8%] max-w-[85%] md:right-0 md:top-[14%] md:max-w-none md:translate-x-16" />
+        <ReviewCard name={REVIEWS[2].name} rating={REVIEWS[2].rating} initials={REVIEWS[2].initials} avatar={REVIEWS[2].avatar} className="right-2 top-[52%] max-w-[85%] md:right-0 md:max-w-none" />
+        <ReviewCard name={REVIEWS[3].name} rating={REVIEWS[3].rating} initials={REVIEWS[3].initials} avatar={REVIEWS[3].avatar} className="left-2 bottom-[12%] max-w-[85%] md:left-0 md:bottom-[18%] md:max-w-none" />
+        <ReviewCard name={REVIEWS[4].name} rating={REVIEWS[4].rating} initials={REVIEWS[4].initials} avatar={REVIEWS[4].avatar} className="right-2 bottom-[10%] max-w-[85%] md:right-0 md:bottom-[14%] md:max-w-none md:translate-x-8" />
       </div>
       <div className="mx-auto mt-16 flex max-w-md justify-center">
         <motion.button type="button" onClick={onNext} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="rounded-full px-6 py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: BRAND_GREEN }}>{t("nextButton")}</motion.button>
@@ -658,9 +659,9 @@ function AppPreviewCard({ onNext }: { onNext: () => void }) {
 function CtaCard({ onBack }: { onBack: () => void }) {
   const t = useTranslations("cta");
   return (
-    <section className="flex min-h-full w-full flex-col items-center justify-center bg-[#fffdf5] px-6 py-24">
-      <h2 className="text-center text-4xl font-bold md:text-5xl" style={{ fontFamily: "var(--font-museo)", color: BRAND_GREEN }}>{t("title")}</h2>
-      <p className="mt-4 text-center text-lg text-zinc-600">{t("subtitle")}</p>
+    <section className="flex min-h-full w-full flex-col items-center justify-center bg-[#fffdf5] px-4 py-16 sm:px-6 sm:py-20 md:py-24">
+      <h2 className="text-center text-3xl font-bold sm:text-4xl md:text-5xl" style={{ fontFamily: "var(--font-museo)", color: BRAND_GREEN }}>{t("title")}</h2>
+      <p className="mt-4 text-center text-base text-zinc-600 sm:text-lg">{t("subtitle")}</p>
       <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
         <motion.a href="#" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.98 }} className="inline-flex h-12 items-center gap-2 rounded-xl border-2 border-zinc-200 bg-white px-5 py-3 font-semibold text-zinc-800 transition hover:border-emerald-300 hover:bg-emerald-50" aria-label="Download on the App Store">
           <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19z"/></svg>
