@@ -58,11 +58,11 @@ function getCardIndexFromHash(): number {
 }
 
 const LOCALES = [
-  { code: "en", label: "EN" },
-  { code: "nl", label: "NL" },
-  { code: "de", label: "DE" },
-  { code: "es", label: "ES" },
-  { code: "fr", label: "FR" },
+  { code: "en", short: "EN", label: "English", flag: "🇬🇧" },
+  { code: "nl", short: "NL", label: "Nederlands", flag: "🇳🇱" },
+  { code: "de", short: "DE", label: "Deutsch", flag: "🇩🇪" },
+  { code: "es", short: "ES", label: "Español", flag: "🇪🇸" },
+  { code: "fr", short: "FR", label: "Français", flag: "🇫🇷" },
 ] as const;
 
 function NavLink({ label, onPress }: { label: string; onPress: () => void }) {
@@ -94,6 +94,13 @@ export default function Home() {
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     window.history.replaceState(null, "", `#${CARD_IDS[index]}`);
   }, []);
+
+  const handleLocaleChange = useCallback(
+    (value: string) => {
+      router.replace(pathname, { locale: value as (typeof LOCALES)[number]["code"] });
+    },
+    [pathname, router]
+  );
 
   useEffect(() => {
     const hash = window.location.hash.slice(1);
@@ -173,20 +180,24 @@ export default function Home() {
             <button type="button" onClick={() => goTo(2)} className="hover:text-zinc-900">{tNav("experience")}</button>
             <button type="button" onClick={() => goTo(3)} className="hover:text-zinc-900">{tNav("moods")}</button>
             <button type="button" onClick={() => goTo(4)} className="hover:text-zinc-900">{tNav("howItWorks")}</button>
-            <div className="flex items-center gap-1 rounded-full border border-zinc-200 bg-white/80 p-0.5">
-              {LOCALES.map(({ code, label }) => (
-                <button
-                  key={code}
-                  type="button"
-                  onClick={() => router.replace(pathname, { locale: code })}
-                  className={`rounded-full px-2 py-1 text-xs font-medium transition-colors ${
-                    currentLocale === code ? "bg-emerald-100 text-emerald-800" : "text-zinc-600 hover:bg-zinc-100"
-                  }`}
-                  aria-label={`Switch to ${label}`}
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="relative">
+              <label htmlFor="locale-select-desktop" className="sr-only">Select language</label>
+              <select
+                id="locale-select-desktop"
+                value={currentLocale}
+                onChange={(event) => handleLocaleChange(event.target.value)}
+                className="h-10 min-w-[132px] appearance-none rounded-full border border-zinc-200 bg-white pl-4 pr-10 text-sm font-medium text-zinc-700 shadow-sm outline-none transition focus:border-emerald-300"
+                aria-label="Select language"
+              >
+                {LOCALES.map(({ code, short, label, flag }) => (
+                  <option key={code} value={code}>
+                    {`${flag} ${short} - ${label}`}
+                  </option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden>
+                ▾
+              </span>
             </div>
             <button
               type="button"
@@ -228,20 +239,28 @@ export default function Home() {
               <NavLink label={tNav("experience")} onPress={() => goTo(2)} />
               <NavLink label={tNav("moods")} onPress={() => goTo(3)} />
               <NavLink label={tNav("howItWorks")} onPress={() => goTo(4)} />
-              <div className="my-4 flex flex-wrap gap-2">
-                {LOCALES.map(({ code, label }) => (
-                  <button
-                    key={code}
-                    type="button"
-                    onClick={() => router.replace(pathname, { locale: code })}
-                    className={`min-h-[44px] min-w-[44px] rounded-full px-3 text-sm font-medium transition-colors ${
-                      currentLocale === code ? "bg-emerald-100 text-emerald-800" : "bg-zinc-100 text-zinc-700"
-                    }`}
-                    aria-label={`Switch to ${label}`}
+              <div className="my-4">
+                <label htmlFor="locale-select-mobile" className="mb-2 block text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Language
+                </label>
+                <div className="relative">
+                  <select
+                    id="locale-select-mobile"
+                    value={currentLocale}
+                    onChange={(event) => handleLocaleChange(event.target.value)}
+                    className="h-12 w-full appearance-none rounded-2xl border border-zinc-200 bg-white px-4 pr-10 text-base font-medium text-zinc-700 outline-none transition focus:border-emerald-300"
+                    aria-label="Select language"
                   >
-                    {label}
-                  </button>
-                ))}
+                    {LOCALES.map(({ code, short, label, flag }) => (
+                      <option key={code} value={code}>
+                        {`${flag} ${short} - ${label}`}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden>
+                    ▾
+                  </span>
+                </div>
               </div>
               <button
                 type="button"
