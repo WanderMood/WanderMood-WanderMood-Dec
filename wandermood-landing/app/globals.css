@@ -47,10 +47,3 @@ body {
   }
 }
 
-/* Mobile: black bar when menu is open */
-@media (max-width: 767px) {
-  nav[data-menu-open="true"] {
-    background-color: #000 !important;
-    border-color: rgba(255, 255, 255, 0.12) !important;
-  }
-}

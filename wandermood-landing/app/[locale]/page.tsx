@@ -154,9 +154,8 @@ export default function Home() {
         }}
         transition={{ duration: 0.2 }}
         className="fixed left-0 right-0 top-0 z-50 border-b backdrop-blur-sm safe-top"
-        data-menu-open={menuOpen ? "true" : "false"}
       >
-        <div className="wm-container flex min-h-[44px] items-center justify-between py-2 md:min-h-[88px] md:py-3">
+        <div className="wm-container flex min-h-[44px] items-center justify-between py-3 md:min-h-[120px] md:py-4">
           <button
             type="button"
             onClick={() => goTo(0)}
@@ -166,11 +165,11 @@ export default function Home() {
             <Image
               src="/logo.png"
               alt={tNav("brand")}
-              width={320}
-              height={80}
-              className={`h-[60px] w-auto object-contain sm:h-[80px] ${
+              width={400}
+              height={100}
+              className={`h-[80px] w-auto object-contain sm:h-[112px] ${
                 !navSolid && activeIndex === 1 ? "brightness-0 invert" : ""
-              } ${menuOpen ? "max-md:brightness-0 max-md:invert" : ""}`}
+              }`}
               priority
             />
           </button>
@@ -230,7 +229,7 @@ export default function Home() {
             )}
           </button>
         </div>
-        {/* Mobile menu: backdrop + panel */}
+        {/* Mobile menu: backdrop + dropdown met effen achtergrond */}
         <AnimatePresence>
           {menuOpen && (
             <>
@@ -239,16 +238,16 @@ export default function Home() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="fixed inset-0 z-40 bg-black/25 backdrop-blur-sm md:hidden"
+                className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm md:hidden"
                 aria-hidden="true"
                 onClick={() => setMenuOpen(false)}
               />
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2 }}
-                className="fixed inset-x-0 top-[calc(5rem+env(safe-area-inset-top,0px))] bottom-0 z-50 overflow-y-auto bg-[#fffdf5] shadow-xl md:hidden"
+                className="fixed left-3 right-3 top-[calc(5.5rem+env(safe-area-inset-top,0px))] z-50 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl border border-zinc-200 bg-white py-5 shadow-xl md:hidden"
                 aria-modal="true"
                 role="dialog"
                 aria-label="Menu"
@@ -310,7 +309,7 @@ export default function Home() {
         ))}
       </div>
 
-      <main className="scroll-container bg-[#fffdf5] pt-[5rem] md:pt-[6rem]">
+      <main className="scroll-container bg-[#fffdf5] pt-[6rem] md:pt-[8rem]">
         <section id={CARD_IDS[0]} ref={(el) => { sectionRefs.current[0] = el; }} className="scroll-mt-20 bg-[#fffdf5]">
           <AppPreviewCard onNext={() => goTo(1)} />
         </section>
@@ -337,7 +336,7 @@ export default function Home() {
       <footer className="border-t border-zinc-200/80 bg-[#fffdf5] px-4 py-4 sm:px-6">
         <div className="wm-container flex flex-wrap items-center justify-between gap-3 text-sm">
           <Link href="/" className="flex shrink-0 items-center" aria-label={tNav("brand")}>
-            <Image src="/logo.png" alt={tNav("brand")} width={240} height={60} className="h-[60px] w-auto object-contain" />
+            <Image src="/logo.png" alt={tNav("brand")} width={280} height={70} className="h-[80px] w-auto object-contain" />
           </Link>
           <nav className="flex items-center gap-6 text-zinc-500">
             <Link href="/privacy" className="hover:text-zinc-800">{tFooter("privacy")}</Link>

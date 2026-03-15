@@ -3,12 +3,12 @@
     "brand": "WanderMood",
     "theApp": "De app",
     "experience": "Ervaring",
-    "moods": "Stemmingen",
+    "moods": "Moods",
     "howItWorks": "Hoe het werkt",
     "download": "Download de app"
   },
   "hero": {
-    "title": "Plan je perfecte dag op basis van je stemming",
+    "title": "Plan je perfecte dag op basis van je mood",
     "tagline": "Persoonlijke activiteitentips die passen bij hoe jij je voelt - in elke stad, overal ter wereld.",
     "cta": "Ontdek je vibe",
     "imageAlt": "Prachtig kuststadje in Italië",
@@ -22,7 +22,7 @@
   },
   "appPreviews": {
     "pickMood": {
-      "label": "Kies je stemming",
+      "label": "Kies je mood",
       "description": "Kies hoe je je voelt en krijg een plan dat bij je past."
     },
     "myDay": {
@@ -39,11 +39,11 @@
     "title": "Reizen die past bij je energie.",
     "intro": "WanderMood helpt je je dag te plannen rond hoe je je voelt — één tik, en je vibe wordt je plan. Plannen passen zich aan het weer aan. Filter op dieet, toegankelijkheid en waar je zin in hebt.",
     "back": "Terug",
-    "nextButton": "Volgende: Stemmingen →"
+    "nextButton": "Volgende: Moods →"
   },
   "featureCards": {
     "pickMood": {
-      "title": "Kies je stemming",
+      "title": "Kies je mood",
       "line": "Eén tik. Krijg een persoonlijk plan dat bij je vibe past."
     },
     "getYourDay": {
@@ -76,10 +76,10 @@
     }
   },
   "moods": {
-    "eyebrow": "Verken op stemming",
+    "eyebrow": "Verken op mood",
     "title": "Hoe wil je je vandaag voelen?",
-    "subtitle": "Kies één of meer stemmingen en we matchen je met activiteiten die bij je vibe passen. Combineer voor nog betere aanbevelingen!",
-    "tip": "Tip: Door stemmingen te combineren krijg je persoonlijkere resultaten",
+    "subtitle": "Kies één of meer moods en we matchen je met activiteiten die bij je vibe passen. Combineer voor nog betere aanbevelingen!",
+    "tip": "Tip: Door moods te combineren krijg je persoonlijkere resultaten",
     "back": "Terug",
     "nextButton": "Volgende: Hoe het werkt →",
     "foodyTooltip": "Restaurants, cafés, foodmarkten, kookworkshops"
@@ -101,12 +101,12 @@
   "howItWorks": {
     "eyebrow": "Hoe het werkt",
     "title": "Je dag, in drie stappen",
-    "subtitle": "Van stemming naar plan in seconden.",
+    "subtitle": "Van mood naar plan in seconden.",
     "back": "Terug",
     "nextButton": "Volgende: Download →"
   },
   "steps": {
-    "step1Title": "Kies je stemming",
+    "step1Title": "Kies je mood",
     "step1Subtitle": "Eén tik. Geen formulieren.",
     "step2Title": "Krijg je dag",
     "step2Subtitle": "Een plan dat past bij je energie en het weer.",
@@ -115,7 +115,7 @@
   },
   "cta": {
     "title": "Laten we herinneringen maken.",
-    "subtitle": "Download de app en plan je perfecte dag — stemming, weer en filters inbegrepen.",
+    "subtitle": "Download de app en plan je perfecte dag — mood, weer en filters inbegrepen.",
     "appStore": "App Store",
     "googlePlay": "Google Play",
     "downloadButton": "Download de app",
@@ -157,7 +157,7 @@
     "title": "Privacybeleid",
     "updated": "Laatst bijgewerkt: maart 2026",
     "intro": "We respecteren je privacy en verzamelen alleen data die nodig is om je reiservaring te verbeteren.",
-    "item1": "Accountgegevens worden gebruikt om je stemmingsplannen te personaliseren.",
+    "item1": "Accountgegevens worden gebruikt om je mood-plannen te personaliseren.",
     "item2": "We verkopen je persoonsgegevens niet aan derden.",
     "item3": "Je kunt op elk moment verwijdering van je accountgegevens aanvragen.",
     "contact": "Vragen? Mail ons via hello@wandermood.com."
