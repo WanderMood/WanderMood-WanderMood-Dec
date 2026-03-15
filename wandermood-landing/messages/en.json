@@ -20,9 +20,18 @@
     "nextButton": "Next: Explore your vibe →"
   },
   "appPreviews": {
-    "pickMood": { "label": "Pick your mood", "description": "Choose how you feel and get a plan that fits." },
-    "myDay": { "label": "My Day", "description": "Your timeline: right now, up next, done." },
-    "wanderFeed": { "label": "WanderFeed", "description": "See what others are exploring and share yours." }
+    "pickMood": {
+      "label": "Pick your mood",
+      "description": "Choose how you feel and get a plan that fits."
+    },
+    "myDay": {
+      "label": "My Day",
+      "description": "Your timeline: right now, up next, done."
+    },
+    "wanderFeed": {
+      "label": "WanderFeed",
+      "description": "See what others are exploring and share yours."
+    }
   },
   "experience": {
     "eyebrow": "Experience the world differently",
@@ -32,10 +41,26 @@
     "nextButton": "Next: Moods →"
   },
   "featureCards": {
-    "pickMood": { "title": "Pick your mood", "line": "One tap. Get a personalized plan that fits your vibe." },
-    "getYourDay": { "title": "Get your day", "line": "Right now, up next, done — and it adapts to the weather." },
-    "wanderFeed": { "title": "WanderFeed", "line": "See what others explore and share yours." },
-    "advancedFilters": { "title": "Advanced filters", "line": "Diet, accessibility, photo spots & more — find exactly what you're looking for." }
+    "pickMood": {
+      "title": "Pick your mood",
+      "line": "One tap. Get a personalized plan that fits your vibe."
+    },
+    "getYourDay": {
+      "title": "Get your day",
+      "line": "Right now, up next, done — and it adapts to the weather."
+    },
+    "wanderFeed": {
+      "title": "WanderFeed",
+      "line": "See what others explore and share yours."
+    },
+    "advancedFilters": {
+      "title": "Advanced filters",
+      "line": "Diet, accessibility, photo spots & more — find exactly what you're looking for."
+    },
+    "moodMatch": {
+      "title": "Mood Match Score",
+      "line": "See your match percentage for each plan so you instantly know what fits your vibe best."
+    }
   },
   "moods": {
     "eyebrow": "Explore by Mood",
@@ -79,12 +104,14 @@
     "appStore": "App Store",
     "googlePlay": "Google Play",
     "downloadButton": "Download the app",
-    "backToHowItWorks": "← Back to How it works"
+    "backToHowItWorks": "← Back to How it works",
+    "comingSoon": "Coming soon"
   },
   "footer": {
     "brand": "WanderMood",
     "privacy": "Privacy",
-    "contact": "Contact"
+    "contact": "Contact",
+    "terms": "Terms"
   },
   "phoneMockup": {
     "howDoYouFeel": "How do you feel?",
@@ -105,5 +132,31 @@
     "foodie": "Foodie",
     "cultural": "Cultural",
     "nightOut": "Night Out"
+  },
+  "privacyPage": {
+    "title": "Privacy Policy",
+    "updated": "Last updated: March 2026",
+    "intro": "We respect your privacy and only collect what is needed to improve your travel planning experience.",
+    "item1": "Account data is used to personalize your mood-based plans.",
+    "item2": "We do not sell your personal data to third parties.",
+    "item3": "You can request deletion of your account data at any time.",
+    "contact": "Questions? Email us at hello@wandermood.com."
+  },
+  "termsPage": {
+    "title": "Terms of Use",
+    "updated": "Last updated: March 2026",
+    "intro": "By using WanderMood, you agree to the following terms:",
+    "item1": "Use the app responsibly and follow local laws while traveling.",
+    "item2": "Content you share must not violate rights of others.",
+    "item3": "We may update features and terms as the product evolves."
+  },
+  "contactPage": {
+    "title": "Contact us",
+    "subtitle": "Need help or want to partner with WanderMood? Send us a message.",
+    "emailLabel": "Email",
+    "nameLabel": "Name",
+    "messageLabel": "Message",
+    "sendButton": "Send message",
+    "note": "This opens your email app and sends to hello@wandermood.com."
   }
 }

@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
-import { useRouter, usePathname } from "@/i18n/navigation";
+import { Link, useRouter, usePathname } from "@/i18n/navigation";
 
 const BRAND_GREEN = "#16a34a";
 
@@ -14,15 +14,6 @@ const APP_PREVIEW_SCREENSHOTS = [
   "/screens/Simulator%20Screenshot%20-%20iPhone%2016%20Pro%20Max%20-%202026-03-14%20at%2022.09.17.png",
   "/screens/Simulator%20Screenshot%20-%20iPhone%2016%20Pro%20Max%20-%202026-03-14%20at%2022.11.50.png",
   "/screens/Simulator%20Screenshot%20-%20iPhone%2016%20Pro%20Max%20-%202026-03-14%20at%2022.16.41.png",
-];
-
-const AVATAR_OPTS = "mouth=smile&eyes=happy";
-const REVIEWS = [
-  { name: "Yara Swaab", rating: 5, initials: "YS", avatar: `https://api.dicebear.com/9.x/avataaars/png?seed=YaraSwaab&${AVATAR_OPTS}` },
-  { name: "Lizanne van Sprang", rating: 5, initials: "LvS", avatar: `https://api.dicebear.com/9.x/avataaars/png?seed=LizanneVanSprang&${AVATAR_OPTS}` },
-  { name: "Euan Huber", rating: 5, initials: "EH", avatar: `https://api.dicebear.com/9.x/avataaars/png?seed=EuanHuber&${AVATAR_OPTS}` },
-  { name: "Jaden Fischer", rating: 5, initials: "JF", avatar: `https://api.dicebear.com/9.x/avataaars/png?seed=JadenFischer&${AVATAR_OPTS}` },
-  { name: "Mohamed Sandoval", rating: 4, initials: "MS", avatar: `https://api.dicebear.com/9.x/avataaars/png?seed=MohamedSandoval&${AVATAR_OPTS}` },
 ];
 
 const MOODS_GRID_KEYS = ["happy", "adventurous", "relaxed", "energetic", "romantic", "social", "cultural", "curious", "cozy", "excited", "foody", "surprise"] as const;
@@ -64,6 +55,9 @@ const LOCALES = [
   { code: "es", short: "ES", label: "Español", flag: "🇪🇸" },
   { code: "fr", short: "FR", label: "Français", flag: "🇫🇷" },
 ] as const;
+
+const APP_STORE_URL = "";
+const GOOGLE_PLAY_URL = "";
 
 function NavLink({ label, onPress }: { label: string; onPress: () => void }) {
   return (
@@ -319,8 +313,9 @@ export default function Home() {
             {tNav("brand")}
           </span>
           <nav className="flex items-center gap-6 text-zinc-500">
-            <a href="#" className="hover:text-zinc-800">{tFooter("privacy")}</a>
-            <a href="#" className="hover:text-zinc-800">{tFooter("contact")}</a>
+            <Link href="/privacy" className="hover:text-zinc-800">{tFooter("privacy")}</Link>
+            <Link href="/terms" className="hover:text-zinc-800">{tFooter("terms")}</Link>
+            <Link href="/contact" className="hover:text-zinc-800">{tFooter("contact")}</Link>
           </nav>
           <span className="text-zinc-400">© {new Date().getFullYear()}</span>
         </div>
@@ -478,6 +473,7 @@ function ExperienceCard({ onBack, onNext }: { onBack: () => void; onNext: () => 
   const t = useTranslations("experience");
   const tCards = useTranslations("featureCards");
   const featureCards = [
+    { icon: "📊", titleKey: "moodMatch" as const },
     { icon: "🎯", titleKey: "pickMood" as const },
     { icon: "📅", titleKey: "getYourDay" as const },
     { icon: "✨", titleKey: "wanderFeed" as const },
@@ -633,25 +629,6 @@ function BigPhoneMockup({ screenshot, alt }: { screenshot: string; alt: string }
   );
 }
 
-function ReviewCard({ name, rating, initials, avatar, className }: { name: string; rating: number; initials: string; avatar?: string; className?: string }) {
-  const stars = "★".repeat(5);
-  return (
-    <div className={`flex items-center gap-3 rounded-2xl border border-zinc-100 bg-white p-3 shadow-lg ${className ?? ""}`}>
-      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-zinc-200">
-        {avatar ? (
-          <Image src={avatar} alt="" width={40} height={40} className="object-cover" />
-        ) : (
-          <span className="flex h-full w-full items-center justify-center text-sm font-semibold text-zinc-700">{initials}</span>
-        )}
-      </div>
-      <div>
-        <p className="text-sm font-semibold text-zinc-900">{name}</p>
-        <p className="text-xs text-amber-600">{rating.toFixed(1)} {stars}</p>
-      </div>
-    </div>
-  );
-}
-
 function AppPreviewCard({ onNext }: { onNext: () => void }) {
   const t = useTranslations("appPreview");
   const tPreviews = useTranslations("appPreviews");
@@ -676,19 +653,6 @@ function AppPreviewCard({ onNext }: { onNext: () => void }) {
         ))}
       </div>
 
-      {/* Reviews: stacked below devices on small screens for stability */}
-      <div className="wm-container mt-8 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {REVIEWS.map((review) => (
-          <ReviewCard
-            key={review.name}
-            name={review.name}
-            rating={review.rating}
-            initials={review.initials}
-            avatar={review.avatar}
-          />
-        ))}
-      </div>
-
       <div className="wm-container mt-10 flex max-w-md justify-center lg:mt-14">
         <motion.button type="button" onClick={onNext} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="rounded-full px-6 py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: BRAND_GREEN }}>{t("nextButton")}</motion.button>
       </div>
@@ -704,16 +668,16 @@ function CtaCard({ onBack }: { onBack: () => void }) {
         <h2 className="text-center text-3xl font-bold sm:text-4xl md:text-5xl" style={{ fontFamily: "var(--font-museo)", color: BRAND_GREEN }}>{t("title")}</h2>
         <p className="mt-4 text-center text-base text-zinc-600 sm:text-lg">{t("subtitle")}</p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-        <motion.a href="#" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.98 }} className="inline-flex h-12 items-center gap-2 rounded-xl border-2 border-zinc-200 bg-white px-5 py-3 font-semibold text-zinc-800 transition hover:border-emerald-300 hover:bg-emerald-50" aria-label="Download on the App Store">
-          <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19z"/></svg>
-          {t("appStore")}
-        </motion.a>
-        <motion.a href="#" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.98 }} className="inline-flex h-12 items-center gap-2 rounded-xl border-2 border-zinc-200 bg-white px-5 py-3 font-semibold text-zinc-800 transition hover:border-emerald-300 hover:bg-emerald-50" aria-label="Get it on Google Play">
-          <svg className="h-6 w-6" viewBox="0 0 24 24" aria-hidden><path fill="currentColor" d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/></svg>
-          {t("googlePlay")}
-        </motion.a>
+          <motion.a href={APP_STORE_URL || undefined} whileHover={{ scale: APP_STORE_URL ? 1.04 : 1 }} whileTap={{ scale: APP_STORE_URL ? 0.98 : 1 }} className={`inline-flex h-12 items-center gap-2 rounded-xl border-2 border-zinc-200 px-5 py-3 font-semibold transition ${APP_STORE_URL ? "bg-white text-zinc-800 hover:border-emerald-300 hover:bg-emerald-50" : "cursor-not-allowed bg-zinc-100 text-zinc-500"}`} aria-label="Download on the App Store">
+            <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19z"/></svg>
+            {APP_STORE_URL ? t("appStore") : `${t("appStore")} (${t("comingSoon")})`}
+          </motion.a>
+          <motion.a href={GOOGLE_PLAY_URL || undefined} whileHover={{ scale: GOOGLE_PLAY_URL ? 1.04 : 1 }} whileTap={{ scale: GOOGLE_PLAY_URL ? 0.98 : 1 }} className={`inline-flex h-12 items-center gap-2 rounded-xl border-2 border-zinc-200 px-5 py-3 font-semibold transition ${GOOGLE_PLAY_URL ? "bg-white text-zinc-800 hover:border-emerald-300 hover:bg-emerald-50" : "cursor-not-allowed bg-zinc-100 text-zinc-500"}`} aria-label="Get it on Google Play">
+            <svg className="h-6 w-6" viewBox="0 0 24 24" aria-hidden><path fill="currentColor" d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/></svg>
+            {GOOGLE_PLAY_URL ? t("googlePlay") : `${t("googlePlay")} (${t("comingSoon")})`}
+          </motion.a>
         </div>
-        <motion.a href="#" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }} className="mt-6 inline-flex h-14 min-w-[220px] items-center justify-center rounded-full font-semibold text-white shadow-lg" style={{ backgroundColor: BRAND_GREEN }}>{t("downloadButton")}</motion.a>
+        <motion.a href={APP_STORE_URL || undefined} whileHover={{ scale: APP_STORE_URL ? 1.03 : 1 }} whileTap={{ scale: APP_STORE_URL ? 0.98 : 1 }} className={`mt-6 inline-flex h-14 min-w-[220px] items-center justify-center rounded-full font-semibold shadow-lg ${APP_STORE_URL ? "text-white" : "cursor-not-allowed bg-zinc-300 text-zinc-600"}`} style={APP_STORE_URL ? { backgroundColor: BRAND_GREEN } : undefined}>{APP_STORE_URL ? t("downloadButton") : t("comingSoon")}</motion.a>
         <button type="button" onClick={onBack} className="mt-8 text-sm font-medium text-zinc-500 underline hover:text-zinc-700">{t("backToHowItWorks")}</button>
       </div>
     </section>

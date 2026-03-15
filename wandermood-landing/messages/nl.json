@@ -20,9 +20,18 @@
     "nextButton": "Volgende: Ontdek je vibe →"
   },
   "appPreviews": {
-    "pickMood": { "label": "Kies je stemming", "description": "Kies hoe je je voelt en krijg een plan dat bij je past." },
-    "myDay": { "label": "Mijn dag", "description": "Je tijdlijn: nu, daarna, klaar." },
-    "wanderFeed": { "label": "WanderFeed", "description": "Zie wat anderen ontdekken en deel de jouwe." }
+    "pickMood": {
+      "label": "Kies je stemming",
+      "description": "Kies hoe je je voelt en krijg een plan dat bij je past."
+    },
+    "myDay": {
+      "label": "Mijn dag",
+      "description": "Je tijdlijn: nu, daarna, klaar."
+    },
+    "wanderFeed": {
+      "label": "WanderFeed",
+      "description": "Zie wat anderen ontdekken en deel de jouwe."
+    }
   },
   "experience": {
     "eyebrow": "Ervaar de wereld anders",
@@ -32,10 +41,26 @@
     "nextButton": "Volgende: Stemmingen →"
   },
   "featureCards": {
-    "pickMood": { "title": "Kies je stemming", "line": "Eén tik. Krijg een persoonlijk plan dat bij je vibe past." },
-    "getYourDay": { "title": "Krijg je dag", "line": "Nu, daarna, klaar — en het past zich aan het weer aan." },
-    "wanderFeed": { "title": "WanderFeed", "line": "Zie wat anderen ontdekken en deel de jouwe." },
-    "advancedFilters": { "title": "Geavanceerde filters", "line": "Dieet, toegankelijkheid, fotoplekken en meer — vind precies wat je zoekt." }
+    "pickMood": {
+      "title": "Kies je stemming",
+      "line": "Eén tik. Krijg een persoonlijk plan dat bij je vibe past."
+    },
+    "getYourDay": {
+      "title": "Krijg je dag",
+      "line": "Nu, daarna, klaar — en het past zich aan het weer aan."
+    },
+    "wanderFeed": {
+      "title": "WanderFeed",
+      "line": "Zie wat anderen ontdekken en deel de jouwe."
+    },
+    "advancedFilters": {
+      "title": "Geavanceerde filters",
+      "line": "Dieet, toegankelijkheid, fotoplekken en meer — vind precies wat je zoekt."
+    },
+    "moodMatch": {
+      "title": "Mood Match Score",
+      "line": "Zie per plan een match-percentage, zodat je meteen weet wat het beste bij je vibe past."
+    }
   },
   "moods": {
     "eyebrow": "Verken op stemming",
@@ -79,12 +104,14 @@
     "appStore": "App Store",
     "googlePlay": "Google Play",
     "downloadButton": "Download de app",
-    "backToHowItWorks": "← Terug naar Hoe het werkt"
+    "backToHowItWorks": "← Terug naar Hoe het werkt",
+    "comingSoon": "Binnenkort beschikbaar"
   },
   "footer": {
     "brand": "WanderMood",
     "privacy": "Privacy",
-    "contact": "Contact"
+    "contact": "Contact",
+    "terms": "Voorwaarden"
   },
   "phoneMockup": {
     "howDoYouFeel": "Hoe voel je je?",
@@ -105,5 +132,31 @@
     "foodie": "Foodie",
     "cultural": "Cultureel",
     "nightOut": "Uitgaan"
+  },
+  "privacyPage": {
+    "title": "Privacybeleid",
+    "updated": "Laatst bijgewerkt: maart 2026",
+    "intro": "We respecteren je privacy en verzamelen alleen data die nodig is om je reiservaring te verbeteren.",
+    "item1": "Accountgegevens worden gebruikt om je stemmingsplannen te personaliseren.",
+    "item2": "We verkopen je persoonsgegevens niet aan derden.",
+    "item3": "Je kunt op elk moment verwijdering van je accountgegevens aanvragen.",
+    "contact": "Vragen? Mail ons via hello@wandermood.com."
+  },
+  "termsPage": {
+    "title": "Gebruiksvoorwaarden",
+    "updated": "Laatst bijgewerkt: maart 2026",
+    "intro": "Door WanderMood te gebruiken ga je akkoord met deze voorwaarden:",
+    "item1": "Gebruik de app verantwoord en volg lokale regels tijdens het reizen.",
+    "item2": "Content die je deelt mag geen rechten van anderen schenden.",
+    "item3": "We kunnen functies en voorwaarden bijwerken terwijl het product groeit."
+  },
+  "contactPage": {
+    "title": "Contact",
+    "subtitle": "Hulp nodig of samenwerken met WanderMood? Stuur ons een bericht.",
+    "emailLabel": "E-mail",
+    "nameLabel": "Naam",
+    "messageLabel": "Bericht",
+    "sendButton": "Verstuur bericht",
+    "note": "Dit opent je e-mailapp en stuurt naar hello@wandermood.com."
   }
 }

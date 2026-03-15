@@ -20,9 +20,18 @@
     "nextButton": "Siguiente: Explora tu vibe →"
   },
   "appPreviews": {
-    "pickMood": { "label": "Elige tu estado de ánimo", "description": "Elige cómo te sientes y obtén un plan a tu medida." },
-    "myDay": { "label": "Mi día", "description": "Tu línea de tiempo: ahora, después, hecho." },
-    "wanderFeed": { "label": "WanderFeed", "description": "Mira qué exploran otros y comparte lo tuyo." }
+    "pickMood": {
+      "label": "Elige tu estado de ánimo",
+      "description": "Elige cómo te sientes y obtén un plan a tu medida."
+    },
+    "myDay": {
+      "label": "Mi día",
+      "description": "Tu línea de tiempo: ahora, después, hecho."
+    },
+    "wanderFeed": {
+      "label": "WanderFeed",
+      "description": "Mira qué exploran otros y comparte lo tuyo."
+    }
   },
   "experience": {
     "eyebrow": "Experimenta el mundo de otra forma",
@@ -32,10 +41,26 @@
     "nextButton": "Siguiente: Estados de ánimo →"
   },
   "featureCards": {
-    "pickMood": { "title": "Elige tu estado de ánimo", "line": "Un toque. Un plan personalizado que encaja con tu vibe." },
-    "getYourDay": { "title": "Obtén tu día", "line": "Ahora, después, hecho — y se adapta al tiempo." },
-    "wanderFeed": { "title": "WanderFeed", "line": "Mira qué exploran otros y comparte lo tuyo." },
-    "advancedFilters": { "title": "Filtros avanzados", "line": "Dieta, accesibilidad, fotos y más — encuentra exactamente lo que buscas." }
+    "pickMood": {
+      "title": "Elige tu estado de ánimo",
+      "line": "Un toque. Un plan personalizado que encaja con tu vibe."
+    },
+    "getYourDay": {
+      "title": "Obtén tu día",
+      "line": "Ahora, después, hecho — y se adapta al tiempo."
+    },
+    "wanderFeed": {
+      "title": "WanderFeed",
+      "line": "Mira qué exploran otros y comparte lo tuyo."
+    },
+    "advancedFilters": {
+      "title": "Filtros avanzados",
+      "line": "Dieta, accesibilidad, fotos y más — encuentra exactamente lo que buscas."
+    },
+    "moodMatch": {
+      "title": "Mood Match Score",
+      "line": "Consulta el porcentaje de coincidencia de cada plan para saber al instante cuál encaja mejor contigo."
+    }
   },
   "moods": {
     "eyebrow": "Explora por estado de ánimo",
@@ -79,12 +104,14 @@
     "appStore": "App Store",
     "googlePlay": "Google Play",
     "downloadButton": "Descargar la app",
-    "backToHowItWorks": "← Volver a Cómo funciona"
+    "backToHowItWorks": "← Volver a Cómo funciona",
+    "comingSoon": "Próximamente"
   },
   "footer": {
     "brand": "WanderMood",
     "privacy": "Privacidad",
-    "contact": "Contacto"
+    "contact": "Contacto",
+    "terms": "Términos"
   },
   "phoneMockup": {
     "howDoYouFeel": "¿Cómo te sientes?",
@@ -105,5 +132,31 @@
     "foodie": "Foodie",
     "cultural": "Cultural",
     "nightOut": "Salir de noche"
+  },
+  "privacyPage": {
+    "title": "Política de privacidad",
+    "updated": "Última actualización: marzo de 2026",
+    "intro": "Respetamos tu privacidad y solo recopilamos lo necesario para mejorar tu experiencia de viaje.",
+    "item1": "Los datos de cuenta se usan para personalizar planes según tu estado de ánimo.",
+    "item2": "No vendemos tus datos personales a terceros.",
+    "item3": "Puedes solicitar la eliminación de tus datos en cualquier momento.",
+    "contact": "¿Preguntas? Escríbenos a hello@wandermood.com."
+  },
+  "termsPage": {
+    "title": "Términos de uso",
+    "updated": "Última actualización: marzo de 2026",
+    "intro": "Al usar WanderMood aceptas los siguientes términos:",
+    "item1": "Usa la app de forma responsable y respeta las leyes locales.",
+    "item2": "El contenido que compartas no debe infringir derechos de terceros.",
+    "item3": "Podemos actualizar funciones y términos conforme evoluciona el producto."
+  },
+  "contactPage": {
+    "title": "Contáctanos",
+    "subtitle": "¿Necesitas ayuda o quieres colaborar con WanderMood? Envíanos un mensaje.",
+    "emailLabel": "Correo",
+    "nameLabel": "Nombre",
+    "messageLabel": "Mensaje",
+    "sendButton": "Enviar mensaje",
+    "note": "Esto abre tu app de correo y envía a hello@wandermood.com."
   }
 }
