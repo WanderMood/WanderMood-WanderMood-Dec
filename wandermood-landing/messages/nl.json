@@ -78,9 +78,11 @@
   "moods": {
     "eyebrow": "Verken op stemming",
     "title": "Hoe wil je je vandaag voelen?",
-    "subtitle": "Kies één of meer — we vormen je dag eromheen.",
+    "subtitle": "Kies één of meer stemmingen en we matchen je met activiteiten die bij je vibe passen. Combineer voor nog betere aanbevelingen!",
+    "tip": "Tip: Door stemmingen te combineren krijg je persoonlijkere resultaten",
     "back": "Terug",
-    "nextButton": "Volgende: Hoe het werkt →"
+    "nextButton": "Volgende: Hoe het werkt →",
+    "foodyTooltip": "Restaurants, cafés, foodmarkten, kookworkshops"
   },
   "moodsGrid": {
     "happy": "Blij",

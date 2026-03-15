@@ -78,9 +78,11 @@
   "moods": {
     "eyebrow": "Explorer par humeur",
     "title": "Comment voulez-vous vous sentir aujourd'hui ?",
-    "subtitle": "Choisissez une ou plusieurs — on façonne votre journée autour.",
+    "subtitle": "Choisissez une ou plusieurs humeurs et nous vous proposerons des activités qui correspondent à votre vibe. Mélangez-les pour de meilleures recommandations !",
+    "tip": "Conseil : Combiner les humeurs donne des résultats plus personnalisés",
     "back": "Retour",
-    "nextButton": "Suivant : Comment ça marche →"
+    "nextButton": "Suivant : Comment ça marche →",
+    "foodyTooltip": "Restaurants, cafés, marchés alimentaires, cours de cuisine"
   },
   "moodsGrid": {
     "happy": "Heureux",

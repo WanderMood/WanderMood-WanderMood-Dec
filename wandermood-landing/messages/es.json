@@ -78,9 +78,11 @@
   "moods": {
     "eyebrow": "Explora por estado de ánimo",
     "title": "¿Cómo quieres sentirte hoy?",
-    "subtitle": "Elige uno o más — daremos forma a tu día.",
+    "subtitle": "Elige uno o más estados de ánimo y te recomendaremos actividades que encajen con tu vibe. ¡Combínalos para mejores resultados!",
+    "tip": "Consejo: Combinar estados de ánimo da resultados más personalizados",
     "back": "Atrás",
-    "nextButton": "Siguiente: Cómo funciona →"
+    "nextButton": "Siguiente: Cómo funciona →",
+    "foodyTooltip": "Restaurantes, cafés, mercados de comida, clases de cocina"
   },
   "moodsGrid": {
     "happy": "Feliz",

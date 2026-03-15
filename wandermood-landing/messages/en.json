@@ -78,9 +78,11 @@
   "moods": {
     "eyebrow": "Explore by Mood",
     "title": "How do you want to feel today?",
-    "subtitle": "Pick one or more — we'll shape your day around it.",
+    "subtitle": "Pick one or more moods and we'll match you with activities that fit your vibe. Mix them for even better recommendations!",
+    "tip": "Tip: Combining moods gives more personalized results",
     "back": "Back",
-    "nextButton": "Next: How it works →"
+    "nextButton": "Next: How it works →",
+    "foodyTooltip": "Restaurants, cafes, food markets, cooking classes"
   },
   "moodsGrid": {
     "happy": "Happy",

@@ -154,8 +154,9 @@ export default function Home() {
         }}
         transition={{ duration: 0.2 }}
         className="fixed left-0 right-0 top-0 z-50 border-b backdrop-blur-sm safe-top"
+        data-menu-open={menuOpen ? "true" : "false"}
       >
-        <div className="wm-container flex h-16 min-h-[44px] items-center justify-between md:h-[4.5rem]">
+        <div className="wm-container flex min-h-[44px] items-center justify-between py-2 md:min-h-[88px] md:py-3">
           <button
             type="button"
             onClick={() => goTo(0)}
@@ -165,11 +166,11 @@ export default function Home() {
             <Image
               src="/logo.png"
               alt={tNav("brand")}
-              width={280}
-              height={70}
-              className={`h-12 w-auto object-contain sm:h-14 ${
+              width={320}
+              height={80}
+              className={`h-[60px] w-auto object-contain sm:h-[80px] ${
                 !navSolid && activeIndex === 1 ? "brightness-0 invert" : ""
-              }`}
+              } ${menuOpen ? "max-md:brightness-0 max-md:invert" : ""}`}
               priority
             />
           </button>
@@ -208,12 +209,16 @@ export default function Home() {
               {tNav("download")}
             </button>
           </div>
-          {/* Mobile: hamburger */}
+          {/* Mobile: hamburger / close X */}
           <button
             type="button"
             onClick={() => setMenuOpen((o) => !o)}
             className={`flex h-10 w-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-lg md:hidden ${
-              !navSolid && activeIndex === 1 ? "text-white hover:bg-white/10" : "text-zinc-700 hover:bg-zinc-100"
+              menuOpen
+                ? "text-white hover:bg-white/10"
+                : !navSolid && activeIndex === 1
+                  ? "text-white hover:bg-white/10"
+                  : "text-zinc-700 hover:bg-zinc-100"
             }`}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
@@ -243,7 +248,7 @@ export default function Home() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="fixed inset-x-0 top-[calc(4rem+env(safe-area-inset-top,0px))] bottom-0 z-50 overflow-y-auto bg-[#fffdf5] shadow-xl md:hidden"
+                className="fixed inset-x-0 top-[calc(5rem+env(safe-area-inset-top,0px))] bottom-0 z-50 overflow-y-auto bg-[#fffdf5] shadow-xl md:hidden"
                 aria-modal="true"
                 role="dialog"
                 aria-label="Menu"
@@ -305,7 +310,7 @@ export default function Home() {
         ))}
       </div>
 
-      <main className="scroll-container bg-[#fffdf5] pt-[4rem] md:pt-[4.5rem]">
+      <main className="scroll-container bg-[#fffdf5] pt-[5rem] md:pt-[6rem]">
         <section id={CARD_IDS[0]} ref={(el) => { sectionRefs.current[0] = el; }} className="scroll-mt-20 bg-[#fffdf5]">
           <AppPreviewCard onNext={() => goTo(1)} />
         </section>
@@ -313,26 +318,26 @@ export default function Home() {
           <HeroCard onNext={() => goTo(2)} />
         </section>
         <section id={CARD_IDS[2]} ref={(el) => { sectionRefs.current[2] = el; }} className="scroll-mt-20 bg-[#fffdf5]">
-          <ExperienceCard onBack={() => goTo(1)} onNext={() => goTo(3)} />
+          <ExperienceCard onNext={() => goTo(3)} />
         </section>
         <section id={CARD_IDS[3]} ref={(el) => { sectionRefs.current[3] = el; }} className="scroll-mt-20 bg-[#fffdf5]">
-          <MoodsCard onBack={() => goTo(2)} onNext={() => goTo(4)} />
+          <MoodsCard onNext={() => goTo(4)} />
         </section>
         <section id={CARD_IDS[4]} ref={(el) => { sectionRefs.current[4] = el; }} className="scroll-mt-20 bg-[#fffdf5]">
-          <HowItWorksCard onBack={() => goTo(3)} onNext={() => goTo(5)} />
+          <HowItWorksCard onNext={() => goTo(5)} />
         </section>
         <section id={CARD_IDS[5]} ref={(el) => { sectionRefs.current[5] = el; }} className="scroll-mt-20 bg-[#fffdf5]">
-          <CityCoverageCard onBack={() => goTo(4)} onNext={() => goTo(6)} />
+          <CityCoverageCard onNext={() => goTo(6)} />
         </section>
         <section id={CARD_IDS[6]} ref={(el) => { sectionRefs.current[6] = el; }} className="scroll-mt-20 bg-[#fffdf5]">
-          <CtaCard onBack={() => goTo(5)} />
+          <CtaCard />
         </section>
       </main>
 
       <footer className="border-t border-zinc-200/80 bg-[#fffdf5] px-4 py-4 sm:px-6">
         <div className="wm-container flex flex-wrap items-center justify-between gap-3 text-sm">
           <Link href="/" className="flex shrink-0 items-center" aria-label={tNav("brand")}>
-            <Image src="/logo.png" alt={tNav("brand")} width={220} height={55} className="h-12 w-auto object-contain" />
+            <Image src="/logo.png" alt={tNav("brand")} width={240} height={60} className="h-[60px] w-auto object-contain" />
           </Link>
           <nav className="flex items-center gap-6 text-zinc-500">
             <Link href="/privacy" className="hover:text-zinc-800">{tFooter("privacy")}</Link>
@@ -359,7 +364,7 @@ function HeroCard({ onNext }: { onNext: () => void }) {
           priority
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/60" />
+        <div className="absolute inset-0 bg-black/45" aria-hidden />
       </div>
       <div className="wm-container relative z-10 flex flex-col items-center pt-12 md:pt-16">
         <h1
@@ -494,7 +499,7 @@ function PhoneMockupContent() {
   );
 }
 
-function ExperienceCard({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
+function ExperienceCard({ onNext }: { onNext: () => void }) {
   const t = useTranslations("experience");
   const tCards = useTranslations("featureCards");
   const featureCards = [
@@ -543,8 +548,7 @@ function ExperienceCard({ onBack, onNext }: { onBack: () => void; onNext: () => 
               </div>
             ))}
           </div>
-          <div className="mt-8 flex gap-4">
-            <button type="button" onClick={onBack} className="text-sm font-medium text-zinc-500 underline hover:text-zinc-700">{t("back")}</button>
+          <div className="mt-8 flex justify-center">
             <motion.button type="button" onClick={onNext} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="rounded-full px-6 py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: BRAND_GREEN }}>{t("nextButton")}</motion.button>
           </div>
         </div>
@@ -553,7 +557,7 @@ function ExperienceCard({ onBack, onNext }: { onBack: () => void; onNext: () => 
   );
 }
 
-function MoodsCard({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
+function MoodsCard({ onNext }: { onNext: () => void }) {
   const t = useTranslations("moods");
   const tGrid = useTranslations("moodsGrid");
   return (
@@ -563,30 +567,45 @@ function MoodsCard({ onBack, onNext }: { onBack: () => void; onNext: () => void 
           <p className="text-sm font-semibold uppercase tracking-wider text-emerald-600">{t("eyebrow")}</p>
           <h2 className="mt-4 text-2xl font-bold leading-tight text-zinc-900 sm:text-3xl md:text-4xl">{t("title")}</h2>
           <p className="mt-6 text-base text-zinc-600 sm:text-lg">{t("subtitle")}</p>
-          <div className="mt-8 flex gap-4">
-            <button type="button" onClick={onBack} className="text-sm font-medium text-zinc-500 underline hover:text-zinc-700">{t("back")}</button>
+          <p className="mt-4 flex items-center gap-2 text-sm text-zinc-600">
+            <span aria-hidden>💡</span>
+            <span>{t("tip")}</span>
+          </p>
+          <div className="mt-8 flex justify-center">
             <motion.button type="button" onClick={onNext} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="rounded-full px-6 py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: BRAND_GREEN }}>{t("nextButton")}</motion.button>
           </div>
         </div>
         <div className="grid grid-cols-3 gap-3 md:gap-4">
-          {MOODS_GRID_KEYS.map((key) => (
-            <div key={key} className={`relative flex flex-col items-center justify-center rounded-2xl p-5 shadow-md backdrop-blur transition-shadow hover:shadow-lg md:p-6 ${MOODS_GRID_STYLE[key].bg}`}>
-              {MOODS_GRID_STYLE[key].selected && (
-                <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full text-white" style={{ backgroundColor: BRAND_GREEN }}>
-                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                </span>
-              )}
-              <span className="text-3xl md:text-4xl">{MOODS_GRID_STYLE[key].emoji}</span>
-              <p className="mt-2 text-center text-xs font-semibold text-zinc-800 md:text-sm">{tGrid(key)}</p>
-            </div>
-          ))}
+          {MOODS_GRID_KEYS.map((key) => {
+            const tooltip = key === "foody" ? t("foodyTooltip") : null;
+            return (
+              <div
+                key={key}
+                className={`group relative flex flex-col items-center justify-center rounded-2xl p-5 shadow-md backdrop-blur transition-shadow hover:shadow-lg md:p-6 ${MOODS_GRID_STYLE[key].bg}`}
+                title={tooltip ?? undefined}
+              >
+                {MOODS_GRID_STYLE[key].selected && (
+                  <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full text-white" style={{ backgroundColor: BRAND_GREEN }}>
+                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                  </span>
+                )}
+                <span className="text-3xl md:text-4xl">{MOODS_GRID_STYLE[key].emoji}</span>
+                <p className="mt-2 text-center text-xs font-semibold text-zinc-800 md:text-sm">{tGrid(key)}</p>
+                {tooltip && (
+                  <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 max-w-[220px] -translate-x-1/2 rounded-lg bg-zinc-800 px-3 py-2 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100">
+                    {tooltip}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
   );
 }
 
-function HowItWorksCard({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
+function HowItWorksCard({ onNext }: { onNext: () => void }) {
   const t = useTranslations("howItWorks");
   const tSteps = useTranslations("steps");
   const steps = [
@@ -625,15 +644,14 @@ function HowItWorksCard({ onBack, onNext }: { onBack: () => void; onNext: () => 
           ))}
         </div>
       </div>
-      <div className="wm-container mt-12 flex max-w-md justify-center gap-4">
-        <button type="button" onClick={onBack} className="text-sm font-medium text-zinc-500 underline hover:text-zinc-700">{t("back")}</button>
+      <div className="wm-container mt-12 flex max-w-md justify-center">
         <motion.button type="button" onClick={onNext} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="rounded-full px-6 py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: BRAND_GREEN }}>{t("nextButton")}</motion.button>
       </div>
     </section>
   );
 }
 
-function CityCoverageCard({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
+function CityCoverageCard({ onNext }: { onNext: () => void }) {
   const t = useTranslations("worldwide");
   return (
     <section className="wm-section">
@@ -653,8 +671,7 @@ function CityCoverageCard({ onBack, onNext }: { onBack: () => void; onNext: () =
             {t("requestButton")}
           </a>
         </div>
-        <div className="mt-8 flex justify-center gap-4">
-          <button type="button" onClick={onBack} className="text-sm font-medium text-zinc-500 underline hover:text-zinc-700">{t("back")}</button>
+        <div className="mt-8 flex justify-center">
           <motion.button type="button" onClick={onNext} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="rounded-full px-6 py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: BRAND_GREEN }}>
             {t("next")}
           </motion.button>
@@ -719,7 +736,7 @@ function AppPreviewCard({ onNext }: { onNext: () => void }) {
   );
 }
 
-function CtaCard({ onBack }: { onBack: () => void }) {
+function CtaCard() {
   const t = useTranslations("cta");
   return (
     <section className="wm-section flex w-full flex-col items-center justify-center bg-[#fffdf5]">
@@ -761,7 +778,6 @@ function CtaCard({ onBack }: { onBack: () => void }) {
           </form>
         </div>
         <motion.a href={APP_STORE_URL || undefined} whileHover={{ scale: APP_STORE_URL ? 1.03 : 1 }} whileTap={{ scale: APP_STORE_URL ? 0.98 : 1 }} className={`mt-6 inline-flex h-14 min-w-[220px] items-center justify-center rounded-full font-semibold shadow-lg ${APP_STORE_URL ? "text-white" : "cursor-not-allowed bg-zinc-300 text-zinc-600"}`} style={APP_STORE_URL ? { backgroundColor: BRAND_GREEN } : undefined}>{APP_STORE_URL ? t("downloadButton") : t("comingSoon")}</motion.a>
-        <button type="button" onClick={onBack} className="mt-8 text-sm font-medium text-zinc-500 underline hover:text-zinc-700">{t("backToHowItWorks")}</button>
       </div>
     </section>
   );

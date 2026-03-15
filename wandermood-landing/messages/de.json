@@ -78,9 +78,11 @@
   "moods": {
     "eyebrow": "Nach Stimmung entdecken",
     "title": "Wie möchtest du dich heute fühlen?",
-    "subtitle": "Wähle eine oder mehrere — wir gestalten deinen Tag danach.",
+    "subtitle": "Wähle eine oder mehrere Stimmungen – wir finden Aktivitäten, die zu deiner Stimmung passen. Kombiniere sie für noch bessere Empfehlungen!",
+    "tip": "Tipp: Mehrere Stimmungen kombinieren liefert persönlichere Ergebnisse",
     "back": "Zurück",
-    "nextButton": "Weiter: So funktioniert's →"
+    "nextButton": "Weiter: So funktioniert's →",
+    "foodyTooltip": "Restaurants, Cafés, Food-Märkte, Kochkurse"
   },
   "moodsGrid": {
     "happy": "Fröhlich",
