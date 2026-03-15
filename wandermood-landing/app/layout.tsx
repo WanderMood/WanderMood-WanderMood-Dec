@@ -44,6 +44,10 @@ export const metadata: Metadata = {
     follow: true,
   },
   alternates: { canonical: SITE_URL },
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export const viewport: Viewport = {
