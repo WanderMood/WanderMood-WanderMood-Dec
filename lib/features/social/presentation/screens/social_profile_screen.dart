@@ -65,7 +65,7 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Report feature coming soon!'),
+                    content: Text('Report is not available.'),
                     duration: Duration(seconds: 2),
                   ),
                 );
@@ -83,7 +83,7 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Block feature coming soon!'),
+                    content: Text('Block is not available.'),
                     duration: Duration(seconds: 2),
                   ),
                 );
@@ -101,7 +101,7 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Share feature coming soon!'),
+                    content: Text('Share is not available.'),
                     duration: Duration(seconds: 2),
                   ),
                 );
@@ -116,7 +116,7 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
   void _openDirectMessage(SocialProfile profile) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Messaging feature coming soon!'),
+        content: Text('Messaging is not available.'),
         duration: Duration(seconds: 2),
       ),
     );

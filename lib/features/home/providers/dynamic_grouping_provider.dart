@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -121,7 +122,7 @@ class DynamicGroupingNotifier extends StateNotifier<DynamicGroupingResult?> {
         savedPlaceId: savedPlaceId,
       );
     } catch (e) {
-      print('Error updating user interaction: $e');
+      if (kDebugMode) debugPrint('Error updating user interaction: $e');
     }
   }
 }

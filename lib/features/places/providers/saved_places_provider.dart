@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,7 +28,7 @@ class SavedPlaces extends _$SavedPlaces {
       
       return [];
     } catch (e) {
-      print('Error loading saved places: $e');
+      if (kDebugMode) debugPrint('Error loading saved places: $e');
       return [];
     }
   }
@@ -38,7 +39,7 @@ class SavedPlaces extends _$SavedPlaces {
       final jsonList = places.map((place) => place.toJson()).toList();
       await prefs.setString(_savedPlacesKey, json.encode(jsonList));
     } catch (e) {
-      print('Error saving places: $e');
+      if (kDebugMode) debugPrint('Error saving places: $e');
     }
   }
 

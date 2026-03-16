@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -74,7 +75,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
 
   Future<void> _saveBooking() async {
     try {
-      print('📝 Attempting to save booking for ${widget.place.name}...');
+      if (kDebugMode) debugPrint('📝 Attempting to save booking for ${widget.place.name}...');
       
       // 1. Save to bookings provider (for My Bookings screen)
       final bookingReference = await ref.read(bookingsProvider.notifier).addBooking(
@@ -86,7 +87,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
         totalPrice: widget.totalPrice,
       );
       
-      print('✅ Booking saved to bookings provider with reference: $bookingReference');
+      if (kDebugMode) debugPrint('✅ Booking saved to bookings provider with reference: $bookingReference');
       
       setState(() {
         _bookingReference = bookingReference;
@@ -132,7 +133,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
       }
     } catch (e) {
       // Handle error - could show a snackbar or retry
-      print('❌ Error saving booking: $e');
+      if (kDebugMode) debugPrint('❌ Error saving booking: $e');
       setState(() {
         _bookingReference = _generateBookingReference(); // Fallback
       });
@@ -157,7 +158,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
   /// Save the booking as a scheduled activity so it appears in My Agenda
   Future<void> _saveToScheduledActivities() async {
     try {
-      print('📅 Saving booking to scheduled activities for My Agenda...');
+      if (kDebugMode) debugPrint('📅 Saving booking to scheduled activities for My Agenda...');
       
       // Parse the time string (e.g., "2:00 PM") to get hours and minutes
       final timeParts = widget.time.split(' ');
@@ -217,15 +218,15 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
       
       // Save to scheduled activity service (Supabase)
       final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
-      print('📅 About to save activity: ${activity.name} on ${startTime.toString()}');
-      print('📅 Activity details: id=${activity.id}, location=${activity.location.latitude},${activity.location.longitude}');
-      print('📅 Activity startTime ISO: ${startTime.toIso8601String()}');
+      if (kDebugMode) debugPrint('📅 About to save activity: ${activity.name} on ${startTime.toString()}');
+      if (kDebugMode) debugPrint('📅 Activity details: id=${activity.id}, location=${activity.location.latitude},${activity.location.longitude}');
+      if (kDebugMode) debugPrint('📅 Activity startTime ISO: ${startTime.toIso8601String()}');
       
       try {
         await scheduledActivityService.saveScheduledActivities([activity], isConfirmed: true);
-        print('✅ Booking saved to scheduled activities successfully');
+        if (kDebugMode) debugPrint('✅ Booking saved to scheduled activities successfully');
       } catch (supabaseError) {
-        print('⚠️ Supabase save failed: $supabaseError');
+        if (kDebugMode) debugPrint('⚠️ Supabase save failed: $supabaseError');
         // Continue to SharedPreferences fallback
       }
       
@@ -233,7 +234,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
       await _saveToSharedPreferences(activity, startTime);
       
       // CRITICAL: Invalidate providers in correct order to ensure fresh data
-      print('🔄 Invalidating providers for fresh My Agenda and My Day data...');
+      if (kDebugMode) debugPrint('🔄 Invalidating providers for fresh My Agenda and My Day data...');
       ref.invalidate(scheduledActivityServiceProvider);
       ref.invalidate(cachedActivitySuggestionsProvider);
       // Also invalidate My Day providers to refresh the screen
@@ -241,11 +242,11 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
       ref.invalidate(timelineCategorizedActivitiesProvider);
       // Refresh daily mood state to update plannedActivities
       ref.invalidate(dailyMoodStateNotifierProvider);
-      print('✅ Providers invalidated - My Agenda and My Day will load fresh activities');
+      if (kDebugMode) debugPrint('✅ Providers invalidated - My Agenda and My Day will load fresh activities');
       
     } catch (e, stackTrace) {
-      print('❌ ERROR: Could not save to scheduled activities: $e');
-      print('❌ Stack trace: $stackTrace');
+      if (kDebugMode) debugPrint('❌ ERROR: Could not save to scheduled activities: $e');
+      if (kDebugMode) debugPrint('❌ Stack trace: $stackTrace');
       // Show error to user so they know something went wrong
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -266,7 +267,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
   /// Save booking to SharedPreferences as fallback so it appears in Agenda
   Future<void> _saveToSharedPreferences(Activity activity, DateTime startTime) async {
     try {
-      print('💾 Saving booking to SharedPreferences as fallback...');
+      if (kDebugMode) debugPrint('💾 Saving booking to SharedPreferences as fallback...');
       final prefs = await SharedPreferences.getInstance();
       final existingJson = prefs.getStringList('cached_activity_suggestions') ?? [];
       
@@ -292,10 +293,10 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
       existingJson.add(jsonEncode(activityMap));
       await prefs.setStringList('cached_activity_suggestions', existingJson);
       
-      print('✅ Booking saved to SharedPreferences successfully');
-      print('✅ Activity will appear in Agenda with startTime: ${startTime.toIso8601String()}');
+      if (kDebugMode) debugPrint('✅ Booking saved to SharedPreferences successfully');
+      if (kDebugMode) debugPrint('✅ Activity will appear in Agenda with startTime: ${startTime.toIso8601String()}');
     } catch (e) {
-      print('❌ Error saving to SharedPreferences: $e');
+      if (kDebugMode) debugPrint('❌ Error saving to SharedPreferences: $e');
     }
   }
 

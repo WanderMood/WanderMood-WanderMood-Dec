@@ -477,12 +477,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     });
 
     // Debug logging
-    if (_activeFiltersCount > 0 || _searchQuery.isNotEmpty) {
-      if (kDebugMode) {
-        debugPrint('🔍 Filtering: ${initialCount} → ${filteredPlaces.length} places');
-        debugPrint('   Active filters: $_activeFiltersCount');
-        debugPrint('   Search query: "$_searchQuery"');
-      }
+    if (kDebugMode && (_activeFiltersCount > 0 || _searchQuery.isNotEmpty)) {
+      debugPrint('Filtering: $initialCount → ${filteredPlaces.length} places');
     }
 
     return filteredPlaces;
@@ -763,12 +759,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       for (final key in keys) {
         if (key.startsWith('places_cache_') || key.startsWith('places_timestamp_')) {
           await prefs.remove(key);
-          print('🗑️ Cleared cached data: $key');
+          if (kDebugMode) debugPrint('🗑️ Cleared cached data: $key');
         }
       }
-      print('✅ All places cache data cleared');
+      if (kDebugMode) debugPrint('✅ All places cache data cleared');
     } catch (e) {
-      print('❌ Error clearing cache: $e');
+      if (kDebugMode) debugPrint('❌ Error clearing cache: $e');
     }
   }
 
@@ -907,7 +903,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     // REMOVED: Auto-invalidate was causing infinite loop
                     // If filters reduce results too much, user can manually refresh or adjust filters
                     if (filteredPlaces.length < 5 && allPlaces.length >= 50) {
-                      debugPrint('⚠️ Filters reduced results to ${filteredPlaces.length} places (${allPlaces.length} unfiltered).');
+                      if (kDebugMode) debugPrint('⚠️ Filters reduced results to ${filteredPlaces.length} places (${allPlaces.length} unfiltered).');
                       // User can adjust filters or pull to refresh manually
                     }
                     
@@ -1409,7 +1405,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           'Dietary Preferences',
                           _dietaryExpanded,
                           () => updateFilter(() {
-                            print('🔄 Toggling Dietary Preferences: $_dietaryExpanded -> ${!_dietaryExpanded}');
+                            if (kDebugMode) debugPrint('🔄 Toggling Dietary Preferences: $_dietaryExpanded -> ${!_dietaryExpanded}');
                             _dietaryExpanded = !_dietaryExpanded;
                           }),
                           _buildDietaryFilters(updateFilter),
@@ -1480,8 +1476,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       setState(() {
                         // Update active filters count
                         _updateActiveFiltersCount();
-                        debugPrint('💾 Saved filters - Active count: $_activeFiltersCount');
-                        debugPrint('🔍 Filter state - Vegan: $_vegan, Vegetarian: $_vegetarian, Wheelchair: $_wheelchairAccessible');
+                        if (kDebugMode) debugPrint('💾 Saved filters - Active count: $_activeFiltersCount');
+                        if (kDebugMode) debugPrint('🔍 Filter state - Vegan: $_vegan, Vegetarian: $_vegetarian, Wheelchair: $_wheelchairAccessible');
                       });
                     },
                     style: ElevatedButton.styleFrom(
@@ -2052,10 +2048,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             color: Colors.transparent,
             child: InkWell(
               onTap: () {
-                print('🚨 TAP DETECTED on section: $title');
+                if (kDebugMode) debugPrint('🚨 TAP DETECTED on section: $title');
                 HapticFeedback.lightImpact();
                 onToggle();
-                print('🚨 AFTER onToggle called');
+                if (kDebugMode) debugPrint('🚨 AFTER onToggle called');
               },
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               child: Container(
@@ -2648,27 +2644,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 mapType: MapType.normal, // Ensure map type is set
                 onMapCreated: (GoogleMapController controller) {
                   _mapController = controller;
-                  if (kDebugMode) {
-                    debugPrint('✅ Google Map created successfully');
-                    debugPrint('📍 Initial position: ${initialPosition.latitude}, ${initialPosition.longitude}');
-                    debugPrint('📍 Markers count: ${markers.length}');
-                  }
+                  if (kDebugMode) debugPrint('Google Map created');
                 },
                 onCameraMoveStarted: () {
-                  if (kDebugMode) {
-                    debugPrint('🗺️ Camera move started');
-                  }
+                  if (kDebugMode) debugPrint('Camera move started');
                 },
                 onTap: (LatLng position) {
-                  if (kDebugMode) {
-                    debugPrint('🗺️ Map tapped at: ${position.latitude}, ${position.longitude}');
-                  }
+                  if (kDebugMode) debugPrint('Map tapped');
                 },
-                // Error handling for map loading
                 onCameraIdle: () {
-                  if (kDebugMode) {
-                    debugPrint('🗺️ Camera idle - map should be fully loaded');
-                  }
+                  if (kDebugMode) debugPrint('Camera idle');
                 },
                 myLocationEnabled: userLocation != null && 
                   (userLocation.latitude - 37.785834).abs() > 0.1, // Don't show if SF simulator

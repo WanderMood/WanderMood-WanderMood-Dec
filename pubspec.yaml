@@ -66,6 +66,7 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   shared_preferences: ^2.5.3
+  flutter_secure_storage: ^9.2.2
   
   # Utils
   json_annotation: ^4.8.1
@@ -133,7 +134,6 @@ flutter:
   generate: true
 
   assets:
-    - .env
     - assets/images/
     - assets/images/fallbacks/
     - assets/images/weather_icons/

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/features/mood/domain/models/activity.dart';
 import 'package:wandermood/features/mood/domain/models/mood_data.dart';
@@ -23,7 +24,7 @@ class SupabaseMoodRepository implements MoodRepository {
       final response = await query.order('timestamp', ascending: false);
       return (response as List).map((item) => MoodData.fromJson(item)).toList();
     } catch (e) {
-      print('Error getting moods: $e');
+      if (kDebugMode) debugPrint('Error getting moods: $e');
       return [];
     }
   }
@@ -47,7 +48,7 @@ class SupabaseMoodRepository implements MoodRepository {
       final response = await _client.from('moods').insert(mood.toJson()).select().single();
       return MoodData.fromJson(response);
     } catch (e) {
-      print('Error saving mood: $e');
+      if (kDebugMode) debugPrint('Error saving mood: $e');
       rethrow;
     }
   }
@@ -57,7 +58,7 @@ class SupabaseMoodRepository implements MoodRepository {
     try {
       await _client.from('moods').delete().eq('id', moodId);
     } catch (e) {
-      print('Error deleting mood: $e');
+      if (kDebugMode) debugPrint('Error deleting mood: $e');
       rethrow;
     }
   }
@@ -68,7 +69,7 @@ class SupabaseMoodRepository implements MoodRepository {
       final response = await _client.from('activities').select();
       return (response as List).map((item) => Activity.fromJson(item)).toList();
     } catch (e) {
-      print('Error getting activities: $e');
+      if (kDebugMode) debugPrint('Error getting activities: $e');
       return [];
     }
   }
@@ -79,7 +80,7 @@ class SupabaseMoodRepository implements MoodRepository {
       final response = await _client.from('activities').insert(activity.toJson()).select().single();
       return Activity.fromJson(response);
     } catch (e) {
-      print('Error creating activity: $e');
+      if (kDebugMode) debugPrint('Error creating activity: $e');
       rethrow;
     }
   }
@@ -89,7 +90,7 @@ class SupabaseMoodRepository implements MoodRepository {
     try {
       await _client.from('activities').update(activity.toJson()).eq('id', activity.id);
     } catch (e) {
-      print('Error updating activity: $e');
+      if (kDebugMode) debugPrint('Error updating activity: $e');
       rethrow;
     }
   }
@@ -99,7 +100,7 @@ class SupabaseMoodRepository implements MoodRepository {
     try {
       await _client.from('activities').delete().eq('id', activityId);
     } catch (e) {
-      print('Error deleting activity: $e');
+      if (kDebugMode) debugPrint('Error deleting activity: $e');
       rethrow;
     }
   }
@@ -124,7 +125,7 @@ class SupabaseMoodRepository implements MoodRepository {
       );
       return response as Map<String, dynamic>;
     } catch (e) {
-      print('Error getting mood stats: $e');
+      if (kDebugMode) debugPrint('Error getting mood stats: $e');
       return {};
     }
   }

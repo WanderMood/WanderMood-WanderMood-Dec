@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/features/mood/data/repositories/supabase_mood_repository.dart';
 import 'package:wandermood/features/mood/domain/models/mood.dart';
@@ -54,7 +55,7 @@ class MoodService extends _$MoodService {
       }
       return null;
     } catch (e) {
-      print('Error getting current mood: $e');
+      if (kDebugMode) debugPrint('Error getting current mood: $e');
       return null;
     }
   }
@@ -83,7 +84,7 @@ class MoodService extends _$MoodService {
 
       return (response as List).map((item) => MoodData.fromJson(item)).toList();
     } catch (e) {
-      print('Error getting mood history: $e');
+      if (kDebugMode) debugPrint('Error getting mood history: $e');
       return [];
     }
   }
@@ -93,7 +94,7 @@ class MoodService extends _$MoodService {
       await _client.from('moods').insert(mood.toJson());
       ref.invalidateSelf();
     } catch (e) {
-      print('Error saving mood: $e');
+      if (kDebugMode) debugPrint('Error saving mood: $e');
       rethrow;
     }
   }
@@ -107,7 +108,7 @@ class MoodService extends _$MoodService {
           .eq('user_id', mood.userId);
       ref.invalidateSelf();
     } catch (e) {
-      print('Error updating mood: $e');
+      if (kDebugMode) debugPrint('Error updating mood: $e');
       rethrow;
     }
   }
@@ -121,7 +122,7 @@ class MoodService extends _$MoodService {
           .eq('user_id', _client.auth.currentUser!.id);
       ref.invalidateSelf();
     } catch (e) {
-      print('Error deleting mood: $e');
+      if (kDebugMode) debugPrint('Error deleting mood: $e');
       rethrow;
     }
   }

@@ -2,8 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
+import 'package:wandermood/core/constants/api_keys.dart';
 
 // Weather data model
 class WeatherData {
@@ -98,25 +98,18 @@ final weatherProvider = FutureProvider.autoDispose<WeatherData?>((ref) async {
   if (locationState == null) return null;
   
   // Get API key from environment
-  final apiKey = dotenv.env['OPENWEATHER_API_KEY'] ?? '';
-  debugPrint('🌤️ Weather API Key: ${apiKey.isEmpty ? 'EMPTY' : 'EXISTS (${apiKey.length} chars)'}');
-  debugPrint('🌤️ Weather location: $locationState');
+  final apiKey = ApiKeys.openWeather;
   
   // Use real API if key is available
   if (apiKey.isNotEmpty) {
     try {
       final url = 'https://api.openweathermap.org/data/2.5/weather?q=$locationState&appid=$apiKey&units=metric';
-      debugPrint('🌤️ Weather URL: $url');
-      
       final response = await http.get(Uri.parse(url));
-      debugPrint('🌤️ Weather API response code: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        debugPrint('🌤️ Weather API response: ${response.body.substring(0, response.body.length > 100 ? 100 : response.body.length)}...');
         return WeatherData.fromOpenWeatherMap(data, locationState);
       } else {
-        debugPrint('🌤️ Weather API error: ${response.body}');
         throw Exception('Failed to load weather data: ${response.statusCode}');
       }
     } catch (e) {

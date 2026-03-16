@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/router/router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/config/supabase_config.dart';
@@ -17,14 +17,14 @@ import 'features/settings/presentation/providers/user_preferences_provider.dart'
 import 'features/gamification/providers/gamification_provider.dart' as gamification;
 import 'package:wandermood/features/places/providers/explore_places_provider.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:wandermood/core/services/secure_storage_service.dart';
+import 'package:wandermood/core/providers/secure_storage_provider.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 // Provider to initialize app data on startup
 final appInitializerProvider = FutureProvider<bool>((ref) async {
-  // Start listening to auth state changes 
   ref.watch(authStateChangesProvider);
-  
-  // **CRITICAL**: Synchronize SharedPreferences with Supabase auth state
-  await _synchronizeAuthState();
+  await _synchronizeAuthState(ref);
   
   // **LOCATION PERMISSION**: Request location permission early to show popup
   await _requestLocationPermission();
@@ -123,52 +123,33 @@ Future<void> _waitForSessionRestore() async {
 }
 
 /// This fixes issues where users are authenticated in Supabase but flags aren't set locally
-Future<void> _synchronizeAuthState() async {
+Future<void> _synchronizeAuthState(Ref ref) async {
   try {
-    // First, wait for Supabase to restore any existing session
     await _waitForSessionRestore();
-    
-    final prefs = await SharedPreferences.getInstance();
+    final secure = ref.read(secureStorageServiceProvider);
     final user = Supabase.instance.client.auth.currentUser;
     final session = Supabase.instance.client.auth.currentSession;
-    
-    final hasCompletedPreferences = prefs.getBool('hasCompletedPreferences') ?? false;
-    
-    debugPrint('🔄 Synchronizing auth state...');
-    debugPrint('   Supabase User: ${user?.id}');
-    debugPrint('   Supabase Session: ${session != null}');
-    debugPrint('   Local hasCompletedPreferences: $hasCompletedPreferences');
-    
-    // If user is authenticated, mark onboarding as seen
+    final hasCompletedPreferences = await secure.getHasCompletedPreferences();
+
+    if (kDebugMode) {
+      debugPrint('Synchronizing auth state...');
+    }
+
     if (user != null && session != null) {
-      final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+      final hasSeenOnboarding = await secure.getHasSeenOnboarding();
       if (!hasSeenOnboarding) {
-      await prefs.setBool('has_seen_onboarding', true);
-        debugPrint('✅ Marked onboarding as seen');
+        await secure.setHasSeenOnboarding(true);
       }
-      
-      // CRITICAL: Don't auto-mark preferences as completed just because they exist in DB
-      // Preferences are saved during email verification (basic communication prefs),
-      // but onboarding completion should only be set after the full onboarding flow
-      // Only check if preferences exist, but don't set the flag here
       try {
-        final response = await Supabase.instance.client
+        await Supabase.instance.client
             .from('user_preferences')
             .select('*')
             .eq('user_id', user.id)
             .maybeSingle();
-        
-        if (response != null && response.isNotEmpty) {
-          debugPrint('📋 User has preferences in database (may be partial from email verification)');
-          // Don't set hasCompletedPreferences here - let onboarding_loading_screen.dart handle it
-        }
-      } catch (e) {
-        debugPrint('📋 Could not check preferences: $e');
-      }
+      } catch (_) {}
     }
-    
   } catch (e) {
-    debugPrint('❌ Error synchronizing auth state: $e');
+    if (kDebugMode) debugPrint('Error synchronizing auth state: $e');
   }
 }
 
@@ -176,16 +157,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   try {
-    // **CRITICAL**: Load environment variables FIRST before any API key access
-    try {
-      await dotenv.load(fileName: '.env');
-      debugPrint('✅ Loaded .env file');
-    } catch (e) {
-      debugPrint('⚠️ Could not load .env file: $e');
-      // Continue - will use build-time environment variables
-    }
-    
-    // **CRITICAL**: Validate required API keys BEFORE initializing Supabase
+    // Validate required API keys (injected via --dart-define at build time)
     await _validateApiKeys();
     
     // Initialize Supabase with loaded environment variables
@@ -201,7 +173,8 @@ Future<void> main() async {
     
     // Initialize SharedPreferences
     final prefs = await SharedPreferences.getInstance();
-    
+    SecureStorageService.sharedPrefs = prefs;
+
     // 🧹 CLEANUP: Clear expired API cache on app start
     ExplorePlaces.clearExpiredCache();
     
@@ -348,6 +321,19 @@ class WanderMoodApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: userPrefs.getThemeMode(),
       routerConfig: router,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('nl'),
+        Locale('es'),
+        Locale('fr'),
+        Locale('de'),
+      ],
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/providers/supabase_provider.dart';
@@ -17,15 +18,15 @@ class SchemaHelper {
   /// Create the scheduled_activities table if it doesn't exist
   Future<void> createScheduledActivitiesTable() async {
     try {
-      print('SchemaHelper: Attempting to create scheduled_activities table');
+          if (kDebugMode) debugPrint('SchemaHelper: Attempting to create scheduled_activities table');
       
       // First, try to query the table to see if it exists
       try {
         final response = await _client.from('scheduled_activities').select('id').limit(1);
-        print('SchemaHelper: Table already exists, got response: $response');
+        if (kDebugMode) debugPrint('SchemaHelper: Table already exists, got response: $response');
         return; // Table exists, so we're good
       } catch (queryError) {
-        print('SchemaHelper: Table query failed: $queryError');
+        if (kDebugMode) debugPrint('SchemaHelper: Table query failed: $queryError');
         // Proceed with table creation if query failed
       }
       
@@ -58,10 +59,10 @@ class SchemaHelper {
         // Attempt to execute SQL directly using the REST API
         // This might work depending on your Supabase setup
         await _client.rpc('execute_sql', params: {'query': sql});
-        print('SchemaHelper: Table created successfully via execute_sql RPC');
+        if (kDebugMode) debugPrint('SchemaHelper: Table created successfully via execute_sql RPC');
         return;
       } catch (sqlError) {
-        print('SchemaHelper: Direct SQL execution failed: $sqlError');
+        if (kDebugMode) debugPrint('SchemaHelper: Direct SQL execution failed: $sqlError');
         // Continue to next approach
       }
       
@@ -82,7 +83,7 @@ class SchemaHelper {
         });
         
         // If we get here, it means the table exists (maybe it was auto-created)
-        print('SchemaHelper: Table exists or was auto-created successfully');
+        if (kDebugMode) debugPrint('SchemaHelper: Table exists or was auto-created successfully');
         
         // Delete the temporary record
         try {
@@ -90,17 +91,17 @@ class SchemaHelper {
             .delete()
             .eq('activity_id', 'temp-activity-id');
         } catch (deleteError) {
-          print('SchemaHelper: Error deleting temp record: $deleteError');
+          if (kDebugMode) debugPrint('SchemaHelper: Error deleting temp record: $deleteError');
         }
         
         return;
       } catch (insertError) {
-        print('SchemaHelper: Test insertion failed: $insertError');
+        if (kDebugMode) debugPrint('SchemaHelper: Test insertion failed: $insertError');
       }
       
       // If all attempts fail, log instructions for manual creation
-      print('SchemaHelper: Automatic table creation failed. Please run this SQL in the Supabase dashboard:');
-      print('''
+          if (kDebugMode) debugPrint('SchemaHelper: Automatic table creation failed. Please run this SQL in the Supabase dashboard:');
+          if (kDebugMode) debugPrint('''
       CREATE TABLE IF NOT EXISTS public.scheduled_activities (
         id SERIAL PRIMARY KEY,
         user_id UUID NOT NULL,
@@ -121,9 +122,9 @@ class SchemaHelper {
       );
       ''');
       
-      print('SchemaHelper: Using in-memory storage instead since table creation failed');
+          if (kDebugMode) debugPrint('SchemaHelper: Using in-memory storage instead since table creation failed');
     } catch (e) {
-      print('SchemaHelper: General error creating table: $e');
+          if (kDebugMode) debugPrint('SchemaHelper: General error creating table: $e');
       // Don't rethrow - just log the error
     }
   }

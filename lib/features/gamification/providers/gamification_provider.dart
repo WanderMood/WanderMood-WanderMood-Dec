@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/material.dart';
 import 'dart:convert';
 
 import '../domain/models/achievement.dart';
@@ -74,7 +75,7 @@ class GamificationNotifier extends StateNotifier<GamificationState> {
         state = state.copyWith(achievements: achievements);
       } catch (e) {
         // Fallback to default achievements on error
-        print('Error loading achievements: $e');
+        if (kDebugMode) debugPrint('Error loading achievements: $e');
       }
     }
     
@@ -96,7 +97,7 @@ class GamificationNotifier extends StateNotifier<GamificationState> {
         state = state.copyWith(streak: streak);
       } catch (e) {
         // Fallback to default streak on error
-        print('Error loading streak: $e');
+        if (kDebugMode) debugPrint('Error loading streak: $e');
       }
     }
   }
@@ -133,7 +134,7 @@ class GamificationNotifier extends StateNotifier<GamificationState> {
       
       await prefs.setString('streak', jsonEncode(streakData));
     } catch (e) {
-      print('Error saving gamification state: $e');
+      if (kDebugMode) debugPrint('Error saving gamification state: $e');
     }
   }
   

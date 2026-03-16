@@ -28,7 +28,7 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
   void _listenToAuthChanges() {
     Supabase.instance.client.auth.onAuthStateChange.listen((event) {
       if (event.event == AuthChangeEvent.signedIn) {
-        debugPrint('🔄 User authenticated - retrying Supabase save...');
+        if (kDebugMode) debugPrint('User authenticated - retrying Supabase save');
         retrySaveToSupabase();
       }
     });
@@ -76,7 +76,7 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
           }
         }
       } catch (e) {
-        debugPrint('Error loading preferences from Supabase: $e');
+        if (kDebugMode) debugPrint('Error loading preferences from Supabase: $e');
         // If no preferences exist in Supabase, save current state
         await _saveToSupabase();
       }
@@ -95,9 +95,7 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
     final session = SupabaseConfig.auth.currentSession;
     
     if (kDebugMode) {
-      debugPrint('🔍 Attempting to save preferences to Supabase...');
-      debugPrint('🔍 User: ${user?.id}');
-      debugPrint('🔍 Session: ${session?.user?.id}');
+      if (kDebugMode) debugPrint('Attempting to save preferences to Supabase');
     }
     
     if (user != null && session != null) {
@@ -122,17 +120,13 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
             .upsert(dataToSave, onConflict: 'user_id');
             
         if (kDebugMode) {
-          debugPrint('✅ Successfully saved preferences to Supabase for user: ${user.id}');
+          if (kDebugMode) debugPrint('Saved preferences to Supabase');
         }
       } catch (e) {
-        debugPrint('❌ Error saving preferences to Supabase: $e');
-        debugPrint('❌ User ID: ${user.id}');
-        debugPrint('❌ Session valid: ${session.isExpired ? 'NO' : 'YES'}');
+        if (kDebugMode) debugPrint('Error saving preferences to Supabase: $e');
       }
     } else {
-      debugPrint('⚠️ Cannot save to Supabase - user not authenticated');
-      debugPrint('⚠️ User: ${user?.id ?? 'null'}');
-      debugPrint('⚠️ Session: ${session?.user?.id ?? 'null'}');
+      if (kDebugMode) debugPrint('Cannot save to Supabase - user not authenticated');
     }
   }
 
@@ -150,7 +144,7 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
     final session = SupabaseConfig.auth.currentSession;
     
     if (user != null && session != null) {
-      debugPrint('🔄 Retrying save to Supabase after authentication...');
+      if (kDebugMode) debugPrint('Retrying save to Supabase');
       await _saveToSupabase();
     }
   }

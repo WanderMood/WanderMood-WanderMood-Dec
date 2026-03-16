@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../mood/application/mood_service.dart';
@@ -80,7 +81,7 @@ class RecommendationService extends _$RecommendationService {
       recommendations.sort((a, b) => b.rating.compareTo(a.rating));
       return recommendations.take(limit).toList();
     } catch (e) {
-      print('Error generating recommendations: $e');
+      if (kDebugMode) debugPrint('Error generating recommendations: $e');
       return [];
     }
   }
@@ -100,7 +101,7 @@ class RecommendationService extends _$RecommendationService {
           .update({'is_favorite': !currentFavorite})
           .eq('id', id);
     } catch (e) {
-      print('Error toggling favorite: $e');
+      if (kDebugMode) debugPrint('Error toggling favorite: $e');
       rethrow;
     }
   }
@@ -117,7 +118,7 @@ class RecommendationService extends _$RecommendationService {
           .map((json) => TravelRecommendation.fromJson(json))
           .toList();
     } catch (e) {
-      print('Error fetching favorites: $e');
+      if (kDebugMode) debugPrint('Error fetching favorites: $e');
       return [];
     }
   }
@@ -135,7 +136,7 @@ class RecommendationService extends _$RecommendationService {
           .map((json) => TravelRecommendation.fromJson(json))
           .toList();
     } catch (e) {
-      print('Error searching recommendations: $e');
+      if (kDebugMode) debugPrint('Error searching recommendations: $e');
       return [];
     }
   }
@@ -146,7 +147,7 @@ class RecommendationService extends _$RecommendationService {
           .from('travel_recommendations')
           .insert(recommendation.toJson());
     } catch (e) {
-      print('Error saving recommendation: $e');
+      if (kDebugMode) debugPrint('Error saving recommendation: $e');
       rethrow;
     }
   }

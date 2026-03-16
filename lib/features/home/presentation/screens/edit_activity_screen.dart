@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -91,7 +92,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
                   children: [
                     IconButton(
                       onPressed: () {
-                        print('🔙 Back button pressed on manage booking screen');
+                        if (kDebugMode) debugPrint('Back from manage booking');
                         if (Navigator.of(context).canPop()) {
                           Navigator.of(context).pop();
                         } else {

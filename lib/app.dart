@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +15,7 @@ class App extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(localThemeProvider);
     final locale = ref.watch(localeProvider);
-    print('🏗️ App: Building with themeMode: $themeMode, locale: $locale');
+    if (kDebugMode) debugPrint('App: Building');
     
     return MaterialApp.router(
       title: 'WanderMood',
@@ -40,7 +41,7 @@ class App extends ConsumerWidget {
       builder: (context, child) {
         final platformBrightness = MediaQuery.platformBrightnessOf(context);
         final decoration = AppTheme.backgroundGradientForTheme(themeMode, platformBrightness);
-        print('🏗️ App: Platform brightness: $platformBrightness, Using decoration: ${decoration == AppTheme.darkBackgroundGradient ? "DARK" : "LIGHT"}');
+        if (kDebugMode) debugPrint('App: Platform brightness');
         return Container(
           decoration: decoration,
           child: child!,

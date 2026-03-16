@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
@@ -9,27 +10,27 @@ final appThemeModeProvider = Provider<ThemeMode>((ref) {
   return profileAsync.when(
     data: (profile) {
       final themePreference = profile?.themePreference ?? 'system';
-      print('🎨 Theme Provider: Profile loaded, theme preference: $themePreference');
+      if (kDebugMode) debugPrint('Theme Provider: preference: $themePreference');
       
       switch (themePreference.toLowerCase()) {
         case 'light':
-          print('🎨 Theme Provider: Returning ThemeMode.light');
+          if (kDebugMode) debugPrint('Theme Provider: ThemeMode.light');
           return ThemeMode.light;
         case 'dark':
-          print('🎨 Theme Provider: Returning ThemeMode.dark');
+          if (kDebugMode) debugPrint('Theme Provider: ThemeMode.dark');
           return ThemeMode.dark;
         case 'system':
         default:
-          print('🎨 Theme Provider: Returning ThemeMode.system');
+          if (kDebugMode) debugPrint('Theme Provider: ThemeMode.system');
           return ThemeMode.system;
       }
     },
     loading: () {
-      print('🎨 Theme Provider: Profile loading, returning ThemeMode.system');
+      if (kDebugMode) debugPrint('Theme Provider: loading');
       return ThemeMode.system;
     },
     error: (error, _) {
-      print('🎨 Theme Provider: Profile error: $error, returning ThemeMode.system');
+      if (kDebugMode) debugPrint('Theme Provider: error: $error');
       return ThemeMode.system;
     },
   );

@@ -56,7 +56,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     // WanderFeed coming soon - interactions disabled
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('WanderFeed is coming soon! Social interactions will be available then. 🧳✨'),
+        content: Text('Social interactions are not available for this post.'),
         duration: Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
       ),
@@ -67,7 +67,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     // WanderFeed coming soon - interactions disabled
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('WanderFeed is coming soon! Bookmarking will be available then. 🧳✨'),
+        content: Text('Bookmarking is not available.'),
         duration: Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
       ),
@@ -80,7 +80,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     // WanderFeed coming soon - interactions disabled
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('WanderFeed is coming soon! Comments will be available then. 🧳✨'),
+        content: Text('Comments are not available.'),
         duration: Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
       ),

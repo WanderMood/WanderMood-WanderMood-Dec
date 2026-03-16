@@ -32,6 +32,10 @@
     "wanderFeed": {
       "label": "WanderFeed",
       "description": "Voyez ce que les autres explorent et partagez le vôtre."
+    },
+    "filters": {
+      "label": "Filtres",
+      "description": "Affinez par intérieur/extérieur, régime, ouvert maintenant et plus."
     }
   },
   "experience": {

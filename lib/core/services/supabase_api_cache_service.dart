@@ -23,7 +23,7 @@ class SupabaseApiCacheService {
     required Map<String, dynamic> parameters,
   }) async {
     if (!shouldUseCache) {
-      debugPrint('🌐 Production mode - skipping cache check');
+      if (kDebugMode) debugPrint('Production mode - skipping cache check');
       return null;
     }
     
@@ -31,8 +31,10 @@ class SupabaseApiCacheService {
       final cacheKey = _generateCacheKey(endpoint, parameters);
       final userId = _supabase.auth.currentUser?.id ?? 'anonymous';
       
-      debugPrint('🔍 Checking Supabase cache for: $endpoint');
-      debugPrint('   Cache key: $cacheKey');
+      if (kDebugMode) {
+        debugPrint('Checking Supabase cache for: $endpoint');
+        debugPrint('Cache key: $cacheKey');
+      }
       
       final cacheResponse = await _supabase
           .from('places_cache')
@@ -41,7 +43,7 @@ class SupabaseApiCacheService {
           .maybeSingle();
       
       if (cacheResponse == null) {
-        debugPrint('❌ Cache MISS: No data found');
+        if (kDebugMode) debugPrint('Cache MISS');
         return null;
       }
       
@@ -50,18 +52,17 @@ class SupabaseApiCacheService {
       // Check if cache is expired
       final expiresAt = DateTime.parse(cacheData['expires_at'] as String);
       if (expiresAt.isBefore(DateTime.now())) {
-        debugPrint('⏰ Cache EXPIRED: ${expiresAt.toIso8601String()}');
+        if (kDebugMode) debugPrint('Cache EXPIRED');
         return null;
       }
       
       // Return cached data
       final cachedData = cacheData['data'] as Map<String, dynamic>;
-      debugPrint('✅ Cache HIT: Found cached response');
-      debugPrint('💰 COST SAVED: ~\$${_getApiCost(endpoint)}');
+      if (kDebugMode) debugPrint('Cache HIT');
       
       return cachedData;
     } catch (e) {
-      debugPrint('❌ Error reading from Supabase cache: $e');
+      if (kDebugMode) debugPrint('Error reading from Supabase cache: $e');
       return null;
     }
   }
@@ -74,7 +75,7 @@ class SupabaseApiCacheService {
     Duration? cacheDuration,
   }) async {
     if (!shouldUseCache) {
-      debugPrint('🌐 Production mode - skipping cache save');
+      if (kDebugMode) debugPrint('Production mode - skipping cache save');
       return;
     }
     
@@ -83,9 +84,7 @@ class SupabaseApiCacheService {
       final userId = _supabase.auth.currentUser?.id ?? 'anonymous';
       final expiresAt = DateTime.now().add(cacheDuration ?? const Duration(days: 30));
       
-      debugPrint('💾 Saving to Supabase cache: $endpoint');
-      debugPrint('   Cache key: $cacheKey');
-      debugPrint('   Expires at: ${expiresAt.toIso8601String()}');
+      if (kDebugMode) debugPrint('Saving to Supabase cache: $endpoint');
       
       // Determine request type from endpoint
       String requestType = 'search';
@@ -127,10 +126,9 @@ class SupabaseApiCacheService {
             'updated_at': DateTime.now().toIso8601String(),
           }, onConflict: 'cache_key');
       
-      // Upsert doesn't return error in the same way, check for exceptions
-      debugPrint('✅ Successfully cached API response in Supabase');
+      if (kDebugMode) debugPrint('Cached API response in Supabase');
     } catch (e) {
-      debugPrint('❌ Error caching response: $e');
+      if (kDebugMode) debugPrint('Error caching response: $e');
     }
   }
   
@@ -181,9 +179,9 @@ class SupabaseApiCacheService {
           .delete()
           .eq('user_id', userId);
       
-      debugPrint('🧹 Cleared all cached API responses');
+      if (kDebugMode) debugPrint('Cleared all cached API responses');
     } catch (e) {
-      debugPrint('❌ Error clearing cache: $e');
+      if (kDebugMode) debugPrint('Error clearing cache: $e');
     }
   }
   

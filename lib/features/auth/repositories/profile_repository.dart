@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -70,7 +71,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       
       return profile;
     } catch (e) {
-      print('Error fetching profile: $e');
+      if (kDebugMode) debugPrint('Error fetching profile: $e');
       return null;
     }
   }
@@ -92,7 +93,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       
       return true;
     } catch (e) {
-      print('Error updating profile: $e');
+      if (kDebugMode) debugPrint('Error updating profile: $e');
       return false;
     }
   }
@@ -130,7 +131,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       
       return publicUrl;
     } catch (e) {
-      print('Error uploading avatar: $e');
+      if (kDebugMode) debugPrint('Error uploading avatar: $e');
       return null;
     }
   }
@@ -186,7 +187,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       
       return UserProfile.fromJson(cacheInfo['data']);
     } catch (e) {
-      print('Error reading from local cache: $e');
+      if (kDebugMode) debugPrint('Error reading from local cache: $e');
       return null;
     }
   }
@@ -203,7 +204,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       
       await prefs.setString(cacheKey, json.encode(cacheData));
     } catch (e) {
-      print('Error saving to local cache: $e');
+      if (kDebugMode) debugPrint('Error saving to local cache: $e');
     }
   }
   
@@ -213,7 +214,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       final cacheKey = _cachePrefix + userId;
       await prefs.remove(cacheKey);
     } catch (e) {
-      print('Error removing from local cache: $e');
+      if (kDebugMode) debugPrint('Error removing from local cache: $e');
     }
   }
   
@@ -226,7 +227,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
         await prefs.remove(key);
       }
     } catch (e) {
-      print('Error clearing local cache: $e');
+      if (kDebugMode) debugPrint('Error clearing local cache: $e');
     }
   }
 } 

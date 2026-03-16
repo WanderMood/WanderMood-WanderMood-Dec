@@ -7,8 +7,9 @@ class SupabaseConfig {
   static String get anonKey => EnvConfig.supabaseAnonKey;
   
   static Future<void> initialize() async {
-    debugPrint('🔧 Initializing Supabase with URL: $url');
-    debugPrint('🔧 Using key: ${anonKey.substring(0, 20)}...');
+    if (kDebugMode) {
+      debugPrint('Initializing Supabase...');
+    }
     
     await Supabase.initialize(
       url: url,
@@ -19,9 +20,9 @@ class SupabaseConfig {
       ),
     );
     
-    // Verify the client is using the correct URL
-    debugPrint('🔧 Final Supabase client initialized successfully');
-    debugPrint('🔧 Final Supabase auth initialized: ${Supabase.instance.client.auth != null}');
+    if (kDebugMode) {
+      debugPrint('Supabase initialized successfully');
+    }
   }
   
   static SupabaseClient get client => Supabase.instance.client;

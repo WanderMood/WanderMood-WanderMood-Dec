@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../constants/api_constants.dart';
 
@@ -32,7 +33,7 @@ class PlacesService {
           }
         }
       } catch (e) {
-        print('Error fetching places for type $type: $e');
+        if (kDebugMode) debugPrint('Error fetching places for type $type: $e');
       }
     }
 
@@ -67,7 +68,7 @@ class PlacesService {
       }
       return {};
     } catch (e) {
-      print('Error fetching place details: $e');
+      if (kDebugMode) debugPrint('Error fetching place details: $e');
       return {};
     }
   }

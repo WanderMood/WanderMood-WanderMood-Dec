@@ -7,7 +7,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../../core/config/supabase_config.dart';
 import '../../../../core/constants/api_keys.dart';
 import 'preferences_provider.dart';
@@ -29,8 +28,8 @@ class OnboardingService extends _$OnboardingService {
       _openWeatherApiKey = '';
       
       final openaiKey = ApiKeys.openAiKey;
-      _googlePlacesApiKey = dotenv.env['GOOGLE_PLACES_API_KEY'] ?? '';
-      _openWeatherApiKey = dotenv.env['OPENWEATHER_API_KEY'] ?? '';
+      _googlePlacesApiKey = ApiKeys.googlePlacesKey;
+      _openWeatherApiKey = ApiKeys.openWeather;
       
       if (openaiKey.isNotEmpty) {
         OpenAI.apiKey = openaiKey;

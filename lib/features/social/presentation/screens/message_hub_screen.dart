@@ -98,7 +98,7 @@ class _MessageHubScreenState extends ConsumerState<MessageHubScreen> {
               onPressed: () {
                 // Open new message composer
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('New message feature coming soon!')),
+                  const SnackBar(content: Text('New message is not available.')),
                 );
               },
             ),
@@ -434,7 +434,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             ),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Call feature coming soon!')),
+                const SnackBar(content: Text('Call is not available.')),
               );
             },
           ),
@@ -445,7 +445,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             ),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Video call feature coming soon!')),
+                const SnackBar(content: Text('Video call is not available.')),
               );
             },
           ),
@@ -546,7 +546,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                           ),
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Photo sharing coming soon!')),
+                              const SnackBar(content: Text('Photo sharing is not available.')),
                             );
                           },
                         ),

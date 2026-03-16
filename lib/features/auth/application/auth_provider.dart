@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../domain/models/user_profile.dart';
@@ -195,7 +196,7 @@ class AuthActions {
       await profileRepo.warmCache();
     } catch (e) {
       // Silent fail - cache warming is not critical
-      print('Cache warming failed: $e');
+      if (kDebugMode) debugPrint('Cache warming failed: $e');
     }
   }
 }

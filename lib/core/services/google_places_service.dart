@@ -97,30 +97,30 @@ class GooglePlace {
     String? placeName,
     String? placeId,
   }) {
-    debugPrint('🔍 getBestPhotoUrl called with:');
-    debugPrint('   📷 photoReference: ${photoReference ?? "null"}');
-    debugPrint('   🏷️ placeTypes: $placeTypes');
-    debugPrint('   🏢 placeName: ${placeName ?? "not provided"}');
-    debugPrint('   🆔 placeId: ${placeId ?? "not provided"}');
+    if (kDebugMode) debugPrint('🔍 getBestPhotoUrl called with:');
+    if (kDebugMode) debugPrint('   📷 photoReference: ${photoReference ?? "null"}');
+    if (kDebugMode) debugPrint('   🏷️ placeTypes: $placeTypes');
+    if (kDebugMode) debugPrint('   🏢 placeName: ${placeName ?? "not provided"}');
+    if (kDebugMode) debugPrint('   🆔 placeId: ${placeId ?? "not provided"}');
     
     // Return Google Places API photo URL ONLY if photo reference exists
     if (photoReference != null && photoReference.isNotEmpty) {
       // Check if this is a NEW API photo reference (starts with "places/")
       if (photoReference.startsWith('places/')) {
-        debugPrint('🔄 NEW API photo reference detected, conversion to Legacy needed');
+        if (kDebugMode) debugPrint('🔄 NEW API photo reference detected, conversion to Legacy needed');
         // For NEW API references, we need async conversion to Legacy format
         // Return placeholder for now - this will be handled by async methods
         return '';
       } else {
         // This is already a Legacy API photo reference - use it directly
         final photoUrl = GooglePlacesService.getPhotoUrl(photoReference, 800, 600, placeId);
-        debugPrint('✅ Using Legacy Google Places API photo: $photoUrl');
+        if (kDebugMode) debugPrint('✅ Using Legacy Google Places API photo: $photoUrl');
         return photoUrl;
       }
     }
     
     // No photo reference available - return empty string
-    debugPrint('❌ No photo reference available');
+    if (kDebugMode) debugPrint('❌ No photo reference available');
     return '';
   }
 
@@ -132,35 +132,35 @@ class GooglePlace {
     String? placeName,
     String? placeId,
   }) async {
-    debugPrint('🔍 getBestPhotoUrlAsync called with:');
-    debugPrint('   📷 photoReference: ${photoReference ?? "null"}');
-    debugPrint('   🆔 placeId: ${placeId ?? "not provided"}');
+    if (kDebugMode) debugPrint('🔍 getBestPhotoUrlAsync called with:');
+    if (kDebugMode) debugPrint('   📷 photoReference: ${photoReference ?? "null"}');
+    if (kDebugMode) debugPrint('   🆔 placeId: ${placeId ?? "not provided"}');
     
     // Return Google Places API photo URL ONLY if photo reference exists
     if (photoReference != null && photoReference.isNotEmpty) {
       // Check if this is a NEW API photo reference (starts with "places/")
       if (photoReference.startsWith('places/') && placeId != null && placeId.isNotEmpty) {
-        debugPrint('🔄 NEW API photo reference detected, converting to Legacy format');
+        if (kDebugMode) debugPrint('🔄 NEW API photo reference detected, converting to Legacy format');
         // Get Legacy photo reference for this place
         final legacyPhotoRef = await GooglePlacesService.getLegacyPhotoReference(placeId);
         if (legacyPhotoRef != null) {
           final photoUrl = GooglePlacesService.getPhotoUrl(legacyPhotoRef, 800, 600, placeId);
-          debugPrint('✅ Using converted Legacy Google Places API photo: $photoUrl');
+          if (kDebugMode) debugPrint('✅ Using converted Legacy Google Places API photo: $photoUrl');
           return photoUrl;
         } else {
-          debugPrint('❌ Could not get Legacy photo reference for place: $placeId');
+          if (kDebugMode) debugPrint('❌ Could not get Legacy photo reference for place: $placeId');
           return '';
         }
       } else {
         // This is already a Legacy API photo reference - use it directly
         final photoUrl = GooglePlacesService.getPhotoUrl(photoReference, 800, 600, placeId);
-        debugPrint('✅ Using Legacy Google Places API photo: $photoUrl');
+        if (kDebugMode) debugPrint('✅ Using Legacy Google Places API photo: $photoUrl');
         return photoUrl;
       }
     }
     
     // No photo reference available - return empty string
-    debugPrint('❌ No photo reference available');
+    if (kDebugMode) debugPrint('❌ No photo reference available');
     return '';
   }
 
@@ -264,25 +264,25 @@ class GooglePlacesService {
     );
 
     if (!shouldCall) {
-      debugPrint('🚫 NEW API call blocked by smart cache system for: $query');
+      if (kDebugMode) debugPrint('🚫 NEW API call blocked by smart cache system for: $query');
       return [];
     }
 
     try {
       // Check if API is enabled in configuration
       if (!ApiConfig.shouldUseApi) {
-        debugPrint('🚫 Google Places API disabled by configuration');
+        if (kDebugMode) debugPrint('🚫 Google Places API disabled by configuration');
         return [];
       }
 
       if (_apiKey.isEmpty || _apiKey == 'YOUR_GOOGLE_PLACES_API_KEY_HERE') {
-        debugPrint('❌ Google Places API key not configured!');
-        debugPrint('🔧 Please update lib/core/constants/api_keys.dart with your Google Places API key');
-        debugPrint('📖 Instructions: https://console.cloud.google.com/');
+        if (kDebugMode) debugPrint('❌ Google Places API key not configured!');
+        if (kDebugMode) debugPrint('🔧 Please update lib/core/constants/api_keys.dart with your Google Places API key');
+        if (kDebugMode) debugPrint('📖 Instructions: https://console.cloud.google.com/');
         return [];
       }
 
-      debugPrint('🔍 Making NEW Places API call for: $query near ($lat, $lng)');
+      if (kDebugMode) debugPrint('🔍 Making NEW Places API call for: $query near ($lat, $lng)');
 
       final headers = {
         'Content-Type': 'application/json',
@@ -311,8 +311,8 @@ class GooglePlacesService {
         body: body,
       );
 
-      debugPrint('🔍 NEW API Response Status: ${response.statusCode}');
-      debugPrint('🔍 NEW API Response Body: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}...');
+      if (kDebugMode) debugPrint('🔍 NEW API Response Status: ${response.statusCode}');
+      if (kDebugMode) debugPrint('🔍 NEW API Response Body: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}...');
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -327,17 +327,17 @@ class GooglePlacesService {
         final List<dynamic> results = data['places'] ?? [];
         final places = results.map((result) => GooglePlace.fromNewApiJson(result)).toList();
           
-        debugPrint('✅ Found ${places.length} places for: $query (NEW API - CACHED for 30 days)');
+        if (kDebugMode) debugPrint('✅ Found ${places.length} places for: $query (NEW API - CACHED for 30 days)');
         for (final place in places.take(3)) {
-          debugPrint('   📍 ${place.name} - Photo: ${place.photoReference != null ? "✅" : "❌"}');
+          if (kDebugMode) debugPrint('   📍 ${place.name} - Photo: ${place.photoReference != null ? "✅" : "❌"}');
         }
         return places;
       } else {
-        debugPrint('❌ NEW API HTTP error: ${response.statusCode} - ${response.body}');
+        if (kDebugMode) debugPrint('❌ NEW API HTTP error: ${response.statusCode} - ${response.body}');
         return [];
       }
     } catch (e) {
-      debugPrint('❌ Error with NEW Places API: $e');
+      if (kDebugMode) debugPrint('❌ Error with NEW Places API: $e');
       return [];
     }
   }
@@ -363,17 +363,17 @@ class GooglePlacesService {
     );
 
     if (!shouldCall) {
-      debugPrint('🚫 NEW API place details call blocked by smart cache for: $placeId');
+      if (kDebugMode) debugPrint('🚫 NEW API place details call blocked by smart cache for: $placeId');
       return null;
     }
 
     try {
       if (_apiKey.isEmpty) {
-        debugPrint('❌ Google Places NEW API key not found');
+        if (kDebugMode) debugPrint('❌ Google Places NEW API key not found');
         return null;
       }
 
-      debugPrint('🔍 Making NEW Places API call for place details: $placeId');
+      if (kDebugMode) debugPrint('🔍 Making NEW Places API call for place details: $placeId');
 
       final headers = {
         'Content-Type': 'application/json',
@@ -396,14 +396,14 @@ class GooglePlacesService {
             response: data,
           );
 
-        debugPrint('✅ Got place details for: ${data['displayName']?['text']} (NEW API - CACHED for 30 days)');
+        if (kDebugMode) debugPrint('✅ Got place details for: ${data['displayName']?['text']} (NEW API - CACHED for 30 days)');
         return GooglePlaceDetails.fromNewApiJson(data);
       } else {
-        debugPrint('❌ NEW API place details error: ${response.statusCode} - ${response.body}');
+        if (kDebugMode) debugPrint('❌ NEW API place details error: ${response.statusCode} - ${response.body}');
         return null;
       }
     } catch (e) {
-      debugPrint('❌ Error getting place details with NEW API: $e');
+      if (kDebugMode) debugPrint('❌ Error getting place details with NEW API: $e');
       return null;
     }
   }
@@ -442,17 +442,17 @@ class GooglePlacesService {
     );
 
     if (!shouldCall) {
-      debugPrint('🚫 NEW API nearby search blocked by smart cache');
+      if (kDebugMode) debugPrint('🚫 NEW API nearby search blocked by smart cache');
       return [];
     }
 
     try {
       if (_apiKey.isEmpty) {
-        debugPrint('❌ Google Places NEW API key not found');
+        if (kDebugMode) debugPrint('❌ Google Places NEW API key not found');
         return [];
       }
 
-      debugPrint('🔍 Making NEW Places API nearby search at ($lat, $lng)');
+      if (kDebugMode) debugPrint('🔍 Making NEW Places API nearby search at ($lat, $lng)');
 
       final headers = {
         'Content-Type': 'application/json',
@@ -493,14 +493,14 @@ class GooglePlacesService {
         final List<dynamic> results = data['places'] ?? [];
         final places = results.map((result) => GooglePlace.fromNewApiJson(result)).toList();
         
-        debugPrint('✅ Found ${places.length} nearby places (NEW API - CACHED for 30 days)');
+        if (kDebugMode) debugPrint('✅ Found ${places.length} nearby places (NEW API - CACHED for 30 days)');
         return places;
       } else {
-        debugPrint('❌ NEW API nearby search error: ${response.statusCode} - ${response.body}');
+        if (kDebugMode) debugPrint('❌ NEW API nearby search error: ${response.statusCode} - ${response.body}');
         return [];
       }
     } catch (e) {
-      debugPrint('❌ Error with NEW Places API nearby search: $e');
+      if (kDebugMode) debugPrint('❌ Error with NEW Places API nearby search: $e');
       return [];
     }
   }
@@ -525,13 +525,13 @@ class GooglePlacesService {
     maxHeight ??= 600;
     
     if (photoReference.isEmpty || _apiKey.isEmpty) {
-      debugPrint('❌ Missing photo reference or API key');
+      if (kDebugMode) debugPrint('❌ Missing photo reference or API key');
       return '';
     }
     
     // Check if this is a NEW API photo reference format (starts with "places/")
     if (photoReference.startsWith('places/')) {
-      debugPrint('🔄 NEW API photo reference detected, need to get Legacy reference for place: $placeId');
+      if (kDebugMode) debugPrint('🔄 NEW API photo reference detected, need to get Legacy reference for place: $placeId');
       // For NEW API references, we need to get the Legacy photo reference
       // This will be handled by a separate method
       return '';
@@ -541,14 +541,14 @@ class GooglePlacesService {
     // Format: https://maps.googleapis.com/maps/api/place/photo?photoreference={PHOTO_REFERENCE}&key={API_KEY}&maxheight={HEIGHT}
     final photoUrl = 'https://maps.googleapis.com/maps/api/place/photo?photoreference=$photoReference&key=$_apiKey&maxheight=$maxHeight';
     
-    debugPrint('🔗 Using Legacy API photo URL: $photoUrl');
+    if (kDebugMode) debugPrint('🔗 Using Legacy API photo URL: $photoUrl');
     return photoUrl;
   }
 
   /// Get Legacy photo reference for a place (WORKING with current API key)
   static Future<String?> getLegacyPhotoReference(String placeId) async {
     try {
-      debugPrint('🔍 Getting Legacy photo reference for place: $placeId');
+      if (kDebugMode) debugPrint('🔍 Getting Legacy photo reference for place: $placeId');
       
       final response = await http.get(
         Uri.parse('https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=photos&key=$_apiKey'),
@@ -560,15 +560,15 @@ class GooglePlacesService {
         
         if (photos != null && photos.isNotEmpty) {
           final photoReference = photos[0]['photo_reference'];
-          debugPrint('✅ Got Legacy photo reference: ${photoReference.substring(0, 50)}...');
+          if (kDebugMode) debugPrint('✅ Got Legacy photo reference: ${photoReference.substring(0, 50)}...');
           return photoReference;
         }
       }
       
-      debugPrint('❌ No Legacy photo reference found for place: $placeId');
+      if (kDebugMode) debugPrint('❌ No Legacy photo reference found for place: $placeId');
       return null;
     } catch (e) {
-      debugPrint('❌ Error getting Legacy photo reference: $e');
+      if (kDebugMode) debugPrint('❌ Error getting Legacy photo reference: $e');
       return null;
     }
   }
@@ -581,7 +581,7 @@ class GooglePlacesService {
   /// Get multiple photo URLs for a place (for variety) - NEW API version
   static List<String> getPhotoUrls(List<String> photoReferences, {int maxWidth = 600, int maxPhotos = 3, String? placeId}) {
     if (placeId == null || placeId.isEmpty) {
-      debugPrint('❌ Missing place ID for photo URLs construction');
+      if (kDebugMode) debugPrint('❌ Missing place ID for photo URLs construction');
       return [];
     }
     
@@ -706,11 +706,11 @@ class GooglePlacesService {
   }) async {
     // Check if API is enabled in configuration
     if (!ApiConfig.shouldUseApi) {
-      debugPrint('🚫 Google Places API disabled by configuration for mood search');
+      if (kDebugMode) debugPrint('🚫 Google Places API disabled by configuration for mood search');
     return [];
   }
 
-    debugPrint('🎯 TOURISM SEARCH: Finding diverse GetYourGuide-style experiences for: $moods in $cityName');
+    if (kDebugMode) debugPrint('🎯 TOURISM SEARCH: Finding diverse GetYourGuide-style experiences for: $moods in $cityName');
     
     final allPlaces = <GooglePlace>[];
     final seenPlaceIds = <String>{};
@@ -750,7 +750,7 @@ class GooglePlacesService {
             // Replace "Rotterdam" in query with actual city name
             String searchQuery = (queryConfig['query'] as String).replaceAll('Rotterdam', cityName);
             
-            debugPrint('🔍 TOURISM API: Searching "$searchQuery" type:"$placeType"');
+            if (kDebugMode) debugPrint('🔍 TOURISM API: Searching "$searchQuery" type:"$placeType"');
             
             // Add radius variation for more diverse results
             final searchRadius = radius + (rotationOffset * 1000); // Vary search radius
@@ -778,16 +778,16 @@ class GooglePlacesService {
                   _isTouristRelevant(place)) {
                 
                 final touristScore = _calculateTouristScore(place);
-                debugPrint('✅ TOURIST EXPERIENCE: ${place.name}');
-                debugPrint('   🏆 Tourist Score: $touristScore/10');
-                debugPrint('   📷 Has photo: ${place.photoReference != null}');
-                debugPrint('   🌟 Rating: ${place.rating} (${place.userRatingsTotal} reviews)');
-                debugPrint('   🏷️ Types: ${place.types.take(3).join(", ")}');
+                if (kDebugMode) debugPrint('✅ TOURIST EXPERIENCE: ${place.name}');
+                if (kDebugMode) debugPrint('   🏆 Tourist Score: $touristScore/10');
+                if (kDebugMode) debugPrint('   📷 Has photo: ${place.photoReference != null}');
+                if (kDebugMode) debugPrint('   🌟 Rating: ${place.rating} (${place.userRatingsTotal} reviews)');
+                if (kDebugMode) debugPrint('   🏷️ Types: ${place.types.take(3).join(", ")}');
                 
                 allPlaces.add(place);
                 seenPlaceIds.add(place.placeId);
               } else {
-                debugPrint('❌ FILTERED OUT: ${place.name} (Rating: ${place.rating}, Reviews: ${place.userRatingsTotal})');
+                if (kDebugMode) debugPrint('❌ FILTERED OUT: ${place.name} (Rating: ${place.rating}, Reviews: ${place.userRatingsTotal})');
               }
             }
           }
@@ -799,7 +799,7 @@ class GooglePlacesService {
           if (allPlaces.length >= 10) break;
           
         } catch (e) {
-          debugPrint('❌ Tourism search error "${queryConfig['query']}": $e');
+          if (kDebugMode) debugPrint('❌ Tourism search error "${queryConfig['query']}": $e');
         }
       }
       
@@ -821,8 +821,8 @@ class GooglePlacesService {
       return ratingB.compareTo(ratingA);
     });
     
-    debugPrint('✅ TOURISM RESULTS: Found ${allPlaces.length} high-quality tourist experiences in $cityName');
-    debugPrint('📊 API calls used: $apiCallCount/$maxApiCalls');
+    if (kDebugMode) debugPrint('✅ TOURISM RESULTS: Found ${allPlaces.length} high-quality tourist experiences in $cityName');
+    if (kDebugMode) debugPrint('📊 API calls used: $apiCallCount/$maxApiCalls');
     
     return allPlaces.take(10).toList(); // Return top 10 tourist experiences
   }
@@ -897,14 +897,14 @@ class GooglePlacesService {
     // Check place types - EXCLUDE if has any excluded type
     final hasExcludedType = place.types.any((type) => excludeTypes.contains(type));
     if (hasExcludedType) {
-      debugPrint('🚫 Excluded by type: ${place.name} (types: ${place.types})');
+      if (kDebugMode) debugPrint('🚫 Excluded by type: ${place.name} (types: ${place.types})');
       return false;
     }
     
     // Check business name for exclusions - STRICT filtering
     final hasExcludedKeyword = excludeKeywords.any((keyword) => nameLower.contains(keyword));
     if (hasExcludedKeyword) {
-      debugPrint('🚫 Excluded by keyword: ${place.name}');
+      if (kDebugMode) debugPrint('🚫 Excluded by keyword: ${place.name}');
       return false;
     }
     
@@ -913,7 +913,7 @@ class GooglePlacesService {
     if (isSpaOrWellness) {
       final hasTouristSpaKeywords = touristSpaKeywords.any((keyword) => nameLower.contains(keyword));
       if (!hasTouristSpaKeywords) {
-        debugPrint('🚫 Excluded wellness/spa without tourist keywords: ${place.name}');
+        if (kDebugMode) debugPrint('🚫 Excluded wellness/spa without tourist keywords: ${place.name}');
         return false;
       }
     }
@@ -921,18 +921,18 @@ class GooglePlacesService {
     // Check if has relevant tourist type
     final hasRelevantType = place.types.any((type) => touristTypes.contains(type));
     if (!hasRelevantType) {
-      debugPrint('🚫 Excluded - no tourist relevant type: ${place.name} (types: ${place.types})');
+      if (kDebugMode) debugPrint('🚫 Excluded - no tourist relevant type: ${place.name} (types: ${place.types})');
       return false;
     }
     
     // Additional tourist-relevance scoring
     final touristScore = _calculateTouristScore(place);
     if (touristScore < 3) {
-      debugPrint('🚫 Excluded - low tourist score ($touristScore): ${place.name}');
+      if (kDebugMode) debugPrint('🚫 Excluded - low tourist score ($touristScore): ${place.name}');
       return false;
     }
     
-    debugPrint('✅ TOURIST APPROVED: ${place.name} (score: $touristScore, types: ${place.types.take(3).join(", ")})');
+    if (kDebugMode) debugPrint('✅ TOURIST APPROVED: ${place.name} (score: $touristScore, types: ${place.types.take(3).join(", ")})');
     return true;
   }
   

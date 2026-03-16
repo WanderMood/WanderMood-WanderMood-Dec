@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import '../../domain/providers/auth_provider.dart';
 import '../../application/auth_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wandermood/core/providers/secure_storage_provider.dart';
 import '../../../../core/config/supabase_config.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -39,14 +40,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _handleSignUp() async {
-    debugPrint('🔥 NEW CODE: Sign up button pressed - LATEST VERSION');
+    if (kDebugMode) debugPrint('Sign up button pressed');
     if (!_formKey.currentState!.validate()) {
-      debugPrint('Form validation failed');
+      if (kDebugMode) debugPrint('Form validation failed');
       return;
     }
     
     if (!_acceptTerms) {
-      debugPrint('Terms not accepted');
+      if (kDebugMode) debugPrint('Terms not accepted');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please accept the terms and conditions')),
       );
@@ -56,23 +57,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!mounted) return;
     
     setState(() => _isLoading = true);
-    debugPrint('Attempting signup with email: ${_emailController.text.trim()}');
+    if (kDebugMode) debugPrint('Attempting signup');
     
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final name = _nameController.text;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      
-      // Clear any existing preferences to ensure fresh start
-      await prefs.clear();
-      
-      // Set authentication state
-      await prefs.setBool('isAuthenticated', true);
-      
       // Perform proper Supabase signup with email verification
-      debugPrint('🔐 NEW CODE: Starting REAL Supabase signup with email verification - NO BYPASS!');
+      if (kDebugMode) debugPrint('Starting Supabase signup');
       
       try {
         final response = await Supabase.instance.client.auth.signUp(
@@ -82,13 +75,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           emailRedirectTo: 'io.supabase.wandermood://auth-callback',
         );
         
-        debugPrint('📧 Signup response: ${response.user?.id}');
-        debugPrint('📧 Signup session: ${response.session?.user?.id}');
+        if (kDebugMode) debugPrint('Signup response received');
         
         if (response.user != null) {
-          debugPrint('✅ Signup successful! User ID: ${response.user!.id}');
-          debugPrint('📧 Email confirmed: ${response.user!.emailConfirmedAt}');
-          debugPrint('📧 Session exists: ${response.session != null}');
+          if (kDebugMode) debugPrint('Signup successful');
           
           final user = response.user!;
           final isEmailVerified = user.emailConfirmedAt != null;
@@ -98,10 +88,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             
             if (isEmailVerified && response.session != null) {
               // Email already verified (auto-confirm enabled in Supabase)
-              debugPrint('✅ Email already verified, proceeding to onboarding');
+              if (kDebugMode) debugPrint('Email verified, proceeding to onboarding');
               
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('hasCompletedPreferences', false);
+              await ref.read(secureStorageServiceProvider).setHasCompletedPreferences(false);
               
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -115,12 +104,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               context.go('/preferences/communication');
             } else {
               // Email verification required
-              debugPrint('📧 Email verification required, showing verification screen');
+              if (kDebugMode) debugPrint('Email verification required');
               
               // Only sign out if we have a session but email isn't verified
               // This ensures proper verification flow
               if (response.session != null && !isEmailVerified) {
-                debugPrint('🔒 Signing out to enforce email verification');
+                if (kDebugMode) debugPrint('Signing out to enforce verification');
                 await Supabase.instance.client.auth.signOut();
               }
               
@@ -133,7 +122,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               );
               
               // Navigate to email verification screen
-              debugPrint('🚀 Navigating to email verification screen...');
+              if (kDebugMode) debugPrint('Navigating to email verification');
               context.go('/auth/verify-email?email=${Uri.encodeComponent(email)}');
             }
           }
@@ -141,7 +130,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           throw Exception('Signup failed: No user returned');
         }
       } on AuthException catch (e) {
-        debugPrint('❌ Auth error: ${e.message}');
+        if (kDebugMode) debugPrint('Auth error: ${e.message}');
         if (mounted) {
           setState(() => _isLoading = false);
           
@@ -172,7 +161,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           }
         }
       } catch (e) {
-        debugPrint('❌ Unexpected error: $e');
+        if (kDebugMode) debugPrint('Unexpected error: $e');
         if (mounted) {
           setState(() => _isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -184,7 +173,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         }
       }
     } catch (e) {
-      debugPrint('Exception during signup: $e');
+      if (kDebugMode) debugPrint('Exception during signup: $e');
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(

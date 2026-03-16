@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,12 +18,12 @@ class ActivityRatingService {
   Future<void> saveRating(ActivityRating rating) async {
     try {
       await _client.from('activity_ratings').insert(rating.toJson());
-      print('✅ Activity rating saved: ${rating.activityName} - ${rating.stars} stars');
+      if (kDebugMode) debugPrint('✅ Activity rating saved: ${rating.activityName} - ${rating.stars} stars');
       
       // Update user patterns after each rating
       await _updateUserPatterns(rating.userId);
     } catch (e) {
-      print('⚠️ Failed to save activity rating: $e');
+      if (kDebugMode) debugPrint('⚠️ Failed to save activity rating: $e');
       // Fallback to local storage
       await _saveRatingLocally(rating);
     }
@@ -45,7 +46,7 @@ class ActivityRatingService {
         return ActivityRating.fromJson(response);
       }
     } catch (e) {
-      print('⚠️ Failed to get activity rating: $e');
+      if (kDebugMode) debugPrint('⚠️ Failed to get activity rating: $e');
     }
     return null;
   }
@@ -65,7 +66,7 @@ class ActivityRatingService {
 
       return response.map((json) => ActivityRating.fromJson(json)).toList();
     } catch (e) {
-      print('⚠️ Failed to get recent ratings: $e');
+      if (kDebugMode) debugPrint('⚠️ Failed to get recent ratings: $e');
       return [];
     }
   }
@@ -87,7 +88,7 @@ class ActivityRatingService {
 
       return response.map((json) => ActivityRating.fromJson(json)).toList();
     } catch (e) {
-      print('⚠️ Failed to get top rated: $e');
+      if (kDebugMode) debugPrint('⚠️ Failed to get top rated: $e');
       return [];
     }
   }
@@ -107,7 +108,7 @@ class ActivityRatingService {
 
       return response.map((json) => ActivityRating.fromJson(json)).toList();
     } catch (e) {
-      print('⚠️ Failed to get ratings by mood: $e');
+      if (kDebugMode) debugPrint('⚠️ Failed to get ratings by mood: $e');
       return [];
     }
   }
@@ -193,9 +194,9 @@ class ActivityRatingService {
         'id': userId, // Use userId as primary key
       });
 
-      print('✅ User patterns updated');
+      if (kDebugMode) debugPrint('✅ User patterns updated');
     } catch (e) {
-      print('⚠️ Failed to update user patterns: $e');
+      if (kDebugMode) debugPrint('⚠️ Failed to update user patterns: $e');
     }
   }
 
@@ -212,7 +213,7 @@ class ActivityRatingService {
         return UserPreferencePattern.fromJson(response);
       }
     } catch (e) {
-      print('⚠️ Failed to get user patterns: $e');
+      if (kDebugMode) debugPrint('⚠️ Failed to get user patterns: $e');
     }
     return null;
   }
@@ -279,7 +280,7 @@ class ActivityRatingService {
 
       return reflection;
     } catch (e) {
-      print('⚠️ Failed to generate weekly reflection: $e');
+      if (kDebugMode) debugPrint('⚠️ Failed to generate weekly reflection: $e');
       return null;
     }
   }
@@ -323,7 +324,7 @@ class ActivityRatingService {
       final jsonList = limited.map((r) => r.toJson()).toList();
       await prefs.setString('activity_ratings', jsonEncode(jsonList));
     } catch (e) {
-      print('❌ Failed to save rating locally: $e');
+      if (kDebugMode) debugPrint('❌ Failed to save rating locally: $e');
     }
   }
 

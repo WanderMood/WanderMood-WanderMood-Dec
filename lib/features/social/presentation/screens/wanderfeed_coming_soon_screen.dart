@@ -49,7 +49,7 @@ class WanderFeedComingSoonScreen extends StatelessWidget {
                 
                 // Title
                 Text(
-                  'WanderFeed Coming Soon!',
+                  'WanderFeed',
                   style: GoogleFonts.poppins(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -99,7 +99,7 @@ class WanderFeedComingSoonScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(25),
                   ),
                   child: Text(
-                    'Stay tuned for updates! 🧳✨',
+                    'Share and discover travel moments. 🧳✨',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,

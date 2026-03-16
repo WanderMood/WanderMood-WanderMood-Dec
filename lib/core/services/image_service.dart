@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -26,13 +27,13 @@ class ImageService {
 
   Future<String> getImageUrl(String? photoReference, String placeType, {int maxWidth = 600, int maxHeight = 400}) async {
     // Force using fallback images (Google Places API disabled)
-    debugPrint('🚫 Google Places Photo API disabled - using fallback image for type: $placeType');
+    if (kDebugMode) debugPrint('Using fallback image for type: $placeType');
     return _getFallbackImageUrl(placeType);
   }
 
   String _getFallbackImageUrl(String placeType) {
     final fallbackImage = _fallbackImages[placeType.toLowerCase()] ?? _fallbackImages['default']!;
-    debugPrint('🖼️ Using fallback image for type: $placeType');
+    if (kDebugMode) debugPrint('Using fallback image: $placeType');
     return fallbackImage;
   }
 
@@ -44,6 +45,6 @@ class ImageService {
 
   Future<void> clearCache() async {
     await _cache.emptyCache();
-    debugPrint('🧹 Image cache cleared');
+    if (kDebugMode) debugPrint('Image cache cleared');
   }
 } 

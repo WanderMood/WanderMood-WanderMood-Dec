@@ -6,7 +6,7 @@ import 'package:wandermood/features/auth/presentation/screens/login_screen.dart'
 import 'package:wandermood/features/splash/application/splash_service.dart';
 import 'package:go_router/go_router.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wandermood/core/providers/secure_storage_provider.dart';
 import '../../../../core/providers/preferences_provider.dart';
 import 'package:flutter/foundation.dart';
 
@@ -72,10 +72,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     } else {
       setState(() => _isLoading = true);
       
-      // Only save to SharedPreferences during "Meet Moody" screens
-      // Don't save to database yet - user isn't authenticated
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('has_seen_onboarding', true);
+      final secure = ref.read(secureStorageServiceProvider);
+      await secure.setHasSeenOnboarding(true);
       
       await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) {
@@ -106,15 +104,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             right: 16,
             child: TextButton(
               onPressed: () async {
-                // Set onboarding completion flag before navigating
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.setBool('has_seen_onboarding', true);
-                if (kDebugMode) {
-                  debugPrint('✅ Skip clicked - has_seen_onboarding set to true');
-                }
-                if (mounted) {
-                  context.go('/auth/signup');
-                }
+                final secure = ref.read(secureStorageServiceProvider);
+                await secure.setHasSeenOnboarding(true);
+                if (mounted) context.go('/auth/signup');
               },
               child: Text(
                 'Skip',

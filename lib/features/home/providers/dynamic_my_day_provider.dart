@@ -85,14 +85,14 @@ final cachedActivitySuggestionsProvider = FutureProvider.autoDispose<List<Map<St
   // Get scheduled activities from the Moody flow
   final scheduledActivities = <Map<String, dynamic>>[];
   try {
-    debugPrint('🔄 My Day Provider: Loading scheduled activities...');
+    if (kDebugMode) debugPrint('My Day Provider: Loading scheduled activities');
     final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
     final activities = await scheduledActivityService.getScheduledActivities();
     
     debugPrint('🔄 My Day Provider: Found ${activities.length} scheduled activities');
     
     for (final activity in activities) {
-      debugPrint('🔄 My Day Provider: Processing activity: ${activity.name}');
+      if (kDebugMode) debugPrint('My Day Provider: Processing activity');
       scheduledActivities.add({
         'id': activity.id,
         'title': activity.name,
@@ -109,10 +109,12 @@ final cachedActivitySuggestionsProvider = FutureProvider.autoDispose<List<Map<St
       });
     }
     
-    debugPrint('🔄 My Day Provider: Successfully processed ${scheduledActivities.length} scheduled activities');
+    if (kDebugMode) debugPrint('My Day Provider: Processed ${scheduledActivities.length} activities');
   } catch (e) {
-    debugPrint('❌ My Day Provider: Error loading scheduled activities: $e');
-    debugPrint('❌ My Day Provider: Stack trace: ${StackTrace.current}');
+    if (kDebugMode) {
+      debugPrint('My Day Provider: Error loading: $e');
+      debugPrint('Stack trace: ${StackTrace.current}');
+    }
   }
   
   // Combine scheduled activities with cached activities
@@ -183,7 +185,7 @@ final todayActivitiesProvider = FutureProvider.autoDispose<List<EnhancedActivity
       ));
       
     } catch (e) {
-      debugPrint('❌ Error processing activity: $e');
+      if (kDebugMode) debugPrint('Error processing activity: $e');
       continue;
     }
   }

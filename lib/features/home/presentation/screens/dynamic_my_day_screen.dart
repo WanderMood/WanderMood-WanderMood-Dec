@@ -2457,7 +2457,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 // TODO: Implement share functionality
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Share functionality coming soon!'),
+                    content: Text('Share is not available.'),
                     backgroundColor: const Color(0xFF12B347),
                   ),
                 );
@@ -3370,7 +3370,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           ],
         ),
         content: Text(
-          'Coming soon! Moody will be able to help you plan your day and suggest activities based on your mood and preferences.',
+          'Moody can help you plan your day and suggest activities based on your mood and preferences from the home screen.',
           style: GoogleFonts.poppins(
             fontSize: 14,
           ),

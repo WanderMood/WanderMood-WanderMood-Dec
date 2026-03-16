@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/domain/models/user_preferences.dart';
+import 'package:wandermood/core/services/account_deletion_service.dart';
 import 'package:wandermood/features/settings/presentation/providers/user_preferences_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -186,6 +188,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           onTap: () => _openTermsOfService(),
         ),
                   
+                  const SizedBox(height: 16),
+                  _buildSectionHeader('Account'),
+                  ListTile(
+                    leading: const Icon(Icons.delete_forever_outlined, color: Colors.red),
+                    title: Text(
+                      'Delete Account',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.red,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Permanently delete your account and all data',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    onTap: () => _showDeleteAccountDialog(),
+                  ),
+                  
                   const SizedBox(height: 32),
                   
                   // Save Button
@@ -336,7 +360,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// Open Privacy Policy in external browser
   Future<void> _openPrivacyPolicy() async {
     try {
-      final url = Uri.parse('https://wandermood.app/privacy-policy');
+      final url = Uri.parse('https://wandermood.com/en/privacy');
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
@@ -364,7 +388,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// Open Terms of Service in external browser
   Future<void> _openTermsOfService() async {
     try {
-      final url = Uri.parse('https://wandermood.app/terms-of-service');
+      final url = Uri.parse('https://wandermood.com/en/terms');
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
@@ -387,5 +411,107 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         );
       }
     }
+  }
+
+  void _showDeleteAccountDialog() {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => _DeleteAccountDialog(
+        onCancel: () => Navigator.pop(ctx),
+        onDeleted: () {
+          Navigator.pop(ctx);
+          context.go('/login');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Account deleted. You have been signed out.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
+        onError: (String message) {
+          Navigator.pop(ctx);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(message),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _DeleteAccountDialog extends StatefulWidget {
+  const _DeleteAccountDialog({
+    required this.onCancel,
+    required this.onDeleted,
+    required this.onError,
+  });
+  final VoidCallback onCancel;
+  final VoidCallback onDeleted;
+  final void Function(String message) onError;
+
+  @override
+  State<_DeleteAccountDialog> createState() => _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
+  bool _isDeleting = false;
+
+  Future<void> _deleteAccount() async {
+    setState(() => _isDeleting = true);
+    final result = await AccountDeletionService().deleteAccount();
+    if (!mounted) return;
+    if (result.success) {
+      widget.onDeleted();
+    } else {
+      widget.onError(result.message ?? 'Failed to delete account. Please try again.');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(
+        'Delete Account?',
+        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+      ),
+      content: _isDeleting
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(
+                  height: 32,
+                  width: 32,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Deleting your account…',
+                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700]),
+                ),
+              ],
+            )
+          : Text(
+              'This will permanently delete your account and all your data (profile, preferences, plans, posts). This cannot be undone.',
+              style: GoogleFonts.poppins(fontSize: 14),
+            ),
+      actions: [
+        TextButton(
+          onPressed: _isDeleting ? null : widget.onCancel,
+          child: Text('Cancel', style: GoogleFonts.poppins(color: Colors.grey[700])),
+        ),
+        TextButton(
+          onPressed: _isDeleting ? null : _deleteAccount,
+          child: Text(
+            _isDeleting ? 'Deleting…' : 'Delete my account',
+            style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
+    );
   }
 }

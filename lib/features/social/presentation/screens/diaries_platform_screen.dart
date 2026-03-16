@@ -1004,7 +1004,7 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
     // TODO: Show notifications panel
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Notifications feature coming soon! 🔔', style: GoogleFonts.poppins()),
+        content: Text('Notifications are not available.', style: GoogleFonts.poppins()),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -1084,7 +1084,7 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
     // TODO: Show search interface
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Search feature coming soon! 🔍', style: GoogleFonts.poppins()),
+        content: Text('Search is not available.', style: GoogleFonts.poppins()),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -3515,7 +3515,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Business signup coming soon!'),
+                  content: Text('Business signup is not available.'),
                   backgroundColor: Color(0xFF12B347),
                 ),
               );
@@ -6093,7 +6093,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Comments feature coming soon! 💬',
+          'Comments are not available.',
           style: GoogleFonts.poppins(),
         ),
         behavior: SnackBarBehavior.floating,
@@ -6578,7 +6578,7 @@ class DiaryDiscoverTab extends StatelessWidget {
           const Icon(Icons.explore, size: 64, color: Color(0xFF667eea)),
           const SizedBox(height: 16),
           Text(
-            'Discover Feature Coming Soon!',
+            'Discover',
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.w600,
@@ -6620,7 +6620,7 @@ class DiaryWriteTab extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Writing interface coming soon',
+            'Writing interface is not available',
             style: GoogleFonts.poppins(
               fontSize: 14,
               color: const Color(0xFF718096),
@@ -7851,7 +7851,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
             ),
             const SizedBox(height: 12),
             Text(
-              'Interactive Map Coming Soon!',
+              'Map view is not available.',
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -7981,7 +7981,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
   void _navigateToMoodPreferences() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Travel Mood Preferences coming soon!'),
+        content: Text('Travel Mood Preferences are not available.'),
       ),
     );
   }
@@ -7989,7 +7989,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
   void _navigateToPrivacySettings() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Privacy Settings coming soon!'),
+        content: Text('Privacy Settings are not available.'),
       ),
     );
   }
@@ -7997,7 +7997,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
   void _navigateToGeneralSettings() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('General Settings coming soon!'),
+        content: Text('General Settings are not available.'),
       ),
     );
   }

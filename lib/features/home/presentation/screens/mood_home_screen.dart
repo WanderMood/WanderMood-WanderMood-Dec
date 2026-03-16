@@ -266,7 +266,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         });
       }
     } catch (e) {
-      print('🤖 Could not get AI greeting: $e');
+      if (kDebugMode) debugPrint('🤖 Could not get AI greeting: $e');
       // Keep default greeting
     }
   }
@@ -299,7 +299,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
 
   void _generatePlan() {
     if (_selectedMoods.isNotEmpty) {
-      print('🎯 Generating plan for moods: $_selectedMoods');
+      if (kDebugMode) debugPrint('🎯 Generating plan for moods: $_selectedMoods');
       
       // 🎯 Save mood selection state for hub
       ref.read(dailyMoodStateNotifierProvider.notifier).setMoodSelection(
@@ -310,14 +310,14 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       
       // Navigate to PlanLoadingScreen first
       if (context.mounted) {
-        print('🧭 Navigating to plan loading screen');
+        if (kDebugMode) debugPrint('🧭 Navigating to plan loading screen');
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => PlanLoadingScreen(
               selectedMoods: _selectedMoods.toList(),
               onLoadingComplete: () {
-                print('✅ Plan loading complete, navigating to result screen');
+                if (kDebugMode) debugPrint('✅ Plan loading complete, navigating to result screen');
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -342,7 +342,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     });
 
     try {
-      print('🤖 Getting AI recommendations for moods: ${_selectedMoods.toList()}');
+      if (kDebugMode) debugPrint('🤖 Getting AI recommendations for moods: ${_selectedMoods.toList()}');
       
       // Extract conversation context from chat messages
       List<String> conversationContext = [];
@@ -350,7 +350,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         conversationContext = _chatMessages
             .map((msg) => '${msg.isUser ? "User" : "Moody"}: ${msg.message}')
             .toList();
-        print('📝 Including ${conversationContext.length} conversation messages');
+        if (kDebugMode) debugPrint('📝 Including ${conversationContext.length} conversation messages');
       }
       
       final response = await WanderMoodAIService.getRecommendations(
@@ -366,18 +366,18 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         conversationContext: conversationContext,
       );
 
-      print('✅ Got ${response.recommendations.length} AI recommendations (${conversationContext.isNotEmpty ? "with conversation context" : "without context"})');
+      if (kDebugMode) debugPrint('✅ Got ${response.recommendations.length} AI recommendations (${conversationContext.isNotEmpty ? "with conversation context" : "without context"})');
 
       // Navigate to PlanLoadingScreen first
       if (mounted) {
-        print('🧭 Navigating to plan loading screen');
+        if (kDebugMode) debugPrint('🧭 Navigating to plan loading screen');
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => PlanLoadingScreen(
               selectedMoods: _selectedMoods.toList(),
               onLoadingComplete: () {
-                print('✅ Plan loading complete, navigating to result screen');
+                if (kDebugMode) debugPrint('✅ Plan loading complete, navigating to result screen');
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -393,7 +393,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         );
       }
     } catch (e) {
-      print('❌ Error getting AI recommendations: $e');
+      if (kDebugMode) debugPrint('❌ Error getting AI recommendations: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -449,8 +449,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       suggestedMoods.add('Surprise');
     }
 
-    print('🎯 Chat analysis: "$chatText"');
-    print('🎭 Suggested moods: $suggestedMoods');
+    if (kDebugMode) debugPrint('🎯 Chat analysis: "$chatText"');
+    if (kDebugMode) debugPrint('🎭 Suggested moods: $suggestedMoods');
 
     // Auto-select suggested moods
     setState(() {
@@ -1314,7 +1314,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   Future<void> _sendChatMessageInModal(String message, StateSetter setModalState) async {
     if (message.trim().isEmpty || _isAILoading) return;
 
-    print('🚀 Starting chat message process: "${message.trim()}"');
+    if (kDebugMode) debugPrint('🚀 Starting chat message process: "${message.trim()}"');
 
     // Add user message to chat
     setModalState(() {
@@ -1326,15 +1326,15 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       _isAILoading = true;
     });
 
-    print('✅ User message added to chat, loading state set to true');
+    if (kDebugMode) debugPrint('✅ User message added to chat, loading state set to true');
 
     // Clear the input immediately
     _chatController.clear();
 
     try {
-      print('💬 Sending message to Moody AI: $message');
-      print('🔧 Conversation ID: $_conversationId');
-      print('🎭 Selected moods: ${_selectedMoods.toList()}');
+      if (kDebugMode) debugPrint('💬 Sending message to Moody AI: $message');
+      if (kDebugMode) debugPrint('🔧 Conversation ID: $_conversationId');
+      if (kDebugMode) debugPrint('🎭 Selected moods: ${_selectedMoods.toList()}');
       
       final response = await WanderMoodAIService.chat(
         message: message.trim(),
@@ -1345,9 +1345,9 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         city: 'Rotterdam',
       );
 
-      print('✅ Moody AI response received successfully');
-      print('📝 Response message: "${response.message}"');
-      print('🆔 Response conversation ID: ${response.conversationId}');
+      if (kDebugMode) debugPrint('✅ Moody AI response received successfully');
+      if (kDebugMode) debugPrint('📝 Response message: "${response.message}"');
+      if (kDebugMode) debugPrint('🆔 Response conversation ID: ${response.conversationId}');
 
       // Validate response
       if (response.message.isEmpty) {
@@ -1364,12 +1364,12 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         _isAILoading = false;
       });
 
-      print('✅ AI response added to chat successfully');
-      print('📊 Total messages in chat: ${_chatMessages.length}');
+      if (kDebugMode) debugPrint('✅ AI response added to chat successfully');
+      if (kDebugMode) debugPrint('📊 Total messages in chat: ${_chatMessages.length}');
 
     } catch (e, stackTrace) {
-      print('❌ Chat error occurred: $e');
-      print('📋 Stack trace: $stackTrace');
+      if (kDebugMode) debugPrint('❌ Chat error occurred: $e');
+      if (kDebugMode) debugPrint('📋 Stack trace: $stackTrace');
       
       // Add error message to chat
       setModalState(() {
@@ -1381,10 +1381,10 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         _isAILoading = false;
       });
 
-      print('⚠️ Error message added to chat');
+      if (kDebugMode) debugPrint('⚠️ Error message added to chat');
     }
 
-    print('🏁 Chat message process completed');
+    if (kDebugMode) debugPrint('🏁 Chat message process completed');
   }
 
   // Send chat message to Moody AI
@@ -1405,7 +1405,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     _chatController.clear();
 
     try {
-      print('💬 Sending message to Moody AI: $message');
+      if (kDebugMode) debugPrint('💬 Sending message to Moody AI: $message');
       
       final response = await WanderMoodAIService.chat(
         message: message.trim(),
@@ -1416,7 +1416,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         city: 'Rotterdam',
       );
 
-      print('✅ Moody AI response: ${response.message}');
+      if (kDebugMode) debugPrint('✅ Moody AI response: ${response.message}');
 
       // Add AI response to chat
       if (mounted) {
@@ -1429,7 +1429,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         });
       }
     } catch (e) {
-      print('❌ Chat error: $e');
+      if (kDebugMode) debugPrint('❌ Chat error: $e');
       
       // Add error message to chat
       if (mounted) {
@@ -1545,7 +1545,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       return prefs.getBool('has_seen_moody_intro') ?? false;
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('⚠️ Error checking intro overlay status: $e');
+        if (kDebugMode) debugPrint('⚠️ Error checking intro overlay status: $e');
       }
       return false; // Default to showing intro if check fails
     }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -26,7 +27,7 @@ class ViewReceiptScreen extends StatelessWidget {
               snap: true,
               leading: IconButton(
                 onPressed: () {
-                  print('🔙 Back button pressed on receipt screen');
+                  if (kDebugMode) debugPrint('Back from receipt screen');
                   if (Navigator.of(context).canPop()) {
                     Navigator.of(context).pop();
                   } else {

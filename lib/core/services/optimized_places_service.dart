@@ -44,7 +44,7 @@ class OptimizedPlacesService {
       // Check cache first
       final cachedData = await _getCachedData(cacheKey);
       if (cachedData != null) {
-        debugPrint('✅ Returning cached results for key: $cacheKey');
+        if (kDebugMode) debugPrint('Returning cached results');
         return cachedData;
       }
 
@@ -69,7 +69,7 @@ class OptimizedPlacesService {
 
       return places;
     } catch (e) {
-      debugPrint('❌ Error fetching places: $e');
+      if (kDebugMode) debugPrint('Error fetching places: $e');
       // Return empty list instead of throwing
       return [];
     }
@@ -100,7 +100,7 @@ class OptimizedPlacesService {
           .map((p) => Place.fromJson(p))
           .toList();
     } catch (e) {
-      debugPrint('❌ Error reading cache: $e');
+      if (kDebugMode) debugPrint('Error reading cache: $e');
       return null;
     }
   }
@@ -113,7 +113,7 @@ class OptimizedPlacesService {
       };
       await _prefs.setString(key, json.encode(data));
     } catch (e) {
-      debugPrint('❌ Error caching data: $e');
+      if (kDebugMode) debugPrint('Error caching data: $e');
     }
   }
 
@@ -130,7 +130,7 @@ class OptimizedPlacesService {
         }
       }
     } catch (e) {
-      debugPrint('❌ Error cleaning cache: $e');
+      if (kDebugMode) debugPrint('Error cleaning cache: $e');
     }
   }
 
@@ -297,7 +297,7 @@ class OptimizedPlacesService {
           }
         }
       } catch (e) {
-        debugPrint('❌ Error in batch search: $e');
+        if (kDebugMode) debugPrint('Error in batch search: $e');
       }
 
       // Break if we have enough results

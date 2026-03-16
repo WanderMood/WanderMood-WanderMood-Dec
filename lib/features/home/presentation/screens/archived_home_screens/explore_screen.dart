@@ -19,7 +19,7 @@ class ExploreScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         body: Center(
           child: Text(
-            'Explore Coming Soon!',
+            'Explore',
             style: GoogleFonts.museoModerno(
               fontSize: 24,
               fontWeight: FontWeight.bold,

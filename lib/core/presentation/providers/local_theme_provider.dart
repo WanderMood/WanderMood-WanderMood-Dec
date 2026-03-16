@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,9 +33,9 @@ class LocalThemeNotifier extends StateNotifier<ThemeMode> {
           break;
       }
       
-      print('🎨 Local Theme: Loaded theme preference: $themeString -> ${state}');
+      if (kDebugMode) debugPrint('Local Theme: Loaded: $themeString');
     } catch (e) {
-      print('🎨 Local Theme: Error loading theme preference: $e');
+      if (kDebugMode) debugPrint('Local Theme: Error loading: $e');
       state = ThemeMode.system;
     }
   }
@@ -60,9 +61,9 @@ class LocalThemeNotifier extends StateNotifier<ThemeMode> {
       }
       
       await prefs.setString(_themeKey, themeString);
-      print('🎨 Local Theme: Saved theme preference: $themeString');
+      if (kDebugMode) debugPrint('Local Theme: Saved: $themeString');
     } catch (e) {
-      print('🎨 Local Theme: Error saving theme preference: $e');
+      if (kDebugMode) debugPrint('Local Theme: Error saving: $e');
     }
   }
 

@@ -257,7 +257,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Location feature coming soon!')),
+                            const SnackBar(content: Text('Location is not available.')),
                           );
                         },
                       ),
@@ -281,7 +281,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Activity tagging coming soon!')),
+                            const SnackBar(content: Text('Activity tagging is not available.')),
                           );
                         },
                       ),

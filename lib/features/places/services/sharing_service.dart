@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/place.dart';
 
@@ -63,7 +64,7 @@ class SharingService {
         );
       }
     } catch (e) {
-      print('Error sharing place with image: $e');
+      if (kDebugMode) debugPrint('Error sharing place with image: $e');
       rethrow;
     }
   }

@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../domain/models/weather_data.dart';
@@ -51,7 +51,7 @@ class WeatherService extends _$WeatherService {
           
           return getCurrentWeather(locationData);
         } catch (e) {
-          print('Error getting coordinates: $e');
+          if (kDebugMode) debugPrint('Error getting coordinates: $e');
           return null;
         }
       },
@@ -66,16 +66,16 @@ class WeatherService extends _$WeatherService {
         throw Exception('OpenWeather API key is not configured');
       }
 
-      print('Getting weather for ${location.name} at ${location.latitude}, ${location.longitude}');
+      if (kDebugMode) debugPrint('Getting weather for ${location.name} at ${location.latitude}, ${location.longitude}');
       final url = '$_baseUrl/weather?lat=${location.latitude}&lon=${location.longitude}&appid=$_apiKey&units=metric';
-      print('Fetching weather from: $url');
+      if (kDebugMode) debugPrint('Fetching weather from: $url');
       
       final response = await http.get(Uri.parse(url));
-      print('Weather API response code: ${response.statusCode}');
+      if (kDebugMode) debugPrint('Weather API response code: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('Weather data received: ${data['main']['temp']}°C, ${data['weather'][0]['main']}');
+        if (kDebugMode) debugPrint('Weather data received: ${data['main']['temp']}°C, ${data['weather'][0]['main']}');
         return Weather(
           temperature: data['main']['temp'].toDouble(),
           condition: data['weather'][0]['main'],
@@ -92,11 +92,11 @@ class WeatherService extends _$WeatherService {
           location: location,
         );
       } else {
-        print('Weather API error: ${response.body}');
+        if (kDebugMode) debugPrint('Weather API error: ${response.body}');
         throw Exception('Failed to load weather data: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching weather: $e');
+      if (kDebugMode) debugPrint('Error fetching weather: $e');
       throw Exception('Failed to load weather data: $e');
     }
   }
@@ -114,12 +114,12 @@ class WeatherService extends _$WeatherService {
         return cachedForecasts;
       }
 
-      print('Getting hourly forecast for ${location.name} at ${location.latitude}, ${location.longitude}');
+      if (kDebugMode) debugPrint('Getting hourly forecast for ${location.name} at ${location.latitude}, ${location.longitude}');
       final url = '$_baseUrl/forecast?lat=${location.latitude}&lon=${location.longitude}&appid=$_apiKey&units=metric';
-      print('Fetching forecast from: $url');
+      if (kDebugMode) debugPrint('Fetching forecast from: $url');
       
       final response = await http.get(Uri.parse(url));
-      print('Forecast API response code: ${response.statusCode}');
+      if (kDebugMode) debugPrint('Forecast API response code: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -254,14 +254,14 @@ class WeatherService extends _$WeatherService {
         // Cache the forecasts
         await _cacheService.cacheForecasts(location, hourlyForecasts);
         
-        print('Generated ${hourlyForecasts.length} hourly forecasts');
+        if (kDebugMode) debugPrint('Generated ${hourlyForecasts.length} hourly forecasts');
         return hourlyForecasts;
       } else {
-        print('Error response: ${response.body}');
+        if (kDebugMode) debugPrint('Error response: ${response.body}');
         throw Exception('Failed to load weather forecast: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching hourly forecasts: $e');
+      if (kDebugMode) debugPrint('Error fetching hourly forecasts: $e');
       return [];
     }
   }
@@ -273,17 +273,17 @@ class WeatherService extends _$WeatherService {
         throw Exception('OpenWeather API key is not configured');
       }
 
-      print('Getting daily forecast for ${location.name} at ${location.latitude}, ${location.longitude}');
+      if (kDebugMode) debugPrint('Getting daily forecast for ${location.name} at ${location.latitude}, ${location.longitude}');
       
       // For daily forecasts, we need to use a different endpoint
       final url = 'https://api.openweathermap.org/data/2.5/forecast/daily?lat=${location.latitude}&lon=${location.longitude}&cnt=3&appid=$_apiKey&units=metric';
       
       // Since free API doesn't have daily endpoint, we'll use the standard forecast and aggregate by day
       final hourlyUrl = '$_baseUrl/forecast?lat=${location.latitude}&lon=${location.longitude}&appid=$_apiKey&units=metric';
-      print('Fetching daily forecast from: $hourlyUrl');
+      if (kDebugMode) debugPrint('Fetching daily forecast from: $hourlyUrl');
       
       final response = await http.get(Uri.parse(hourlyUrl));
-      print('Daily forecast API response code: ${response.statusCode}');
+      if (kDebugMode) debugPrint('Daily forecast API response code: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -359,11 +359,11 @@ class WeatherService extends _$WeatherService {
         
         return dailyForecasts;
       } else {
-        print('Error response: ${response.body}');
+        if (kDebugMode) debugPrint('Error response: ${response.body}');
         throw Exception('Failed to load daily forecast: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching daily forecasts: $e');
+      if (kDebugMode) debugPrint('Error fetching daily forecasts: $e');
       return [];
     }
   }

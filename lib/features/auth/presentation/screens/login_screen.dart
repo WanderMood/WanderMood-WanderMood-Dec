@@ -12,8 +12,8 @@ import 'package:wandermood/features/auth/application/auth_service.dart';
 import 'package:wandermood/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:wandermood/features/auth/presentation/screens/register_screen.dart' as register;
 import 'package:wandermood/core/theme/app_theme.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
+import 'package:wandermood/core/providers/secure_storage_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -40,17 +40,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _loadRememberMeState() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _rememberMe = prefs.getBool('remember_me') ?? false;
-    });
+    final secure = ref.read(secureStorageServiceProvider);
+    final value = await secure.getRememberMe();
+    if (mounted) setState(() => _rememberMe = value);
   }
 
   Future<void> _saveRememberMeState(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('remember_me', value);
+    final secure = ref.read(secureStorageServiceProvider);
+    await secure.setRememberMe(value);
     if (kDebugMode) {
-      debugPrint('💾 Remember Me state saved: $value');
+      if (kDebugMode) debugPrint('Remember Me state saved');
     }
   }
 
@@ -94,13 +93,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           password: _passwordController.text,
           onSuccess: () async {
             if (mounted) {
-              // Track auth timestamp for router cache clearing logic
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setInt('last_auth_timestamp', DateTime.now().millisecondsSinceEpoch);
-              debugPrint('✅ Login successful');
-              
-              // CRITICAL: Check database for completed preferences to avoid re-onboarding
-              // When user logs out, local SharedPreferences is cleared, but database isn't
+              final secure = ref.read(secureStorageServiceProvider);
+              await secure.setLastAuthTimestamp(DateTime.now().millisecondsSinceEpoch);
               try {
                 final user = Supabase.instance.client.auth.currentUser;
                 if (user != null) {
@@ -109,22 +103,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       .select('has_completed_preferences')
                       .eq('user_id', user.id)
                       .maybeSingle();
-                  
                   if (response != null && response['has_completed_preferences'] == true) {
-                    // User has completed preferences in database - sync to local
-                    await prefs.setBool('hasCompletedPreferences', true);
-                    debugPrint('✅ Synced preferences completion from database');
-                  } else {
-                    debugPrint('ℹ️ User has not completed preferences');
+                    await secure.setHasCompletedPreferences(true);
                   }
                 }
-              } catch (e) {
-                debugPrint('⚠️ Could not check preferences: $e');
-                // Non-critical - router will handle redirect
-              }
-              
-              // Let the router handle redirect logic
-              // Router will check both local flag and database
+              } catch (_) {}
               context.go('/');
             }
           },
@@ -147,22 +130,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _handleSocialSignIn(Future<AuthResponse?> Function() signInMethod) async {
     setState(() => _isLoading = true);
     try {
-      print('🔍 Social Sign-In: Starting authentication...');
+      if (kDebugMode) debugPrint('Social Sign-In: Starting');
       final result = await signInMethod();
       
       if (result != null && result.user != null) {
-        print('✅ Social Sign-In: Authentication successful');
+        if (kDebugMode) debugPrint('Social Sign-In: Success');
         if (mounted) {
-          // Track auth timestamp for router cache clearing logic
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setInt('last_auth_timestamp', DateTime.now().millisecondsSinceEpoch);
-          debugPrint('✅ Social login successful');
-          
-          // Let the router handle redirect logic instead of directly going to home
+          final secure = ref.read(secureStorageServiceProvider);
+          await secure.setLastAuthTimestamp(DateTime.now().millisecondsSinceEpoch);
           context.go('/');
         }
       } else {
-        print('❌ Social Sign-In: Authentication failed - no user returned');
+        if (kDebugMode) debugPrint('Social Sign-In: No user returned');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -174,7 +153,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         }
       }
     } catch (e) {
-      print('❌ Social Sign-In Error: $e');
+      if (kDebugMode) debugPrint('Social Sign-In Error: $e');
       if (mounted) {
         String errorMessage = 'Sign-in failed. Please try again.';
         

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -97,7 +98,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
       
       return posts;
     } catch (e) {
-      print('Error fetching feed posts: $e');
+      if (kDebugMode) debugPrint('Error fetching feed posts: $e');
       return [];
     }
   }
@@ -133,7 +134,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
       
       return posts;
     } catch (e) {
-      print('Error fetching user posts: $e');
+      if (kDebugMode) debugPrint('Error fetching user posts: $e');
       return [];
     }
   }
@@ -159,7 +160,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
       
       return post;
     } catch (e) {
-      print('Error fetching post: $e');
+      if (kDebugMode) debugPrint('Error fetching post: $e');
       return null;
     }
   }
@@ -183,7 +184,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
       if (request.locationDetails?.latitude != null && 
           request.locationDetails?.longitude != null) {
         try {
-          print('Fetching weather data for location: ${request.locationDetails?.name}');
+          if (kDebugMode) debugPrint('Fetching weather data for location: ${request.locationDetails?.name}');
           
           // Create an instance of the enhanced weather service
           final weatherService = EnhancedWeatherService();
@@ -204,9 +205,9 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
             'timestamp': weatherMap['timestamp'],
           };
           
-          print('Weather data fetched successfully: ${weatherMap['temperature']}°C, ${weatherMap['condition']}');
+          if (kDebugMode) debugPrint('Weather data fetched successfully: ${weatherMap['temperature']}°C, ${weatherMap['condition']}');
         } catch (e) {
-          print('Failed to fetch weather data: $e');
+          if (kDebugMode) debugPrint('Failed to fetch weather data: $e');
           // Continue without weather data - don't fail the post creation
           weatherData = null;
         }
@@ -283,7 +284,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
       
       return postId;
     } catch (e) {
-      print('Error creating post: $e');
+      if (kDebugMode) debugPrint('Error creating post: $e');
       throw Exception('Failed to create post: $e');
     }
   }
@@ -305,7 +306,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
       
       return true;
     } catch (e) {
-      print('Error updating post: $e');
+      if (kDebugMode) debugPrint('Error updating post: $e');
       return false;
     }
   }
@@ -326,7 +327,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
       
       return true;
     } catch (e) {
-      print('Error deleting post: $e');
+      if (kDebugMode) debugPrint('Error deleting post: $e');
       return false;
     }
   }
@@ -354,7 +355,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
       
       return publicUrl;
     } catch (e) {
-      print('Error uploading photo: $e');
+      if (kDebugMode) debugPrint('Error uploading photo: $e');
       throw Exception('Failed to upload photo: $e');
     }
   }
@@ -368,7 +369,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
         final url = await uploadPhoto(filePath, postId);
         urls.add(url);
       } catch (e) {
-        print('Failed to upload photo $filePath: $e');
+        if (kDebugMode) debugPrint('Failed to upload photo $filePath: $e');
         // Continue with other photos
       }
     }
@@ -390,7 +391,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
       
       return true;
     } catch (e) {
-      print('Error deleting photo: $e');
+      if (kDebugMode) debugPrint('Error deleting photo: $e');
       return false;
     }
   }
@@ -412,7 +413,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
       
       return true;
     } catch (e) {
-      print('Error liking post: $e');
+      if (kDebugMode) debugPrint('Error liking post: $e');
       return false;
     }
   }
@@ -433,7 +434,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
       
       return true;
     } catch (e) {
-      print('Error unliking post: $e');
+      if (kDebugMode) debugPrint('Error unliking post: $e');
       return false;
     }
   }
@@ -455,7 +456,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
       
       return true;
     } catch (e) {
-      print('Error adding reaction: $e');
+      if (kDebugMode) debugPrint('Error adding reaction: $e');
       return false;
     }
   }
@@ -476,7 +477,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
       
       return true;
     } catch (e) {
-      print('Error removing reaction: $e');
+      if (kDebugMode) debugPrint('Error removing reaction: $e');
       return false;
     }
   }
@@ -490,7 +491,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
       
       return true;
     } catch (e) {
-      print('Error incrementing view count: $e');
+      if (kDebugMode) debugPrint('Error incrementing view count: $e');
       return false;
     }
   }
@@ -521,7 +522,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
       
       return posts;
     } catch (e) {
-      print('Error fetching trending posts: $e');
+      if (kDebugMode) debugPrint('Error fetching trending posts: $e');
       return [];
     }
   }
@@ -541,7 +542,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
         return TravelPostFromDatabase.fromDatabase(data);
       }).toList();
     } catch (e) {
-      print('Error searching posts: $e');
+      if (kDebugMode) debugPrint('Error searching posts: $e');
       return [];
     }
   }
@@ -561,7 +562,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
         return TravelPostFromDatabase.fromDatabase(data);
       }).toList();
     } catch (e) {
-      print('Error fetching posts by location: $e');
+      if (kDebugMode) debugPrint('Error fetching posts by location: $e');
       return [];
     }
   }
@@ -581,7 +582,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
         return TravelPostFromDatabase.fromDatabase(data);
       }).toList();
     } catch (e) {
-      print('Error fetching posts by mood: $e');
+      if (kDebugMode) debugPrint('Error fetching posts by mood: $e');
       return [];
     }
   }
@@ -593,7 +594,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
       await getTrendingPosts();
       await getFeedPosts(limit: 10);
     } catch (e) {
-      print('Cache warming failed: $e');
+      if (kDebugMode) debugPrint('Cache warming failed: $e');
     }
   }
   

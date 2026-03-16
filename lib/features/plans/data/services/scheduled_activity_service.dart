@@ -29,7 +29,7 @@ class ScheduledActivityService {
   /// Save a list of activities to the scheduled_activities table
   Future<void> saveScheduledActivities(List<Activity> activities, {bool isConfirmed = false}) async {
     try {
-      print('ScheduledActivityService: saveScheduledActivities called with ${activities.length} activities');
+      if (kDebugMode) debugPrint('ScheduledActivityService: saveScheduledActivities called with ${activities.length} activities');
       
       // Require authentication
       final userId = _client.auth.currentUser?.id;
@@ -37,18 +37,18 @@ class ScheduledActivityService {
         throw Exception('User must be authenticated to save scheduled activities');
       }
       
-      print('ScheduledActivityService: User ID: $userId');
+      if (kDebugMode) debugPrint('ScheduledActivityService: User ID: $userId');
       final activityData = _prepareActivityData(activities, userId, isConfirmed);
       await _insertActivities(activityData);
     } catch (e) {
-      print('ScheduledActivityService: Database save failed: $e');
-      print('ScheduledActivityService: Using in-memory fallback storage');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Database save failed: $e');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Using in-memory fallback storage');
       
       // Fallback to in-memory storage
       _inMemoryActivities.clear();
       _inMemoryActivities.addAll(activities);
       
-      print('ScheduledActivityService: Saved ${activities.length} activities to memory');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Saved ${activities.length} activities to memory');
       // Don't rethrow - we have a fallback solution
     }
   }
@@ -62,24 +62,24 @@ class ScheduledActivityService {
         throw Exception('User must be authenticated to clear scheduled activities');
       }
       
-      print('🧹 Clearing all scheduled activities for user $userId');
+      if (kDebugMode) debugPrint('🧹 Clearing all scheduled activities for user $userId');
       
       await _client
           .from('scheduled_activities')
           .delete()
           .eq('user_id', userId);
       
-      print('✅ Successfully cleared all scheduled activities');
+      if (kDebugMode) debugPrint('✅ Successfully cleared all scheduled activities');
       
       // Also clear in-memory fallback storage
       _inMemoryActivities.clear();
-      print('✅ Cleared in-memory fallback storage');
+      if (kDebugMode) debugPrint('✅ Cleared in-memory fallback storage');
       
     } catch (e) {
-      print('❌ Error clearing scheduled activities: $e');
+      if (kDebugMode) debugPrint('❌ Error clearing scheduled activities: $e');
       // Clear in-memory fallback even if database fails
       _inMemoryActivities.clear();
-      print('✅ Cleared in-memory fallback storage (database failed)');
+      if (kDebugMode) debugPrint('✅ Cleared in-memory fallback storage (database failed)');
       rethrow;
     }
   }
@@ -110,7 +110,7 @@ class ScheduledActivityService {
   // Helper to insert activities with duplicate checking
   Future<void> _insertActivities(List<Map<String, dynamic>> activityData) async {
     try {
-      print('ScheduledActivityService: Inserting ${activityData.length} activities');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Inserting ${activityData.length} activities');
       
       // Require authentication
       final userId = _client.auth.currentUser?.id;
@@ -136,19 +136,19 @@ class ScheduledActivityService {
         if (existingActivity == null) {
           // No duplicate found, add to insert list
           filteredActivities.add(activity);
-          print('ScheduledActivityService: Activity "${activity['name']}" is new, will be inserted');
+          if (kDebugMode) debugPrint('ScheduledActivityService: Activity "${activity['name']}" is new, will be inserted');
         } else {
-          print('ScheduledActivityService: Duplicate activity "${activity['name']}" found, skipping insert');
-          print('   Existing: ${existingActivity['activity_id']}, New: ${activity['activity_id']}');
+          if (kDebugMode) debugPrint('ScheduledActivityService: Duplicate activity "${activity['name']}" found, skipping insert');
+          if (kDebugMode) debugPrint('   Existing: ${existingActivity['activity_id']}, New: ${activity['activity_id']}');
         }
       }
       
       if (filteredActivities.isEmpty) {
-        print('ScheduledActivityService: All activities are duplicates, nothing to insert');
+        if (kDebugMode) debugPrint('ScheduledActivityService: All activities are duplicates, nothing to insert');
         return;
       }
       
-      print('ScheduledActivityService: Inserting ${filteredActivities.length} new activities (${activityData.length - filteredActivities.length} duplicates skipped)');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Inserting ${filteredActivities.length} new activities (${activityData.length - filteredActivities.length} duplicates skipped)');
       
       // Mark that user has completed their first plan
       if (filteredActivities.isNotEmpty) {
@@ -158,33 +158,33 @@ class ScheduledActivityService {
           if (!hasCompletedFirstPlan) {
             await prefs.setBool('has_completed_first_plan', true);
             if (kDebugMode) {
-              debugPrint('🎉 First plan completed! User has created their first day plan.');
+              if (kDebugMode) debugPrint('🎉 First plan completed! User has created their first day plan.');
             }
           }
         } catch (e) {
           if (kDebugMode) {
-            debugPrint('⚠️ Failed to set first plan flag: $e');
+            if (kDebugMode) debugPrint('⚠️ Failed to set first plan flag: $e');
           }
         }
       }
       
       await _client.from('scheduled_activities').insert(filteredActivities);
-      print('ScheduledActivityService: Activities inserted successfully');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Activities inserted successfully');
     } catch (e) {
-      print('ScheduledActivityService: Failed to save activities to Supabase: $e');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Failed to save activities to Supabase: $e');
       
       // Try to create the table if it doesn't exist
       if (e.toString().contains('does not exist') || e.toString().contains('relation') || e.toString().contains('42P01')) {
-        print('ScheduledActivityService: Table may not exist, attempting to create it...');
+        if (kDebugMode) debugPrint('ScheduledActivityService: Table may not exist, attempting to create it...');
         try {
           await _schemaHelper.createScheduledActivitiesTable();
-          print('ScheduledActivityService: Table created successfully, retrying insert');
+          if (kDebugMode) debugPrint('ScheduledActivityService: Table created successfully, retrying insert');
           
           // Retry with duplicate checking
           await _insertActivities(activityData);
-          print('ScheduledActivityService: Activities inserted successfully after table creation');
+          if (kDebugMode) debugPrint('ScheduledActivityService: Activities inserted successfully after table creation');
         } catch (tableError) {
-          print('ScheduledActivityService: Failed to create table: $tableError');
+          if (kDebugMode) debugPrint('ScheduledActivityService: Failed to create table: $tableError');
           rethrow;
         }
       } else {
@@ -202,7 +202,7 @@ class ScheduledActivityService {
         throw Exception('User must be authenticated to view scheduled activities');
       }
       
-      print('ScheduledActivityService: Getting activities for user $userId');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Getting activities for user $userId');
       
       // Query the scheduled_activities table
       final response = await _client
@@ -211,11 +211,11 @@ class ScheduledActivityService {
           .eq('user_id', userId)
           .order('start_time', ascending: true);
       
-      print('ScheduledActivityService: Raw response length: ${response.length}');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Raw response length: ${response.length}');
       
       // Convert response to Activity objects
       final activities = response.map((json) {
-        print('ScheduledActivityService: Processing activity: ${json['name']}');
+        if (kDebugMode) debugPrint('ScheduledActivityService: Processing activity: ${json['name']}');
         
         // Parse tags and create a LatLng object
         final tags = (json['tags'] as String).split(',');
@@ -267,11 +267,11 @@ class ScheduledActivityService {
         );
       }).toList();
       
-      print('ScheduledActivityService: Returning ${activities.length} activities');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Returning ${activities.length} activities');
       return activities;
     } catch (e) {
-      print('ScheduledActivityService: Database query failed: $e');
-      print('ScheduledActivityService: Using in-memory fallback storage');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Database query failed: $e');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Using in-memory fallback storage');
       
       // Return in-memory activities as fallback
       final activities = _inMemoryActivities.where((activity) {
@@ -283,7 +283,7 @@ class ScheduledActivityService {
                activityDate.day == now.day;
       }).toList();
       
-      print('ScheduledActivityService: Returning ${activities.length} activities from memory');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Returning ${activities.length} activities from memory');
       return activities;
     }
   }
@@ -302,7 +302,7 @@ class ScheduledActivityService {
           .eq('user_id', userId)
           .eq('activity_id', activityId);
     } catch (e) {
-      print('Error updating activity confirmation: $e');
+      if (kDebugMode) debugPrint('Error updating activity confirmation: $e');
       rethrow;
     }
   }
@@ -316,7 +316,7 @@ class ScheduledActivityService {
         throw Exception('User must be authenticated to delete scheduled activities');
       }
       
-      print('ScheduledActivityService: Deleting activity $activityId for user $userId');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Deleting activity $activityId for user $userId');
       
       await _client
           .from('scheduled_activities')
@@ -324,9 +324,9 @@ class ScheduledActivityService {
           .eq('user_id', userId)
           .eq('activity_id', activityId);
       
-      print('ScheduledActivityService: Activity deleted successfully');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Activity deleted successfully');
     } catch (e) {
-      print('ScheduledActivityService: Error deleting scheduled activity: $e');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Error deleting scheduled activity: $e');
       rethrow;
     }
   }
@@ -340,7 +340,7 @@ class ScheduledActivityService {
         throw Exception('User must be authenticated to update scheduled activities');
       }
       
-      print('ScheduledActivityService: Updating activity $activityId for user $userId');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Updating activity $activityId for user $userId');
       
       await _client
           .from('scheduled_activities')
@@ -348,9 +348,9 @@ class ScheduledActivityService {
           .eq('user_id', userId)
           .eq('activity_id', activityId);
       
-      print('ScheduledActivityService: Activity updated successfully');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Activity updated successfully');
     } catch (e) {
-      print('ScheduledActivityService: Error updating scheduled activity: $e');
+      if (kDebugMode) debugPrint('ScheduledActivityService: Error updating scheduled activity: $e');
       rethrow;
     }
   }

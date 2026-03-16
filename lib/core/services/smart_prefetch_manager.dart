@@ -37,7 +37,7 @@ class SmartPrefetchManager with PerformanceAware {
     initializePerformance(performanceManager);
     await _loadBehaviorData();
     _startPeriodicPrefetching();
-    debugPrint('🧠 Smart Prefetching Manager initialized');
+    if (kDebugMode) debugPrint('🧠 Smart Prefetching Manager initialized');
   }
 
   /// Track screen visit for behavior analysis
@@ -69,7 +69,7 @@ class SmartPrefetchManager with PerformanceAware {
     // Trigger intelligent prefetching based on visit
     _prefetchBasedOnVisit(screenName);
     
-    debugPrint('🧠 Tracked visit to $screenName (${_screenVisitCounts[screenName]} visits)');
+    if (kDebugMode) debugPrint('🧠 Tracked visit to $screenName (${_screenVisitCounts[screenName]} visits)');
   }
 
   /// Track navigation pattern for prediction
@@ -85,7 +85,7 @@ class SmartPrefetchManager with PerformanceAware {
     }
     
     await _saveBehaviorData();
-    debugPrint('🧠 Tracked navigation: $fromScreen → $toScreen');
+    if (kDebugMode) debugPrint('🧠 Tracked navigation: $fromScreen → $toScreen');
   }
 
   /// Track mood selection for time-based patterns
@@ -100,7 +100,7 @@ class SmartPrefetchManager with PerformanceAware {
     }
     
     await _saveBehaviorData();
-    debugPrint('🧠 Tracked mood "$mood" at hour $hour');
+    if (kDebugMode) debugPrint('🧠 Tracked mood "$mood" at hour $hour');
   }
 
   /// Predict next likely screens based on current screen
@@ -123,7 +123,7 @@ class SmartPrefetchManager with PerformanceAware {
         .map((entry) => entry.key)
         .toList();
     
-    debugPrint('🧠 Predicted next screens from $currentScreen: $predictions');
+    if (kDebugMode) debugPrint('🧠 Predicted next screens from $currentScreen: $predictions');
     return predictions;
   }
 
@@ -141,7 +141,7 @@ class SmartPrefetchManager with PerformanceAware {
       if (distance < _prefetchDistanceThreshold && 
           _lastLocationPrefetch != null &&
           DateTime.now().difference(_lastLocationPrefetch!) < _prefetchValidDuration) {
-        debugPrint('🧠 Skipping nearby prefetch - recent location and data');
+        if (kDebugMode) debugPrint('🧠 Skipping nearby prefetch - recent location and data');
         return;
       }
     }
@@ -168,7 +168,7 @@ class SmartPrefetchManager with PerformanceAware {
       await _prefetchScreenContent(screen, 'time_based');
     }
     
-    debugPrint('🧠 Prefetched time-based content for hour $currentHour: $likelyScreens');
+    if (kDebugMode) debugPrint('🧠 Prefetched time-based content for hour $currentHour: $likelyScreens');
   }
 
   /// Prefetch content based on mood patterns
@@ -179,7 +179,7 @@ class SmartPrefetchManager with PerformanceAware {
     // If current hour matches mood pattern, prefetch related content
     if (likelyHours.contains(currentHour)) {
       await _prefetchMoodContent(selectedMood);
-      debugPrint('🧠 Prefetched mood-based content for "$selectedMood"');
+      if (kDebugMode) debugPrint('🧠 Prefetched mood-based content for "$selectedMood"');
     }
   }
 
@@ -195,7 +195,7 @@ class SmartPrefetchManager with PerformanceAware {
       return null;
     }
     
-    debugPrint('🧠 Retrieved prefetched data for key: $key');
+    if (kDebugMode) debugPrint('🧠 Retrieved prefetched data for key: $key');
     return _prefetchCache[key] as T?;
   }
 
@@ -203,7 +203,7 @@ class SmartPrefetchManager with PerformanceAware {
   void storePrefetchedData(String key, dynamic data) {
     _prefetchCache[key] = data;
     _prefetchTimestamps[key] = DateTime.now();
-    debugPrint('🧠 Stored prefetched data for key: $key');
+    if (kDebugMode) debugPrint('🧠 Stored prefetched data for key: $key');
   }
 
   /// Get user behavior insights
@@ -245,9 +245,9 @@ class SmartPrefetchManager with PerformanceAware {
       };
       
       storePrefetchedData(nearbyKey, mockNearbyData);
-      debugPrint('🧠 Prefetched nearby content for location: ${location.latitude}, ${location.longitude}');
+      if (kDebugMode) debugPrint('🧠 Prefetched nearby content for location: ${location.latitude}, ${location.longitude}');
     } catch (e) {
-      debugPrint('❌ Error prefetching nearby content: $e');
+      if (kDebugMode) debugPrint('❌ Error prefetching nearby content: $e');
     }
   }
 
@@ -269,9 +269,9 @@ class SmartPrefetchManager with PerformanceAware {
       }
       
       storePrefetchedData(cacheKey, mockData);
-      debugPrint('🧠 Prefetched content for screen "$screenName" (reason: $reason)');
+      if (kDebugMode) debugPrint('🧠 Prefetched content for screen "$screenName" (reason: $reason)');
     } catch (e) {
-      debugPrint('❌ Error prefetching screen content: $e');
+      if (kDebugMode) debugPrint('❌ Error prefetching screen content: $e');
     }
   }
 
@@ -287,9 +287,9 @@ class SmartPrefetchManager with PerformanceAware {
       };
       
       storePrefetchedData(cacheKey, mockMoodData);
-      debugPrint('🧠 Prefetched mood content for "$mood"');
+      if (kDebugMode) debugPrint('🧠 Prefetched mood content for "$mood"');
     } catch (e) {
-      debugPrint('❌ Error prefetching mood content: $e');
+      if (kDebugMode) debugPrint('❌ Error prefetching mood content: $e');
     }
   }
 
@@ -338,9 +338,9 @@ class SmartPrefetchManager with PerformanceAware {
         });
       }
       
-      debugPrint('🧠 Loaded behavior data: ${_screenVisitCounts.length} screens tracked');
+      if (kDebugMode) debugPrint('🧠 Loaded behavior data: ${_screenVisitCounts.length} screens tracked');
     } catch (e) {
-      debugPrint('❌ Error loading behavior data: $e');
+      if (kDebugMode) debugPrint('❌ Error loading behavior data: $e');
     }
   }
 
@@ -358,7 +358,7 @@ class SmartPrefetchManager with PerformanceAware {
       await prefs.setString('behavior_mood_patterns', json.encode(_moodTimePatterns));
       
     } catch (e) {
-      debugPrint('❌ Error saving behavior data: $e');
+      if (kDebugMode) debugPrint('❌ Error saving behavior data: $e');
     }
   }
 
@@ -378,6 +378,6 @@ class SmartPrefetchManager with PerformanceAware {
       _prefetchTimestamps.remove(key);
     }
     
-    debugPrint('🧠 Cleaned up ${keysToRemove.length} expired prefetch entries');
+    if (kDebugMode) debugPrint('🧠 Cleaned up ${keysToRemove.length} expired prefetch entries');
   }
 } 

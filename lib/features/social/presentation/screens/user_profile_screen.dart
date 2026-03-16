@@ -68,7 +68,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> with Sing
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Saved posts feature coming soon!'),
+                    content: Text('Saved posts are not available.'),
                     duration: Duration(seconds: 2),
                   ),
                 );
@@ -86,7 +86,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> with Sing
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Close friends feature coming soon!'),
+                    content: Text('Close friends are not available.'),
                     duration: Duration(seconds: 2),
                   ),
                 );

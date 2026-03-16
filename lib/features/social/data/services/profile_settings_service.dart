@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/features/social/domain/models/user_profile.dart';
 import 'package:wandermood/features/social/domain/models/wander_badge.dart';
@@ -22,7 +23,7 @@ class ProfileSettingsService {
 
       return UserProfile.fromJson(response);
     } catch (e) {
-      print('Error in profile provider: $e');
+      if (kDebugMode) debugPrint('Error in profile provider: $e');
       return null;
     }
   }
@@ -56,9 +57,9 @@ class ProfileSettingsService {
             'user_id': user.id,
             ...updateData,
           });
-      print('✅ Profile updated successfully');
+      if (kDebugMode) debugPrint('✅ Profile updated successfully');
     } catch (e) {
-      print('❌ Error updating profile: $e');
+      if (kDebugMode) debugPrint('❌ Error updating profile: $e');
       rethrow;
     }
   }
@@ -308,19 +309,19 @@ class ProfileSettingsService {
     if (user == null) throw Exception('User not authenticated');
 
     try {
-      print('📸 Starting photo upload process...');
+      if (kDebugMode) debugPrint('📸 Starting photo upload process...');
       
       // For now, generate a user-specific avatar URL based on their email
       final avatarUrl = 'https://ui-avatars.com/api/?name=${user.email?.substring(0, 1) ?? 'U'}&background=12B347&color=fff&size=200';
-      print('📸 Generated avatar URL: $avatarUrl');
+      if (kDebugMode) debugPrint('📸 Generated avatar URL: $avatarUrl');
 
       // Update profile with the avatar URL
       await updateProfileInfo(imageUrl: avatarUrl);
 
-      print('✅ Photo upload completed successfully');
+      if (kDebugMode) debugPrint('✅ Photo upload completed successfully');
       return avatarUrl;
     } catch (e) {
-      print('❌ Error in photo upload process: $e');
+      if (kDebugMode) debugPrint('❌ Error in photo upload process: $e');
       rethrow;
     }
   }

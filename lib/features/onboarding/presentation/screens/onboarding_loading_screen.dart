@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wandermood/core/providers/secure_storage_provider.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../../core/providers/preferences_provider.dart';
 import '../widgets/swirling_gradient_painter.dart';
@@ -480,8 +481,8 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
       // Step 6: Finalize and prepare dashboard (100%)
       await _updateProgress(5, 'Almost ready! Setting up your dashboard...');
       
-      // Mark preferences as completed in local storage
-      await prefs.setBool('hasCompletedPreferences', true);
+      final secure = ref.read(secureStorageServiceProvider);
+      await secure.setHasCompletedPreferences(true);
       
       // CRITICAL: Also update database so login checks work correctly
       try {
@@ -543,10 +544,8 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
   }
 
   Future<void> _handleError(dynamic error) async {
-    debugPrint('🔧 Handling prefetch error gracefully...');
-    
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('hasCompletedPreferences', true);
+    final secure = ref.read(secureStorageServiceProvider);
+    await secure.setHasCompletedPreferences(true);
     
     // CRITICAL: Also update database so login checks work correctly
     try {

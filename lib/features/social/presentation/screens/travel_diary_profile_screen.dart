@@ -961,7 +961,7 @@ class _EditProfileModalState extends State<EditProfileModal> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Photo selection coming soon!',
+          'Photo selection is not available.',
           style: GoogleFonts.poppins(),
         ),
         backgroundColor: const Color(0xFF12B347),

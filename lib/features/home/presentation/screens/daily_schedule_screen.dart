@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -39,7 +40,7 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      print('Error loading scheduled activities: $e');
+      if (kDebugMode) debugPrint('Error loading scheduled activities: $e');
       setState(() {
         _scheduledActivities = [];
         _isLoading = false;

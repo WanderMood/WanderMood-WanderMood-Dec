@@ -77,7 +77,7 @@ class DayPlanService {
         weatherData: weather?.toJson(),
       );
     } catch (e) {
-      debugPrint('❌ Error generating day plan: $e');
+      if (kDebugMode) debugPrint('Error generating day plan: $e');
       rethrow;
     }
   }
@@ -191,7 +191,7 @@ class DayPlanService {
         overallMoodScore: _calculateOverallMoodScore(newActivities),
       );
     } catch (e) {
-      debugPrint('❌ Error refreshing activity: $e');
+      if (kDebugMode) debugPrint('Error refreshing activity: $e');
       rethrow;
     }
   }

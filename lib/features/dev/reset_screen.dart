@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wandermood/core/services/secure_storage_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -23,13 +24,12 @@ class _ResetScreenState extends ConsumerState<ResetScreen> {
     });
     
     try {
-      // Clear shared preferences
+      final secure = SecureStorageService();
+      await secure.clearAuthSensitive();
+      await secure.setHasSeenOnboarding(false);
+      await secure.setHasCompletedPreferences(false);
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
-      
-      // Reset specific flags
-      await prefs.setBool('has_seen_onboarding', false);
-      await prefs.setBool('has_completed_preferences', false);
       
       setState(() {
         _status = 'All preferences cleared successfully!';

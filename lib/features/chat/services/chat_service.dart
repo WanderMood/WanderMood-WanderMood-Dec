@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/chat_message.dart';
 
@@ -26,7 +27,7 @@ class ChatService {
 
       return ChatMessage.fromJson(response);
     } catch (e) {
-      print('❌ Error saving chat message: $e');
+      if (kDebugMode) debugPrint('❌ Error saving chat message: $e');
       rethrow;
     }
   }
@@ -56,7 +57,7 @@ class ChatService {
           .reversed
           .toList(); // Return in chronological order
     } catch (e) {
-      print('❌ Error getting chat messages: $e');
+      if (kDebugMode) debugPrint('❌ Error getting chat messages: $e');
       return [];
     }
   }
@@ -81,7 +82,7 @@ class ChatService {
           .eq('id', messageId)
           .eq('user_id', _supabase.auth.currentUser!.id);
     } catch (e) {
-      print('❌ Error deleting chat message: $e');
+      if (kDebugMode) debugPrint('❌ Error deleting chat message: $e');
       rethrow;
     }
   }
@@ -94,7 +95,7 @@ class ChatService {
           .delete()
           .eq('user_id', _supabase.auth.currentUser!.id);
     } catch (e) {
-      print('❌ Error clearing chat history: $e');
+      if (kDebugMode) debugPrint('❌ Error clearing chat history: $e');
       rethrow;
     }
   }

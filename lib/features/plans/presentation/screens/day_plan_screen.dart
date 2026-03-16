@@ -106,7 +106,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
       );
 
       // 🤖 USE MOODY AI FOR ALTERNATIVE GENERATION
-      debugPrint('🤖 Asking Moody AI for alternative activity for ${activity.name}...');
+      if (kDebugMode) debugPrint('Asking Moody AI for alternative activity');
       
       // Extract mood from activity tags or use default
       final moods = activity.tags.where((tag) => 
@@ -160,8 +160,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
       }
       
       if (replacementActivity != null) {
-        debugPrint('✅ Generated AI alternative activity: ${replacementActivity.name}');
-        debugPrint('   Rating: ${replacementActivity.rating}');
+        if (kDebugMode) debugPrint('Generated AI alternative activity');
         
         setState(() {
           // Create updated activity with preserved timing and incremented refresh count
@@ -209,7 +208,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
         );
       }
     } catch (e) {
-      debugPrint('❌ Error refreshing activity: $e');
+      if (kDebugMode) debugPrint('Error refreshing activity: $e');
       
       // Show error feedback
       ScaffoldMessenger.of(context).showSnackBar(
@@ -733,7 +732,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                     );
                   },
                       errorBuilder: (context, error, stackTrace) {
-                        debugPrint('🖼️ Image failed to load: ${activity.imageUrl}');
+                        if (kDebugMode) debugPrint('Image failed to load');
                         return _buildPhotoPlaceholder(activity.name);
                       },
             ),

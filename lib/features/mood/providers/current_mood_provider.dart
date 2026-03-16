@@ -8,7 +8,7 @@ part 'current_mood_provider.g.dart';
 class CurrentMood extends _$CurrentMood {
   @override
   Mood? build() {
-    debugPrint('🌈 Building CurrentMood provider');
+    if (kDebugMode) debugPrint('Building CurrentMood provider');
     // Default mood - ensure it matches a key in _moodToActivityTypes map
     return Mood(
       id: 'default',
@@ -24,7 +24,7 @@ class CurrentMood extends _$CurrentMood {
   }
 
   void setMood(Mood mood) {
-    debugPrint('🌈 Setting mood to: ${mood.label}');
+    if (kDebugMode) debugPrint('Setting mood');
     state = mood;
   }
 } 

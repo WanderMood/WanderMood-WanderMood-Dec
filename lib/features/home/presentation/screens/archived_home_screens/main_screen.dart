@@ -13,13 +13,13 @@ import 'package:wandermood/features/profile/presentation/screens/profile_screen.
 class TrendingScreen extends ConsumerWidget {
   const TrendingScreen({super.key});
   @override
-  Widget build(BuildContext context, WidgetRef ref) => const Center(child: Text('Trending Coming Soon'));
+  Widget build(BuildContext context, WidgetRef ref) => const Center(child: Text('Trending'));
 }
 
 class AgendaScreen extends ConsumerWidget {
   const AgendaScreen({super.key});
   @override
-  Widget build(BuildContext context, WidgetRef ref) => const Center(child: Text('Agenda Coming Soon'));
+  Widget build(BuildContext context, WidgetRef ref) => const Center(child: Text('Agenda'));
 }
 
 class MainScreen extends ConsumerStatefulWidget {

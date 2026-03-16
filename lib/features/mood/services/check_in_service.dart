@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,9 +34,9 @@ class CheckInService {
       final streak = await getCheckInStreak();
       await _updateStreakInLocalStorage(streak);
       
-      print('✅ Check-in saved to Supabase: ${checkIn.id}');
+      if (kDebugMode) debugPrint('Check-in saved to Supabase');
     } catch (e) {
-      print('⚠️ Failed to save check-in to Supabase: $e');
+      if (kDebugMode) debugPrint('Failed to save check-in to Supabase: $e');
       // Continue to save locally as fallback
     }
     
@@ -62,7 +63,7 @@ class CheckInService {
         return response.map((json) => CheckIn.fromJson(json)).toList();
       }
     } catch (e) {
-      print('⚠️ Failed to load check-ins from Supabase: $e');
+      if (kDebugMode) debugPrint('Failed to load check-ins: $e');
     }
     
     // Fallback to local storage
@@ -153,7 +154,7 @@ class CheckInService {
 
       return streak;
     } catch (e) {
-      print('⚠️ Error calculating streak: $e');
+      if (kDebugMode) debugPrint('Error calculating streak: $e');
       return await _getStreakFromLocalStorage();
     }
   }
@@ -172,7 +173,7 @@ class CheckInService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('check_in_streak', streak);
     } catch (e) {
-      print('⚠️ Error saving streak: $e');
+      if (kDebugMode) debugPrint('Error saving streak: $e');
     }
   }
 
@@ -189,9 +190,9 @@ class CheckInService {
       final jsonList = limited.map((c) => c.toJson()).toList();
       await prefs.setString(_prefsKey, jsonEncode(jsonList));
       
-      print('✅ Check-in saved to local storage');
+      if (kDebugMode) debugPrint('Check-in saved to local storage');
     } catch (e) {
-      print('❌ Failed to save check-in to local storage: $e');
+      if (kDebugMode) debugPrint('Failed to save check-in to local storage: $e');
     }
   }
 
@@ -205,7 +206,7 @@ class CheckInService {
       final jsonList = jsonDecode(jsonString) as List;
       return jsonList.map((json) => CheckIn.fromJson(json)).toList();
     } catch (e) {
-      print('❌ Failed to load check-ins from local storage: $e');
+      if (kDebugMode) debugPrint('Failed to load check-ins from local storage: $e');
       return [];
     }
   }

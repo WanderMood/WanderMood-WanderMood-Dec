@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -103,10 +104,10 @@ class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> {
         ),
       ),
       data: (bookings) {
-        print('🔍 Loaded ${bookings.length} bookings from provider');
+        if (kDebugMode) debugPrint('Loaded ${bookings.length} bookings');
         
         if (bookings.isEmpty) {
-          print('🔍 No bookings found, showing empty state');
+          if (kDebugMode) debugPrint('No bookings found');
           return _buildEnhancedEmptyState(context, ref);
         } else {
           return _buildBookingsList(bookings);

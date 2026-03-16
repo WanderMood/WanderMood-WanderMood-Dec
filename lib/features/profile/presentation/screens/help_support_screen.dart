@@ -375,14 +375,14 @@ class HelpSupportScreen extends ConsumerWidget {
   }
 
   Future<void> _openPrivacyPolicy() async {
-    final Uri url = Uri.parse('https://wandermood.app/privacy');
+    final Uri url = Uri.parse('https://wandermood.com/en/privacy');
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     }
   }
 
   Future<void> _openTermsOfService() async {
-    final Uri url = Uri.parse('https://wandermood.app/terms');
+    final Uri url = Uri.parse('https://wandermood.com/en/terms');
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     }

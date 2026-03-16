@@ -101,10 +101,10 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
 
       if (response != null) {
         state = UserPreferencesHelper.fromSupabaseJson(response);
-        debugPrint('✅ Loaded preferences from Supabase');
+        if (kDebugMode) debugPrint('Loaded preferences from Supabase');
       }
     } catch (e) {
-      debugPrint('❌ Error loading preferences: $e');
+      if (kDebugMode) debugPrint('Error loading preferences: $e');
     }
   }
 
@@ -113,11 +113,11 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        debugPrint('⚠️ No authenticated user, skipping save');
+        if (kDebugMode) debugPrint('No authenticated user, skipping save');
         return;
       }
 
-      debugPrint('🔍 Saving preferences for user: ${user.id}');
+      if (kDebugMode) debugPrint('Saving preferences');
 
       // Create preferences object that matches the database schema (no budget fields since no budget screen)
       final prefsData = {
@@ -129,14 +129,14 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
       };
 
       await _supabase.from('user_preferences').upsert(prefsData, onConflict: 'user_id');
-      debugPrint('✅ Saved preferences to Supabase (using existing schema)');
+      if (kDebugMode) debugPrint('Saved preferences to Supabase');
     } catch (e) {
-      debugPrint('❌ Error saving preferences: $e');
+      if (kDebugMode) debugPrint('Error saving preferences: $e');
       
       // If it's a foreign key constraint error, try to create a basic profile first
       if (e.toString().contains('user_preferences_user_id_fkey') || 
           e.toString().contains('foreign key constraint')) {
-        debugPrint('🔧 Foreign key constraint error detected, attempting to create user profile...');
+        if (kDebugMode) debugPrint('Foreign key constraint, creating user profile');
         await _ensureUserProfileExists();
         
         // Retry saving preferences after creating profile
@@ -152,10 +152,10 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
             };
             
             await _supabase.from('user_preferences').upsert(prefsData, onConflict: 'user_id');
-            debugPrint('✅ Saved preferences after creating user profile');
+            if (kDebugMode) debugPrint('Saved preferences after creating profile');
           }
         } catch (retryError) {
-          debugPrint('❌ Failed to save preferences even after creating profile: $retryError');
+          if (kDebugMode) debugPrint('Failed to save preferences: $retryError');
         }
       }
     }
@@ -167,31 +167,31 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
       final user = _supabase.auth.currentUser;
       if (user == null) return;
 
-      debugPrint('🔧 Checking if user exists in auth.users...');
+      if (kDebugMode) debugPrint('Checking if user exists');
 
       // The foreign key constraint is to auth.users(id), not profiles
       // Supabase automatically creates entries in auth.users when users sign up
       // So we just need to verify the user exists and is properly authenticated
       
       if (user.id.isNotEmpty && user.email != null) {
-        debugPrint('✅ User exists in auth.users: ${user.id}');
+        if (kDebugMode) debugPrint('User exists');
         
         // If we still get foreign key errors, it might be a timing issue
         // Let's wait a moment for the auth state to fully sync
         await Future.delayed(const Duration(milliseconds: 100));
       } else {
-        debugPrint('❌ User authentication state is invalid');
+        if (kDebugMode) debugPrint('User authentication state invalid');
         throw Exception('User authentication state is invalid');
       }
     } catch (e) {
-      debugPrint('❌ Error ensuring user exists: $e');
+      if (kDebugMode) debugPrint('Error ensuring user exists: $e');
       // Don't rethrow - let the calling code handle the error
     }
   }
 
   // Communication Style
   void updateCommunicationStyle(String style) {
-    debugPrint('Updating communication style to: $style');
+    if (kDebugMode) debugPrint('Updating communication style');
     state = state.copyWith(communicationStyle: style);
     _savePreferences();
     
@@ -199,52 +199,52 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
     try {
       _ref.read(communicationStyleProvider.notifier).setCommunicationStyle(style);
     } catch (e) {
-      debugPrint('⚠️ Could not update communication style provider: $e');
+      if (kDebugMode) debugPrint('Could not update communication style: $e');
     }
   }
 
   // Mood preferences
   void updateSelectedMoods(List<String> moods) {
-    debugPrint('Updating moods to: $moods');
+    if (kDebugMode) debugPrint('Updating moods');
     state = state.copyWith(
       selectedMoods: moods,
       favoriteMoods: moods, // Also update AI favorite moods
     );
-    debugPrint('Updated state moods: ${state.selectedMoods}');
+    if (kDebugMode) debugPrint('Updated state moods');
     _savePreferences();
   }
 
   // Travel interests
   void updateTravelInterests(List<String> interests) {
-    debugPrint('Updating interests to: $interests');
+    if (kDebugMode) debugPrint('Updating interests');
     state = state.copyWith(travelInterests: interests);
     _savePreferences();
   }
 
   // Home base (travel background)
   void updateHomeBase(String homeBase) {
-    debugPrint('Updating home base to: $homeBase');
+    if (kDebugMode) debugPrint('Updating home base');
     state = state.copyWith(homeBase: homeBase);
     _savePreferences();
   }
 
   // Social vibe
   void updateSocialVibe(List<String> vibe) {
-    debugPrint('Updating social vibe to: $vibe');
+    if (kDebugMode) debugPrint('Updating social vibe');
     state = state.copyWith(socialVibe: vibe);
     _savePreferences();
   }
 
   // Planning pace
   void updatePlanningPace(String pace) {
-    debugPrint('Updating planning pace to: $pace');
+    if (kDebugMode) debugPrint('Updating planning pace');
     state = state.copyWith(planningPace: pace);
     _savePreferences();
   }
 
   // Travel styles
   void updateTravelStyles(List<String> styles) {
-    debugPrint('Updating travel styles to: $styles');
+    if (kDebugMode) debugPrint('Updating travel styles');
     state = state.copyWith(travelStyles: styles);
     _savePreferences();
   }
@@ -270,20 +270,20 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
 
   // Completion tracking
   void markOnboardingCompleted() {
-    debugPrint('Marking onboarding as completed');
+    if (kDebugMode) debugPrint('Marking onboarding as completed');
     state = state.copyWith(hasCompletedOnboarding: true);
     _savePreferences();
   }
 
   void markPreferencesCompleted() {
-    debugPrint('Marking preferences as completed');
+    if (kDebugMode) debugPrint('Marking preferences as completed');
     state = state.copyWith(hasCompletedPreferences: true);
     _savePreferences();
   }
 
   // Reset for testing
   void resetOnboardingStatus() {
-    debugPrint('Resetting onboarding status');
+    if (kDebugMode) debugPrint('Resetting onboarding status');
     state = state.copyWith(
       hasCompletedOnboarding: false,
       hasCompletedPreferences: false,
@@ -305,7 +305,7 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
   // Clear authentication state and preferences for fresh start
   Future<void> clearAuthenticationState() async {
     try {
-      debugPrint('🔄 Clearing authentication state for fresh start...');
+      if (kDebugMode) debugPrint('Clearing authentication state');
       
       // Sign out from Supabase
       await _supabase.auth.signOut();
@@ -317,9 +317,9 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
       // Reset local state
       state = const UserPreferences();
       
-      debugPrint('✅ Authentication state cleared successfully');
+      if (kDebugMode) debugPrint('Authentication state cleared');
     } catch (e) {
-      debugPrint('❌ Error clearing authentication state: $e');
+      if (kDebugMode) debugPrint('Error clearing authentication state: $e');
     }
   }
 }

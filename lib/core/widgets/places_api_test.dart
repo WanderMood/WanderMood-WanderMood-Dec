@@ -1,6 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../services/places_service.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PlacesApiTest extends StatefulWidget {
   const PlacesApiTest({Key? key}) : super(key: key);
@@ -39,16 +39,13 @@ class _PlacesApiTestState extends State<PlacesApiTest> {
         _isLoading = false;
       });
 
-      debugPrint('✅ Successfully fetched ${results.length} places');
-      for (var place in results) {
-        debugPrint('📍 ${place['name']} - ${place['vicinity']}');
-      }
+      if (kDebugMode) debugPrint('Fetched ${results.length} places');
     } catch (e) {
       setState(() {
         _error = e.toString();
         _isLoading = false;
       });
-      debugPrint('❌ Error testing Places API: $e');
+      if (kDebugMode) debugPrint('Error testing Places API: $e');
     }
   }
 

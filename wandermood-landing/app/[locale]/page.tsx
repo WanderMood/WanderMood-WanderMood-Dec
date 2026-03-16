@@ -707,7 +707,7 @@ function BigPhoneMockup({ screenshot, alt }: { screenshot: string; alt: string }
 function AppPreviewCard({ onNext }: { onNext: () => void }) {
   const t = useTranslations("appPreview");
   const tPreviews = useTranslations("appPreviews");
-  const previewKeys = ["pickMood", "myDay", "wanderFeed"] as const;
+  const previewKeys = ["pickMood", "myDay", "filters"] as const;
   return (
     <section className="relative overflow-hidden wm-section">
       <div className="wm-container">

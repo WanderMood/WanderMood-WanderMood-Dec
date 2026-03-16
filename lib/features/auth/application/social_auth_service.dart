@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -14,36 +15,36 @@ class SocialAuthService {
     try {
       // Check if Google Sign-In is available
       if (!await _googleSignIn.isSignedIn()) {
-        print('🔍 Google Sign-In: Starting sign-in process...');
+        if (kDebugMode) debugPrint('Google Sign-In: Starting');
       }
 
       final googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        print('❌ Google Sign-In: User cancelled sign-in');
+        if (kDebugMode) debugPrint('Google Sign-In: User cancelled');
         return null;
       }
 
-      print('✅ Google Sign-In: User selected, getting authentication...');
+      if (kDebugMode) debugPrint('Google Sign-In: Getting auth');
       final googleAuth = await googleUser.authentication;
       final accessToken = googleAuth.accessToken;
       final idToken = googleAuth.idToken;
 
       if (accessToken == null) {
-        print('❌ Google Sign-In: No access token received');
+        if (kDebugMode) debugPrint('Google Sign-In: No access token');
         return null;
       }
 
-      print('🔐 Google Sign-In: Authenticating with Supabase...');
+      if (kDebugMode) debugPrint('Google Sign-In: Authenticating with Supabase');
       final response = await _supabase.auth.signInWithIdToken(
         provider: OAuthProvider.google,
         idToken: idToken!,
         accessToken: accessToken,
       );
 
-      print('✅ Google Sign-In: Successfully authenticated with Supabase');
+      if (kDebugMode) debugPrint('Google Sign-In: Success');
       return response;
     } catch (e) {
-      print('❌ Google Sign-In Error: $e');
+      if (kDebugMode) debugPrint('Google Sign-In Error: $e');
       // Handle specific Google Sign-In errors
       if (e.toString().contains('sign_in_failed') || 
           e.toString().contains('GoogleService-Info.plist')) {
@@ -60,11 +61,11 @@ class SocialAuthService {
 
   Future<AuthResponse?> signInWithFacebook() async {
     try {
-      print('🔍 Facebook Sign-In: Starting sign-in process...');
+      if (kDebugMode) debugPrint('Facebook Sign-In: Starting');
       final result = await FacebookAuth.instance.login();
       
       if (result.status != LoginStatus.success) {
-        print('❌ Facebook Sign-In: ${result.status} - ${result.message}');
+        if (kDebugMode) debugPrint('Facebook Sign-In: ${result.status}');
         if (result.status == LoginStatus.cancelled) {
           throw Exception('Facebook sign-in cancelled by user.');
         }
@@ -73,20 +74,20 @@ class SocialAuthService {
 
       final accessToken = result.accessToken?.toJson()['token'] as String?;
       if (accessToken == null) {
-        print('❌ Facebook Sign-In: No access token received');
+        if (kDebugMode) debugPrint('Facebook Sign-In: No access token');
         return null;
       }
 
-      print('🔐 Facebook Sign-In: Authenticating with Supabase...');
+      if (kDebugMode) debugPrint('Facebook Sign-In: Authenticating with Supabase');
       final response = await _supabase.auth.signInWithIdToken(
         provider: OAuthProvider.facebook,
         idToken: accessToken,
       );
 
-      print('✅ Facebook Sign-In: Successfully authenticated with Supabase');
+      if (kDebugMode) debugPrint('Facebook Sign-In: Success');
       return response;
     } catch (e) {
-      print('❌ Facebook Sign-In Error: $e');
+      if (kDebugMode) debugPrint('Facebook Sign-In Error: $e');
       if (e.toString().contains('not configured') || 
           e.toString().contains('Invalid key hash')) {
         throw Exception('Facebook Sign-In not configured. Please add Facebook App ID to your iOS project.');
@@ -100,7 +101,7 @@ class SocialAuthService {
 
   Future<AuthResponse?> signInWithApple() async {
     try {
-      print('🔍 Apple Sign-In: Starting sign-in process...');
+      if (kDebugMode) debugPrint('Apple Sign-In: Starting');
       final credential = await SignInWithApple.getAppleIDCredential(
         scopes: [
           AppleIDAuthorizationScopes.email,
@@ -109,20 +110,20 @@ class SocialAuthService {
       );
 
       if (credential.identityToken == null) {
-        print('❌ Apple Sign-In: No identity token received');
+        if (kDebugMode) debugPrint('Apple Sign-In: No identity token');
         return null;
       }
 
-      print('🔐 Apple Sign-In: Authenticating with Supabase...');
+      if (kDebugMode) debugPrint('Apple Sign-In: Authenticating with Supabase');
       final response = await _supabase.auth.signInWithIdToken(
         provider: OAuthProvider.apple,
         idToken: credential.identityToken!,
       );
 
-      print('✅ Apple Sign-In: Successfully authenticated with Supabase');
+      if (kDebugMode) debugPrint('Apple Sign-In: Success');
       return response;
     } catch (e) {
-      print('❌ Apple Sign-In Error: $e');
+      if (kDebugMode) debugPrint('Apple Sign-In Error: $e');
       if (e.toString().contains('not configured') || 
           e.toString().contains('not available')) {
         throw Exception('Apple Sign-In not configured. Please enable Sign in with Apple in your iOS project.');

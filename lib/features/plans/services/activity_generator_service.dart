@@ -23,7 +23,7 @@ class ActivityGeneratorService {
     double? lat,
     double? lng,
   }) async {
-    debugPrint('🎯 Generating MOOD-AWARE activities for: $selectedMoods in $userLocation');
+    if (kDebugMode) debugPrint('🎯 Generating MOOD-AWARE activities for: $selectedMoods in $userLocation');
 
     // Ensure we have real coordinates - NEVER use hardcoded values for actual queries
     double latitude;
@@ -33,39 +33,39 @@ class ActivityGeneratorService {
       // Use provided coordinates (actual user location)
       latitude = lat;
       longitude = lng;
-      debugPrint('📍 Using provided user coordinates: ($latitude, $longitude)');
+      if (kDebugMode) debugPrint('📍 Using provided user coordinates: ($latitude, $longitude)');
     } else {
       // Get current location if not provided
-      debugPrint('📍 Getting current user location...');
+      if (kDebugMode) debugPrint('📍 Getting current user location...');
       try {
         final position = await LocationService.getCurrentLocation();
         latitude = position.latitude;
         longitude = position.longitude;
-        debugPrint('📍 Retrieved current location: ($latitude, $longitude)');
+        if (kDebugMode) debugPrint('📍 Retrieved current location: ($latitude, $longitude)');
       } catch (e) {
-        debugPrint('❌ Failed to get location: $e');
+        if (kDebugMode) debugPrint('❌ Failed to get location: $e');
         // Only fall back to default if we absolutely cannot get user location
         latitude = LocationService.defaultLocation['latitude'] as double;
         longitude = LocationService.defaultLocation['longitude'] as double;
-        debugPrint('⚠️ Using fallback location: ($latitude, $longitude)');
+        if (kDebugMode) debugPrint('⚠️ Using fallback location: ($latitude, $longitude)');
       }
     }
 
     // Log tourism platform mood analysis for debugging
-    debugPrint('🎪 Tourism platform mood analysis:');
+    if (kDebugMode) debugPrint('🎪 Tourism platform mood analysis:');
     for (final mood in selectedMoods) {
       final queries = GooglePlacesService.moodToTourismQueries[mood.toLowerCase()] ?? [];
       final sampleQueries = queries.take(2).map((q) => '"${q['query']}" (${q['minRating']}⭐, ${q['minReviews']}+ reviews)').join(', ');
-      debugPrint('   "$mood" → $sampleQueries...');
+      if (kDebugMode) debugPrint('   "$mood" → $sampleQueries...');
     }
 
     // IMPORTANT: Always log the exact coordinates being used for Places API
-    debugPrint('🌐 Querying Google Places API with mood-specific filters');
-    debugPrint('📍 Location: ($latitude, $longitude) | Radius: 15km');
+    if (kDebugMode) debugPrint('🌐 Querying Google Places API with mood-specific filters');
+    if (kDebugMode) debugPrint('📍 Location: ($latitude, $longitude) | Radius: 15km');
 
     try {
       // SMART CACHE STRATEGY: Use cached data when available, supplement with fresh API calls for variety
-      debugPrint('🧠 Using smart caching strategy: cached data + fresh supplements for variety...');
+      if (kDebugMode) debugPrint('🧠 Using smart caching strategy: cached data + fresh supplements for variety...');
       List<GooglePlace> places = [];
 
       // Step 1: Try to get some cached places first (cost-efficient)
@@ -76,16 +76,16 @@ class ActivityGeneratorService {
         radiusKm: 15.0,
       );
 
-      debugPrint('💾 Found ${cachedPlaces.length} cached places for these moods');
+      if (kDebugMode) debugPrint('💾 Found ${cachedPlaces.length} cached places for these moods');
 
       // Step 2: Apply tourism relevance filtering to cached places
       final filteredCachedPlaces = cachedPlaces.where(_isTouristRelevant).toList();
-      debugPrint('✅ Cached places after tourism filtering: ${filteredCachedPlaces.length}');
+      if (kDebugMode) debugPrint('✅ Cached places after tourism filtering: ${filteredCachedPlaces.length}');
 
       // Step 3: If we have good cached data, use it as foundation
       if (filteredCachedPlaces.isNotEmpty) {
         places.addAll(filteredCachedPlaces);
-        debugPrint('💾 Using ${filteredCachedPlaces.length} cached places as foundation');
+        if (kDebugMode) debugPrint('💾 Using ${filteredCachedPlaces.length} cached places as foundation');
       }
 
       // Step 4: Always supplement with some fresh API calls for variety (but not all)
@@ -105,7 +105,7 @@ class ActivityGeneratorService {
         }
       }
       
-      debugPrint('🆕 Supplementing with fresh API calls for variety and new discoveries...');
+      if (kDebugMode) debugPrint('🆕 Supplementing with fresh API calls for variety and new discoveries...');
       final freshApiPlaces = await GooglePlacesService.searchByMood(
           moods: selectedMoods,
           lat: latitude,
@@ -114,22 +114,22 @@ class ActivityGeneratorService {
         cityName: cityName,
         );
 
-      debugPrint('🌐 Fresh API returned ${freshApiPlaces.length} new places');
+      if (kDebugMode) debugPrint('🌐 Fresh API returned ${freshApiPlaces.length} new places');
       
       // Step 5: Combine cached + fresh places, remove duplicates
       final allPlaceIds = places.map((p) => p.placeId).toSet();
       final newFreshPlaces = freshApiPlaces.where((p) => !allPlaceIds.contains(p.placeId)).toList();
       
       places.addAll(newFreshPlaces);
-      debugPrint('🔄 Combined: ${filteredCachedPlaces.length} cached + ${newFreshPlaces.length} fresh = ${places.length} total');
+      if (kDebugMode) debugPrint('🔄 Combined: ${filteredCachedPlaces.length} cached + ${newFreshPlaces.length} fresh = ${places.length} total');
 
         // CRITICAL DEBUG: Check if problematic places are in results
         for (final place in places) {
           if (place.name.toLowerCase().contains('yoga')) {
-            debugPrint('🔍 FOUND YOGA IN RESULTS: ${place.name} (types: ${place.types})');
+            if (kDebugMode) debugPrint('🔍 FOUND YOGA IN RESULTS: ${place.name} (types: ${place.types})');
           }
           if (place.name.toLowerCase().contains('bodycare') || place.name.toLowerCase().contains('body')) {
-            debugPrint('🔍 FOUND BODYCARE IN RESULTS: ${place.name} (types: ${place.types})');
+            if (kDebugMode) debugPrint('🔍 FOUND BODYCARE IN RESULTS: ${place.name} (types: ${place.types})');
           }
         }
 
@@ -140,7 +140,7 @@ class ActivityGeneratorService {
             typeCount[type] = (typeCount[type] ?? 0) + 1;
           }
         }
-        debugPrint('📊 Place type distribution: ${typeCount.entries.take(5).map((e) => '${e.key}(${e.value})').join(', ')}');
+        if (kDebugMode) debugPrint('📊 Place type distribution: ${typeCount.entries.take(5).map((e) => '${e.key}(${e.value})').join(', ')}');
 
         // Step 6: Cache the new fresh places for future use
         if (newFreshPlaces.isNotEmpty) {
@@ -150,15 +150,15 @@ class ActivityGeneratorService {
             lat: latitude,
             lng: longitude,
           );
-          debugPrint('💾 Cached ${newFreshPlaces.length} new places for future use');
+          if (kDebugMode) debugPrint('💾 Cached ${newFreshPlaces.length} new places for future use');
         }
 
-        debugPrint('✅ Smart caching result: ${places.length} total places (${filteredCachedPlaces.length} cached + ${newFreshPlaces.length} fresh)');
+        if (kDebugMode) debugPrint('✅ Smart caching result: ${places.length} total places (${filteredCachedPlaces.length} cached + ${newFreshPlaces.length} fresh)');
 
       // CRITICAL: NEVER use fallback activities - force real API data usage
       if (places.isEmpty) {
-        debugPrint('🚨 CRITICAL: No mood-appropriate places found near user location');
-        debugPrint('🔧 FORCING direct API search to get REAL activities...');
+        if (kDebugMode) debugPrint('🚨 CRITICAL: No mood-appropriate places found near user location');
+        if (kDebugMode) debugPrint('🔧 FORCING direct API search to get REAL activities...');
         
         // EMERGENCY FALLBACK: Force direct API search without mood filtering
         try {
@@ -169,30 +169,30 @@ class ActivityGeneratorService {
             radius: 15000, // Larger radius
           );
           
-          debugPrint('🆘 Emergency search found ${emergencyPlaces.length} places');
+          if (kDebugMode) debugPrint('🆘 Emergency search found ${emergencyPlaces.length} places');
           
           if (emergencyPlaces.isNotEmpty) {
             // Use the emergency places instead of fallback activities
             return await _generateActivitiesFromPlaces(emergencyPlaces, selectedMoods, userLocation);
           }
         } catch (e) {
-          debugPrint('❌ Emergency search also failed: $e');
+          if (kDebugMode) debugPrint('❌ Emergency search also failed: $e');
         }
         
         // As LAST RESORT, return empty list instead of fallback activities
-        debugPrint('❌ ALL SEARCHES FAILED - returning empty list to force retry');
+        if (kDebugMode) debugPrint('❌ ALL SEARCHES FAILED - returning empty list to force retry');
         return [];
       }
 
       // Step 3: Convert real mood-appropriate Google Places data into activities
-      debugPrint('🏗️ Converting ${places.length} mood-appropriate places into activities...');
+      if (kDebugMode) debugPrint('🏗️ Converting ${places.length} mood-appropriate places into activities...');
       return await _generateActivitiesFromPlaces(places, selectedMoods, userLocation);
 
     } catch (e) {
-      debugPrint('❌ Error in mood-aware activity generation: $e');
+      if (kDebugMode) debugPrint('❌ Error in mood-aware activity generation: $e');
       
       // NEVER return fallback activities - force retry instead
-      debugPrint('🔄 ERROR RECOVERY: Attempting simple places search...');
+      if (kDebugMode) debugPrint('🔄 ERROR RECOVERY: Attempting simple places search...');
       try {
         final simplePlaces = await GooglePlacesService.searchPlaces(
           query: "restaurants ${selectedMoods.join(' ')} Rotterdam",
@@ -202,15 +202,15 @@ class ActivityGeneratorService {
         );
         
         if (simplePlaces.isNotEmpty) {
-          debugPrint('✅ ERROR RECOVERY: Found ${simplePlaces.length} places via simple search');
+          if (kDebugMode) debugPrint('✅ ERROR RECOVERY: Found ${simplePlaces.length} places via simple search');
           return await _generateActivitiesFromPlaces(simplePlaces, selectedMoods, userLocation);
         }
       } catch (recoveryError) {
-        debugPrint('❌ Recovery search also failed: $recoveryError');
+        if (kDebugMode) debugPrint('❌ Recovery search also failed: $recoveryError');
       }
       
       // Return empty list to force retry instead of fallback activities
-      debugPrint('🚨 RETURNING EMPTY LIST - NO FALLBACK ACTIVITIES ALLOWED');
+      if (kDebugMode) debugPrint('🚨 RETURNING EMPTY LIST - NO FALLBACK ACTIVITIES ALLOWED');
       return [];
     }
   }
@@ -221,7 +221,7 @@ class ActivityGeneratorService {
     List<String> moods,
     String? userLocation,
   ) async {
-    debugPrint('🏗️ Converting ${places.length} places to activities');
+    if (kDebugMode) debugPrint('🏗️ Converting ${places.length} places to activities');
 
     final activities = <Activity>[];
     final usedPlaces = <String>{};
@@ -256,7 +256,7 @@ class ActivityGeneratorService {
       }
     }
 
-    debugPrint('🎯 Time slot candidates: Morning(${morningCandidates.length}) Afternoon(${afternoonCandidates.length}) Evening(${eveningCandidates.length})');
+    if (kDebugMode) debugPrint('🎯 Time slot candidates: Morning(${morningCandidates.length}) Afternoon(${afternoonCandidates.length}) Evening(${eveningCandidates.length})');
 
     // Balanced allocation: prioritize slots with fewer candidates first
     final usedPlaceIds = <String>{};
@@ -285,7 +285,7 @@ class ActivityGeneratorService {
       }
     }
 
-    debugPrint('📊 Time distribution: Morning(${morningPlaces.length}) Afternoon(${afternoonPlaces.length}) Evening(${eveningPlaces.length})');
+    if (kDebugMode) debugPrint('📊 Time distribution: Morning(${morningPlaces.length}) Afternoon(${afternoonPlaces.length}) Evening(${eveningPlaces.length})');
 
     // Generate 2-3 activities per time slot
     activities.addAll(await _createActivitiesForTimeSlot(
@@ -309,7 +309,7 @@ class ActivityGeneratorService {
       usedPlaces,
     ));
 
-    debugPrint('✅ Generated ${activities.length} activities');
+    if (kDebugMode) debugPrint('✅ Generated ${activities.length} activities');
     return activities;
   }
 
@@ -333,16 +333,16 @@ class ActivityGeneratorService {
       final startTime = _getStartTimeForSlot(timeSlot, today);
 
       // Generate photo URL using async method that handles NEW API conversion
-      debugPrint('🏢 Creating activity for: ${place.name}');
-      debugPrint('   📷 Photo reference: ${place.photoReference ?? "null"}');
-      debugPrint('   🏷️ Types: ${place.types}');
+      if (kDebugMode) debugPrint('🏢 Creating activity for: ${place.name}');
+      if (kDebugMode) debugPrint('   📷 Photo reference: ${place.photoReference ?? "null"}');
+      if (kDebugMode) debugPrint('   🏷️ Types: ${place.types}');
       final photoUrl = await GooglePlace.getBestPhotoUrlAsync(
         place.photoReference, 
         place.types, 
         placeName: place.name,
         placeId: place.placeId,
       );
-      debugPrint('🎨 Final Photo URL for "${place.name}": $photoUrl');
+      if (kDebugMode) debugPrint('🎨 Final Photo URL for "${place.name}": $photoUrl');
 
       final activity = Activity(
         id: 'activity_${DateTime.now().millisecondsSinceEpoch}_${activities.length}',
@@ -361,7 +361,7 @@ class ActivityGeneratorService {
       );
 
       activities.add(activity);
-      debugPrint('   ✅ Created activity: ${activity.name} (${timeSlot.name})');
+      if (kDebugMode) debugPrint('   ✅ Created activity: ${activity.name} (${timeSlot.name})');
     }
 
     return activities;
@@ -426,7 +426,7 @@ class ActivityGeneratorService {
         break;
     }
     
-    debugPrint('🕐 Generated time for ${timeSlot.name}: ${baseTime.hour}:${baseTime.minute.toString().padLeft(2, '0')} (current time: ${now.hour}:${now.minute.toString().padLeft(2, '0')})');
+    if (kDebugMode) debugPrint('🕐 Generated time for ${timeSlot.name}: ${baseTime.hour}:${baseTime.minute.toString().padLeft(2, '0')} (current time: ${now.hour}:${now.minute.toString().padLeft(2, '0')})');
     return baseTime;
   }
 
@@ -696,7 +696,7 @@ class ActivityGeneratorService {
 
   /// Enhanced tourist relevance filtering - same logic as GooglePlacesService
   static bool _isTouristRelevant(GooglePlace place) {
-    debugPrint('🔍 Checking tourist relevance for: ${place.name} (types: ${place.types})');
+    if (kDebugMode) debugPrint('🔍 Checking tourist relevance for: ${place.name} (types: ${place.types})');
     
     // STRICT exclusion types - these are NEVER tourist attractions
     final excludedTypes = {
@@ -712,7 +712,7 @@ class ActivityGeneratorService {
     // Check if place has any excluded types
     for (final type in place.types) {
       if (excludedTypes.contains(type)) {
-        debugPrint('🚫 EXCLUDED BY TYPE: ${place.name} has excluded type "$type"');
+        if (kDebugMode) debugPrint('🚫 EXCLUDED BY TYPE: ${place.name} has excluded type "$type"');
         return false;
       }
     }
@@ -761,7 +761,7 @@ class ActivityGeneratorService {
       }
     }
 
-    debugPrint('✅ TOURIST APPROVED: ${place.name}');
+    if (kDebugMode) debugPrint('✅ TOURIST APPROVED: ${place.name}');
     return true;
   }
 
@@ -816,9 +816,9 @@ class ActivityGeneratorService {
     required double longitude,
     required String userLocation,
   }) async {
-    debugPrint('🔄 Generating alternative activity for ${originalActivity.name}');
-    debugPrint('   Time slot: ${originalActivity.timeSlot}');
-    debugPrint('   Moods: $moods');
+    if (kDebugMode) debugPrint('🔄 Generating alternative activity for ${originalActivity.name}');
+    if (kDebugMode) debugPrint('   Time slot: ${originalActivity.timeSlot}');
+    if (kDebugMode) debugPrint('   Moods: $moods');
     
     try {
       // Search for alternatives in the same time slot
@@ -830,7 +830,7 @@ class ActivityGeneratorService {
       );
       
       if (places.isEmpty) {
-        debugPrint('❌ No alternative places found for mood search');
+        if (kDebugMode) debugPrint('❌ No alternative places found for mood search');
         
         // Try a broader search
         final broadPlaces = await GooglePlacesService.searchPlaces(
@@ -841,7 +841,7 @@ class ActivityGeneratorService {
         );
         
         if (broadPlaces.isEmpty) {
-          debugPrint('❌ No places found even with broad search');
+          if (kDebugMode) debugPrint('❌ No places found even with broad search');
           return null;
         }
         
@@ -852,7 +852,7 @@ class ActivityGeneratorService {
         ).toList();
         
         if (filteredBroadPlaces.isEmpty) {
-          debugPrint('❌ No suitable alternative places found');
+          if (kDebugMode) debugPrint('❌ No suitable alternative places found');
           return null;
         }
         
@@ -873,7 +873,7 @@ class ActivityGeneratorService {
       ).toList();
       
       if (alternatives.isEmpty) {
-        debugPrint('❌ No suitable alternatives found after filtering');
+        if (kDebugMode) debugPrint('❌ No suitable alternatives found after filtering');
         return null;
       }
       
@@ -881,7 +881,7 @@ class ActivityGeneratorService {
       alternatives.shuffle();
       final selectedPlace = alternatives.first;
       
-      debugPrint('✅ Found alternative: ${selectedPlace.name}');
+      if (kDebugMode) debugPrint('✅ Found alternative: ${selectedPlace.name}');
       
       // Create the alternative activity with same timing
       return await _createActivityFromPlace(
@@ -893,7 +893,7 @@ class ActivityGeneratorService {
       );
       
     } catch (e) {
-      debugPrint('❌ Error generating alternative activity: $e');
+      if (kDebugMode) debugPrint('❌ Error generating alternative activity: $e');
       return null;
     }
   }

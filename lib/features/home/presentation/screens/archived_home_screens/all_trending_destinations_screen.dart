@@ -601,7 +601,7 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
           ),
           const SizedBox(height: 16),
           Text(
-            'Map View Coming Soon',
+            'Map view',
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.bold,

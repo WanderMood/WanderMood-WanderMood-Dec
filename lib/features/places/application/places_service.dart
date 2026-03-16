@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../domain/models/place.dart';
@@ -157,7 +158,7 @@ class PlacesService extends _$PlacesService {
       // Try to get from cache first
       final cachedPlaces = await _getCachedPlaces('search', query: query);
       if (cachedPlaces != null) {
-        print('📋 Found cached search results');
+        if (kDebugMode) debugPrint('📋 Found cached search results');
         return cachedPlaces;
       }
 
@@ -187,7 +188,7 @@ class PlacesService extends _$PlacesService {
       );
       
       if (stalePlaces != null) {
-        print('📋 Using stale cached search results');
+        if (kDebugMode) debugPrint('📋 Using stale cached search results');
         return stalePlaces;
       }
       
@@ -307,7 +308,7 @@ class PlacesService extends _$PlacesService {
         type: type,
       );
       if (cachedPlaces != null) {
-        print('📋 Found cached nearby places');
+        if (kDebugMode) debugPrint('📋 Found cached nearby places');
         return cachedPlaces;
       }
 
@@ -334,7 +335,7 @@ class PlacesService extends _$PlacesService {
           longitude: longitude,
           type: type,
         );
-        print('✅ Cached ${places.length} nearby places');
+        if (kDebugMode) debugPrint('✅ Cached ${places.length} nearby places');
         return places;
       } else {
         throw Exception(response.error ?? 'Failed to get nearby places');
@@ -352,7 +353,7 @@ class PlacesService extends _$PlacesService {
       );
       
       if (stalePlaces != null) {
-        print('📋 Using stale cached nearby places');
+        if (kDebugMode) debugPrint('📋 Using stale cached nearby places');
         return stalePlaces;
       }
       
@@ -371,7 +372,7 @@ class PlacesService extends _$PlacesService {
       // Try to get from cache first
       final cachedPlace = await _getCachedPlace('details', placeId: placeId);
       if (cachedPlace != null) {
-        print('Found cached place details');
+        if (kDebugMode) debugPrint('Found cached place details');
         return cachedPlace;
       }
 
@@ -401,7 +402,7 @@ class PlacesService extends _$PlacesService {
       );
       
       if (stalePlace != null) {
-        print('Using stale cached place details');
+        if (kDebugMode) debugPrint('Using stale cached place details');
         return stalePlace;
       }
       

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_google_maps_webservices/places.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -289,7 +290,7 @@ class TrendingDestinationsSection extends ConsumerWidget {
       final message = 'Check out this trending destination: ${destination.name} in $city! Found via WanderMood app 🔥✨';
       await Share.share(message);
     } catch (e) {
-      debugPrint('Error sharing destination: $e');
+      if (kDebugMode) debugPrint('Error sharing destination: $e');
     }
   }
 

@@ -523,6 +523,1128 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Email notifications disabled'**
   String get emailNotificationsDisabled;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @privacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get privacy;
+
+  /// No description provided for @privateProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Private Profile'**
+  String get privateProfile;
+
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get loading;
+
+  /// No description provided for @appSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'App Settings'**
+  String get appSettings;
+
+  /// No description provided for @pushEmailInApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Push, email, and in-app'**
+  String get pushEmailInApp;
+
+  /// No description provided for @location.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get location;
+
+  /// No description provided for @autoDetectPermissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-detect and permissions'**
+  String get autoDetectPermissions;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get theme;
+
+  /// No description provided for @more.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get more;
+
+  /// No description provided for @achievements.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get achievements;
+
+  /// No description provided for @unlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'unlocked'**
+  String get unlocked;
+
+  /// No description provided for @subscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription'**
+  String get subscription;
+
+  /// No description provided for @free.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get free;
+
+  /// No description provided for @plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get plan;
+
+  /// No description provided for @premium.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium'**
+  String get premium;
+
+  /// No description provided for @dataStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Data & Storage'**
+  String get dataStorage;
+
+  /// No description provided for @exportClearCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Export data and clear cache'**
+  String get exportClearCache;
+
+  /// No description provided for @helpSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & Support'**
+  String get helpSupport;
+
+  /// No description provided for @faqContactUs.
+  ///
+  /// In en, this message translates to:
+  /// **'FAQ and contact us'**
+  String get faqContactUs;
+
+  /// No description provided for @dangerZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Danger Zone'**
+  String get dangerZone;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccount;
+
+  /// No description provided for @permanentlyDeleteYourData.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently delete your data'**
+  String get permanentlyDeleteYourData;
+
+  /// No description provided for @signOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get signOut;
+
+  /// No description provided for @logOutOfYourAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out of your account'**
+  String get logOutOfYourAccount;
+
+  /// Tagline on the intro screen below Mood-Based Travel Buddy
+  ///
+  /// In en, this message translates to:
+  /// **'Your mood. Your day. Your adventure.'**
+  String get introTagline;
+
+  /// No description provided for @introTitleLine1.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Mood,'**
+  String get introTitleLine1;
+
+  /// No description provided for @introTitleLine2.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Adventure'**
+  String get introTitleLine2;
+
+  /// No description provided for @introSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get introSkip;
+
+  /// No description provided for @introSeeHowItWorks.
+  ///
+  /// In en, this message translates to:
+  /// **'See How It Works'**
+  String get introSeeHowItWorks;
+
+  /// No description provided for @demoMoodyGreeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Hey there! 👋 I\'m Moody, your travel buddy.'**
+  String get demoMoodyGreeting;
+
+  /// No description provided for @demoMoodyAskVibe.
+  ///
+  /// In en, this message translates to:
+  /// **'I help you discover amazing places based on how you\'re feeling. What\'s your mood today?'**
+  String get demoMoodyAskVibe;
+
+  /// No description provided for @demoUserFeeling.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m feeling {mood}'**
+  String demoUserFeeling(String mood);
+
+  /// No description provided for @demoMoodyResponseAdventurous.
+  ///
+  /// In en, this message translates to:
+  /// **'Love that energy! 🔥 Here are some exciting spots that match your adventurous spirit...'**
+  String get demoMoodyResponseAdventurous;
+
+  /// No description provided for @demoMoodyResponseRelaxed.
+  ///
+  /// In en, this message translates to:
+  /// **'Ah, a chill day! ☕ Let me find you some peaceful spots to unwind...'**
+  String get demoMoodyResponseRelaxed;
+
+  /// No description provided for @demoMoodyResponseRomantic.
+  ///
+  /// In en, this message translates to:
+  /// **'How lovely! 💕 I\'ve got some beautiful places perfect for romance...'**
+  String get demoMoodyResponseRomantic;
+
+  /// No description provided for @demoMoodyResponseCultural.
+  ///
+  /// In en, this message translates to:
+  /// **'A curious explorer! 🎨 Check out these fascinating cultural gems...'**
+  String get demoMoodyResponseCultural;
+
+  /// No description provided for @demoMoodyResponseFoodie.
+  ///
+  /// In en, this message translates to:
+  /// **'Yum! 🍕 Here are some delicious spots that\'ll satisfy your taste buds...'**
+  String get demoMoodyResponseFoodie;
+
+  /// No description provided for @demoMoodyResponseSocial.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s go! 🎉 I\'ve got some fun places perfect for hanging out with friends...'**
+  String get demoMoodyResponseSocial;
+
+  /// No description provided for @demoMoodyResponseDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Great choice! 🌟 Here are some perfect spots for your mood...'**
+  String get demoMoodyResponseDefault;
+
+  /// No description provided for @demoMoodAdventurous.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventurous'**
+  String get demoMoodAdventurous;
+
+  /// No description provided for @demoMoodRelaxed.
+  ///
+  /// In en, this message translates to:
+  /// **'Relaxed'**
+  String get demoMoodRelaxed;
+
+  /// No description provided for @demoMoodRomantic.
+  ///
+  /// In en, this message translates to:
+  /// **'Romantic'**
+  String get demoMoodRomantic;
+
+  /// No description provided for @demoMoodCultural.
+  ///
+  /// In en, this message translates to:
+  /// **'Cultural'**
+  String get demoMoodCultural;
+
+  /// No description provided for @demoMoodFoodie.
+  ///
+  /// In en, this message translates to:
+  /// **'Foodie'**
+  String get demoMoodFoodie;
+
+  /// No description provided for @demoMoodSocial.
+  ///
+  /// In en, this message translates to:
+  /// **'Social'**
+  String get demoMoodSocial;
+
+  /// No description provided for @demoExploreMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore More'**
+  String get demoExploreMore;
+
+  /// No description provided for @demoMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo Mode'**
+  String get demoMode;
+
+  /// No description provided for @demoMoodyName.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody'**
+  String get demoMoodyName;
+
+  /// No description provided for @demoTapToSelectMood.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to select your mood:'**
+  String get demoTapToSelectMood;
+
+  /// No description provided for @demoReadyToSignUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to sign up? Start now →'**
+  String get demoReadyToSignUp;
+
+  /// No description provided for @guestExplorePlaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore Places'**
+  String get guestExplorePlaces;
+
+  /// No description provided for @guestPreviewMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview mode • Limited features'**
+  String get guestPreviewMode;
+
+  /// No description provided for @guestGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest'**
+  String get guestGuest;
+
+  /// No description provided for @guestSignUpFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Up Free'**
+  String get guestSignUpFree;
+
+  /// No description provided for @guestLovingWhatYouSee.
+  ///
+  /// In en, this message translates to:
+  /// **'Loving what you see?'**
+  String get guestLovingWhatYouSee;
+
+  /// No description provided for @guestSignUpSaveFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up to save favorites & create plans'**
+  String get guestSignUpSaveFavorites;
+
+  /// No description provided for @guestSignUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Up'**
+  String get guestSignUp;
+
+  /// No description provided for @guestSignUpToSaveFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up to save your favorites!'**
+  String get guestSignUpToSaveFavorites;
+
+  /// No description provided for @guestNoPlacesMatchFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'No places match these filters'**
+  String get guestNoPlacesMatchFilters;
+
+  /// No description provided for @guestTryDifferentCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Try a different category'**
+  String get guestTryDifferentCategory;
+
+  /// No description provided for @guestMoodySays.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody says...'**
+  String get guestMoodySays;
+
+  /// No description provided for @guestGreatChoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Great choice for your mood today!'**
+  String get guestGreatChoice;
+
+  /// No description provided for @guestSignUpToUnlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up to unlock'**
+  String get guestSignUpToUnlock;
+
+  /// No description provided for @guestSignUpUnlockDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Save favorites, create plans, and get personalized recommendations'**
+  String get guestSignUpUnlockDescription;
+
+  /// No description provided for @guestSignUpFreeSparkle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Up Free ✨'**
+  String get guestSignUpFreeSparkle;
+
+  /// No description provided for @guestExploringLikePro.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re exploring like a pro!'**
+  String get guestExploringLikePro;
+
+  /// No description provided for @guestReadyToSaveFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to save your favorites and create personalized day plans?'**
+  String get guestReadyToSaveFavorites;
+
+  /// No description provided for @guestMaybeLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe later'**
+  String get guestMaybeLater;
+
+  /// No description provided for @guestFilterHalal.
+  ///
+  /// In en, this message translates to:
+  /// **'Halal'**
+  String get guestFilterHalal;
+
+  /// No description provided for @guestFilterBlackOwned.
+  ///
+  /// In en, this message translates to:
+  /// **'Black-owned'**
+  String get guestFilterBlackOwned;
+
+  /// No description provided for @guestFilterAesthetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Aesthetic'**
+  String get guestFilterAesthetic;
+
+  /// No description provided for @guestFilterLgbtq.
+  ///
+  /// In en, this message translates to:
+  /// **'LGBTQ+'**
+  String get guestFilterLgbtq;
+
+  /// No description provided for @guestFilterVegan.
+  ///
+  /// In en, this message translates to:
+  /// **'Vegan'**
+  String get guestFilterVegan;
+
+  /// No description provided for @guestFilterVegetarian.
+  ///
+  /// In en, this message translates to:
+  /// **'Vegetarian'**
+  String get guestFilterVegetarian;
+
+  /// No description provided for @guestFilterWheelchair.
+  ///
+  /// In en, this message translates to:
+  /// **'Wheelchair'**
+  String get guestFilterWheelchair;
+
+  /// No description provided for @guestCategoryAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get guestCategoryAll;
+
+  /// No description provided for @guestCategoryRestaurants.
+  ///
+  /// In en, this message translates to:
+  /// **'Restaurants'**
+  String get guestCategoryRestaurants;
+
+  /// No description provided for @guestCategoryCafes.
+  ///
+  /// In en, this message translates to:
+  /// **'Cafés'**
+  String get guestCategoryCafes;
+
+  /// No description provided for @guestCategoryParks.
+  ///
+  /// In en, this message translates to:
+  /// **'Parks'**
+  String get guestCategoryParks;
+
+  /// No description provided for @guestCategoryMuseums.
+  ///
+  /// In en, this message translates to:
+  /// **'Museums'**
+  String get guestCategoryMuseums;
+
+  /// No description provided for @guestCategoryNightlife.
+  ///
+  /// In en, this message translates to:
+  /// **'Nightlife'**
+  String get guestCategoryNightlife;
+
+  /// No description provided for @demoActTitleMountainTrailHike.
+  ///
+  /// In en, this message translates to:
+  /// **'Mountain Trail Hike'**
+  String get demoActTitleMountainTrailHike;
+
+  /// No description provided for @demoActTitleCityBikeTour.
+  ///
+  /// In en, this message translates to:
+  /// **'City Bike Tour'**
+  String get demoActTitleCityBikeTour;
+
+  /// No description provided for @demoActTitleIndoorClimbing.
+  ///
+  /// In en, this message translates to:
+  /// **'Indoor Climbing'**
+  String get demoActTitleIndoorClimbing;
+
+  /// No description provided for @demoActTitleCozyCornerCafe.
+  ///
+  /// In en, this message translates to:
+  /// **'Cozy Corner Café'**
+  String get demoActTitleCozyCornerCafe;
+
+  /// No description provided for @demoActTitleBotanicalGarden.
+  ///
+  /// In en, this message translates to:
+  /// **'Botanical Garden'**
+  String get demoActTitleBotanicalGarden;
+
+  /// No description provided for @demoActTitleWellnessSpa.
+  ///
+  /// In en, this message translates to:
+  /// **'Wellness Spa'**
+  String get demoActTitleWellnessSpa;
+
+  /// No description provided for @demoActTitleSunsetViewpoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunset Viewpoint'**
+  String get demoActTitleSunsetViewpoint;
+
+  /// No description provided for @demoActTitleWineAndDine.
+  ///
+  /// In en, this message translates to:
+  /// **'Wine & Dine'**
+  String get demoActTitleWineAndDine;
+
+  /// No description provided for @demoActTitleRoseGardenWalk.
+  ///
+  /// In en, this message translates to:
+  /// **'Rose Garden Walk'**
+  String get demoActTitleRoseGardenWalk;
+
+  /// No description provided for @demoActTitleHistoryMuseum.
+  ///
+  /// In en, this message translates to:
+  /// **'History Museum'**
+  String get demoActTitleHistoryMuseum;
+
+  /// No description provided for @demoActTitleLocalTheater.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Theater'**
+  String get demoActTitleLocalTheater;
+
+  /// No description provided for @demoActTitleArtGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Art Gallery'**
+  String get demoActTitleArtGallery;
+
+  /// No description provided for @demoActTitleLocalFavorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Favorite'**
+  String get demoActTitleLocalFavorite;
+
+  /// No description provided for @demoActTitleCozyCafe.
+  ///
+  /// In en, this message translates to:
+  /// **'Cozy Café'**
+  String get demoActTitleCozyCafe;
+
+  /// No description provided for @demoActTitleWineBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Wine Bar'**
+  String get demoActTitleWineBar;
+
+  /// No description provided for @demoActTitleRooftopBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Rooftop Bar'**
+  String get demoActTitleRooftopBar;
+
+  /// No description provided for @demoActTitleArcadeLounge.
+  ///
+  /// In en, this message translates to:
+  /// **'Arcade Lounge'**
+  String get demoActTitleArcadeLounge;
+
+  /// No description provided for @demoActTitleLiveMusicSpot.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Music Spot'**
+  String get demoActTitleLiveMusicSpot;
+
+  /// No description provided for @demoActTitlePopularSpot.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular Spot'**
+  String get demoActTitlePopularSpot;
+
+  /// No description provided for @demoActTitleFunActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Fun Activity'**
+  String get demoActTitleFunActivity;
+
+  /// No description provided for @demoActSubScenic32.
+  ///
+  /// In en, this message translates to:
+  /// **'Scenic adventure • 3.2 km away'**
+  String get demoActSubScenic32;
+
+  /// No description provided for @demoActSubActive18.
+  ///
+  /// In en, this message translates to:
+  /// **'Active exploration • 1.8 km away'**
+  String get demoActSubActive18;
+
+  /// No description provided for @demoActSubThrilling25.
+  ///
+  /// In en, this message translates to:
+  /// **'Thrilling experience • 2.5 km away'**
+  String get demoActSubThrilling25;
+
+  /// No description provided for @demoActSubUnwinding08.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfect for unwinding • 0.8 km away'**
+  String get demoActSubUnwinding08;
+
+  /// No description provided for @demoActSubPeaceful21.
+  ///
+  /// In en, this message translates to:
+  /// **'Peaceful escape • 2.1 km away'**
+  String get demoActSubPeaceful21;
+
+  /// No description provided for @demoActSubRelaxation34.
+  ///
+  /// In en, this message translates to:
+  /// **'Total relaxation • 3.4 km away'**
+  String get demoActSubRelaxation34;
+
+  /// No description provided for @demoActSubMagical15.
+  ///
+  /// In en, this message translates to:
+  /// **'Magical atmosphere • 1.5 km away'**
+  String get demoActSubMagical15;
+
+  /// No description provided for @demoActSubIntimate09.
+  ///
+  /// In en, this message translates to:
+  /// **'Intimate setting • 0.9 km away'**
+  String get demoActSubIntimate09;
+
+  /// No description provided for @demoActSubStroll23.
+  ///
+  /// In en, this message translates to:
+  /// **'Beautiful stroll • 2.3 km away'**
+  String get demoActSubStroll23;
+
+  /// No description provided for @demoActSubExhibits12.
+  ///
+  /// In en, this message translates to:
+  /// **'Fascinating exhibits • 1.2 km away'**
+  String get demoActSubExhibits12;
+
+  /// No description provided for @demoActSubLive18.
+  ///
+  /// In en, this message translates to:
+  /// **'Live performances • 1.8 km away'**
+  String get demoActSubLive18;
+
+  /// No description provided for @demoActSubContemporary07.
+  ///
+  /// In en, this message translates to:
+  /// **'Contemporary art • 0.7 km away'**
+  String get demoActSubContemporary07;
+
+  /// No description provided for @demoActSubTopReviewed05.
+  ///
+  /// In en, this message translates to:
+  /// **'Top reviewed • 0.5 km away'**
+  String get demoActSubTopReviewed05;
+
+  /// No description provided for @demoActSubBrunch09.
+  ///
+  /// In en, this message translates to:
+  /// **'Great brunch • 0.9 km away'**
+  String get demoActSubBrunch09;
+
+  /// No description provided for @demoActSubSmallPlates12.
+  ///
+  /// In en, this message translates to:
+  /// **'Small plates • 1.2 km away'**
+  String get demoActSubSmallPlates12;
+
+  /// No description provided for @demoActSubVibes11.
+  ///
+  /// In en, this message translates to:
+  /// **'Atmosphere & views • 1.1 km away'**
+  String get demoActSubVibes11;
+
+  /// No description provided for @demoActSubGames07.
+  ///
+  /// In en, this message translates to:
+  /// **'Games & drinks • 0.7 km away'**
+  String get demoActSubGames07;
+
+  /// No description provided for @demoActSubTonightsGig15.
+  ///
+  /// In en, this message translates to:
+  /// **'Tonight\'s gig • 1.5 km away'**
+  String get demoActSubTonightsGig15;
+
+  /// No description provided for @demoActSubHighlyRated10.
+  ///
+  /// In en, this message translates to:
+  /// **'Highly rated • 1.0 km away'**
+  String get demoActSubHighlyRated10;
+
+  /// No description provided for @demoActSubGreatToday15.
+  ///
+  /// In en, this message translates to:
+  /// **'Great for today • 1.5 km away'**
+  String get demoActSubGreatToday15;
+
+  /// No description provided for @demoActSubTopReviewed08.
+  ///
+  /// In en, this message translates to:
+  /// **'Top reviewed • 0.8 km away'**
+  String get demoActSubTopReviewed08;
+
+  /// No description provided for @guestPlaceNameCozyCorner.
+  ///
+  /// In en, this message translates to:
+  /// **'The Cozy Corner'**
+  String get guestPlaceNameCozyCorner;
+
+  /// No description provided for @guestPlaceNameSunsetTerrace.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunset Terrace'**
+  String get guestPlaceNameSunsetTerrace;
+
+  /// No description provided for @guestPlaceNameCityArtMuseum.
+  ///
+  /// In en, this message translates to:
+  /// **'City Art Museum'**
+  String get guestPlaceNameCityArtMuseum;
+
+  /// No description provided for @guestPlaceNameGreenPark.
+  ///
+  /// In en, this message translates to:
+  /// **'Green Park'**
+  String get guestPlaceNameGreenPark;
+
+  /// No description provided for @guestPlaceNameJazzLounge.
+  ///
+  /// In en, this message translates to:
+  /// **'Jazz Lounge'**
+  String get guestPlaceNameJazzLounge;
+
+  /// No description provided for @guestPlaceNameRooftopBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Rooftop Bar'**
+  String get guestPlaceNameRooftopBar;
+
+  /// No description provided for @guestPlaceNameFreshKitchen.
+  ///
+  /// In en, this message translates to:
+  /// **'Fresh Kitchen'**
+  String get guestPlaceNameFreshKitchen;
+
+  /// No description provided for @guestPlaceNameHistoryMuseum.
+  ///
+  /// In en, this message translates to:
+  /// **'History Museum'**
+  String get guestPlaceNameHistoryMuseum;
+
+  /// No description provided for @guestPlaceNameSpiceRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Spice Route'**
+  String get guestPlaceNameSpiceRoute;
+
+  /// No description provided for @guestPlaceNameSoulKitchen.
+  ///
+  /// In en, this message translates to:
+  /// **'Soul Kitchen'**
+  String get guestPlaceNameSoulKitchen;
+
+  /// No description provided for @guestPlaceNameStudioCafe.
+  ///
+  /// In en, this message translates to:
+  /// **'Studio Café'**
+  String get guestPlaceNameStudioCafe;
+
+  /// No description provided for @guestPlaceDescCozyCorner.
+  ///
+  /// In en, this message translates to:
+  /// **'A warm neighbourhood café with specialty coffee and fresh pastries.'**
+  String get guestPlaceDescCozyCorner;
+
+  /// No description provided for @guestPlaceDescSunsetTerrace.
+  ///
+  /// In en, this message translates to:
+  /// **'Terrace dining with a view and a relaxed evening atmosphere.'**
+  String get guestPlaceDescSunsetTerrace;
+
+  /// No description provided for @guestPlaceDescCityArtMuseum.
+  ///
+  /// In en, this message translates to:
+  /// **'Modern art and rotating exhibitions in a striking building.'**
+  String get guestPlaceDescCityArtMuseum;
+
+  /// No description provided for @guestPlaceDescGreenPark.
+  ///
+  /// In en, this message translates to:
+  /// **'Lush green space perfect for a stroll or a picnic.'**
+  String get guestPlaceDescGreenPark;
+
+  /// No description provided for @guestPlaceDescJazzLounge.
+  ///
+  /// In en, this message translates to:
+  /// **'Live jazz, craft cocktails, and a moody interior.'**
+  String get guestPlaceDescJazzLounge;
+
+  /// No description provided for @guestPlaceDescRooftopBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Skyline views and cocktails at golden hour.'**
+  String get guestPlaceDescRooftopBar;
+
+  /// No description provided for @guestPlaceDescFreshKitchen.
+  ///
+  /// In en, this message translates to:
+  /// **'Healthy, colourful bowls and fresh ingredients.'**
+  String get guestPlaceDescFreshKitchen;
+
+  /// No description provided for @guestPlaceDescHistoryMuseum.
+  ///
+  /// In en, this message translates to:
+  /// **'Local history and heritage in a grand historic building.'**
+  String get guestPlaceDescHistoryMuseum;
+
+  /// No description provided for @guestPlaceDescSpiceRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Halal-friendly flavours and generous portions.'**
+  String get guestPlaceDescSpiceRoute;
+
+  /// No description provided for @guestPlaceDescSoulKitchen.
+  ///
+  /// In en, this message translates to:
+  /// **'Comfort food and live music in a welcoming space.'**
+  String get guestPlaceDescSoulKitchen;
+
+  /// No description provided for @guestPlaceDescStudioCafe.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimal interior and great light for working or meeting.'**
+  String get guestPlaceDescStudioCafe;
+
+  /// No description provided for @guestOpenNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Open now'**
+  String get guestOpenNow;
+
+  /// No description provided for @guestClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get guestClosed;
+
+  /// No description provided for @guestFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get guestFree;
+
+  /// No description provided for @guestPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get guestPaid;
+
+  /// No description provided for @guestDistanceAway.
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} away'**
+  String guestDistanceAway(String distance);
+
+  /// No description provided for @guestHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Hours'**
+  String get guestHours;
+
+  /// No description provided for @signupJoinWanderMood.
+  ///
+  /// In en, this message translates to:
+  /// **'Join WanderMood'**
+  String get signupJoinWanderMood;
+
+  /// No description provided for @signupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email to get started.\nNo password needed!'**
+  String get signupSubtitle;
+
+  /// No description provided for @signupEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get signupEmailLabel;
+
+  /// No description provided for @signupEmailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'you@example.com'**
+  String get signupEmailHint;
+
+  /// No description provided for @signupEmailRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your email'**
+  String get signupEmailRequired;
+
+  /// No description provided for @signupEmailInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email'**
+  String get signupEmailInvalid;
+
+  /// No description provided for @signupSendMagicLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Magic Link'**
+  String get signupSendMagicLink;
+
+  /// No description provided for @signupErrorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get signupErrorGeneric;
+
+  /// No description provided for @signupWhatYouGet.
+  ///
+  /// In en, this message translates to:
+  /// **'What you\'ll get'**
+  String get signupWhatYouGet;
+
+  /// No description provided for @signupBenefitPersonalized.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalized recommendations'**
+  String get signupBenefitPersonalized;
+
+  /// No description provided for @signupBenefitFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Save your favorite places'**
+  String get signupBenefitFavorites;
+
+  /// No description provided for @signupBenefitDayPlans.
+  ///
+  /// In en, this message translates to:
+  /// **'Create custom day plans'**
+  String get signupBenefitDayPlans;
+
+  /// No description provided for @signupBenefitMoodMatching.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood-based activity matching'**
+  String get signupBenefitMoodMatching;
+
+  /// No description provided for @signupTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'By continuing, you agree to our Terms of Service and Privacy Policy'**
+  String get signupTerms;
+
+  /// No description provided for @signupCheckEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your email!'**
+  String get signupCheckEmail;
+
+  /// No description provided for @signupWeSentLinkTo.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a magic link to'**
+  String get signupWeSentLinkTo;
+
+  /// No description provided for @signupClickLinkInEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Click the link in the email to sign in'**
+  String get signupClickLinkInEmail;
+
+  /// No description provided for @signupLinkExpires.
+  ///
+  /// In en, this message translates to:
+  /// **'The link expires in 24 hours'**
+  String get signupLinkExpires;
+
+  /// No description provided for @signupCheckSpam.
+  ///
+  /// In en, this message translates to:
+  /// **'Check spam folder if not in inbox'**
+  String get signupCheckSpam;
+
+  /// No description provided for @signupTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Didn\'t receive email? Try again'**
+  String get signupTryAgain;
+
+  /// No description provided for @signupAlmostThere.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re almost there! One click away from discovering amazing mood-based adventures in {city} ✨'**
+  String signupAlmostThere(String city);
+
+  /// No description provided for @signupAlmostThereTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re almost there!'**
+  String get signupAlmostThereTitle;
+
+  /// No description provided for @signupAlmostThereBody.
+  ///
+  /// In en, this message translates to:
+  /// **'One click away from discovering amazing mood-based adventures in {city} ✨'**
+  String signupAlmostThereBody(String city);
+
+  /// No description provided for @signupJoinTravelersInCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Join {count} travelers in {city}!'**
+  String signupJoinTravelersInCity(String count, String city);
+
+  /// No description provided for @signupJoinTravelers.
+  ///
+  /// In en, this message translates to:
+  /// **'Join {count} travelers!'**
+  String signupJoinTravelers(String count);
+
+  /// No description provided for @signupWhatYouUnlock.
+  ///
+  /// In en, this message translates to:
+  /// **'What you\'ll unlock'**
+  String get signupWhatYouUnlock;
+
+  /// No description provided for @signupUnlockPersonalized.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalized recommendations'**
+  String get signupUnlockPersonalized;
+
+  /// No description provided for @signupUnlockFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Save your favorite places'**
+  String get signupUnlockFavorites;
+
+  /// No description provided for @signupUnlockDayPlans.
+  ///
+  /// In en, this message translates to:
+  /// **'Create custom day plans'**
+  String get signupUnlockDayPlans;
+
+  /// No description provided for @signupUnlockMoodMatching.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood-based activity matching'**
+  String get signupUnlockMoodMatching;
+
+  /// No description provided for @signupRating.
+  ///
+  /// In en, this message translates to:
+  /// **'4.9/5 Rating'**
+  String get signupRating;
+
+  /// No description provided for @signupLoveIt.
+  ///
+  /// In en, this message translates to:
+  /// **'98% Love It'**
+  String get signupLoveIt;
+
+  /// No description provided for @signupTestimonial.
+  ///
+  /// In en, this message translates to:
+  /// **'WanderMood helped me discover places I never knew existed!'**
+  String get signupTestimonial;
+
+  /// No description provided for @signupTestimonialBy.
+  ///
+  /// In en, this message translates to:
+  /// **'– Sarah, {city}'**
+  String signupTestimonialBy(String city);
+
+  /// No description provided for @signupDefaultCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotterdam'**
+  String get signupDefaultCity;
 }
 
 class _AppLocalizationsDelegate

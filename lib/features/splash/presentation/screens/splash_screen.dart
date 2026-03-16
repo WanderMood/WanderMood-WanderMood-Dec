@@ -8,8 +8,9 @@ import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../auth/providers/auth_state_provider.dart';
 import '../../../../core/providers/preferences_provider.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wandermood/core/providers/secure_storage_provider.dart';
 
 class SwirlingGradientPainter extends CustomPainter {
   @override
@@ -161,41 +162,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     
     if (!mounted) return;
     
-    // Check current authentication and onboarding status
-    final prefs = await SharedPreferences.getInstance();
-    final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
-    final hasCompletedPreferences = prefs.getBool('hasCompletedPreferences') ?? false;
+    final secure = ref.read(secureStorageServiceProvider);
+    final hasSeenOnboarding = await secure.getHasSeenOnboarding();
+    final hasCompletedPreferences = await secure.getHasCompletedPreferences();
     final currentUser = Supabase.instance.client.auth.currentUser;
     final currentSession = Supabase.instance.client.auth.currentSession;
-    
-    debugPrint('🔍 App initialization state:');
-    debugPrint('   hasSeenOnboarding: $hasSeenOnboarding');
-    debugPrint('   hasCompletedPreferences: $hasCompletedPreferences');
-    debugPrint('   currentUser: ${currentUser?.id}');
-    debugPrint('   currentSession: ${currentSession != null}');
-    
-    // If we have a session, mark onboarding as seen
+
     if (currentUser != null && currentSession != null && !hasSeenOnboarding) {
-      debugPrint('🔧 User has session, marking onboarding as seen');
-      await prefs.setBool('has_seen_onboarding', true);
-      
-      // CRITICAL: Don't auto-mark preferences as completed just because they exist in DB
-      // Preferences are saved during email verification (basic communication prefs),
-      // but onboarding completion should only be set after the full onboarding flow
-      try {
-        final response = await Supabase.instance.client
-            .from('user_preferences')
-            .select('*')
-            .eq('user_id', currentUser.id)
-            .maybeSingle();
-        
-        if (response != null && response.isNotEmpty) {
-          debugPrint('📋 User has preferences in database (may be partial from email verification)');
-          // Don't set hasCompletedPreferences here - let onboarding_loading_screen.dart handle it
-        }
-      } catch (e) {
-        debugPrint('📋 Could not check preferences: $e');
-      }
+      await secure.setHasSeenOnboarding(true);
     }
     
     // Wait for auth state to be available
@@ -209,16 +183,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     
     if (!mounted) return;
     
-    // Re-check after sync
     final finalCurrentUser = Supabase.instance.client.auth.currentUser;
-    final finalHasCompletedPreferences = prefs.getBool('hasCompletedPreferences') ?? false;
-    
-    // Check feature flag for new onboarding flow
+    final finalHasCompletedPreferences = await secure.getHasCompletedPreferences();
     final useNewOnboarding = ref.read(useNewOnboardingFlowProvider);
-    debugPrint('🚩 Feature flag - useNewOnboarding: $useNewOnboarding');
-    debugPrint('🚩 hasSeenOnboarding: $hasSeenOnboarding');
-    debugPrint('🚩 finalCurrentUser: ${finalCurrentUser?.id}');
-    debugPrint('🚩 finalHasCompletedPreferences: $finalHasCompletedPreferences');
     
     // FORCE NEW FLOW: If feature flag is enabled, always use new flow
     // This ensures new users see the new onboarding even if hasSeenOnboarding is somehow set
@@ -256,6 +223,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
       context.go('/preferences/communication');
     } else {
       // User has completed preferences - check if first-time user
+      final prefs = await SharedPreferences.getInstance();
       final hasCompletedFirstPlan = prefs.getBool('has_completed_first_plan') ?? false;
       final tabIndex = hasCompletedFirstPlan ? 0 : 2; // My Day (0) or Moody Hub (2)
       
@@ -303,19 +271,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                   children: [
                     const Spacer(flex: 2),
 
-                    // Logo and title
-                    Text(
-                      'WanderMood',
-                      style: GoogleFonts.museoModerno(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF5BB32A),
-                      ),
+                    // Logo (increased 76% from original size)
+                    Image.asset(
+                      'assets/images/logo.png',
+                      height: 127,
+                      fit: BoxFit.contain,
                     ).animate()
                       .fadeIn(duration: 600.ms)
                       .slideY(begin: -0.2, end: 0),
 
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
 
                     Text(
                       'Your AI Travel Companion',

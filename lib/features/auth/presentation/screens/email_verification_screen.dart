@@ -1,22 +1,24 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wandermood/core/providers/secure_storage_provider.dart';
 
-class EmailVerificationScreen extends StatefulWidget {
+class EmailVerificationScreen extends ConsumerStatefulWidget {
   final String email;
-  
+
   const EmailVerificationScreen({
     super.key,
     required this.email,
   });
 
   @override
-  State<EmailVerificationScreen> createState() => _EmailVerificationScreenState();
+  ConsumerState<EmailVerificationScreen> createState() => _EmailVerificationScreenState();
 }
 
-class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
+class _EmailVerificationScreenState extends ConsumerState<EmailVerificationScreen> {
   bool _isResending = false;
   bool _isVerified = false;
   bool _isChecking = true;
@@ -52,7 +54,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         });
       }
     } catch (e) {
-      debugPrint('❌ Error checking verification status: $e');
+      if (kDebugMode) debugPrint('Error checking verification status: $e');
       setState(() {
         _isChecking = false;
       });
@@ -66,13 +68,12 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       final session = data.session;
       final user = session?.user;
       
-      debugPrint('🔐 Auth state change: $event');
-      debugPrint('🔐 User: ${user?.id}, Email confirmed: ${user?.emailConfirmedAt}');
+      if (kDebugMode) debugPrint('Auth state change: $event');
       
       if (event == AuthChangeEvent.signedIn && session != null && user != null) {
         // Check if email is verified
         if (user.emailConfirmedAt != null) {
-          debugPrint('✅ Email verified! Proceeding to onboarding...');
+          if (kDebugMode) debugPrint('Email verified, proceeding to onboarding');
           setState(() {
             _isVerified = true;
           });
@@ -87,23 +88,23 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     try {
       // CRITICAL: Don't refresh session here - it's already established from deep link
       // Refreshing immediately after email verification can cause rate limiting
-      debugPrint('🔄 Checking Supabase session after email verification...');
+      if (kDebugMode) debugPrint('Checking session after email verification');
       final session = Supabase.instance.client.auth.currentSession;
       
       if (session == null) {
-        debugPrint('⚠️ No session found after verification, waiting a moment...');
+        if (kDebugMode) debugPrint('No session after verification, waiting');
         // Wait a moment for session to be established
         await Future.delayed(const Duration(milliseconds: 500));
         
         // Check again
         final newSession = Supabase.instance.client.auth.currentSession;
         if (newSession == null) {
-          debugPrint('❌ Still no session after wait, this is an error');
+          if (kDebugMode) debugPrint('Still no session after wait');
           throw Exception('Session not established after email verification');
         }
-        debugPrint('✅ Session found after waiting');
+        if (kDebugMode) debugPrint('Session found after waiting');
       } else {
-        debugPrint('✅ Session already established, no refresh needed');
+        if (kDebugMode) debugPrint('Session already established');
       }
       
       // Verify user is authenticated
@@ -116,13 +117,11 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         throw Exception('Email not confirmed after verification');
       }
       
-      debugPrint('✅ User authenticated: ${user.id}, Email confirmed: ${user.emailConfirmedAt}');
+      if (kDebugMode) debugPrint('User authenticated after verification');
       
-      // Set preferences flag and track auth timestamp
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('hasCompletedPreferences', false);
-      await prefs.setInt('last_auth_timestamp', DateTime.now().millisecondsSinceEpoch);
-      debugPrint('✅ Auth flags set after email verification');
+      final secure = ref.read(secureStorageServiceProvider);
+      await secure.setHasCompletedPreferences(false);
+      await secure.setLastAuthTimestamp(DateTime.now().millisecondsSinceEpoch);
       
       // Small delay to ensure flags are persisted
       await Future.delayed(const Duration(milliseconds: 100));
@@ -131,7 +130,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       context.go('/preferences/communication');
       }
     } catch (e) {
-      debugPrint('❌ Error in _proceedToOnboarding: $e');
+      if (kDebugMode) debugPrint('Error in _proceedToOnboarding: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

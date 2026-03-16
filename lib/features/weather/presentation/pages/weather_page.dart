@@ -19,7 +19,7 @@ class WeatherPage extends ConsumerWidget {
       ),
       body: Center(
         child: Text(
-          'Weather feature coming soon!',
+          'Weather data will appear here when available.',
           style: GoogleFonts.poppins(
             fontSize: 18,
           ),

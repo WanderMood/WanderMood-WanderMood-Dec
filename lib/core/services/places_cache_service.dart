@@ -68,7 +68,7 @@ class PlacesCacheService {
         .length;
 
     if (requestsInWindow >= maxRequestsPerWindow) {
-      debugPrint('⚠️ Rate limit exceeded for $endpoint');
+      if (kDebugMode) debugPrint('Rate limit exceeded for $endpoint');
       return false;
     }
 

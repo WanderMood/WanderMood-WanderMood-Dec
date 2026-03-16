@@ -118,7 +118,7 @@ class MoodyEdgeFunctionService {
               if (cachedData != null && cachedData.containsKey('cards')) {
                 final cards = cachedData['cards'] as List<dynamic>?;
                 if (cards != null && cards.isNotEmpty) {
-                  debugPrint('✅ Using cached explore results from Supabase (${cards.length} places)');
+                  if (kDebugMode) debugPrint('Using cached explore results (${cards.length} places)');
                   final places = cards.map((card) => _transformCardToPlace(card as Map<String, dynamic>)).toList();
                   return places;
                 }
@@ -126,7 +126,7 @@ class MoodyEdgeFunctionService {
             }
           }
         } catch (e) {
-          debugPrint('⚠️ Cache check error (continuing to Edge Function): $e');
+          if (kDebugMode) debugPrint('Cache check error: $e');
         }
       }
 

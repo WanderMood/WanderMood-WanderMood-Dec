@@ -23,7 +23,7 @@ class MoodyAIService {
     List<String>? userPreferences,
   }) async {
     if (apiKey.isEmpty) {
-      debugPrint('⚠️ OpenAI API key not configured, using fallback tips');
+      if (kDebugMode) debugPrint('OpenAI API key not configured, using fallback tips');
       return _getFallbackTips(place);
     }
 
@@ -38,7 +38,7 @@ class MoodyAIService {
         userPreferences: userPreferences,
       );
 
-      debugPrint('🤖 Generating Moody Tips for: ${place.name}');
+      if (kDebugMode) debugPrint('Generating Moody Tips');
 
       final response = await http.post(
         url,
@@ -70,14 +70,14 @@ class MoodyAIService {
         // Parse the response and extract tips
         final tips = _parseAIResponse(content);
         
-        debugPrint('✅ Generated ${tips.length} AI-powered Moody Tips');
+        if (kDebugMode) debugPrint('Generated Moody Tips');
         return tips;
       } else {
-        debugPrint('❌ OpenAI API error: ${response.statusCode}');
+        if (kDebugMode) debugPrint('OpenAI API error: ${response.statusCode}');
         return _getFallbackTips(place);
       }
     } catch (e) {
-      debugPrint('❌ Error generating Moody Tips: $e');
+      if (kDebugMode) debugPrint('Error generating Moody Tips: $e');
       return _getFallbackTips(place);
     }
   }
@@ -319,7 +319,7 @@ Generate tips that are:
     String? weather,
   }) async {
     if (apiKey.isEmpty) {
-      debugPrint('❌ OpenAI API key is empty - cannot generate mood activities');
+      if (kDebugMode) debugPrint('OpenAI API key empty - cannot generate mood activities');
       return [];
     }
 
@@ -370,7 +370,7 @@ Format as simple list, one per line.
         return _parseAIResponse(content);
       }
     } catch (e) {
-      debugPrint('❌ Error generating mood activities: $e');
+      if (kDebugMode) debugPrint('Error generating mood activities: $e');
       // Return empty list instead of fallback activities
       return [];
     }

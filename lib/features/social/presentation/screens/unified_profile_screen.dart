@@ -142,7 +142,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
   void _sendMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Messaging feature coming soon!'),
+        content: Text('Messaging is not available for this profile.'),
         backgroundColor: Color(0xFF4CAF50),
         behavior: SnackBarBehavior.floating,
         duration: Duration(seconds: 2),
@@ -154,7 +154,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
     // QR code functionality for own profile
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('QR code sharing coming soon!'),
+        content: Text('QR code sharing is not available.'),
         backgroundColor: Color(0xFF4CAF50),
         behavior: SnackBarBehavior.floating,
       ),
@@ -164,7 +164,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
   void _reportUser() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Report feature coming soon!'),
+        content: Text('Report is not available.'),
         backgroundColor: Colors.orange,
         behavior: SnackBarBehavior.floating,
       ),
@@ -174,7 +174,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
   void _blockUser() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Block feature coming soon!'),
+        content: Text('Block is not available.'),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
       ),
@@ -184,7 +184,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
   void _shareProfile() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Share feature coming soon!'),
+        content: Text('Share is not available.'),
         backgroundColor: Colors.blue,
         behavior: SnackBarBehavior.floating,
       ),
@@ -660,7 +660,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
           _buildEmptyState('No saved posts', Icons.bookmark_border),
           
           // Places Map/Grid
-          _buildEmptyState('Places coming soon', Icons.map),
+          _buildEmptyState('No places yet', Icons.map),
         ],
       ),
     );

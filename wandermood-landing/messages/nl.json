@@ -32,6 +32,10 @@
     "wanderFeed": {
       "label": "WanderFeed",
       "description": "Zie wat anderen ontdekken en deel de jouwe."
+    },
+    "filters": {
+      "label": "Filters",
+      "description": "Verfijn op binnen/buiten, dieet, nu open en meer."
     }
   },
   "experience": {

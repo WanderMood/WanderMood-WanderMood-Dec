@@ -404,7 +404,7 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
                       // Share post
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Share feature coming soon!'),
+                          content: Text('Share is not available.'),
                           duration: Duration(seconds: 2),
                         ),
                       );
@@ -769,7 +769,7 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Comment feature coming soon!'),
+                                  content: Text('Comments are not available.'),
                                   duration: Duration(seconds: 2),
                                 ),
                               );

@@ -320,7 +320,7 @@ class ExplorePlaces extends _$ExplorePlaces {
         final cachedTime = _broadCacheTimestamps[broadCacheKey];
         if (cachedTime != null && 
             DateTime.now().difference(cachedTime) < const Duration(minutes: 2)) {
-          debugPrint('🚀 Using recent build cache for $cityName (${_broadCache[broadCacheKey]!.length} places)');
+          if (kDebugMode) debugPrint('🚀 Using recent build cache for $cityName (${_broadCache[broadCacheKey]!.length} places)');
           return _broadCache[broadCacheKey]!;
         }
       }
@@ -336,10 +336,10 @@ class ExplorePlaces extends _$ExplorePlaces {
       final isExpired = DateTime.now().difference(cacheTime) > _broadCacheValidDuration;
       
       if (!isExpired) {
-        debugPrint('📋 Using cached data for $cityName (${_broadCache[broadCacheKey]!.length} places)');
+        if (kDebugMode) debugPrint('📋 Using cached data for $cityName (${_broadCache[broadCacheKey]!.length} places)');
         return _broadCache[broadCacheKey]!;
       } else {
-        debugPrint('🗑️ Cache expired for $cityName, fetching fresh data');
+        if (kDebugMode) debugPrint('🗑️ Cache expired for $cityName, fetching fresh data');
         _broadCache.remove(broadCacheKey);
         _broadCacheTimestamps.remove(broadCacheKey);
       }
@@ -348,12 +348,12 @@ class ExplorePlaces extends _$ExplorePlaces {
     // Check persistent storage cache
     final persistentCachedPlaces = await _loadBroadCacheFromPersistentStorage(broadCacheKey);
     if (persistentCachedPlaces != null) {
-      debugPrint('💾 Loading $cityName data from persistent storage (${persistentCachedPlaces.length} places)');
+      if (kDebugMode) debugPrint('💾 Loading $cityName data from persistent storage (${persistentCachedPlaces.length} places)');
       _updateBroadCache(broadCacheKey, persistentCachedPlaces);
       return persistentCachedPlaces;
     }
 
-    debugPrint('🌍 No cached data found for $cityName, fetching fresh comprehensive data...');
+    if (kDebugMode) debugPrint('🌍 No cached data found for $cityName, fetching fresh comprehensive data...');
 
     // Debounce the data fetching to prevent rapid successive builds
     return await _buildPlacesInternal(cityName, broadCacheKey);
@@ -376,7 +376,7 @@ class ExplorePlaces extends _$ExplorePlaces {
           );
           
           if (!locationChanged && _lastCityName == cityName) {
-            debugPrint('📍 Location unchanged for $cityName, returning cached data');
+            if (kDebugMode) debugPrint('📍 Location unchanged for $cityName, returning cached data');
             return _broadCache[broadCacheKey] ?? _getMinimalFallbackPlaces(cityName);
           }
         }
@@ -384,11 +384,11 @@ class ExplorePlaces extends _$ExplorePlaces {
         // Check if location seems unrealistic for Netherlands (fallback to Rotterdam)
         if (currentPosition.latitude < 50.0 || currentPosition.latitude > 54.0 || 
             currentPosition.longitude < 3.0 || currentPosition.longitude > 8.0) {
-          debugPrint('🎯 Detected simulator coordinates, using $cityName fallback');
+          if (kDebugMode) debugPrint('🎯 Detected simulator coordinates, using $cityName fallback');
           currentPosition = _getCityCoordinates(cityName);
         }
       } catch (e) {
-        debugPrint('⚠️ Location service failed, using $cityName fallback: $e');
+        if (kDebugMode) debugPrint('⚠️ Location service failed, using $cityName fallback: $e');
         currentPosition = _getCityCoordinates(cityName);
       }
       
@@ -396,23 +396,23 @@ class ExplorePlaces extends _$ExplorePlaces {
       _lastLocation = currentPosition;
       _lastCityName = cityName;
       
-      debugPrint('📍 Using position for $cityName: ${currentPosition.latitude}, ${currentPosition.longitude}');
+      if (kDebugMode) debugPrint('📍 Using position for $cityName: ${currentPosition.latitude}, ${currentPosition.longitude}');
       
       // Fetch comprehensive place data for the city
       final broadPlaces = await _fetchBroadPlaceData(cityName, currentPosition);
       
       if (broadPlaces.isNotEmpty) {
-        debugPrint('✅ Fetched ${broadPlaces.length} places for $cityName');
+        if (kDebugMode) debugPrint('✅ Fetched ${broadPlaces.length} places for $cityName');
         _updateBroadCache(broadCacheKey, broadPlaces);
         await _saveBroadCacheToPersistentStorage(broadCacheKey, broadPlaces);
         return broadPlaces;
       }
     } catch (e) {
-      debugPrint('❌ Error fetching places for $cityName: $e');
+      if (kDebugMode) debugPrint('❌ Error fetching places for $cityName: $e');
     }
 
     // Final fallback to a few basic places
-    debugPrint('⚠️ Using minimal fallback data for $cityName');
+    if (kDebugMode) debugPrint('⚠️ Using minimal fallback data for $cityName');
     return _getMinimalFallbackPlaces(cityName);
   }
 
@@ -454,13 +454,13 @@ class ExplorePlaces extends _$ExplorePlaces {
     final allPlaces = _broadCache[broadCacheKey] ?? [];
     
     if (allPlaces.isEmpty) {
-      debugPrint('⚠️ No cached places available for filtering');
+      if (kDebugMode) debugPrint('⚠️ No cached places available for filtering');
       return [];
     }
 
     // If no category or "All", return all places
     if (category == null || category == 'All') {
-      debugPrint('📋 Returning all ${allPlaces.length} places');
+      if (kDebugMode) debugPrint('📋 Returning all ${allPlaces.length} places');
       return allPlaces;
     }
 
@@ -468,7 +468,7 @@ class ExplorePlaces extends _$ExplorePlaces {
     final targetTypes = _categoryToPlaceTypes[category] ?? [];
     
     if (targetTypes.isEmpty) {
-      debugPrint('⚠️ Unknown category: $category, returning all places');
+      if (kDebugMode) debugPrint('⚠️ Unknown category: $category, returning all places');
       return allPlaces;
     }
 
@@ -478,11 +478,11 @@ class ExplorePlaces extends _$ExplorePlaces {
       return place.types.any((type) => targetTypes.contains(type));
     }).toList();
 
-    debugPrint('🔍 Filtered $category: ${filteredPlaces.length} places from ${allPlaces.length} total');
+    if (kDebugMode) debugPrint('🔍 Filtered $category: ${filteredPlaces.length} places from ${allPlaces.length} total');
 
     // If no results, return popular places as fallback
     if (filteredPlaces.isEmpty) {
-      debugPrint('🎯 No $category places found, returning popular places as fallback');
+      if (kDebugMode) debugPrint('🎯 No $category places found, returning popular places as fallback');
       final popularPlaces = allPlaces.where((place) {
         return place.types.any((type) => ['tourist_attraction', 'point_of_interest'].contains(type));
       }).toList();
@@ -518,13 +518,13 @@ class ExplorePlaces extends _$ExplorePlaces {
     
     final selectedQueries = prioritizedQueries.take(maxQueries).toList();
     
-    debugPrint('🚀 SPEED OPTIMIZATION: Processing ${selectedQueries.length} high-priority queries in parallel batches of $batchSize');
+    if (kDebugMode) debugPrint('🚀 SPEED OPTIMIZATION: Processing ${selectedQueries.length} high-priority queries in parallel batches of $batchSize');
     
     // Process in parallel batches
     for (int i = 0; i < selectedQueries.length; i += batchSize) {
       final batch = selectedQueries.skip(i).take(batchSize).toList();
       
-      debugPrint('🔄 Processing batch ${(i ~/ batchSize) + 1}: ${batch.length} queries in parallel');
+      if (kDebugMode) debugPrint('🔄 Processing batch ${(i ~/ batchSize) + 1}: ${batch.length} queries in parallel');
       
       // **PARALLEL EXECUTION** - Run all queries in this batch simultaneously
       final batchResults = await Future.wait(
@@ -539,7 +539,7 @@ class ExplorePlaces extends _$ExplorePlaces {
         final query = batch[j];
         
         if (results.isNotEmpty) {
-          debugPrint('✅ ${query}: Found ${results.length} places');
+          if (kDebugMode) debugPrint('✅ ${query}: Found ${results.length} places');
           
           // Smart result selection based on query type
           final resultLimit = _getResultLimitForQuery(query);
@@ -555,16 +555,16 @@ class ExplorePlaces extends _$ExplorePlaces {
             }
           }
         } else {
-          debugPrint('❌ ${query}: No results');
+          if (kDebugMode) debugPrint('❌ ${query}: No results');
         }
       }
       
-      debugPrint('📈 Batch ${(i ~/ batchSize) + 1} completed: Added $addedFromBatch places (Total: ${allPlaces.length})');
+      if (kDebugMode) debugPrint('📈 Batch ${(i ~/ batchSize) + 1} completed: Added $addedFromBatch places (Total: ${allPlaces.length})');
       
       // **OPTIMIZATION 3: Early Termination**
       // Stop early if we have enough places
       if (allPlaces.length >= 60) {
-        debugPrint('🎯 EARLY TERMINATION: Reached ${allPlaces.length} places, stopping for faster loading');
+        if (kDebugMode) debugPrint('🎯 EARLY TERMINATION: Reached ${allPlaces.length} places, stopping for faster loading');
         break;
       }
       
@@ -585,7 +585,7 @@ class ExplorePlaces extends _$ExplorePlaces {
       return aDistance.compareTo(bDistance);
     });
 
-    debugPrint('🎉 SPEED OPTIMIZATION COMPLETE: Collected ${allPlaces.length} unique places for $cityName');
+    if (kDebugMode) debugPrint('🎉 SPEED OPTIMIZATION COMPLETE: Collected ${allPlaces.length} unique places for $cityName');
     return allPlaces;
   }
 
@@ -596,7 +596,7 @@ class ExplorePlaces extends _$ExplorePlaces {
       final results = await service.searchPlaces(query);
       return results;
     } catch (e) {
-      debugPrint('❌ Query failed: $query - $e');
+      if (kDebugMode) debugPrint('❌ Query failed: $query - $e');
       return [];
     }
   }
@@ -755,7 +755,7 @@ class ExplorePlaces extends _$ExplorePlaces {
             final photoUrl = service.getPhotoUrl(photo.photoReference);
             photoUrls.add(photoUrl);
           } catch (e) {
-            debugPrint('❌ Error getting photo URL: $e');
+            if (kDebugMode) debugPrint('❌ Error getting photo URL: $e');
           }
         }
       }
@@ -786,7 +786,7 @@ class ExplorePlaces extends _$ExplorePlaces {
         priceRange = _inferPriceRange(priceLevel);
       }
       
-      debugPrint('💰 Place ${result.name}: priceLevel=$priceLevel, isFree=$isFree, priceRange=$priceRange');
+      if (kDebugMode) debugPrint('💰 Place ${result.name}: priceLevel=$priceLevel, isFree=$isFree, priceRange=$priceRange');
 
       final place = Place(
         id: 'google_${result.placeId}',
@@ -819,7 +819,7 @@ class ExplorePlaces extends _$ExplorePlaces {
       
       return place;
     } catch (e) {
-      debugPrint('❌ Error converting place: $e');
+      if (kDebugMode) debugPrint('❌ Error converting place: $e');
       return null;
     }
   }
@@ -1153,7 +1153,7 @@ class ExplorePlaces extends _$ExplorePlaces {
         weekdayText: weekdayText,
       );
     } catch (e) {
-      debugPrint('❌ Error parsing opening hours: $e');
+      if (kDebugMode) debugPrint('❌ Error parsing opening hours: $e');
       return null;
     }
   }
@@ -1362,9 +1362,9 @@ class ExplorePlaces extends _$ExplorePlaces {
       
       await prefs.setString('broad_cache_$cacheKey', jsonString);
       await prefs.setInt('broad_timestamp_$cacheKey', DateTime.now().millisecondsSinceEpoch);
-      debugPrint('💾 Saved ${places.length} places to broad cache storage');
+      if (kDebugMode) debugPrint('💾 Saved ${places.length} places to broad cache storage');
     } catch (e) {
-      debugPrint('❌ Error saving broad cache to storage: $e');
+      if (kDebugMode) debugPrint('❌ Error saving broad cache to storage: $e');
     }
   }
 
@@ -1381,14 +1381,14 @@ class ExplorePlaces extends _$ExplorePlaces {
         if (!isExpired) {
           final List<dynamic> jsonList = json.decode(storedData);
           final places = jsonList.map((json) => Place.fromJson(json)).toList();
-          debugPrint('💾 Loaded ${places.length} places from broad cache storage');
+          if (kDebugMode) debugPrint('💾 Loaded ${places.length} places from broad cache storage');
           return places;
         } else {
-          debugPrint('🗑️ Broad cache expired for $cacheKey');
+          if (kDebugMode) debugPrint('🗑️ Broad cache expired for $cacheKey');
         }
       }
     } catch (e) {
-      debugPrint('❌ Error loading broad cache from storage: $e');
+      if (kDebugMode) debugPrint('❌ Error loading broad cache from storage: $e');
     }
     return null;
   }
@@ -1419,7 +1419,7 @@ class ExplorePlaces extends _$ExplorePlaces {
     }
     
     if (expiredBroadKeys.isNotEmpty) {
-      debugPrint('🧹 Cleared expired broad cache for: ${expiredBroadKeys.join(", ")}');
+      if (kDebugMode) debugPrint('🧹 Cleared expired broad cache for: ${expiredBroadKeys.join(", ")}');
     }
   }
 } 

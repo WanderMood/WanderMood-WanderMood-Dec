@@ -405,7 +405,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
   /// Open Privacy Policy in external browser
   Future<void> _openPrivacyPolicy() async {
     try {
-      final url = Uri.parse('https://wandermood.app/privacy-policy');
+      final url = Uri.parse('https://wandermood.com/en/privacy');
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
@@ -433,7 +433,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
   /// Open Terms of Service in external browser
   Future<void> _openTermsOfService() async {
     try {
-      final url = Uri.parse('https://wandermood.app/terms-of-service');
+      final url = Uri.parse('https://wandermood.com/en/terms');
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {

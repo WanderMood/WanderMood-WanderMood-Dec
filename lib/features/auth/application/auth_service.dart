@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -50,7 +51,7 @@ class AuthService {
     required String name,
   }) async {
     try {
-      debugPrint('🔐 Starting signup process for email: $email');
+      if (kDebugMode) debugPrint('Signup started');
       
       // Step 1: Create user in Supabase auth
       final response = await _supabase.auth.signUp(
@@ -64,28 +65,28 @@ class AuthService {
       );
       
       if (response.user == null) {
-        debugPrint('❌ Signup failed: No user returned');
+        if (kDebugMode) debugPrint('Signup failed: No user returned');
         return AuthResult.error('Registratie mislukt, probeer het opnieuw');
       }
       
       final user = response.user!;
-      debugPrint('✅ User created in auth.users: ${user.id}');
+      if (kDebugMode) debugPrint('User created in auth');
       
       // Step 2: If we have a session, create the profile immediately
       if (response.session != null) {
-        debugPrint('🔄 Session established, creating profile...');
+        if (kDebugMode) debugPrint('Session established, creating profile');
         await _createUserProfile(user, name);
       } else {
-        debugPrint('⚠️ No session yet, profile will be created on email confirmation');
+        if (kDebugMode) debugPrint('No session yet, profile on email confirmation');
       }
       
       return AuthResult.success(user);
       
     } on AuthException catch (e) {
-      debugPrint('❌ Auth exception during signup: ${e.message}');
+      if (kDebugMode) debugPrint('Auth exception during signup: ${e.message}');
       return _handleAuthException(e);
     } catch (e) {
-      debugPrint('❌ Unexpected error during signup: $e');
+      if (kDebugMode) debugPrint('Unexpected error during signup: $e');
       return AuthResult.error('Er is een onverwachte fout opgetreden: $e');
     }
   }
@@ -93,7 +94,7 @@ class AuthService {
   // Helper method to create user profile with proper RLS context
   Future<void> _createUserProfile(User user, String name) async {
     try {
-      debugPrint('🔄 Creating profile for user: ${user.id}');
+      if (kDebugMode) debugPrint('Creating profile');
       
       // First check if profile already exists (might have been created by trigger)
       final existingProfile = await _supabase
@@ -103,7 +104,7 @@ class AuthService {
           .maybeSingle();
       
       if (existingProfile != null) {
-        debugPrint('✅ Profile already exists for user: ${user.id} (created by trigger)');
+        if (kDebugMode) debugPrint('Profile already exists (trigger)');
         return;
       }
       
@@ -150,23 +151,23 @@ class AuthService {
         'last_active_at': DateTime.now().toIso8601String(),
       };
       
-      debugPrint('📝 Inserting profile data: $profileData');
+      if (kDebugMode) debugPrint('Inserting profile data');
       
       await _supabase
           .from('profiles')
           .insert(profileData);
       
-      debugPrint('✅ Profile created successfully for user: ${user.id}');
+      if (kDebugMode) debugPrint('Profile created successfully');
       
     } catch (e) {
-      debugPrint('❌ Error creating profile: $e');
+      if (kDebugMode) debugPrint('Error creating profile: $e');
       // Check if it's a duplicate key error (profile already exists)
       // This can happen if a database trigger creates the profile first
       final errorString = e.toString().toLowerCase();
       if (errorString.contains('duplicate key') || 
           errorString.contains('already exists') ||
           errorString.contains('23505')) {
-        debugPrint('⚠️ Profile already exists (likely created by trigger), this is okay');
+        if (kDebugMode) debugPrint('Profile already exists, skipping');
         return;
       }
       // Don't throw - allow signup to succeed even if profile creation fails
@@ -185,7 +186,7 @@ class AuthService {
       
       return response != null;
     } catch (e) {
-      debugPrint('⚠️ Error checking username existence: $e');
+      if (kDebugMode) debugPrint('Error checking username: $e');
       return false; // Assume it doesn't exist if we can't check
     }
   }
@@ -196,7 +197,7 @@ class AuthService {
     required String password,
   }) async {
     try {
-      debugPrint('Attempting to sign in with email: $email');
+      if (kDebugMode) debugPrint('Attempting sign in');
       final response = await _supabase.auth.signInWithPassword(
         email: email,
         password: password,
@@ -207,7 +208,7 @@ class AuthService {
       }
       
       final user = response.user!;
-      debugPrint('Sign in successful for user: ${user.id}');
+      if (kDebugMode) debugPrint('Sign in successful');
       
       // Ensure profile exists after successful sign in
       await _ensureProfileExists(user);
@@ -215,10 +216,10 @@ class AuthService {
       return AuthResult.success(user);
       
     } on AuthException catch (e) {
-      debugPrint('AuthException during sign in: $e');
+      if (kDebugMode) debugPrint('AuthException during sign in: $e');
       return _handleAuthException(e);
     } catch (e) {
-      debugPrint('Exception during sign in: $e');
+      if (kDebugMode) debugPrint('Exception during sign in: $e');
       return AuthResult.error('Er is een onverwachte fout opgetreden: $e');
     }
   }
@@ -234,17 +235,17 @@ class AuthService {
           .maybeSingle();
       
       if (existingProfile == null) {
-        debugPrint('⚠️ Profile missing for user ${user.id}, creating...');
+        if (kDebugMode) debugPrint('Profile missing, creating');
         // Extract name from user metadata or use default
         final name = user.userMetadata?['name'] ?? 
                     user.userMetadata?['full_name'] ?? 
                     'WanderMood User';
         await _createUserProfile(user, name);
       } else {
-        debugPrint('✅ Profile exists for user: ${user.id}');
+        if (kDebugMode) debugPrint('Profile exists');
       }
     } catch (e) {
-      debugPrint('⚠️ Error ensuring profile exists: $e');
+      if (kDebugMode) debugPrint('Error ensuring profile exists: $e');
       // Don't throw - sign in should succeed even if profile check fails
     }
   }

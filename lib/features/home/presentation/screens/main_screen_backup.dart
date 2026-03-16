@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -73,17 +74,17 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
     }
     
     try {
-      print('MyDayScreen: Loading scheduled activities...');
+      if (kDebugMode) debugPrint('MyDayScreen: Loading scheduled activities...');
       final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
       final activities = await scheduledActivityService.getScheduledActivities();
       
-      print('MyDayScreen: Loaded ${activities.length} activities');
+      if (kDebugMode) debugPrint('MyDayScreen: Loaded ${activities.length} activities');
       if (activities.isNotEmpty) {
         activities.forEach((activity) {
-          print('Activity: ${activity.name}, Time: ${activity.startTime}, Location: ${activity.location}');
+          if (kDebugMode) debugPrint('Activity: ${activity.name}, Time: ${activity.startTime}, Location: ${activity.location}');
         });
       } else {
-        print('MyDayScreen: No activities found');
+        if (kDebugMode) debugPrint('MyDayScreen: No activities found');
       }
       
       if (mounted) {
@@ -93,8 +94,8 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
         });
       }
     } catch (e) {
-      print('Error loading scheduled activities: $e');
-      print('Stack trace: ${StackTrace.current}');
+      if (kDebugMode) debugPrint('Error loading scheduled activities: $e');
+      if (kDebugMode) debugPrint('Stack trace: ${StackTrace.current}');
       if (mounted) {
         setState(() {
           _scheduledActivities = [];
@@ -162,7 +163,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                                     ),
                                     onPressed: () {
                                       // Force refresh activities
-                                      print('Manual refresh requested');
+                                      if (kDebugMode) debugPrint('Manual refresh requested');
                                       setState(() {
                                         _scheduledActivities = null;
                                         _isLoading = true;
@@ -1226,7 +1227,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      print('Error loading scheduled activities: $e');
+      if (kDebugMode) debugPrint('Error loading scheduled activities: $e');
       setState(() {
         _scheduledActivities = [];
         _isLoading = false;

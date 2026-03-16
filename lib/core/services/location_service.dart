@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 
@@ -48,7 +49,7 @@ class LocationService {
         name: locationName,
       );
     } catch (e) {
-      print('Error getting location: $e');
+      if (kDebugMode) debugPrint('Error getting location: $e');
       return null;
     }
   }
@@ -66,7 +67,7 @@ class LocationService {
       }
       return null;
     } catch (e) {
-      print('Error getting location from address: $e');
+      if (kDebugMode) debugPrint('Error getting location from address: $e');
       return null;
     }
   }

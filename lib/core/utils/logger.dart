@@ -1,14 +1,21 @@
+import 'package:flutter/foundation.dart';
+
 class Logger {
   static void error(String message) {
-    // In production, you might want to use a proper logging service
-    print('🔴 ERROR: $message');
+    if (kDebugMode) {
+      debugPrint('ERROR: $message');
+    }
   }
 
   static void info(String message) {
-    print('ℹ️ INFO: $message');
+    if (kDebugMode) {
+      debugPrint('INFO: $message');
+    }
   }
 
   static void warning(String message) {
-    print('⚠️ WARNING: $message');
+    if (kDebugMode) {
+      debugPrint('WARNING: $message');
+    }
   }
 } 

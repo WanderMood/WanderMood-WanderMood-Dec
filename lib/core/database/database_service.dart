@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -20,9 +21,9 @@ class DatabaseService {
       // For production, migrations moeten via Supabase Dashboard worden toegepast
       await _supabase.rpc('exec_sql', params: {'sql_query': sqlContent});
       
-      print('Migration uitgevoerd: $sqlFilePath');
+      if (kDebugMode) debugPrint('Migration executed: $sqlFilePath');
     } catch (e) {
-      print('Fout bij uitvoeren migration: $e');
+      if (kDebugMode) debugPrint('Migration error: $e');
       rethrow;
     }
   }
@@ -35,7 +36,7 @@ class DatabaseService {
       
       return result ?? false;
     } catch (e) {
-      print('Fout bij controleren of tabel bestaat: $e');
+      if (kDebugMode) debugPrint('Table check error: $e');
       return false;
     }
   }
@@ -51,13 +52,13 @@ class DatabaseService {
   /// Initialiseert de database als deze nog niet is geïnitialiseerd
   Future<void> initializeDatabase() async {
     if (await isDatabaseInitialized()) {
-      print('Database is al geïnitialiseerd');
+      if (kDebugMode) debugPrint('Database already initialized');
       return;
     }
     
     // Voer migraties uit in volgorde
     await executeMigration('lib/core/database/migrations/mood_table_migration.sql');
     
-    print('Database initialisatie voltooid');
+    if (kDebugMode) debugPrint('Database initialization complete');
   }
 } 

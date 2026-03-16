@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -76,7 +77,7 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
     setState(() => _isLoading = true);
 
     try {
-      print('💾 Saving profile changes...');
+      if (kDebugMode) debugPrint('Saving profile changes');
       final actions = ref.read(profileSettingsActionsProvider);
       await actions.updateProfileInfo(
         fullName: _nameController.text.trim(),
@@ -85,7 +86,7 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
         travelVibes: _selectedVibes,
       );
       
-      print('✅ Profile changes saved successfully');
+      if (kDebugMode) debugPrint('Profile changes saved');
 
       // Refresh the profile provider to update the UI
       ref.invalidate(currentUserProfileProvider);
@@ -109,7 +110,7 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
         context.pop();
       }
     } catch (e) {
-      print('❌ Error saving profile: $e');
+      if (kDebugMode) debugPrint('Error saving profile: $e');
       
       // Check if it's just a database issue, and if so, simulate success
       if (e.toString().contains('404') || 
@@ -117,7 +118,7 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
           e.toString().contains('42P01') ||
           e.toString().contains('Not Found')) {
         
-        print('⚠️ Database not ready, simulating successful save');
+        if (kDebugMode) debugPrint('Database not ready, simulating save');
         
         // Refresh the profile provider to update the UI even in development mode
         ref.invalidate(currentUserProfileProvider);
@@ -231,7 +232,7 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
         }
       }
     } catch (e) {
-      print('Error changing profile photo: $e');
+      if (kDebugMode) debugPrint('Error changing profile photo: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
