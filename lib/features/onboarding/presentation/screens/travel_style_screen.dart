@@ -398,141 +398,153 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
               // Main content
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 60),
-                    SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, -0.2),
-                        end: Offset.zero,
-                      ).animate(_messageController),
-                      child: FadeTransition(
-                        opacity: _messageController,
-                        child: Center(
-                          child: Consumer(
-                            builder: (context, ref, child) {
-                              final communicationState = ref.watch(communicationStyleProvider);
-                              final styleKey = communicationState.style.toString().split('.').last;
-                              final title = communicationState.texts['travel_style']?[styleKey] ?? 'Last but not least! ✨';
-                              return Text(
-                                title,
-                                style: GoogleFonts.museoModerno(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF5BB32A),
-                                ),
-                                textAlign: TextAlign.center,
-                              );
-                            },
-                          ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, -0.2),
-                        end: Offset.zero,
-                      ).animate(_messageController),
-                      child: FadeTransition(
-                        opacity: _messageController,
-                        child: Center(
-                          child: Consumer(
-                            builder: (context, ref, child) {
-                              final communicationState = ref.watch(communicationStyleProvider);
-                              final styleKey = communicationState.style.toString().split('.').last;
-                              final subtitle = communicationState.texts['travel_style_subtitle']?[styleKey] ?? 'What\'s your travel style?';
-                              return Text(
-                                subtitle,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  color: Colors.black87,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 60),
+                            SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0, -0.2),
+                                end: Offset.zero,
+                              ).animate(_messageController),
+                              child: FadeTransition(
+                                opacity: _messageController,
+                                child: Center(
+                                  child: Consumer(
+                                    builder: (context, ref, child) {
+                                      final communicationState = ref.watch(communicationStyleProvider);
+                                      final styleKey = communicationState.style.toString().split('.').last;
+                                      final title = communicationState.texts['travel_style']?[styleKey] ?? 'Last but not least! ✨';
+                                      return Text(
+                                        title,
+                                        style: GoogleFonts.museoModerno(
+                                          fontSize: 32,
+                                          fontWeight: FontWeight.bold,
+                                          color: const Color(0xFF5BB32A),
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      );
+                                    },
+                                  ),
                                 ),
-                                textAlign: TextAlign.center,
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 40),
-                    
-                    Expanded(
-                      child: ListView(
-                        children: _travelStyles.map((style) => _buildStyleCard(style)).toList(),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Continue button with text back at bottom
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 24),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Almost there! 🎉',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Select your travel style to unlock your personalized experience',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.black54,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: _selectedStyles.isNotEmpty
-                                ? () async {
-                                    // Don't mark as complete yet - let the loading screen do that
-                                    if (mounted) {
-                                      context.go('/preferences/loading');
-                                    }
-                                  }
-                                : null,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: _selectedStyles.isNotEmpty
-                                  ? const Color(0xFF5BB32A)
-                                  : Colors.grey.withOpacity(0.3),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                elevation: _selectedStyles.isNotEmpty ? 4 : 0,
-                                shadowColor: _selectedStyles.isNotEmpty 
-                                  ? const Color(0xFF5BB32A).withOpacity(0.4)
-                                  : Colors.transparent,
                               ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                            ),
+                            const SizedBox(height: 8),
+                            SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0, -0.2),
+                                end: Offset.zero,
+                              ).animate(_messageController),
+                              child: FadeTransition(
+                                opacity: _messageController,
+                                child: Center(
+                                  child: Consumer(
+                                    builder: (context, ref, child) {
+                                      final communicationState = ref.watch(communicationStyleProvider);
+                                      final styleKey = communicationState.style.toString().split('.').last;
+                                      final subtitle = communicationState.texts['travel_style_subtitle']?[styleKey] ?? 'What\'s your travel style?';
+                                      return Text(
+                                        subtitle,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 16,
+                                          color: Colors.black87,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 40),
+                            
+                            ListView(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              children: _travelStyles.map((style) => _buildStyleCard(style)).toList(),
+                            ),
+                            const SizedBox(height: 16),
+                            // Continue button with text back at bottom
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 24),
+                              child: Column(
                                 children: [
                                   Text(
-                                    'Start My Journey',
+                                    'Almost there! 🎉',
                                     style: GoogleFonts.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Select your travel style to unlock your personalized experience',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 14,
+                                      color: Colors.black54,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: _selectedStyles.isNotEmpty
+                                        ? () async {
+                                            // Don't mark as complete yet - let the loading screen do that
+                                            if (mounted) {
+                                              context.go('/preferences/loading');
+                                            }
+                                          }
+                                        : null,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: _selectedStyles.isNotEmpty
+                                          ? const Color(0xFF5BB32A)
+                                          : Colors.grey.withOpacity(0.3),
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                        elevation: _selectedStyles.isNotEmpty ? 4 : 0,
+                                        shadowColor: _selectedStyles.isNotEmpty 
+                                          ? const Color(0xFF5BB32A).withOpacity(0.4)
+                                          : Colors.transparent,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            'Start My Journey',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          const Icon(Icons.arrow_forward_rounded),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  const Icon(Icons.arrow_forward_rounded),
                                 ],
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
 
