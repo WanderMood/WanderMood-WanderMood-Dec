@@ -36,8 +36,6 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
   late AnimationController _controller;
   int _currentGradientIndex = 0;
 
-  // Single message for planner-first flow (no rotating messages)
-  static const String _loadingMessage = "Building your plan…";
 
   // Onboarding gradients
   final List<List<Color>> _gradients = [
@@ -122,7 +120,9 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
     final loadingStartTime = DateTime.now();
     
     List<Activity> activities = [];
-      
+    String moodyMessage = '';
+    String moodyReasoning = '';
+
       try {
       // CRITICAL: Ensure session is valid before calling Edge Function
       await AuthHelper.ensureValidSession();
@@ -220,6 +220,8 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
 
       final activitiesData = responseData['activities'] as List<dynamic>;
       final locationData = responseData['location'] as Map<String, dynamic>;
+      moodyMessage = responseData['moodyMessage'] as String? ?? '';
+      moodyReasoning = responseData['reasoning'] as String? ?? '';
       
       debugPrint('✅ Edge Function generated ${activitiesData.length} activities');
       debugPrint('📍 Location confirmed: ${locationData['city']} (${locationData['latitude']}, ${locationData['longitude']})');
@@ -303,26 +305,56 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
       await Future.delayed(remainingTime);
     }
 
-    // Enforce exactly 3 activities: one per slot (morning, afternoon, evening)
-    final grouped = <String, List<Activity>>{};
-    for (final a in activities) {
-      final slot = a.timeSlot.toLowerCase();
-      grouped.putIfAbsent(slot, () => []).add(a);
+    // Filter activities based on current time to avoid suggesting past slots
+    final now = DateTime.now();
+    final hour = now.hour;
+    
+    // Create a new list with unique time slots
+    List<Activity> validActivities = [];
+    Set<TimeSlot> seenSlots = {};
+    
+    for (var a in activities) {
+      // Time filtering
+      if (hour >= 13 && a.timeSlotEnum == TimeSlot.morning) continue;
+      if (hour >= 18 && a.timeSlotEnum == TimeSlot.afternoon) continue;
+      
+      // Deduplicate by time slot (only keep one activity per period)
+      if (!seenSlots.contains(a.timeSlotEnum)) {
+        seenSlots.add(a.timeSlotEnum);
+        validActivities.add(a);
+      }
     }
-    final morning = (grouped['morning'] ?? []).isNotEmpty ? grouped['morning']!.first : null;
-    final afternoon = (grouped['afternoon'] ?? []).isNotEmpty ? grouped['afternoon']!.first : null;
-    final evening = (grouped['evening'] ?? []).isNotEmpty ? grouped['evening']!.first : null;
-    final threeActivities = <Activity>[
-      morning ?? afternoon ?? evening ?? activities.first,
-      afternoon ?? morning ?? evening ?? activities.first,
-      evening ?? afternoon ?? morning ?? activities.first,
-    ];
+    
+    // If filtering removed everything, fallback to one activity per unique time slot from original list
+    if (validActivities.isEmpty) {
+      seenSlots.clear();
+      for (var a in activities) {
+        if (!seenSlots.contains(a.timeSlotEnum)) {
+          seenSlots.add(a.timeSlotEnum);
+          validActivities.add(a);
+        }
+      }
+    }
+    
+    // Sort by time slot index (morning -> afternoon -> evening -> night)
+    validActivities.sort((a, b) => a.timeSlotEnum.index.compareTo(b.timeSlotEnum.index));
+    
+    // Take up to 3 activities
+    final finalActivities = validActivities.take(3).toList();
+    
+    // Sort final activities by time slot index to ensure correct visual order (morning -> afternoon -> evening -> night)
+    finalActivities.sort((a, b) => a.timeSlotEnum.index.compareTo(b.timeSlotEnum.index));
 
-    debugPrint('✅ Loading complete! Navigating to day plan with ${threeActivities.length} activities');
+    debugPrint('✅ Loading complete! Navigating to day plan with ${finalActivities.length} activities');
     
     // Navigate to the day plan screen with activities + moods for header
     if (mounted) {
-      context.goNamed('day-plan', extra: {'activities': threeActivities, 'moods': widget.selectedMoods});
+      context.goNamed('day-plan', extra: {
+        'activities': finalActivities,
+        'moods': widget.selectedMoods,
+        'moodyMessage': moodyMessage,
+        'moodyReasoning': moodyReasoning,
+      });
     }
   }
 
@@ -495,7 +527,7 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
                   child: Text(
-                    _loadingMessage,
+                    AppLocalizations.of(context)!.planLoadingMessage,
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,

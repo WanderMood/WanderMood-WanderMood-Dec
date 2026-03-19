@@ -13,10 +13,7 @@ class WanderFeedComingSoonScreen extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () => Navigator.pop(context),
-          ),
+          automaticallyImplyLeading: false,
           title: Text(
             'WanderFeed',
             style: GoogleFonts.museoModerno(
@@ -49,7 +46,7 @@ class WanderFeedComingSoonScreen extends StatelessWidget {
                 
                 // Title
                 Text(
-                  'WanderFeed Coming Soon!',
+                  'WanderFeed',
                   style: GoogleFonts.poppins(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -61,7 +58,7 @@ class WanderFeedComingSoonScreen extends StatelessWidget {
                 
                 // Description
                 Text(
-                  'We\'re building an amazing social experience where you can share your travel adventures, discover new places, and connect with fellow wanderers.',
+                  'A social space for travelers — share your adventures, discover hidden gems, and connect with fellow wanderers.',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     color: Colors.grey[700],
@@ -71,7 +68,7 @@ class WanderFeedComingSoonScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 48),
                 
-                // Features preview
+                // Features
                 _buildFeatureItem(
                   icon: Icons.camera_alt_outlined,
                   title: 'Share Your Journey',
@@ -91,7 +88,6 @@ class WanderFeedComingSoonScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 48),
                 
-                // CTA
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   decoration: BoxDecoration(
@@ -99,12 +95,13 @@ class WanderFeedComingSoonScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(25),
                   ),
                   child: Text(
-                    'Stay tuned for updates! 🧳✨',
+                    'Be among the first to explore WanderFeed 🧳✨',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF12B347),
                     ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ],

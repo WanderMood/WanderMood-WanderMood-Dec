@@ -28,6 +28,7 @@ import 'package:wandermood/core/services/user_preferences_service.dart';
 import '../widgets/conversational_explore_header.dart';
 import '../../application/intent_processor.dart';
 import '../../providers/smart_context_provider.dart';
+import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 
 
 class ExploreScreen extends ConsumerStatefulWidget {
@@ -163,6 +164,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       ref.invalidate(explorePlacesProvider);
       // Get current location
       ref.read(locationNotifierProvider.notifier).getCurrentLocation();
+
+      // Wire daily mood selection → Explore filter so the user's current mood
+      // is pre-selected when they open Explore after choosing moods.
+      final moodState = ref.read(dailyMoodStateNotifierProvider);
+      final currentMood = moodState.currentMood;
+      if (currentMood != null && currentMood.isNotEmpty) {
+        setState(() {
+          _selectedMood = currentMood;
+          _updateActiveFiltersCount();
+        });
+      }
     });
   }
 

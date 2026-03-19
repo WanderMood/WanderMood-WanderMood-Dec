@@ -164,6 +164,120 @@ abstract class AppLocalizations {
   /// **'Create my first day'**
   String get createMyFirstDay;
 
+  /// No description provided for @myDayHeaderMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning! Let\'s make today amazing.'**
+  String get myDayHeaderMorning;
+
+  /// No description provided for @myDayHeaderAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon! Your day is looking great.'**
+  String get myDayHeaderAfternoon;
+
+  /// No description provided for @myDayHeaderEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening! Let\'s see what the rest of today can become.'**
+  String get myDayHeaderEvening;
+
+  /// No description provided for @myDayNoPlanHeaderSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No plans yet. Your day is still open.'**
+  String get myDayNoPlanHeaderSubtitle;
+
+  /// No description provided for @myDayEmptyGreetingMorningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A fresh day full of possibilities awaits.'**
+  String get myDayEmptyGreetingMorningBody;
+
+  /// No description provided for @myDayEmptyGreetingAfternoonBody.
+  ///
+  /// In en, this message translates to:
+  /// **'There is still time to turn today into something memorable.'**
+  String get myDayEmptyGreetingAfternoonBody;
+
+  /// No description provided for @myDayEmptyGreetingEveningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The night is still open. Plan something special or ease into it slowly.'**
+  String get myDayEmptyGreetingEveningBody;
+
+  /// No description provided for @myDayEmptyPlanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to plan your day?'**
+  String get myDayEmptyPlanTitle;
+
+  /// No description provided for @myDayEmptyPlanSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a day plan and start exploring places that match your mood, timing, and energy.'**
+  String get myDayEmptyPlanSubtitle;
+
+  /// No description provided for @myDayEmptyCreateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create My Day'**
+  String get myDayEmptyCreateButton;
+
+  /// No description provided for @myDayEmptyBrowseButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse Activities'**
+  String get myDayEmptyBrowseButton;
+
+  /// No description provided for @myDayEmptyAskMoodyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask Moody'**
+  String get myDayEmptyAskMoodyButton;
+
+  /// No description provided for @myDayEmptyInspiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get inspired'**
+  String get myDayEmptyInspiredTitle;
+
+  /// No description provided for @myDayInspiredCafesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover cafes'**
+  String get myDayInspiredCafesTitle;
+
+  /// No description provided for @myDayInspiredCafesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find cozy spots to relax'**
+  String get myDayInspiredCafesSubtitle;
+
+  /// No description provided for @myDayInspiredTrendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending places'**
+  String get myDayInspiredTrendingTitle;
+
+  /// No description provided for @myDayInspiredTrendingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular spots this week'**
+  String get myDayInspiredTrendingSubtitle;
+
+  /// No description provided for @myDayInspiredHiddenGemsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden gems'**
+  String get myDayInspiredHiddenGemsTitle;
+
+  /// No description provided for @myDayInspiredHiddenGemsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Local favorites nearby'**
+  String get myDayInspiredHiddenGemsSubtitle;
+
   /// No description provided for @skipForNow.
   ///
   /// In en, this message translates to:
@@ -4526,11 +4640,29 @@ abstract class AppLocalizations {
   /// **'{name} added to My Day.'**
   String dayPlanCardAddedToMyDay(String name);
 
+  /// No description provided for @dayPlanCardAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get dayPlanCardAdded;
+
+  /// No description provided for @dayPlanCardAddRemainingToMyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Add remaining to My Day'**
+  String get dayPlanCardAddRemainingToMyDay;
+
   /// No description provided for @dayPlanCardMatch.
   ///
   /// In en, this message translates to:
   /// **'{percent}% Match'**
   String dayPlanCardMatch(String percent);
+
+  /// No description provided for @dayPlanCardAddToMyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Add to My Day'**
+  String get dayPlanCardAddToMyDay;
 
   /// No description provided for @moodHubGreetingFriendly.
   ///
@@ -4784,6 +4916,174 @@ abstract class AppLocalizations {
   /// **'No activities found for your selected moods and location. Please try different moods or check your location settings.'**
   String get planLoadingErrorNoActivities;
 
+  /// No description provided for @planLoadingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Building your plan…'**
+  String get planLoadingMessage;
+
+  /// No description provided for @moodySays.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody says'**
+  String get moodySays;
+
+  /// No description provided for @dayPlanMoodyCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody'**
+  String get dayPlanMoodyCardTitle;
+
+  /// No description provided for @moodCultural.
+  ///
+  /// In en, this message translates to:
+  /// **'Cultural'**
+  String get moodCultural;
+
+  /// No description provided for @moodCozy.
+  ///
+  /// In en, this message translates to:
+  /// **'Cozy'**
+  String get moodCozy;
+
+  /// No description provided for @moodFoody.
+  ///
+  /// In en, this message translates to:
+  /// **'Foody'**
+  String get moodFoody;
+
+  /// No description provided for @moodRelaxed.
+  ///
+  /// In en, this message translates to:
+  /// **'Relaxed'**
+  String get moodRelaxed;
+
+  /// No description provided for @moodAdventurous.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventurous'**
+  String get moodAdventurous;
+
+  /// No description provided for @moodSocial.
+  ///
+  /// In en, this message translates to:
+  /// **'Social'**
+  String get moodSocial;
+
+  /// No description provided for @moodCreative.
+  ///
+  /// In en, this message translates to:
+  /// **'Creative'**
+  String get moodCreative;
+
+  /// No description provided for @moodRomantic.
+  ///
+  /// In en, this message translates to:
+  /// **'Romantic'**
+  String get moodRomantic;
+
+  /// No description provided for @moodEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Energetic'**
+  String get moodEnergetic;
+
+  /// No description provided for @moodCurious.
+  ///
+  /// In en, this message translates to:
+  /// **'Curious'**
+  String get moodCurious;
+
+  /// No description provided for @dayPlanFoundNewOption.
+  ///
+  /// In en, this message translates to:
+  /// **'✨ Found a new option: {name}! ({remaining} more changes available)'**
+  String dayPlanFoundNewOption(String name, String remaining);
+
+  /// No description provided for @activityDetailMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% Match'**
+  String activityDetailMatch(String percent);
+
+  /// No description provided for @activityDetailPhotoCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} photo'**
+  String activityDetailPhotoCount(String count);
+
+  /// No description provided for @activityDetailRatingExceptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Exceptional'**
+  String get activityDetailRatingExceptional;
+
+  /// No description provided for @activityDetailDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get activityDetailDuration;
+
+  /// No description provided for @activityDetailPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get activityDetailPrice;
+
+  /// No description provided for @activityDetailDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get activityDetailDistance;
+
+  /// No description provided for @activityDetailAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get activityDetailAbout;
+
+  /// No description provided for @activityDetailHighlights.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlights'**
+  String get activityDetailHighlights;
+
+  /// No description provided for @activityDetailLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get activityDetailLocation;
+
+  /// No description provided for @activityDetailGetDirections.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Directions →'**
+  String get activityDetailGetDirections;
+
+  /// No description provided for @activityDetailFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get activityDetailFrom;
+
+  /// No description provided for @activityDetailPerPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'per person'**
+  String get activityDetailPerPerson;
+
+  /// No description provided for @activityDetailDirections.
+  ///
+  /// In en, this message translates to:
+  /// **'Directions'**
+  String get activityDetailDirections;
+
+  /// No description provided for @activityDetailBookNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Book Now'**
+  String get activityDetailBookNow;
+
   /// No description provided for @getReadyTitle.
   ///
   /// In en, this message translates to:
@@ -4999,6 +5299,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Can\'t wait to see what you discover!'**
   String get getReadyCantWait;
+
+  /// No description provided for @noPlanDayOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Your day in {city} is wide open. Want me to put a plan together, or are you looking for a specific vibe?'**
+  String noPlanDayOpen(String city);
+
+  /// No description provided for @noPlanPlanMyWholeDay.
+  ///
+  /// In en, this message translates to:
+  /// **'✨ Plan my whole day'**
+  String get noPlanPlanMyWholeDay;
+
+  /// No description provided for @noPlanFindMeCoffee.
+  ///
+  /// In en, this message translates to:
+  /// **'☕ Find me coffee'**
+  String get noPlanFindMeCoffee;
+
+  /// No description provided for @noPlanGetMeMoving.
+  ///
+  /// In en, this message translates to:
+  /// **'🏃 Get me moving'**
+  String get noPlanGetMeMoving;
+
+  /// No description provided for @noPlanJustChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Just chat'**
+  String get noPlanJustChat;
+
+  /// No description provided for @noPlanPlanLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe later'**
+  String get noPlanPlanLater;
 }
 
 class _AppLocalizationsDelegate

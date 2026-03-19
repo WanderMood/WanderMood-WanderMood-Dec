@@ -50,6 +50,7 @@ class SchemaHelper {
           is_confirmed BOOLEAN DEFAULT FALSE,
           tags TEXT,
           payment_type TEXT,
+          scheduled_date DATE,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
           UNIQUE(user_id, activity_id)
         );
@@ -79,6 +80,7 @@ class SchemaHelper {
           'longitude': 0.0,
           'tags': 'test',
           'payment_type': 'free',
+          'scheduled_date': DateTime.now().toIso8601String().substring(0, 10),
         });
         
         // If we get here, it means the table exists (maybe it was auto-created)
@@ -116,6 +118,7 @@ class SchemaHelper {
         is_confirmed BOOLEAN DEFAULT FALSE,
         tags TEXT,
         payment_type TEXT,
+        scheduled_date DATE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         UNIQUE(user_id, activity_id)
       );

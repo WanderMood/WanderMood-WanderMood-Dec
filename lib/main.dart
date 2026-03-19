@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/router/router.dart';
@@ -14,6 +13,8 @@ import 'features/auth/providers/auth_provider.dart';
 import 'core/domain/providers/location_notifier_provider.dart';
 import 'features/location/services/location_service.dart';
 import 'features/plans/data/services/schema_helper.dart';
+import 'services/daily_cleanup_service.dart';
+import 'core/providers/supabase_provider.dart';
 import 'features/settings/presentation/providers/user_preferences_provider.dart';
 import 'features/gamification/providers/gamification_provider.dart' as gamification;
 import 'package:wandermood/features/places/providers/explore_places_provider.dart';
@@ -43,6 +44,14 @@ final appInitializerProvider = FutureProvider<bool>((ref) async {
     await schemaHelper.createScheduledActivitiesTable();
   } catch (e) {
     debugPrint('Error initializing database schema: $e');
+  }
+  
+  // Clean up old scheduled activities (past dates) on app start
+  try {
+    final client = ref.read(supabaseClientProvider);
+    await DailyCleanupService(client).cleanupOldActivities();
+  } catch (e) {
+    debugPrint('Error during daily cleanup: $e');
   }
   
   // Record app visit for gamification
@@ -179,19 +188,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   try {
-    // **CRITICAL**: Load environment variables FIRST before any API key access
-    try {
-      await dotenv.load(fileName: '.env');
-      debugPrint('✅ Loaded .env file');
-      if (dotenv.isInitialized) {
-        debugPrint('🔍 SUPABASE_URL from .env: ${dotenv.env['SUPABASE_URL']}');
-        debugPrint('🔍 SUPABASE_ANON_KEY from .env: ${dotenv.env['SUPABASE_ANON_KEY']?.substring(0, 20)}...');
-      }
-    } catch (e) {
-      debugPrint('⚠️ Could not load .env file: $e');
-      debugPrint('⚠️ Error details: ${e.toString()}');
-      debugPrint('⚠️ Will use fallback values or build-time environment variables');
-      // Continue - will use build-time environment variables
+    // Use --dart-define for API keys (never bundle .env in release)
+    if (kDebugMode) {
+      debugPrint('🔑 API keys loaded from --dart-define (release) or ApiKeys fallbacks (debug)');
     }
     
     // **CRITICAL**: Validate required API keys BEFORE initializing Supabase

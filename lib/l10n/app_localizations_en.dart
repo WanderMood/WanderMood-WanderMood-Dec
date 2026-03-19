@@ -40,6 +40,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createMyFirstDay => 'Create my first day';
 
   @override
+  String get myDayHeaderMorning => 'Good morning! Let\'s make today amazing.';
+
+  @override
+  String get myDayHeaderAfternoon =>
+      'Good afternoon! Your day is looking great.';
+
+  @override
+  String get myDayHeaderEvening =>
+      'Good evening! Let\'s see what the rest of today can become.';
+
+  @override
+  String get myDayNoPlanHeaderSubtitle =>
+      'No plans yet. Your day is still open.';
+
+  @override
+  String get myDayEmptyGreetingMorningBody =>
+      'A fresh day full of possibilities awaits.';
+
+  @override
+  String get myDayEmptyGreetingAfternoonBody =>
+      'There is still time to turn today into something memorable.';
+
+  @override
+  String get myDayEmptyGreetingEveningBody =>
+      'The night is still open. Plan something special or ease into it slowly.';
+
+  @override
+  String get myDayEmptyPlanTitle => 'Ready to plan your day?';
+
+  @override
+  String get myDayEmptyPlanSubtitle =>
+      'Create a day plan and start exploring places that match your mood, timing, and energy.';
+
+  @override
+  String get myDayEmptyCreateButton => 'Create My Day';
+
+  @override
+  String get myDayEmptyBrowseButton => 'Browse Activities';
+
+  @override
+  String get myDayEmptyAskMoodyButton => 'Ask Moody';
+
+  @override
+  String get myDayEmptyInspiredTitle => 'Get inspired';
+
+  @override
+  String get myDayInspiredCafesTitle => 'Discover cafes';
+
+  @override
+  String get myDayInspiredCafesSubtitle => 'Find cozy spots to relax';
+
+  @override
+  String get myDayInspiredTrendingTitle => 'Trending places';
+
+  @override
+  String get myDayInspiredTrendingSubtitle => 'Popular spots this week';
+
+  @override
+  String get myDayInspiredHiddenGemsTitle => 'Hidden gems';
+
+  @override
+  String get myDayInspiredHiddenGemsSubtitle => 'Local favorites nearby';
+
+  @override
   String get skipForNow => 'Skip for now';
 
   @override
@@ -2395,9 +2459,18 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get dayPlanCardAdded => 'Added';
+
+  @override
+  String get dayPlanCardAddRemainingToMyDay => 'Add remaining to My Day';
+
+  @override
   String dayPlanCardMatch(String percent) {
     return '$percent% Match';
   }
+
+  @override
+  String get dayPlanCardAddToMyDay => '+ Add to My Day';
 
   @override
   String moodHubGreetingFriendly(String name) {
@@ -2545,6 +2618,96 @@ class AppLocalizationsEn extends AppLocalizations {
       'No activities found for your selected moods and location. Please try different moods or check your location settings.';
 
   @override
+  String get planLoadingMessage => 'Building your plan…';
+
+  @override
+  String get moodySays => 'Moody says';
+
+  @override
+  String get dayPlanMoodyCardTitle => 'Moody';
+
+  @override
+  String get moodCultural => 'Cultural';
+
+  @override
+  String get moodCozy => 'Cozy';
+
+  @override
+  String get moodFoody => 'Foody';
+
+  @override
+  String get moodRelaxed => 'Relaxed';
+
+  @override
+  String get moodAdventurous => 'Adventurous';
+
+  @override
+  String get moodSocial => 'Social';
+
+  @override
+  String get moodCreative => 'Creative';
+
+  @override
+  String get moodRomantic => 'Romantic';
+
+  @override
+  String get moodEnergetic => 'Energetic';
+
+  @override
+  String get moodCurious => 'Curious';
+
+  @override
+  String dayPlanFoundNewOption(String name, String remaining) {
+    return '✨ Found a new option: $name! ($remaining more changes available)';
+  }
+
+  @override
+  String activityDetailMatch(String percent) {
+    return '$percent% Match';
+  }
+
+  @override
+  String activityDetailPhotoCount(String count) {
+    return '$count photo';
+  }
+
+  @override
+  String get activityDetailRatingExceptional => 'Exceptional';
+
+  @override
+  String get activityDetailDuration => 'Duration';
+
+  @override
+  String get activityDetailPrice => 'Price';
+
+  @override
+  String get activityDetailDistance => 'Distance';
+
+  @override
+  String get activityDetailAbout => 'About';
+
+  @override
+  String get activityDetailHighlights => 'Highlights';
+
+  @override
+  String get activityDetailLocation => 'Location';
+
+  @override
+  String get activityDetailGetDirections => 'Get Directions →';
+
+  @override
+  String get activityDetailFrom => 'From';
+
+  @override
+  String get activityDetailPerPerson => 'per person';
+
+  @override
+  String get activityDetailDirections => 'Directions';
+
+  @override
+  String get activityDetailBookNow => 'Book Now';
+
+  @override
   String get getReadyTitle => 'Get Ready';
 
   @override
@@ -2668,4 +2831,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get getReadyCantWait => 'Can\'t wait to see what you discover!';
+
+  @override
+  String noPlanDayOpen(String city) {
+    return 'Your day in $city is wide open. Want me to put a plan together, or are you looking for a specific vibe?';
+  }
+
+  @override
+  String get noPlanPlanMyWholeDay => '✨ Plan my whole day';
+
+  @override
+  String get noPlanFindMeCoffee => '☕ Find me coffee';
+
+  @override
+  String get noPlanGetMeMoving => '🏃 Get me moving';
+
+  @override
+  String get noPlanJustChat => 'Just chat';
+
+  @override
+  String get noPlanPlanLater => 'Maybe later';
 }

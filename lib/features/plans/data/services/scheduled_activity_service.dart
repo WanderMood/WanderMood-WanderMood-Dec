@@ -85,7 +85,8 @@ class ScheduledActivityService {
   // Helper to prepare activity data for insertion
   List<Map<String, dynamic>> _prepareActivityData(List<Activity> activities, String userId, bool isConfirmed) {
     return activities.map((activity) {
-      // Create a simplified map for the database
+      // Derive scheduled_date from activity's startTime (date-only, YYYY-MM-DD)
+      final scheduledDate = '${activity.startTime.year}-${activity.startTime.month.toString().padLeft(2, '0')}-${activity.startTime.day.toString().padLeft(2, '0')}';
       return {
         'user_id': userId,
         'activity_id': activity.id,
@@ -102,6 +103,7 @@ class ScheduledActivityService {
         'payment_type': activity.paymentType.toString().split('.').last,
         'place_id': activity.placeId,
         'rating': activity.rating,
+        'scheduled_date': scheduledDate,
         'created_at': DateTime.now().toIso8601String(),
       };
     }).toList();
@@ -190,7 +192,7 @@ class ScheduledActivityService {
     }
   }
   
-  /// Get all scheduled activities for the current user
+  /// Get all scheduled activities for the current user (today only, filtered by scheduled_date)
   Future<List<Activity>> getScheduledActivities() async {
     try {
       // Require authentication
@@ -199,14 +201,39 @@ class ScheduledActivityService {
         throw Exception('User must be authenticated to view scheduled activities');
       }
       
-      debugPrint('ScheduledActivityService: Getting activities for user $userId');
+      final now = DateTime.now();
+      final todayStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
       
-      // Query the scheduled_activities table
-      final response = await _client
-          .from('scheduled_activities')
-          .select()
-          .eq('user_id', userId)
-          .order('start_time', ascending: true);
+      debugPrint('ScheduledActivityService: Getting activities for user $userId (scheduled_date=$todayStr)');
+      
+      // Query only today's activities (scheduled_date = today)
+      // Fallback: if column doesn't exist yet, fetch all and filter by startTime in Dart
+      List<dynamic> response;
+      try {
+        response = await _client
+            .from('scheduled_activities')
+            .select()
+            .eq('user_id', userId)
+            .eq('scheduled_date', todayStr)
+            .order('start_time', ascending: true);
+      } catch (columnError) {
+        if (columnError.toString().contains('scheduled_date') || columnError.toString().contains('column')) {
+          debugPrint('ScheduledActivityService: scheduled_date column missing, falling back to startTime filter');
+          final all = await _client
+              .from('scheduled_activities')
+              .select()
+              .eq('user_id', userId)
+              .order('start_time', ascending: true);
+          response = (all as List).where((r) {
+            final st = r['start_time'] as String?;
+            if (st == null) return false;
+            final dt = DateTime.parse(st);
+            return dt.year == now.year && dt.month == now.month && dt.day == now.day;
+          }).toList();
+        } else {
+          rethrow;
+        }
+      }
       
       debugPrint('ScheduledActivityService: Raw response length: ${response.length}');
       

@@ -214,7 +214,7 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
     final color = style['color'] as Color;
     
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 10),
       child: InkWell(
         onTap: () => _toggleStyle(style['name']),
         child: AnimatedContainer(
@@ -252,12 +252,12 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             child: Row(
               children: [
                 Container(
-                  width: 50,
-                  height: 50,
+                  width: 46,
+                  height: 46,
                   decoration: BoxDecoration(
                     color: isSelected
                       ? Colors.white.withOpacity(0.2)
@@ -289,11 +289,13 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
                       Text(
                         style['description'],
                         style: GoogleFonts.poppins(
-                          fontSize: 14,
+                          fontSize: 13,
                           color: isSelected
                             ? Colors.white.withOpacity(0.9)
                             : Colors.black54,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -471,31 +473,12 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
                               physics: const NeverScrollableScrollPhysics(),
                               children: _travelStyles.map((style) => _buildStyleCard(style)).toList(),
                             ),
-                            const SizedBox(height: 16),
-                            // Continue button with text back at bottom
+                            const SizedBox(height: 8),
+                            // Continue button
                             Padding(
                               padding: const EdgeInsets.only(bottom: 24),
                               child: Column(
                                 children: [
-                                  Text(
-                                    'Almost there! 🎉',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black87,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Select your travel style to unlock your personalized experience',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      color: Colors.black54,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 16),
                                   SizedBox(
                                     width: double.infinity,
                                     child: ElevatedButton(

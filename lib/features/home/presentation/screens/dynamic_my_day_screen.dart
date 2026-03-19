@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -7,9 +9,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
-import 'dart:convert';
+import 'package:wandermood/l10n/app_localizations.dart';
 import 'dynamic_my_day_provider.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import '../../../profile/presentation/widgets/profile_drawer.dart';
@@ -21,11 +22,15 @@ import '../../../places/models/place.dart';
 import '../../../../core/domain/providers/location_notifier_provider.dart';
 import '../../../../core/providers/user_location_provider.dart';
 import 'main_screen.dart';
-import 'reservation_details_sheet.dart';
+import '../widgets/day_execution_hero_card.dart';
+import '../widgets/my_day_free_time_carousel.dart';
+import '../widgets/my_day_get_ready_sheet.dart';
+import '../widgets/my_day_timeline_section.dart';
+import '../widgets/my_day_weather_dialog.dart';
 import 'package:wandermood/core/theme/time_based_theme.dart';
 import '../../providers/time_suggestion_provider.dart';
 import 'package:wandermood/core/presentation/painters/circle_pattern_painter.dart';
-import 'reservation_details_sheet.dart';
+import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 
 class DynamicMyDayScreen extends ConsumerStatefulWidget {
   const DynamicMyDayScreen({super.key});
@@ -63,15 +68,22 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   @override
   Widget build(BuildContext context) {
     debugPrint('🏠 DynamicMyDayScreen: Building My Day screen');
-    final greetingMessage = ref.watch(greetingMessageProvider);
+    final l10n = AppLocalizations.of(context)!;
     final currentStatus = ref.watch(currentActivityStatusProvider);
     final timelineActivities = ref.watch(timelineCategorizedActivitiesProvider);
+    final currentStatusValue = currentStatus.valueOrNull;
+    final headerSubtitle = _headerSubtitle(
+      l10n: l10n,
+      status: currentStatusValue,
+    );
     
     return Scaffold(
       key: _scaffoldKey,
       drawer: const ProfileDrawer(),
       backgroundColor: Colors.transparent,
-      body: SwirlBackground(
+      body: currentStatusValue?['type'] == 'no_plan'
+          ? _buildImmersiveNoPlanState(l10n)
+          : SwirlBackground(
         child: CustomScrollView(
           slivers: [
             // Header Section
@@ -83,308 +95,13 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Header with profile button, title, and controls
-                      Row(
-                        children: [
-                          // Profile button
-                          GestureDetector(
-                            onTap: () {
-                              _scaffoldKey.currentState?.openDrawer();
-                            },
-                            child: Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Consumer(
-                                builder: (context, ref, child) {
-                                  final profileData = ref.watch(profileProvider);
-                                  return profileData.when(
-                                    data: (profile) => CircleAvatar(
-                                      radius: 20,
-                                      backgroundColor: Colors.white,
-                                      backgroundImage: profile?.imageUrl != null
-                                          ? NetworkImage(profile!.imageUrl!)
-                                          : null,
-                                      child: profile?.imageUrl == null
-                                          ? Text(
-                                              profile?.fullName?.substring(0, 1).toUpperCase() ?? 'U',
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: const Color(0xFF12B347),
-                                              ),
-                                            )
-                                          : null,
-                                    ),
-                                    loading: () => CircleAvatar(
-                                      radius: 20,
-                                      backgroundColor: Colors.white,
-                                      child: Icon(
-                                        Icons.person,
-                                        color: const Color(0xFF12B347),
-                                        size: 20,
-                                      ),
-                                    ),
-                                    error: (_, __) => CircleAvatar(
-                                      radius: 20,
-                                      backgroundColor: Colors.white,
-                                      child: Icon(
-                                        Icons.person,
-                                        color: const Color(0xFF12B347),
-                                        size: 20,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          
-                          // Title
-                          Expanded(
-                            child: Text(
-                              'My Day',
-                              style: GoogleFonts.museoModerno(
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF12B347),
-                                letterSpacing: 0.5,
-                              ),
-                            ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2),
-                          ),
-                          
-                          // Agenda and refresh
-                          Row(
-                            children: [
-                              // Agenda button
-                              IconButton(
-                                onPressed: () {
-                                  context.push('/agenda');
-                                },
-                                icon: const Icon(
-                                  Icons.calendar_month,
-                                  color: Color(0xFF12B347),
-                                  size: 24,
-                                ),
-                              ),
-                              // Refresh button
-                              IconButton(
-                                onPressed: () {
-                                  // ✅ FIXED: Add debounce - only allow refresh every 2 seconds
-                                  final now = DateTime.now();
-                                  if (_lastRefreshTime == null || now.difference(_lastRefreshTime!).inSeconds > 2) {
-                                    _lastRefreshTime = now;
-                                    debugPrint('🔄 My Day: Manual refresh triggered');
-                                    ref.invalidate(scheduledActivitiesForTodayProvider);
-                                    ref.invalidate(cachedActivitySuggestionsProvider);
-                                  } else {
-                                    debugPrint('⏸️ My Day: Refresh blocked (debounced)');
-                                  }
-                                },
-                                icon: const Icon(
-                                  Icons.refresh,
-                                  color: Color(0xFF12B347),
-                                  size: 24,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // Weather widget - now with real data and clickable!
-                              Consumer(
-                                builder: (context, ref, child) {
-                                  final weatherAsync = ref.watch(weatherProvider);
-                                  
-                                  return weatherAsync.when(
-                                    data: (weather) {
-                                      if (weather == null) {
-                                        return GestureDetector(
-                                          onTap: () => _showWeatherDialog(context, null),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white.withOpacity(0.9),
-                                              borderRadius: BorderRadius.circular(20),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.black.withOpacity(0.1),
-                                                  blurRadius: 8,
-                                                  offset: const Offset(0, 2),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                const Icon(Icons.cloud_off, color: Colors.grey, size: 20),
-                                                const SizedBox(width: 6),
-                                                Text(
-                                                  '--°',
-                                                  style: GoogleFonts.poppins(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.grey[600],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                      
-                                      // Get appropriate weather icon
-                                      IconData weatherIcon;
-                                      Color iconColor;
-                                      switch (weather.condition.toLowerCase()) {
-                                        case 'clear':
-                                          weatherIcon = Icons.wb_sunny;
-                                          iconColor = Colors.orange;
-                                          break;
-                                        case 'clouds':
-                                          weatherIcon = Icons.cloud;
-                                          iconColor = Colors.grey[600]!;
-                                          break;
-                                        case 'rain':
-                                          weatherIcon = Icons.water_drop;
-                                          iconColor = Colors.blue;
-                                          break;
-                                        case 'snow':
-                                          weatherIcon = Icons.ac_unit;
-                                          iconColor = Colors.lightBlue;
-                                          break;
-                                        case 'thunderstorm':
-                                          weatherIcon = Icons.flash_on;
-                                          iconColor = Colors.deepPurple;
-                                          break;
-                                        case 'mist':
-                                        case 'fog':
-                                          weatherIcon = Icons.blur_on;
-                                          iconColor = Colors.grey[500]!;
-                                          break;
-                                        default:
-                                          weatherIcon = Icons.wb_sunny;
-                                          iconColor = Colors.orange;
-                                      }
-                                      
-                                      return GestureDetector(
-                                        onTap: () => _showWeatherDialog(context, weather),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(0.9),
-                                            borderRadius: BorderRadius.circular(20),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black.withOpacity(0.1),
-                                                blurRadius: 8,
-                                                offset: const Offset(0, 2),
-                                              ),
-                                            ],
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(weatherIcon, color: iconColor, size: 20),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                '${weather.temperature.round()}°',
-                                                style: GoogleFonts.poppins(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Colors.black87,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    loading: () => Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.9),
-                                        borderRadius: BorderRadius.circular(20),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withOpacity(0.1),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[600]!),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            '...°',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.grey[600],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    error: (_, __) => Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.9),
-                                        borderRadius: BorderRadius.circular(20),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withOpacity(0.1),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(Icons.error_outline, color: Colors.red, size: 20),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            '!°',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.red,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ).animate().fadeIn(delay: 300.ms, duration: 600.ms),
-                            ],
-                          ),
-                        ],
-                      ),
+                      _buildHeaderRow(isImmersive: false),
                       
                       const SizedBox(height: 12),
                       
                       // Dynamic greeting message
                       Text(
-                        greetingMessage,
+                        headerSubtitle,
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           color: Colors.black87,
@@ -392,26 +109,19 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         ),
                       ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
                       
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 12),
+                      currentStatus.when(
+                        data: (status) => _buildSmartStatusCard(status),
+                        loading: () => _buildLoadingStatusCard(),
+                        error: (error, stack) => _buildErrorStatusCard(),
+                      ),
                     ],
                   ),
                 ),
               ),
             ),
 
-            // Smart Status Card
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: currentStatus.when(
-                  data: (status) => _buildSmartStatusCard(status),
-                  loading: () => _buildLoadingStatusCard(),
-                  error: (error, stack) => _buildErrorStatusCard(),
-                ),
-              ),
-            ),
-
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            const SliverToBoxAdapter(child: SizedBox(height: 0)),
 
             // Timeline or List View
             if (_selectedView == 'timeline')
@@ -439,19 +149,759 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     );
   }
 
-  Widget _buildSmartStatusCard(Map<String, dynamic> status) {
-    // If it's the "Right Now" card, create a hero card
-    if (status['type'] == 'active') {
-      return _buildRightNowCard(status);
+  Widget _buildImmersiveNoPlanState(AppLocalizations l10n) {
+    final hour = DateTime.now().hour;
+    // We'll use the city from weather data since userLocationProvider only gives coordinates
+    final weatherAsync = ref.watch(weatherProvider);
+    final cityName = weatherAsync.valueOrNull?.location ?? 'your city';
+
+    String bgImageUrl;
+    String greeting;
+    String subtitle;
+
+    if (hour < 12) {
+      bgImageUrl = 'https://images.unsplash.com/photo-1513622470522-26c308a908f7?q=80&w=1200&auto=format&fit=crop'; // Morning coffee/sunrise city
+      greeting = l10n.goodMorning;
+      subtitle = "The day is a blank canvas. What's the vibe?";
+    } else if (hour < 17) {
+      bgImageUrl = 'https://images.unsplash.com/photo-1514924013411-cbf25faa35bb?q=80&w=1200&auto=format&fit=crop'; // Vibrant city street day
+      greeting = l10n.goodAfternoon;
+      subtitle = "Ready for an adventure? What's the vibe?";
+    } else {
+      bgImageUrl = 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=1200&auto=format&fit=crop'; // Beautiful city night
+      greeting = l10n.goodEvening;
+      subtitle = "The night is young. What's the vibe?";
     }
-    
-    // For free time card, create the stunning new design
+
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: CachedNetworkImage(
+            imageUrl: bgImageUrl,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(color: Colors.black87),
+            errorWidget: (context, url, error) => Container(color: Colors.black87),
+          ),
+        ),
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.5),
+                  Colors.black.withOpacity(0.1),
+                  Colors.black.withOpacity(0.9),
+                ],
+                stops: const [0.0, 0.4, 1.0],
+              ),
+            ),
+          ),
+        ),
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
+                _buildHeaderRow(isImmersive: true),
+                
+                const Spacer(),
+                
+                Text(
+                  '$greeting in $cityName!',
+                  style: GoogleFonts.poppins(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    height: 1.2,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.6),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                ).animate().fadeIn(delay: 200.ms, duration: 600.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOut),
+                
+                const SizedBox(height: 12),
+                
+                Text(
+                  subtitle,
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white.withOpacity(0.9),
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.6),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ).animate().fadeIn(delay: 400.ms, duration: 600.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOut),
+                
+                const SizedBox(height: 32),
+                
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildImmersiveActionButton(
+                        icon: Icons.restaurant,
+                        label: 'Grab a bite',
+                        onTap: () => _navigateToTab(1),
+                      ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.2, end: 0),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildImmersiveActionButton(
+                        icon: Icons.explore_rounded,
+                        label: 'Explore',
+                        onTap: () => _navigateToTab(1),
+                      ).animate().fadeIn(delay: 700.ms).slideY(begin: 0.2, end: 0),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildImmersiveActionButton(
+                        icon: Icons.nightlife,
+                        label: 'Nightlife',
+                        onTap: () => _navigateToTab(1),
+                      ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2, end: 0),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 24),
+                
+                GestureDetector(
+                  onTap: () => _navigateToTab(2),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF16C45B), Color(0xFF0E8E38)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF16C45B).withOpacity(0.4),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.auto_awesome, color: Colors.white, size: 24),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Let Moody Plan It',
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ).animate().fadeIn(delay: 1000.ms).slideY(begin: 0.2, end: 0),
+                
+                const SizedBox(height: 48),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImmersiveActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: Colors.white, size: 28),
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderRow({required bool isImmersive}) {
+    final titleColor = isImmersive ? Colors.white : const Color(0xFF12B347);
+    final iconColor = isImmersive ? Colors.white : const Color(0xFF12B347);
+    final profileBgColor = isImmersive ? Colors.white.withOpacity(0.2) : Colors.white;
+    final profileBorder = isImmersive ? Border.all(color: Colors.white.withOpacity(0.5), width: 1) : null;
+    final shadowColor = isImmersive ? Colors.black.withOpacity(0.5) : Colors.black.withOpacity(0.1);
+
+    return Row(
+      children: [
+        // Profile button
+        GestureDetector(
+          onTap: () {
+            _scaffoldKey.currentState?.openDrawer();
+          },
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: profileBgColor,
+              shape: BoxShape.circle,
+              border: profileBorder,
+              boxShadow: [
+                if (!isImmersive)
+                  BoxShadow(
+                    color: shadowColor,
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+              ],
+            ),
+            child: isImmersive
+                ? ClipOval(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                      child: _buildProfileAvatar(isImmersive: isImmersive),
+                    ),
+                  )
+                : _buildProfileAvatar(isImmersive: isImmersive),
+          ),
+        ),
+        const SizedBox(width: 16),
+        
+        // Title
+        Expanded(
+          child: Text(
+            'My Day',
+            style: GoogleFonts.museoModerno(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: titleColor,
+              letterSpacing: 0.5,
+              shadows: isImmersive
+                  ? [Shadow(color: shadowColor, blurRadius: 4, offset: const Offset(0, 2))]
+                  : null,
+            ),
+          ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2),
+        ),
+        
+        // Agenda and refresh
+        Row(
+          children: [
+            // Temporary clear button for testing
+            if (kDebugMode)
+              IconButton(
+                onPressed: () async {
+                  try {
+                    await ref.read(scheduledActivityServiceProvider).clearAllScheduledActivities();
+                    ref.invalidate(scheduledActivitiesForTodayProvider);
+                    ref.invalidate(cachedActivitySuggestionsProvider);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Plan cleared! (Debug)')),
+                      );
+                    }
+                  } catch (e) {
+                    debugPrint('Error clearing: \$e');
+                  }
+                },
+                icon: Icon(
+                  Icons.delete_sweep,
+                  color: Colors.redAccent,
+                  size: 24,
+                  shadows: isImmersive
+                      ? [Shadow(color: shadowColor, blurRadius: 4, offset: const Offset(0, 2))]
+                      : null,
+                ),
+              ),
+            // Agenda button
+            IconButton(
+              onPressed: () {
+                context.push('/agenda');
+              },
+              icon: Icon(
+                Icons.calendar_month,
+                color: iconColor,
+                size: 24,
+                shadows: isImmersive
+                    ? [Shadow(color: shadowColor, blurRadius: 4, offset: const Offset(0, 2))]
+                    : null,
+              ),
+            ),
+            // Refresh button
+            IconButton(
+              onPressed: () {
+                final now = DateTime.now();
+                if (_lastRefreshTime == null || now.difference(_lastRefreshTime!).inSeconds > 2) {
+                  _lastRefreshTime = now;
+                  debugPrint('🔄 My Day: Manual refresh triggered');
+                  ref.invalidate(scheduledActivitiesForTodayProvider);
+                  ref.invalidate(cachedActivitySuggestionsProvider);
+                } else {
+                  debugPrint('⏸️ My Day: Refresh blocked (debounced)');
+                }
+              },
+              icon: Icon(
+                Icons.refresh,
+                color: iconColor,
+                size: 24,
+                shadows: isImmersive
+                    ? [Shadow(color: shadowColor, blurRadius: 4, offset: const Offset(0, 2))]
+                    : null,
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Weather widget
+            Consumer(
+              builder: (context, ref, child) {
+                final weatherAsync = ref.watch(weatherProvider);
+                
+                return weatherAsync.when(
+                  data: (weather) {
+                    if (weather == null) {
+                      return GestureDetector(
+                        onTap: () => _showWeatherDialog(context, null),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isImmersive ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(20),
+                            border: isImmersive ? Border.all(color: Colors.white.withOpacity(0.3), width: 1) : null,
+                            boxShadow: isImmersive ? null : [
+                              BoxShadow(
+                                color: shadowColor,
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: BackdropFilter(
+                              filter: isImmersive ? ImageFilter.blur(sigmaX: 5, sigmaY: 5) : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.cloud_off, color: isImmersive ? Colors.white : Colors.grey, size: 20),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '--°',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: isImmersive ? Colors.white : Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                    
+                    // Get appropriate weather icon
+                    IconData weatherIcon;
+                    Color dynamicIconColor;
+                    switch (weather.condition.toLowerCase()) {
+                      case 'clear':
+                        weatherIcon = Icons.wb_sunny;
+                        dynamicIconColor = isImmersive ? Colors.white : Colors.orange;
+                        break;
+                      case 'clouds':
+                        weatherIcon = Icons.cloud;
+                        dynamicIconColor = isImmersive ? Colors.white : Colors.grey[600]!;
+                        break;
+                      case 'rain':
+                        weatherIcon = Icons.water_drop;
+                        dynamicIconColor = isImmersive ? Colors.white : Colors.blue;
+                        break;
+                      case 'snow':
+                        weatherIcon = Icons.ac_unit;
+                        dynamicIconColor = isImmersive ? Colors.white : Colors.lightBlue;
+                        break;
+                      case 'thunderstorm':
+                        weatherIcon = Icons.flash_on;
+                        dynamicIconColor = isImmersive ? Colors.white : Colors.deepPurple;
+                        break;
+                      case 'mist':
+                      case 'fog':
+                        weatherIcon = Icons.blur_on;
+                        dynamicIconColor = isImmersive ? Colors.white : Colors.grey[500]!;
+                        break;
+                      default:
+                        weatherIcon = Icons.wb_sunny;
+                        dynamicIconColor = isImmersive ? Colors.white : Colors.orange;
+                    }
+                    
+                    return GestureDetector(
+                      onTap: () => _showWeatherDialog(context, weather),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isImmersive ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(20),
+                          border: isImmersive ? Border.all(color: Colors.white.withOpacity(0.3), width: 1) : null,
+                          boxShadow: isImmersive ? null : [
+                            BoxShadow(
+                              color: shadowColor,
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: BackdropFilter(
+                            filter: isImmersive ? ImageFilter.blur(sigmaX: 5, sigmaY: 5) : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(weatherIcon, color: dynamicIconColor, size: 20),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '${weather.temperature.round()}°',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: isImmersive ? Colors.white : Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  loading: () => Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isImmersive ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(20),
+                      border: isImmersive ? Border.all(color: Colors.white.withOpacity(0.3), width: 1) : null,
+                      boxShadow: isImmersive ? null : [
+                        BoxShadow(
+                          color: shadowColor,
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(isImmersive ? Colors.white : Colors.grey[600]!),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '...°',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: isImmersive ? Colors.white : Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  error: (_, __) => Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isImmersive ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(20),
+                      border: isImmersive ? Border.all(color: Colors.white.withOpacity(0.3), width: 1) : null,
+                      boxShadow: isImmersive ? null : [
+                        BoxShadow(
+                          color: shadowColor,
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                        const SizedBox(width: 6),
+                        Text(
+                          '!°',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ).animate().fadeIn(delay: 300.ms, duration: 600.ms),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfileAvatar({required bool isImmersive}) {
+    return Consumer(
+      builder: (context, ref, child) {
+        final profileData = ref.watch(profileProvider);
+        return profileData.when(
+          data: (profile) => CircleAvatar(
+            radius: 20,
+            backgroundColor: isImmersive ? Colors.transparent : Colors.white,
+            backgroundImage: profile?.imageUrl != null
+                ? NetworkImage(profile!.imageUrl!)
+                : null,
+            child: profile?.imageUrl == null
+                ? Text(
+                    profile?.fullName?.substring(0, 1).toUpperCase() ?? 'U',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isImmersive ? Colors.white : const Color(0xFF12B347),
+                    ),
+                  )
+                : null,
+          ),
+          loading: () => CircleAvatar(
+            radius: 20,
+            backgroundColor: isImmersive ? Colors.transparent : Colors.white,
+            child: Icon(
+              Icons.person,
+              color: isImmersive ? Colors.white : const Color(0xFF12B347),
+              size: 20,
+            ),
+          ),
+          error: (_, __) => CircleAvatar(
+            radius: 20,
+            backgroundColor: isImmersive ? Colors.transparent : Colors.white,
+            child: Icon(
+              Icons.person,
+              color: isImmersive ? Colors.white : const Color(0xFF12B347),
+              size: 20,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSmartStatusCard(Map<String, dynamic> status) {
+    final enhancedActivity = status['enhancedActivity'] as EnhancedActivityData?;
+
+    if (status['type'] == 'no_plan') {
+      return _buildNoPlanGreetingCard();
+    }
+
+    if (status['type'] == 'active' && enhancedActivity != null) {
+      return DayExecutionHeroCard(
+        activity: enhancedActivity,
+        state: DayExecutionHeroState.active,
+        onDirections: () => _showDirectionsOptions(status['activity']),
+      );
+    }
+
+    if (status['type'] == 'awaiting_completion' && enhancedActivity != null) {
+      return DayExecutionHeroCard(
+        activity: enhancedActivity,
+        state: DayExecutionHeroState.awaitingCompletion,
+        onDirections: () => _showDirectionsOptions(status['activity']),
+        onMarkDone: () => _markActivityDone(enhancedActivity),
+        onStillHere: () => _keepActivityActive(enhancedActivity),
+      );
+    }
+
+    if (status['type'] == 'upcoming' && enhancedActivity != null) {
+      return DayExecutionHeroCard(
+        activity: enhancedActivity,
+        state: DayExecutionHeroState.upcoming,
+        onDirections: () => _showDirectionsOptions(status['activity']),
+        onGetReady: () => _showRichGetReadySheet(enhancedActivity),
+      );
+    }
+
+    if (status['type'] == 'completed' && enhancedActivity != null) {
+      return DayExecutionHeroCard(
+        activity: enhancedActivity,
+        state: DayExecutionHeroState.completed,
+        onDirections: () => _showDirectionsOptions(status['activity']),
+      );
+    }
+
     if (status['type'] == 'free_time') {
       return _buildEnhancedFreeTimeCard(status);
     }
-    
-    // For other types (upcoming, completed), use enhanced versions
+
     return _buildEnhancedStatusCard(status);
+  }
+
+  Widget _buildNoPlanGreetingCard() {
+    final l10n = AppLocalizations.of(context)!;
+    final hour = DateTime.now().hour;
+    final timeConfig = TimeBasedTheme.getConfigForHour(hour);
+
+    final config = _emptyStateGreetingConfig(
+      l10n: l10n,
+      hour: hour,
+      timeConfig: timeConfig,
+    );
+
+    String bgImageUrl;
+    if (hour < 12) {
+      bgImageUrl = 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?q=80&w=1200&auto=format&fit=crop';
+    } else if (hour < 17) {
+      bgImageUrl = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop';
+    } else {
+      bgImageUrl = 'https://images.unsplash.com/photo-1514565131-fce0801e5785?q=80&w=1200&auto=format&fit=crop';
+    }
+
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: config.borderColor.withOpacity(0.3),
+            blurRadius: 34,
+            offset: const Offset(0, 16),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Background Image
+          Positioned.fill(
+            child: CachedNetworkImage(
+              imageUrl: bgImageUrl,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                color: config.gradientColors.first,
+              ),
+              errorWidget: (context, url, error) => Container(
+                color: config.gradientColors.first,
+              ),
+            ),
+          ),
+          // Dark/Gradient Overlay for text readability
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.2),
+                    Colors.black.withOpacity(0.6),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              children: [
+                Container(
+                  width: 86,
+                  height: 86,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.2),
+                  ),
+                  child: ClipOval(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        color: Colors.white.withOpacity(0.1),
+                        child: Icon(
+                          config.icon,
+                          size: 44,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
+                const SizedBox(height: 16),
+                Text(
+                  config.title,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0, duration: 400.ms, curve: Curves.easeOut),
+                const SizedBox(height: 10),
+                Text(
+                  config.subtitle,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    height: 1.5,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2, end: 0, duration: 400.ms, curve: Curves.easeOut),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.05, end: 0, curve: Curves.easeOut);
   }
 
   Widget _buildEnhancedFreeTimeCard(Map<String, dynamic> status) {
@@ -1137,18 +1587,45 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   List<Widget> _buildTimelineView(Map<String, List<EnhancedActivityData>> activities) {
+    final hasMorning = activities['morning']?.isNotEmpty == true;
+    final hasAfternoon = activities['afternoon']?.isNotEmpty == true;
+    final hasEvening = activities['evening']?.isNotEmpty == true;
+
+    final firstVisibleSection = hasMorning
+        ? 'morning'
+        : hasAfternoon
+            ? 'afternoon'
+            : hasEvening
+                ? 'evening'
+                : null;
+
     return [
       // Morning Section
-      if (activities['morning']?.isNotEmpty == true)
-        _buildTimelineSection('🌅 Morning', 'Start your day right', activities['morning']!),
+      if (hasMorning)
+        _buildTimelineSection(
+          '🌅 Morning',
+          'Start your day right',
+          activities['morning']!,
+          isFirstSection: firstVisibleSection == 'morning',
+        ),
       
       // Afternoon Section  
-      if (activities['afternoon']?.isNotEmpty == true)
-        _buildTimelineSection('🌞 Afternoon', 'Peak adventure time', activities['afternoon']!),
+      if (hasAfternoon)
+        _buildTimelineSection(
+          '🌞 Afternoon',
+          'Peak adventure time',
+          activities['afternoon']!,
+          isFirstSection: firstVisibleSection == 'afternoon',
+        ),
       
       // Evening Section
-      if (activities['evening']?.isNotEmpty == true)
-        _buildTimelineSection('🌆 Evening', 'Wind down and enjoy', activities['evening']!),
+      if (hasEvening)
+        _buildTimelineSection(
+          '🌆 Evening',
+          'Wind down and enjoy',
+          activities['evening']!,
+          isFirstSection: firstVisibleSection == 'evening',
+        ),
       
       // Empty state if no activities
       if (activities.values.every((list) => list.isEmpty))
@@ -1159,6 +1636,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   List<Widget> _buildListView(Map<String, List<EnhancedActivityData>> activities) {
     final allActivities = [
       ...activities['active'] ?? [],
+      ...activities['awaiting'] ?? [],
       ...activities['upcoming'] ?? [],
       ...activities['completed'] ?? [],
     ];
@@ -1177,7 +1655,13 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               final activity = entry.value;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16),
-                child: _buildEnhancedActivityCard(activity).animate(delay: (index * 100).ms)
+                child: MyDayTimelineActivityCard(
+                  activity: activity,
+                  onTap: () => _showActivityDetails(activity.rawData),
+                  onDirectionsTap: () => _handleTimelinePrimaryAction(activity),
+                  onMoreTap: () => _showActivityOptions(activity),
+                  formatTime: _formatTime,
+                ).animate(delay: (index * 100).ms)
                   .slideX(begin: 0.3, duration: 600.ms)
                   .fadeIn(duration: 600.ms)
                   .scale(begin: const Offset(0.9, 0.9), duration: 400.ms),
@@ -1189,474 +1673,35 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     ];
   }
 
-  Widget _buildTimelineSection(String title, String subtitle, List<EnhancedActivityData> activities) {
-    // Check if all activities in this section are completed
-    bool allCompleted = activities.every((activity) => 
-      activity.status == ActivityStatus.completed
-    );
-    
-    // Get the section key for tracking collapse state
-    String sectionKey = title.toLowerCase().replaceAll(' ', '_').replaceAll('🌅', '').replaceAll('🌞', '').replaceAll('🌆', '').trim();
-    
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 24),
-            GestureDetector(
-              onTap: () {
-                if (allCompleted) {
-                  setState(() {
-                    _collapsedSections[sectionKey] = !(_collapsedSections[sectionKey] ?? false);
-                  });
-                }
-              },
-              child: Row(
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.museoModerno(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: allCompleted ? const Color(0xFF12B347) : const Color(0xFF12B347),
-                    ),
-                  ),
-                  if (allCompleted) ...[
-                    const SizedBox(width: 8),
-                    Icon(
-                      (_collapsedSections[sectionKey] ?? false) 
-                          ? Icons.expand_more 
-                          : Icons.expand_less,
-                      color: const Color(0xFF12B347),
-                      size: 18,
-                    ),
-                  ],
-                  const Spacer(),
-                  if (allCompleted) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF12B347).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: const Color(0xFF12B347).withOpacity(0.3),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.check_circle,
-                            color: Color(0xFF12B347),
-                            size: 12,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'All Done',
-                            style: GoogleFonts.poppins(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF12B347),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(
-                    '${activities.length} ${activities.length == 1 ? 'activity' : 'activities'}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: allCompleted ? const Color(0xFF12B347) : Colors.grey[600],
-                      fontWeight: allCompleted ? FontWeight.w500 : FontWeight.normal,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              allCompleted ? 'Great job completing this section!' : subtitle,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: allCompleted ? const Color(0xFF12B347) : Colors.grey[600],
-                fontWeight: allCompleted ? FontWeight.w500 : FontWeight.normal,
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Show activities only if not collapsed
-            if (!allCompleted || !(_collapsedSections[sectionKey] ?? false))
-              ...activities.asMap().entries.map((entry) {
-                final index = entry.key;
-                final activity = entry.value;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: _buildEnhancedActivityCard(activity).animate(delay: (index * 100).ms)
-                    .slideX(begin: 0.3, duration: 600.ms)
-                    .fadeIn(duration: 600.ms)
-                    .scale(begin: const Offset(0.9, 0.9), duration: 400.ms),
-                );
-              }).toList(),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget _buildTimelineSection(
+    String title,
+    String subtitle,
+    List<EnhancedActivityData> activities, {
+    bool isFirstSection = false,
+  }) {
+    final sectionKey = title
+        .toLowerCase()
+        .replaceAll(' ', '_')
+        .replaceAll('🌅', '')
+        .replaceAll('🌞', '')
+        .replaceAll('🌆', '')
+        .trim();
 
-  Widget _buildEnhancedActivityCard(EnhancedActivityData activity) {
-    Color statusColor;
-    String statusText;
-    IconData statusIcon;
-    
-    // Check payment status
-    final paymentType = activity.rawData['paymentType'] as String?;
-    final bookingRef = activity.rawData['bookingReference'] as String?;
-    final isBooked = paymentType?.toLowerCase() == 'paid' || paymentType?.toLowerCase() == 'reserved' || bookingRef != null;
-    
-    switch (activity.status) {
-      case ActivityStatus.activeNow:
-        statusColor = Colors.red;
-        statusText = 'RIGHT NOW';
-        statusIcon = Icons.play_circle_filled;
-        break;
-      case ActivityStatus.upcoming:
-        statusColor = isBooked ? Colors.blue : Colors.orange;
-        statusText = isBooked ? 'BOOKED' : 'UPCOMING';
-        statusIcon = isBooked ? Icons.confirmation_number : Icons.schedule;
-        break;
-      case ActivityStatus.completed:
-        statusColor = Colors.green;
-        statusText = 'COMPLETED';
-        statusIcon = Icons.check_circle;
-        break;
-      default:
-        statusColor = const Color(0xFF12B347);
-        statusText = 'SCHEDULED';
-        statusIcon = Icons.event;
-    }
-    
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        _showActivityDetails(activity.rawData);
+    return MyDayTimelineSection(
+      title: title,
+      subtitle: subtitle,
+      activities: activities,
+      isFirstSection: isFirstSection,
+      isCollapsed: _collapsedSections[sectionKey] ?? false,
+      onToggleCollapse: () {
+        setState(() {
+          _collapsedSections[sectionKey] = !(_collapsedSections[sectionKey] ?? false);
+        });
       },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        height: 160, // Increased height to accommodate booking status
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 25,
-              offset: const Offset(0, 15),
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: statusColor.withOpacity(0.2),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-              spreadRadius: -5,
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Column(
-            children: [
-              // Image section (top part)
-              Expanded(
-                flex: 3,
-                child: Stack(
-                  children: [
-                    // Background Image
-                    Positioned.fill(
-                      child: CachedNetworkImage(
-                        imageUrl: activity.rawData['imageUrl'] ?? '',
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          color: Colors.grey[300],
-                          child: const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                statusColor.withOpacity(0.8),
-                                statusColor.withOpacity(0.6),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                          ),
-                          child: const Center(
-                            child: Icon(Icons.image, color: Colors.white, size: 40),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Overlay gradient
-                    Positioned.fill(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.black.withOpacity(0.1),
-                              Colors.black.withOpacity(0.6),
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Content overlay
-                    Positioned.fill(
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Top row - time and status
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                // Time badge
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.6),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.schedule,
-                                        color: Colors.white,
-                                        size: 14,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '${_formatTime(activity.startTime)} • ${activity.rawData['duration']}m',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 11,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                
-                                // Status badge
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: statusColor,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        statusIcon,
-                                        color: Colors.white,
-                                        size: 12,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        statusText,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            
-                            const Spacer(),
-                            
-                            // Activity title
-                            Text(
-                              activity.rawData['title'],
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black.withOpacity(0.8),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              // White section at the bottom
-              Container(
-                color: Colors.white,
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Left side - booking status or description
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (isBooked) ...[
-                            Row(
-                              children: [
-                                Icon(
-                                  paymentType?.toLowerCase() == 'paid' ? Icons.check_circle : Icons.schedule,
-                                  color: paymentType?.toLowerCase() == 'paid' ? Colors.green : Colors.orange,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  paymentType?.toLowerCase() == 'paid' ? 'Confirmed' : 'Reserved',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: paymentType?.toLowerCase() == 'paid' ? Colors.green : Colors.orange,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Text(
-                              paymentType?.toLowerCase() == 'paid' ? 'Ready to go!' : 'Payment pending',
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ] else ...[
-                            Text(
-                              activity.rawData['category'] ?? 'Activity',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey[700],
-                              ),
-                            ),
-                            Text(
-                              'Tap to book',
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                color: Colors.grey[500],
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    
-                    // Right side - button and menu
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Main action button
-                        Container(
-                          height: 32,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: isBooked || activity.rawData['bookingReference'] != null ? Colors.blue : const Color(0xFF12B347),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(16),
-                              onTap: () {
-                                HapticFeedback.lightImpact();
-                                final bookingRef = activity.rawData['bookingReference'] as String?;
-                                final isActuallyBooked = isBooked || bookingRef != null;
-                                if (isActuallyBooked) {
-                                  // Show reservation details instead of just directions
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ReservationDetailsSheet(activity: activity.rawData),
-                                    ),
-                                  );
-                                } else {
-                                  _showBookingBottomSheet(activity.rawData);
-                                }
-                              },
-                              child: Center(
-                                child: Text(
-                                  isBooked || activity.rawData['bookingReference'] != null ? 'View Reservation' : 'Book Now',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        
-                        const SizedBox(width: 8),
-                        
-                        // Three dots menu
-                        GestureDetector(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            _showActivityOptions(activity.rawData);
-                          },
-                          child: Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Icon(
-                              Icons.more_vert,
-                              size: 16,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      onActivityTap: (activity) => _showActivityDetails(activity.rawData),
+      onDirectionsTap: _handleTimelinePrimaryAction,
+      onMoreTap: _showActivityOptions,
+      formatTime: _formatTime,
     );
   }
 
@@ -1713,99 +1758,378 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   Widget _buildEmptyTimelineSliver() {
+    final l10n = AppLocalizations.of(context)!;
     return SliverToBoxAdapter(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(40.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.calendar_today_outlined,
-                  size: 64,
-                  color: Colors.grey[400],
-                ),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                'Ready to plan your day?',
-                style: GoogleFonts.poppins(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[800],
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Create your first day plan and start exploring amazing places based on your mood!',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Navigate to Moody Hub to create first plan
-                    context.goNamed('main', extra: {'tab': 2});
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF12B347),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 36, 24, 40),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.94),
+                borderRadius: BorderRadius.circular(32),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 22,
+                    offset: const Offset(0, 12),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                ],
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 84,
+                    height: 84,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFDDFCE5), Color(0xFFB6F1C4)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF12B347).withOpacity(0.18),
+                          blurRadius: 18,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.calendar_month_rounded,
+                      size: 38,
+                      color: Color(0xFF12B347),
+                    ),
+                  ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+                   .scale(begin: const Offset(1, 1), end: const Offset(1.05, 1.05), duration: 2.seconds, curve: Curves.easeInOut),
+                  const SizedBox(height: 22),
+                  Text(
+                    l10n.myDayEmptyPlanTitle,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF172033),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.myDayEmptyPlanSubtitle,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      height: 1.6,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => context.goNamed('main', extra: {'tab': 2}),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF16C45B),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(22),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.auto_awesome_rounded, size: 20),
+                          const SizedBox(width: 10),
+                          Text(
+                            l10n.myDayEmptyCreateButton,
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
                     children: [
-                      const Icon(Icons.auto_awesome, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Create Your First Day Plan',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => context.goNamed('main', extra: {'tab': 1}),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            side: BorderSide(
+                              color: Colors.grey.shade300,
+                              width: 2,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            foregroundColor: const Color(0xFF334155),
+                          ),
+                          child: Text(
+                            l10n.myDayEmptyBrowseButton,
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => context.goNamed('main', extra: {'tab': 2}),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            side: BorderSide(
+                              color: Colors.grey.shade300,
+                              width: 2,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            foregroundColor: const Color(0xFF334155),
+                          ),
+                          child: Text(
+                            l10n.myDayEmptyAskMoodyButton,
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
+                ],
+              ),
+            ).animate().fadeIn(delay: 200.ms, duration: 600.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOut),
+            const SizedBox(height: 36),
+            Row(
+              children: [
+                const Icon(
+                  Icons.bolt_rounded,
+                  color: Color(0xFFF59E0B),
+                  size: 22,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.myDayEmptyInspiredTitle,
+                  style: GoogleFonts.poppins(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF172033),
+                  ),
+                ),
+              ],
+            ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1, end: 0, curve: Curves.easeOut),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 180,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
+                children: [
+                  _buildInspirationCard(
+                    imageUrl: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=800&auto=format&fit=crop',
+                    icon: Icons.local_cafe_rounded,
+                    title: l10n.myDayInspiredCafesTitle,
+                    subtitle: l10n.myDayInspiredCafesSubtitle,
+                    onTap: () => context.goNamed('main', extra: {'tab': 1}),
+                  ).animate().fadeIn(delay: 500.ms).slideX(begin: 0.2, end: 0, curve: Curves.easeOut),
+                  const SizedBox(width: 16),
+                  _buildInspirationCard(
+                    imageUrl: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=800&auto=format&fit=crop',
+                    icon: Icons.trending_up_rounded,
+                    title: l10n.myDayInspiredTrendingTitle,
+                    subtitle: l10n.myDayInspiredTrendingSubtitle,
+                    onTap: () => context.goNamed('main', extra: {'tab': 1}),
+                  ).animate().fadeIn(delay: 600.ms).slideX(begin: 0.2, end: 0, curve: Curves.easeOut),
+                  const SizedBox(width: 16),
+                  _buildInspirationCard(
+                    imageUrl: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?q=80&w=800&auto=format&fit=crop',
+                    icon: Icons.explore_rounded,
+                    title: l10n.myDayInspiredHiddenGemsTitle,
+                    subtitle: l10n.myDayInspiredHiddenGemsSubtitle,
+                    onTap: () => context.goNamed('main', extra: {'tab': 1}),
+                  ).animate().fadeIn(delay: 700.ms).slideX(begin: 0.2, end: 0, curve: Curves.easeOut),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInspirationCard({
+    required String imageUrl,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 160,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(color: Colors.grey.shade200),
+                  errorWidget: (context, url, error) => Container(color: Colors.grey.shade200),
                 ),
               ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () => context.goNamed('main', extra: {'tab': 1}),
-                child: Text(
-                  'Or explore places first',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: Colors.grey[600],
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.0),
+                        Colors.black.withOpacity(0.7),
+                      ],
+                    ),
                   ),
+                ),
+              ),
+              Positioned(
+                bottom: 16,
+                left: 16,
+                right: 16,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.25),
+                        shape: BoxShape.circle,
+                      ),
+                      child: ClipOval(
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                          child: Icon(icon, color: Colors.white, size: 16),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      title,
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        height: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  String _headerSubtitle({
+    required AppLocalizations l10n,
+    required Map<String, dynamic>? status,
+  }) {
+    final statusType = status?['type'] as String?;
+
+    if (statusType == 'no_plan') {
+      return l10n.myDayNoPlanHeaderSubtitle;
+    }
+
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return l10n.myDayHeaderMorning;
+    }
+    if (hour < 17) {
+      return l10n.myDayHeaderAfternoon;
+    }
+    return l10n.myDayHeaderEvening;
+  }
+
+  _EmptyGreetingConfig _emptyStateGreetingConfig({
+    required AppLocalizations l10n,
+    required int hour,
+    required TimeOfDayConfig timeConfig,
+  }) {
+    if (hour < 12) {
+      return _EmptyGreetingConfig(
+        title: '${l10n.goodMorning}!',
+        subtitle: l10n.myDayEmptyGreetingMorningBody,
+        icon: Icons.wb_sunny_rounded,
+        gradientColors: [
+          const Color(0xFFFFF4C7),
+          const Color(0xFFFFF8E1),
+        ],
+        borderColor: const Color(0xFFF6C26B),
+        iconTint: const Color(0xFFF59E0B),
+      );
+    }
+
+    if (hour < 17) {
+      return _EmptyGreetingConfig(
+        title: '${l10n.goodAfternoon}!',
+        subtitle: l10n.myDayEmptyGreetingAfternoonBody,
+        icon: timeConfig.icon,
+        gradientColors: [
+          const Color(0xFFE6F4FF),
+          const Color(0xFFF1F8FF),
+        ],
+        borderColor: const Color(0xFF9DD0FF),
+        iconTint: const Color(0xFF3B82F6),
+      );
+    }
+
+    return _EmptyGreetingConfig(
+      title: '${l10n.goodEvening}!',
+      subtitle: l10n.myDayEmptyGreetingEveningBody,
+      icon: timeConfig.icon,
+      gradientColors: [
+        const Color(0xFFF2E8FF),
+        const Color(0xFFF9F4FF),
+      ],
+      borderColor: const Color(0xFFC9A7FF),
+      iconTint: const Color(0xFF8B5CF6),
     );
   }
 
@@ -1819,7 +2143,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         _showActivityDetails(status['activity']);
         break;
       case 'Get Ready':
-        _prepareForActivity(status['activity']);
+        final enhancedActivity = status['enhancedActivity'] as EnhancedActivityData?;
+        if (enhancedActivity != null) {
+          _showRichGetReadySheet(enhancedActivity);
+        } else {
+          _prepareForActivity(status['activity']);
+        }
         break;
       case 'Get Directions':
         _showDirectionsOptions(status['activity']);
@@ -1836,6 +2165,73 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         _navigateToTab(2);
         break;
     }
+  }
+
+  void _handleTimelinePrimaryAction(EnhancedActivityData activity) {
+    if (activity.status == ActivityStatus.awaitingCompletion) {
+      _markActivityDone(activity);
+      return;
+    }
+
+    _openDirections(activity.rawData);
+  }
+
+  void _markActivityDone(EnhancedActivityData activity) {
+    final activityId =
+        activity.rawData['id'] as String? ??
+        activity.rawData['title'] as String? ??
+        '';
+    if (activityId.isEmpty) return;
+
+    ref.read(activityManagerProvider.notifier).clearCompletionPromptSnooze(
+          activityId,
+        );
+    ref.read(activityManagerProvider.notifier).updateActivityStatus(
+          activityId,
+          ActivityStatus.completed,
+        );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Marked as done. You can review it now.',
+          style: GoogleFonts.poppins(),
+        ),
+        backgroundColor: const Color(0xFF12B347),
+      ),
+    );
+  }
+
+  void _keepActivityActive(EnhancedActivityData activity) {
+    final activityId =
+        activity.rawData['id'] as String? ??
+        activity.rawData['title'] as String? ??
+        '';
+    if (activityId.isEmpty) return;
+
+    ref.read(activityManagerProvider.notifier).snoozeCompletionPrompt(
+          activityId,
+          duration: const Duration(minutes: 45),
+        );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Okay, we will check back in about 45 minutes.',
+          style: GoogleFonts.poppins(),
+        ),
+        backgroundColor: const Color(0xFFF59E0B),
+      ),
+    );
+  }
+
+  Future<void> _showRichGetReadySheet(EnhancedActivityData activity) async {
+    await showMyDayGetReadySheet(
+      context: context,
+      ref: ref,
+      activity: activity,
+      formatTime: _formatTime,
+    );
   }
   
   void _prepareForActivity(Map<String, dynamic> activity) {
@@ -2100,10 +2496,6 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   void _showActivityDetails(Map<String, dynamic> activity) {
-    final paymentType = activity['paymentType'] as String?;
-    final bookingRef = activity['bookingReference'] as String?;
-    final isBooked = paymentType?.toLowerCase() == 'paid' || paymentType?.toLowerCase() == 'reserved' || bookingRef != null;
-    final isFree = (activity['price'] == 0 || (paymentType ?? '').toLowerCase() == 'free');
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -2219,54 +2611,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                               _buildInfoRow('Scheduled', _formatTime(DateTime.parse(activity['startTime']))),
                             
                             const SizedBox(height: 24),
-                            
-                            // Show booking status if booked
-                            if (isBooked) ...[
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.green.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.green, width: 1),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      paymentType?.toLowerCase() == 'paid' ? Icons.check_circle : Icons.schedule,
-                                      color: Colors.green,
-                                      size: 24,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            paymentType?.toLowerCase() == 'paid' ? 'Booking Confirmed' : 'Reserved',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.green[700],
-                                            ),
-                                          ),
-                                          Text(
-                                            paymentType?.toLowerCase() == 'paid' 
-                                              ? 'Your booking is confirmed and ready!'
-                                              : 'Complete payment to confirm your booking',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 14,
-                                              color: Colors.green[600],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                            ],
-                            
+
                             // Action buttons
                             Row(
                               children: [
@@ -2274,26 +2619,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                                   child: ElevatedButton.icon(
                                     onPressed: () {
                                       Navigator.pop(context);
-                                      if (isBooked) {
-                                        // Show reservation summary
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => ReservationDetailsSheet(activity: activity),
-                                          ),
-                                        );
-                                      } else if (isFree) {
-                                        _showDirectionsOptions(activity);
-                                      } else {
-                                        _showBookingBottomSheet(activity);
-                                      }
+                                      _openDirections(activity);
                                     },
-                                    icon: Icon(
-                                      isBooked ? Icons.receipt : (isFree ? Icons.directions : Icons.payment),
-                                    ),
-                                    label: Text(
-                                      isBooked ? 'View Reservation' : (isFree ? 'Get Directions' : 'Book Now'),
-                                    ),
+                                    icon: const Icon(Icons.directions),
+                                    label: const Text('Get Directions'),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF12B347),
                                       foregroundColor: Colors.white,
@@ -2304,26 +2633,25 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                                     ),
                                   ),
                                 ),
-                                if (isFree) ...[
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: OutlinedButton.icon(
-                                      onPressed: () {
-                                        // Edit activity logic
-                                      },
-                                      icon: const Icon(Icons.edit),
-                                      label: const Text('Edit Activity'),
-                                      style: OutlinedButton.styleFrom(
-                                        foregroundColor: const Color(0xFF12B347),
-                                        side: const BorderSide(color: Color(0xFF12B347)),
-                                        padding: const EdgeInsets.symmetric(vertical: 14),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(24),
-                                        ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      _saveActivity(activity);
+                                    },
+                                    icon: const Icon(Icons.bookmark_outline),
+                                    label: const Text('Save for Later'),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: const Color(0xFF12B347),
+                                      side: const BorderSide(color: Color(0xFF12B347)),
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(24),
                                       ),
                                     ),
                                   ),
-                                ],
+                                ),
                               ],
                             ),
                             
@@ -2406,20 +2734,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     );
   }
 
-  void _showBookingBottomSheet(Map<String, dynamic> activity) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _ActivityBookingBottomSheet(activity: activity),
-    );
-  }
-
-  void _showActivityOptions(Map<String, dynamic> activity) {
-    final paymentType = activity['paymentType'] as String?;
-    final bookingRef = activity['bookingReference'] as String?;
-    final isBooked = paymentType?.toLowerCase() == 'paid' || paymentType?.toLowerCase() == 'reserved' || bookingRef != null;
-    
+  void _showActivityOptions(EnhancedActivityData activity) {
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
@@ -2445,7 +2760,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               ),
               onTap: () {
                 Navigator.pop(context);
-                _showActivityDetails(activity);
+                _showActivityDetails(activity.rawData);
               },
             ),
             
@@ -2458,10 +2773,49 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               ),
               onTap: () {
                 Navigator.pop(context);
-                _saveActivity(activity);
+                _saveActivity(activity.rawData);
               },
             ),
             
+            if (activity.status == ActivityStatus.awaitingCompletion)
+              ListTile(
+                leading: const Icon(
+                  Icons.schedule_rounded,
+                  color: Color(0xFFF59E0B),
+                ),
+                title: Text(
+                  'Still Here',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+                ),
+                subtitle: Text(
+                  'Keep this activity active a bit longer',
+                  style: GoogleFonts.poppins(fontSize: 12),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _keepActivityActive(activity);
+                },
+              ),
+            if (activity.status == ActivityStatus.awaitingCompletion)
+              ListTile(
+                leading: const Icon(
+                  Icons.check_circle_outline,
+                  color: Color(0xFF12B347),
+                ),
+                title: Text(
+                  'Mark as Done',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+                ),
+                subtitle: Text(
+                  'Unlock review for this activity',
+                  style: GoogleFonts.poppins(fontSize: 12),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _markActivityDone(activity);
+                },
+              ),
+
             // Share option
             ListTile(
               leading: const Icon(Icons.share, color: Color(0xFF12B347)),
@@ -2480,51 +2834,17 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 );
               },
             ),
-            
-            // Booking-specific options
-            if (isBooked) ...[
-              ListTile(
-                leading: const Icon(Icons.receipt, color: Color(0xFF12B347)),
-                title: Text(
-                  'View Booking',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Show booking details
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Booking details: ${activity['bookingReference'] ?? 'N/A'}'),
-                      backgroundColor: const Color(0xFF12B347),
-                    ),
-                  );
-                },
+            ListTile(
+              leading: const Icon(Icons.directions, color: Color(0xFF12B347)),
+              title: Text(
+                'Get Directions',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
               ),
-              if (paymentType?.toLowerCase() == 'reserved')
-                ListTile(
-                  leading: const Icon(Icons.payment, color: Colors.orange),
-                  title: Text(
-                    'Complete Payment',
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _showBookingBottomSheet(activity);
-                  },
-                ),
-            ] else ...[
-              ListTile(
-                leading: const Icon(Icons.event_available, color: Color(0xFF12B347)),
-                title: Text(
-                  'Book This Activity',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _showBookingBottomSheet(activity);
-                },
-              ),
-            ],
+              onTap: () {
+                Navigator.pop(context);
+                _openDirections(activity.rawData);
+              },
+            ),
             
             const SizedBox(height: 16),
           ],
@@ -2570,328 +2890,13 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   Widget _buildFreeTimeCarousel() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 32),
-        
-        // Section header
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Row(
-            children: [
-              Text(
-                '✨ Free Time Activities',
-                style: GoogleFonts.museoModerno(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF12B347),
-                ),
-              ),
-              const Spacer(),
-              Text(
-                'Near you',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ),
-        
-        const SizedBox(height: 4),
-        
-        // Subtitle
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Text(
-            'Discover what you can do right now',
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
-          ),
-        ),
-        
-        const SizedBox(height: 16),
-        
-        // Horizontal scrollable carousel
-        SizedBox(
-          height: 200,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: _getFreeTimeActivities().length,
-            itemBuilder: (context, index) {
-              final activity = _getFreeTimeActivities()[index];
-              return Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: _buildFreeTimeCard(activity).animate(delay: (index * 200).ms)
-                  .slideX(begin: 0.3, duration: 600.ms)
-                  .fadeIn(duration: 600.ms)
-                  .scale(begin: const Offset(0.9, 0.9), duration: 400.ms),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
+    final activities = _getFreeTimeActivities();
 
-  Widget _buildFreeTimeCard(Map<String, dynamic> activity) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        _showActivityDetails(activity);
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: 280,
-        height: 220,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 25,
-              offset: const Offset(0, 12),
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 15,
-              offset: const Offset(0, 6),
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: const Color(0xFF12B347).withOpacity(0.2),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-              spreadRadius: -5,
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Stack(
-            children: [
-              // Background Image with color filter for intensity
-              Positioned.fill(
-                child: ColorFiltered(
-                  colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.1),
-                    BlendMode.multiply,
-                  ),
-                  child: CachedNetworkImage(
-                    imageUrl: activity['imageUrl'] ?? 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80',
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey[300],
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFF12B347).withOpacity(0.8),
-                            const Color(0xFF4CAF50).withOpacity(0.6),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
-                      child: const Center(
-                        child: Icon(Icons.image, color: Colors.white, size: 40),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // Intense overlay for dramatic effect
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.black.withOpacity(0.3),
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.8),
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      stops: const [0.0, 0.2, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-
-              // Content - simplified
-              Positioned.fill(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Distance and category badges
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Distance badge - no border
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.place,
-                                  color: Colors.white,
-                                  size: 12,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  activity['distance'] ?? '0.5 km',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 11,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          
-                          // Category badge
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF12B347),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              _getCategoryIcon(activity['category'] ?? ''),
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ),
-                        ],
-                      ),
-                      
-                      const Spacer(),
-                      
-                      // Title - just text, no container
-                      Text(
-                        activity['title'] ?? 'Activity',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withOpacity(0.8),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      
-                      const SizedBox(height: 4),
-                      
-                      // Description - smaller text
-                      Text(
-                        activity['description'] ?? '',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: Colors.white.withOpacity(0.9),
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withOpacity(0.6),
-                              blurRadius: 4,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      
-                      const SizedBox(height: 12),
-                      
-                      // Action buttons - no borders
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.5),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(16),
-                                  onTap: () => _saveActivity(activity),
-                                  child: Center(
-                                    child: Text(
-                                      'Save',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Container(
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF12B347),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(16),
-                                  onTap: () => _openDirections(activity),
-                                  child: Center(
-                                    child: Text(
-                                      'Directions',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return MyDayFreeTimeCarousel(
+      activities: activities,
+      onActivityTap: _showActivityDetails,
+      onSaveTap: _saveActivity,
+      onDirectionsTap: _openDirections,
     );
   }
 
@@ -3038,203 +3043,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.blue.shade50,
-                  Colors.blue.shade100,
-                ],
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Weather in Rotterdam',
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue.shade800,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: Icon(Icons.close, color: Colors.blue.shade600),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                if (weather != null) ...[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        _getWeatherIconForDialog(weather.condition),
-                        size: 64,
-                        color: _getWeatherColorForDialog(weather.condition),
-                      ),
-                      const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${weather.temperature.round()}°C',
-                            style: GoogleFonts.poppins(
-                              fontSize: 36,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue.shade800,
-                            ),
-                          ),
-                          Text(
-                            weather.condition,
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              color: Colors.blue.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.7),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      children: [
-                        _buildWeatherDetail('Feels Like', '${weather.details['feelsLike']?.round() ?? '--'}°C'),
-                        const SizedBox(height: 8),
-                        _buildWeatherDetail('Humidity', '${weather.details['humidity'] ?? '--'}%'),
-                        const SizedBox(height: 8),
-                        _buildWeatherDetail('Description', weather.details['description'] ?? 'Clear skies'),
-                      ],
-                    ),
-                  ),
-                ] else ...[
-                  Icon(
-                    Icons.cloud_off,
-                    size: 64,
-                    color: Colors.grey.shade400,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Weather data unavailable',
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  Text(
-                    'Please check your internet connection',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade600,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                  ),
-                  child: Text(
-                    'Close',
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+        return MyDayWeatherDialog(weather: weather);
       },
     );
-  }
-
-  Widget _buildWeatherDetail(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            color: Colors.blue.shade700,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        Text(
-          value,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            color: Colors.blue.shade800,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-  }
-
-  IconData _getWeatherIconForDialog(String condition) {
-    switch (condition.toLowerCase()) {
-      case 'clear':
-        return Icons.wb_sunny;
-      case 'clouds':
-        return Icons.cloud;
-      case 'rain':
-        return Icons.water_drop;
-      case 'snow':
-        return Icons.ac_unit;
-      case 'thunderstorm':
-        return Icons.flash_on;
-      case 'mist':
-      case 'fog':
-        return Icons.blur_on;
-      default:
-        return Icons.wb_sunny;
-    }
-  }
-
-  Color _getWeatherColorForDialog(String condition) {
-    switch (condition.toLowerCase()) {
-      case 'clear':
-        return Colors.orange;
-      case 'clouds':
-        return Colors.grey.shade600;
-      case 'rain':
-        return Colors.blue;
-      case 'snow':
-        return Colors.lightBlue;
-      case 'thunderstorm':
-        return Colors.deepPurple;
-      case 'mist':
-      case 'fog':
-        return Colors.grey.shade500;
-      default:
-        return Colors.orange;
-    }
   }
 
   // Helper method to calculate distance between two coordinates using Haversine formula
@@ -3271,27 +3082,6 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
   double _degreeToRadian(double degree) {
     return degree * (pi / 180);
-  }
-
-  String _getCategoryIcon(String category) {
-    switch (category.toLowerCase()) {
-      case 'food':
-        return '🍽️';
-      case 'exercise':
-        return '🏃‍♂️';
-      case 'culture':
-        return '🎨';
-      case 'entertainment':
-        return '🎭';
-      case 'shopping':
-        return '🛍️';
-      case 'social':
-        return '👥';
-      case 'nature':
-        return '🌳';
-      default:
-        return '📍';
-    }
   }
 
   void _saveActivity(Map<String, dynamic> activity) {
@@ -3430,6 +3220,24 @@ class _DotPatternPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
+class _EmptyGreetingConfig {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final List<Color> gradientColors;
+  final Color borderColor;
+  final Color iconTint;
+
+  const _EmptyGreetingConfig({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.gradientColors,
+    required this.borderColor,
+    required this.iconTint,
+  });
+}
+
 /// Custom pressable button widget for enhanced UX
 class _PressableButton extends StatefulWidget {
   final Widget child;
@@ -3501,1220 +3309,4 @@ class _PressableButtonState extends State<_PressableButton>
       ),
     );
   }
-}
-
-/// Booking bottom sheet for activity booking
-class _ActivityBookingBottomSheet extends StatefulWidget {
-  final Map<String, dynamic> activity;
-
-  const _ActivityBookingBottomSheet({required this.activity});
-
-  @override
-  State<_ActivityBookingBottomSheet> createState() => _ActivityBookingBottomSheetState();
-}
-
-class _ActivityBookingBottomSheetState extends State<_ActivityBookingBottomSheet> {
-  String selectedBookingType = 'Standard Visit';
-  int guests = 1;
-  DateTime selectedDate = DateTime.now();
-  String selectedTimeSlot = '9:00 AM';
-  
-  final Map<String, double> bookingTypes = {
-    'Standard Visit': 15.0,
-    'Guided Tour': 25.0,
-    'Premium Experience': 45.0,
-    'Group Booking': 12.0,
-  };
-  
-  final List<String> timeSlots = [
-    '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
-    '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'
-  ];
-
-  double get totalPrice => bookingTypes[selectedBookingType]! * guests;
-
-  @override
-  Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.8,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      builder: (context, scrollController) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          children: [
-            // Handle bar
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(top: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            
-            // Title
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                'Book ${widget.activity['title']}',
-                style: GoogleFonts.museoModerno(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            
-            // Scrollable content
-            Expanded(
-              child: SingleChildScrollView(
-                controller: scrollController,
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Booking type selection
-                    Text(
-                      'Select Experience',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ...bookingTypes.entries.map((entry) => _buildBookingTypeCard(entry.key, entry.value)),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Guest selection
-                    Text(
-                      'Number of Guests',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: guests > 1 ? () => setState(() => guests--) : null,
-                          icon: const Icon(Icons.remove_circle_outline),
-                          color: guests > 1 ? const Color(0xFF12B347) : Colors.grey,
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: const Color(0xFF12B347)),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            '$guests',
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: guests < 10 ? () => setState(() => guests++) : null,
-                          icon: const Icon(Icons.add_circle_outline),
-                          color: guests < 10 ? const Color(0xFF12B347) : Colors.grey,
-                        ),
-                        const Spacer(),
-                        Text(
-                          'Max 10 guests',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Date selection
-                    Text(
-                      'Select Date',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    GestureDetector(
-                      onTap: () async {
-                        final date = await showDatePicker(
-                          context: context,
-                          initialDate: selectedDate,
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(const Duration(days: 90)),
-                          builder: (context, child) {
-                            return Theme(
-                              data: Theme.of(context).copyWith(
-                                colorScheme: const ColorScheme.light(
-                                  primary: Color(0xFF12B347),
-                                ),
-                              ),
-                              child: child!,
-                            );
-                          },
-                        );
-                        if (date != null) setState(() => selectedDate = date);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFF12B347)),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.calendar_today, color: Color(0xFF12B347)),
-                            const SizedBox(width: 12),
-                            Text(
-                              '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
-                              style: GoogleFonts.poppins(fontSize: 16),
-                            ),
-                            const Spacer(),
-                            const Icon(Icons.arrow_drop_down, color: Color(0xFF12B347)),
-                          ],
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Time slot selection
-                    Text(
-                      'Select Time',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: timeSlots.map((time) => _buildTimeSlotChip(time)).toList(),
-                    ),
-                    
-                    const SizedBox(height: 32),
-                    
-                    // Total price
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF12B347).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF12B347), width: 1),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Total',
-                            style: GoogleFonts.poppins(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            '€${totalPrice.toStringAsFixed(2)}',
-                            style: GoogleFonts.poppins(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF12B347),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              ),
-            ),
-            
-            // Continue button
-            Container(
-              padding: const EdgeInsets.all(24),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => _ActivityPaymentScreen(
-                          activity: widget.activity,
-                          bookingType: selectedBookingType,
-                          guests: guests,
-                          date: selectedDate,
-                          timeSlot: selectedTimeSlot,
-                          totalPrice: totalPrice,
-                        ),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF12B347),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    'Continue to Payment',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBookingTypeCard(String type, double price) {
-    final isSelected = selectedBookingType == type;
-    return GestureDetector(
-      onTap: () => setState(() => selectedBookingType = type),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF12B347).withOpacity(0.1) : Colors.white,
-          border: Border.all(
-            color: isSelected ? const Color(0xFF12B347) : Colors.grey[300]!,
-            width: isSelected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected ? const Color(0xFF12B347) : Colors.grey[400]!,
-                  width: 2,
-                ),
-                color: isSelected ? const Color(0xFF12B347) : Colors.transparent,
-              ),
-              child: isSelected
-                  ? const Icon(Icons.check, color: Colors.white, size: 12)
-                  : null,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                type,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            Text(
-              '€${price.toStringAsFixed(2)}',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF12B347),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTimeSlotChip(String time) {
-    final isSelected = selectedTimeSlot == time;
-    return GestureDetector(
-      onTap: () => setState(() => selectedTimeSlot = time),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF12B347) : Colors.white,
-          border: Border.all(
-            color: isSelected ? const Color(0xFF12B347) : Colors.grey[300]!,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          time,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: isSelected ? Colors.white : Colors.black87,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Payment screen for activity booking
-class _ActivityPaymentScreen extends StatefulWidget {
-  final Map<String, dynamic> activity;
-  final String bookingType;
-  final int guests;
-  final DateTime date;
-  final String timeSlot;
-  final double totalPrice;
-
-  const _ActivityPaymentScreen({
-    required this.activity,
-    required this.bookingType,
-    required this.guests,
-    required this.date,
-    required this.timeSlot,
-    required this.totalPrice,
-  });
-
-  @override
-  State<_ActivityPaymentScreen> createState() => _ActivityPaymentScreenState();
-}
-
-class _ActivityPaymentScreenState extends State<_ActivityPaymentScreen> {
-  String selectedPaymentMethod = 'card';
-  String selectedBank = 'ABN AMRO';
-  bool isProcessing = false;
-  
-  final cardNumberController = TextEditingController();
-  final expiryController = TextEditingController();
-  final cvvController = TextEditingController();
-  final nameController = TextEditingController();
-
-  final List<String> idealBanks = [
-    'ABN AMRO', 'ING', 'Rabobank', 'SNS Bank', 'ASN Bank',
-    'Bunq', 'Knab', 'Moneyou', 'RegioBank', 'Triodos Bank'
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(
-          'Payment',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-        ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          // Booking summary
-          Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[200]!),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Booking Summary',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(widget.activity['title']),
-                    Text('${widget.guests} guest${widget.guests > 1 ? 's' : ''}'),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(widget.bookingType),
-                    Text('${widget.date.day}/${widget.date.month}/${widget.date.year}'),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(widget.timeSlot),
-                    Text(
-                      '€${widget.totalPrice.toStringAsFixed(2)}',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF12B347),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          
-          // Payment methods
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Payment Method',
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // Payment method options
-                  _buildPaymentMethodOption('card', 'Credit/Debit Card', Icons.credit_card),
-                  _buildPaymentMethodOption('ideal', 'iDEAL', Icons.account_balance),
-                  _buildPaymentMethodOption('paypal', 'PayPal', Icons.payment),
-                  _buildPaymentMethodOption('apple', 'Apple Pay', Icons.phone_iphone),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Payment form based on selected method
-                  if (selectedPaymentMethod == 'card') _buildCardForm(),
-                  if (selectedPaymentMethod == 'ideal') _buildIdealForm(),
-                  if (selectedPaymentMethod == 'paypal') _buildPayPalForm(),
-                  if (selectedPaymentMethod == 'apple') _buildApplePayForm(),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Security notice
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.security, color: Colors.blue, size: 16),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Your payment information is encrypted and secure',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: Colors.blue[700],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          
-          // Pay button
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: isProcessing ? null : _processPayment,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF12B347),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                ),
-                child: isProcessing
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : Text(
-                        'Pay €${widget.totalPrice.toStringAsFixed(2)}',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentMethodOption(String value, String title, IconData icon) {
-    final isSelected = selectedPaymentMethod == value;
-    return GestureDetector(
-      onTap: () => setState(() => selectedPaymentMethod = value),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF12B347).withOpacity(0.1) : Colors.white,
-          border: Border.all(
-            color: isSelected ? const Color(0xFF12B347) : Colors.grey[300]!,
-            width: isSelected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: isSelected ? const Color(0xFF12B347) : Colors.grey[600]),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                title,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected ? const Color(0xFF12B347) : Colors.grey[400]!,
-                  width: 2,
-                ),
-                color: isSelected ? const Color(0xFF12B347) : Colors.transparent,
-              ),
-              child: isSelected
-                  ? const Icon(Icons.check, color: Colors.white, size: 12)
-                  : null,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCardForm() {
-    return Column(
-      children: [
-        TextField(
-          controller: cardNumberController,
-          decoration: InputDecoration(
-            labelText: 'Card Number',
-            hintText: '1234 5678 9012 3456',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF12B347)),
-            ),
-          ),
-          keyboardType: TextInputType.number,
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: expiryController,
-                decoration: InputDecoration(
-                  labelText: 'MM/YY',
-                  hintText: '12/25',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFF12B347)),
-                  ),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: TextField(
-                controller: cvvController,
-                decoration: InputDecoration(
-                  labelText: 'CVV',
-                  hintText: '123',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFF12B347)),
-                  ),
-                ),
-                keyboardType: TextInputType.number,
-                obscureText: true,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: nameController,
-          decoration: InputDecoration(
-            labelText: 'Cardholder Name',
-            hintText: 'John Doe',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF12B347)),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildIdealForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Select your bank',
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          value: selectedBank,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF12B347)),
-            ),
-          ),
-          items: idealBanks.map((bank) => DropdownMenuItem(
-            value: bank,
-            child: Text(bank),
-          )).toList(),
-          onChanged: (value) => setState(() => selectedBank = value!),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPayPalForm() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Column(
-        children: [
-          const Icon(Icons.payment, size: 48, color: Colors.blue),
-          const SizedBox(height: 8),
-          Text(
-            'You will be redirected to PayPal to complete your payment',
-            style: GoogleFonts.poppins(fontSize: 14),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildApplePayForm() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Column(
-        children: [
-          const Icon(Icons.phone_iphone, size: 48, color: Colors.black),
-          const SizedBox(height: 8),
-          Text(
-            'Use Touch ID or Face ID to pay with Apple Pay',
-            style: GoogleFonts.poppins(fontSize: 14),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _processPayment() async {
-    setState(() => isProcessing = true);
-    
-    // Simulate payment processing with realistic timing
-    int processingTime;
-    switch (selectedPaymentMethod) {
-      case 'card':
-        processingTime = 3000;
-        break;
-      case 'ideal':
-        processingTime = 2000;
-        break;
-      case 'paypal':
-        processingTime = 4000;
-        break;
-      case 'apple':
-        processingTime = 1500;
-        break;
-      default:
-        processingTime = 3000;
-    }
-    
-    await Future.delayed(Duration(milliseconds: processingTime));
-    
-    if (mounted) {
-      setState(() => isProcessing = false);
-      
-      // Navigate to confirmation screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => _ActivityBookingConfirmationScreen(
-            activity: widget.activity,
-            bookingType: widget.bookingType,
-            guests: widget.guests,
-            date: widget.date,
-            timeSlot: widget.timeSlot,
-            totalPrice: widget.totalPrice,
-            paymentMethod: selectedPaymentMethod,
-          ),
-        ),
-      );
-    }
-  }
-}
-
-/// Confirmation screen after successful booking
-class _ActivityBookingConfirmationScreen extends StatefulWidget {
-  final Map<String, dynamic> activity;
-  final String bookingType;
-  final int guests;
-  final DateTime date;
-  final String timeSlot;
-  final double totalPrice;
-  final String paymentMethod;
-
-  const _ActivityBookingConfirmationScreen({
-    required this.activity,
-    required this.bookingType,
-    required this.guests,
-    required this.date,
-    required this.timeSlot,
-    required this.totalPrice,
-    required this.paymentMethod,
-  });
-
-  @override
-  State<_ActivityBookingConfirmationScreen> createState() => _ActivityBookingConfirmationScreenState();
-}
-
-class _ActivityBookingConfirmationScreenState extends State<_ActivityBookingConfirmationScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _checkmarkController;
-  late Animation<double> _checkmarkAnimation;
-  late AnimationController _scaleController;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    
-    _checkmarkController = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-    _checkmarkAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _checkmarkController, curve: Curves.elasticOut),
-    );
-    
-    _scaleController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1).animate(
-      CurvedAnimation(parent: _scaleController, curve: Curves.easeOut),
-    );
-    
-    // Start animations
-    Future.delayed(const Duration(milliseconds: 100), () {
-      _scaleController.forward();
-      _checkmarkController.forward();
-    });
-    
-    // Haptic feedback
-            HapticFeedback.lightImpact();
-  }
-
-  @override
-  void dispose() {
-    _checkmarkController.dispose();
-    _scaleController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 40),
-                    
-                    // Success animation
-                    AnimatedBuilder(
-                      animation: _scaleAnimation,
-                      builder: (context, child) {
-                        return Transform.scale(
-                          scale: _scaleAnimation.value,
-                          child: Container(
-                            width: 120,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: const Color(0xFF4CAF50),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF4CAF50).withOpacity(0.3),
-                                  blurRadius: 20,
-                                  spreadRadius: 5,
-                                ),
-                              ],
-                            ),
-                            child: AnimatedBuilder(
-                              animation: _checkmarkAnimation,
-                              builder: (context, child) {
-                                return CustomPaint(
-                                  painter: _CheckmarkPainter(_checkmarkAnimation.value),
-                                  child: const SizedBox.expand(),
-                                );
-                              },
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    
-                    const SizedBox(height: 32),
-                    
-                    Text(
-                      'Booking Confirmed!',
-                      style: GoogleFonts.museoModerno(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF4CAF50),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 12),
-                    
-                    Text(
-                      'Your booking has been successfully confirmed. Get ready for an amazing experience!',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                        height: 1.4,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    
-                    const SizedBox(height: 32),
-                    
-                    // Booking details card
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[50],
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey[200]!),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.receipt, color: Colors.grey[600], size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Booking Details',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          _buildDetailRow('Activity', widget.activity['title']),
-                          _buildDetailRow('Experience', widget.bookingType),
-                          _buildDetailRow('Guests', '${widget.guests}'),
-                          _buildDetailRow('Date', '${widget.date.day}/${widget.date.month}/${widget.date.year}'),
-                          _buildDetailRow('Time', widget.timeSlot),
-                          _buildDetailRow('Reference', 'WM${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}'),
-                          const Divider(height: 24),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Total Paid',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Text(
-                                '€${widget.totalPrice.toStringAsFixed(2)}',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF4CAF50),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Action buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              // TODO: Add to calendar functionality
-                            },
-                            icon: const Icon(Icons.calendar_today),
-                            label: const Text('Add to Calendar'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF12B347),
-                              side: const BorderSide(color: Color(0xFF12B347)),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              // TODO: Add share functionality
-                            },
-                            icon: const Icon(Icons.share),
-                            label: const Text('Share'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF12B347),
-                              side: const BorderSide(color: Color(0xFF12B347)),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            
-            // Done button
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => _returnToMyDay(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4CAF50),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                  ),
-                  child: Text(
-                    'Done',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _returnToMyDay(BuildContext context) async {
-    // Update the activity status to 'paid' in the provider
-    final activityId = widget.activity['id'] as String? ?? widget.activity['title'] as String? ?? '';
-    
-    // For this demo, we'll update the activity data to include payment status
-    // In a real app, this would update the backend/database
-    final updatedActivity = Map<String, dynamic>.from(widget.activity);
-    updatedActivity['paymentType'] = 'paid';
-    updatedActivity['bookingReference'] = 'WM${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
-    updatedActivity['bookingDate'] = widget.date.toIso8601String();
-    updatedActivity['bookingTimeSlot'] = widget.timeSlot;
-    updatedActivity['guests'] = widget.guests;
-    updatedActivity['totalPaid'] = widget.totalPrice;
-    
-    // Update the cached activities with the new booking status
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final activitiesJson = prefs.getStringList('cached_activity_suggestions') ?? [];
-      
-      // Find and update the specific activity
-      final updatedActivitiesJson = activitiesJson.map((json) {
-        try {
-          final activity = jsonDecode(json) as Map<String, dynamic>;
-          final currentId = activity['id'] as String? ?? activity['title'] as String? ?? '';
-          if (currentId == activityId) {
-            // Update this activity with booking info
-            activity['paymentType'] = 'paid';
-            activity['bookingReference'] = updatedActivity['bookingReference'];
-            activity['bookingDate'] = updatedActivity['bookingDate'];
-            activity['bookingTimeSlot'] = updatedActivity['bookingTimeSlot'];
-            activity['guests'] = updatedActivity['guests'];
-            activity['totalPaid'] = updatedActivity['totalPaid'];
-          }
-          return jsonEncode(activity);
-        } catch (e) {
-          return json; // Return original if parsing fails
-        }
-      }).toList();
-      
-      // Save updated activities back to preferences
-      await prefs.setStringList('cached_activity_suggestions', updatedActivitiesJson);
-      
-      debugPrint('✅ Successfully updated activity booking status in cache');
-    } catch (e) {
-      debugPrint('❌ Error updating activity booking status: $e');
-    }
-    
-    // Navigate back to main screen and refresh My Day
-    Navigator.of(context).popUntil((route) => route.isFirst);
-    
-    // Navigate back to main screen with My Day tab
-    if (context.mounted) {
-      // Use context.go to navigate to main screen with My Day tab
-      context.go('/main', extra: {'tab': 0, 'refresh': true});
-    }
-  }
-}
-
-/// Custom painter for animated checkmark
-class _CheckmarkPainter extends CustomPainter {
-  final double progress;
-
-  _CheckmarkPainter(this.progress);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4
-      ..strokeCap = StrokeCap.round;
-
-    final center = Offset(size.width / 2, size.height / 2);
-    final checkmarkPath = Path();
-    
-    // Define checkmark points
-    final startPoint = Offset(center.dx - 15, center.dy);
-    final middlePoint = Offset(center.dx - 5, center.dy + 10);
-    final endPoint = Offset(center.dx + 15, center.dy - 10);
-    
-    checkmarkPath.moveTo(startPoint.dx, startPoint.dy);
-    checkmarkPath.lineTo(middlePoint.dx, middlePoint.dy);
-    checkmarkPath.lineTo(endPoint.dx, endPoint.dy);
-    
-    final pathMetric = checkmarkPath.computeMetrics().first;
-    final extractedPath = pathMetric.extractPath(0, pathMetric.length * progress);
-    
-    canvas.drawPath(extractedPath, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_google_maps_webservices/places.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -124,107 +125,97 @@ class PlacesService extends _$PlacesService {
     }
   }
 
-  /// Get detailed place information by place ID with smart caching
+  /// Get detailed place information by place ID via direct HTTP — no package JSON parsing
+  /// that can throw 'Null is not a subtype of Map' on missing fields.
   Future<Map<String, dynamic>> getPlaceDetails(String placeId) async {
-    if (!_isInitialized) {
-      debugPrint('⚠️ Places service not initialized, initializing now...');
-      await _initializePlaces();
-    }
-
-    // If Places API is disabled, return empty details
-    if (_places == null) {
-      debugPrint('🚫 Places API disabled - returning empty details for place: $placeId');
-      return {};
-    }
-
     debugPrint('🏷️ Getting details for place: $placeId');
-    
+
     try {
-      final response = await _places.getDetailsByPlaceId(
-        placeId,
-        fields: [
-          'name',
-          'formatted_address',
-          'rating',
-          'user_ratings_total', // Get review count
-          'reviews', // Get actual reviews
-          'photos',
-          'types',
-          'geometry',
-          'price_level', // Add price level for booking logic
-          'opening_hours', // For open_now (uses device local time)
-        ],
+      final apiKey = ApiKeys.googlePlacesKey;
+      final dio = Dio();
+      final response = await dio.get<Map<String, dynamic>>(
+        'https://maps.googleapis.com/maps/api/place/details/json',
+        queryParameters: {
+          'place_id': placeId,
+          'fields': 'name,formatted_address,rating,user_ratings_total,reviews,photos,types,geometry,price_level,opening_hours',
+          'key': apiKey,
+        },
       ).timeout(const Duration(seconds: 5), onTimeout: () {
         debugPrint('⏱️ Place details API call timed out for ID: $placeId');
         throw TimeoutException('API call timed out');
       });
 
-      debugPrint('🏷️ Place details status: ${response.status}');
-      
-      if (response.status != 'OK') {
-        debugPrint('❌ Details error: ${response.errorMessage}');
+      final data = response.data;
+      final status = data?['status'] as String?;
+      debugPrint('🏷️ Place details status: $status');
+
+      if (status != 'OK') {
+        debugPrint('❌ Details error: ${data?['error_message'] ?? status}');
         return {};
       }
-      
-      final result = response.result;
+
+      final result = data?['result'] as Map<String, dynamic>?;
       if (result == null) {
         debugPrint('❌ Place details result is null');
         return {};
       }
-      
+
       // Safely extract photos
       final photoReferences = <String>[];
-      if (result.photos != null && result.photos!.isNotEmpty) {
-        for (final photo in result.photos!) {
-          if (photo.photoReference != null && photo.photoReference!.isNotEmpty) {
-            photoReferences.add(photo.photoReference!);
-          }
+      final photosRaw = result['photos'] as List<dynamic>?;
+      if (photosRaw != null) {
+        for (final photo in photosRaw) {
+          final ref = (photo as Map<String, dynamic>?)?['photo_reference'] as String?;
+          if (ref != null && ref.isNotEmpty) photoReferences.add(ref);
         }
       }
-      
-      // Safely extract reviews from Google Places API
+
+      // Safely extract reviews
       final reviews = <Map<String, dynamic>>[];
-      if (result.reviews != null && result.reviews!.isNotEmpty) {
-        for (final review in result.reviews!) {
+      final reviewsRaw = result['reviews'] as List<dynamic>?;
+      if (reviewsRaw != null) {
+        for (final review in reviewsRaw) {
+          final r = review as Map<String, dynamic>?;
+          if (r == null) continue;
+          final time = r['time'] as num?;
           reviews.add({
-            'author_name': review.authorName ?? 'Anonymous',
-            'rating': review.rating ?? 0,
-            'text': review.text ?? '',
-            'time': review.time ?? 0,
-            'relative_time_description': review.time != null 
-                ? _formatReviewTime(review.time!.toInt()) 
-                : 'Recently',
+            'author_name': r['author_name'] as String? ?? 'Anonymous',
+            'rating': r['rating'] as num? ?? 0,
+            'text': r['text'] as String? ?? '',
+            'time': time ?? 0,
+            'relative_time_description': time != null ? _formatReviewTime(time.toInt()) : 'Recently',
           });
         }
         debugPrint('✅ Extracted ${reviews.length} real reviews from Google Places API');
       } else {
         debugPrint('⚠️ No reviews available for this place');
       }
-      
+
       // Safely extract location
-      final geometry = result.geometry;
-      final location = geometry?.location;
-      
+      final geometry = result['geometry'] as Map<String, dynamic>?;
+      final locationRaw = geometry?['location'] as Map<String, dynamic>?;
+
       // open_now from Google uses device local time (correct for user's timezone e.g. NL)
-      final openNow = result.openingHours?.openNow ?? false;
+      final openingHours = result['opening_hours'] as Map<String, dynamic>?;
+      final openNow = openingHours?['open_now'] as bool? ?? false;
 
       final details = {
-        'name': result.name ?? '',
-        'address': result.formattedAddress ?? '',
-        'rating': result.rating,
-        'user_ratings_total': reviews.length, // Use review count from actual reviews
-        'reviews': reviews, // Real reviews from Google Places API
+        'name': result['name'] as String? ?? '',
+        'address': result['formatted_address'] as String? ?? '',
+        'rating': result['rating'] as num?,
+        'user_ratings_total': reviews.length,
+        'reviews': reviews,
         'photos': photoReferences,
-        'types': result.types ?? [],
-        'priceLevel': result.priceLevel, // Include price level
-        'location': location != null ? {
-          'lat': location.lat,
-          'lng': location.lng,
+        'types': (result['types'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+        'priceLevel': result['price_level'] as int?,
+        'location': locationRaw != null ? {
+          'lat': locationRaw['lat'] as num? ?? 0.0,
+          'lng': locationRaw['lng'] as num? ?? 0.0,
         } : null,
         'open_now': openNow,
       };
-      
-      debugPrint('✅ Got details for ${result.name} with ${photoReferences.length} photos and ${reviews.length} reviews');
+
+      debugPrint('✅ Got details for ${result['name']} with ${photoReferences.length} photos and ${reviews.length} reviews');
       return details;
     } catch (e) {
       debugPrint('❌ Failed to get place details: $e');

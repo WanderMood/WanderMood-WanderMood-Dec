@@ -19,7 +19,7 @@ import 'package:wandermood/l10n/app_localizations.dart';
 /// Day Plan activity card matching the reference design:
 /// gradient accent bar, image with overlays (mood match, category, rating, actions),
 /// title, mood tags (gradient + glassy), description, info pills (gradient + glassy), Not feeling this? + See activity buttons.
-class DayPlanActivityCard extends ConsumerWidget {
+class DayPlanActivityCard extends ConsumerStatefulWidget {
   final Activity activity;
   /// Called when the card or "See activity" is tapped. Receives activity and optional distance for detail screen.
   final void Function(Activity activity, {String? distanceKm}) onTap;
@@ -28,6 +28,8 @@ class DayPlanActivityCard extends ConsumerWidget {
   final String? distanceKm;
   /// Optional address/location line (e.g. from Places API or activity.description).
   final String? locationLabel;
+  /// Callback when the activity is successfully added to My Day.
+  final VoidCallback? onAdded;
 
   const DayPlanActivityCard({
     super.key,
@@ -36,11 +38,20 @@ class DayPlanActivityCard extends ConsumerWidget {
     this.onNotFeelingThis,
     this.distanceKm,
     this.locationLabel,
+    this.onAdded,
   });
+
+  @override
+  ConsumerState<DayPlanActivityCard> createState() => _DayPlanActivityCardState();
+}
+
+class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
+  bool _isAdding = false;
+  bool _isAdded = false;
 
   /// Gradient for accent bar and "See activity" button by time slot / category.
   LinearGradient _cardGradient() {
-    final first = activity.tags.isNotEmpty ? activity.tags.first.toLowerCase() : '';
+    final first = widget.activity.tags.isNotEmpty ? widget.activity.tags.first.toLowerCase() : '';
     if (first.contains('cultural') || first.contains('museum') || first.contains('art')) {
       return const LinearGradient(colors: [Color(0xFFA78BFA), Color(0xFF6366F1)], begin: Alignment.centerLeft, end: Alignment.centerRight);
     }
@@ -53,49 +64,23 @@ class DayPlanActivityCard extends ConsumerWidget {
     return const LinearGradient(colors: [Color(0xFFF472B6), Color(0xFFFB7185)], begin: Alignment.centerLeft, end: Alignment.centerRight);
   }
 
-  /// Category badge gradient (category color from reference).
-  LinearGradient _categoryGradient() {
-    final first = activity.tags.isNotEmpty ? activity.tags.first.toLowerCase() : '';
-    if (first.contains('cultural') || first.contains('museum')) {
-      return const LinearGradient(colors: [Color(0xFFA78BFA), Color(0xFF6366F1)], begin: Alignment.centerLeft, end: Alignment.centerRight);
-    }
-    if (first.contains('food') || first.contains('tour')) {
-      return const LinearGradient(colors: [Color(0xFF4ADE80), Color(0xFF10B981)], begin: Alignment.centerLeft, end: Alignment.centerRight);
-    }
-    if (first.contains('market') || first.contains('dining')) {
-      return const LinearGradient(colors: [Color(0xFFFB923C), Color(0xFFEF4444)], begin: Alignment.centerLeft, end: Alignment.centerRight);
-    }
-    return const LinearGradient(colors: [Color(0xFFA78BFA), Color(0xFF6366F1)], begin: Alignment.centerLeft, end: Alignment.centerRight);
-  }
-
-  /// Mood match % (placeholder when not from API).
-  int get _moodMatch => 85 + (activity.id.hashCode % 15).clamp(0, 14);
-
-  String _categoryLabel(BuildContext context) {
-    if (activity.tags.isNotEmpty) {
-      final t = activity.tags.first;
-      return t.length > 2 ? '${t[0].toUpperCase()}${t.substring(1)}' : t.toUpperCase();
-    }
-    return AppLocalizations.of(context)!.dayPlanCardActivity;
-  }
-
   String get _durationText {
-    if (activity.duration >= 60) {
-      final h = activity.duration ~/ 60;
-      final m = activity.duration % 60;
+    if (widget.activity.duration >= 60) {
+      final h = widget.activity.duration ~/ 60;
+      final m = widget.activity.duration % 60;
       if (m == 0) return '${h}h';
       return '${h}h ${m}min';
     }
-    return '${activity.duration} min';
+    return '${widget.activity.duration} min';
   }
 
   String _priceText(BuildContext context) {
-    switch (activity.paymentType) {
+    switch (widget.activity.paymentType) {
       case PaymentType.free:
         return AppLocalizations.of(context)!.dayPlanCardFree;
       case PaymentType.ticket:
       case PaymentType.reservation:
-        final p = activity.priceLevel?.toLowerCase() ?? '';
+        final p = widget.activity.priceLevel?.toLowerCase() ?? '';
         if (p.contains('€€€') || p == '3') return '€€€';
         if (p.contains('€€') || p == '2') return '€€';
         return '€';
@@ -104,16 +89,16 @@ class DayPlanActivityCard extends ConsumerWidget {
 
   /// Image for the card: use activity.imageUrl if set; otherwise fetch from Places API (same key as Explore).
   Widget _buildCardImage(WidgetRef ref) {
-    final hasImageUrl = activity.imageUrl.isNotEmpty;
+    final hasImageUrl = widget.activity.imageUrl.isNotEmpty;
     if (hasImageUrl) {
       return CachedNetworkImage(
-        imageUrl: activity.imageUrl,
+        imageUrl: widget.activity.imageUrl,
         fit: BoxFit.cover,
         placeholder: (_, __) => _imagePlaceholder(),
         errorWidget: (_, __, ___) => _imagePlaceholder(),
       );
     }
-    final placeId = activity.placeId;
+    final placeId = widget.activity.placeId;
     if (placeId != null && placeId.isNotEmpty) {
       final photoAsync = ref.watch(placePhotoUrlProvider(placeId));
       return photoAsync.when(
@@ -147,13 +132,13 @@ class DayPlanActivityCard extends ConsumerWidget {
       final availableMaps = await MapLauncher.installedMaps;
       if (availableMaps.isNotEmpty) {
         await availableMaps.first.showMarker(
-          coords: Coords(activity.location.latitude, activity.location.longitude),
-          title: activity.name,
-          description: activity.description,
+          coords: Coords(widget.activity.location.latitude, widget.activity.location.longitude),
+          title: widget.activity.name,
+          description: widget.activity.description,
         );
       } else {
         final url = Uri.parse(
-          'https://www.google.com/maps/search/?api=1&query=${activity.location.latitude},${activity.location.longitude}',
+          'https://www.google.com/maps/search/?api=1&query=${widget.activity.location.latitude},${widget.activity.location.longitude}',
         );
         if (await canLaunchUrl(url)) {
           await launchUrl(url, mode: LaunchMode.externalApplication);
@@ -170,7 +155,7 @@ class DayPlanActivityCard extends ConsumerWidget {
 
   Future<void> _share(BuildContext context) async {
     try {
-      final place = activityToPlace(activity);
+      final place = activityToPlace(widget.activity);
       await SharingService.sharePlace(place);
     } catch (e) {
       if (context.mounted) {
@@ -182,9 +167,8 @@ class DayPlanActivityCard extends ConsumerWidget {
   }
 
   Future<void> _toggleFavorite(BuildContext context, WidgetRef ref) async {
-    final place = activityToPlace(activity);
+    final place = activityToPlace(widget.activity);
     final savedPlacesService = ref.read(savedPlacesServiceProvider);
-    final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
     final savedPlacesAsync = ref.read(savedPlacesProvider);
     final isFav = savedPlacesAsync.value?.any((sp) => sp.place.id == place.id) ?? false;
 
@@ -193,30 +177,31 @@ class DayPlanActivityCard extends ConsumerWidget {
         await savedPlacesService.unsavePlace(place.id);
         ref.invalidate(savedPlacesProvider);
         if (context.mounted) {
-          final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.dayPlanCardRemovedFromSaved(place.name)), backgroundColor: Colors.orange),
+            SnackBar(content: Text(AppLocalizations.of(context)!.dayPlanCardRemovedFromSaved(place.name)), backgroundColor: Colors.orange),
           );
         }
       } catch (e) {
         if (context.mounted) {
-          final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.dayPlanCardFailedToRemove(place.name)), backgroundColor: Colors.red),
+            SnackBar(content: Text(AppLocalizations.of(context)!.dayPlanCardFailedToRemove(place.name)), backgroundColor: Colors.red),
           );
         }
       }
       return;
     }
 
-    // Save to both Moody Hub (saved places, top right) and My Day (scheduled activities)
-    bool savedToMoodyHub = false;
-    bool savedToMyDay = false;
-
     try {
       await savedPlacesService.savePlace(place);
       ref.invalidate(savedPlacesProvider);
-      savedToMoodyHub = true;
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.dayPlanCardSavedToMoodyHub(place.name)),
+            backgroundColor: const Color(0xFF12B347),
+          ),
+        );
+      }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -227,14 +212,44 @@ class DayPlanActivityCard extends ConsumerWidget {
         );
       }
     }
+  }
 
+  Future<void> _addToMyDay(BuildContext context, WidgetRef ref) async {
+    if (_isAdded) return;
+    
+    setState(() {
+      _isAdding = true;
+    });
+    
+    final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
     try {
-      await scheduledActivityService.saveScheduledActivities([activity], isConfirmed: false);
+      await scheduledActivityService.saveScheduledActivities([widget.activity], isConfirmed: false);
       ref.invalidate(scheduledActivityServiceProvider);
       ref.invalidate(scheduledActivitiesForTodayProvider);
       ref.invalidate(todayActivitiesProvider);
-      savedToMyDay = true;
+      
+      if (mounted) {
+        setState(() {
+          _isAdding = false;
+          _isAdded = true;
+        });
+        widget.onAdded?.call();
+      }
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.dayPlanCardAddedToMyDay(widget.activity.name)),
+            backgroundColor: const Color(0xFF12B347),
+          ),
+        );
+      }
     } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isAdding = false;
+        });
+      }
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -244,39 +259,15 @@ class DayPlanActivityCard extends ConsumerWidget {
         );
       }
     }
-
-    if (context.mounted) {
-      final l10n = AppLocalizations.of(context)!;
-      if (savedToMoodyHub && savedToMyDay) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.dayPlanCardSavedToMoodyHubAndMyDay(place.name)),
-            backgroundColor: const Color(0xFF12B347),
-          ),
-        );
-      } else if (savedToMoodyHub || savedToMyDay) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              savedToMoodyHub
-                  ? l10n.dayPlanCardSavedToMoodyHub(place.name)
-                  : l10n.dayPlanCardAddedToMyDay(place.name),
-            ),
-            backgroundColor: const Color(0xFF12B347),
-          ),
-        );
-      }
-    }
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final gradient = _cardGradient();
     final savedPlacesAsync = ref.watch(savedPlacesProvider);
-    final place = activityToPlace(activity);
+    final place = activityToPlace(widget.activity);
     final isFavorite = savedPlacesAsync.value?.any((sp) => sp.place.id == place.id) ?? false;
-    final categoryGradient = _categoryGradient();
-    final placeId = activity.placeId;
+    final placeId = widget.activity.placeId;
     final openNowAsync = placeId != null && placeId.isNotEmpty
         ? ref.watch(placeOpenNowProvider(placeId))
         : const AsyncValue.data(null);
@@ -285,7 +276,7 @@ class DayPlanActivityCard extends ConsumerWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => onTap(activity, distanceKm: distanceKm),
+        onTap: () => widget.onTap(widget.activity, distanceKm: widget.distanceKm),
         borderRadius: BorderRadius.circular(24),
         child: Container(
           decoration: BoxDecoration(
@@ -333,52 +324,6 @@ class DayPlanActivityCard extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    // Mood Match badge (top-left) – gradient + glassy
-                    Positioned(
-                      top: 12,
-                      left: 12,
-                      child: _glassyGradientPill(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF4ADE80), Color(0xFF10B981)],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.auto_awesome, size: 14, color: Colors.white),
-                            const SizedBox(width: 6),
-                            Text(
-                              AppLocalizations.of(context)!.dayPlanCardMatch('$_moodMatch'),
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // Category badge (top-right) – gradient + glassy
-                    Positioned(
-                      top: 12,
-                      right: 12,
-                      child: _glassyGradientPill(
-                        gradient: categoryGradient,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        child: Text(
-                          _categoryLabel(context).toUpperCase(),
-                          style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
                     // Rating badge (bottom-left) – gradient + glassy
                     Positioned(
                       bottom: 12,
@@ -396,7 +341,7 @@ class DayPlanActivityCard extends ConsumerWidget {
                             const Icon(Icons.star, size: 16, color: Color(0xFFFBBF24)),
                             const SizedBox(width: 4),
                             Text(
-                              activity.rating.toStringAsFixed(1),
+                              widget.activity.rating.toStringAsFixed(1),
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
@@ -445,7 +390,7 @@ class DayPlanActivityCard extends ConsumerWidget {
                   children: [
                     // Title
                     Text(
-                      activity.name,
+                      widget.activity.name,
                       style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -459,7 +404,7 @@ class DayPlanActivityCard extends ConsumerWidget {
                     Wrap(
                       spacing: 6,
                       runSpacing: 6,
-                      children: activity.tags.take(5).map((tag) {
+                      children: widget.activity.tags.take(5).map((tag) {
                         final style = _tagGradient(tag);
                         return _glassyGradientPill(
                           gradient: style,
@@ -477,14 +422,14 @@ class DayPlanActivityCard extends ConsumerWidget {
                     ),
                     const SizedBox(height: 12),
                     // Location/address when provided
-                    if (locationLabel != null && locationLabel!.isNotEmpty) ...[
+                    if (widget.locationLabel != null && widget.locationLabel!.isNotEmpty) ...[
                       Row(
                         children: [
                           Icon(Icons.location_on_outlined, size: 16, color: Colors.grey[600]),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
-                              locationLabel!,
+                              widget.locationLabel!,
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 color: Colors.grey[600],
@@ -500,7 +445,7 @@ class DayPlanActivityCard extends ConsumerWidget {
                     ],
                     // Description
                     Text(
-                      activity.description,
+                      widget.activity.description,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: const Color(0xFF4B5563),
@@ -535,10 +480,10 @@ class DayPlanActivityCard extends ConsumerWidget {
                           ),
                           iconColor: const Color(0xFF059669),
                         ),
-                        if (distanceKm != null)
+                        if (widget.distanceKm != null)
                           _infoPill(
                             icon: Icons.location_on,
-                            label: distanceKm!,
+                            label: widget.distanceKm!,
                             gradient: const LinearGradient(
                               colors: [Color(0xFFFED7AA), Color(0xFFFBCFE8)],
                               begin: Alignment.centerLeft,
@@ -568,9 +513,9 @@ class DayPlanActivityCard extends ConsumerWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: onNotFeelingThis != null
+                          child: widget.onNotFeelingThis != null
                               ? OutlinedButton.icon(
-                                  onPressed: onNotFeelingThis,
+                                  onPressed: widget.onNotFeelingThis,
                                   icon: const Icon(Icons.refresh_rounded, size: 18, color: Color(0xFF4CAF50)),
                                   label: Text(
                                     AppLocalizations.of(context)!.dayPlanCardNotFeelingThis,
@@ -611,7 +556,7 @@ class DayPlanActivityCard extends ConsumerWidget {
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              onTap: () => onTap(activity, distanceKm: distanceKm),
+                              onTap: () => widget.onTap(widget.activity, distanceKm: widget.distanceKm),
                               borderRadius: BorderRadius.circular(16),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -646,6 +591,52 @@ class DayPlanActivityCard extends ConsumerWidget {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 10),
+                    // Add to My Day button
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _isAdded ? null : () => _addToMyDay(context, ref),
+                        icon: _isAdding 
+                            ? const SizedBox(
+                                width: 16, 
+                                height: 16, 
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF7C3AED)),
+                              )
+                            : Icon(
+                                _isAdded ? Icons.check_circle_rounded : Icons.calendar_today_rounded, 
+                                size: 16, 
+                                color: _isAdded ? Colors.white : const Color(0xFF7C3AED),
+                              ),
+                        label: Text(
+                          _isAdded 
+                              ? AppLocalizations.of(context)!.dayPlanCardAdded
+                              : AppLocalizations.of(context)!.dayPlanCardAddToMyDay,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: _isAdded ? Colors.white : const Color(0xFF7C3AED),
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: BorderSide(
+                            color: _isAdded ? const Color(0xFF12B347) : const Color(0xFF7C3AED), 
+                            width: 2,
+                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          backgroundColor: _isAdded ? const Color(0xFF12B347) : const Color(0xFFF5F3FF),
+                        ).copyWith(
+                          // Ensure disabled state still shows the custom colors
+                          foregroundColor: WidgetStateProperty.resolveWith((states) {
+                            if (states.contains(WidgetState.disabled)) {
+                              return _isAdded ? Colors.white : const Color(0xFF7C3AED);
+                            }
+                            return null; // Defer to default
+                          }),
+                        ),
+                      ),
                     ),
                   ],
                 ),

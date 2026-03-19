@@ -40,6 +40,72 @@ class AppLocalizationsEs extends AppLocalizations {
   String get createMyFirstDay => 'Crear mi primer día';
 
   @override
+  String get myDayHeaderMorning =>
+      '¡Buenos días! Vamos a hacer que hoy valga la pena.';
+
+  @override
+  String get myDayHeaderAfternoon =>
+      '¡Buenas tardes! Tu día todavía promete mucho.';
+
+  @override
+  String get myDayHeaderEvening =>
+      '¡Buenas noches! Veamos qué más puede ser este día.';
+
+  @override
+  String get myDayNoPlanHeaderSubtitle =>
+      'Aún no hay planes. Tu día sigue abierto.';
+
+  @override
+  String get myDayEmptyGreetingMorningBody =>
+      'Te espera un día fresco lleno de posibilidades.';
+
+  @override
+  String get myDayEmptyGreetingAfternoonBody =>
+      'Todavía hay tiempo para convertir hoy en algo memorable.';
+
+  @override
+  String get myDayEmptyGreetingEveningBody =>
+      'La noche sigue abierta. Planea algo especial o tómatelo con calma.';
+
+  @override
+  String get myDayEmptyPlanTitle => '¿Listo para planear tu día?';
+
+  @override
+  String get myDayEmptyPlanSubtitle =>
+      'Crea un plan para tu día y empieza a descubrir lugares que encajen con tu ánimo, tu tiempo y tu energía.';
+
+  @override
+  String get myDayEmptyCreateButton => 'Crear Mi Día';
+
+  @override
+  String get myDayEmptyBrowseButton => 'Ver actividades';
+
+  @override
+  String get myDayEmptyAskMoodyButton => 'Preguntar a Moody';
+
+  @override
+  String get myDayEmptyInspiredTitle => 'Inspírate';
+
+  @override
+  String get myDayInspiredCafesTitle => 'Descubrir cafés';
+
+  @override
+  String get myDayInspiredCafesSubtitle =>
+      'Encuentra sitios acogedores para relajarte';
+
+  @override
+  String get myDayInspiredTrendingTitle => 'Lugares en tendencia';
+
+  @override
+  String get myDayInspiredTrendingSubtitle => 'Sitios populares esta semana';
+
+  @override
+  String get myDayInspiredHiddenGemsTitle => 'Joyas ocultas';
+
+  @override
+  String get myDayInspiredHiddenGemsSubtitle => 'Favoritos locales cerca de ti';
+
+  @override
   String get skipForNow => 'Omitir por ahora';
 
   @override
@@ -2415,9 +2481,18 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get dayPlanCardAdded => 'Añadido';
+
+  @override
+  String get dayPlanCardAddRemainingToMyDay => 'Añadir el resto a Mi Día';
+
+  @override
   String dayPlanCardMatch(String percent) {
     return '$percent% coincidencia';
   }
+
+  @override
+  String get dayPlanCardAddToMyDay => '+ Añadir a Mi Día';
 
   @override
   String moodHubGreetingFriendly(String name) {
@@ -2564,6 +2639,96 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se encontraron actividades. Prueba otros estados de ánimo o comprueba la ubicación.';
 
   @override
+  String get planLoadingMessage => 'Creando tu plan…';
+
+  @override
+  String get moodySays => 'Moody dice';
+
+  @override
+  String get dayPlanMoodyCardTitle => 'Moody';
+
+  @override
+  String get moodCultural => 'Cultural';
+
+  @override
+  String get moodCozy => 'Acogedor';
+
+  @override
+  String get moodFoody => 'Foodie';
+
+  @override
+  String get moodRelaxed => 'Relajado';
+
+  @override
+  String get moodAdventurous => 'Aventurero';
+
+  @override
+  String get moodSocial => 'Social';
+
+  @override
+  String get moodCreative => 'Creativo';
+
+  @override
+  String get moodRomantic => 'Romántico';
+
+  @override
+  String get moodEnergetic => 'Enérgico';
+
+  @override
+  String get moodCurious => 'Curioso';
+
+  @override
+  String dayPlanFoundNewOption(String name, String remaining) {
+    return '✨ Nueva opción encontrada: $name. ($remaining cambios más disponibles)';
+  }
+
+  @override
+  String activityDetailMatch(String percent) {
+    return '$percent% de coincidencia';
+  }
+
+  @override
+  String activityDetailPhotoCount(String count) {
+    return '$count foto';
+  }
+
+  @override
+  String get activityDetailRatingExceptional => 'Excepcional';
+
+  @override
+  String get activityDetailDuration => 'Duración';
+
+  @override
+  String get activityDetailPrice => 'Precio';
+
+  @override
+  String get activityDetailDistance => 'Distancia';
+
+  @override
+  String get activityDetailAbout => 'Sobre';
+
+  @override
+  String get activityDetailHighlights => 'Destacados';
+
+  @override
+  String get activityDetailLocation => 'Ubicación';
+
+  @override
+  String get activityDetailGetDirections => 'Cómo llegar →';
+
+  @override
+  String get activityDetailFrom => 'Desde';
+
+  @override
+  String get activityDetailPerPerson => 'por persona';
+
+  @override
+  String get activityDetailDirections => 'Direcciones';
+
+  @override
+  String get activityDetailBookNow => 'Reservar ahora';
+
+  @override
   String get getReadyTitle => 'Prepárate';
 
   @override
@@ -2686,4 +2851,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get getReadyCantWait => '¡Qué ganas de ver qué descubres!';
+
+  @override
+  String noPlanDayOpen(String city) {
+    return 'Tu día en $city está abierto. ¿Quieres que prepare un plan, o buscas una vibra específica?';
+  }
+
+  @override
+  String get noPlanPlanMyWholeDay => '✨ Planear mi día completo';
+
+  @override
+  String get noPlanFindMeCoffee => '☕ Encuentra café para mí';
+
+  @override
+  String get noPlanGetMeMoving => '🏃 Ponme en movimiento';
+
+  @override
+  String get noPlanJustChat => 'Solo charlar';
+
+  @override
+  String get noPlanPlanLater => 'Quizás más tarde';
 }

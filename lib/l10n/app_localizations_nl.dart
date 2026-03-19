@@ -40,6 +40,72 @@ class AppLocalizationsNl extends AppLocalizations {
   String get createMyFirstDay => 'Maak mijn eerste dag';
 
   @override
+  String get myDayHeaderMorning =>
+      'Goedemorgen! Laten we vandaag iets moois maken.';
+
+  @override
+  String get myDayHeaderAfternoon =>
+      'Goedemiddag! Je dag ziet er veelbelovend uit.';
+
+  @override
+  String get myDayHeaderEvening =>
+      'Goedenavond! Laten we kijken wat er nog van vandaag te maken valt.';
+
+  @override
+  String get myDayNoPlanHeaderSubtitle =>
+      'Nog geen plannen. Je dag ligt nog open.';
+
+  @override
+  String get myDayEmptyGreetingMorningBody =>
+      'Een frisse dag vol mogelijkheden wacht op je.';
+
+  @override
+  String get myDayEmptyGreetingAfternoonBody =>
+      'Er is nog genoeg tijd om vandaag memorabel te maken.';
+
+  @override
+  String get myDayEmptyGreetingEveningBody =>
+      'De avond ligt nog open. Plan iets bijzonders of doe het rustig aan.';
+
+  @override
+  String get myDayEmptyPlanTitle => 'Klaar om je dag te plannen?';
+
+  @override
+  String get myDayEmptyPlanSubtitle =>
+      'Maak een dagplanning en ontdek plekken die passen bij je stemming, timing en energie.';
+
+  @override
+  String get myDayEmptyCreateButton => 'Maak Mijn Dag';
+
+  @override
+  String get myDayEmptyBrowseButton => 'Browse Activiteiten';
+
+  @override
+  String get myDayEmptyAskMoodyButton => 'Vraag Moody';
+
+  @override
+  String get myDayEmptyInspiredTitle => 'Doe inspiratie op';
+
+  @override
+  String get myDayInspiredCafesTitle => 'Ontdek cafés';
+
+  @override
+  String get myDayInspiredCafesSubtitle =>
+      'Vind knusse plekken om te ontspannen';
+
+  @override
+  String get myDayInspiredTrendingTitle => 'Trending plekken';
+
+  @override
+  String get myDayInspiredTrendingSubtitle => 'Populaire spots van deze week';
+
+  @override
+  String get myDayInspiredHiddenGemsTitle => 'Verborgen parels';
+
+  @override
+  String get myDayInspiredHiddenGemsSubtitle => 'Lokale favorieten in de buurt';
+
+  @override
   String get skipForNow => 'Sla nu over';
 
   @override
@@ -2253,7 +2319,7 @@ class AppLocalizationsNl extends AppLocalizations {
       'Verborgen parels, unieke ervaringen';
 
   @override
-  String get dayPlanTodayItinerary => 'ITINERAIRE VANDAAG';
+  String get dayPlanTodayItinerary => 'JOUW PLAN';
 
   @override
   String get dayPlanBasedOn => 'Je dagplan gebaseerd op:';
@@ -2406,9 +2472,18 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String get dayPlanCardAdded => 'Toegevoegd';
+
+  @override
+  String get dayPlanCardAddRemainingToMyDay => 'Voeg de rest toe aan Mijn Dag';
+
+  @override
   String dayPlanCardMatch(String percent) {
     return '$percent% match';
   }
+
+  @override
+  String get dayPlanCardAddToMyDay => '+ Toevoegen aan Mijn Dag';
 
   @override
   String moodHubGreetingFriendly(String name) {
@@ -2555,6 +2630,96 @@ class AppLocalizationsNl extends AppLocalizations {
       'Geen activiteiten gevonden. Probeer andere stemmingen of controleer je locatie.';
 
   @override
+  String get planLoadingMessage => 'Je plan wordt gemaakt…';
+
+  @override
+  String get moodySays => 'Moody zegt';
+
+  @override
+  String get dayPlanMoodyCardTitle => 'Moody';
+
+  @override
+  String get moodCultural => 'Cultureel';
+
+  @override
+  String get moodCozy => 'Gezellig';
+
+  @override
+  String get moodFoody => 'Foodie';
+
+  @override
+  String get moodRelaxed => 'Ontspannen';
+
+  @override
+  String get moodAdventurous => 'Avontuurlijk';
+
+  @override
+  String get moodSocial => 'Sociaal';
+
+  @override
+  String get moodCreative => 'Creatief';
+
+  @override
+  String get moodRomantic => 'Romantisch';
+
+  @override
+  String get moodEnergetic => 'Energiek';
+
+  @override
+  String get moodCurious => 'Nieuwsgierig';
+
+  @override
+  String dayPlanFoundNewOption(String name, String remaining) {
+    return '✨ Nieuwe optie gevonden: $name! (Nog $remaining wijzigingen beschikbaar)';
+  }
+
+  @override
+  String activityDetailMatch(String percent) {
+    return '$percent% Match';
+  }
+
+  @override
+  String activityDetailPhotoCount(String count) {
+    return '$count foto';
+  }
+
+  @override
+  String get activityDetailRatingExceptional => 'Uitzonderlijk';
+
+  @override
+  String get activityDetailDuration => 'Duur';
+
+  @override
+  String get activityDetailPrice => 'Prijs';
+
+  @override
+  String get activityDetailDistance => 'Afstand';
+
+  @override
+  String get activityDetailAbout => 'Over';
+
+  @override
+  String get activityDetailHighlights => 'Hoogtepunten';
+
+  @override
+  String get activityDetailLocation => 'Locatie';
+
+  @override
+  String get activityDetailGetDirections => 'Route ophalen →';
+
+  @override
+  String get activityDetailFrom => 'Vanaf';
+
+  @override
+  String get activityDetailPerPerson => 'per persoon';
+
+  @override
+  String get activityDetailDirections => 'Routebeschrijving';
+
+  @override
+  String get activityDetailBookNow => 'Nu boeken';
+
+  @override
   String get getReadyTitle => 'Maak je klaar';
 
   @override
@@ -2678,4 +2843,24 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get getReadyCantWait => 'Benieuwd wat je gaat ontdekken!';
+
+  @override
+  String noPlanDayOpen(String city) {
+    return 'Je dag in $city staat nog open. Zal ik een plan maken, of zoek je een specifieke vibe?';
+  }
+
+  @override
+  String get noPlanPlanMyWholeDay => '✨ Plan mijn hele dag';
+
+  @override
+  String get noPlanFindMeCoffee => '☕ Vind koffie voor me';
+
+  @override
+  String get noPlanGetMeMoving => '🏃 Zet me in beweging';
+
+  @override
+  String get noPlanJustChat => 'Gewoon chatten';
+
+  @override
+  String get noPlanPlanLater => 'Misschien later';
 }

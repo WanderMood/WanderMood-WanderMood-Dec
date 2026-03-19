@@ -553,9 +553,13 @@ GoRouter router(RouterRef ref) {
           if (extra == null) return const DayPlanScreen(activities: [], selectedMoods: []);
           final activities = extra['activities'] as List<Activity>? ?? [];
           final moods = (extra['moods'] as List<dynamic>?)?.cast<String>() ?? <String>[];
+          final moodyMessage = extra['moodyMessage'] as String? ?? '';
+          final moodyReasoning = extra['moodyReasoning'] as String? ?? '';
           return DayPlanScreen(
             activities: activities,
             selectedMoods: moods,
+            moodyMessage: moodyMessage,
+            moodyReasoning: moodyReasoning,
           );
         },
       ),

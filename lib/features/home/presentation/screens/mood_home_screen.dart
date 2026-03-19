@@ -1971,7 +1971,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                           borderRadius: BorderRadius.circular(28),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.green.withOpacity(0.2),
+                              color: const Color(0xFF5BB32A).withOpacity(0.25),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),
@@ -1982,7 +1982,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _selectedMoods.isEmpty || _isAILoading
                                 ? const Color(0xFFD0D0D0) // Light gray for inactive/loading state
-                                : const Color(0xFF12B347), // Green for active state
+                                : const Color(0xFF5BB32A), // Same brand green as splash screen
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
@@ -2026,22 +2026,16 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                       Padding(
                         padding: const EdgeInsets.only(left: 16, right: 16, bottom: 30),
                         child: TextButton(
-                          onPressed: () {
-                            // Always show hub when "Back to Hub" is clicked
-                            // If in mood change mode, use returnToHub (preserves activities)
+                          onPressed: () async {
+                            // MoodHomeScreen always shows this full-screen mood picker; updating
+                            // provider alone does not switch UI. Navigate to main Moody hub tab.
                             if (dailyMoodState.isInMoodChangeMode) {
-                              ref.read(dailyMoodStateNotifierProvider.notifier).returnToHub();
-                            } else {
-                              // If not in mood change mode (first-time user), just show hub
-                              // Enter mood change mode temporarily, then return to hub
-                              // This ensures the hub is shown even without a mood selection
-                              ref.read(dailyMoodStateNotifierProvider.notifier).enterMoodChangeMode();
-                              Future.delayed(const Duration(milliseconds: 50), () {
-                                if (mounted) {
-                                  ref.read(dailyMoodStateNotifierProvider.notifier).returnToHub();
-                                }
-                              });
+                              await ref
+                                  .read(dailyMoodStateNotifierProvider.notifier)
+                                  .returnToHub();
                             }
+                            if (!context.mounted) return;
+                            context.go('/main?tab=2');
                           },
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.black54,

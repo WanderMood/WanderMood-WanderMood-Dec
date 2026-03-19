@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
@@ -207,52 +209,22 @@ class _MoodyHubWithPlan extends ConsumerWidget {
 
           const SizedBox(height: 20),
 
-          // --- Current Activity Hero ---
-          if (currentActivity != null)
-            Builder(
-              builder: (context) {
-                final activityId =
-                    (currentActivity.rawData['id'] as String?) ??
-                    (currentActivity.rawData['title'] as String? ?? '');
-                final ratingAsync =
-                    ref.watch(activityRatingForActivityProvider(activityId));
-
-                return ratingAsync.when(
-                  data: (rating) {
-                    final isReviewed = rating != null;
-                    return _CurrentActivityHero(
-                      activity: currentActivity,
-                      onDirections: () => _openDirections(context, currentActivity),
-                      onReview: isReviewed
-                          ? () {}
-                          : () => _showActivityReviewSheet(context, currentActivity),
-                      isReviewed: isReviewed,
-                      rating: rating,
-                    );
-                  },
-                  loading: () => _CurrentActivityHero(
-                    activity: currentActivity,
-                    onDirections: () => _openDirections(context, currentActivity),
-                    onReview: () => _showActivityReviewSheet(context, currentActivity),
-                    isReviewed: false,
-                    rating: null,
-                  ),
-                  error: (_, __) => _CurrentActivityHero(
-                    activity: currentActivity,
-                    onDirections: () => _openDirections(context, currentActivity),
-                    onReview: () => _showActivityReviewSheet(context, currentActivity),
-                    isReviewed: false,
-                    rating: null,
-                  ),
-                );
-              },
-            )
-          else if (nextActivity != null)
-            _UpcomingActivityHero(
-              activity: nextActivity,
-              onDirections: () => _openDirections(context, nextActivity),
-              onGetReady: () => _showGetReadySheet(context, ref, nextActivity),
-            ),
+          _MoodPlanSummaryCard(
+            title: currentActivity != null
+                ? 'Your day is already in motion.'
+                : nextActivity != null
+                    ? 'Your next activity is lined up.'
+                    : 'Your day is set.',
+            subtitle: currentActivity != null
+                ? 'Use My Day for live actions like directions, get ready, and reviews. Moody Hub stays focused on your vibe.'
+                : nextActivity != null
+                    ? 'My Day handles what happens next. Here in Moody Hub you can still shift your mood or ask Moody for a new angle.'
+                    : 'You have plans for today. Moody Hub is here to help you check in, change mood, and get inspired.',
+            primaryLabel: 'Ask Moody',
+            onPrimaryTap: () => _openMoodyChat(context, ref),
+            secondaryLabel: 'Change mood',
+            onSecondaryTap: () => context.pushNamed('moody-standalone'),
+          ),
 
           const SizedBox(height: 24),
 
@@ -662,6 +634,117 @@ class _MoodyHubWithPlan extends ConsumerWidget {
       default:
         return const Color(0xFF6B7280);
     }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mood-focused summary card for users who already have a plan
+// ---------------------------------------------------------------------------
+class _MoodPlanSummaryCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final String primaryLabel;
+  final VoidCallback onPrimaryTap;
+  final String secondaryLabel;
+  final VoidCallback onSecondaryTap;
+
+  const _MoodPlanSummaryCard({
+    required this.title,
+    required this.subtitle,
+    required this.primaryLabel,
+    required this.onPrimaryTap,
+    required this.secondaryLabel,
+    required this.onSecondaryTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFF0FDF4), Color(0xFFECFDF5), Color(0xFFFDF4FF)],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFD1FAE5), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withOpacity(0.12),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFBBF7D0), Color(0xFFDDD6FE)],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Center(
+                  child: Text('✨', style: TextStyle(fontSize: 22)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 21,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF1A1A2E),
+                    height: 1.2,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            subtitle,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade700,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              Expanded(
+                child: _HeroButton(
+                  label: primaryLabel,
+                  icon: Icons.chat_bubble_outline_rounded,
+                  filled: true,
+                  onTap: onPrimaryTap,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _HeroButton(
+                  label: secondaryLabel,
+                  icon: Icons.tune_rounded,
+                  filled: false,
+                  onTap: onSecondaryTap,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -1364,9 +1447,9 @@ class _QuickChip extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// STATE B: User has NO active plan
+// STATE B: User has NO active plan (Conversational AI Vibe)
 // ---------------------------------------------------------------------------
-class _MoodyHubNoPlan extends ConsumerWidget {
+class _MoodyHubNoPlan extends ConsumerStatefulWidget {
   final String greeting;
   final String emoji;
   final String city;
@@ -1378,126 +1461,329 @@ class _MoodyHubNoPlan extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-        children: [
-          // --- Header ---
-          Text(
-            'Hey there! $emoji',
-            style: GoogleFonts.poppins(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFF1A1A2E),
+  ConsumerState<_MoodyHubNoPlan> createState() => _MoodyHubNoPlanState();
+}
+
+class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan> with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Immersive Background Gradient
+        Positioned.fill(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFE0F2FE), // Light blue
+                  Color(0xFFF3E8FF), // Light purple
+                  Color(0xFFFEF3C7), // Light yellow
+                ],
+                stops: [0.0, 0.5, 1.0],
+              ),
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Ready to discover $city today?',
-            style: GoogleFonts.poppins(fontSize: 15, color: Colors.grey.shade600),
-          ),
-
-          const SizedBox(height: 24),
-
-          // --- Hero CTA: Create Plan ---
-          _CreatePlanHero(city: city),
-
-          const SizedBox(height: 28),
-
-          // --- OR divider ---
-          Row(
-            children: [
-              Expanded(child: Divider(color: Colors.grey.shade200)),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'or explore on your own',
-                  style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey.shade400),
-                ),
-              ),
-              Expanded(child: Divider(color: Colors.grey.shade200)),
-            ],
-          ),
-
-          const SizedBox(height: 28),
-
-          // --- Secondary Actions Grid ---
-          Row(
-            children: [
-              Expanded(
-                child: _SecondaryActionCard(
-                  icon: Icons.place_rounded,
-                  iconGradient: const [Color(0xFFFB923C), Color(0xFFEC4899)],
-                  bgGradient: const [Color(0xFFFFF7ED), Color(0xFFFCE7F3)],
-                  borderColor: const Color(0xFFFED7AA),
-                  title: 'Browse',
-                  subtitle: 'Explore activities',
-                  onTap: () {
-                    ref.read(mainTabProvider.notifier).state = 1;
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _SecondaryActionCard(
-                  icon: Icons.chat_bubble_outline_rounded,
-                  iconGradient: const [Color(0xFF4ADE80), Color(0xFF10B981)],
-                  bgGradient: const [Color(0xFFF0FDF4), Color(0xFFECFDF5)],
-                  borderColor: const Color(0xFFBBF7D0),
-                  title: 'Ask Moody',
-                  subtitle: 'Chat for ideas',
-                  onTap: () {
-                    showMoodyChatSheet(context, ref);
-                  },
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 28),
-
-          // --- Quick Mood Shortcuts ---
-          Text(
-            "I'm feeling...",
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF1A1A2E),
+        ),
+        
+        // Animated Orbs in Background
+        Positioned(
+          top: -50,
+          left: -50,
+          child: Container(
+            width: 250,
+            height: 250,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF93C5FD).withOpacity(0.4),
             ),
+          ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+            .scale(begin: const Offset(1, 1), end: const Offset(1.2, 1.2), duration: 4.seconds, curve: Curves.easeInOut)
+            .slide(begin: const Offset(0, 0), end: const Offset(0.1, 0.1), duration: 3.seconds, curve: Curves.easeInOut),
+        ),
+        
+        Positioned(
+          bottom: 100,
+          right: -80,
+          child: Container(
+            width: 300,
+            height: 300,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFFC4B5FD).withOpacity(0.4),
+            ),
+          ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+            .scale(begin: const Offset(1, 1), end: const Offset(1.1, 1.1), duration: 5.seconds, curve: Curves.easeInOut)
+            .slide(begin: const Offset(0, 0), end: const Offset(-0.1, -0.1), duration: 4.seconds, curve: Curves.easeInOut),
+        ),
+
+        // Blur layer to soften the orbs
+        Positioned.fill(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: Container(color: Colors.white.withOpacity(0.1)),
           ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _moodShortcuts.map((mood) {
-              return _MoodPill(
-                emoji: mood.emoji,
-                label: mood.label,
-                gradient: mood.gradient,
-                onTap: () {
-                  ref.read(dailyMoodStateNotifierProvider.notifier).setMoodSelection(
-                    mood: mood.label,
-                    selectedMoods: [mood.label],
-                  );
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => PlanLoadingScreen(
-                        selectedMoods: [mood.label],
+        ),
+
+        // Main Content
+        SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(flex: 2),
+
+              // Moody Character Floating
+              Center(
+                child: AnimatedBuilder(
+                  animation: _pulseController,
+                  builder: (context, child) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF60A5FA).withOpacity(0.4 + (_pulseController.value * 0.2)),
+                            blurRadius: 40 + (_pulseController.value * 20),
+                            spreadRadius: 10 + (_pulseController.value * 10),
+                          ),
+                        ],
                       ),
+                      child: child,
+                    );
+                  },
+                  child: const SizedBox(
+                    width: 120,
+                    height: 120,
+                    child: MoodyCharacter(
+                      size: 120,
+                      mood: 'happy',
                     ),
-                  );
-                },
-              );
-            }).toList(),
+                  ),
+                ),
+              ).animate().fadeIn(duration: 800.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutBack),
+
+              const SizedBox(height: 32),
+
+              // Chat Bubble
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.85),
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                      BoxShadow(
+                        color: Colors.white.withOpacity(0.8),
+                        blurRadius: 0,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 0),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        widget.greeting,
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1E293B),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        AppLocalizations.of(context)!.noPlanDayOpen(widget.city),
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          height: 1.5,
+                          color: const Color(0xFF475569),
+                        ),
+                      ),
+                    ],
+                  ),
+                ).animate().fadeIn(delay: 400.ms, duration: 600.ms).scale(begin: const Offset(0.9, 0.9), end: const Offset(1.0, 1.0), curve: Curves.easeOut),
+              ),
+
+              const SizedBox(height: 40),
+
+              // Action Chips
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  children: [
+                    _buildChatActionChip(
+                      icon: Icons.auto_awesome,
+                      text: AppLocalizations.of(context)!.noPlanPlanMyWholeDay,
+                      gradient: const [Color(0xFF5BB32A), Color(0xFF4A9A24)],
+                      onTap: () => context.pushNamed('moody-standalone'),
+                    ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.2, end: 0, curve: Curves.easeOut),
+                    
+                    const SizedBox(height: 12),
+                    
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildChatActionChip(
+                            icon: Icons.coffee,
+                            text: AppLocalizations.of(context)!.noPlanFindMeCoffee,
+                            gradient: const [Color(0xFF5BB32A), Color(0xFF4A9A24)],
+                            onTap: () {
+                              ref.read(dailyMoodStateNotifierProvider.notifier).setMoodSelection(
+                                mood: 'Relaxed',
+                                selectedMoods: ['Relaxed'],
+                              );
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const PlanLoadingScreen(selectedMoods: ['Relaxed']),
+                                ),
+                              );
+                            },
+                          ).animate().fadeIn(delay: 700.ms).slideY(begin: 0.2, end: 0, curve: Curves.easeOut),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildChatActionChip(
+                            icon: Icons.directions_run,
+                            text: AppLocalizations.of(context)!.noPlanGetMeMoving,
+                            gradient: const [Color(0xFF5BB32A), Color(0xFF4A9A24)],
+                            onTap: () {
+                              ref.read(dailyMoodStateNotifierProvider.notifier).setMoodSelection(
+                                mood: 'Energetic',
+                                selectedMoods: ['Energetic'],
+                              );
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const PlanLoadingScreen(selectedMoods: ['Energetic']),
+                                ),
+                              );
+                            },
+                          ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2, end: 0, curve: Curves.easeOut),
+                        ),
+                      ],
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Just chat button
+                    GestureDetector(
+                      onTap: () => showMoodyChatSheet(context, ref),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 28),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(50),
+                          border: Border.all(color: Colors.white, width: 1.5),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.chat_bubble_outline_rounded, color: Color(0xFF475569), size: 18),
+                            const SizedBox(width: 8),
+                            Text(
+                              AppLocalizations.of(context)!.noPlanJustChat,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF475569),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ).animate().fadeIn(delay: 900.ms).slideY(begin: 0.2, end: 0, curve: Curves.easeOut),
+
+                    const SizedBox(height: 12),
+
+                    // Plan later button
+                    GestureDetector(
+                      onTap: () {
+                        // Dismiss / do nothing — user will come back later
+                      },
+                      child: Text(
+                        AppLocalizations.of(context)!.noPlanPlanLater,
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF94A3B8),
+                          decoration: TextDecoration.underline,
+                          decorationColor: const Color(0xFF94A3B8),
+                        ),
+                      ),
+                    ).animate().fadeIn(delay: 1000.ms),
+                  ],
+                ),
+              ),
+              
+              const Spacer(flex: 3),
+            ],
           ),
+        ),
+      ],
+    );
+  }
 
-          const SizedBox(height: 28),
-
-          // --- Trending Suggestion ---
-          _TrendingCard(city: city),
-        ],
+  Widget _buildChatActionChip({
+    required IconData icon,
+    required String text,
+    required List<Color> gradient,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: gradient,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(50),
+          boxShadow: [
+            BoxShadow(
+              color: gradient.last.withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }

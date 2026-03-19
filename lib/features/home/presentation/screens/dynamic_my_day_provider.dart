@@ -9,6 +9,7 @@ import '../../../plans/domain/models/activity.dart';
 enum ActivityStatus {
   upcoming,    // Scheduled for later today
   activeNow,   // Currently happening  
+  awaitingCompletion, // Planned end passed; waiting for user confirmation
   completed,   // Recently finished
   overdue,     // Missed/passed time
   scheduled,   // Future days
@@ -56,25 +57,37 @@ class EnhancedActivityData {
 class ActivityManagerState {
   final List<Map<String, dynamic>> activities;
   final Map<String, ActivityStatus> statusUpdates;
+  final Map<String, DateTime> completionPromptSnoozes;
 
   ActivityManagerState({
     required this.activities,
     required this.statusUpdates,
+    required this.completionPromptSnoozes,
   });
 
   ActivityManagerState copyWith({
     List<Map<String, dynamic>>? activities,
     Map<String, ActivityStatus>? statusUpdates,
+    Map<String, DateTime>? completionPromptSnoozes,
   }) {
     return ActivityManagerState(
       activities: activities ?? this.activities,
       statusUpdates: statusUpdates ?? this.statusUpdates,
+      completionPromptSnoozes:
+          completionPromptSnoozes ?? this.completionPromptSnoozes,
     );
   }
 }
 
 class ActivityManagerNotifier extends StateNotifier<ActivityManagerState> {
-  ActivityManagerNotifier() : super(ActivityManagerState(activities: [], statusUpdates: {}));
+  ActivityManagerNotifier()
+      : super(
+          ActivityManagerState(
+            activities: [],
+            statusUpdates: {},
+            completionPromptSnoozes: {},
+          ),
+        );
 
   void updateActivities(List<Map<String, dynamic>> activities) {
     state = state.copyWith(activities: activities);
@@ -84,6 +97,32 @@ class ActivityManagerNotifier extends StateNotifier<ActivityManagerState> {
     final newStatusUpdates = Map<String, ActivityStatus>.from(state.statusUpdates);
     newStatusUpdates[activityId] = status;
     state = state.copyWith(statusUpdates: newStatusUpdates);
+  }
+
+  void snoozeCompletionPrompt(
+    String activityId, {
+    Duration duration = const Duration(minutes: 45),
+  }) {
+    final newSnoozes =
+        Map<String, DateTime>.from(state.completionPromptSnoozes);
+    newSnoozes[activityId] = DateTime.now().add(duration);
+
+    final newStatusUpdates = Map<String, ActivityStatus>.from(state.statusUpdates);
+    newStatusUpdates[activityId] = ActivityStatus.activeNow;
+
+    state = state.copyWith(
+      statusUpdates: newStatusUpdates,
+      completionPromptSnoozes: newSnoozes,
+    );
+  }
+
+  void clearCompletionPromptSnooze(String activityId) {
+    if (!state.completionPromptSnoozes.containsKey(activityId)) return;
+
+    final newSnoozes =
+        Map<String, DateTime>.from(state.completionPromptSnoozes);
+    newSnoozes.remove(activityId);
+    state = state.copyWith(completionPromptSnoozes: newSnoozes);
   }
 
   void cancelActivity(String activityId) {
@@ -199,6 +238,8 @@ final todayActivitiesProvider = FutureProvider<List<EnhancedActivityData>>((ref)
       // Check if activity has been cancelled
       final activityId = activity['id'] as String? ?? activity['title'] as String? ?? '';
       final managerStatus = activityManagerState.statusUpdates[activityId];
+      final snoozedUntil =
+          activityManagerState.completionPromptSnoozes[activityId];
       
       if (managerStatus == ActivityStatus.cancelled) {
         // Add cancelled activity
@@ -217,11 +258,22 @@ final todayActivitiesProvider = FutureProvider<List<EnhancedActivityData>>((ref)
       ActivityStatus status;
       Duration? timeRemaining;
       Duration? timeSinceStart;
-      
-      if (now.isAfter(endTime)) {
-        // Activity is over
+
+      final isCompletionPromptSnoozed =
+          snoozedUntil != null && now.isBefore(snoozedUntil);
+
+      if (managerStatus == ActivityStatus.completed) {
         status = ActivityStatus.completed;
         timeSinceStart = now.difference(endTime);
+      } else if (now.isAfter(endTime)) {
+        if (isCompletionPromptSnoozed) {
+          status = ActivityStatus.activeNow;
+          timeRemaining = snoozedUntil.difference(now);
+          timeSinceStart = now.difference(startTime);
+        } else {
+          status = ActivityStatus.awaitingCompletion;
+          timeSinceStart = now.difference(endTime);
+        }
       } else if (now.isAfter(startTime) && now.isBefore(endTime)) {
         // Activity is happening now
         status = ActivityStatus.activeNow;
@@ -236,7 +288,9 @@ final todayActivitiesProvider = FutureProvider<List<EnhancedActivityData>>((ref)
       }
       
       // Override with manager status if available
-      if (managerStatus != null) {
+      if (managerStatus != null &&
+          managerStatus != ActivityStatus.activeNow &&
+          managerStatus != ActivityStatus.completed) {
         status = managerStatus;
       }
       
@@ -267,6 +321,12 @@ final currentActivityStatusProvider = FutureProvider<Map<String, dynamic>>((ref)
   final todayActivities = await ref.watch(todayActivitiesProvider.future);
   final now = DateTime.now();
   final hour = now.hour;
+
+  if (todayActivities.isEmpty) {
+    return {
+      'type': 'no_plan',
+    };
+  }
   
   // Find active activity
   final activeActivity = todayActivities.where((a) => a.status == ActivityStatus.activeNow).firstOrNull;
@@ -277,7 +337,23 @@ final currentActivityStatusProvider = FutureProvider<Map<String, dynamic>>((ref)
       'subtitle': activeActivity.rawData['title'],
       'description': 'Started ${_formatDuration(activeActivity.timeSinceStart!)} ago • Ends in ${_formatDuration(activeActivity.timeRemaining!)}',
       'activity': activeActivity.rawData,
+      'enhancedActivity': activeActivity,
       'imageUrl': activeActivity.rawData['imageUrl'] ?? 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80',
+    };
+  }
+
+  final awaitingCompletionActivity = todayActivities
+      .where((a) => a.status == ActivityStatus.awaitingCompletion)
+      .lastOrNull;
+  if (awaitingCompletionActivity != null) {
+    return {
+      'type': 'awaiting_completion',
+      'title': '⏱ CHECK IN',
+      'subtitle': awaitingCompletionActivity.rawData['title'],
+      'description':
+          'Planned to finish ${_formatDuration(awaitingCompletionActivity.timeSinceStart!)} ago. Still there or done?',
+      'activity': awaitingCompletionActivity.rawData,
+      'enhancedActivity': awaitingCompletionActivity,
     };
   }
   
@@ -293,6 +369,7 @@ final currentActivityStatusProvider = FutureProvider<Map<String, dynamic>>((ref)
       'description': 'Starts in ${_formatDuration(upcomingActivity.timeRemaining!)} (${_formatTime(upcomingActivity.startTime)})',
       'action2': 'Get Ready',
       'activity': upcomingActivity.rawData,
+      'enhancedActivity': upcomingActivity,
     };
   }
   
@@ -309,6 +386,7 @@ final currentActivityStatusProvider = FutureProvider<Map<String, dynamic>>((ref)
       'action1': 'Rate Experience',
       'action2': 'Share',
       'activity': recentlyCompleted.rawData,
+      'enhancedActivity': recentlyCompleted,
     };
   }
   
@@ -347,6 +425,7 @@ final timelineCategorizedActivitiesProvider = FutureProvider<Map<String, List<En
     'afternoon': [],  // 12 PM - 6 PM
     'evening': [],    // 6 PM - 12 AM
     'active': [],     // Currently happening
+    'awaiting': [],   // Waiting for done / still here
     'upcoming': [],   // Next activities
     'completed': [],  // Finished activities
   };
@@ -358,6 +437,9 @@ final timelineCategorizedActivitiesProvider = FutureProvider<Map<String, List<En
     switch (activity.status) {
       case ActivityStatus.activeNow:
         categorized['active']!.add(activity);
+        break;
+      case ActivityStatus.awaitingCompletion:
+        categorized['awaiting']!.add(activity);
         break;
       case ActivityStatus.upcoming:
         categorized['upcoming']!.add(activity);
@@ -380,19 +462,6 @@ final timelineCategorizedActivitiesProvider = FutureProvider<Map<String, List<En
   }
   
   return categorized;
-});
-
-/// Provider for time-based greeting message
-final greetingMessageProvider = Provider<String>((ref) {
-  final hour = DateTime.now().hour;
-  
-  if (hour < 12) {
-    return 'Good morning! Let\'s make today amazing.';
-  } else if (hour < 17) {
-    return 'Good afternoon! Your day is looking great.';
-  } else {
-    return 'Good evening! Here\'s how your day went.';
-  }
 });
 
 /// Provider for categorized activities (legacy - for backwards compatibility)

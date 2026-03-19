@@ -343,7 +343,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _openPrivacyPolicy() async {
     final l10n = AppLocalizations.of(context)!;
     try {
-      final url = Uri.parse('https://wandermood.app/privacy-policy');
+      final url = Uri.parse('https://wandermood.com/privacy-policy');
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
@@ -372,7 +372,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _openTermsOfService() async {
     final l10n = AppLocalizations.of(context)!;
     try {
-      final url = Uri.parse('https://wandermood.app/terms-of-service');
+      final url = Uri.parse('https://wandermood.com/terms-of-service');
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {

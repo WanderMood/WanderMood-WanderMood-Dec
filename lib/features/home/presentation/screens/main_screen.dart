@@ -8,6 +8,8 @@ import 'package:wandermood/features/plans/widgets/activity_detail_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/free_time_activities_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/mood_home_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/redesigned_moody_hub.dart';
+import 'package:wandermood/features/social/presentation/screens/wanderfeed_coming_soon_screen.dart';
+import 'package:wandermood/features/profile/presentation/screens/user_profile_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.dart';
@@ -151,11 +153,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   
   // Screens in the bottom navigation
   final List<Widget> screens = [
-    const DynamicMyDayScreen(),  // My Day is now first - using dynamic screen
+    const DynamicMyDayScreen(),
     const ExploreScreen(),
-    const RedesignedMoodyHub(), // Redesigned two-state Moody Hub
-            const SizedBox.shrink(), // Placeholder - Feed is now a standalone route
-            const SizedBox.shrink(), // Placeholder - Profile navigates directly to profile screen
+    const RedesignedMoodyHub(),
+    const WanderFeedComingSoonScreen(),
+    const UserProfileScreen(),
   ];
   
   @override
@@ -243,23 +245,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     // The default logic `selectedIndex == index` handles this correctly, as selectedIndex will be 1.
     
     final onTap = () {
-      if (index == 3) {
-        // For WanderFeed, update state first so UI reflects it, then navigate
-        ref.read(mainTabProvider.notifier).state = index;
-        // Small delay to let the animation play before pushing the new route
-        Future.delayed(const Duration(milliseconds: 100), () {
-          context.push('/diaries');
-        });
-        return;
-      }
-      if (index == 4) {
-        // For Profile, update state first so UI reflects it, then navigate
-        ref.read(mainTabProvider.notifier).state = index;
-        Future.delayed(const Duration(milliseconds: 100), () {
-          context.push('/profile');
-        });
-        return;
-      }
       ref.read(mainTabProvider.notifier).state = index;
     };
 

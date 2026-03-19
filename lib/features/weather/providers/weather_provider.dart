@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:wandermood/core/constants/api_keys.dart';
 import 'package:flutter/foundation.dart';
 
 // Weather data model
@@ -97,8 +97,8 @@ final weatherProvider = FutureProvider.autoDispose<WeatherData?>((ref) async {
   final locationState = await ref.watch(locationNotifierProvider.future);
   if (locationState == null) return null;
   
-  // Get API key from environment
-  final apiKey = dotenv.env['OPENWEATHER_API_KEY'] ?? '';
+  // Get API key from ApiKeys (--dart-define or fallback)
+  final apiKey = ApiKeys.openWeather;
   debugPrint('🌤️ Weather API Key: ${apiKey.isEmpty ? 'EMPTY' : 'EXISTS (${apiKey.length} chars)'}');
   debugPrint('🌤️ Weather location: $locationState');
   

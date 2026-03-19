@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
+import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:intl/intl.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/plans/widgets/activity_detail_screen.dart';
@@ -18,6 +19,8 @@ import 'package:go_router/go_router.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
+import 'package:wandermood/features/home/domain/enums/moody_feature.dart';
 import 'package:wandermood/features/plans/presentation/widgets/day_plan_activity_card.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
@@ -27,11 +30,15 @@ import 'package:wandermood/l10n/app_localizations.dart';
 class DayPlanScreen extends ConsumerStatefulWidget {
   final List<Activity> activities;
   final List<String> selectedMoods;
+  final String moodyMessage;
+  final String moodyReasoning;
 
   const DayPlanScreen({
     super.key,
     required this.activities,
     this.selectedMoods = const [],
+    this.moodyMessage = '',
+    this.moodyReasoning = '',
   });
 
   @override
@@ -41,6 +48,7 @@ class DayPlanScreen extends ConsumerStatefulWidget {
 class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
   /// Mutable list of exactly 3 activities (morning, afternoon, evening) for swap support.
   late List<Activity> _activities;
+  int _addedCount = 0;
 
   @override
   void initState() {
@@ -210,28 +218,34 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
         debugPrint('✅ Generated AI alternative activity: ${replacementActivity.name}');
         debugPrint('   Rating: ${replacementActivity.rating}');
         
-        setState(() {
-          // Create updated activity with preserved timing and incremented refresh count
-          final updatedActivity = replacementActivity!.copyWith(
-            startTime: activity.startTime,
-            duration: activity.duration,
-            refreshCount: activity.refreshCount + 1,
-          );
-          
-          // Replace the activity in the slot
-          final index = _activities.indexOf(activity);
-          if (index >= 0 && index < _activities.length) {
-            setState(() {
+        // Ensure UI updates properly
+        if (mounted) {
+          setState(() {
+            // Create updated activity with preserved timing and incremented refresh count
+            final updatedActivity = replacementActivity!.copyWith(
+              startTime: activity.startTime,
+              duration: activity.duration,
+              refreshCount: activity.refreshCount + 1,
+              timeSlotEnum: activity.timeSlotEnum, // Crucial: preserve the specific time slot enum!
+              timeSlot: activity.timeSlot, // Crucial: preserve the string representation too
+            );
+            
+            // Replace the activity in the slot
+            final index = _activities.indexOf(activity);
+            if (index >= 0 && index < _activities.length) {
               _activities = List.from(_activities)..[index] = updatedActivity;
-            });
-          }
-        });
+            }
+          });
+        }
         
         // Show success feedback
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '✨ Found a new AI option: ${replacementActivity.name}! (${3 - (activity.refreshCount + 1)} more changes available)',
+              AppLocalizations.of(context)!.dayPlanFoundNewOption(
+                replacementActivity.name,
+                '${3 - (activity.refreshCount + 1)}',
+              ),
               style: GoogleFonts.poppins(),
             ),
             backgroundColor: Colors.green.shade600,
@@ -275,6 +289,84 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
         ),
       );
     }
+  }
+
+  String _firstSentence(String text) {
+    final normalized = text.replaceAll('\n', ' ').trim();
+    if (normalized.isEmpty) return '';
+
+    final match = RegExp(r'^.*?[.!?](?:\s|$)').firstMatch(normalized);
+    if (match != null) {
+      return match.group(0)!.trim();
+    }
+
+    return normalized;
+  }
+
+  Widget _buildMoodyMessageCard(BuildContext context) {
+    final primaryMessage = _firstSentence(
+      widget.moodyMessage.isNotEmpty ? widget.moodyMessage : widget.moodyReasoning,
+    );
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFFF1F5F9), // Light slate border
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF12B347).withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+            spreadRadius: -4,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const MoodyCharacter(
+                size: 36,
+                mood: 'happy',
+                currentFeature: MoodyFeature.none,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  AppLocalizations.of(context)!.dayPlanMoodyCardTitle,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF0F9F8F),
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            primaryMessage,
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF1E293B),
+              height: 1.35,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 500.ms, curve: Curves.easeOutQuad).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad);
   }
 
   Widget _buildRefreshButton(Activity activity) {
@@ -427,26 +519,27 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
       body: Stack(
         children: [
           const SwirlBackground(child: SizedBox.expand()),
-          // Dark header per design: gradient purple/indigo → dark, TODAY'S ITINERARY (orange), mood pills, Edit Moods
+          // Softer, gender-neutral header gradient
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            height: MediaQuery.of(context).padding.top + 200,
+            height: MediaQuery.of(context).padding.top + 220,
             child: Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFF2D1B4E), // Dark purple/indigo
-                    Color(0xFF1A0F2E),
-                    Color(0xFF0D0618), // Near black
+                    Color(0xFFFFD8A8),
+                    Color(0xFFE7DAFF),
+                    Color(0xFFDDF4EE),
                   ],
+                  stops: [0.0, 0.5, 1.0],
                 ),
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
                 ),
               ),
             ),
@@ -462,30 +555,42 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.auto_awesome, size: 18, color: const Color(0xFFFFB74D)),
-                          const SizedBox(width: 8),
-                          Text(
-                            AppLocalizations.of(context)!.dayPlanTodayItinerary,
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFFFFB74D),
-                              letterSpacing: 0.5,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.4),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.auto_awesome, size: 16, color: Color(0xFFB45309)),
+                                const SizedBox(width: 6),
+                                Text(
+                                  AppLocalizations.of(context)!.dayPlanTodayItinerary,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF92400E),
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 12),
                       Text(
                         AppLocalizations.of(context)!.dayPlanBasedOn,
-                        style: GoogleFonts.poppins(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                        style: GoogleFonts.museoModerno(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF1E293B),
+                          height: 1.1,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      // Mood pills: glassy gradient (frosted look)
+                      const SizedBox(height: 16),
+                      // Mood pills: bright, solid look with a soft shadow
                       Wrap(
                         spacing: 10,
                         runSpacing: 8,
@@ -493,122 +598,104 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                           ...widget.selectedMoods.take(3).toList().asMap().entries.map((e) {
                             final mood = e.value;
                             final isOrange = e.key % 2 == 0;
-                            final gradient = isOrange
-                                ? LinearGradient(
-                                    colors: [
-                                      const Color(0xFFE65100).withOpacity(0.85),
-                                      const Color(0xFFFF9800).withOpacity(0.85),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  )
-                                : LinearGradient(
-                                    colors: [
-                                      const Color(0xFF7B1FA2).withOpacity(0.85),
-                                      const Color(0xFF9C27B0).withOpacity(0.85),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  );
-                            return ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
-                              child: BackdropFilter(
-                                filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  decoration: BoxDecoration(
-                                    gradient: gradient,
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: Colors.white.withOpacity(0.35),
-                                      width: 1.2,
+                            final bgColor = isOrange ? const Color(0xFFFF8A00) : const Color(0xFF0EA5A4);
+                            
+                            return Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: bgColor,
+                                borderRadius: BorderRadius.circular(24),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: bgColor.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(_moodEmoji(mood), style: const TextStyle(fontSize: 18)),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    _moodDisplayName(context, mood),
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
                                     ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.2),
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
                                   ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(_moodEmoji(mood), style: const TextStyle(fontSize: 20)),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        mood,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                ],
                               ),
                             );
                           }),
                         ],
                       ),
-                      const SizedBox(height: 14),
-                      // Edit Moods: underlined link back to mood selection (Moody tab)
+                      const SizedBox(height: 16),
+                      // Edit Moods: subtle link back to mood selection
                       GestureDetector(
                         onTap: _goBackToMoodyHub,
-                        child: Text(
-                          AppLocalizations.of(context)!.dayPlanEditMoods,
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFFFFB74D),
-                            decoration: TextDecoration.underline,
-                            decorationColor: const Color(0xFFFFB74D),
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              AppLocalizations.of(context)!.dayPlanEditMoods,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF64748B),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(Icons.edit_outlined, size: 14, color: Color(0xFF64748B)),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-                // Content: 3 sections (Morning, Afternoon, Evening), one card + swap each
-                Expanded(
-                  child: Consumer(
-                    builder: (context, ref, _) {
-                      final userLocationAsync = ref.watch(userLocationProvider);
-                      final position = userLocationAsync.valueOrNull;
-                      return ListView(
-                        padding: const EdgeInsets.fromLTRB(6, 24, 6, 0),
-                        children: [
-                          for (int i = 0; i < 3; i++) ...[
-                            if (_activities.length > i) ...[
-                              _buildSectionHeader(context, i),
-                              _buildActivityCard(
-                                _activities[i],
-                                distanceKm: position != null
-                                    ? DistanceService.formatDistance(
-                                        DistanceService.calculateDistance(
-                                          position.latitude,
-                                          position.longitude,
-                                          _activities[i].location.latitude,
-                                          _activities[i].location.longitude,
-                                        ),
-                                      )
-                                    : null,
-                                locationLabel: _activities[i].description.isEmpty
-                                    ? null
-                                    : (_activities[i].description.length > 80
-                                        ? '${_activities[i].description.substring(0, 80)}...'
-                                        : _activities[i].description),
+        // Content: dynamic list of filtered activities (Morning, Afternoon, Evening if applicable)
+        Expanded(
+          child: Consumer(
+            builder: (context, ref, _) {
+              final userLocationAsync = ref.watch(userLocationProvider);
+              final position = userLocationAsync.valueOrNull;
+              return ListView(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+                children: [
+                  if (widget.moodyMessage.isNotEmpty) ...[
+                    _buildMoodyMessageCard(context),
+                    const SizedBox(height: 16),
+                  ],
+                  for (int i = 0; i < _activities.length; i++) ...[
+                    _buildSectionHeader(context, _activities[i], i),
+                    _buildActivityCard(
+                      _activities[i],
+                      distanceKm: position != null
+                          ? DistanceService.formatDistance(
+                              DistanceService.calculateDistance(
+                                position.latitude,
+                                position.longitude,
+                                _activities[i].location.latitude,
+                                _activities[i].location.longitude,
                               ),
-                              const SizedBox(height: 16),
-                            ],
-                          ],
-                          const SizedBox(height: 100),
-                        ],
-                      );
-                    },
-                  ),
-                ),
+                            )
+                          : null,
+                      locationLabel: _activities[i].description.isEmpty
+                          ? null
+                          : (_activities[i].description.length > 80
+                              ? '${_activities[i].description.substring(0, 80)}...'
+                              : _activities[i].description),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  const SizedBox(height: 100),
+                ],
+              );
+            },
+          ),
+        ),
               ],
             ),
           ),
@@ -635,20 +722,47 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: _activities.isEmpty ? null : () => _addPlanToMyDay(ref),
-                    icon: const Text('🗓️', style: TextStyle(fontSize: 22)),
+                    icon: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        const Text('🗓️', style: TextStyle(fontSize: 22)),
+                        if (_addedCount > 0)
+                          Positioned(
+                            right: -6,
+                            top: -6,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Colors.orange,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                '+$_addedCount',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                     label: Text(
-                      AppLocalizations.of(context)!.dayPlanAddToMyDay,
+                      _addedCount > 0 
+                          ? AppLocalizations.of(context)!.dayPlanCardAddRemainingToMyDay
+                          : AppLocalizations.of(context)!.dayPlanAddToMyDay,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF12B347),
+                      backgroundColor: const Color(0xFF5BB32A),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(50),
                       ),
                       elevation: 0,
                     ),
@@ -660,6 +774,23 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
         ],
       ),
     );
+  }
+
+  /// Translates an English mood key to the user's locale display name.
+  String _moodDisplayName(BuildContext context, String mood) {
+    final l10n = AppLocalizations.of(context)!;
+    final lower = mood.toLowerCase();
+    if (lower.contains('cultural') || lower.contains('culture')) return l10n.moodCultural;
+    if (lower.contains('cozy') || lower.contains('cosy')) return l10n.moodCozy;
+    if (lower.contains('food') || lower.contains('foody')) return l10n.moodFoody;
+    if (lower.contains('relax')) return l10n.moodRelaxed;
+    if (lower.contains('adventure') || lower.contains('adventurous')) return l10n.moodAdventurous;
+    if (lower.contains('social')) return l10n.moodSocial;
+    if (lower.contains('creative')) return l10n.moodCreative;
+    if (lower.contains('romantic')) return l10n.moodRomantic;
+    if (lower.contains('energetic')) return l10n.moodEnergetic;
+    if (lower.contains('curious')) return l10n.moodCurious;
+    return mood;
   }
 
   /// Actual Unicode emoji for mood pills (e.g. 🍜 Foody, 😀 Curious, 👥 Social).
@@ -679,14 +810,36 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
   }
 
   /// Section header: circular period badge + MORNING/AFTERNOON/EVENING + mood-based theme (reference style).
-  Widget _buildSectionHeader(BuildContext context, int slotIndex) {
+  Widget _buildSectionHeader(BuildContext context, Activity activity, int index) {
     final l10n = AppLocalizations.of(context)!;
-    final labels = [l10n.dayPlanMorning, l10n.dayPlanAfternoon, l10n.dayPlanEvening];
-    final label = labels[slotIndex.clamp(0, 2)];
-    final emoji = _slotEmojis[slotIndex];
-    final theme = _getThemeForSlot(context, slotIndex);
+    
+    String label;
+    String emoji;
+    int themeIndex;
+    
+    switch (activity.timeSlotEnum) {
+      case TimeSlot.morning:
+        label = l10n.dayPlanMorning;
+        emoji = '☀️';
+        themeIndex = 0;
+        break;
+      case TimeSlot.afternoon:
+        label = l10n.dayPlanAfternoon;
+        emoji = '🌤️';
+        themeIndex = 1;
+        break;
+      case TimeSlot.evening:
+      case TimeSlot.night:
+      default:
+        label = l10n.dayPlanEvening;
+        emoji = '🌆';
+        themeIndex = 2;
+        break;
+    }
+
+    final theme = _getThemeForSlot(context, themeIndex);
     return Padding(
-      padding: EdgeInsets.only(top: slotIndex == 0 ? 4 : 20, bottom: 10),
+      padding: EdgeInsets.only(top: index == 0 ? 4 : 20, bottom: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -749,15 +902,21 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-        // Day Plan card: Not feeling this? | See activity (time bar removed for now)
         Padding(
-          padding: const EdgeInsets.only(top: 12, left: 0, right: 0, bottom: 12),
+          padding: const EdgeInsets.only(top: 8, bottom: 8),
           child: DayPlanActivityCard(
             activity: activity,
             onTap: (a, {String? distanceKm}) => _openActivityDetail(a, distanceKm: distanceKm),
             onNotFeelingThis: () => _refreshActivity(activity),
             distanceKm: distanceKm,
             locationLabel: locationLabel,
+            onAdded: () {
+              if (mounted) {
+                setState(() {
+                  _addedCount++;
+                });
+              }
+            },
           ),
         ),
         ],

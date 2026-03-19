@@ -78,6 +78,8 @@ interface DayPlanResponse {
   }
   total_found: number
   error?: string
+  moodyMessage?: string
+  reasoning?: string
 }
 
 // ============================================
@@ -424,7 +426,10 @@ async function handleCreateDayPlan(
 
     console.log(`✅ Generated ${activities.length} activities for day plan`)
 
-    // 5. Return successful response
+    // 5. Generate Moody personality response (non-blocking; graceful fallback)
+    const { moodyMessage, reasoning } = await getMoodyPersonalityResponse(moods, activities, location)
+
+    // 6. Return successful response
     const response: DayPlanResponse = {
       success: true,
       activities: activities,
@@ -434,6 +439,8 @@ async function handleCreateDayPlan(
         longitude: coordinates.lng,
       },
       total_found: activities.length,
+      moodyMessage,
+      reasoning,
     }
 
     return new Response(
@@ -1049,6 +1056,61 @@ async function getMoodySearchQueries(
   } catch (e) {
     console.error('❌ getMoodySearchQueries error:', e)
     return null
+  }
+}
+
+/** Generate a warm Moody personality message after a day plan is created.
+ *  Falls back to a template when OpenAI is unavailable. */
+async function getMoodyPersonalityResponse(
+  moods: string[],
+  activities: Activity[],
+  location: string
+): Promise<{ moodyMessage: string; reasoning: string }> {
+  const fallback = {
+    moodyMessage: `Found ${activities.length} amazing activities for your ${moods.join(' & ')} day in ${location}! 🎯`,
+    reasoning: `Picked a mix of morning, afternoon and evening experiences matched to your ${moods.join(' and ')} mood.`,
+  }
+
+  const openaiKey = Deno.env.get('OPENAI_API_KEY')
+  if (!openaiKey || openaiKey.trim() === '') {
+    return fallback
+  }
+
+  const activityNames = activities.slice(0, 3).map(a => a.name).join(', ')
+
+  const systemPrompt = `You are Moody, a friendly AI travel companion for WanderMood. Speak warmly and concisely. Use 1-2 emojis max. Never be cheesy or over-the-top.`
+  const userPrompt = `The user chose these moods: ${moods.join(', ')}. I found ${activities.length} activities in ${location} including: ${activityNames}. Return ONLY a JSON object: {"moodyMessage": "<1-2 sentence warm reaction, max 100 chars>", "reasoning": "<1 sentence why these fit their mood, max 80 chars>"}`
+
+  try {
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        max_tokens: 150,
+        temperature: 0.7,
+        response_format: { type: 'json_object' },
+      }),
+    })
+    if (!resp.ok) throw new Error(`OpenAI ${resp.status}`)
+    const data = await resp.json()
+    const content = data.choices?.[0]?.message?.content
+    if (!content) throw new Error('No content')
+    const parsed = JSON.parse(content) as { moodyMessage?: string; reasoning?: string }
+    return {
+      moodyMessage: parsed.moodyMessage || fallback.moodyMessage,
+      reasoning: parsed.reasoning || fallback.reasoning,
+    }
+  } catch (e) {
+    console.error('getMoodyPersonalityResponse error (non-fatal):', e)
+    return fallback
   }
 }
 

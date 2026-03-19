@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/plans/providers/selected_activities_provider.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class ActivityDetailScreen extends ConsumerStatefulWidget {
   final Activity activity;
@@ -50,7 +51,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
             slivers: [
               _buildImageGalleryHeader(),
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 140),
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 80),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     _buildTitleAndRating(),
@@ -133,45 +134,6 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
               ),
             ),
             Positioned(
-              top: MediaQuery.of(context).padding.top + 56,
-              left: 16,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [Color(0xFF4ADE80), Color(0xFF10B981)]),
-                  borderRadius: BorderRadius.circular(999),
-                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8, offset: const Offset(0, 2))],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('✨', style: TextStyle(fontSize: 14)),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${85 + (widget.activity.id.hashCode % 15)}% Match',
-                      style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 56,
-              right: 16,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [Color(0xFFA78BFA), Color(0xFF6366F1)]),
-                  borderRadius: BorderRadius.circular(999),
-                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8, offset: const Offset(0, 2))],
-                ),
-                child: Text(
-                  (widget.activity.tags.isNotEmpty ? widget.activity.tags.first : 'Activity').toUpperCase(),
-                  style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5, color: Colors.white),
-                ),
-              ),
-            ),
-            Positioned(
               bottom: 16,
               right: 16,
               child: Container(
@@ -185,7 +147,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
                   children: [
                     const Icon(Icons.photo_camera, size: 14, color: Colors.white),
                     const SizedBox(width: 6),
-                    Text('1 photo', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
+                    Text(AppLocalizations.of(context)!.activityDetailPhotoCount('1'), style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
                   ],
                 ),
               ),
@@ -227,7 +189,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
             ),
             const SizedBox(width: 8),
             Text(
-              'Exceptional',
+              AppLocalizations.of(context)!.activityDetailRatingExceptional,
               style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF059669)),
             ),
           ],
@@ -264,7 +226,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
         Expanded(
           child: _quickInfoCard(
             icon: Icons.schedule,
-            label: 'Duration',
+            label: AppLocalizations.of(context)!.activityDetailDuration,
             value: durationText,
             color: const Color(0xFFEA580C),
             bgColor: const Color(0xFFFFF7ED),
@@ -274,7 +236,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
         Expanded(
           child: _quickInfoCard(
             icon: Icons.euro,
-            label: 'Price',
+            label: AppLocalizations.of(context)!.activityDetailPrice,
             value: widget.activity.priceLevel ?? '—',
             color: const Color(0xFF059669),
             bgColor: const Color(0xFFECFDF5),
@@ -284,7 +246,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
         Expanded(
           child: _quickInfoCard(
             icon: Icons.location_on,
-            label: 'Distance',
+            label: AppLocalizations.of(context)!.activityDetailDistance,
             value: widget.distanceKm ?? '—',
             color: const Color(0xFF0284C7),
             bgColor: const Color(0xFFEFF6FF),
@@ -318,7 +280,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('About', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
+        Text(AppLocalizations.of(context)!.activityDetailAbout, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
         const SizedBox(height: 12),
         Text(
           widget.activity.description,
@@ -335,7 +297,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Highlights', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
+        Text(AppLocalizations.of(context)!.activityDetailHighlights, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
         const SizedBox(height: 12),
         Wrap(
           spacing: 8,
@@ -359,7 +321,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Location', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
+        Text(AppLocalizations.of(context)!.activityDetailLocation, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
         const SizedBox(height: 12),
         Container(
           height: 180,
@@ -389,7 +351,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
                     const SizedBox(height: 8),
                     GestureDetector(
                       onTap: () => _openDirections(context),
-                      child: Text('Get Directions →', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF2563EB))),
+                      child: Text(AppLocalizations.of(context)!.activityDetailGetDirections, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF2563EB))),
                     ),
                   ],
                 ),
@@ -421,58 +383,23 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
           border: Border(top: BorderSide(color: Colors.grey[200]!)),
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 16, offset: const Offset(0, -4))],
         ),
-        child: Row(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('From', style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600])),
-                Text(
-                  widget.activity.priceLevel ?? '—',
-                  style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w900, color: const Color(0xFF111827)),
-                ),
-                Text('per person', style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[500])),
-              ],
+        child: SizedBox(
+          width: double.infinity,
+          child: TextButton.icon(
+            onPressed: () => _openDirections(context),
+            icon: const Icon(Icons.directions, size: 20),
+            label: Text(
+              AppLocalizations.of(context)!.activityDetailDirections,
+              style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600),
             ),
-            const Spacer(),
-            TextButton.icon(
-              onPressed: () => _openDirections(context),
-              icon: const Icon(Icons.directions, size: 20),
-              label: const Text('Directions'),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF374151),
-                side: BorderSide(color: Colors.grey[300]!),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFF374151),
+              side: BorderSide(color: Colors.grey[300]!),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             ),
-            const SizedBox(width: 12),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {},
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFFA78BFA), Color(0xFF6366F1)]),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.4), blurRadius: 12, offset: const Offset(0, 4))],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('🗓️', style: TextStyle(fontSize: 18)),
-                      const SizedBox(width: 8),
-                      Text('Book Now', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
