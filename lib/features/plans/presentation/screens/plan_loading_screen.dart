@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
@@ -19,6 +18,7 @@ import 'package:go_router/go_router.dart';
 import 'package:wandermood/core/utils/auth_helper.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'dart:convert';
+import 'dart:async';
 
 class PlanLoadingScreen extends ConsumerStatefulWidget {
   final List<String> selectedMoods;
@@ -32,55 +32,60 @@ class PlanLoadingScreen extends ConsumerStatefulWidget {
   ConsumerState<PlanLoadingScreen> createState() => _PlanLoadingScreenState();
 }
 
-class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  int _currentGradientIndex = 0;
-
-
-  // Onboarding gradients
-  final List<List<Color>> _gradients = [
-    [
-      const Color(0xFFFFF3C4), // Very Soft Yellow (Meet Moody)
-      const Color(0xFFFFE0A1), // Light Warm Yellow
-    ],
-    [
-      const Color(0xFFFFB3B3), // Very Soft Red (Travel by Mood)
-      const Color(0xFFFF9999), // Light Warm Red
-    ],
-    [
-      const Color(0xFFD4C4FB), // Very Soft Lavender (Your Day Your Way)
-      const Color(0xFFE2D6FC), // Light Lavender
-    ],
-    [
-      const Color(0xFFFFD3A1), // Very Soft Orange (Every Day's a Mood)
-      const Color(0xFFFFBF7F), // Light Warm Orange
-    ],
-  ];
+class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with TickerProviderStateMixin {
+  late AnimationController _breathController;
+  late Animation<double> _breathAnimation;
+  late AnimationController _progressController;
+  late Animation<double> _progressAnimation;
+  Timer? _messageTimer;
+  int _messageIndex = 0;
+  double _messageOpacity = 1.0;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-
-    // Start the UI animations and API call
-    _startLoadingProcess();
+    _initAnimations();
+    _startMessageCycle();
+    _startApiCall();
   }
 
-  void _startLoadingProcess() {
-    // Optional: subtle gradient animation (no message rotation)
-    Future.doWhile(() async {
-      await Future.delayed(const Duration(seconds: 2));
-      if (!mounted) return false;
-      setState(() {
-        _currentGradientIndex = (_currentGradientIndex + 1) % _gradients.length;
-      });
-      return true;
-    });
+  void _initAnimations() {
+    _breathController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    )..repeat(reverse: true);
 
-    _generateActivitiesWithProperLoading();
+    _breathAnimation = Tween<double>(begin: 1.0, end: 1.06).animate(
+      CurvedAnimation(parent: _breathController, curve: Curves.easeInOut),
+    );
+
+    _progressController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    );
+    _progressAnimation = Tween<double>(begin: 0.0, end: 0.85).animate(
+      CurvedAnimation(parent: _progressController, curve: Curves.easeOut),
+    );
+    _progressController.forward();
+  }
+
+  void _startMessageCycle() {
+    _messageTimer = Timer.periodic(const Duration(milliseconds: 2200), (_) {
+      if (!mounted) return;
+      setState(() => _messageOpacity = 0.0);
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (!mounted) return;
+        final messages = _getMessages();
+        setState(() {
+          _messageIndex = (_messageIndex + 1) % messages.length;
+          _messageOpacity = 1.0;
+        });
+      });
+    });
+  }
+
+  Future<void> _startApiCall() async {
+    await _generateActivitiesWithProperLoading();
   }
   
   /// Wait for session to be fully ready (not just valid)
@@ -115,8 +120,8 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
   Future<void> _generateActivitiesWithProperLoading() async {
     debugPrint('🚀 Starting activity generation using Supabase Edge Function for moods: ${widget.selectedMoods}');
       
-    // Shorter loading for planner-first flow (2–3 seconds)
-    final minimumLoadingDuration = const Duration(seconds: 2);
+    // Keep loading visible long enough for the progress bar behavior.
+    final minimumLoadingDuration = const Duration(seconds: 6);
     final loadingStartTime = DateTime.now();
     
     List<Activity> activities = [];
@@ -346,16 +351,96 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
     finalActivities.sort((a, b) => a.timeSlotEnum.index.compareTo(b.timeSlotEnum.index));
 
     debugPrint('✅ Loading complete! Navigating to day plan with ${finalActivities.length} activities');
-    
-    // Navigate to the day plan screen with activities + moods for header
-    if (mounted) {
-      context.goNamed('day-plan', extra: {
-        'activities': finalActivities,
-        'moods': widget.selectedMoods,
-        'moodyMessage': moodyMessage,
-        'moodyReasoning': moodyReasoning,
-      });
-    }
+    if (!mounted) return;
+
+    await _progressController.animateTo(
+      1.0,
+      duration: const Duration(milliseconds: 300),
+    );
+    await Future.delayed(const Duration(milliseconds: 500));
+    if (!mounted) return;
+    context.goNamed('day-plan', extra: {
+      'activities': finalActivities,
+      'moods': widget.selectedMoods,
+      'moodyMessage': moodyMessage,
+      'moodyReasoning': moodyReasoning,
+    });
+  }
+
+  static const Map<String, List<String>> _loadingMessages = {
+    'blij': [
+      'Moody zoekt de zonnigste plekken voor je...',
+      'Goede vibes worden geladen...',
+      'Bijna klaar — jouw perfecte dag staat klaar ✨',
+    ],
+    'avontuurlijk': [
+      'Moody jaagt op jouw volgende avontuur...',
+      'Een epische route door de stad wordt uitgestippeld...',
+      'Wacht even — iets wilds is onderweg 🔥',
+    ],
+    'ontspannen': [
+      'Moody zoekt jouw perfecte rustige plek...',
+      'Een vredige dag wordt samengesteld...',
+      'Rustig aan — jouw kalme plan is bijna klaar 🌿',
+    ],
+    'energiek': [
+      'Moody laadt energie voor je op...',
+      'De beste actieve plekken worden gevonden...',
+      'Vol energie — jouw dag staat bijna klaar ⚡',
+    ],
+    'romantisch': [
+      'Moody vindt de meest romantische plekken...',
+      'Speciale momenten worden gevonden...',
+      'Bijna klaar — een magische dag staat klaar 💕',
+    ],
+    'sociaal': [
+      'Moody zoekt de gezelligste plekken...',
+      'Leuke activiteiten met anderen worden gevonden...',
+      'Bijna klaar — een sociale dag staat klaar 👥',
+    ],
+    'foodie': [
+      'Moody snuffelt de lekkerste plekken op...',
+      'De beste eetadressen in Rotterdam worden gevonden...',
+      'Bijna klaar — een heerlijke dag staat klaar 🍽',
+    ],
+    'cultureel': [
+      'Moody duikt in de culturele scene...',
+      'Kunst, muziek en cultuur worden opgezocht...',
+      'Bijna klaar — een inspirerende dag staat klaar 🎭',
+    ],
+    'gezellig': [
+      'Moody zoekt de gezelligste hoekjes...',
+      'Warme, comfortabele plekken worden gevonden...',
+      'Bijna klaar — een gezellige dag staat klaar ☕',
+    ],
+    'opgewonden': [
+      'Moody zoekt de meest opwindende plekken...',
+      'Bijzondere ervaringen worden gevonden...',
+      'Bijna klaar — een spannende dag staat klaar 🤩',
+    ],
+    'nieuwsgierig': [
+      'Moody ontdekt verborgen plekken voor je...',
+      'Unieke ervaringen worden gevonden...',
+      'Bijna klaar — een ontdekkingstocht staat klaar 🔍',
+    ],
+    'verrassing': [
+      'Moody kiest iets verrassends voor je...',
+      'Een onverwachte dag wordt samengesteld...',
+      'Bijna klaar — een verrassende dag staat klaar 😮',
+    ],
+  };
+
+  static const List<String> _fallbackMessages = [
+    'Moody denkt na...',
+    'Jouw dag wordt samengesteld...',
+    'Bijna klaar — jouw perfecte plan staat klaar ✨',
+  ];
+
+  List<String> _getMessages() {
+    final mood = widget.selectedMoods.isNotEmpty
+        ? widget.selectedMoods.first.toLowerCase().trim()
+        : '';
+    return _loadingMessages[mood] ?? _fallbackMessages;
   }
 
   String _getErrorMessage(BuildContext context, dynamic error) {
@@ -429,137 +514,82 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Sing
 
   @override
   void dispose() {
-    _controller.dispose();
+    _messageTimer?.cancel();
+    _breathController.dispose();
+    _progressController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () {
-            // Pop back to the mood selection screen
-            Navigator.of(context).pop();
-          },
-        ),
-      ),
-      body: AnimatedContainer(
-        duration: const Duration(milliseconds: 500),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: _gradients[_currentGradientIndex],
-          ),
-        ),
-        child: SafeArea(
-          bottom: true,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Spacer(flex: 2),
-                
-                // Moody Character
-                Container(
-                  height: 160,
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      MoodyCharacter(
-                        size: 140,
+    final messages = _getMessages();
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F0E8),
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Align(
+                alignment: const Alignment(0, -0.3),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ScaleTransition(
+                      scale: _breathAnimation,
+                      child: const MoodyCharacter(
+                        size: 120,
                         mood: 'thinking',
-                      ).animate(
-                        onPlay: (controller) => controller.repeat(),
-                      ).scale(
-                        duration: const Duration(milliseconds: 2000),
-                        begin: const Offset(0.95, 0.95),
-                        end: const Offset(1.05, 1.05),
-                        curve: Curves.easeInOut,
                       ),
-                      const SizedBox(height: 8),
-                      // Pulsing dots
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(3, (index) {
-                          return Container(
-                            width: 6,
-                            height: 6,
-                            margin: const EdgeInsets.symmetric(horizontal: 3),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.black.withOpacity(0.9),
-                            ),
-                          ).animate(
-                            onPlay: (controller) => controller.repeat(),
-                          ).scale(
-                            duration: const Duration(milliseconds: 800),
-                            delay: Duration(milliseconds: index * 300),
-                            begin: const Offset(0.8, 0.8),
-                            end: const Offset(1.2, 1.2),
-                            curve: Curves.easeInOut,
-                          ).fadeIn(
-                            duration: const Duration(milliseconds: 400),
-                            delay: Duration(milliseconds: index * 300),
-                            curve: Curves.easeIn,
-                          ).fadeOut(
-                            delay: Duration(milliseconds: 400 + index * 300),
-                            duration: const Duration(milliseconds: 400),
-                            curve: Curves.easeOut,
-                          );
-                        }),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Single message for planner-first flow (no "Creating your X plan" title)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Text(
-                    AppLocalizations.of(context)!.planLoadingMessage,
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                      height: 1.3,
-                      shadows: [
-                        Shadow(
-                          offset: const Offset(0, 1),
-                          blurRadius: 2.0,
-                          color: Colors.black.withOpacity(0.15),
-                        ),
-                      ],
                     ),
-                    textAlign: TextAlign.center,
+                    const SizedBox(height: 28),
+                    AnimatedOpacity(
+                      opacity: _messageOpacity,
+                      duration: const Duration(milliseconds: 300),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Text(
+                          messages[_messageIndex % messages.length],
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF1E1C18),
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Positioned(
+                bottom: 72,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.6,
+                    height: 3,
+                    child: AnimatedBuilder(
+                      animation: _progressAnimation,
+                      builder: (_, __) => ClipRRect(
+                        borderRadius: BorderRadius.circular(2),
+                        child: Stack(
+                          children: [
+                            Container(color: const Color(0xFFE8E2D8)),
+                            FractionallySizedBox(
+                              widthFactor: _progressAnimation.value,
+                              child: Container(color: const Color(0xFF2A6049)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-
-                const SizedBox(height: 12),
-
-                // Loading indicator
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.black87.withOpacity(0.8)),
-                    strokeWidth: 2,
-                  ),
-                ),
-
-                const Spacer(flex: 3),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
