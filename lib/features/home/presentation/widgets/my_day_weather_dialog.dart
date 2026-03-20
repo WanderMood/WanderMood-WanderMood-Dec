@@ -20,14 +20,7 @@ class MyDayWeatherDialog extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.blue.shade50,
-              Colors.blue.shade100,
-            ],
-          ),
+          color: const Color(0xFFFFFFFF),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -40,12 +33,12 @@ class MyDayWeatherDialog extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade800,
+                    color: const Color(0xFF1E1C18),
                   ),
                 ),
                 IconButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: Icon(Icons.close, color: Colors.blue.shade600),
+                  icon: const Icon(Icons.close, color: Color(0xFF8A847B)),
                 ),
               ],
             ),
@@ -68,14 +61,14 @@ class MyDayWeatherDialog extends StatelessWidget {
                         style: GoogleFonts.poppins(
                           fontSize: 36,
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue.shade800,
+                          color: const Color(0xFF1E1C18),
                         ),
                       ),
                       Text(
                         weather!.condition,
                         style: GoogleFonts.poppins(
                           fontSize: 18,
-                          color: Colors.blue.shade600,
+                          color: const Color(0xFF8A847B),
                         ),
                       ),
                     ],
@@ -86,8 +79,9 @@ class MyDayWeatherDialog extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.7),
+                  color: const Color(0xFFFFFFFF),
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFD8D0C4), width: 0.5),
                 ),
                 child: Column(
                   children: [
@@ -95,12 +89,12 @@ class MyDayWeatherDialog extends StatelessWidget {
                       label: 'Feels Like',
                       value: '${weather!.details['feelsLike']?.round() ?? '--'}°C',
                     ),
-                    const SizedBox(height: 8),
+                    const Divider(height: 16, thickness: 1, color: Color(0xFFD8D0C4)),
                     _WeatherDetailRow(
                       label: 'Humidity',
                       value: '${weather!.details['humidity'] ?? '--'}%',
                     ),
-                    const SizedBox(height: 8),
+                    const Divider(height: 16, thickness: 1, color: Color(0xFFD8D0C4)),
                     _WeatherDetailRow(
                       label: 'Description',
                       value: weather!.details['description'] ?? 'Clear skies',
@@ -134,17 +128,20 @@ class MyDayWeatherDialog extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue.shade600,
+                backgroundColor: const Color(0xFF2A6049),
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 54),
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(999),
                 ),
+                elevation: 0,
               ),
               child: Text(
                 'Close',
                 style: GoogleFonts.poppins(
                   color: Colors.white,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -213,7 +210,7 @@ class _WeatherDetailRow extends StatelessWidget {
           label,
           style: GoogleFonts.poppins(
             fontSize: 14,
-            color: Colors.blue.shade700,
+            color: const Color(0xFF4A4640),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -221,7 +218,7 @@ class _WeatherDetailRow extends StatelessWidget {
           value,
           style: GoogleFonts.poppins(
             fontSize: 14,
-            color: Colors.blue.shade800,
+            color: const Color(0xFF1E1C18),
             fontWeight: FontWeight.w600,
           ),
         ),

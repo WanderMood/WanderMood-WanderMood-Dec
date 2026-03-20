@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -77,11 +78,10 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.shareProfileFailedToShare(e.toString())),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: l10n.shareProfileFailedToShare(e.toString()),
+          isError: true,
         );
       }
     }
@@ -161,19 +161,9 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFFFF7E5F), Color(0xFFF5609F), Color(0xFFA855F7)],
-                ),
+                color: const Color(0xFF2A6049),
                 borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFFF7E5F).withOpacity(0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
+                boxShadow: const [],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,12 +176,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.9),
                           shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                            ),
-                          ],
+                          boxShadow: const [],
                         ),
                         child: Center(
                           child: Text(
@@ -199,7 +184,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                             style: GoogleFonts.poppins(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFFFF7E5F),
+                              color: const Color(0xFF2A6049),
                             ),
                           ),
                         ),
@@ -267,7 +252,8 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                     icon: Icons.qr_code,
                     label: l10n.shareProfileQRCode,
                     subtitle: l10n.shareProfileScanToConnect,
-                    gradient: const [Color(0xFFFF7E5F), Color(0xFFF5609F)],
+                    gradient: const [Color(0xFFEAF5EE), Color(0xFFEAF5EE)],
+                    iconColor: const Color(0xFF2A6049),
                     onTap: () => setState(() => _currentScreen = ShareProfileScreenType.qr),
                   ),
                 ),
@@ -277,7 +263,8 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                     icon: Icons.link,
                     label: l10n.shareProfileCopyLink,
                     subtitle: l10n.shareProfileShareAnywhere,
-                    gradient: const [Color(0xFF3B82F6), Color(0xFFA855F7)],
+                    gradient: const [Color(0xFFEDF5F9), Color(0xFFEDF5F9)],
+                    iconColor: const Color(0xFFA8C8DC),
                     onTap: () => setState(() => _currentScreen = ShareProfileScreenType.link),
                   ),
                 ),
@@ -328,13 +315,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                boxShadow: const [],
               ),
               child: Row(
                 children: [
@@ -369,20 +350,17 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                       try {
                         await ref.read(profileProvider.notifier).updateProfile(isPublic: value);
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.profileVisibilityUpdated),
-                              backgroundColor: const Color(0xFF4CAF50),
-                            ),
+                          showWanderMoodToast(
+                            context,
+                            message: l10n.profileVisibilityUpdated,
                           );
                         }
                       } catch (e) {
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.shareProfileUpdateFailed(e.toString())),
-                              backgroundColor: Colors.red,
-                            ),
+                          showWanderMoodToast(
+                            context,
+                            message: l10n.shareProfileUpdateFailed(e.toString()),
+                            isError: true,
                           );
                         }
                       }
@@ -425,6 +403,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
     required String label,
     required String subtitle,
     required List<Color> gradient,
+    required Color iconColor,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -434,13 +413,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          boxShadow: const [],
         ),
         child: Column(
           children: [
@@ -450,15 +423,9 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(colors: gradient),
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: gradient[0].withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                boxShadow: const [],
               ),
-              child: Icon(icon, color: Colors.white, size: 32),
+              child: Icon(icon, color: iconColor, size: 32),
             ),
             const SizedBox(height: 12),
             Text(
@@ -496,13 +463,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(colors: gradient),
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: gradient[0].withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          boxShadow: const [],
         ),
         child: Row(
           children: [
@@ -560,13 +521,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
+                boxShadow: const [],
               ),
               child: Column(
                 children: [
@@ -602,13 +557,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                boxShadow: const [],
               ),
               child: Row(
                 children: [
@@ -660,7 +609,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                   backgroundColor: _qrDownloaded
                       ? const Color(0xFF10B981)
                       : const Color(0xFFFF7E5F),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -694,7 +643,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                   await Share.share(l10n.shareProfileShareMessage('https://$_profileUrl'));
                 },
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                     side: BorderSide(color: Colors.grey[300]!),
@@ -760,13 +709,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                boxShadow: const [],
               ),
               child: Row(
                 children: [
@@ -887,7 +830,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                   backgroundColor: _copied
                       ? const Color(0xFF10B981)
                       : const Color(0xFFFF7E5F),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -1026,13 +969,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.grey[200]!),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          boxShadow: const [],
         ),
         child: Column(
           children: [

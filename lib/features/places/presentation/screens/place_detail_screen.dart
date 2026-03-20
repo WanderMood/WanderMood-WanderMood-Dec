@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:wandermood/core/theme/app_theme.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/providers/explore_places_provider.dart';
 import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
@@ -83,20 +84,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         ? ref.watch(moodyExploreAutoProvider)
         : ref.read(moodyExploreAutoProvider);
     
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFFFFDF5), // Warm cream yellow
-            Color(0xFFFFF3E0), // Slightly darker warm yellow
-            Color(0xFFFFF9E8), // Light peachy warmth
-          ],
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+    return Scaffold(
+        backgroundColor: const Color(0xFFF5F0E8),
         body: edgePlacesAsync.when(
           data: (places) {
             try {
@@ -117,7 +106,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
                         child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
                         ),
                       );
                     }
@@ -136,7 +125,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           },
           loading: () => const Center(
             child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
             ),
           ),
           error: (error, stack) => _buildErrorState(error),
@@ -146,8 +135,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 ? _buildBookingButton(_cachedPlace!)
                 : const SizedBox.shrink())
             : const SizedBox.shrink(),
-      ),
-    );
+      );
   }
   
   /// Helper method to build with a place (avoids duplicate code)
@@ -160,26 +148,13 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       _realReviews = [];
     }
     // Return the full Scaffold structure with booking button
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFFFFDF5), // Warm cream yellow
-            Color(0xFFFFF3E0), // Slightly darker warm yellow
-            Color(0xFFFFF9E8), // Light peachy warmth
-          ],
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+    return Scaffold(
+        backgroundColor: const Color(0xFFF5F0E8),
         body: _buildPlaceDetail(place),
         bottomNavigationBar: _isPlaceBookable(place)
             ? _buildBookingButton(place)
             : const SizedBox.shrink(),
-      ),
-    );
+      );
   }
 
   Widget _buildPlaceDetail(Place place) {
@@ -190,17 +165,10 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       ],
       body: Container(
             decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFFF9E8), // Light peachy warmth
-              Color(0xFFFFFDF5), // Warm cream yellow
-            ],
-          ),
+              color: Color(0xFFF5F0E8),
               borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(32),
-            topRight: Radius.circular(32),
+                topLeft: Radius.circular(32),
+                topRight: Radius.circular(32),
               ),
             ),
             child: Column(
@@ -220,7 +188,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   Widget _buildSliverAppBar(Place place, bool innerBoxIsScrolled) {
     // Use solid background when scrolled to prevent content bleed-through
     final backgroundColor = innerBoxIsScrolled
-        ? const Color(0xFFFFF9E8) // Match body background color
+        ? const Color(0xFFF5F0E8)
         : Colors.transparent;
     
     final iconColor = innerBoxIsScrolled ? Colors.black : Colors.white;
@@ -288,34 +256,24 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                       try {
                         if (isSaved) {
                           await savedPlacesService.unsavePlace(place.id);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${place.name} removed from saved places'),
-                              backgroundColor: Colors.orange.shade400,
-                              behavior: SnackBarBehavior.floating,
-                              duration: const Duration(seconds: 2),
-                            ),
+                          showWanderMoodToast(
+                            context,
+                            message: '${place.name} removed from saved places',
                           );
                         } else {
                           await savedPlacesService.savePlace(place);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${place.name} saved to favorites!'),
-                              backgroundColor: const Color(0xFF12B347),
-                              behavior: SnackBarBehavior.floating,
-                              duration: const Duration(seconds: 2),
-                            ),
+                          showWanderMoodToast(
+                            context,
+                            message: '${place.name} saved to favorites!',
                           );
                         }
                         ref.invalidate(savedPlacesProvider);
                         HapticFeedback.lightImpact();
                       } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Failed to ${isSaved ? 'unsave' : 'save'} place'),
-                            backgroundColor: Colors.red.shade400,
-                            duration: const Duration(seconds: 2),
-                          ),
+                        showWanderMoodToast(
+                          context,
+                          message: 'Failed to ${isSaved ? 'unsave' : 'save'} place',
+                          isError: true,
                         );
                       }
                     },
@@ -412,7 +370,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: const Color(0xFF12B347),
+                          color: const Color(0xFF2A6049),
                         ),
                       ),
                     );
@@ -445,7 +403,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
@@ -537,12 +495,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           ),
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
-            color: const Color(0xFF12B347).withOpacity(0.2),
+            color: const Color(0xFF2A6049).withOpacity(0.2),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF12B347).withOpacity(0.1),
+              color: const Color(0xFF2A6049).withOpacity(0.1),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -551,11 +509,11 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         child: TabBar(
         controller: _tabController,
         labelColor: Colors.white,
-        unselectedLabelColor: const Color(0xFF12B347),
+        unselectedLabelColor: const Color(0xFF2A6049),
         indicator: BoxDecoration(
           gradient: const LinearGradient(
             colors: [
-              Color(0xFF12B347),
+              Color(0xFF2A6049),
               Color(0xFF0D8A35),
             ],
             begin: Alignment.topLeft,
@@ -564,7 +522,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           borderRadius: BorderRadius.circular(28),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF12B347).withOpacity(0.3),
+              color: const Color(0xFF2A6049).withOpacity(0.3),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -704,7 +662,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: place.openingHours!.isOpen
-                            ? const Color(0xFF12B347).withOpacity(0.3)
+                            ? const Color(0xFF2A6049).withOpacity(0.3)
                             : Colors.red.withOpacity(0.3),
                         width: 1.5,
                       ),
@@ -719,12 +677,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: place.openingHours!.isOpen
-                              ? const Color(0xFF12B347)
+                              ? const Color(0xFF2A6049)
                               : Colors.red,
                                 boxShadow: [
                                   BoxShadow(
                                     color: place.openingHours!.isOpen
-                                        ? const Color(0xFF12B347).withOpacity(0.3)
+                                        ? const Color(0xFF2A6049).withOpacity(0.3)
                                         : Colors.red.withOpacity(0.3),
                                     blurRadius: 4,
                                     spreadRadius: 1,
@@ -739,7 +697,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                                 fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: place.openingHours!.isOpen
-                              ? const Color(0xFF12B347)
+                              ? const Color(0xFF2A6049)
                               : Colors.red,
                         ),
                       ),
@@ -869,10 +827,10 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF12B347).withOpacity(0.05),
+        color: const Color(0xFFEAF5EE),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF12B347).withOpacity(0.15),
+          color: const Color(0xFF2A6049).withOpacity(0.15),
           width: 1,
         ),
       ),
@@ -902,7 +860,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF12B347).withOpacity(0.15),
+                color: const Color(0xFFEAF5EE),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -918,7 +876,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF12B347),
+                      color: const Color(0xFF2A6049),
                     ),
                   ),
                 ],
@@ -1576,7 +1534,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       case 'culture':
         return Colors.deepPurple;
       default:
-        return const Color(0xFF12B347);
+        return const Color(0xFF2A6049);
     }
   }
 
@@ -1646,7 +1604,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        const Color(0xFF12B347),
+                        const Color(0xFF2A6049),
                       ),
                     ),
                   ),
@@ -1784,7 +1742,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF12B347).withOpacity(0.08),
+        color: const Color(0xFFEAF5EE),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -1796,7 +1754,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 width: 28,
                 height: 28,
               decoration: BoxDecoration(
-                color: const Color(0xFF12B347),
+                color: const Color(0xFF2A6049),
                   borderRadius: BorderRadius.circular(14),
               ),
                 child: const Center(
@@ -1812,7 +1770,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               style: GoogleFonts.poppins(
                   fontSize: 14,
                 fontWeight: FontWeight.w600,
-                  color: const Color(0xFF12B347),
+                  color: const Color(0xFF2A6049),
               ),
             ),
           ],
@@ -1832,7 +1790,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              const Color(0xFF12B347),
+                              const Color(0xFF2A6049),
                             ),
                           ),
                         ),
@@ -1842,7 +1800,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                             style: GoogleFonts.poppins(
                           fontSize: 13,
                               fontStyle: FontStyle.italic,
-                          color: const Color(0xFF12B347),
+                          color: const Color(0xFF2A6049),
                           ),
                         ),
                       ],
@@ -2044,7 +2002,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         //             'View all reviews feature coming soon!',
         //             style: GoogleFonts.poppins(),
         //           ),
-        //           backgroundColor: const Color(0xFF12B347),
+        //           backgroundColor: const Color(0xFF2A6049),
         //           behavior: SnackBarBehavior.floating,
         //         ),
         //       );
@@ -2054,7 +2012,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         //       style: GoogleFonts.poppins(
         //         fontSize: 14,
         //         fontWeight: FontWeight.w500,
-        //         color: const Color(0xFF12B347),
+        //         color: const Color(0xFF2A6049),
         //       ),
         //     ),
         //   ),
@@ -2086,13 +2044,13 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundColor: const Color(0xFF12B347).withOpacity(0.1),
+                backgroundColor: const Color(0xFFEAF5EE),
                 child: Text(
                   (review['author_name'] as String? ?? 'A')[0].toUpperCase(),
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF12B347),
+                    color: const Color(0xFF2A6049),
                   ),
                 ),
               ),
@@ -2353,9 +2311,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF12B347).withOpacity(0.1),
+                  color: const Color(0xFFEAF5EE),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFF12B347).withOpacity(0.3)),
+                  border: Border.all(color: const Color(0xFF2A6049).withOpacity(0.3)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -2371,7 +2329,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                       ),
                     ),
                     if (place.reviewCount > 0) ...[
@@ -2451,7 +2409,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           //             'Add review feature coming soon!',
           //             style: GoogleFonts.poppins(),
           //           ),
-          //           backgroundColor: const Color(0xFF12B347),
+          //           backgroundColor: const Color(0xFF2A6049),
           //           behavior: SnackBarBehavior.floating,
           //         ),
           //       );
@@ -2465,8 +2423,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           //       ),
           //     ),
           //     style: OutlinedButton.styleFrom(
-          //       foregroundColor: const Color(0xFF12B347),
-          //       side: const BorderSide(color: Color(0xFF12B347)),
+          //       foregroundColor: const Color(0xFF2A6049),
+          //       side: const BorderSide(color: Color(0xFF2A6049)),
           //       padding: const EdgeInsets.symmetric(vertical: 16),
           //       shape: RoundedRectangleBorder(
           //         borderRadius: BorderRadius.circular(25),
@@ -2502,13 +2460,13 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                   children: [
               CircleAvatar(
                 radius: 24,
-                backgroundColor: const Color(0xFF12B347).withOpacity(0.1),
+                backgroundColor: const Color(0xFFEAF5EE),
                 child: Text(
                   (review['author_name'] as String? ?? 'A')[0].toUpperCase(),
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                      color: const Color(0xFF12B347),
+                      color: const Color(0xFF2A6049),
                   ),
                 ),
                     ),
@@ -2588,7 +2546,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [
-                  Color(0xFF12B347),
+                  Color(0xFF2A6049),
                   Color(0xFF0D8A35),
                 ],
                 begin: Alignment.centerLeft,
@@ -2597,7 +2555,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               borderRadius: BorderRadius.circular(28),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF12B347).withOpacity(0.35),
+                  color: const Color(0xFF2A6049).withOpacity(0.35),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -2716,8 +2674,10 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not open maps: $e')),
+        showWanderMoodToast(
+          context,
+          message: 'Could not open maps: $e',
+          isError: true,
         );
       }
     }

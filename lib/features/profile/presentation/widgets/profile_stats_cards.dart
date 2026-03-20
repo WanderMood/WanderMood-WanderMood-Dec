@@ -156,43 +156,13 @@ class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.orange.shade400, Colors.red.shade500],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: const Color(0xFFFDF0EE), // wmSunsetTint
               shape: BoxShape.circle,
             ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade500,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Center(
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            child: const Icon(
+              Icons.check_circle_outline_rounded,
+              color: Color(0xFFE8784A), // wmSunset
+              size: 24,
             ),
           ),
           const SizedBox(height: 8),
@@ -254,16 +224,12 @@ class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.blue.shade400, Colors.purple.shade500],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: const Color(0xFFEDF5F9), // wmSkyTint
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.place,
-                    color: Colors.white,
+                    color: Color(0xFFA8C8DC), // wmSky
                     size: 24,
                   ),
                 ),
@@ -361,16 +327,12 @@ class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.pink.shade400, Colors.red.shade500],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: const Color(0xFFEAF5EE), // wmForestTint
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.trending_up,
-              color: Colors.white,
+              color: Color(0xFF2A6049), // wmForest
               size: 24,
             ),
           ),

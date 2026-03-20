@@ -166,13 +166,13 @@ class FavoriteVibesCard extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFFF97316),
+                        color: const Color(0xFF2A6049),
                       ),
                     ),
                     const SizedBox(width: 4),
                     const Icon(
                       Icons.chevron_right,
-                      color: Color(0xFFF97316),
+                      color: Color(0xFF2A6049),
                       size: 20,
                     ),
                   ],
@@ -195,13 +195,7 @@ class FavoriteVibesCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(colors: vibeData.gradient),
                     borderRadius: BorderRadius.circular(50),
-                    boxShadow: [
-                      BoxShadow(
-                        color: vibeData.gradient[0].withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    boxShadow: const [],
                   ),
                   child: Text(
                     '${vibeData.emoji} ${vibeData.name}',
@@ -563,13 +557,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: const [],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -599,13 +587,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(colors: vibe.gradient),
                     borderRadius: BorderRadius.circular(50),
-                    boxShadow: [
-                      BoxShadow(
-                        color: vibe.gradient[0].withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    boxShadow: const [],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -742,12 +724,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 4,
-                          ),
-                        ],
+                        boxShadow: const [],
                       ),
                       child: const Icon(
                         Icons.check,

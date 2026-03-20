@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/plans/providers/selected_activities_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
@@ -202,12 +203,13 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFFA78BFA), Color(0xFF6366F1)]),
+                color: const Color(0xFFEAF5EE),
                 borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: const Color(0xFF2A6049)),
               ),
               child: Text(
                 tag,
-                style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700, color: const Color(0xFF2A6049)),
               ),
             );
           }).toList(),
@@ -228,8 +230,6 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
             icon: Icons.schedule,
             label: AppLocalizations.of(context)!.activityDetailDuration,
             value: durationText,
-            color: const Color(0xFFEA580C),
-            bgColor: const Color(0xFFFFF7ED),
           ),
         ),
         const SizedBox(width: 12),
@@ -238,8 +238,6 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
             icon: Icons.euro,
             label: AppLocalizations.of(context)!.activityDetailPrice,
             value: widget.activity.priceLevel ?? '—',
-            color: const Color(0xFF059669),
-            bgColor: const Color(0xFFECFDF5),
           ),
         ),
         const SizedBox(width: 12),
@@ -248,25 +246,23 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
             icon: Icons.location_on,
             label: AppLocalizations.of(context)!.activityDetailDistance,
             value: widget.distanceKm ?? '—',
-            color: const Color(0xFF0284C7),
-            bgColor: const Color(0xFFEFF6FF),
           ),
         ),
       ],
     );
   }
 
-  Widget _quickInfoCard({required IconData icon, required String label, required String value, required Color color, required Color bgColor}) {
+  Widget _quickInfoCard({required IconData icon, required String label, required String value}) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
       decoration: BoxDecoration(
-        color: bgColor,
+        color: const Color(0xFFF5F0E8),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
+        border: Border.all(color: const Color(0xFFD8D0C4), width: 0.5),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 22, color: color),
+          Icon(icon, size: 22, color: const Color(0xFF2A6049)),
           const SizedBox(height: 6),
           Text(label, style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey[700])),
           const SizedBox(height: 2),
@@ -394,9 +390,9 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
             ),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF374151),
-              side: BorderSide(color: Colors.grey[300]!),
+              minimumSize: const Size.fromHeight(54),
+              backgroundColor: const Color(0xFF2A6049),
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             ),
           ),
@@ -1477,52 +1473,19 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
     
     final isAdded = ref.read(selectedActivitiesProvider).contains(widget.activity.id);
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Text(isAdded ? '🎉' : '➖', style: const TextStyle(fontSize: 20)),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                isAdded 
-                  ? '${widget.activity.name} added to your epic adventure plan!'
-                  : '${widget.activity.name} removed from your plan',
-                style: GoogleFonts.poppins(),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: isAdded ? Colors.green[600] : Colors.orange[600],
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
+    showWanderMoodToast(
+      context,
+      message: isAdded
+          ? '${widget.activity.name} added to your epic adventure plan!'
+          : '${widget.activity.name} removed from your plan',
     );
   }
 
   void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Text('😅', style: TextStyle(fontSize: 20)),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                message,
-                style: GoogleFonts.poppins(),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.red[600],
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
+    showWanderMoodToast(
+      context,
+      message: message,
+      isError: true,
     );
   }
 

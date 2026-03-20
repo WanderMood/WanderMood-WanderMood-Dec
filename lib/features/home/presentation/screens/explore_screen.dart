@@ -435,7 +435,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: category == _searchFilter ? FontWeight.w600 : FontWeight.w400,
-                  color: category == _searchFilter ? const Color(0xFF12B347) : Colors.black87,
+                  color: category == _searchFilter ? const Color(0xFF2A6049) : Colors.black87,
                 ),
               ),
             ],
@@ -800,9 +800,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final explorePlacesAsync = ref.watch(moodyExploreAutoProvider);
     // OLD: ref.watch(explorePlacesProvider(city: city)) - Replaced by Edge Function
 
-    return SwirlBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+    return Scaffold(
+        backgroundColor: const Color(0xFFF5F0E8),
         // Removed drawer and floating action button for Moody chat
         body: NestedScrollView(
           controller: _scrollController,
@@ -982,13 +981,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  const Color(0xFF12B347).withOpacity(0.1),
-                                  const Color(0xFF12B347).withOpacity(0.05),
+                                  const Color(0xFFEAF5EE),
+                                  const Color(0xFFEAF5EE),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: const Color(0xFF12B347).withOpacity(0.2),
+                                color: const Color(0xFF2A6049).withOpacity(0.2),
                               ),
                             ),
                             child: Row(
@@ -996,7 +995,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF12B347),
+                                    color: const Color(0xFF2A6049),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: const Icon(
@@ -1015,7 +1014,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                         style: GoogleFonts.poppins(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
-                                          color: const Color(0xFF12B347),
+                                          color: const Color(0xFF2A6049),
                                         ),
                                       ),
                                       Text(
@@ -1157,8 +1156,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   },
           ),
         ),
-      ),
-    );
+      );
   }
 
 
@@ -1206,7 +1204,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               maxWidth: MediaQuery.of(context).size.width * 0.9,
             ),
             decoration: BoxDecoration(
-              color: const Color(0xFFE8F5E8),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -1223,7 +1221,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 Container(
                   padding: const EdgeInsets.fromLTRB(24, 20, 20, 20),
                   decoration: const BoxDecoration(
-                    color: Color(0xFFE8F5E8),
+                    color: Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20),
@@ -1234,7 +1232,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF12B347),
+                          color: const Color(0xFF2A6049),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
@@ -1261,7 +1259,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                 '$_activeFiltersCount filters active',
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
-                                  color: const Color(0xFF12B347),
+                                  color: const Color(0xFF2A6049),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -1275,15 +1273,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             setModalState(() {});
                           },
                           style: TextButton.styleFrom(
-                            backgroundColor: const Color(0xFF12B347).withOpacity(0.1),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                            backgroundColor: Colors.transparent,
+                            shape: const RoundedRectangleBorder(),
                           ),
                           child: Text(
                             'Clear All',
                             style: GoogleFonts.poppins(
-                              color: const Color(0xFF12B347),
+                              color: const Color(0xFF8A847B),
                               fontWeight: FontWeight.w600,
                               fontSize: 13,
                             ),
@@ -1439,14 +1435,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       });
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF12B347),
+                      backgroundColor: const Color(0xFF2A6049),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
                       elevation: 2,
-                      shadowColor: const Color(0xFF12B347).withOpacity(0.3),
+                      shadowColor: const Color(0xFF2A6049).withOpacity(0.3),
                     ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -1486,10 +1482,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFF12B347).withOpacity(0.1),
+              color: const Color(0xFFEAF5EE),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFF12B347).withOpacity(0.2),
+                color: const Color(0xFF2A6049).withOpacity(0.2),
               ),
             ),
             child: Row(
@@ -1497,7 +1493,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF12B347),
+                    color: const Color(0xFF2A6049),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(icon, size: 18, color: Colors.white),
@@ -1508,7 +1504,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF12B347),
+                    color: const Color(0xFF2A6049),
                   ),
                 ),
               ],
@@ -1728,21 +1724,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: value ? const Color(0xFF12B347) : Colors.white,
+            color: value ? const Color(0xFF2A6049) : Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: value ? const Color(0xFF12B347) : Colors.grey[300]!,
+              color: value ? const Color(0xFF2A6049) : Colors.grey[300]!,
               width: value ? 2 : 1,
             ),
             boxShadow: value ? [
               BoxShadow(
-                color: const Color(0xFF12B347).withOpacity(0.3),
+                color: const Color(0xFF2A6049).withOpacity(0.3),
                 blurRadius: 6,
                 spreadRadius: 1,
                 offset: const Offset(0, 3),
               ),
               BoxShadow(
-                color: const Color(0xFF12B347).withOpacity(0.1),
+                color: const Color(0xFF2A6049).withOpacity(0.1),
                 blurRadius: 10,
                 spreadRadius: 0,
                 offset: const Offset(0, 5),
@@ -1788,21 +1784,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: value ? const Color(0xFF12B347) : Colors.white,
+            color: value ? const Color(0xFF2A6049) : Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: value ? const Color(0xFF12B347) : Colors.grey[300]!,
+              color: value ? const Color(0xFF2A6049) : Colors.grey[300]!,
               width: value ? 2 : 1,
             ),
             boxShadow: value ? [
               BoxShadow(
-                color: const Color(0xFF12B347).withOpacity(0.3),
+                color: const Color(0xFF2A6049).withOpacity(0.3),
                 blurRadius: 6,
                 spreadRadius: 1,
                 offset: const Offset(0, 3),
               ),
               BoxShadow(
-                color: const Color(0xFF12B347).withOpacity(0.1),
+                color: const Color(0xFF2A6049).withOpacity(0.1),
                 blurRadius: 10,
                 spreadRadius: 0,
                 offset: const Offset(0, 5),
@@ -1851,21 +1847,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: value ? const Color(0xFF12B347) : Colors.white,
+            color: value ? const Color(0xFF2A6049) : Colors.white,
             borderRadius: BorderRadius.circular(25),
             border: Border.all(
-              color: value ? const Color(0xFF12B347) : Colors.grey[300]!,
+              color: value ? const Color(0xFF2A6049) : Colors.grey[300]!,
               width: value ? 2.5 : 1.5,
             ),
             boxShadow: value ? [
               BoxShadow(
-                color: const Color(0xFF12B347).withOpacity(0.3),
+                color: const Color(0xFF2A6049).withOpacity(0.3),
                 blurRadius: 6,
                 spreadRadius: 1,
                 offset: const Offset(0, 3),
               ),
               BoxShadow(
-                color: const Color(0xFF12B347).withOpacity(0.1),
+                color: const Color(0xFF2A6049).withOpacity(0.1),
                 blurRadius: 8,
                 spreadRadius: 0,
                 offset: const Offset(0, 4),
@@ -1911,21 +1907,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: value ? const Color(0xFF12B347) : Colors.white,
+            color: value ? const Color(0xFF2A6049) : Colors.white,
             borderRadius: BorderRadius.circular(25),
             border: Border.all(
-              color: value ? const Color(0xFF12B347) : Colors.grey[300]!,
+              color: value ? const Color(0xFF2A6049) : Colors.grey[300]!,
               width: value ? 2.5 : 1.5,
             ),
             boxShadow: value ? [
               BoxShadow(
-                color: const Color(0xFF12B347).withOpacity(0.3),
+                color: const Color(0xFF2A6049).withOpacity(0.3),
                 blurRadius: 6,
                 spreadRadius: 1,
                 offset: const Offset(0, 3),
               ),
               BoxShadow(
-                color: const Color(0xFF12B347).withOpacity(0.1),
+                color: const Color(0xFF2A6049).withOpacity(0.1),
                 blurRadius: 8,
                 spreadRadius: 0,
                 offset: const Offset(0, 4),
@@ -2015,7 +2011,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               child: Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: isExpanded ? const Color(0xFF12B347).withOpacity(0.05) : Colors.transparent,
+                  color: isExpanded ? const Color(0xFFEAF5EE) : Colors.transparent,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                 ),
                 child: Row(
@@ -2040,7 +2036,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       duration: const Duration(milliseconds: 200),
                       child: Icon(
                         Icons.keyboard_arrow_down,
-                        color: isExpanded ? const Color(0xFF12B347) : Colors.grey,
+                        color: isExpanded ? const Color(0xFF2A6049) : Colors.grey,
                       ),
                     ),
                   ],
@@ -2278,8 +2274,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               _updateActiveFiltersCount();
             });
           },
-          activeColor: const Color(0xFF12B347),
-          inactiveColor: const Color(0xFF12B347).withOpacity(0.2),
+          activeColor: const Color(0xFF2A6049),
+          inactiveColor: const Color(0xFF2A6049).withOpacity(0.2),
         ),
         const SizedBox(height: 16),
         Text(
@@ -2303,8 +2299,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               _updateActiveFiltersCount();
             });
           },
-          activeColor: const Color(0xFF12B347),
-          inactiveColor: const Color(0xFF12B347).withOpacity(0.2),
+          activeColor: const Color(0xFF2A6049),
+          inactiveColor: const Color(0xFF2A6049).withOpacity(0.2),
         ),
         const SizedBox(height: 16),
         Text(
@@ -2413,27 +2409,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF12B347) : unselectedColor,
+          color: isSelected ? const Color(0xFFEAF5EE) : const Color(0xFFF5F0E8),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFF12B347) : unselectedColor.withOpacity(0.5),
-            width: isSelected ? 2 : 1,
+            color: isSelected ? const Color(0xFF2A6049) : const Color(0xFFD8D0C4),
+            width: 1,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF12B347).withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : [
-                  BoxShadow(
-                    color: unselectedColor.withOpacity(0.3),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+          boxShadow: const [],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -2446,7 +2428,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.poppins(
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? Colors.white : Colors.black87,
+                  color: isSelected ? const Color(0xFF2A6049) : const Color(0xFF1E1C18),
                 ),
               ),
             ),
@@ -2469,10 +2451,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF12B347) : Colors.grey[100],
+          color: isSelected ? const Color(0xFF2A6049) : Colors.grey[100],
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFF12B347) : Colors.grey[300]!,
+            color: isSelected ? const Color(0xFF2A6049) : Colors.grey[300]!,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -2766,10 +2748,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF12B347).withOpacity(0.1) : Colors.white,
+          color: isActive ? const Color(0xFFEAF5EE) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isActive ? const Color(0xFF12B347) : Colors.grey[300]!,
+            color: isActive ? const Color(0xFF2A6049) : Colors.grey[300]!,
           ),
         ),
         child: Text(
@@ -2777,7 +2759,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           style: GoogleFonts.poppins(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: isActive ? const Color(0xFF12B347) : Colors.grey[800],
+            color: isActive ? const Color(0xFF2A6049) : Colors.grey[800],
           ),
         ),
       ),

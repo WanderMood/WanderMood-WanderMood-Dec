@@ -28,6 +28,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/providers/communication_style_provider.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
 class MoodHomeScreen extends ConsumerStatefulWidget {
@@ -390,18 +391,10 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       } else if (_selectedMoods.length < 3) {
         _selectedMoods.add(mood.label);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.moodHubSelectUpTo('3'),
-              style: GoogleFonts.poppins(),
-            ),
-            backgroundColor: Colors.red.shade400,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
+        showWanderMoodToast(
+          context,
+          message: AppLocalizations.of(context)!.moodHubSelectUpTo('3'),
+          isError: true,
         );
       }
     });
@@ -479,11 +472,10 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     } catch (e) {
       print('❌ Error getting AI recommendations: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Error: $e',
+          isError: true,
         );
       }
     } finally {
@@ -626,12 +618,12 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF12B347).withOpacity(0.1),
+                  color: const Color(0xFFEAF5EE),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Icon(
                   Icons.my_location,
-                  color: Color(0xFF12B347),
+                  color: Color(0xFF2A6049),
                 ),
               ),
               title: Text(
@@ -651,20 +643,18 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                 // Close the dialog
                 Navigator.pop(context);
                 // Show loading message
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Getting your location...'),
-                    duration: Duration(seconds: 1),
-                  ),
+                showWanderMoodToast(
+                  context,
+                  message: 'Getting your location...',
+                  duration: const Duration(seconds: 1),
                 );
                 // Trigger location update
                 final location = await ref.read(locationNotifierProvider.notifier).getCurrentLocation();
                 // Show result message
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Location: ${location ?? "Could not get location"}'),
-                    duration: Duration(seconds: 3),
-                  ),
+                showWanderMoodToast(
+                  context,
+                  message: 'Location: ${location ?? "Could not get location"}',
+                  duration: const Duration(seconds: 3),
                 );
               },
             ),
@@ -737,7 +727,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              const Color(0xFF12B347).withOpacity(0.03),
+                              const Color(0xFF2A6049).withOpacity(0.03),
                               Colors.transparent,
                             ],
                             begin: Alignment.topCenter,
@@ -769,13 +759,13 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       gradient: const LinearGradient(
-                                        colors: [Color(0xFF12B347), Color(0xFF0EA33F)],
+                                        colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
                                         begin: Alignment.topLeft,
                                         end: Alignment.bottomRight,
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: const Color(0xFF12B347).withOpacity(0.25),
+                                          color: const Color(0xFF2A6049).withOpacity(0.25),
                                           blurRadius: 16,
                                           offset: const Offset(0, 6),
                                         ),
@@ -877,19 +867,19 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                       shape: BoxShape.circle,
                                       gradient: LinearGradient(
                                         colors: [
-                                          const Color(0xFF12B347).withOpacity(0.08),
-                                          const Color(0xFF12B347).withOpacity(0.03),
+                                          const Color(0xFF2A6049).withOpacity(0.08),
+                                          const Color(0xFF2A6049).withOpacity(0.03),
                                         ],
                                         begin: Alignment.topLeft,
                                         end: Alignment.bottomRight,
                                       ),
                                       border: Border.all(
-                                        color: const Color(0xFF12B347).withOpacity(0.15),
+                                        color: const Color(0xFF2A6049).withOpacity(0.15),
                                         width: 2,
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: const Color(0xFF12B347).withOpacity(0.1),
+                                          color: const Color(0xFF2A6049).withOpacity(0.1),
                                           blurRadius: 24,
                                           offset: const Offset(0, 8),
                                         ),
@@ -935,7 +925,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                       color: const Color(0xFFF7FAFC),
                                       borderRadius: BorderRadius.circular(16),
                                       border: Border.all(
-                                        color: const Color(0xFF12B347).withOpacity(0.1),
+                                        color: const Color(0xFF2A6049).withOpacity(0.1),
                                       ),
                                     ),
                                     child: Text(
@@ -979,11 +969,11 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             gradient: const LinearGradient(
-                                              colors: [Color(0xFF12B347), Color(0xFF0EA33F)],
+                                              colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
                                             ),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: const Color(0xFF12B347).withOpacity(0.3),
+                                                color: const Color(0xFF2A6049).withOpacity(0.3),
                                                 blurRadius: 12,
                                                 offset: const Offset(0, 4),
                                               ),
@@ -1006,7 +996,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                             ),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: const Color(0xFF12B347).withOpacity(0.08),
+                                                color: const Color(0xFF2A6049).withOpacity(0.08),
                                                 blurRadius: 12,
                                                 offset: const Offset(0, 4),
                                               ),
@@ -1021,7 +1011,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                                 child: CircularProgressIndicator(
                                                   strokeWidth: 2.5,
                                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                                    const Color(0xFF12B347).withOpacity(0.7),
+                                                    const Color(0xFF2A6049).withOpacity(0.7),
                                                   ),
                                                 ),
                                               ),
@@ -1054,13 +1044,13 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  const Color(0xFF12B347).withOpacity(0.05),
-                                  const Color(0xFF12B347).withOpacity(0.02),
+                                  const Color(0xFF2A6049).withOpacity(0.05),
+                                  const Color(0xFF2A6049).withOpacity(0.02),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: const Color(0xFF12B347).withOpacity(0.2),
+                                color: const Color(0xFF2A6049).withOpacity(0.2),
                               ),
                             ),
                             child: OutlinedButton.icon(
@@ -1082,7 +1072,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                 ),
                               ),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFF12B347),
+                                foregroundColor: const Color(0xFF2A6049),
                                 backgroundColor: Colors.transparent,
                                 side: BorderSide.none,
                                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1123,12 +1113,12 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                     color: const Color(0xFFF8FAFC),
                                     borderRadius: BorderRadius.circular(28),
                                     border: Border.all(
-                                      color: const Color(0xFF12B347).withOpacity(0.15),
+                                      color: const Color(0xFF2A6049).withOpacity(0.15),
                                       width: 1.5,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: const Color(0xFF12B347).withOpacity(0.05),
+                                        color: const Color(0xFF2A6049).withOpacity(0.05),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -1151,7 +1141,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                         padding: const EdgeInsets.only(left: 4),
                                         child: Icon(
                                           Icons.psychology_outlined,
-                                          color: const Color(0xFF12B347).withOpacity(0.6),
+                                          color: const Color(0xFF2A6049).withOpacity(0.6),
                                           size: 22,
                                         ),
                                       ),
@@ -1172,14 +1162,14 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                 height: 52,
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [Color(0xFF12B347), Color(0xFF0EA33F)],
+                                    colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                   ),
                                   borderRadius: BorderRadius.circular(26),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF12B347).withOpacity(0.3),
+                                      color: const Color(0xFF2A6049).withOpacity(0.3),
                                       blurRadius: 12,
                                       offset: const Offset(0, 4),
                                     ),
@@ -1243,13 +1233,13 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF12B347), Color(0xFF0EA33F)],
+                  colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF12B347).withOpacity(0.25),
+                    color: const Color(0xFF2A6049).withOpacity(0.25),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
@@ -1301,7 +1291,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                       BoxShadow(
                         color: message.isUser 
                           ? Colors.blue.withOpacity(0.12)
-                          : const Color(0xFF12B347).withOpacity(0.06),
+                          : const Color(0xFF2A6049).withOpacity(0.06),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -1638,7 +1628,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                             children: [
                               const Icon(
                                 Icons.location_on,
-                                color: Color(0xFF12B347),
+                                color: Color(0xFF2A6049),
                                 size: 18,
                               ),
                               const SizedBox(width: 6),
@@ -2202,7 +2192,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                     child: Icon(
                       Icons.check,
                       size: 12,
-                      color: Color(0xFF12B347),
+                      color: Color(0xFF2A6049),
                     ),
                   ),
                 ),

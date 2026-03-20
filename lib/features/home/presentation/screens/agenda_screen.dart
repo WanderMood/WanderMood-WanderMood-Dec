@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'dynamic_my_day_provider.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import '../../../plans/data/services/scheduled_activity_service.dart';
@@ -70,17 +72,11 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    boxShadow: const [],
                   ),
                   child: const Icon(
                     Icons.arrow_back,
-                    color: Color(0xFF12B347),
+                    color: Color(0xFF2A6049),
                     size: 20,
                   ),
                 ),
@@ -90,7 +86,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 style: GoogleFonts.museoModerno(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF12B347),
+                  color: const Color(0xFF1E1C18),
                   letterSpacing: 0.5,
                 ),
               ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2),
@@ -108,17 +104,11 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                      boxShadow: const [],
                     ),
                     child: Icon(
                       _viewMode == 'calendar' ? Icons.view_list : Icons.calendar_view_month,
-                      color: const Color(0xFF12B347),
+                      color: const Color(0xFF2A6049),
                       size: 20,
                     ),
                   ),
@@ -150,13 +140,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
+            boxShadow: const [],
           ),
           child: TableCalendar<Map<String, dynamic>>(
             firstDay: DateTime.utc(2020, 1, 1),
@@ -178,27 +162,53 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
             },
             calendarStyle: CalendarStyle(
               outsideDaysVisible: false,
+              defaultTextStyle: GoogleFonts.poppins(
+                color: const Color(0xFF1E1C18),
+                fontWeight: FontWeight.w600,
+              ),
               weekendTextStyle: GoogleFonts.poppins(
-                color: const Color(0xFF12B347),
+                color: const Color(0xFF8A847B),
                 fontWeight: FontWeight.w600,
               ),
               holidayTextStyle: GoogleFonts.poppins(
-                color: const Color(0xFF12B347),
+                color: const Color(0xFF8A847B),
                 fontWeight: FontWeight.w600,
               ),
               selectedDecoration: const BoxDecoration(
-                color: Color(0xFF12B347),
+                color: Color(0xFF2A6049),
                 shape: BoxShape.circle,
               ),
               todayDecoration: BoxDecoration(
-                color: const Color(0xFF12B347).withOpacity(0.3),
-                shape: BoxShape.circle,
-              ),
-              markerDecoration: const BoxDecoration(
-                color: Colors.red,
+                color: const Color(0xFF2A6049).withOpacity(0.3),
                 shape: BoxShape.circle,
               ),
               markersMaxCount: 3,
+            ),
+            calendarBuilders: CalendarBuilders(
+              markerBuilder: (context, day, events) {
+                if (events.isEmpty) return const SizedBox.shrink();
+                final visibleEvents = events.take(3).cast<Map<String, dynamic>>().toList();
+                return Positioned(
+                  bottom: 6,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: visibleEvents.map((event) {
+                      final color = _isMoodyGeneratedEvent(event)
+                          ? const Color(0xFFE8784A) // wmSunset
+                          : const Color(0xFF2A6049); // wmForest
+                      return Container(
+                        width: 6,
+                        height: 6,
+                        margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                );
+              },
             ),
             headerStyle: HeaderStyle(
               formatButtonVisible: false,
@@ -206,25 +216,25 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
               titleTextStyle: GoogleFonts.museoModerno(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF12B347),
+                color: const Color(0xFF2A6049),
               ),
               leftChevronIcon: const Icon(
                 Icons.chevron_left,
-                color: Color(0xFF12B347),
+                color: Color(0xFF2A6049),
               ),
               rightChevronIcon: const Icon(
                 Icons.chevron_right,
-                color: Color(0xFF12B347),
+                color: Color(0xFF2A6049),
               ),
             ),
             daysOfWeekStyle: DaysOfWeekStyle(
               weekdayStyle: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
+                color: const Color(0xFF1E1C18),
               ),
               weekendStyle: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF12B347),
+                color: const Color(0xFF8A847B),
               ),
             ),
           ),
@@ -273,20 +283,23 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                   color: Colors.white.withOpacity(0.7),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: const Color(0xFF12B347).withOpacity(0.2),
+                    color: const Color(0xFF2A6049).withOpacity(0.2),
                     width: 1,
                   ),
                 ),
                 child: Column(
                   children: [
-                    Icon(
-                      Icons.event_available,
-                      size: 48,
-                      color: Colors.grey[400],
+                    const SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: MoodyCharacter(
+                        size: 48,
+                        mood: 'happy',
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'No activities planned',
+                      'Geen activiteiten gepland',
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -295,7 +308,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Tap the + button to add activities for this day',
+                      'Tik op een dag om activiteiten toe te voegen',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: Colors.grey[500],
@@ -339,7 +352,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
             child: Column(
               children: [
                 const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -417,7 +430,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                   color: Colors.white.withOpacity(0.7),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: const Color(0xFF12B347).withOpacity(0.2),
+                    color: const Color(0xFF2A6049).withOpacity(0.2),
                     width: 1,
                   ),
                 ),
@@ -469,10 +482,10 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF12B347).withOpacity(0.1),
+                        color: const Color(0xFF2A6049).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: const Color(0xFF12B347).withOpacity(0.3),
+                          color: const Color(0xFF2A6049).withOpacity(0.3),
                         ),
                       ),
                       child: Text(
@@ -480,7 +493,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF12B347),
+                          color: const Color(0xFF2A6049),
                         ),
                       ),
                     ),
@@ -513,7 +526,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
             child: Column(
               children: [
                 const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -639,13 +652,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          boxShadow: const [],
         ),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -659,7 +666,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF12B347),
+                      color: const Color(0xFF2A6049),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -668,13 +675,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                     height: 60,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                      boxShadow: const [],
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
@@ -686,10 +687,10 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                           child: const Icon(Icons.image, color: Colors.grey),
                         ),
                         errorWidget: (context, url, error) => Container(
-                          color: const Color(0xFF12B347).withOpacity(0.2),
+                          color: const Color(0xFF2A6049).withOpacity(0.2),
                           child: const Icon(
                             Icons.image,
-                            color: Color(0xFF12B347),
+                            color: Color(0xFF2A6049),
                           ),
                         ),
                       ),
@@ -1030,6 +1031,14 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       return '${months[date.month - 1]} ${date.day}';
     }
   }
+
+  bool _isMoodyGeneratedEvent(Map<String, dynamic> event) {
+    final source = (event['source'] ?? event['createdBy'] ?? '').toString().toLowerCase();
+    if (source.contains('manual') || source.contains('user')) return false;
+    if (source.contains('moody') || source.contains('ai')) return true;
+    // Default to Moody-generated for older rows that don't store source metadata.
+    return true;
+  }
   
   IconData _getEditButtonIcon(String? paymentStatus) {
     switch (paymentStatus) {
@@ -1064,7 +1073,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   Color _getEditButtonColor(String? paymentStatus) {
     switch (paymentStatus) {
       case 'free':
-        return const Color(0xFF12B347);
+        return const Color(0xFF2A6049);
       case 'paid':
         return Colors.blue;
       case 'reserved':
@@ -1072,7 +1081,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       case 'pending':
         return Colors.purple;
       default:
-        return const Color(0xFF12B347);
+        return const Color(0xFF2A6049);
     }
   }
   
@@ -1135,44 +1144,23 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   
   void _getDirections(Map<String, dynamic> activity) {
     // In a real app, this would open maps with directions
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Opening directions to ${activity['location']}',
-          style: GoogleFonts.poppins(),
-        ),
-        backgroundColor: const Color(0xFF12B347),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Opening directions to ${activity['location']}',
     );
   }
   
   void _completePayment(Map<String, dynamic> activity) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Redirecting to payment for ${activity['title']}',
-          style: GoogleFonts.poppins(),
-        ),
-        backgroundColor: Colors.orange,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Redirecting to payment for ${activity['title']}',
     );
   }
   
   void _checkPaymentStatus(Map<String, dynamic> activity) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Checking payment status for ${activity['title']}',
-          style: GoogleFonts.poppins(),
-        ),
-        backgroundColor: Colors.purple,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Checking payment status for ${activity['title']}',
     );
   }
   
@@ -1212,16 +1200,10 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 ref.read(activityManagerProvider.notifier).cancelActivity(activityId);
               }
               
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Activity cancelled successfully',
-                    style: GoogleFonts.poppins(),
-                  ),
-                  backgroundColor: Colors.red,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
+              showWanderMoodToast(
+                context,
+                message: 'Activity cancelled successfully',
+                isError: true,
               );
             },
             style: ElevatedButton.styleFrom(
@@ -1256,45 +1238,9 @@ ${activity['description']}
 ''';
 
     // In a real app, this would use the share_plus package
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Activity details copied to share',
-          style: GoogleFonts.poppins(),
-        ),
-        backgroundColor: const Color(0xFF12B347),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        action: SnackBarAction(
-          label: 'View',
-          textColor: Colors.white,
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                title: Text(
-                  'Share Content',
-                  style: GoogleFonts.museoModerno(fontWeight: FontWeight.bold),
-                ),
-                content: Text(
-                  shareText,
-                  style: GoogleFonts.poppins(fontSize: 14),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(
-                      'Close',
-                      style: GoogleFonts.poppins(color: const Color(0xFF12B347)),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Activity details copied to share',
     );
   }
   
@@ -1406,13 +1352,7 @@ ${activity['description']}
                           width: double.infinity,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                            boxShadow: const [],
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(16),
@@ -1429,7 +1369,7 @@ ${activity['description']}
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
-                                      const Color(0xFF12B347).withOpacity(0.8),
+                                      const Color(0xFF2A6049).withOpacity(0.8),
                                       const Color(0xFF4CAF50).withOpacity(0.6),
                                     ],
                                     begin: Alignment.topLeft,
@@ -1483,14 +1423,14 @@ ${activity['description']}
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                const Color(0xFF12B347).withOpacity(0.1),
-                                const Color(0xFF12B347).withOpacity(0.05),
+                                const Color(0xFF2A6049).withOpacity(0.1),
+                                const Color(0xFF2A6049).withOpacity(0.05),
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF12B347).withOpacity(0.3)),
+                            border: Border.all(color: const Color(0xFF2A6049).withOpacity(0.3)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1501,7 +1441,7 @@ ${activity['description']}
                                     width: 32,
                                     height: 32,
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF12B347),
+                                      color: const Color(0xFF2A6049),
                                       borderRadius: BorderRadius.circular(16),
                                     ),
                                     child: const Icon(
@@ -1516,7 +1456,7 @@ ${activity['description']}
                                     style: GoogleFonts.museoModerno(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF12B347),
+                                      color: const Color(0xFF2A6049),
                                     ),
                                   ),
                                 ],
@@ -1526,7 +1466,7 @@ ${activity['description']}
                                 _getMoodyAdvice(activity),
                                 style: GoogleFonts.poppins(
                                   fontSize: 13,
-                                  color: const Color(0xFF12B347),
+                                  color: const Color(0xFF2A6049),
                                   height: 1.4,
                                 ),
                               ),
@@ -1545,9 +1485,9 @@ ${activity['description']}
                                 icon: const Icon(Icons.directions),
                                 label: const Text('Get Directions'),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: const Color(0xFF12B347),
-                                  side: const BorderSide(color: Color(0xFF12B347)),
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  foregroundColor: const Color(0xFF2A6049),
+                                  side: const BorderSide(color: Color(0xFF2A6049)),
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
@@ -1563,7 +1503,7 @@ ${activity['description']}
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: _getEditButtonColor(activity['paymentStatus']),
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),

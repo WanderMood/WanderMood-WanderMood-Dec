@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -202,7 +203,7 @@ class _MoodyHubWithPlan extends ConsumerWidget {
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(Icons.auto_awesome, color: Color(0xFF16A34A), size: 24),
+                child: const Icon(Icons.auto_awesome, color: Color(0xFF2A6049), size: 24),
               ),
             ],
           ),
@@ -424,11 +425,11 @@ class _MoodyHubWithPlan extends ConsumerWidget {
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFF16A34A),
+                                color: const Color(0xFF2A6049),
                               ),
                             ),
                             const SizedBox(width: 4),
-                            const Icon(Icons.chevron_right, size: 18, color: Color(0xFF16A34A)),
+                            const Icon(Icons.chevron_right, size: 18, color: Color(0xFF2A6049)),
                           ],
                         ),
                       ),
@@ -626,7 +627,7 @@ class _MoodyHubWithPlan extends ConsumerWidget {
       case 'adventurous':
         return const Color(0xFFDC2626);
       case 'relaxed':
-        return const Color(0xFF16A34A);
+        return const Color(0xFF2A6049);
       case 'romantic':
         return const Color(0xFFEC4899);
       case 'energetic':
@@ -670,13 +671,7 @@ class _MoodPlanSummaryCard extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0xFFD1FAE5), width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF10B981).withOpacity(0.12),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        boxShadow: const [],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -780,17 +775,10 @@ class _CurrentActivityHero extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: afterState
-              ? const [Color(0xFF16A34A), Color(0xFF22C55E)]
+              ? const [Color(0xFF2A6049), Color(0xFF2A6049)]
               : const [Color(0xFFFB923C), Color(0xFFEC4899), Color(0xFFA855F7)],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: (afterState ? const Color(0xFF16A34A) : const Color(0xFFEC4899))
-                .withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        boxShadow: const [],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -961,13 +949,7 @@ class _UpcomingActivityHero extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF3B82F6).withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        boxShadow: const [],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1066,7 +1048,7 @@ class _HeroButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: filled ? const Color(0xFF22C55E) : Colors.white,
+      color: filled ? const Color(0xFF2A6049) : Colors.white,
       borderRadius: BorderRadius.circular(16),
       elevation: 4,
       shadowColor: Colors.black.withOpacity(0.1),
@@ -1258,7 +1240,7 @@ class _TimelineBubbleState extends State<_TimelineBubble>
                   fontSize: 11,
                   fontWeight: widget.isDone ? FontWeight.w500 : FontWeight.w400,
                   color: widget.isDone
-                      ? const Color(0xFF16A34A)
+                      ? const Color(0xFF2A6049)
                       : Colors.grey.shade400,
                 ),
               ),
@@ -1486,60 +1468,19 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan> with SingleTic
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Immersive Background Gradient
+        // Screen 9 background split: sky tint top, cream bottom
         Positioned.fill(
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFE0F2FE), // Light blue
-                  Color(0xFFF3E8FF), // Light purple
-                  Color(0xFFFEF3C7), // Light yellow
-                ],
-                stops: [0.0, 0.5, 1.0],
+          child: Column(
+            children: const [
+              Expanded(
+                flex: 5,
+                child: ColoredBox(color: Color(0xFFEDF5F9)),
               ),
-            ),
-          ),
-        ),
-        
-        // Animated Orbs in Background
-        Positioned(
-          top: -50,
-          left: -50,
-          child: Container(
-            width: 250,
-            height: 250,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF93C5FD).withOpacity(0.4),
-            ),
-          ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-            .scale(begin: const Offset(1, 1), end: const Offset(1.2, 1.2), duration: 4.seconds, curve: Curves.easeInOut)
-            .slide(begin: const Offset(0, 0), end: const Offset(0.1, 0.1), duration: 3.seconds, curve: Curves.easeInOut),
-        ),
-        
-        Positioned(
-          bottom: 100,
-          right: -80,
-          child: Container(
-            width: 300,
-            height: 300,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFFC4B5FD).withOpacity(0.4),
-            ),
-          ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-            .scale(begin: const Offset(1, 1), end: const Offset(1.1, 1.1), duration: 5.seconds, curve: Curves.easeInOut)
-            .slide(begin: const Offset(0, 0), end: const Offset(-0.1, -0.1), duration: 4.seconds, curve: Curves.easeInOut),
-        ),
-
-        // Blur layer to soften the orbs
-        Positioned.fill(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-            child: Container(color: Colors.white.withOpacity(0.1)),
+              Expanded(
+                flex: 5,
+                child: ColoredBox(color: Color(0xFFF5F0E8)),
+              ),
+            ],
           ),
         ),
 
@@ -1558,11 +1499,12 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan> with SingleTic
                     return Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
+                        color: const Color(0xFFA8C8DC),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF60A5FA).withOpacity(0.4 + (_pulseController.value * 0.2)),
-                            blurRadius: 40 + (_pulseController.value * 20),
-                            spreadRadius: 10 + (_pulseController.value * 10),
+                            color: const Color(0xFFA8C8DC).withOpacity(0.35 + (_pulseController.value * 0.15)),
+                            blurRadius: 24 + (_pulseController.value * 14),
+                            spreadRadius: 6 + (_pulseController.value * 6),
                           ),
                         ],
                       ),
@@ -1639,7 +1581,7 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan> with SingleTic
                     _buildChatActionChip(
                       icon: Icons.auto_awesome,
                       text: AppLocalizations.of(context)!.noPlanPlanMyWholeDay,
-                      gradient: const [Color(0xFF5BB32A), Color(0xFF4A9A24)],
+                      gradient: const [Color(0xFF2A6049), Color(0xFF2A6049)],
                       onTap: () => context.pushNamed('moody-standalone'),
                     ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.2, end: 0, curve: Curves.easeOut),
                     
@@ -1651,7 +1593,7 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan> with SingleTic
                           child: _buildChatActionChip(
                             icon: Icons.coffee,
                             text: AppLocalizations.of(context)!.noPlanFindMeCoffee,
-                            gradient: const [Color(0xFF5BB32A), Color(0xFF4A9A24)],
+                            gradient: const [Color(0xFF2A6049), Color(0xFF2A6049)],
                             onTap: () {
                               ref.read(dailyMoodStateNotifierProvider.notifier).setMoodSelection(
                                 mood: 'Relaxed',
@@ -1671,7 +1613,7 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan> with SingleTic
                           child: _buildChatActionChip(
                             icon: Icons.directions_run,
                             text: AppLocalizations.of(context)!.noPlanGetMeMoving,
-                            gradient: const [Color(0xFF5BB32A), Color(0xFF4A9A24)],
+                            gradient: const [Color(0xFF2A6049), Color(0xFF2A6049)],
                             onTap: () {
                               ref.read(dailyMoodStateNotifierProvider.notifier).setMoodSelection(
                                 mood: 'Energetic',
@@ -1697,21 +1639,21 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan> with SingleTic
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 28),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(50),
-                          border: Border.all(color: Colors.white, width: 1.5),
+                          border: Border.all(color: const Color(0xFFD8D0C4), width: 0.5),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.chat_bubble_outline_rounded, color: Color(0xFF475569), size: 18),
+                            const Icon(Icons.chat_bubble_outline_rounded, color: Color(0xFF1E1C18), size: 18),
                             const SizedBox(width: 8),
                             Text(
                               AppLocalizations.of(context)!.noPlanJustChat,
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFF475569),
+                                color: const Color(0xFF1E1C18),
                               ),
                             ),
                           ],
@@ -1767,13 +1709,7 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan> with SingleTic
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(50),
-          boxShadow: [
-            BoxShadow(
-              color: gradient.last.withOpacity(0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          boxShadow: const [],
         ),
         child: Text(
           text,
@@ -1808,15 +1744,9 @@ class _CreatePlanHero extends ConsumerWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF4ADE80), Color(0xFF10B981), Color(0xFF16A34A)],
+              colors: [Color(0xFF4ADE80), Color(0xFF10B981), Color(0xFF2A6049)],
             ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF10B981).withOpacity(0.35),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
-              ),
-            ],
+            boxShadow: const [],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1853,7 +1783,7 @@ class _CreatePlanHero extends ConsumerWidget {
                       context.pushNamed('moody-standalone');
                     },
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -1862,12 +1792,12 @@ class _CreatePlanHero extends ConsumerWidget {
                             style: GoogleFonts.poppins(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF16A34A),
+                              color: const Color(0xFF2A6049),
                             ),
                           ),
                           const SizedBox(width: 8),
-                          const Icon(Icons.auto_awesome, size: 20, color: Color(0xFF16A34A)),
-                          const Icon(Icons.chevron_right_rounded, size: 22, color: Color(0xFF16A34A)),
+                          const Icon(Icons.auto_awesome, size: 20, color: Color(0xFF2A6049)),
+                          const Icon(Icons.chevron_right_rounded, size: 22, color: Color(0xFF2A6049)),
                         ],
                       ),
                     ),
@@ -1951,13 +1881,7 @@ class _SecondaryActionCard extends StatelessWidget {
                     end: Alignment.bottomRight,
                     colors: iconGradient,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: iconGradient.first.withOpacity(0.35),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
+                  boxShadow: const [],
                 ),
                 child: Icon(icon, size: 24, color: Colors.white),
               ),
@@ -2010,13 +1934,7 @@ class _MoodPill extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(colors: gradient),
             borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: gradient.first.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
+            boxShadow: const [],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -2075,13 +1993,7 @@ class _TrendingCard extends StatelessWidget {
                 gradient: const LinearGradient(
                   colors: [Color(0xFFA855F7), Color(0xFFEC4899)],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFA855F7).withOpacity(0.35),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
+                boxShadow: const [],
               ),
               child: const Icon(Icons.trending_up_rounded, size: 22, color: Colors.white),
             ),
@@ -2536,13 +2448,9 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
 
                             if (!mounted) return;
                             Navigator.of(context).pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Thanks for your review! 🚀',
-                                  style: GoogleFonts.poppins(),
-                                ),
-                              ),
+                            showWanderMoodToast(
+                              context,
+                              message: 'Thanks for your review! 🚀',
                             );
                           },
                     style: ElevatedButton.styleFrom(
@@ -2550,7 +2458,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(22),
                       ),
-                      backgroundColor: const Color(0xFF22C55E),
+                      backgroundColor: const Color(0xFF2A6049),
                       foregroundColor: Colors.white,
                       disabledBackgroundColor: Colors.grey.shade200,
                       disabledForegroundColor: Colors.grey.shade500,
@@ -3071,7 +2979,7 @@ class _ExcitingGetReadySheetContentState extends State<_ExcitingGetReadySheetCon
                               padding: const EdgeInsets.only(top: 2),
                               child: Text(
                                 'Ready to go!',
-                                style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF16A34A), fontStyle: FontStyle.italic),
+                                style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF2A6049), fontStyle: FontStyle.italic),
                               ),
                             ),
                         ],
@@ -3080,7 +2988,7 @@ class _ExcitingGetReadySheetContentState extends State<_ExcitingGetReadySheetCon
                     Icon(
                       checked ? Icons.check_circle_rounded : Icons.circle_outlined,
                       size: 24,
-                      color: checked ? const Color(0xFF16A34A) : Colors.grey.shade400,
+                      color: checked ? const Color(0xFF2A6049) : Colors.grey.shade400,
                     ),
                   ],
                 ),
@@ -3177,19 +3085,16 @@ class _ExcitingGetReadySheetContentState extends State<_ExcitingGetReadySheetCon
         subtitle: _reminderOn
             ? Text(
                 l10n.getReadyReminderAt(widget.formatTime(reminderTime)),
-                style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF16A34A)),
+                style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF2A6049)),
               )
             : null,
         value: _reminderOn,
         onChanged: (value) {
           setState(() => _reminderOn = value);
           if (value) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  l10n.getReadyReminderAt(widget.formatTime(reminderTime)),
-                ),
-              ),
+            showWanderMoodToast(
+              context,
+              message: l10n.getReadyReminderAt(widget.formatTime(reminderTime)),
             );
           }
         },
@@ -3288,8 +3193,9 @@ class _ExcitingGetReadySheetContentState extends State<_ExcitingGetReadySheetCon
   void _showCalendarSnackBar() {
     if (!mounted) return;
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${l10n.getReadyQuickCalendar} – open in browser or app')),
+    showWanderMoodToast(
+      context,
+      message: '${l10n.getReadyQuickCalendar} – open in browser or app',
     );
   }
 
@@ -3333,8 +3239,9 @@ class _ExcitingGetReadySheetContentState extends State<_ExcitingGetReadySheetCon
 
   void _showPlaylistSnackBar() {
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.getReadyVibePlaylist)),
+    showWanderMoodToast(
+      context,
+      message: l10n.getReadyVibePlaylist,
     );
   }
 
@@ -3379,11 +3286,11 @@ class _ExcitingGetReadySheetContentState extends State<_ExcitingGetReadySheetCon
             Navigator.pop(context);
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF16A34A),
+            backgroundColor: const Color(0xFF2A6049),
             foregroundColor: Colors.white,
             elevation: 0,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: const EdgeInsets.symmetric(vertical: 14),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

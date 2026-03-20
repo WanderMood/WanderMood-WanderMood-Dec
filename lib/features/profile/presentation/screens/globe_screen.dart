@@ -155,13 +155,13 @@ class _GlobeScreenState extends ConsumerState<GlobeScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isDemo ? const Color(0xFF334155) : Colors.orange,
+                  color: isDemo ? const Color(0xFFEAF5EE) : Colors.orange,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   isDemo ? 'Demo' : '${places.length}',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: isDemo ? const Color(0xFF2A6049) : Colors.white,
                     fontWeight: FontWeight.w600,
                     fontSize: 12,
                   ),
@@ -541,7 +541,7 @@ class _ControlButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           decoration: BoxDecoration(
             border: Border.all(
-                color: Colors.white.withValues(alpha: 0.5), width: 1.5),
+                color: const Color(0xFF94A3B8).withValues(alpha: 0.75), width: 1.5),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(

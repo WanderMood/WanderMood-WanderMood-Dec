@@ -15,6 +15,7 @@ import '../../domain/providers/profile_provider.dart';
 import '../widgets/edit_favorite_vibes.dart';
 import '../widgets/travel_mode_toggle.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import '../widgets/profile_stats_cards.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 
@@ -61,17 +62,17 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       if (mounted) {
         setState(() => _isUploadingImage = false);
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.profileSnackAvatarUpdated), backgroundColor: const Color(0xFF5BB32A)),
-        );
+        showWanderMoodToast(context, message: l10n.profileSnackAvatarUpdated);
       }
     } catch (e) {
       debugPrint('Error uploading profile picture: $e');
       if (mounted) {
         setState(() => _isUploadingImage = false);
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.profileSnackAvatarFailed(e.toString())), backgroundColor: Colors.red),
+        showWanderMoodToast(
+          context,
+          message: l10n.profileSnackAvatarFailed(e.toString()),
+          isError: true,
         );
       }
     }
@@ -185,7 +186,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 height: 80,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF5BB32A), width: 3),
+                  border: Border.all(color: const Color(0xFF2A6049), width: 3),
                 ),
                 child: ClipOval(
                   child: (avatarUrl != null && avatarUrl.isNotEmpty)
@@ -203,7 +204,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 child: Container(
                   width: 28,
                   height: 28,
-                  decoration: const BoxDecoration(color: Color(0xFF5BB32A), shape: BoxShape.circle),
+                  decoration: const BoxDecoration(color: Color(0xFF2A6049), shape: BoxShape.circle),
                   child: _isUploadingImage
                       ? const Padding(
                           padding: EdgeInsets.all(6),
@@ -264,7 +265,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF5BB32A), // Green background
+        color: const Color(0xFF2A6049), // Green background
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -421,10 +422,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 24, offset: const Offset(0, 8), spreadRadius: 0),
-          BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 12, offset: const Offset(0, 4), spreadRadius: -2),
-        ],
+        boxShadow: const [],
       ),
       child: Column(
         children: [
@@ -462,7 +460,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           ],
           if (!hasAny)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 14),
               child: Text(
                 l10n.profilePreferencesEmptyHint,
                 style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600], fontStyle: FontStyle.italic),
@@ -614,13 +612,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 end: Alignment.centerRight,
               ),
               borderRadius: BorderRadius.circular(50),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFF97316).withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              boxShadow: const [],
             ),
             child: ElevatedButton.icon(
               onPressed: () => context.push('/profile/edit'),
@@ -636,7 +628,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
                 shadowColor: Colors.transparent,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50),
                 ),
@@ -657,13 +649,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 end: Alignment.centerRight,
               ),
               borderRadius: BorderRadius.circular(50),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF3B82F6).withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              boxShadow: const [],
             ),
             child: ElevatedButton.icon(
               onPressed: () => context.push('/share-profile'),
@@ -679,7 +665,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
                 shadowColor: Colors.transparent,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50),
                 ),

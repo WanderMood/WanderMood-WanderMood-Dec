@@ -113,11 +113,9 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFFFF7ED), Color(0xFFFFE4E6)],
-                      ),
+                      color: const Color(0xFFFDF0EE), // wmSunsetTint
                       borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: const Color(0xFFF97316)),
+                      border: Border.all(color: const Color(0xFFE8784A)), // wmSunset
                     ),
                     child: Row(
                       children: [
@@ -184,7 +182,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                           Icons.star_rounded,
                           color: isActive
                               ? const Color(0xFFFACC15)
-                              : Colors.grey.shade300,
+                              : const Color(0xFFD8D0C4), // wmParchment
                         ),
                       );
                     }),
@@ -247,24 +245,15 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: selected
-                                  ? Colors.transparent
-                                  : Colors.grey.shade300,
+                                  ? const Color(0xFF2A6049)
+                                  : const Color(0xFFD8D0C4),
                               width: 2,
                             ),
-                            gradient: selected
-                                ? const LinearGradient(
-                                    colors: [
-                                      Color(0xFF6366F1),
-                                      Color(0xFFEC4899),
-                                    ],
-                                  )
-                                : null,
-                            color: selected ? null : Colors.white,
+                            color: _vibeTileColor(option.label),
                             boxShadow: selected
                                 ? [
                                     BoxShadow(
-                                      color: const Color(0xFF6366F1)
-                                          .withOpacity(0.25),
+                                      color: const Color(0xFF2A6049).withOpacity(0.18),
                                       blurRadius: 10,
                                       offset: const Offset(0, 4),
                                     ),
@@ -286,7 +275,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   color: selected
-                                      ? Colors.white
+                                      ? const Color(0xFF2A6049)
                                       : const Color(0xFF4B5563),
                                 ),
                               ),
@@ -357,10 +346,10 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(22),
                       ),
-                      backgroundColor: const Color(0xFF22C55E),
+                      backgroundColor: const Color(0xFF2A6049), // wmForest
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor: Colors.grey.shade200,
-                      disabledForegroundColor: Colors.grey.shade500,
+                      disabledBackgroundColor: const Color(0xFFD8D0C4), // wmParchment
+                      disabledForegroundColor: const Color(0xFF8A847B), // wmStone
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -476,6 +465,21 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
         return 'Meh';
       default:
         return 'Mood';
+    }
+  }
+
+  Color _vibeTileColor(String label) {
+    switch (label) {
+      case 'Amazing':
+        return const Color(0xFFF9D878); // wmTileBlij
+      case 'Good':
+        return const Color(0xFF78CCB8); // wmTileOntspannen
+      case 'Okay':
+        return const Color(0xFFD8D0C4); // wmParchment
+      case 'Meh':
+        return const Color(0xFFFDF0EE); // error tint
+      default:
+        return Colors.white;
     }
   }
 }

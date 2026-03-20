@@ -119,22 +119,8 @@ class _ActiveExecutionHero extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: const [
-            Color(0xFFFB923C),
-            Color(0xFFEC4899),
-            Color(0xFFA855F7),
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFEC4899).withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        color: const Color(0xFFA8C8DC),
+        boxShadow: const [],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,7 +148,7 @@ class _ActiveExecutionHero extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: const Color(0xFF1E1C18),
                       ),
                     ),
                   ],
@@ -175,12 +161,12 @@ class _ActiveExecutionHero extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'IN PROGRESS',
+                  'In Progress',
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.6,
-                    color: Colors.white,
+                    color: const Color(0xFF1E1C18),
                   ),
                 ),
               ),
@@ -202,7 +188,7 @@ class _ActiveExecutionHero extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.92),
+              color: const Color(0xFF1E1C18),
             ),
           ),
           const SizedBox(height: 20),
@@ -259,17 +245,10 @@ class _CompletedExecutionHero extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: hasReview
-              ? const [Color(0xFF16A34A), Color(0xFF22C55E)]
+              ? const [Color(0xFF2A6049), Color(0xFF2A6049)]
               : const [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: (hasReview ? const Color(0xFF16A34A) : const Color(0xFF3B82F6))
-                .withOpacity(0.28),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        boxShadow: const [],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -423,18 +402,8 @@ class _AwaitingCompletionHero extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFF59E0B), Color(0xFFEF4444)],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFF59E0B).withOpacity(0.28),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        color: const Color(0xFFE8784A),
+        boxShadow: const [],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -502,7 +471,7 @@ class _AwaitingCompletionHero extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.92),
+              color: const Color(0xFF1E1C18),
             ),
           ),
           const SizedBox(height: 20),
@@ -560,13 +529,7 @@ class _UpcomingExecutionHero extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF3B82F6).withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        boxShadow: const [],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -620,7 +583,7 @@ class _UpcomingExecutionHero extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: 22,
               fontWeight: FontWeight.w800,
-              color: Colors.white,
+              color: const Color(0xFF1E1C18),
               height: 1.2,
             ),
           ),
@@ -668,7 +631,7 @@ class _HeroButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: filled ? const Color(0xFF22C55E) : Colors.white,
+      color: filled ? const Color(0xFF2A6049) : Colors.white,
       borderRadius: BorderRadius.circular(16),
       elevation: 4,
       shadowColor: Colors.black.withOpacity(0.1),
@@ -680,14 +643,14 @@ class _HeroButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 18, color: filled ? Colors.white : const Color(0xFF1A1A2E)),
+              Icon(icon, size: 18, color: filled ? Colors.white : const Color(0xFF2A6049)),
               const SizedBox(width: 8),
               Text(
                 label,
                 style: GoogleFonts.poppins(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: filled ? Colors.white : const Color(0xFF1A1A2E),
+                  color: filled ? Colors.white : const Color(0xFF2A6049),
                 ),
               ),
             ],

@@ -37,6 +37,7 @@ import '../../../plans/domain/enums/payment_type.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../home/presentation/screens/main_screen.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
+import '../../../../core/presentation/widgets/wm_toast.dart';
 import '../../../profile/domain/providers/profile_provider.dart';
 import 'dart:ui';
 
@@ -330,11 +331,11 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color(0xFFF0F9FF), // Very light blue
-                Color(0xFFFFFBF0), // Very light warm
-                Colors.white,
+                Color(0xFFEDF5F9),
+                Color(0xFFEDF5F9),
+                Color(0xFFF5F0E8),
               ],
-              stops: [0.0, 0.3, 0.7],
+              stops: [0.0, 0.38, 0.38],
             ),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
             boxShadow: [
@@ -358,7 +359,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                   width: 48,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF12B347).withOpacity(0.3),
+                    color: const Color(0xFFD8D0C4),
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -370,8 +371,8 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      const Color(0xFF12B347).withOpacity(0.1),
-                      const Color(0xFF6DE89A).withOpacity(0.05),
+                      const Color(0xFFA8C8DC).withOpacity(0.22),
+                      const Color(0xFFA8C8DC).withOpacity(0.08),
                     ],
                   ),
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
@@ -387,14 +388,14 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            Color(0xFF12B347),
-                            Color(0xFF6DE89A),
+                            Color(0xFFA8C8DC),
+                            Color(0xFFA8C8DC),
                           ],
                         ),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF12B347).withOpacity(0.4),
+                            color: const Color(0xFFA8C8DC).withOpacity(0.45),
                             blurRadius: 15,
                             spreadRadius: 2,
                             offset: const Offset(0, 4),
@@ -428,7 +429,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                                 : 'Your travel companion 🌟',
                               style: GoogleFonts.poppins(
                               fontSize: 13,
-                              color: const Color(0xFF12B347),
+                              color: const Color(0xFF2A6049),
                               fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -512,7 +513,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                             ),
                             prefixIcon: const Icon(
                               Icons.chat_bubble_outline,
-                              color: Color(0xFF12B347),
+                              color: Color(0xFF2A6049),
                               size: 22,
                             ),
                             filled: false,
@@ -543,14 +544,14 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            Color(0xFF12B347),
-                            Color(0xFF0E8F38),
+                            Color(0xFF2A6049),
+                            Color(0xFF2A6049),
                           ],
                         ),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF12B347).withOpacity(0.4),
+                            color: const Color(0xFF2A6049).withOpacity(0.35),
                             blurRadius: 16,
                             spreadRadius: 0,
                             offset: const Offset(0, 6),
@@ -654,7 +655,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: const Color(0xFF12B347).withOpacity(0.1),
+              color: const Color(0xFFEAF5EE),
               shape: BoxShape.circle,
             ),
             child: const Center(
@@ -673,7 +674,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               height: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
               ),
             ),
           ),
@@ -700,14 +701,14 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFF12B347),
-                    Color(0xFF6DE89A),
+                    Color(0xFFA8C8DC),
+                    Color(0xFFA8C8DC),
                   ],
                 ),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF12B347).withOpacity(0.3),
+                    color: const Color(0xFFA8C8DC).withOpacity(0.35),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
               ),
@@ -731,8 +732,8 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          Color(0xFF12B347),
-                          Color(0xFF0E8F38),
+                          Color(0xFF2A6049),
+                          Color(0xFF2A6049),
                         ],
                       )
                     : null,
@@ -746,7 +747,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                 boxShadow: [
                   BoxShadow(
                     color: isUser 
-                        ? const Color(0xFF12B347).withOpacity(0.3)
+                        ? const Color(0xFF2A6049).withOpacity(0.3)
                         : Colors.black.withOpacity(0.08),
                     blurRadius: 12,
                     spreadRadius: 0,
@@ -866,14 +867,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             children: quickReplies.asMap().entries.map((entry) {
               final index = entry.key;
               final reply = entry.value;
-              // Rotate colors for variety
-              final colors = [
-                [const Color(0xFF12B347), const Color(0xFF6DE89A)],
-                [const Color(0xFF6366F1), const Color(0xFF818CF8)],
-                [const Color(0xFFF59E0B), const Color(0xFFFBBF24)],
-                [const Color(0xFFEC4899), const Color(0xFFF472B6)],
-              ];
-              final colorPair = colors[index % colors.length];
+              final colorPair = [const Color(0xFF2A6049), const Color(0xFF2A6049)];
               
           return GestureDetector(
             onTap: () => _handleQuickReply(reply['text']!, setModalState),
@@ -1357,7 +1351,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                             ),
                             child: const Icon(
                               Icons.bookmark,
-                              color: Color(0xFF12B347),
+                              color: Color(0xFF2A6049),
                               size: 24,
                             ),
                           ),
@@ -1480,13 +1474,13 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF12B347),
-            Color(0xFF6DE89A),
+            Color(0xFF2A6049),
+            Color(0xFF2A6049),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF12B347).withOpacity(0.3),
+            color: const Color(0xFF2A6049).withOpacity(0.3),
             blurRadius: 12,
             spreadRadius: 1,
             offset: const Offset(0, 4),
@@ -1562,13 +1556,13 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFF12B347),
-                  Color(0xFF6DE89A),
+                  Color(0xFF2A6049),
+                  Color(0xFF2A6049),
                 ],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF12B347).withOpacity(0.4),
+                  color: const Color(0xFF2A6049).withOpacity(0.4),
                   blurRadius: 20,
                   spreadRadius: 2,
                   offset: const Offset(0, 8),
@@ -1618,7 +1612,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               height: 24,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
               ),
             ),
           ),
@@ -1630,8 +1624,8 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFF12B347),
-                Color(0xFF6DE89A),
+                Color(0xFF2A6049),
+                Color(0xFF2A6049),
               ],
             ),
           ),
@@ -1680,14 +1674,14 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF12B347),
-            Color(0xFF0E8F38),
+            Color(0xFF2A6049),
+            Color(0xFF2A6049),
           ],
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF12B347).withOpacity(0.3),
+            color: const Color(0xFF2A6049).withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -1754,7 +1748,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF12B347),
+                foregroundColor: const Color(0xFF2A6049),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -2059,7 +2053,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                       boxShadow: [
                         // Pulsing shadow to indicate tappability
                         BoxShadow(
-                          color: const Color(0xFF12B347).withOpacity(
+                          color: const Color(0xFF2A6049).withOpacity(
                             0.3 + (math.sin(_floatController!.value * 2 * math.pi) * 0.2)
                           ),
                           blurRadius: 25 + (math.sin(_floatController!.value * 2 * math.pi) * 5),
@@ -2163,14 +2157,14 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF12B347),
+              Color(0xFF2A6049),
               Color(0xFF0E8F38),
             ],
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF12B347).withOpacity(0.4),
+              color: const Color(0xFF2A6049).withOpacity(0.4),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -2271,13 +2265,13 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                    const Color(0xFF12B347).withOpacity(0.2),
-                const Color(0xFF12B347).withOpacity(0.1),
+                    const Color(0xFF2A6049).withOpacity(0.2),
+                const Color(0xFF2A6049).withOpacity(0.1),
               ],
             ),
             boxShadow: [
               BoxShadow(
-                    color: const Color(0xFF12B347).withOpacity(0.3),
+                    color: const Color(0xFF2A6049).withOpacity(0.3),
                     blurRadius: 30,
                     spreadRadius: 5,
               ),
@@ -2346,16 +2340,16 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF12B347).withOpacity(0.1),
+                    color: const Color(0xFFEAF5EE),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: const Color(0xFF12B347),
+                      color: const Color(0xFF2A6049),
                       width: 2,
                     ),
                   ),
                   child: const Icon(
                     Icons.swap_horiz,
-                    color: Color(0xFF12B347),
+                    color: Color(0xFF2A6049),
                     size: 20,
                   ),
                 ),
@@ -2422,7 +2416,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               ),
               child: const Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFF12B347),
+                  color: Color(0xFF2A6049),
                 ),
               ),
             ),
@@ -2473,8 +2467,8 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          const Color(0xFF12B347).withOpacity(0.3),
-                          const Color(0xFF12B347).withOpacity(0.1),
+                          const Color(0xFF2A6049).withOpacity(0.3),
+                          const Color(0xFF2A6049).withOpacity(0.1),
                         ],
                       ),
                     ),
@@ -2494,8 +2488,8 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        const Color(0xFF12B347).withOpacity(0.3),
-                        const Color(0xFF12B347).withOpacity(0.1),
+                        const Color(0xFF2A6049).withOpacity(0.3),
+                        const Color(0xFF2A6049).withOpacity(0.1),
                       ],
                     ),
                   ),
@@ -2535,7 +2529,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF12B347),
+                              color: const Color(0xFF2A6049),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
@@ -2629,7 +2623,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             end: Alignment.bottomRight,
             colors: [
               Colors.white,
-              const Color(0xFF12B347).withOpacity(0.05),
+              const Color(0xFF2A6049).withOpacity(0.05),
             ],
           ),
           borderRadius: BorderRadius.circular(24),
@@ -2672,7 +2666,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             moodOptionsAsync.when(
               data: (moodOptions) => _buildCheckInMoodPills(moodOptions),
               loading: () => const CircularProgressIndicator(
-                color: Color(0xFF12B347),
+                color: Color(0xFF2A6049),
               ),
               error: (_, __) => Text(
                 "Couldn't load moods",
@@ -2712,12 +2706,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               child: GestureDetector(
                 onTap: () {
                   ref.read(dailyMoodStateNotifierProvider.notifier).updateMood(mood.id);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Feeling ${mood.label} today! ✨"),
-                      duration: const Duration(seconds: 2),
-                      backgroundColor: const Color(0xFF12B347),
-                    ),
+                  showWanderMoodToast(
+                    context,
+                    message: "Feeling ${mood.label} today! ✨",
                   );
                 },
               child: Container(
@@ -2725,7 +2716,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: const Color(0xFF12B347).withOpacity(0.2),
+                    color: const Color(0xFF2A6049).withOpacity(0.2),
                     width: 2,
                   ),
                   boxShadow: [
@@ -2794,7 +2785,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             data: (trending) => _buildSuggestionCardsHorizontal(trending, currentMood),
             loading: () => const Center(
               child: CircularProgressIndicator(
-                color: Color(0xFF12B347),
+                color: Color(0xFF2A6049),
               ),
             ),
             error: (_, __) => Center(
@@ -3378,7 +3369,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             data: (trending) => _buildSuggestionCardsHorizontal(trending, currentMood),
             loading: () => const Center(
               child: CircularProgressIndicator(
-                color: Color(0xFF12B347),
+                color: Color(0xFF2A6049),
               ),
             ),
             error: (_, __) => Center(
@@ -3427,7 +3418,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               height: 60,
               child: Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFF12B347),
+                  color: Color(0xFF2A6049),
                 ),
               ),
             ),
@@ -3487,24 +3478,21 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             child: GestureDetector(
               onTap: () {
                 ref.read(dailyMoodStateNotifierProvider.notifier).updateMood(mood.id);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text("Switched to ${mood.label} mood! ✨"),
-                    duration: const Duration(seconds: 2),
-                    backgroundColor: const Color(0xFF12B347),
-                  ),
+                showWanderMoodToast(
+                  context,
+                  message: "Switched to ${mood.label} mood! ✨",
                 );
               },
       child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
                   color: isSelected 
-                      ? const Color(0xFF12B347).withOpacity(0.1)
+                      ? const Color(0xFFEAF5EE)
                       : Colors.white,
                   borderRadius: BorderRadius.circular(25),
                   border: Border.all(
                     color: isSelected
-                        ? const Color(0xFF12B347)
+                        ? const Color(0xFF2A6049)
                         : Colors.grey[300]!,
                     width: isSelected ? 2 : 1,
                   ),
@@ -3518,7 +3506,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                         height: 8,
                         margin: const EdgeInsets.only(right: 8),
                         decoration: const BoxDecoration(
-                          color: Color(0xFF12B347),
+                          color: Color(0xFF2A6049),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -3640,7 +3628,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isActive
-                        ? const Color(0xFF12B347)
+                        ? const Color(0xFF2A6049)
                         : isCompleted
                             ? Colors.grey[400]
                             : Colors.grey[300],
@@ -3684,7 +3672,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF12B347).withOpacity(0.1),
+                                color: const Color(0xFFEAF5EE),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -3692,7 +3680,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                                 style: GoogleFonts.poppins(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF12B347),
+                                  color: const Color(0xFF2A6049),
                                 ),
                               ),
                             ),
@@ -3785,7 +3773,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                       "See all",
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -3807,31 +3795,28 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                       child: GestureDetector(
                         onTap: () {
                           ref.read(dailyMoodStateNotifierProvider.notifier).updateMood(mood.id);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("Switched to ${mood.label} vibe! ✨"),
-                              duration: const Duration(seconds: 2),
-                              backgroundColor: const Color(0xFF12B347),
-                            ),
+                          showWanderMoodToast(
+                            context,
+                            message: "Switched to ${mood.label} vibe! ✨",
                           );
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? const Color(0xFF12B347)
+                                ? const Color(0xFF2A6049)
                                 : Colors.white,
                             borderRadius: BorderRadius.circular(30),
                             border: Border.all(
                               color: isSelected
-                                  ? const Color(0xFF12B347)
+                                  ? const Color(0xFF2A6049)
                                   : Colors.grey[300]!,
                               width: isSelected ? 2 : 1,
                             ),
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: const Color(0xFF12B347).withOpacity(0.3),
+                                      color: const Color(0xFF2A6049).withOpacity(0.3),
                                       blurRadius: 12,
                                       offset: const Offset(0, 4),
                                     ),
@@ -3875,7 +3860,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           height: 60,
           child: Center(
             child: CircularProgressIndicator(
-              color: Color(0xFF12B347),
+              color: Color(0xFF2A6049),
             ),
           ),
         ),
@@ -3949,7 +3934,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF12B347),
+              backgroundColor: const Color(0xFF2A6049),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -4038,23 +4023,20 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                         onTap: () {
                           ref.read(dailyMoodStateNotifierProvider.notifier).updateMood(mood.id);
                           Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("Switched to ${mood.label} vibe! ✨"),
-                              duration: const Duration(seconds: 2),
-                              backgroundColor: const Color(0xFF12B347),
-                            ),
+                          showWanderMoodToast(
+                            context,
+                            message: "Switched to ${mood.label} vibe! ✨",
                           );
                         },
                         child: Container(
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? const Color(0xFF12B347).withOpacity(0.1)
+                                ? const Color(0xFFEAF5EE)
                                 : Colors.white,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: isSelected
-                                  ? const Color(0xFF12B347)
+                                  ? const Color(0xFF2A6049)
                                   : Colors.grey[300]!,
                               width: isSelected ? 2 : 1,
                             ),
@@ -4087,7 +4069,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF12B347),
+                                    color: const Color(0xFF2A6049),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(
@@ -4108,7 +4090,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                   ),
                 loading: () => const Center(
                   child: CircularProgressIndicator(
-                    color: Color(0xFF12B347),
+                    color: Color(0xFF2A6049),
                   ),
                 ),
                 error: (_, __) => Center(
@@ -4163,15 +4145,15 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0xFF12B347), // WanderMood green
-                      Color(0xFF6DE89A), // Light green
+                      Color(0xFF2A6049),
+                      Color(0xFF2A6049),
                     ],
                   ),
                   icon: Icons.chat_bubble_rounded,
                   title: 'Talk to Moody',
                   subtitle: 'Ask me anything',
                   emoji: '💬',
-                  accentColor: const Color(0xFF12B347),
+                  accentColor: const Color(0xFF2A6049),
                   onTap: () => widget.onShowChat?.call(),
                 ),
               ),
@@ -4367,7 +4349,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       if (afternoonActivities.any((a) => a.status == ActivityStatus.completed)) {
         afternoonStatus = 'Complete & satisfying';
         afternoonIcon = Icons.check_circle;
-        afternoonColor = const Color(0xFF12B347);
+        afternoonColor = const Color(0xFF2A6049);
       } else if (afternoonActivities.any((a) => a.status == ActivityStatus.activeNow)) {
         afternoonStatus = 'In the zone now';
         afternoonIcon = Icons.arrow_forward;
@@ -4385,7 +4367,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       if (afternoonActivities.isNotEmpty) {
         afternoonStatus = 'Complete & satisfying';
         afternoonIcon = Icons.check_circle;
-        afternoonColor = const Color(0xFF12B347);
+        afternoonColor = const Color(0xFF2A6049);
       }
     }
     
@@ -4622,7 +4604,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             ),
             child: const Center(
                   child: CircularProgressIndicator(
-                    color: Color(0xFF12B347),
+                    color: Color(0xFF2A6049),
                   ),
                 ),
           ),
@@ -4720,7 +4702,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         children: [
           Row(
             children: [
-              const Icon(Icons.bar_chart, color: Color(0xFF12B347), size: 20),
+              const Icon(Icons.bar_chart, color: Color(0xFF2A6049), size: 20),
               const SizedBox(width: 8),
               Text(
                 "Today's Insights",
@@ -4871,7 +4853,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                             errorBuilder: (context, error, stackTrace) => Container(
                               width: double.infinity,
                               height: 120,
-                              color: const Color(0xFF12B347).withOpacity(0.1),
+                              color: const Color(0xFFEAF5EE),
                               child: Center(
                                 child: Text(
                                   activity.emoji,
@@ -4888,8 +4870,8 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                                 colors: [
-                                  const Color(0xFF12B347).withOpacity(0.1),
-                                  const Color(0xFF12B347).withOpacity(0.05),
+                                  const Color(0xFFEAF5EE),
+                                  const Color(0xFFEAF5EE),
                                 ],
                               ),
                             ),
@@ -4949,14 +4931,14 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF12B347).withOpacity(0.1),
+                              color: const Color(0xFFEAF5EE),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               activity.moodTag,
                               style: GoogleFonts.poppins(
                                 fontSize: 10,
-                                color: const Color(0xFF12B347),
+                                color: const Color(0xFF2A6049),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -5053,44 +5035,20 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       
       // Show success message
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.white, size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    '${place.name} added to your $timePeriod!',
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: const Color(0xFF12B347),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            duration: const Duration(seconds: 3),
-            action: SnackBarAction(
-              label: 'View',
-              textColor: Colors.white,
-              onPressed: () {
-                // Navigate to My Day tab
-                ref.read(mainTabProvider.notifier).state = 0;
-              },
-            ),
-          ),
+        showWanderMoodToast(
+          context,
+          message: '${place.name} added to your $timePeriod!',
+          duration: const Duration(seconds: 3),
         );
       }
     } catch (e) {
       if (kDebugMode) debugPrint('⚠️ Error adding place to schedule: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to add ${place.name}. Please try again.'),
-            backgroundColor: Colors.red.shade400,
-            duration: const Duration(seconds: 3),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Failed to add ${place.name}. Please try again.',
+          isError: true,
+          duration: const Duration(seconds: 3),
         );
       }
     }

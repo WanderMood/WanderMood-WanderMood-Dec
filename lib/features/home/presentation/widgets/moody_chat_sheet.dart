@@ -168,10 +168,10 @@ class _MoodyChatHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [const Color(0xFF12B347).withOpacity(0.03), Colors.transparent],
+          colors: [const Color(0xFF2A6049).withOpacity(0.03), Colors.transparent],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -197,17 +197,11 @@ class _MoodyChatHeader extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF12B347), Color(0xFF0EA33F)],
+                      colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF12B347).withOpacity(0.25),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
+                    boxShadow: const [],
                   ),
                   child: const Center(child: MoodyCharacter(size: 32)),
                 ),
@@ -256,13 +250,7 @@ class _MoodyChatHeader extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
                     shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    boxShadow: const [],
                   ),
                   child: IconButton(
                     onPressed: () => Navigator.pop(context),
@@ -297,23 +285,17 @@ class _MoodyChatEmptyState extends StatelessWidget {
               shape: BoxShape.circle,
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF12B347).withOpacity(0.08),
-                  const Color(0xFF12B347).withOpacity(0.03),
+                  const Color(0xFF2A6049).withOpacity(0.08),
+                  const Color(0xFF2A6049).withOpacity(0.03),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               border: Border.all(
-                color: const Color(0xFF12B347).withOpacity(0.15),
+                color: const Color(0xFF2A6049).withOpacity(0.15),
                 width: 2,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF12B347).withOpacity(0.1),
-                  blurRadius: 24,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+              boxShadow: const [],
             ),
             child: const Center(child: MoodyCharacter(size: 70)),
           ),
@@ -323,7 +305,7 @@ class _MoodyChatEmptyState extends StatelessWidget {
             decoration: BoxDecoration(
               color: const Color(0xFFF7FAFC),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF12B347).withOpacity(0.1)),
+              border: Border.all(color: const Color(0xFF2A6049).withOpacity(0.1)),
             ),
             child: Text(
               "I know Rotterdam like the back of my hand! Tell me your mood, and I'll craft the perfect day just for you. Whether you're feeling adventurous, romantic, or need some chill vibes - I've got you covered! 🎯",
@@ -364,17 +346,11 @@ class _MessageBubble extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF12B347), Color(0xFF0EA33F)],
+                  colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF12B347).withOpacity(0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
+                boxShadow: const [],
               ),
               child: const Center(child: MoodyCharacter(size: 20)),
             ),
@@ -405,13 +381,7 @@ class _MessageBubble extends StatelessWidget {
                   bottomLeft: msg.isUser ? const Radius.circular(20) : const Radius.circular(4),
                   bottomRight: msg.isUser ? const Radius.circular(4) : const Radius.circular(20),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: (msg.isUser ? const Color(0xFF007AFF) : const Color(0xFF12B347)).withOpacity(0.08),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                boxShadow: const [],
               ),
               child: Text(
                 msg.message,
@@ -444,14 +414,8 @@ class _MoodyTypingIndicator extends StatelessWidget {
             height: 40,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(colors: [Color(0xFF12B347), Color(0xFF0EA33F)]),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF12B347).withOpacity(0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              gradient: const LinearGradient(colors: [Color(0xFF2A6049), Color(0xFF2A6049)]),
+              boxShadow: const [],
             ),
             child: const Center(child: MoodyCharacter(size: 22)),
           ),
@@ -466,13 +430,7 @@ class _MoodyTypingIndicator extends StatelessWidget {
                 bottomRight: Radius.circular(20),
                 bottomLeft: Radius.circular(4),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF12B347).withOpacity(0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              boxShadow: const [],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -482,7 +440,7 @@ class _MoodyTypingIndicator extends StatelessWidget {
                   height: 18,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF12B347).withOpacity(0.7)),
+                    valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF2A6049).withOpacity(0.7)),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -521,12 +479,12 @@ class _CreatePlanFromChat extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              const Color(0xFF12B347).withOpacity(0.05),
-              const Color(0xFF12B347).withOpacity(0.02),
+              const Color(0xFF2A6049).withOpacity(0.05),
+              const Color(0xFF2A6049).withOpacity(0.02),
             ],
           ),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF12B347).withOpacity(0.2)),
+          border: Border.all(color: const Color(0xFF2A6049).withOpacity(0.2)),
         ),
         child: OutlinedButton.icon(
           onPressed: onCreatePlan,
@@ -536,10 +494,10 @@ class _CreatePlanFromChat extends StatelessWidget {
             style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           style: OutlinedButton.styleFrom(
-            foregroundColor: const Color(0xFF12B347),
+            foregroundColor: const Color(0xFF2A6049),
             backgroundColor: Colors.transparent,
             side: BorderSide.none,
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
         ),
@@ -574,52 +532,44 @@ class _MoodyChatInput extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: Colors.grey[100]!)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
+        boxShadow: const [],
       ),
       child: Row(
         children: [
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(
-                  color: const Color(0xFF12B347).withOpacity(0.15),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF12B347).withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: TextField(
-                controller: controller,
-                decoration: InputDecoration(
-                  hintText: "What's your mood today?",
-                  hintStyle: GoogleFonts.poppins(color: Colors.grey[500], fontSize: 16),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Icon(
-                      Icons.psychology_outlined,
-                      color: const Color(0xFF12B347).withOpacity(0.6),
-                      size: 22,
-                    ),
+            child: TextField(
+              controller: controller,
+              decoration: InputDecoration(
+                hintText: "What's your mood today?",
+                hintStyle: GoogleFonts.poppins(color: Colors.grey[500], fontSize: 16),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                filled: true,
+                fillColor: const Color(0xFFF8FAFC),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(28),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFD8D0C4),
+                    width: 1.5,
                   ),
                 ),
-                style: GoogleFonts.poppins(fontSize: 16, color: const Color(0xFF1A202C)),
-                onSubmitted: onSend,
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(28),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF2A6049),
+                    width: 2,
+                  ),
+                ),
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Icon(
+                    Icons.psychology_outlined,
+                    color: const Color(0xFF2A6049).withOpacity(0.75),
+                    size: 22,
+                  ),
+                ),
               ),
+              style: GoogleFonts.poppins(fontSize: 16, color: const Color(0xFF1A202C)),
+              onSubmitted: onSend,
             ),
           ),
           const SizedBox(width: 16),
@@ -628,18 +578,12 @@ class _MoodyChatInput extends StatelessWidget {
             height: 52,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF12B347), Color(0xFF0EA33F)],
+                colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(26),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF12B347).withOpacity(0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              boxShadow: const [],
             ),
             child: Material(
               color: Colors.transparent,

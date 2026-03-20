@@ -57,14 +57,14 @@ class MyDayTimelineSection extends StatelessWidget {
                     style: GoogleFonts.museoModerno(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF12B347),
+                      color: const Color(0xFF2A6049),
                     ),
                   ),
                   if (allCompleted) ...[
                     const SizedBox(width: 8),
                     Icon(
                       isCollapsed ? Icons.expand_more : Icons.expand_less,
-                      color: const Color(0xFF12B347),
+                      color: const Color(0xFF2A6049),
                       size: 18,
                     ),
                   ],
@@ -73,10 +73,10 @@ class MyDayTimelineSection extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF12B347).withOpacity(0.1),
+                        color: const Color(0xFF2A6049).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: const Color(0xFF12B347).withOpacity(0.3),
+                          color: const Color(0xFF2A6049).withOpacity(0.3),
                         ),
                       ),
                       child: Row(
@@ -84,7 +84,7 @@ class MyDayTimelineSection extends StatelessWidget {
                         children: [
                           const Icon(
                             Icons.check_circle,
-                            color: Color(0xFF12B347),
+                            color: Color(0xFF2A6049),
                             size: 12,
                           ),
                           const SizedBox(width: 4),
@@ -93,7 +93,7 @@ class MyDayTimelineSection extends StatelessWidget {
                             style: GoogleFonts.poppins(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFF12B347),
+                              color: const Color(0xFF2A6049),
                             ),
                           ),
                         ],
@@ -105,7 +105,7 @@ class MyDayTimelineSection extends StatelessWidget {
                     '${activities.length} ${activities.length == 1 ? 'activity' : 'activities'}',
                     style: GoogleFonts.poppins(
                       fontSize: 12,
-                      color: allCompleted ? const Color(0xFF12B347) : Colors.grey[600],
+                      color: allCompleted ? const Color(0xFF2A6049) : Colors.grey[600],
                       fontWeight: allCompleted ? FontWeight.w500 : FontWeight.normal,
                     ),
                   ),
@@ -117,7 +117,7 @@ class MyDayTimelineSection extends StatelessWidget {
               allCompleted ? 'Great job completing this section!' : subtitle,
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                color: allCompleted ? const Color(0xFF12B347) : Colors.grey[600],
+                color: allCompleted ? const Color(0xFF2A6049) : Colors.grey[600],
                 fontWeight: allCompleted ? FontWeight.w500 : FontWeight.normal,
               ),
             ),
@@ -185,12 +185,17 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
             ? 'Done'
             : 'Directions';
     final primaryColor = activity.status == ActivityStatus.completed
-        ? (hasReview ? const Color(0xFF16A34A) : const Color(0xFF8B5CF6))
+        ? (hasReview ? const Color(0xFF2A6049) : const Color(0xFF8B5CF6))
         : isAwaitingCompletion
-            ? const Color(0xFF16A34A)
-            : const Color(0xFF12B347);
+            ? const Color(0xFF2A6049)
+            : const Color(0xFF2A6049);
+    final activityType =
+        (activity.rawData['category'] ?? activity.rawData['type'] ?? 'Activity')
+            .toString();
+    final durationMinutes =
+        int.tryParse('${activity.rawData['duration'] ?? 0}') ?? 0;
     final subtitleText = isAwaitingCompletion
-        ? 'Mark done or tap more for still here'
+        ? '$activityType · $durationMinutes min'
         : 'Tap for details';
 
     return GestureDetector(
@@ -488,7 +493,7 @@ _ActivityCardStatus _buildCardStatus(EnhancedActivityData activity) {
       );
     default:
       return const _ActivityCardStatus(
-        color: Color(0xFF12B347),
+        color: Color(0xFF2A6049),
         label: 'SCHEDULED',
         icon: Icons.event,
       );

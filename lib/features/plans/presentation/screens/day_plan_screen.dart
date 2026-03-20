@@ -21,6 +21,7 @@ import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_pro
 import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/home/domain/enums/moody_feature.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/plans/presentation/widgets/day_plan_activity_card.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
@@ -78,29 +79,14 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
       context.goNamed('main', extra: {'tab': 0});
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.dayPlanPlanAddedToMyDay,
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-          ),
-          backgroundColor: const Color(0xFF12B347),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
+      showWanderMoodToast(context, message: l10n.dayPlanPlanAddedToMyDay);
     } catch (e) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.dayPlanAddPlanFailed,
-            style: GoogleFonts.poppins(),
-          ),
-          backgroundColor: Colors.red.shade600,
-          behavior: SnackBarBehavior.floating,
-        ),
+      showWanderMoodToast(
+        context,
+        message: l10n.dayPlanAddPlanFailed,
+        isError: true,
       );
     }
   }
@@ -109,19 +95,9 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
     // Check if user has reached the limit
     if (activity.refreshCount >= 3) {
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.dayPlanAllAlternativesUsed,
-            style: GoogleFonts.poppins(),
-          ),
-          backgroundColor: Colors.orange.shade600,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 2),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
+      showWanderMoodToast(
+        context,
+        message: l10n.dayPlanAllAlternativesUsed,
       );
       return;
     }
@@ -129,34 +105,10 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
     try {
       // Show loading feedback
       final l10nLoading = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  l10nLoading.dayPlanFindingOptions(activity.name),
-                  style: GoogleFonts.poppins(),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.green.shade600,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 3),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
+      showWanderMoodToast(
+        context,
+        message: l10nLoading.dayPlanFindingOptions(activity.name),
+        duration: const Duration(seconds: 3),
       );
 
       // 🤖 USE MOODY AI FOR ALTERNATIVE GENERATION
@@ -239,54 +191,28 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
         }
         
         // Show success feedback
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.dayPlanFoundNewOption(
-                replacementActivity.name,
-                '${3 - (activity.refreshCount + 1)}',
-              ),
-              style: GoogleFonts.poppins(),
-            ),
-            backgroundColor: Colors.green.shade600,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+        showWanderMoodToast(
+          context,
+          message: AppLocalizations.of(context)!.dayPlanFoundNewOption(
+            replacementActivity.name,
+            '${3 - (activity.refreshCount + 1)}',
           ),
         );
       } else {
         // No alternative found
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.dayPlanNoOptionsFound,
-              style: GoogleFonts.poppins(),
-            ),
-            backgroundColor: Colors.orange.shade600,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
+        showWanderMoodToast(
+          context,
+          message: AppLocalizations.of(context)!.dayPlanNoOptionsFound,
         );
       }
     } catch (e) {
       debugPrint('❌ Error refreshing activity: $e');
       
       // Show error feedback
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppLocalizations.of(context)!.dayPlanFindOptionsFailed,
-            style: GoogleFonts.poppins(),
-          ),
-          backgroundColor: Colors.red.shade600,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
+      showWanderMoodToast(
+        context,
+        message: AppLocalizations.of(context)!.dayPlanFindOptionsFailed,
+        isError: true,
       );
     }
   }
@@ -320,7 +246,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF12B347).withOpacity(0.08),
+            color: const Color(0xFF2A6049).withOpacity(0.08),
             blurRadius: 20,
             offset: const Offset(0, 8),
             spreadRadius: -4,

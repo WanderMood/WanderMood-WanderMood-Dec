@@ -5,6 +5,7 @@ import 'package:wandermood/features/auth/domain/providers/auth_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:go_router/go_router.dart';
@@ -176,7 +177,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFFF97316),
+              primary: Color(0xFF2A6049),
               onPrimary: Colors.white,
               surface: Colors.white,
               onSurface: Colors.black,
@@ -239,27 +240,18 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Profile updated successfully',
-              style: GoogleFonts.poppins(),
-            ),
-            backgroundColor: const Color(0xFFF97316),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Profile updated successfully',
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Failed to update profile: ${e.toString()}',
-              style: GoogleFonts.poppins(),
-            ),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Failed to update profile: ${e.toString()}',
+          isError: true,
         );
       }
     } finally {
@@ -288,7 +280,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFFFFF7ED),
+        backgroundColor: const Color(0xFFF5F0E8),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -311,7 +303,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     final profileState = ref.watch(profileProvider);
     
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF7ED),
+      backgroundColor: const Color(0xFFF5F0E8),
       body: profileState.when(
         data: (profile) => Column(
           children: [
@@ -346,31 +338,22 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                       child: TextButton(
                         onPressed: _hasChanges ? _saveProfile : null,
                         style: TextButton.styleFrom(
+                          minimumSize: const Size(44, 44),
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
                         child: Container(
-                          decoration: _hasChanges
-                              ? BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFFF97316),
-                                      Color(0xFFEC4899),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                )
-                              : BoxDecoration(
-                                  color: Colors.grey[100],
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
+                          decoration: BoxDecoration(
+                            color: _hasChanges ? const Color(0xFF2A6049) : const Color(0xFFD8D0C4),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           child: Text(
                             'Save',
                             style: GoogleFonts.poppins(
-                              color: _hasChanges ? Colors.white : Colors.grey[400],
+                              color: _hasChanges ? Colors.white : const Color(0xFF8A847B),
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
                             ),
@@ -423,7 +406,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFFF97316), width: 2),
+                              borderSide: const BorderSide(color: Color(0xFF2A6049), width: 2),
                             ),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           ),
@@ -468,7 +451,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFFF97316), width: 2),
+                                    borderSide: const BorderSide(color: Color(0xFF2A6049), width: 2),
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 ),
@@ -511,7 +494,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFFF97316), width: 2),
+                                    borderSide: const BorderSide(color: Color(0xFF2A6049), width: 2),
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 ),
@@ -552,9 +535,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFF97316), width: 2),
+                                  borderSide: const BorderSide(color: Color(0xFF2A6049), width: 2),
                                 ),
                                 contentPadding: const EdgeInsets.all(16),
+                                counterText: '',
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -604,7 +588,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFFF97316), width: 2),
+                                    borderSide: const BorderSide(color: Color(0xFF2A6049), width: 2),
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 ),
@@ -668,48 +652,35 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               child: SafeArea(
                 top: false,
                 child: SizedBox(
+                  height: 54,
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _hasChanges && !_isSaving ? _saveProfile : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _hasChanges ? null : Colors.grey[200],
-                      foregroundColor: _hasChanges ? Colors.white : Colors.grey[400],
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: _hasChanges ? const Color(0xFF2A6049) : const Color(0xFFD8D0C4),
+                      foregroundColor: _hasChanges ? Colors.white : const Color(0xFF8A847B),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(999),
                       ),
-                      elevation: _hasChanges ? 8 : 0,
+                      elevation: 0,
                     ),
-                    child: Container(
-                      decoration: _hasChanges
-                          ? BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [
-                                  Color(0xFFF97316),
-                                  Color(0xFFEC4899),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                            )
-                          : null,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: _isSaving
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Text(
-                              _hasChanges ? 'Save Changes' : 'No Changes',
-                              style: GoogleFonts.poppins(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                    child: _isSaving
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
                             ),
-                    ),
+                          )
+                        : Text(
+                            _hasChanges ? 'Save Changes' : 'No Changes',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                   ),
                 ),
               ),
@@ -743,13 +714,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: const [],
       ),
       child: Row(
         children: [
@@ -759,7 +724,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             decoration: BoxDecoration(
               gradient: displayImage == null
                   ? const LinearGradient(
-                      colors: [Color(0xFFF97316), Color(0xFFEC4899)],
+                      colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     )
@@ -768,13 +733,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               image: displayImage != null
                   ? DecorationImage(image: displayImage, fit: BoxFit.cover)
                   : null,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              boxShadow: const [],
             ),
             child: displayImage == null
                 ? Center(
@@ -820,15 +779,15 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFFF97316).withOpacity(0.1),
-                    const Color(0xFFEC4899).withOpacity(0.1),
+                    const Color(0xFFEAF5EE),
+                    const Color(0xFFEAF5EE),
                   ],
                 ),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.camera_alt,
-                color: Color(0xFFF97316),
+                color: Color(0xFF2A6049),
                 size: 24,
               ),
             ),
@@ -844,13 +803,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: const [],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -876,13 +829,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: const [],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -892,7 +839,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.auto_awesome, color: Color(0xFFF97316), size: 20),
+                  const Icon(Icons.auto_awesome, color: Color(0xFF2A6049), size: 20),
                   const SizedBox(width: 8),
                   Text(
                     'Favorite Vibes',
@@ -913,13 +860,13 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFFF97316),
+                        color: const Color(0xFF2A6049),
                       ),
                     ),
                     const SizedBox(width: 4),
                     const Icon(
                       Icons.chevron_right,
-                      color: Color(0xFFF97316),
+                      color: Color(0xFF2A6049),
                       size: 20,
                     ),
                   ],
@@ -935,24 +882,16 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFF97316), Color(0xFFEC4899)],
-                  ),
+                  color: const Color(0xFFEAF5EE),
+                  border: Border.all(color: const Color(0xFF2A6049)),
                   borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFF97316).withOpacity(0.3),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
                 ),
                 child: Text(
                   vibe,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: const Color(0xFF2A6049),
                   ),
                 ),
               );
@@ -969,7 +908,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         : '?';
     
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF7ED),
+      backgroundColor: const Color(0xFFF5F0E8),
       body: Column(
         children: [
           // Header
@@ -1018,7 +957,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                     decoration: BoxDecoration(
                       gradient: _selectedImagePath == null && _profileImageUrl == null
                           ? const LinearGradient(
-                              colors: [Color(0xFFF97316), Color(0xFFEC4899)],
+                              colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             )
@@ -1035,13 +974,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                                   fit: BoxFit.cover,
                                 )
                               : null),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
+                      boxShadow: const [],
                     ),
                     child: _selectedImagePath == null && _profileImageUrl == null
                         ? Center(
@@ -1067,13 +1000,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                           colors: [Color(0xFF3B82F6), Color(0xFF9333EA)],
                         ),
                         borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF3B82F6).withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                        boxShadow: const [],
                       ),
                       child: ElevatedButton.icon(
                         onPressed: () => _pickImage(fromCamera: true),
@@ -1089,7 +1016,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          minimumSize: const Size.fromHeight(54),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -1108,13 +1036,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                           colors: [Color(0xFF10B981), Color(0xFF14B8A6)],
                         ),
                         borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF10B981).withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                        boxShadow: const [],
                       ),
                       child: ElevatedButton.icon(
                         onPressed: () => _pickImage(fromCamera: false),
@@ -1130,7 +1052,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          minimumSize: const Size.fromHeight(54),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -1157,7 +1080,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                         ),
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Colors.red, width: 2),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          minimumSize: const Size.fromHeight(44),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -1176,7 +1100,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
   Widget _buildVibesScreen() {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF7ED),
+      backgroundColor: const Color(0xFFF5F0E8),
       body: Column(
         children: [
           // Header
@@ -1215,6 +1139,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                         });
                       },
                       style: TextButton.styleFrom(
+                        minimumSize: const Size(44, 44),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
@@ -1223,7 +1148,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                       child: Container(
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFFF97316), Color(0xFFEC4899)],
+                            colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
                           ),
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -1296,18 +1221,18 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFFFFF7ED) : Colors.white,
+                            color: isSelected ? const Color(0xFFEAF5EE) : Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: isSelected
-                                  ? const Color(0xFFF97316)
+                                  ? const Color(0xFF2A6049)
                                   : const Color(0xFFE5E7EB),
                               width: isSelected ? 2 : 1,
                             ),
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: const Color(0xFFF97316).withOpacity(0.2),
+                                      color: const Color(0xFF2A6049).withOpacity(0.2),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
                                     ),
@@ -1354,7 +1279,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                                   width: 24,
                                   height: 24,
                                   decoration: const BoxDecoration(
-                                    color: Color(0xFFF97316),
+                                    color: Color(0xFF2A6049),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(

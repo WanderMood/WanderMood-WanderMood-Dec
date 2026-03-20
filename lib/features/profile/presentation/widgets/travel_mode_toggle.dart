@@ -90,13 +90,7 @@ class _TravelModeToggleState extends ConsumerState<TravelModeToggle> {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.6),
             borderRadius: BorderRadius.circular(50),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            boxShadow: const [],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(50),
@@ -112,7 +106,7 @@ class _TravelModeToggleState extends ConsumerState<TravelModeToggle> {
                         icon: Icons.home,
                         label: l10n.profileModeLocal,
                         isActive: widget.isLocal,
-                        activeGradient: const [Color(0xFF5BB32A), Color(0xFF4CAF50)], // Match splash screen color
+                        activeGradient: const [Color(0xFF2A6049), Color(0xFF2A6049)],
                         onTap: () => _handleToggleTap(true),
                       ),
                     ),
@@ -123,7 +117,7 @@ class _TravelModeToggleState extends ConsumerState<TravelModeToggle> {
                         icon: Icons.map,
                         label: l10n.profileModeTravel,
                         isActive: !widget.isLocal,
-                        activeGradient: const [Color(0xFFF97316), Color(0xFFEC4899)],
+                        activeGradient: const [Color(0xFF2A6049), Color(0xFF2A6049)],
                         onTap: () => _handleToggleTap(false),
                       ),
                     ),
@@ -184,6 +178,7 @@ class _ToggleButton extends StatelessWidget {
           gradient: isActive
               ? LinearGradient(colors: activeGradient)
               : null,
+          color: isActive ? null : const Color(0xFFD8D0C4),
           borderRadius: BorderRadius.circular(50),
           boxShadow: isActive
               ? [
@@ -200,14 +195,14 @@ class _ToggleButton extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isActive ? Colors.white : Colors.grey[600],
+              color: isActive ? Colors.white : const Color(0xFF8A847B),
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: GoogleFonts.poppins(
-                color: isActive ? Colors.white : Colors.grey[600],
+                color: isActive ? Colors.white : const Color(0xFF8A847B),
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
               ),
@@ -289,13 +284,7 @@ class _ConfirmationOverlayState extends State<_ConfirmationOverlay>
                 colors: modeData.gradient,
               ),
               borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: modeData.gradient[0].withOpacity(0.4),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
+              boxShadow: const [],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -410,7 +399,7 @@ class _ConfirmationOverlayState extends State<_ConfirmationOverlay>
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: modeData.gradient[0],
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -446,7 +435,7 @@ class _ConfirmationOverlayState extends State<_ConfirmationOverlay>
                           onPressed: widget.onCancel,
                           style: TextButton.styleFrom(
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -585,13 +574,7 @@ class _SuccessAnimationOverlayState extends State<_SuccessAnimationOverlay>
                 colors: modeData.gradient,
               ),
               borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: modeData.gradient[0].withOpacity(0.4),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
+              boxShadow: const [],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -730,13 +713,7 @@ class _ModeOverlayState extends State<_ModeOverlay>
                 colors: modeData.gradient,
               ),
               borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: modeData.gradient[0].withOpacity(0.4),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
+              boxShadow: const [],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1136,7 +1113,7 @@ class TravelModeExplanationModal extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange[500],
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),

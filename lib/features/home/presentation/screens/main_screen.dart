@@ -205,22 +205,16 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(999),
                     border: Border.all(color: const Color(0xFFF3F4F6), width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 24,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    boxShadow: const [],
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildRegularNavItem(context, ref, selectedIndex, 0, 'My Day', Icons.calendar_today_outlined, Icons.calendar_today, const Color(0xFFF97316), const Color(0xFFFFF7ED)),
-                      _buildRegularNavItem(context, ref, selectedIndex, 1, 'Explore', Icons.explore_outlined, Icons.explore, const Color(0xFF3B82F6), const Color(0xFFEFF6FF)),
+                      _buildRegularNavItem(context, ref, selectedIndex, 0, 'My Day', Icons.calendar_today_outlined, Icons.calendar_today, const Color(0xFF2A6049), const Color(0xFFEAF5EE)),
+                      _buildRegularNavItem(context, ref, selectedIndex, 1, 'Explore', Icons.explore_outlined, Icons.explore, const Color(0xFF2A6049), const Color(0xFFEAF5EE)),
                       _buildCenterMoodyButton(context, ref, selectedIndex),
-                      _buildRegularNavItem(context, ref, selectedIndex, 3, 'WanderFeed', Icons.people_outline, Icons.people, const Color(0xFFA855F7), const Color(0xFFF5F3FF)),
-                      _buildRegularNavItem(context, ref, selectedIndex, 4, 'Profile', Icons.person_outline, Icons.person, const Color(0xFFEC4899), const Color(0xFFFDF2F8)),
+                      _buildRegularNavItem(context, ref, selectedIndex, 3, 'WanderFeed', Icons.people_outline, Icons.people, const Color(0xFF2A6049), const Color(0xFFEAF5EE)),
+                      _buildRegularNavItem(context, ref, selectedIndex, 4, 'Profile', Icons.person_outline, Icons.person, const Color(0xFF2A6049), const Color(0xFFEAF5EE)),
                     ],
                   ),
                 ),
@@ -314,15 +308,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 height: 48,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isSelected ? const Color(0xFF12B347).withOpacity(0.12) : Colors.grey.shade100,
-                  border: isSelected ? Border.all(color: const Color(0xFF12B347).withOpacity(0.4), width: 1.5) : null,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                  color: isSelected ? const Color(0xFFEAF5EE) : Colors.grey.shade100,
+                  border: isSelected ? Border.all(color: const Color(0xFF2A6049).withOpacity(0.4), width: 1.5) : null,
+                  boxShadow: const [],
                 ),
                 child: Center(
                   child: MoodyCharacter(

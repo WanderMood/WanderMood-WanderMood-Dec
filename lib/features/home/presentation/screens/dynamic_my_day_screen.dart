@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:ui';
@@ -31,6 +32,7 @@ import 'package:wandermood/core/theme/time_based_theme.dart';
 import '../../providers/time_suggestion_provider.dart';
 import 'package:wandermood/core/presentation/painters/circle_pattern_painter.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 
 class DynamicMyDayScreen extends ConsumerStatefulWidget {
   const DynamicMyDayScreen({super.key});
@@ -111,7 +113,13 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                       
                       const SizedBox(height: 12),
                       currentStatus.when(
-                        data: (status) => _buildSmartStatusCard(status),
+                        data: (status) {
+                          try {
+                            return _buildSmartStatusCard(status);
+                          } catch (_) {
+                            return const SizedBox.shrink();
+                          }
+                        },
                         loading: () => _buildLoadingStatusCard(),
                         error: (error, stack) => _buildErrorStatusCard(),
                       ),
@@ -150,177 +158,96 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   Widget _buildImmersiveNoPlanState(AppLocalizations l10n) {
-    final hour = DateTime.now().hour;
-    // We'll use the city from weather data since userLocationProvider only gives coordinates
-    final weatherAsync = ref.watch(weatherProvider);
-    final cityName = weatherAsync.valueOrNull?.location ?? 'your city';
-
-    String bgImageUrl;
-    String greeting;
-    String subtitle;
-
-    if (hour < 12) {
-      bgImageUrl = 'https://images.unsplash.com/photo-1513622470522-26c308a908f7?q=80&w=1200&auto=format&fit=crop'; // Morning coffee/sunrise city
-      greeting = l10n.goodMorning;
-      subtitle = "The day is a blank canvas. What's the vibe?";
-    } else if (hour < 17) {
-      bgImageUrl = 'https://images.unsplash.com/photo-1514924013411-cbf25faa35bb?q=80&w=1200&auto=format&fit=crop'; // Vibrant city street day
-      greeting = l10n.goodAfternoon;
-      subtitle = "Ready for an adventure? What's the vibe?";
-    } else {
-      bgImageUrl = 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=1200&auto=format&fit=crop'; // Beautiful city night
-      greeting = l10n.goodEvening;
-      subtitle = "The night is young. What's the vibe?";
-    }
-
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: CachedNetworkImage(
-            imageUrl: bgImageUrl,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(color: Colors.black87),
-            errorWidget: (context, url, error) => Container(color: Colors.black87),
-          ),
-        ),
-        Positioned.fill(
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withOpacity(0.5),
-                  Colors.black.withOpacity(0.1),
-                  Colors.black.withOpacity(0.9),
-                ],
-                stops: const [0.0, 0.4, 1.0],
-              ),
-            ),
-          ),
-        ),
-        SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 16),
-                _buildHeaderRow(isImmersive: true),
-                
-                const Spacer(),
-                
-                Text(
-                  '$greeting in $cityName!',
-                  style: GoogleFonts.poppins(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    height: 1.2,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.6),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                ).animate().fadeIn(delay: 200.ms, duration: 600.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOut),
-                
-                const SizedBox(height: 12),
-                
-                Text(
-                  subtitle,
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white.withOpacity(0.9),
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.6),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                ).animate().fadeIn(delay: 400.ms, duration: 600.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOut),
-                
-                const SizedBox(height: 32),
-                
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildImmersiveActionButton(
-                        icon: Icons.restaurant,
-                        label: 'Grab a bite',
-                        onTap: () => _navigateToTab(1),
-                      ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.2, end: 0),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildImmersiveActionButton(
-                        icon: Icons.explore_rounded,
-                        label: 'Explore',
-                        onTap: () => _navigateToTab(1),
-                      ).animate().fadeIn(delay: 700.ms).slideY(begin: 0.2, end: 0),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildImmersiveActionButton(
-                        icon: Icons.nightlife,
-                        label: 'Nightlife',
-                        onTap: () => _navigateToTab(1),
-                      ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2, end: 0),
-                    ),
-                  ],
+    return Container(
+      color: const Color(0xFFF5F0E8),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              _buildHeaderRow(isImmersive: false),
+              const Spacer(),
+              MoodyCharacter(
+                size: 80,
+                mood: 'happy',
+              ).animate().fadeIn(duration: 300.ms),
+              const SizedBox(height: 16),
+              Text(
+                'Jouw dag is leeg ✨',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1E1C18),
+                  letterSpacing: -0.5,
                 ),
-                
-                const SizedBox(height: 24),
-                
-                GestureDetector(
-                  onTap: () => _navigateToTab(2),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF16C45B), Color(0xFF0E8E38)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF16C45B).withOpacity(0.4),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Laat Moody een plan maken voor jouw stemming vandaag',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFF4A4640),
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                height: 54,
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => _navigateToTab(2),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2A6049),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(999),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.auto_awesome, color: Colors.white, size: 24),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Let Moody Plan It',
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'Plan mijn dag met Moody',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.3,
                     ),
                   ),
-                ).animate().fadeIn(delay: 1000.ms).slideY(begin: 0.2, end: 0),
-                
-                const SizedBox(height: 48),
-              ],
-            ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 54,
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => _navigateToTab(1),
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    side: const BorderSide(color: Color(0xFF2A6049), width: 1.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                  child: Text(
+                    'Verken activiteiten',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF2A6049),
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ),
+              ),
+              const Spacer(),
+              const SizedBox(height: 24),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 
@@ -332,7 +259,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.15),
           borderRadius: BorderRadius.circular(20),
@@ -364,8 +291,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   Widget _buildHeaderRow({required bool isImmersive}) {
-    final titleColor = isImmersive ? Colors.white : const Color(0xFF12B347);
-    final iconColor = isImmersive ? Colors.white : const Color(0xFF12B347);
+    final titleColor = isImmersive ? Colors.white : const Color(0xFF1E1C18);
+    final iconColor = isImmersive ? Colors.white : const Color(0xFF2A6049);
     final profileBgColor = isImmersive ? Colors.white.withOpacity(0.2) : Colors.white;
     final profileBorder = isImmersive ? Border.all(color: Colors.white.withOpacity(0.5), width: 1) : null;
     final shadowColor = isImmersive ? Colors.black.withOpacity(0.5) : Colors.black.withOpacity(0.1);
@@ -433,8 +360,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     ref.invalidate(scheduledActivitiesForTodayProvider);
                     ref.invalidate(cachedActivitySuggestionsProvider);
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Plan cleared! (Debug)')),
+                      showWanderMoodToast(
+                        context,
+                        message: 'Plan cleared! (Debug)',
                       );
                     }
                   } catch (e) {
@@ -699,11 +627,13 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 : null,
             child: profile?.imageUrl == null
                 ? Text(
-                    profile?.fullName?.substring(0, 1).toUpperCase() ?? 'U',
+                    ((profile?.fullName?.trim().isNotEmpty ?? false)
+                            ? profile!.fullName!.trim().substring(0, 1).toUpperCase()
+                            : 'U'),
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: isImmersive ? Colors.white : const Color(0xFF12B347),
+                      color: isImmersive ? Colors.white : const Color(0xFF2A6049),
                     ),
                   )
                 : null,
@@ -713,7 +643,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             backgroundColor: isImmersive ? Colors.transparent : Colors.white,
             child: Icon(
               Icons.person,
-              color: isImmersive ? Colors.white : const Color(0xFF12B347),
+              color: isImmersive ? Colors.white : const Color(0xFF2A6049),
               size: 20,
             ),
           ),
@@ -722,7 +652,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             backgroundColor: isImmersive ? Colors.transparent : Colors.white,
             child: Icon(
               Icons.person,
-              color: isImmersive ? Colors.white : const Color(0xFF12B347),
+              color: isImmersive ? Colors.white : const Color(0xFF2A6049),
               size: 20,
             ),
           ),
@@ -804,13 +734,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: config.borderColor.withOpacity(0.3),
-            blurRadius: 34,
-            offset: const Offset(0, 16),
-          ),
-        ],
+        boxShadow: const [],
       ),
       child: Stack(
         children: [
@@ -1091,7 +1015,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         statusIcon = Icons.check_circle;
         break;
       default:
-        primaryColor = const Color(0xFF12B347);
+        primaryColor = const Color(0xFF2A6049);
         backgroundColor = const Color(0xFFE8F5E8);
         statusIcon = Icons.explore;
     }
@@ -1104,14 +1028,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         border: isUpcoming 
             ? Border(top: BorderSide(color: primaryColor, width: 4)) 
             : Border.all(color: primaryColor.withOpacity(0.2), width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-            spreadRadius: 0,
-          ),
-        ],
+        boxShadow: const [],
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -1178,15 +1095,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 Container(
                   height: 44,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF12B347),
+                    color: const Color(0xFF2A6049),
                     borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF12B347).withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    boxShadow: const [],
                   ),
                   child: Material(
                     color: Colors.transparent,
@@ -1215,7 +1126,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         child: Container(
                           height: 44,
                           decoration: BoxDecoration(
-                            border: Border.all(color: const Color(0xFF12B347), width: 1.5),
+                            border: Border.all(color: const Color(0xFF2A6049), width: 1.5),
                             borderRadius: BorderRadius.circular(24),
                           ),
                           child: Material(
@@ -1229,7 +1140,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                                   style: GoogleFonts.poppins(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF12B347),
+                                    color: const Color(0xFF2A6049),
                                   ),
                                 ),
                               ),
@@ -1244,16 +1155,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         child: Container(
                           height: 44,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF12B347),
+                            color: const Color(0xFF2A6049),
                             border: null,
                             borderRadius: BorderRadius.circular(24),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF12B347).withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                            boxShadow: const [],
                           ),
                           child: Material(
                             color: Colors.transparent,
@@ -1338,7 +1243,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          const Color(0xFF12B347).withOpacity(0.8),
+                          const Color(0xFF2A6049).withOpacity(0.8),
                           const Color(0xFF4CAF50).withOpacity(0.6),
                         ],
                         begin: Alignment.topLeft,
@@ -1487,10 +1392,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF12B347).withOpacity(0.1),
+        color: const Color(0xFF2A6049).withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFF12B347).withOpacity(0.2),
+          color: const Color(0xFF2A6049).withOpacity(0.2),
           width: 1,
         ),
       ),
@@ -1500,7 +1405,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             width: 4,
             height: 60,
             decoration: BoxDecoration(
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -1530,7 +1435,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             ),
           ),
           const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
             strokeWidth: 2,
           ),
         ],
@@ -1711,7 +1616,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         child: Padding(
           padding: EdgeInsets.all(40.0),
           child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
           ),
         ),
       ),
@@ -1745,7 +1650,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   ref.invalidate(cachedActivitySuggestionsProvider);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF12B347),
+                  backgroundColor: const Color(0xFF2A6049),
                   foregroundColor: Colors.white,
                 ),
                 child: Text('Retry'),
@@ -1769,13 +1674,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.94),
                 borderRadius: BorderRadius.circular(32),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 22,
-                    offset: const Offset(0, 12),
-                  ),
-                ],
+                boxShadow: const [],
               ),
               child: Column(
                 children: [
@@ -1789,18 +1688,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF12B347).withOpacity(0.18),
-                          blurRadius: 18,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
+                      boxShadow: const [],
                     ),
                     child: const Icon(
                       Icons.calendar_month_rounded,
                       size: 38,
-                      color: Color(0xFF12B347),
+                      color: Color(0xFF2A6049),
                     ),
                   ).animate(onPlay: (controller) => controller.repeat(reverse: true))
                    .scale(begin: const Offset(1, 1), end: const Offset(1.05, 1.05), duration: 2.seconds, curve: Curves.easeInOut),
@@ -1832,7 +1725,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF16C45B),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(22),
                         ),
@@ -1861,7 +1754,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         child: OutlinedButton(
                           onPressed: () => context.goNamed('main', extra: {'tab': 1}),
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                             side: BorderSide(
                               color: Colors.grey.shade300,
                               width: 2,
@@ -1886,7 +1779,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         child: OutlinedButton(
                           onPressed: () => context.goNamed('main', extra: {'tab': 2}),
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                             side: BorderSide(
                               color: Colors.grey.shade300,
                               width: 2,
@@ -1982,13 +1875,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         width: 160,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.12),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          boxShadow: const [],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(24),
@@ -2191,14 +2078,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           ActivityStatus.completed,
         );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Marked as done. You can review it now.',
-          style: GoogleFonts.poppins(),
-        ),
-        backgroundColor: const Color(0xFF12B347),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Marked as done. You can review it now.',
     );
   }
 
@@ -2214,14 +2096,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           duration: const Duration(minutes: 45),
         );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Okay, we will check back in about 45 minutes.',
-          style: GoogleFonts.poppins(),
-        ),
-        backgroundColor: const Color(0xFFF59E0B),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Okay, we will check back in about 45 minutes.',
     );
   }
 
@@ -2362,11 +2239,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 if (phone.isNotEmpty) {
                   launchUrl(Uri.parse('tel:$phone'));
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('No phone number available'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
+                  showWanderMoodToast(
+                    context,
+                    message: 'No phone number available',
                   );
                 }
               },
@@ -2406,11 +2281,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               onTap: () {
                 // TODO: Implement calendar integration
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Added to calendar'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
+                showWanderMoodToast(
+                  context,
+                  message: 'Added to calendar',
                 );
               },
             ),
@@ -2423,18 +2296,15 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('You\'re all set! Have a great time!'),
-                      behavior: SnackBarBehavior.floating,
-                      backgroundColor: Color(0xFF12B347),
-                    ),
+                  showWanderMoodToast(
+                    context,
+                    message: 'You\'re all set! Have a great time!',
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF12B347),
+                  backgroundColor: const Color(0xFF2A6049),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                   ),
@@ -2461,19 +2331,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     
     // Show brief visual feedback
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${tabIndex == 1 ? "Explore" : "Moody"} activated!',
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: const Color(0xFF12B347),
-          duration: const Duration(milliseconds: 600),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
+      showWanderMoodToast(
+        context,
+        message: '${tabIndex == 1 ? "Explore" : "Moody"} activated!',
+        duration: const Duration(milliseconds: 600),
       );
     }
     
@@ -2535,13 +2396,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         margin: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+                          boxShadow: const [],
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(16),
@@ -2558,7 +2413,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
-                                    const Color(0xFF12B347).withOpacity(0.8),
+                                    const Color(0xFF2A6049).withOpacity(0.8),
                                     const Color(0xFF4CAF50).withOpacity(0.6),
                                   ],
                                   begin: Alignment.topLeft,
@@ -2624,7 +2479,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                                     icon: const Icon(Icons.directions),
                                     label: const Text('Get Directions'),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF12B347),
+                                      backgroundColor: const Color(0xFF2A6049),
                                       foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(vertical: 14),
                                       shape: RoundedRectangleBorder(
@@ -2643,8 +2498,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                                     icon: const Icon(Icons.bookmark_outline),
                                     label: const Text('Save for Later'),
                                     style: OutlinedButton.styleFrom(
-                                      foregroundColor: const Color(0xFF12B347),
-                                      side: const BorderSide(color: Color(0xFF12B347)),
+                                      foregroundColor: const Color(0xFF2A6049),
+                                      side: const BorderSide(color: Color(0xFF2A6049)),
                                       padding: const EdgeInsets.symmetric(vertical: 14),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(24),
@@ -2702,7 +2557,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     icon: const Icon(Icons.map),
                     label: const Text('Google Maps'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF12B347),
+                      backgroundColor: const Color(0xFF2A6049),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
@@ -2717,8 +2572,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     icon: const Icon(Icons.navigation),
                     label: const Text('Apple Maps'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF12B347),
-                      side: const BorderSide(color: Color(0xFF12B347)),
+                      foregroundColor: const Color(0xFF2A6049),
+                      side: const BorderSide(color: Color(0xFF2A6049)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
@@ -2737,7 +2592,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   void _showActivityOptions(EnhancedActivityData activity) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: const Color(0xFFFFFFFF),
       builder: (context) => Container(
+        color: const Color(0xFFFFFFFF),
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -2753,7 +2610,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             
             // View Details option
             ListTile(
-              leading: const Icon(Icons.info_outline, color: Color(0xFF12B347)),
+              leading: const Icon(Icons.info_outline, color: Color(0xFF2A6049)),
               title: Text(
                 'View Details',
                 style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
@@ -2763,10 +2620,11 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 _showActivityDetails(activity.rawData);
               },
             ),
+            const Divider(height: 1, thickness: 1, color: Color(0xFFD8D0C4)),
             
             // Save for Later option
             ListTile(
-              leading: const Icon(Icons.bookmark_outline, color: Color(0xFF12B347)),
+              leading: const Icon(Icons.bookmark_outline, color: Color(0xFF2A6049)),
               title: Text(
                 'Save for Later',
                 style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
@@ -2776,12 +2634,13 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 _saveActivity(activity.rawData);
               },
             ),
+            const Divider(height: 1, thickness: 1, color: Color(0xFFD8D0C4)),
             
             if (activity.status == ActivityStatus.awaitingCompletion)
               ListTile(
                 leading: const Icon(
                   Icons.schedule_rounded,
-                  color: Color(0xFFF59E0B),
+                  color: Color(0xFF2A6049),
                 ),
                 title: Text(
                   'Still Here',
@@ -2797,10 +2656,21 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 },
               ),
             if (activity.status == ActivityStatus.awaitingCompletion)
+              const Divider(height: 1, thickness: 1, color: Color(0xFFD8D0C4)),
+            if (activity.status == ActivityStatus.awaitingCompletion)
               ListTile(
-                leading: const Icon(
-                  Icons.check_circle_outline,
-                  color: Color(0xFF12B347),
+                leading: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF2A6049),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check,
+                    color: Colors.white,
+                    size: 16,
+                  ),
                 ),
                 title: Text(
                   'Mark as Done',
@@ -2815,10 +2685,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   _markActivityDone(activity);
                 },
               ),
+            if (activity.status == ActivityStatus.awaitingCompletion)
+              const Divider(height: 1, thickness: 1, color: Color(0xFFD8D0C4)),
 
             // Share option
             ListTile(
-              leading: const Icon(Icons.share, color: Color(0xFF12B347)),
+              leading: const Icon(Icons.share, color: Color(0xFF2A6049)),
               title: Text(
                 'Share Activity',
                 style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
@@ -2826,16 +2698,15 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               onTap: () {
                 Navigator.pop(context);
                 // TODO: Implement share functionality
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Share functionality coming soon!'),
-                    backgroundColor: const Color(0xFF12B347),
-                  ),
+                showWanderMoodToast(
+                  context,
+                  message: 'Share functionality coming soon!',
                 );
               },
             ),
+            const Divider(height: 1, thickness: 1, color: Color(0xFFD8D0C4)),
             ListTile(
-              leading: const Icon(Icons.directions, color: Color(0xFF12B347)),
+              leading: const Icon(Icons.directions, color: Color(0xFF2A6049)),
               title: Text(
                 'Get Directions',
                 style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
@@ -3085,29 +2956,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   void _saveActivity(Map<String, dynamic> activity) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '${activity['title']} saved for later!',
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-          ),
-        ),
-        backgroundColor: const Color(0xFF12B347),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 2),
-        action: SnackBarAction(
-          label: 'View',
-          textColor: Colors.white,
-          onPressed: () => _showActivityDetails(activity),
-        ),
-      ),
+    showWanderMoodToast(
+      context,
+      message: '${activity['title']} saved for later!',
     );
   }
 
@@ -3137,24 +2988,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       }
     } catch (e) {
       // Show error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Unable to open directions',
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.white,
-            ),
-          ),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          margin: const EdgeInsets.all(16),
-          duration: const Duration(seconds: 2),
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Unable to open directions',
+        isError: true,
       );
     }
   }
