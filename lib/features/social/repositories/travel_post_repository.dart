@@ -72,7 +72,9 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
           .from('diary_entries')
           .select('''
             *, 
-            profiles:user_id(username, full_name, avatar_url),
+            // Some environments don't have `avatar_url` in profiles.
+            // Use `image_url` so parsing doesn't fail.
+            profiles:user_id(username, full_name, image_url),
             diary_likes(count),
             post_reactions(count),
             diary_comments(count)
@@ -115,7 +117,7 @@ class TravelPostRepositoryImpl implements TravelPostRepository {
           .from('diary_entries')
           .select('''
             *, 
-            profiles:user_id(username, full_name, avatar_url),
+            profiles:user_id(username, full_name, image_url),
             diary_likes(count),
             post_reactions(count),
             diary_comments(count)

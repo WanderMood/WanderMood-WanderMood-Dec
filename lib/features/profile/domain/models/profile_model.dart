@@ -40,7 +40,7 @@ class Profile with _$Profile {
       email: map['email'] as String,
       username: map['username'] as String?,
       fullName: map['full_name'] as String?,
-      imageUrl: map['image_url'] as String? ?? map['avatar_url'] as String?,
+      imageUrl: map['image_url'] as String?,
       dateOfBirth: map['date_of_birth'] != null 
           ? DateTime.parse(map['date_of_birth'] as String)
           : null,
@@ -78,10 +78,9 @@ class Profile with _$Profile {
       'is_public': profileVisibility == 'public',
       'updated_at': DateTime.now().toIso8601String(),
     };
-    // Write to BOTH avatar_url and image_url so all UIs (profile, edit, drawer) stay in sync
+    // Only write to `image_url` (some environments don't have `avatar_url`).
     if (imageUrl != null && imageUrl!.isNotEmpty) {
       map['image_url'] = imageUrl;
-      map['avatar_url'] = imageUrl;
     }
     return map;
   }

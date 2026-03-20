@@ -34,7 +34,9 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
       // Select only columns that exist in profiles table (avoid 42703 errors)
       final response = await supabase
           .from('profiles')
-          .select('id, email, username, full_name, image_url, avatar_url, date_of_birth, bio, favorite_mood, mood_streak, is_public, created_at, updated_at')
+          // Some environments don't have `avatar_url` in the profiles table.
+          // Select only `image_url` to avoid 42703 errors.
+          .select('id, email, username, full_name, image_url, date_of_birth, bio, favorite_mood, mood_streak, is_public, created_at, updated_at')
           .eq('id', user.id)
           .maybeSingle();
 

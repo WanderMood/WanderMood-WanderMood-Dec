@@ -51,10 +51,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           .from('avatars')
           .upload(fileName, file, fileOptions: const FileOptions(upsert: true, cacheControl: '3600'));
       final imageUrl = _supabase.storage.from('avatars').getPublicUrl(fileName);
-      // Write to both avatar_url and image_url so all profile UIs (old and new)
-      // resolve to the same avatar and there is a single visual source of truth.
+      // Write only to `image_url` because some environments don't have `avatar_url`.
       await _supabase.from('profiles').update({
-        'avatar_url': imageUrl,
         'image_url': imageUrl,
       }).eq('id', userId);
 

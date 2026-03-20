@@ -21,7 +21,9 @@ class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
     try {
       final profileRes = await supabase
           .from('profiles')
-          .select('full_name, username, bio, avatar_url, image_url, mood_streak')
+          // Some environments don't have `avatar_url` in the profiles table.
+          // Prefer `image_url` and never request `avatar_url` to avoid 42703 errors.
+          .select('full_name, username, bio, image_url, mood_streak')
           .eq('id', userId)
           .maybeSingle();
 
@@ -33,10 +35,7 @@ class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
           .eq('user_id', userId)
           .maybeSingle();
 
-      // Prefer image_url (used by newer flows), but fall back to avatar_url
-      // so older data still works.
-      final avatarUrl = profileRes?['image_url'] as String? ??
-          profileRes?['avatar_url'] as String?;
+      final avatarUrl = profileRes?['image_url'] as String?;
 
       List<String> selectedMoods = [];
       if (prefsRes?['selected_moods'] != null) {
