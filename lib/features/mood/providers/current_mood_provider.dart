@@ -1,3 +1,4 @@
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter/foundation.dart';
 import '../domain/models/mood.dart';
@@ -15,7 +16,7 @@ class CurrentMood extends _$CurrentMood {
       userId: 'default_user',
       label: 'Social',
       emoji: '😊',
-      createdAt: DateTime.now(),
+      createdAt: MoodyClock.now(),
       energyLevel: 0.8,
       activities: ['restaurants', 'bars', 'cafes'],
       isShared: false,

@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../application/mood_service.dart';
 import '../../domain/models/mood_data.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 
 class MoodInputCard extends ConsumerStatefulWidget {
   final Function(MoodData)? onMoodSaved;
@@ -55,11 +56,11 @@ class _MoodInputCardState extends ConsumerState<MoodInputCard> {
 
     try {
       final mood = MoodData(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: MoodyClock.now().millisecondsSinceEpoch.toString(),
         userId: Supabase.instance.client.auth.currentUser!.id,
         moodScore: _selectedMoodScore,
         moodType: _selectedMoodType,
-        timestamp: DateTime.now(),
+        timestamp: MoodyClock.now(),
         description: _descriptionController.text,
         location: _locationController.text,
         tags: _tagsController.text

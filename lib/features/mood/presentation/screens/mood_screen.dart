@@ -9,6 +9,7 @@ import 'package:wandermood/features/mood/presentation/screens/mood_history_scree
 import 'package:wandermood/features/mood/domain/models/mood_data.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 
 class MoodScreen extends ConsumerStatefulWidget {
   const MoodScreen({super.key});
@@ -330,11 +331,11 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
       }
 
       final mood = MoodData(
-        id: DateTime.now().toIso8601String(),
+        id: MoodyClock.now().toIso8601String(),
         userId: userId,
         moodScore: _energyLevel,
         moodType: _selectedMood!,
-        timestamp: DateTime.now(),
+        timestamp: MoodyClock.now(),
         description: _notes.isNotEmpty ? _notes : null,
         tags: _selectedActivity != null ? [_selectedActivity!] : [],
       );

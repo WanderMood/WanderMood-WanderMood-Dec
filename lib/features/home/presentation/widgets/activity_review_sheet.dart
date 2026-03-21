@@ -7,6 +7,7 @@ import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_pro
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/mood/models/activity_rating.dart';
 import 'package:wandermood/features/mood/services/activity_rating_service.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 
 // WanderMood v2 — Quick Review sheet (Screen 14)
 const Color _wmSunset = Color(0xFFE8784A);
@@ -420,7 +421,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
       tags: _selectedEmoji != null ? [_mapEmojiToLabel(_selectedEmoji!)] : [],
       wouldRecommend: _rating >= 4,
       notes: _noteController.text.isNotEmpty ? _noteController.text : null,
-      completedAt: DateTime.now(),
+      completedAt: MoodyClock.now(),
       mood: mood,
     );
 

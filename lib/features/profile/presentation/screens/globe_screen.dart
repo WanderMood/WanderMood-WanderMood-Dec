@@ -541,7 +541,8 @@ class _ControlButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           decoration: BoxDecoration(
             border: Border.all(
-              color: const Color(0xFF94A3B8).withValues(alpha: 0.85),
+              // Lighter on dark globe UI (SCREEN 17) — reads better than slate-400
+              color: const Color(0xFFB8C0CC).withValues(alpha: 0.95),
               width: 1.5,
             ),
             borderRadius: BorderRadius.circular(12),

@@ -4,7 +4,7 @@ import 'package:wandermood/core/utils/auth_helper.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:dio/dio.dart';
 import 'package:wandermood/core/config/supabase_config.dart';
-import 'package:wandermood/core/services/supabase_api_cache_service.dart';
+import 'package:wandermood/core/utils/places_cache_utils.dart';
 
 /// Service to call the `moody` Edge Function
 class MoodyEdgeFunctionService {
@@ -86,48 +86,16 @@ class MoodyEdgeFunctionService {
         throw Exception('Session not ready. Please wait a moment and try again.');
       }
       
-      if (kDebugMode) {
-        debugPrint('🎯 Calling moody Edge Function: get_explore');
-        debugPrint('   mood: $mood');
-        debugPrint('   location: $location');
-        debugPrint('   coordinates: ($latitude, $longitude)');
-        debugPrint('   filters: $filters');
-        debugPrint('   🔑 Auth token exists: true');
-        debugPrint('   🔑 Token preview: ${token.substring(0, 20)}...');
+      // Cache-first: shared `places_cache` aggregate row (same key as moody Edge Function).
+      final cachedPlaces =
+          await PlacesCacheUtils.tryLoadExplorePlaces(_supabase, mood, location);
+      if (cachedPlaces != null) {
+        return cachedPlaces;
       }
-
-      // Check Supabase cache first (dev mode only)
-      // Note: The Edge Function also checks cache, but we check here too for faster response
-      if (SupabaseApiCacheService.shouldUseCache) {
-        // Use same cache key format as Edge Function: explore_{mood}_{location}
-        final cacheKey = 'explore_${mood}_${location.toLowerCase().trim()}';
-        
-        // Check cache directly in Supabase (bypassing Edge Function for speed)
-        try {
-          final cacheResponse = await _supabase
-              .from('places_cache')
-              .select('data, expires_at')
-              .eq('cache_key', cacheKey)
-              .maybeSingle();
-          
-          if (cacheResponse != null) {
-            final cacheData = cacheResponse as Map<String, dynamic>;
-            final expiresAt = DateTime.parse(cacheData['expires_at'] as String);
-            if (expiresAt.isAfter(DateTime.now())) {
-              final cachedData = cacheData['data'] as Map<String, dynamic>?;
-              if (cachedData != null && cachedData.containsKey('cards')) {
-                final cards = cachedData['cards'] as List<dynamic>?;
-                if (cards != null && cards.isNotEmpty) {
-                  debugPrint('✅ Using cached explore results from Supabase (${cards.length} places)');
-                  final places = cards.map((card) => _transformCardToPlace(card as Map<String, dynamic>)).toList();
-                  return places;
-                }
-              }
-            }
-          }
-        } catch (e) {
-          debugPrint('⚠️ Cache check error (continuing to Edge Function): $e');
-        }
+      if (kDebugMode) {
+        debugPrint('🔴 Cache MISS — moody get_explore via network');
+        debugPrint('   mood: $mood | location: $location | filters: $filters');
+        debugPrint('   🔑 Token preview: ${token.substring(0, 20)}...');
       }
 
       // Use Dio to explicitly send Authorization header
@@ -184,7 +152,12 @@ class MoodyEdgeFunctionService {
       }
 
       // Transform Edge Function response to Place objects
-      final places = cards.map((card) => _transformCardToPlace(card as Map<String, dynamic>)).toList();
+      final places = cards.map((card) {
+        final m = card is Map<String, dynamic>
+            ? card
+            : Map<String, dynamic>.from(card as Map);
+        return PlacesCacheUtils.placeFromMoodyExploreCard(m);
+      }).toList();
 
       // Note: Edge Function already caches the response, so we don't need to cache again here
       // The Edge Function's cachePlaces() function handles caching automatically
@@ -198,7 +171,7 @@ class MoodyEdgeFunctionService {
         // CRITICAL: If filtered results < 5, log warning
         final unfilteredTotal = responseData['unfiltered_total'] as int? ?? places.length;
         if (places.length < 5 && unfilteredTotal >= 50) {
-          debugPrint('⚠️ Filters reduced results to ${places.length} places (${unfilteredTotal} unfiltered). Consider triggering wider fetch.');
+          debugPrint('⚠️ Filters reduced results to ${places.length} places ($unfilteredTotal unfiltered). Consider triggering wider fetch.');
         }
       }
 
@@ -211,45 +184,69 @@ class MoodyEdgeFunctionService {
     }
   }
 
-  /// Transform Edge Function card response to Place model
-  Place _transformCardToPlace(Map<String, dynamic> card) {
-    // Extract location
-    final locationData = card['location'] as Map<String, dynamic>? ?? {};
-    
-    // CRITICAL: Use photo_url from Edge Function (already includes API key)
-    // Edge Function now returns full photo URLs, so we don't need API key in Flutter
-    final photoUrl = card['photo_url'] as String?;
-    final photos = photoUrl != null && photoUrl.isNotEmpty
-        ? [photoUrl]
-        : <String>[];
+  /// Day plan from Edge (`create_day_plan`). Google Places runs only on the server.
+  ///
+  /// Returns the parsed JSON body (includes `activities`, `success`, `moodyMessage`, etc.).
+  /// Callers map to app models as needed.
+  Future<Map<String, dynamic>> createDayPlan({
+    required List<String> moods,
+    required String location,
+    required double latitude,
+    required double longitude,
+    Map<String, dynamic>? filters,
+  }) async {
+    await AuthHelper.ensureValidSession();
+    await _waitForSessionReady();
 
-    if (kDebugMode && photoUrl != null) {
-      debugPrint('✅ Using photo URL from Edge Function: ${photoUrl.substring(0, 50)}...');
+    if (location.trim().isEmpty) {
+      throw Exception('Location is required. Please provide a valid city name.');
     }
 
-    // Build address from vicinity or address field
-    final address = card['address'] as String? ?? 
-                    card['vicinity'] as String? ?? 
-                    '';
+    final session = _supabase.auth.currentSession;
+    final token = session?.accessToken;
+    final user = _supabase.auth.currentUser;
+    if (user == null || session == null || token == null || token.isEmpty) {
+      throw Exception('Session not ready. Please wait a moment and try again.');
+    }
 
-    // Transform types
-    final types = (card['types'] as List<dynamic>?)?.cast<String>() ?? [];
+    final dio = Dio();
+    final functionUrl = '${SupabaseConfig.url}/functions/v1/moody';
 
-    return Place(
-      id: card['id'] as String? ?? '',
-      name: card['name'] as String? ?? 'Unknown Place',
-      address: address,
-      rating: (card['rating'] as num?)?.toDouble() ?? 0.0,
-      photos: photos,
-      types: types,
-      location: PlaceLocation(
-        lat: (locationData['lat'] as num?)?.toDouble() ?? 0.0,
-        lng: (locationData['lng'] as num?)?.toDouble() ?? 0.0,
+    final response = await dio.post<Map<String, dynamic>>(
+      functionUrl,
+      data: {
+        'action': 'create_day_plan',
+        'moods': moods,
+        'location': location.trim(),
+        'coordinates': {'lat': latitude, 'lng': longitude},
+        'filters': filters ?? <String, dynamic>{},
+      },
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'apikey': SupabaseConfig.anonKey,
+        },
       ),
-      description: card['description'] as String?,
-      priceLevel: card['price_level'] as int?,
-      isFree: card['price_level'] == null || card['price_level'] == 0,
     );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Edge Function returned status ${response.statusCode}: ${response.data}',
+      );
+    }
+
+    final data = response.data;
+    if (data == null) {
+      throw Exception('Empty response from create_day_plan');
+    }
+    if (data['success'] == false) {
+      final err = data['error']?.toString() ??
+          data['message']?.toString() ??
+          'create_day_plan failed';
+      throw Exception(err);
+    }
+    return data;
   }
 }
 

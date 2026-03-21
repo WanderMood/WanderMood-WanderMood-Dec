@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 import '../constants/api_constants.dart';
 import '../../features/places/models/place.dart';
 
@@ -188,7 +189,7 @@ Generate tips that are:
     }
 
     final tips = <String>[];
-    final now = DateTime.now();
+    final now = MoodyClock.now();
     final hour = now.hour;
     final timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
     

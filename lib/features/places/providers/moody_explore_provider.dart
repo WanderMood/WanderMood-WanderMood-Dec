@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/core/services/moody_edge_function_service.dart';
+import 'package:wandermood/core/utils/places_cache_utils.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
@@ -126,5 +127,25 @@ final moodyExploreAutoProvider = FutureProvider<List<Place>>((ref) async {
   );
   
   return ref.watch(moodyExploreProvider(params).future);
+});
+
+/// Moody Hub only: reads the Explore aggregate row in `places_cache`.
+/// Does not call the Edge Function or Google — empty until the user has opened Explore (or another path filled cache).
+final moodyHubExploreCacheOnlyProvider =
+    FutureProvider.autoDispose<List<Place>>((ref) async {
+  final locationAsync = ref.watch(locationNotifierProvider);
+  final city = locationAsync.value?.trim();
+  if (city == null || city.isEmpty) return [];
+
+  final dailyMoodState = ref.watch(dailyMoodStateNotifierProvider);
+  final mood =
+      (dailyMoodState.currentMood ?? 'adventurous').toLowerCase().trim();
+
+  final places = await PlacesCacheUtils.tryLoadExplorePlaces(
+    Supabase.instance.client,
+    mood,
+    city,
+  );
+  return places ?? [];
 });
 

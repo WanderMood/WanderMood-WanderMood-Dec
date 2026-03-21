@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
 import { corsHeaders } from '../_shared/cors.ts'
 
@@ -86,7 +85,7 @@ interface DayPlanResponse {
 // Main Handler
 // ============================================
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -534,7 +533,7 @@ async function handleGetExplore(
     const cacheKey = `explore_${mood}_${location.toLowerCase().trim()}`
     const cachedResult = await checkCache(supabase, cacheKey, userId)
 
-    if (cachedResult && cachedResult.cards.length >= 50) {
+    if (cachedResult && cachedResult.cards.length > 0) {
       console.log(`✅ Using cached explore results (${cachedResult.cards.length} places)`)
       // Apply filters client-side (filters are passed in response but not used for caching)
       const filteredCards = applyFilters(cachedResult.cards, filters)
@@ -653,12 +652,26 @@ async function checkCache(
   userId: string
 ): Promise<ExploreResponse | null> {
   try {
-    const { data, error } = await supabase
+    // Aggregate explore row uses `place_id` null (see cachePlaces). Do not require user_id:
+    // some deployments store shared rows with user_id NULL.
+    let { data, error } = await supabase
       .from('places_cache')
       .select('data, place_id, expires_at')
       .eq('cache_key', cacheKey)
-      .eq('user_id', userId)
+      .is('place_id', null)
       .maybeSingle()
+
+    if (error || !data) {
+      const legacy = await supabase
+        .from('places_cache')
+        .select('data, place_id, expires_at')
+        .eq('cache_key', cacheKey)
+        .eq('user_id', userId)
+        .is('place_id', null)
+        .maybeSingle()
+      data = legacy.data
+      error = legacy.error
+    }
 
     if (error || !data) return null
 

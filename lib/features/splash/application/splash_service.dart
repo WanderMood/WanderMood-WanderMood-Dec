@@ -29,12 +29,8 @@ class SplashService {
       final hasCompletedOnboarding = prefs.getBool('has_completed_preferences') ?? false;
       
       if (hasCompletedOnboarding) {
-        // CRITICAL: DO NOT prefetch here - causes infinite API loop
-        // Prefetch is handled in main_screen.dart using Edge Function (moodyExploreAutoProvider)
-        // The old explorePlacesProvider() was making hundreds of API calls for ALL cities
-        debugPrint('🎯 RETURNING USER: Navigating to home (prefetch handled by main_screen)');
-        
-        // Navigate to home - prefetch will happen in main_screen.dart
+        // Do not prefetch Places or Explore data from splash — cache-first; Explore loads when opened.
+        debugPrint('🎯 RETURNING USER: Navigating to home');
         context.go('/home');
       } else {
         // Always show onboarding for better testing or new users

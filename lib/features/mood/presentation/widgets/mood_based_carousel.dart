@@ -15,6 +15,7 @@ import '../../../home/presentation/screens/dynamic_my_day_provider.dart';
 import '../../../home/presentation/screens/main_screen.dart';
 import '../../../places/services/saved_places_service.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 
 class MoodBasedCarousel extends ConsumerWidget {
   final List<Place> places;
@@ -262,7 +263,7 @@ class MoodBasedCarousel extends ConsumerWidget {
   }
 
   Widget _buildTimeAwareActions(Place place, BuildContext context) {
-    final hour = DateTime.now().hour;
+    final hour = MoodyClock.now().hour;
     String primaryLabel;
     IconData primaryIcon;
     String timePeriod;
@@ -346,7 +347,7 @@ class MoodBasedCarousel extends ConsumerWidget {
       final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
       
       // Convert time period to TimeSlot enum and calculate start time
-      final now = DateTime.now();
+      final now = MoodyClock.now();
       final today = DateTime(now.year, now.month, now.day);
       
       TimeSlot timeSlotEnum;
@@ -389,7 +390,7 @@ class MoodBasedCarousel extends ConsumerWidget {
       
       // Create Activity from Place
       final activity = Activity(
-        id: 'place_${place.id}_${DateTime.now().millisecondsSinceEpoch}',
+        id: 'place_${place.id}_${MoodyClock.now().millisecondsSinceEpoch}',
         name: place.name,
         description: place.address ?? 'Visit ${place.name}',
         imageUrl: imageUrl,

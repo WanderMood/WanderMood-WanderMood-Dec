@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'dart:async';
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/features/home/domain/enums/moody_feature.dart';
 
 class MoodyCharacter extends StatefulWidget {
@@ -9,7 +10,10 @@ class MoodyCharacter extends StatefulWidget {
   final VoidCallback? onTap;
   final MoodyFeature currentFeature;
   final double mouthScaleFactor;
-  
+
+  /// Multiplier for outer glow / halo shadows (1.0 = default). Use below 1 on busy backdrops.
+  final double glowOpacityScale;
+
   const MoodyCharacter({
     super.key,
     this.size = 120,
@@ -17,6 +21,7 @@ class MoodyCharacter extends StatefulWidget {
     this.onTap,
     this.currentFeature = MoodyFeature.none,
     this.mouthScaleFactor = 1.0,
+    this.glowOpacityScale = 1.0,
   });
 
   @override
@@ -137,7 +142,11 @@ class _MoodyCharacterState extends State<MoodyCharacter> with TickerProviderStat
     if (!_isDisposed) {
       _floatController.repeat(reverse: true);
       _rotateController.repeat(reverse: true);
-      _startBlinking();
+      if (widget.mood != 'sleeping') {
+        _startBlinking();
+      } else {
+        _blinkController.value = 1.0;
+      }
     }
   }
 
@@ -184,6 +193,18 @@ class _MoodyCharacterState extends State<MoodyCharacter> with TickerProviderStat
         _showFeatureMessage(widget.currentFeature);
       }
     }
+    if (oldWidget.mood != widget.mood) {
+      if (widget.mood == 'sleeping') {
+        _blinkTimer?.cancel();
+        // Controller at 1.0 drives blink tween to "shut" = scale 0 for open-eye
+        // widgets; sleeping uses CustomPaint eyes, so this only affects reuse.
+        _blinkController.value = 1.0;
+      } else if (oldWidget.mood == 'sleeping') {
+        // Was at 1.0 → normal eyes would be scaled to 0 (invisible). Reset open.
+        _blinkController.value = 0.0;
+        _startBlinking();
+      }
+    }
   }
 
   void _hideBubble() {
@@ -197,7 +218,7 @@ class _MoodyCharacterState extends State<MoodyCharacter> with TickerProviderStat
   }
 
   void _updateTimeOfDay() {
-    final hour = DateTime.now().hour;
+    final hour = MoodyClock.now().hour;
     setState(() {
       if (hour >= 5 && hour < 12) {
         _currentTimeOfDay = 'morning';
@@ -344,30 +365,30 @@ class _MoodyCharacterState extends State<MoodyCharacter> with TickerProviderStat
                           stops: const [0.0, 0.5, 1.0],
                         ),
                         boxShadow: [
-                          // Ambient shadow
                           BoxShadow(
-                            color: const Color(0xFF90C2FF).withOpacity(0.2),
+                            color: const Color(0xFF90C2FF).withValues(
+                                alpha: (0.2 * widget.glowOpacityScale).clamp(0.0, 1.0)),
                             blurRadius: 30,
                             spreadRadius: 10,
                             offset: Offset(_tiltX, _tiltY + 6),
                           ),
-                          // Main shadow
                           BoxShadow(
-                            color: const Color(0xFF90C2FF).withOpacity(0.4),
+                            color: const Color(0xFF90C2FF).withValues(
+                                alpha: (0.4 * widget.glowOpacityScale).clamp(0.0, 1.0)),
                             blurRadius: 20,
                             spreadRadius: 4,
                             offset: Offset(_tiltX * 0.5, _tiltY * 0.5 + 6),
                           ),
-                          // Top highlight
                           BoxShadow(
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(
+                                alpha: (0.6 * widget.glowOpacityScale).clamp(0.0, 1.0)),
                             blurRadius: 15,
                             spreadRadius: -2,
                             offset: Offset(-4 + (_tiltX * 0.2), -4 + (_tiltY * 0.2)),
                           ),
-                          // Edge highlight
                           BoxShadow(
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(
+                                alpha: (0.3 * widget.glowOpacityScale).clamp(0.0, 1.0)),
                             blurRadius: 8,
                             spreadRadius: 1,
                             offset: Offset(_tiltX * -0.1, _tiltY * -0.1),
@@ -380,13 +401,24 @@ class _MoodyCharacterState extends State<MoodyCharacter> with TickerProviderStat
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    _buildEye(left: true),
-                                    _buildEye(left: false),
-                                  ],
-                                ),
+                                if (widget.mood == 'sleeping')
+                                  SizedBox(
+                                    width: widget.size * 0.58,
+                                    height: widget.size * 0.24,
+                                    child: CustomPaint(
+                                      painter: _MoodySleepingEyesPainter(
+                                        faceSize: widget.size,
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      _buildEye(left: true),
+                                      _buildEye(left: false),
+                                    ],
+                                  ),
                                 SizedBox(height: widget.size * 0.15),
                                 SizedBox(
                                   width: widget.size * 0.5,
@@ -406,6 +438,34 @@ class _MoodyCharacterState extends State<MoodyCharacter> with TickerProviderStat
                               ],
                             ),
                           ),
+                          if (widget.mood == 'sleeping') ...[
+                            Positioned(
+                              top: widget.size * 0.06,
+                              left: widget.size * 0.1,
+                              child: Text(
+                                'z',
+                                style: TextStyle(
+                                  fontSize: widget.size * 0.13,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF7EB0E8),
+                                  height: 1,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: widget.size * 0.02,
+                              right: widget.size * 0.08,
+                              child: Text(
+                                'Z',
+                                style: TextStyle(
+                                  fontSize: widget.size * 0.17,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF6FA0D8),
+                                  height: 1,
+                                ),
+                              ),
+                            ),
+                          ],
                           if (_isHovered)
                             Container(
                               width: widget.size,
@@ -507,6 +567,54 @@ class _MoodyCharacterState extends State<MoodyCharacter> with TickerProviderStat
       ),
     );
   }
+}
+
+/// Closed eyelids (arcs) for [MoodyCharacter] `mood: sleeping`.
+class _MoodySleepingEyesPainter extends CustomPainter {
+  const _MoodySleepingEyesPainter({required this.faceSize});
+
+  final double faceSize;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final r = faceSize * 0.47;
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final line = Paint()
+      ..color = Colors.black87
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = math.max(2.0, faceSize * 0.016)
+      ..strokeCap = StrokeCap.round;
+
+    final eyeY = cy - r * 0.08;
+    final eyeSpread = r * 0.2;
+    canvas.drawArc(
+      Rect.fromCenter(
+        center: Offset(cx - eyeSpread, eyeY),
+        width: r * 0.26,
+        height: r * 0.12,
+      ),
+      math.pi * 0.15,
+      math.pi * 0.7,
+      false,
+      line,
+    );
+    canvas.drawArc(
+      Rect.fromCenter(
+        center: Offset(cx + eyeSpread, eyeY),
+        width: r * 0.26,
+        height: r * 0.12,
+      ),
+      math.pi * 0.15,
+      math.pi * 0.7,
+      false,
+      line,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _MoodySleepingEyesPainter oldDelegate) =>
+      oldDelegate.faceSize != faceSize;
 }
 
 class SmilePainter extends CustomPainter {

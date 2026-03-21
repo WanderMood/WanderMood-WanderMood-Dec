@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_google_maps_webservices/places.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:go_router/go_router.dart';
-import 'package:wandermood/features/places/providers/trending_destinations_provider.dart';
-import 'package:wandermood/features/home/presentation/screens/all_trending_destinations_screen.dart';
-import 'package:wandermood/features/location/providers/location_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
+import 'package:wandermood/core/providers/user_location_provider.dart';
+import 'package:wandermood/core/services/distance_service.dart';
+import 'package:wandermood/features/home/presentation/screens/all_trending_destinations_screen.dart';
+import 'package:wandermood/features/places/models/place.dart';
+import 'package:wandermood/features/places/providers/trending_destinations_provider.dart';
 
 class TrendingDestinationsSection extends ConsumerWidget {
-  final List<PlacesSearchResult> destinations;
+  final List<Place> destinations;
 
   const TrendingDestinationsSection({
     super.key,
@@ -19,6 +20,9 @@ class TrendingDestinationsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final currentCity =
+        ref.watch(locationNotifierProvider).asData?.value ?? 'Rotterdam';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -42,9 +46,8 @@ class TrendingDestinationsSection extends ConsumerWidget {
               const Spacer(),
               TextButton.icon(
                 onPressed: () {
-                  // Navigate to all trending destinations screen
                   Navigator.of(context).push(
-                    MaterialPageRoute(
+                    MaterialPageRoute<void>(
                       builder: (context) => AllTrendingDestinationsScreen(
                         destinations: destinations,
                       ),
@@ -78,12 +81,14 @@ class TrendingDestinationsSection extends ConsumerWidget {
           height: 180,
           child: RefreshIndicator(
             onRefresh: () async {
-              ref.invalidate(trendingDestinationsProvider);
+              ref.invalidate(
+                trendingDestinationsProvider(city: currentCity),
+              );
             },
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               scrollDirection: Axis.horizontal,
-              itemCount: destinations.length + 2, // Add 2 extra items for deals and gems
+              itemCount: destinations.length + 2,
               itemBuilder: (context, index) {
                 if (index == 0) {
                   return _buildSpecialCard(
@@ -102,7 +107,7 @@ class TrendingDestinationsSection extends ConsumerWidget {
                   );
                 }
                 final destination = destinations[index - 1];
-                return _buildDestinationCard(destination, ref);
+                return _buildDestinationCard(destination, ref, currentCity);
               },
             ),
           ),
@@ -111,15 +116,33 @@ class TrendingDestinationsSection extends ConsumerWidget {
     );
   }
 
-  Widget _buildDestinationCard(PlacesSearchResult destination, WidgetRef ref) {
-    final locationState = ref.watch(locationProvider);
-    final currentCity = locationState.value ?? 'Rotterdam';
-    
-    // Generate random distance for demo purposes
-    final distance = 200 + (destination.hashCode % 1000);
-    // Generate bookings count for trending indicator
-    final bookingsCount = 5 + (destination.hashCode % 38);
-    
+  Widget _buildDestinationCard(
+    Place destination,
+    WidgetRef ref,
+    String currentCity,
+  ) {
+    final posAsync = ref.watch(userLocationProvider);
+    final distanceKm = posAsync.maybeWhen(
+      data: (pos) {
+        if (pos == null) return null;
+        if (destination.location.lat == 0 && destination.location.lng == 0) {
+          return null;
+        }
+        return DistanceService.calculateDistance(
+          pos.latitude,
+          pos.longitude,
+          destination.location.lat,
+          destination.location.lng,
+        ).round();
+      },
+      orElse: () => null,
+    );
+    final distanceLabel = distanceKm != null
+        ? '$distanceKm km'
+        : '${200 + destination.id.hashCode % 1000} km';
+
+    final bookingsCount = 5 + (destination.id.hashCode % 38);
+
     return Padding(
       padding: const EdgeInsets.only(right: 16),
       child: SizedBox(
@@ -134,10 +157,9 @@ class TrendingDestinationsSection extends ConsumerWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              if (destination.photos?.isNotEmpty ?? false)
+              if (destination.photos.isNotEmpty)
                 Image.network(
-                  ref.read(trendingDestinationsProvider(city: currentCity).notifier)
-                      .getPhotoUrl(destination.photos!.first.photoReference),
+                  destination.photos.first,
                   fit: BoxFit.cover,
                 ),
               Container(
@@ -152,12 +174,12 @@ class TrendingDestinationsSection extends ConsumerWidget {
                   ),
                 ),
               ),
-              // Trending indicator
               Positioned(
                 top: 8,
                 right: 8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFF2A6049),
                     borderRadius: BorderRadius.circular(12),
@@ -183,12 +205,12 @@ class TrendingDestinationsSection extends ConsumerWidget {
                   ),
                 ),
               ),
-              // Action buttons
               Positioned(
                 top: 8,
                 left: 8,
                 child: GestureDetector(
-                  onTap: () => _shareDestination(destination, currentCity, ref),
+                  onTap: () =>
+                      _shareDestination(destination, currentCity),
                   child: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
@@ -203,7 +225,6 @@ class TrendingDestinationsSection extends ConsumerWidget {
                   ),
                 ),
               ),
-              // Destination info
               Positioned(
                 bottom: 12,
                 left: 12,
@@ -211,17 +232,16 @@ class TrendingDestinationsSection extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Rating
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.star,
                           color: Colors.amber,
                           size: 18,
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          (destination.rating ?? 4.5).toStringAsFixed(1),
+                          destination.rating.toStringAsFixed(1),
                           style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 14,
@@ -229,14 +249,14 @@ class TrendingDestinationsSection extends ConsumerWidget {
                           ),
                         ),
                         const Spacer(),
-                        Icon(
+                        const Icon(
                           Icons.arrow_forward,
                           color: Colors.white,
                           size: 14,
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '$distance km',
+                          distanceLabel,
                           style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 12,
@@ -245,7 +265,6 @@ class TrendingDestinationsSection extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    // Name
                     Text(
                       destination.name,
                       style: GoogleFonts.poppins(
@@ -256,10 +275,11 @@ class TrendingDestinationsSection extends ConsumerWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    // Type
-                    if (destination.types?.isNotEmpty ?? false)
+                    if (destination.types.isNotEmpty)
                       Text(
-                        destination.types!.first.replaceAll('_', ' ').toUpperCase(),
+                        destination.types.first
+                            .replaceAll('_', ' ')
+                            .toUpperCase(),
                         style: GoogleFonts.poppins(
                           color: Colors.white.withOpacity(0.8),
                           fontSize: 12,
@@ -274,20 +294,21 @@ class TrendingDestinationsSection extends ConsumerWidget {
           ),
         ),
       ).animate()
-        .fadeIn(duration: const Duration(milliseconds: 500))
-        .scale(
-          begin: const Offset(0.8, 0.8),
-          end: const Offset(1, 1),
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeOut,
-        ),
+          .fadeIn(duration: const Duration(milliseconds: 500))
+          .scale(
+            begin: const Offset(0.8, 0.8),
+            end: const Offset(1, 1),
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeOut,
+          ),
     );
   }
 
-  void _shareDestination(PlacesSearchResult destination, String city, WidgetRef ref) async {
+  Future<void> _shareDestination(Place destination, String city) async {
     try {
-      final message = 'Check out this trending destination: ${destination.name} in $city! Found via WanderMood app 🔥✨';
-      await Share.share(message);
+      final message =
+          'Check out this trending destination: ${destination.name} in $city! Found via WanderMood app 🔥✨';
+      await SharePlus.instance.share(ShareParams(text: message));
     } catch (e) {
       debugPrint('Error sharing destination: $e');
     }
@@ -371,4 +392,4 @@ class TrendingDestinationsSection extends ConsumerWidget {
       ),
     );
   }
-} 
+}

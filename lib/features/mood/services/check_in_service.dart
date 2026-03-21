@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:wandermood/core/utils/moody_clock.dart';
 import '../models/check_in.dart';
 
 final checkInServiceProvider = Provider<CheckInService>((ref) {
@@ -135,7 +136,7 @@ class CheckInService {
   /// Get check-in from yesterday (for morning greetings)
   Future<CheckIn?> getYesterdayCheckIn() async {
     final checkIns = await getRecentCheckIns(limit: 5);
-    final now = DateTime.now();
+    final now = MoodyClock.now();
     final yesterday = DateTime(now.year, now.month, now.day - 1);
 
     for (final checkIn in checkIns) {
@@ -174,7 +175,7 @@ class CheckInService {
       checkIns.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
       int streak = 0;
-      DateTime expectedDate = DateTime.now();
+      DateTime expectedDate = MoodyClock.now();
 
       // Check if there's a check-in today
       final today =

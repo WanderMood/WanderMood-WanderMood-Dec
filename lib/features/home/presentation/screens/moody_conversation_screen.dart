@@ -14,6 +14,7 @@ import 'package:wandermood/features/home/presentation/widgets/moody_character.da
 import 'package:wandermood/features/home/domain/enums/moody_feature.dart';
 import 'package:wandermood/features/plans/presentation/screens/plan_loading_screen.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 
 // WanderMood v2 — Moody conversation overlay (aligned with moody_chat_sheet / Screen 9)
 const Color _wmSkyTint = Color(0xFFEDF5F9);
@@ -910,7 +911,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
       _chatMessages.add(ChatMessage(
         text: message,
         isUser: true,
-        timestamp: DateTime.now(),
+        timestamp: MoodyClock.now(),
       ));
     });
     _scrollToBottom();
@@ -921,7 +922,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
       _chatMessages.add(ChatMessage(
         text: message,
         isUser: false,
-        timestamp: DateTime.now(),
+        timestamp: MoodyClock.now(),
       ));
     });
     _scrollToBottom();

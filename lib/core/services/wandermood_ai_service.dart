@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:wandermood/core/models/ai_recommendation.dart';
 import 'package:wandermood/core/models/ai_chat_message.dart';
 import 'package:wandermood/core/constants/api_keys.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 
 class WanderMoodAIService {
   static final SupabaseClient _supabase = Supabase.instance.client;
@@ -49,7 +50,7 @@ class WanderMoodAIService {
       return AIRecommendationResponse(
         success: data['success'] ?? false,
         action: 'recommend',
-        timestamp: DateTime.now().toIso8601String(),
+        timestamp: MoodyClock.now().toIso8601String(),
         summary: 'AI-powered recommendations for ${moods.join(', ')} in ${city ?? 'Rotterdam'}',
         availablePlaces: (data['recommendations'] as List<dynamic>?)?.length ?? 0,
         recommendations: (data['recommendations'] as List<dynamic>?)
@@ -136,7 +137,7 @@ class WanderMoodAIService {
           return AIChatResponse(
             success: true,
             action: 'chat',
-            timestamp: DateTime.now().toIso8601String(),
+            timestamp: MoodyClock.now().toIso8601String(),
             message: aiMessage.trim(),
             conversationId: convId,
             contextUsed: {
@@ -158,7 +159,7 @@ class WanderMoodAIService {
     return AIChatResponse(
       success: true,
       action: 'chat',
-      timestamp: DateTime.now().toIso8601String(),
+      timestamp: MoodyClock.now().toIso8601String(),
       message: _getFallbackResponse(message, moods?.first ?? 'exploring'),
       conversationId: convId,
       contextUsed: {},
@@ -211,7 +212,7 @@ Guidelines:
         'user_id': user.id,
         'role': 'user',
         'content': userMessage,
-        'created_at': DateTime.now().toIso8601String(),
+        'created_at': MoodyClock.now().toIso8601String(),
       });
       
       // Save AI message
@@ -220,7 +221,7 @@ Guidelines:
         'user_id': user.id,
         'role': 'assistant',
         'content': aiMessage,
-        'created_at': DateTime.now().toIso8601String(),
+        'created_at': MoodyClock.now().toIso8601String(),
       });
     } catch (e) {
       debugPrint('⚠️ Error saving conversation: $e');
@@ -453,7 +454,7 @@ Guidelines:
         'rating': rating,
         'feedback_rating': feedbackRating,
         'feedback_notes': feedbackNotes,
-        'completed_at': DateTime.now().toIso8601String(),
+        'completed_at': MoodyClock.now().toIso8601String(),
       });
       
       debugPrint('✅ Activity completion logged');
@@ -465,7 +466,7 @@ Guidelines:
 
   /// Generate a unique conversation ID
   static String _generateConversationId() {
-    return 'conv_${DateTime.now().millisecondsSinceEpoch}_${_supabase.auth.currentUser?.id?.substring(0, 8) ?? 'anon'}';
+    return 'conv_${MoodyClock.now().millisecondsSinceEpoch}_${_supabase.auth.currentUser?.id?.substring(0, 8) ?? 'anon'}';
   }
 
   /// Get or create a persistent conversation ID for the current user
@@ -493,7 +494,7 @@ Guidelines:
       }
 
       // No existing conversation, create a new one
-      final newId = 'conv_${user.id}_${DateTime.now().millisecondsSinceEpoch}';
+      final newId = 'conv_${user.id}_${MoodyClock.now().millisecondsSinceEpoch}';
       debugPrint('🆕 Created new conversation ID: $newId');
       return newId;
     } catch (e) {

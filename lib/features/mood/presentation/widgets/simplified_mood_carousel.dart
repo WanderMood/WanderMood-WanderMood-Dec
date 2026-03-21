@@ -9,6 +9,7 @@ import '../../../../core/extensions/string_extensions.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:math' as math;
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 
 class SimplifiedMoodCarousel extends ConsumerStatefulWidget {
   final List<Place> places;
@@ -506,7 +507,7 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
   }
 
   Widget _buildSimpleActions(BuildContext context, Place place, bool needsBooking) {
-    final timeOfDay = DateTime.now().hour;
+    final timeOfDay = MoodyClock.now().hour;
     String timePeriod;
     IconData timeIcon;
     

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -208,7 +209,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       // Fallback to generating a new one
       if (mounted) {
         setState(() {
-          _conversationId = DateTime.now().millisecondsSinceEpoch.toString();
+          _conversationId = MoodyClock.now().millisecondsSinceEpoch.toString();
         });
       }
     }
@@ -240,7 +241,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         _chatMessages.add({
           'role': 'user',
           'content': contextualGreeting,
-          'timestamp': DateTime.now(),
+          'timestamp': MoodyClock.now(),
         });
         // Don't auto-trigger API - wait for user to send
       } else if (contextualActivity != null) {
@@ -248,7 +249,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         _chatMessages.add({
           'role': 'assistant',
           'content': _getContextualGreeting(contextualActivity),
-          'timestamp': DateTime.now(),
+          'timestamp': MoodyClock.now(),
           'quickReplies': _getContextualQuickReplies(contextualActivity),
         });
       } else {
@@ -256,7 +257,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         _chatMessages.add({
           'role': 'assistant',
           'content': _getMoodyGreeting(),
-          'timestamp': DateTime.now(),
+          'timestamp': MoodyClock.now(),
           'quickReplies': _getDefaultQuickReplies(),
         });
       }
@@ -268,7 +269,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       _chatMessages.add({
         'role': 'assistant',
         'content': _getMoodyGreeting(),
-        'timestamp': DateTime.now(),
+        'timestamp': MoodyClock.now(),
         'quickReplies': _getDefaultQuickReplies(),
       });
     }
@@ -927,7 +928,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       _chatMessages.add({
         'role': 'user',
         'content': message.trim(),
-        'timestamp': DateTime.now(),
+        'timestamp': MoodyClock.now(),
       });
     });
 
@@ -963,7 +964,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           _chatMessages.add({
             'role': 'assistant',
             'content': response.message,
-            'timestamp': DateTime.now(),
+            'timestamp': MoodyClock.now(),
           });
           _isAILoading = false;
           _isSendingMessage = false;
@@ -977,7 +978,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           _chatMessages.add({
             'role': 'assistant',
             'content': "Oops! I'm having trouble connecting right now. Can you try again? 🤔",
-            'timestamp': DateTime.now(),
+            'timestamp': MoodyClock.now(),
           });
           _isAILoading = false;
           _isSendingMessage = false;
@@ -1026,7 +1027,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       _chatMessages.add({
         'role': 'assistant',
         'content': "Added 💚\n\nI'll remind you later if the vibe still matches.",
-        'timestamp': DateTime.now(),
+        'timestamp': MoodyClock.now(),
       });
     });
     setModalState(() {});
@@ -1047,7 +1048,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       _chatMessages.add({
         'role': 'assistant',
         'content': explanation,
-        'timestamp': DateTime.now(),
+        'timestamp': MoodyClock.now(),
       });
     });
     setModalState(() {});
@@ -1239,7 +1240,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
 
   // Header with greeting (personalized based on check-ins)
   Widget _buildHeader() {
-    final hour = DateTime.now().hour;
+    final hour = MoodyClock.now().hour;
     String greeting = 'Hey there!';
     String emoji = '👋';
     String subtitle = 'Welcome back to your mood journey 🎭';
@@ -1840,7 +1841,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
 
     return todayActivitiesAsync.when(
       data: (activities) {
-        final now = DateTime.now();
+        final now = MoodyClock.now();
         final heroContext = _deriveHeroContext(activities, now);
         final city = _currentCityLabel();
 
@@ -2024,7 +2025,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           ? AnimatedBuilder(
               animation: _floatController!,
               builder: (context, child) {
-                final hour = DateTime.now().hour;
+                final hour = MoodyClock.now().hour;
                 final floatAmount = hour < 12 
                     ? 4.0 
                     : hour < 18 
@@ -2230,7 +2231,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
   Widget _buildMoodyCharacterHero(DailyMoodState dailyState) {
     final currentMood = dailyState.currentMood ?? 'exploring';
     final moodEmoji = _getMoodEmoji(currentMood);
-    final hour = DateTime.now().hour;
+    final hour = MoodyClock.now().hour;
     
     String greeting = 'Hey there!';
     String personalityMessage = "Ready for today's adventure?";
@@ -2862,7 +2863,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
   // Your Day's Flow - Colorful horizontal timeline with interpretive commentary
   Widget _buildYourDaysFlow(DailyMoodState dailyState) {
     final activities = dailyState.plannedActivities;
-    final now = DateTime.now();
+    final now = MoodyClock.now();
     final hour = now.hour;
     final currentMood = dailyState.currentMood ?? 'exploring';
     final contentService = ref.watch(moodyHubContentServiceProvider);
@@ -3254,7 +3255,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           ),
         ),
         const SizedBox(height: 16),
-        // Get mood-filtered places - use ref.watch to prevent API calls on rebuild
+        // Cached Explore rows only (no Edge/Google from Hub)
         locationNotifier.when(
           data: (location) {
             if (location == null) {
@@ -3272,7 +3273,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             }
             
             // Use ref.watch instead of FutureBuilder to prevent API calls on rebuild
-            final placesAsync = ref.watch(moodyExploreAutoProvider);
+            final placesAsync = ref.watch(moodyHubExploreCacheOnlyProvider);
             
             return placesAsync.when(
               data: (places) {
@@ -3280,7 +3281,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Text(
-                      'Exploring places just for you...',
+                      'Open Explore to load spots for your mood — favorites from cache appear here.',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: const Color(0xFF718096),
@@ -3295,7 +3296,8 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                   mood: currentMood,
                   onChatOpen: _showChatBottomSheet,
                   onAddToDay: _addPlaceToSchedule,
-                  onRefresh: () => ref.invalidate(moodyExploreAutoProvider),
+                  onRefresh: () =>
+                      ref.invalidate(moodyHubExploreCacheOnlyProvider),
                 );
               },
               loading: () => const Center(
@@ -3307,7 +3309,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               error: (error, stack) => Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  'Exploring places just for you...',
+                  'Could not load cached suggestions. Try Explore to refresh.',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: const Color(0xFF718096),
@@ -3536,7 +3538,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
   // Your Journey - visual timeline section
   Widget _buildYourJourneySection(DailyMoodState dailyState) {
     final activities = dailyState.plannedActivities;
-    final now = DateTime.now();
+    final now = MoodyClock.now();
     final hour = now.hour;
     
     // Determine current phase
@@ -3591,7 +3593,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
   Widget _buildJourneyTimeline(List<EnhancedActivityData> activities) {
     // Get today's activities sorted by time
     final todayActivities = activities
-        .where((a) => a.startTime.day == DateTime.now().day)
+        .where((a) => a.startTime.day == MoodyClock.now().day)
         .toList()
       ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
@@ -4294,7 +4296,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
 
   // Today's Flow Card (keeping for reference, can be removed later)
   Widget _buildTodayFlowCard(DailyMoodState dailyState) {
-    final now = DateTime.now();
+    final now = MoodyClock.now();
     final hour = now.hour;
     
     // Determine status for each time period
@@ -4662,7 +4664,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     if (nextActivity.isNotEmpty) {
       final next = nextActivity.first;
       nextActivityTitle = next.rawData['title'] ?? 'Next activity';
-      final now = DateTime.now();
+      final now = MoodyClock.now();
       final timeUntil = next.startTime.difference(now);
       if (timeUntil.inHours > 0) {
         nextActivityTime = 'In ${timeUntil.inHours} hours';
@@ -4676,7 +4678,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     }
     
     // Determine focus time
-    final now = DateTime.now();
+    final now = MoodyClock.now();
     String focusTime = 'Evening focused';
     if (now.hour < 12) {
       focusTime = 'Morning focused';
@@ -4965,7 +4967,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
       
       // Convert time period to TimeSlot enum and calculate start time
-      final now = DateTime.now();
+      final now = MoodyClock.now();
       final today = DateTime(now.year, now.month, now.day);
       
       TimeSlot timeSlotEnum;
@@ -5008,7 +5010,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       
       // Create Activity from Place
       final activity = Activity(
-        id: 'place_${place.id}_${DateTime.now().millisecondsSinceEpoch}',
+        id: 'place_${place.id}_${MoodyClock.now().millisecondsSinceEpoch}',
         name: place.name,
         description: place.address ?? 'Visit ${place.name}',
         imageUrl: imageUrl,

@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 import '../../mood/domain/models/mood.dart';
 import '../../weather/domain/models/weather.dart';
 
@@ -7,7 +7,7 @@ class ContextManager {
   
   /// Get current time-based context
   static TimeContext getCurrentTimeContext() {
-    final now = DateTime.now();
+    final now = MoodyClock.now();
     final hour = now.hour;
     final dayOfWeek = now.weekday;
     final isWeekend = dayOfWeek >= 6;

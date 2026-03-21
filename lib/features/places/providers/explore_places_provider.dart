@@ -1,3 +1,8 @@
+// DEPRECATED — do not use.
+// Legacy Google Places mass-fetch implementation. Production Explore uses the moody Edge
+// function and `places_cache`. Nothing in the shipping app imports this file; it is kept
+// temporarily to avoid churn. Do not add routes, imports, or provider wiring here.
+
 import 'package:flutter_google_maps_webservices/places.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter/foundation.dart';

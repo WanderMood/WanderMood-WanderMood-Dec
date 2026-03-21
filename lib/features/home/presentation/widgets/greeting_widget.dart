@@ -1,3 +1,4 @@
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -5,7 +6,7 @@ class GreetingWidget extends StatelessWidget {
   const GreetingWidget({super.key});
 
   String _getTimeBasedGreeting() {
-    final hour = DateTime.now().hour;
+    final hour = MoodyClock.now().hour;
     if (hour >= 5 && hour < 12) {
       return 'Good morning explorer 👋';
     } else if (hour >= 12 && hour < 17) {

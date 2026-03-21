@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/location/presentation/widgets/location_dropdown.dart';
 import 'package:wandermood/features/places/models/place.dart';
-import 'package:wandermood/features/places/providers/explore_places_provider.dart';
 // OLD - Replaced by moody_explore_provider. Keep for 24-48h rollback safety.
 import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_card.dart';
@@ -19,8 +18,8 @@ import 'package:wandermood/core/domain/providers/location_notifier_provider.dart
 import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:wandermood/core/constants/api_keys.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:wandermood/core/services/distance_service.dart';
 import 'package:wandermood/core/services/user_preferences_service.dart';
@@ -164,13 +163,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     _searchController.addListener(_onSearchChanged);
     _scrollController.addListener(_onScrollChanged);
     
-    // Clear any cached data and get fresh location
+    // Refresh location; keep Supabase/SharedPreferences explore caches (cache-first).
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Clear ALL cached places data from SharedPreferences
-      await _clearAllCachedData();
-      // Clear any cached places data to ensure fresh content
-      ref.invalidate(explorePlacesProvider);
-      // Get current location
       ref.read(locationNotifierProvider.notifier).getCurrentLocation();
 
       // Wire daily mood selection → Explore filter so the user's current mood
@@ -700,7 +694,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     
     // Fallback: estimate based on place type and current time
     // This is a reasonable fallback when real data isn't available
-    final hour = DateTime.now().hour;
+    final hour = MoodyClock.now().hour;
     if (place.types.contains('museum')) return hour >= 9 && hour <= 17;
     if (place.types.contains('restaurant')) return hour >= 11 && hour <= 22;
     if (place.types.contains('bar')) return hour >= 17 || hour <= 2; // Bars open late
@@ -773,24 +767,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       default:
         return place.types.any((type) => type.toLowerCase() == category.toLowerCase()) ||
                place.activities.any((activity) => activity.toLowerCase() == category.toLowerCase());
-    }
-  }
-
-  Future<void> _clearAllCachedData() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final keys = prefs.getKeys();
-      
-      // Remove all places cache keys
-      for (final key in keys) {
-        if (key.startsWith('places_cache_') || key.startsWith('places_timestamp_')) {
-          await prefs.remove(key);
-          print('🗑️ Cleared cached data: $key');
-        }
-      }
-      print('✅ All places cache data cleared');
-    } catch (e) {
-      print('❌ Error clearing cache: $e');
     }
   }
 
@@ -2721,7 +2697,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       referencePoint = Position(
         latitude: cityCoords['lat']!,
         longitude: cityCoords['lng']!,
-        timestamp: DateTime.now(),
+        timestamp: MoodyClock.now(),
         accuracy: 0,
         altitude: 0,
         altitudeAccuracy: 0,

@@ -8,9 +8,6 @@ import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'dynamic_my_day_provider.dart';
-import '../../../../core/presentation/widgets/swirl_background.dart';
-import '../../../plans/data/services/scheduled_activity_service.dart';
-
 // WanderMood v2 — Agenda / calendar (Screen 10)
 const Color _wmCharcoal = Color(0xFF1E1C18);
 const Color _wmStone = Color(0xFF8C8780);
@@ -61,9 +58,8 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     // ✅ FIXED: Watch provider ONCE at top level of build
     final activitiesAsyncValue = ref.watch(cachedActivitySuggestionsProvider);
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: SwirlBackground(
-        child: CustomScrollView(
+      backgroundColor: const Color(0xFFF5F0E8), // wmCream — no gradient (redesign QA)
+      body: CustomScrollView(
           slivers: [
             // Header Section
             SliverAppBar(
@@ -142,7 +138,6 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ),
-      ),
     );
   }
   

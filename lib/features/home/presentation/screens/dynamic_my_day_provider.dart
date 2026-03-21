@@ -1,3 +1,4 @@
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -105,7 +106,7 @@ class ActivityManagerNotifier extends StateNotifier<ActivityManagerState> {
   }) {
     final newSnoozes =
         Map<String, DateTime>.from(state.completionPromptSnoozes);
-    newSnoozes[activityId] = DateTime.now().add(duration);
+    newSnoozes[activityId] = MoodyClock.now().add(duration);
 
     final newStatusUpdates = Map<String, ActivityStatus>.from(state.statusUpdates);
     newStatusUpdates[activityId] = ActivityStatus.activeNow;
@@ -174,7 +175,7 @@ Map<String, dynamic> _activityToRawData(Activity activity) {
 final scheduledActivitiesForTodayProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final service = ref.watch(scheduledActivityServiceProvider);
   final activities = await service.getScheduledActivities();
-  final now = DateTime.now();
+  final now = MoodyClock.now();
   final today = DateTime(now.year, now.month, now.day);
 
   final todayMaps = <Map<String, dynamic>>[];
@@ -214,7 +215,7 @@ final cachedActivitySuggestionsProvider = FutureProvider<List<Map<String, dynami
 final todayActivitiesProvider = FutureProvider<List<EnhancedActivityData>>((ref) async {
   final activities = await ref.watch(scheduledActivitiesForTodayProvider.future);
   final activityManagerState = ref.watch(activityManagerProvider);
-  final now = DateTime.now();
+  final now = MoodyClock.now();
   final today = DateTime(now.year, now.month, now.day);
 
   final enhancedActivities = <EnhancedActivityData>[];
@@ -319,7 +320,7 @@ final todayActivitiesProvider = FutureProvider<List<EnhancedActivityData>>((ref)
 /// CRITICAL: NOT autoDispose to prevent API calls on hot reload
 final currentActivityStatusProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final todayActivities = await ref.watch(todayActivitiesProvider.future);
-  final now = DateTime.now();
+  final now = MoodyClock.now();
   final hour = now.hour;
 
   if (todayActivities.isEmpty) {
@@ -467,7 +468,7 @@ final timelineCategorizedActivitiesProvider = FutureProvider<Map<String, List<En
 /// Provider for categorized activities (legacy - for backwards compatibility)
 final categorizedActivitiesProvider = FutureProvider<Map<String, List<Map<String, dynamic>>>>((ref) async {
   final activities = await ref.watch(cachedActivitySuggestionsProvider.future);
-  final currentHour = DateTime.now().hour;
+  final currentHour = MoodyClock.now().hour;
   
   final Map<String, List<Map<String, dynamic>>> categorized = {
     'recommended': [],
@@ -532,7 +533,7 @@ String _formatTime(DateTime time) {
 
 /// Default activities as fallback
 List<Map<String, dynamic>> _getDefaultActivities() {
-  final hour = DateTime.now().hour;
+  final hour = MoodyClock.now().hour;
   
   if (hour >= 6 && hour < 12) {
     return [

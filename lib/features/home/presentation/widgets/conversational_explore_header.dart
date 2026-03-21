@@ -171,15 +171,16 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
                     height: 38,
                     width: 38,
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: _wmForestTint,
                       borderRadius: BorderRadius.circular(19),
+                      border: Border.all(color: _wmParchment, width: 0.5),
                     ),
                     child: IconButton(
                       padding: EdgeInsets.zero,
                       onPressed: widget.onFilterTap,
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.tune,
-                        color: Colors.grey[700],
+                        color: _wmForest,
                         size: 20,
                       ),
                     ),

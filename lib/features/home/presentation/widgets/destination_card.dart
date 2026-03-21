@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:go_router/go_router.dart';
 import 'package:wandermood/features/places/models/place.dart';
-import 'package:wandermood/features/places/services/places_service.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:math' show min;
-import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_image.dart';
 
-class DestinationCard extends ConsumerWidget {
+class DestinationCard extends StatelessWidget {
   final Place place;
   final VoidCallback? onTap;
   final double elevation;
@@ -16,18 +10,16 @@ class DestinationCard extends ConsumerWidget {
   final bool compact;
 
   const DestinationCard({
-    Key? key,
+    super.key,
     required this.place,
     this.onTap,
     this.elevation = 2.0,
     this.showDescription = true,
     this.compact = false,
-  }) : super(key: key);
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final placesService = ref.watch(placesServiceProvider);
-    
+  Widget build(BuildContext context) {
     return Card(
       elevation: elevation,
       shape: RoundedRectangleBorder(
@@ -66,10 +58,10 @@ class DestinationCard extends ConsumerWidget {
       children: [
         // Image
         PlaceImage(
-          photoReference: place.photos.isNotEmpty ? place.photos.first : null,
-          placeType: place.types.isNotEmpty ? place.types.first : 'default',
+          imageUrl: place.photos.isNotEmpty
+              ? place.photos.first
+              : 'assets/images/fallbacks/default.jpg',
           height: 180,
-          isAsset: place.isAsset,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         ),
 
@@ -178,24 +170,24 @@ class DestinationCard extends ConsumerWidget {
     return relevantTypes.contains(type);
   }
 
-  Widget _buildOpeningHoursBanner(OpeningHours openingHours) {
+  Widget _buildOpeningHoursBanner(PlaceOpeningHours openingHours) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: openingHours.openNow ? Colors.green : Colors.red,
+        color: openingHours.isOpen ? Colors.green : Colors.red,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            openingHours.openNow ? Icons.check_circle : Icons.access_time,
+            openingHours.isOpen ? Icons.check_circle : Icons.access_time,
             color: Colors.white,
             size: 16,
           ),
           const SizedBox(width: 4),
           Text(
-            openingHours.openNow ? 'Open Now' : 'Closed',
+            openingHours.isOpen ? 'Open Now' : 'Closed',
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -213,9 +205,9 @@ class DestinationCard extends ConsumerWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Icon(
-        place.isFavorite ? Icons.favorite : Icons.favorite_border,
-        color: place.isFavorite ? Colors.red : Colors.grey,
+      child: const Icon(
+        Icons.favorite_border,
+        color: Colors.grey,
         size: 20,
       ),
     );

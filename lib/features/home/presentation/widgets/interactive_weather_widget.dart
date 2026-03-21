@@ -1,9 +1,10 @@
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/weather_provider.dart';
-import '../../../weather/domain/models/weather.dart';
+import 'package:wandermood/features/home/providers/weather_provider.dart';
+import 'package:wandermood/features/weather/domain/models/weather.dart';
+import 'package:wandermood/features/weather/domain/models/weather_forecast.dart';
 
 class InteractiveWeatherWidget extends ConsumerStatefulWidget {
   const InteractiveWeatherWidget({super.key});
@@ -111,7 +112,7 @@ class _InteractiveWeatherWidgetState extends ConsumerState<InteractiveWeatherWid
                             ),
                           ),
                           Text(
-                weather.description,
+                weather.description ?? weather.condition,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   color: Colors.grey[600],
@@ -120,16 +121,16 @@ class _InteractiveWeatherWidgetState extends ConsumerState<InteractiveWeatherWid
                         ],
                       ),
           Icon(
-            _getWeatherIcon(weather.description),
+            _getWeatherIcon(weather.description ?? weather.condition),
             size: 48,
-            color: _getWeatherColor(weather.description),
+            color: _getWeatherColor(weather.description ?? weather.condition),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildHourlyForecast(List<Weather> forecast) {
+  Widget _buildHourlyForecast(List<WeatherForecast> forecast) {
     return SizedBox(
       height: 100,
       child: ListView.builder(
@@ -138,24 +139,31 @@ class _InteractiveWeatherWidgetState extends ConsumerState<InteractiveWeatherWid
         itemCount: forecast.length,
         itemBuilder: (context, index) {
           final hourlyWeather = forecast[index];
+          final label = hourlyWeather.time ??
+              '${hourlyWeather.date.hour.toString().padLeft(2, '0')}:00';
+          final desc =
+              hourlyWeather.description ?? hourlyWeather.conditions;
+          final temp = hourlyWeather.temperature ??
+              (hourlyWeather.maxTemperature + hourlyWeather.minTemperature) /
+                  2.0;
           return Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                 Text(
-                  '${hourlyWeather.dateTime.hour}:00',
+                  label,
                   style: GoogleFonts.poppins(fontSize: 12),
                 ),
                 const SizedBox(height: 4),
                 Icon(
-                  _getWeatherIcon(hourlyWeather.description),
+                  _getWeatherIcon(desc),
                   size: 24,
-                  color: _getWeatherColor(hourlyWeather.description),
+                  color: _getWeatherColor(desc),
                           ),
                 const SizedBox(height: 4),
                 Text(
-                  '${hourlyWeather.temperature.round()}°',
+                  '${temp.round()}°',
                   style: GoogleFonts.poppins(fontSize: 12),
                 ),
               ],
@@ -166,28 +174,31 @@ class _InteractiveWeatherWidgetState extends ConsumerState<InteractiveWeatherWid
     );
   }
 
-  Widget _buildDailyForecast(List<Weather> forecast) {
+  Widget _buildDailyForecast(List<WeatherForecast> forecast) {
     return Column(
-      children: forecast.map((weather) {
+      children: forecast.map((row) {
+        final desc = row.description ?? row.conditions;
+        final temp = row.temperature ??
+            (row.maxTemperature + row.minTemperature) / 2.0;
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                _getDayName(weather.dateTime),
+                _getDayName(row.date),
                 style: GoogleFonts.poppins(fontSize: 14),
                                     ),
                                     Row(
                                       children: [
                                         Icon(
-                    _getWeatherIcon(weather.description),
+                    _getWeatherIcon(desc),
                     size: 20,
-                    color: _getWeatherColor(weather.description),
+                    color: _getWeatherColor(desc),
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
-                    '${weather.temperature.round()}°',
+                    '${temp.round()}°',
                     style: GoogleFonts.poppins(fontSize: 14),
                                       ),
                 ],
@@ -234,7 +245,7 @@ class _InteractiveWeatherWidgetState extends ConsumerState<InteractiveWeatherWid
   }
 
   String _getDayName(DateTime date) {
-    final now = DateTime.now();
+    final now = MoodyClock.now();
     if (date.year == now.year && date.month == now.month && date.day == now.day) {
       return 'Today';
     } else if (date.year == now.year && date.month == now.month && date.day == now.day + 1) {

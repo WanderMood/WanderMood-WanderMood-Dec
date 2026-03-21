@@ -15,6 +15,7 @@ import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_pro
 import 'package:wandermood/features/weather/providers/weather_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 
 Future<void> showMyDayGetReadySheet({
   required BuildContext context,
@@ -239,7 +240,7 @@ class _ExcitingGetReadySheetContentState
 
   void _updateCountdown() {
     if (!mounted) return;
-    final d = widget.activity.startTime.difference(DateTime.now());
+    final d = widget.activity.startTime.difference(MoodyClock.now());
     setState(() => _countdown = d.isNegative ? Duration.zero : d);
   }
 

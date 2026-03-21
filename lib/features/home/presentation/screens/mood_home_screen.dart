@@ -1,3 +1,4 @@
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -78,7 +79,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   }
   
   void _updateGreeting() {
-    final hour = DateTime.now().hour;
+    final hour = MoodyClock.now().hour;
     setState(() {
       if (hour >= 5 && hour < 12) {
         _timeGreeting = 'Good morning';
@@ -101,7 +102,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
 
   // Generate contextual message based on time, user history, and context
   void _updateAIGreeting() {
-    final hour = DateTime.now().hour;
+    final hour = MoodyClock.now().hour;
     
     // Get contextual message
     final contextualMessage = _getContextualMoodMessage();
@@ -125,7 +126,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   /// Time-of-day phrase for the hero line (replaces "today?")
   String _getTimeOfDayPhrase(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final hour = DateTime.now().hour;
+    final hour = MoodyClock.now().hour;
     if (hour >= 5 && hour < 12) return l10n.moodHubThisMorning;
     if (hour >= 12 && hour < 17) return l10n.moodHubThisAfternoon;
     if (hour >= 17 && hour < 21) return l10n.moodHubThisEvening;
@@ -142,7 +143,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       case CommunicationStyle.friendly:
         return name != null ? l10n.moodHubGreetingFriendly(name) : l10n.moodHubGreetingHeyThere;
       case CommunicationStyle.professional: {
-        final hour = DateTime.now().hour;
+        final hour = MoodyClock.now().hour;
         final greeting = hour >= 5 && hour < 12
             ? l10n.goodMorning
             : hour >= 12 && hour < 17
@@ -161,8 +162,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   /// Returns a statement (not a question) that guides the user
   String _getContextualMoodMessage() {
     try {
-      final hour = DateTime.now().hour;
-      final isWeekend = DateTime.now().weekday >= 6;
+      final hour = MoodyClock.now().hour;
+      final isWeekend = MoodyClock.now().weekday >= 6;
       
       // Check if user is new (no previous mood selections)
       final dailyState = ref.read(dailyMoodStateNotifierProvider);
@@ -207,8 +208,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   /// Varies by time of day, new vs returning user, last mood, and user's communication style from onboarding.
   Future<String> _getContextualMoodyMessage(DailyMoodState dailyMoodState) async {
     try {
-      final hour = DateTime.now().hour;
-      final isWeekend = DateTime.now().weekday >= 6;
+      final hour = MoodyClock.now().hour;
+      final isWeekend = MoodyClock.now().weekday >= 6;
       final isNewUser = !dailyMoodState.hasSelectedMoodToday && dailyMoodState.currentMood == null;
       final lastMood = dailyMoodState.currentMood;
       final style = ref.read(communicationStyleProvider).style;
@@ -498,7 +499,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
 
   // Helper to get current time slot
   String _getTimeSlot() {
-    final hour = DateTime.now().hour;
+    final hour = MoodyClock.now().hour;
     if (hour >= 5 && hour < 12) return 'morning';
     if (hour >= 12 && hour < 17) return 'afternoon';
     if (hour >= 17 && hour < 21) return 'evening';
@@ -697,7 +698,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   void _showMoodyTalkDialog(BuildContext context) {
     // Create conversation ID only if it doesn't exist (persistent conversation)
     if (_conversationId == null) {
-      _conversationId = 'conv_${DateTime.now().millisecondsSinceEpoch}';
+      _conversationId = 'conv_${MoodyClock.now().millisecondsSinceEpoch}';
     }
     
     showModalBottomSheet(
@@ -1334,7 +1335,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
 
   // Helper method to format message timestamp (iMessage style)
   String _formatMessageTime(DateTime timestamp) {
-    final now = DateTime.now();
+    final now = MoodyClock.now();
     final difference = now.difference(timestamp);
     
     if (difference.inMinutes < 1) {
@@ -1359,7 +1360,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       _chatMessages.add(ChatMessage(
         message: message.trim(),
         isUser: true,
-        timestamp: DateTime.now(),
+        timestamp: MoodyClock.now(),
       ));
       _isAILoading = true;
     });
@@ -1396,7 +1397,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         _chatMessages.add(ChatMessage(
           message: response.message,
           isUser: false,
-          timestamp: DateTime.now(),
+          timestamp: MoodyClock.now(),
         ));
         _isAILoading = false;
       });
@@ -1413,7 +1414,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         _chatMessages.add(ChatMessage(
           message: 'Oops! I\'m having trouble connecting right now. Can you try again? 🤔',
           isUser: false,
-          timestamp: DateTime.now(),
+          timestamp: MoodyClock.now(),
         ));
         _isAILoading = false;
       });
@@ -1433,7 +1434,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       _chatMessages.add(ChatMessage(
         message: message.trim(),
         isUser: true,
-        timestamp: DateTime.now(),
+        timestamp: MoodyClock.now(),
       ));
       _isAILoading = true;
     });
@@ -1460,7 +1461,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
           _chatMessages.add(ChatMessage(
             message: response.message,
             isUser: false,
-            timestamp: DateTime.now(),
+            timestamp: MoodyClock.now(),
           ));
         });
       }
@@ -1473,7 +1474,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
           _chatMessages.add(ChatMessage(
             message: 'Sorry, I couldn\'t respond right now. Try again! 😅',
             isUser: false,
-            timestamp: DateTime.now(),
+            timestamp: MoodyClock.now(),
           ));
         });
       }
@@ -1495,9 +1496,9 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
 
   // Add personalized greeting method
   void _updatePersonalizedGreeting() {
-    final hour = DateTime.now().hour;
-    final isWeekend = DateTime.now().weekday >= 6;
-    final dayOfWeek = DateTime.now().weekday;
+    final hour = MoodyClock.now().hour;
+    final isWeekend = MoodyClock.now().weekday >= 6;
+    final dayOfWeek = MoodyClock.now().weekday;
     
     setState(() {
       // Contextual greetings based on time and day
@@ -1766,7 +1767,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
               Builder(
                 builder: (context) {
                   final l10n = AppLocalizations.of(context)!;
-                  final hour = DateTime.now().hour;
+                  final hour = MoodyClock.now().hour;
                   final message = hour >= 5 && hour < 12
                       ? l10n.moodHubBannerMorning
                       : hour >= 12 && hour < 17
@@ -2177,8 +2178,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         colorHex: '#FCDF7E', // soft pale yellow
         displayOrder: 1,
         isActive: true,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: MoodyClock.now(),
+        updatedAt: MoodyClock.now(),
       ),
       MoodOption(
         id: 'adventurous',
@@ -2187,8 +2188,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         colorHex: '#F79F9C', // muted light coral
         displayOrder: 2,
         isActive: true,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: MoodyClock.now(),
+        updatedAt: MoodyClock.now(),
       ),
       MoodOption(
         id: 'relaxed',
@@ -2197,8 +2198,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         colorHex: '#72DED5', // light teal aqua
         displayOrder: 3,
         isActive: true,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: MoodyClock.now(),
+        updatedAt: MoodyClock.now(),
       ),
       MoodOption(
         id: 'energetic',
@@ -2207,8 +2208,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         colorHex: '#84C8F0', // gentle sky blue
         displayOrder: 4,
         isActive: true,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: MoodyClock.now(),
+        updatedAt: MoodyClock.now(),
       ),
       MoodOption(
         id: 'romantic',
@@ -2217,8 +2218,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         colorHex: '#F4A9D3', // soft light pink
         displayOrder: 5,
         isActive: true,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: MoodyClock.now(),
+        updatedAt: MoodyClock.now(),
       ),
       MoodOption(
         id: 'social',
@@ -2227,8 +2228,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         colorHex: '#ECCBA3', // pale warm beige
         displayOrder: 6,
         isActive: true,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: MoodyClock.now(),
+        updatedAt: MoodyClock.now(),
       ),
       MoodOption(
         id: 'cultural',
@@ -2237,8 +2238,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         colorHex: '#BFA8E0', // light pastel purple / lavender
         displayOrder: 7,
         isActive: true,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: MoodyClock.now(),
+        updatedAt: MoodyClock.now(),
       ),
       MoodOption(
         id: 'curious',
@@ -2247,8 +2248,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         colorHex: '#EFB887', // muted light peach
         displayOrder: 8,
         isActive: true,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: MoodyClock.now(),
+        updatedAt: MoodyClock.now(),
       ),
       MoodOption(
         id: 'cozy',
@@ -2257,8 +2258,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         colorHex: '#D2A08B', // soft light brown / taupe
         displayOrder: 9,
         isActive: true,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: MoodyClock.now(),
+        updatedAt: MoodyClock.now(),
       ),
       MoodOption(
         id: 'excited',
@@ -2267,8 +2268,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         colorHex: '#A3E0A3', // soft pastel green
         displayOrder: 10,
         isActive: true,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: MoodyClock.now(),
+        updatedAt: MoodyClock.now(),
       ),
       MoodOption(
         id: 'foody',
@@ -2277,8 +2278,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         colorHex: '#FFD3A3', // soft pastel orange / peach
         displayOrder: 11,
         isActive: true,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: MoodyClock.now(),
+        updatedAt: MoodyClock.now(),
       ),
       MoodOption(
         id: 'surprise',
@@ -2287,8 +2288,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         colorHex: '#C0D3E0', // soft pastel blue / lavender
         displayOrder: 12,
         isActive: true,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: MoodyClock.now(),
+        updatedAt: MoodyClock.now(),
       ),
     ];
   }

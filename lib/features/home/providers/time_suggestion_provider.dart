@@ -1,3 +1,4 @@
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/core/theme/time_based_theme.dart';
 import 'package:wandermood/features/weather/providers/weather_provider.dart';
@@ -5,7 +6,7 @@ import 'package:wandermood/features/plans/application/services/openai_service.da
 import 'package:dart_openai/dart_openai.dart';
 
 final timeSuggestionProvider = FutureProvider.autoDispose<String>((ref) async {
-  final hour = DateTime.now().hour;
+  final hour = MoodyClock.now().hour;
   final timeConfig = TimeBasedTheme.getConfigForHour(hour);
   final weather = await ref.watch(weatherProvider.future);
   final openAI = ref.read(openAIServiceProvider);

@@ -56,6 +56,7 @@ class _TravelModeToggleState extends ConsumerState<TravelModeToggle> {
               widget.onModeChanged(newMode);
               // Invalidate recommendations provider to refresh places
               ref.invalidate(moodyExploreAutoProvider);
+              ref.invalidate(moodyHubExploreCacheOnlyProvider);
             }
           });
         },

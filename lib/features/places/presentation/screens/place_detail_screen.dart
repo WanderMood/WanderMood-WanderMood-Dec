@@ -11,7 +11,6 @@ import 'package:map_launcher/map_launcher.dart';
 import 'package:wandermood/core/theme/app_theme.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/places/models/place.dart';
-import 'package:wandermood/features/places/providers/explore_places_provider.dart';
 import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:wandermood/features/places/presentation/widgets/booking_bottom_sheet.dart';
@@ -86,14 +85,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       return _buildWithPlace(_cachedPlace!);
     }
     
-    // FIX: Use Edge Function cache instead of looping through all cities
-    // This prevents the infinite API call loop
-    if (kDebugMode) debugPrint('🔍 Looking for place in Edge Function cache...');
-    
-    // Check Edge Function cache first (moodyExploreAutoProvider)
-    final edgePlacesAsync = _cachedPlace == null 
-        ? ref.watch(moodyExploreAutoProvider)
-        : ref.read(moodyExploreAutoProvider);
+    // Resolve from Supabase places_cache aggregate only (same as Moody Hub / My Day free time).
+    if (kDebugMode) debugPrint('🔍 Looking for place in places_cache aggregate...');
+    final edgePlacesAsync = ref.watch(moodyHubExploreCacheOnlyProvider);
     
     return Scaffold(
         backgroundColor: const Color(0xFFF5F0E8),
@@ -599,26 +593,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF7CB342).withOpacity(0.1),
-                    const Color(0xFF689F38).withOpacity(0.05),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: _pdWmCream,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: const Color(0xFF7CB342).withOpacity(0.3),
-                  width: 1.5,
+                  color: _pdWmParchment,
+                  width: 1,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF7CB342).withOpacity(0.1),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -628,12 +608,17 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF7CB342).withOpacity(0.2),
+                          color: _pdWmForestTint,
                           borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: _pdWmParchment,
+                            width: 0.5,
+                          ),
                         ),
-                        child: const Text(
-                          '🕐',
-                          style: TextStyle(fontSize: 20),
+                        child: Icon(
+                          Icons.schedule,
+                          size: 20,
+                          color: _pdWmForest,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -642,7 +627,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF388E3C),
+                          color: _pdWmCharcoal,
               ),
                       ),
                     ],
@@ -651,12 +636,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.8),
+                      color: _pdWmWhite,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: place.openingHours!.isOpen
-                            ? const Color(0xFF2A6049).withOpacity(0.3)
-                            : Colors.red.withOpacity(0.3),
+                            ? _pdWmForest.withOpacity(0.25)
+                            : Colors.red.withOpacity(0.35),
                         width: 1.5,
                       ),
               ),
@@ -670,12 +655,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: place.openingHours!.isOpen
-                              ? const Color(0xFF2A6049)
+                              ? _pdWmForest
                               : Colors.red,
                                 boxShadow: [
                                   BoxShadow(
                                     color: place.openingHours!.isOpen
-                                        ? const Color(0xFF2A6049).withOpacity(0.3)
+                                        ? _pdWmForest.withOpacity(0.3)
                                         : Colors.red.withOpacity(0.3),
                                     blurRadius: 4,
                                     spreadRadius: 1,
@@ -690,7 +675,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                                 fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: place.openingHours!.isOpen
-                              ? const Color(0xFF2A6049)
+                              ? _pdWmForest
                               : Colors.red,
                         ),
                       ),
@@ -702,7 +687,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                       place.openingHours!.currentStatus!,
                       style: GoogleFonts.poppins(
                               fontSize: 14,
-                              color: const Color(0xFF424242),
+                              color: _pdWmCharcoal.withValues(alpha: 0.75),
                               fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -920,10 +905,10 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFEAF5EE),
+        color: _pdWmCream,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF2A6049).withOpacity(0.15),
+          color: _pdWmParchment,
           width: 1,
         ),
       ),
@@ -942,7 +927,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF2E2E2E),
+                  color: _pdWmCharcoal,
                 ),
               ),
             ],
@@ -953,8 +938,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFFEAF5EE),
+                color: _pdWmForestTint,
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: _pdWmParchment, width: 0.5),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -969,7 +955,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF2A6049),
+                      color: _pdWmForest,
                     ),
                   ),
                 ],

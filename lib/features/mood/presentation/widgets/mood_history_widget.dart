@@ -6,6 +6,7 @@ import 'package:wandermood/features/auth/domain/providers/auth_provider.dart';
 import 'package:wandermood/features/mood/application/mood_service.dart';
 import 'package:wandermood/features/mood/domain/models/mood_data.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 
 /// WanderMood v2 mood history — no card shadows; parchment borders; calm empty state.
 const Color _wmWhite = Color(0xFFFFFFFF);
@@ -254,7 +255,7 @@ class MoodHistoryWidget extends ConsumerWidget {
     MoodData mood,
   ) {
     final isToday = DateFormat('yyyy-MM-dd').format(mood.timestamp) ==
-        DateFormat('yyyy-MM-dd').format(DateTime.now());
+        DateFormat('yyyy-MM-dd').format(MoodyClock.now());
 
     return Container(
       width: 152,
@@ -374,7 +375,7 @@ class MoodHistoryWidget extends ConsumerWidget {
     AppLocalizations l10n,
     DateTime date,
   ) {
-    final now = DateTime.now();
+    final now = MoodyClock.now();
     final today = DateTime(now.year, now.month, now.day);
     final dateOnly = DateTime(date.year, date.month, date.day);
 
@@ -397,10 +398,10 @@ class MoodHistoryWidget extends ConsumerWidget {
     bool isLast,
   ) {
     final isToday = DateFormat('yyyy-MM-dd').format(day) ==
-        DateFormat('yyyy-MM-dd').format(DateTime.now());
+        DateFormat('yyyy-MM-dd').format(MoodyClock.now());
     final isYesterday = DateFormat('yyyy-MM-dd').format(day) ==
         DateFormat('yyyy-MM-dd')
-            .format(DateTime.now().subtract(const Duration(days: 1)));
+            .format(MoodyClock.now().subtract(const Duration(days: 1)));
 
     final String dayLabel;
     if (isToday) {

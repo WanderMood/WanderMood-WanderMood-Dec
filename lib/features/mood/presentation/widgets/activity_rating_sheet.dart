@@ -4,6 +4,7 @@ import '../../models/activity_rating.dart';
 import '../../services/activity_rating_service.dart';
 import 'package:uuid/uuid.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 
 class ActivityRatingSheet extends ConsumerStatefulWidget {
   final String activityId;
@@ -443,7 +444,7 @@ class _ActivityRatingSheetState extends ConsumerState<ActivityRatingSheet>
       notes: _notesController.text.trim().isNotEmpty
           ? _notesController.text.trim()
           : null,
-      completedAt: DateTime.now(),
+      completedAt: MoodyClock.now(),
       mood: widget.currentMood,
     );
 

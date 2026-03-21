@@ -1,3 +1,4 @@
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -142,7 +143,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
 
   // Get time-based gradient colors
   List<Color> _getTimeBasedGradient() {
-    final hour = DateTime.now().hour;
+    final hour = MoodyClock.now().hour;
 
     if (hour >= 5 && hour < 12) {
       // Morning - Sunrise gradient
@@ -285,7 +286,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       final userId = Supabase.instance.client.auth.currentUser?.id;
       if (userId != null) {
         final checkIn = CheckIn(
-          id: 'checkin_${DateTime.now().millisecondsSinceEpoch}',
+          id: 'checkin_${MoodyClock.now().millisecondsSinceEpoch}',
           userId: userId,
           mood: _selectedMood,
           activities: _selectedActivity != null ? [_selectedActivity!] : [],
@@ -293,7 +294,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           text: _textController.text.trim().isNotEmpty
               ? _textController.text.trim()
               : null,
-          timestamp: DateTime.now(),
+          timestamp: MoodyClock.now(),
         );
 
         final checkInService = CheckInService(Supabase.instance.client);
@@ -481,7 +482,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       if (dayState is! AsyncData) return [];
 
       final activities = dayState.value ?? [];
-      final today = DateTime.now();
+      final today = MoodyClock.now();
 
       // Find activities that are scheduled for today and haven't been rated
       final ratingService = ref.read(activityRatingServiceProvider);
@@ -494,7 +495,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             activityTime.month == today.month &&
             activityTime.year == today.year) {
           final activityId = activity.rawData['id']?.toString() ??
-              DateTime.now().toString();
+              MoodyClock.now().toString();
           final activityName = activity.rawData['name'] as String? ??
               activity.rawData['title'] as String? ??
               'Activity';
@@ -515,7 +516,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               stars: 0,
               tags: [],
               wouldRecommend: false,
-              completedAt: DateTime.now(),
+              completedAt: MoodyClock.now(),
               mood: _selectedMood ?? 'neutral',
             ));
           }
@@ -554,7 +555,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     final lastCheckIn = await checkInService.getLastCheckIn();
     final yesterdayCheckIn = await checkInService.getYesterdayCheckIn();
 
-    final hour = DateTime.now().hour;
+    final hour = MoodyClock.now().hour;
     final isMorning = hour < 12;
 
     if (mounted) {

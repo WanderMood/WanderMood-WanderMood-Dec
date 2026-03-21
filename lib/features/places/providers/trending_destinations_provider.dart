@@ -1,81 +1,41 @@
-import 'package:flutter_google_maps_webservices/places.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter/foundation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
+import 'package:wandermood/core/utils/places_cache_utils.dart';
+import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import '../models/place.dart';
-import '../services/places_service.dart';
 
 part 'trending_destinations_provider.g.dart';
 
 @riverpod
 class TrendingDestinations extends _$TrendingDestinations {
-  final Map<String, List<String>> _cityDestinations = {
-    'Rotterdam': [
-      "Rotterdam Centrum 🏙️",
-      "Euromast 🗼",
-      "Markthal 🏛️",
-      "Kinderdijk ⚡",
-      "Erasmusbrug 🌉",
-      "Blijdorp Zoo 🦁",
-      "Kunsthal 🎨",
-      "SS Rotterdam 🚢"
-    ],
-    'Amsterdam': [
-      "Amsterdam Centrum 🏙️",
-      "Anne Frank House 🏠",
-      "Van Gogh Museum 🎨",
-      "Vondelpark 🌳",
-      "Rijksmuseum 🏛️",
-      "Amsterdam Canals 🚢",
-      "NEMO Science Museum 🔬",
-      "A'DAM Lookout 🗼"
-    ],
-    'Utrecht': [
-      "Utrecht Dom Tower 🗼",
-      "Utrecht Canals 🚢",
-      "Railway Museum 🚂",
-      "Centraal Museum 🏛️",
-      "Botanic Gardens 🌺",
-      "Oudegracht 🏙️",
-      "St. Martin's Cathedral 🏛️",
-      "Museum Speelklok 🎵"
-    ],
-    'The Hague': [
-      "Peace Palace 🏛️",
-      "Mauritshuis 🎨",
-      "Scheveningen Beach 🏖️",
-      "Binnenhof 🏛️",
-      "Madurodam 🏙️",
-      "Kunstmuseum 🎨",
-      "Escher Museum 🖼️",
-      "Panorama Mesdag 🖼️"
-    ]
-  };
-
   @override
-  Future<List<PlacesSearchResult>> build({String? city}) async {
-    final service = ref.read(placesServiceProvider.notifier);
-    List<PlacesSearchResult> allResults = [];
+  Future<List<Place>> build({String? city}) async {
+    final cityName = (city ??
+            ref.watch(locationNotifierProvider).asData?.value ??
+            'Rotterdam')
+        .trim();
+    if (cityName.isEmpty) return [];
 
-    // Use the provided city or default to Rotterdam
-    final cityName = city ?? 'Rotterdam';
-    final destinations = _cityDestinations[cityName] ?? _cityDestinations['Rotterdam']!;
+    final mood =
+        ref.watch(dailyMoodStateNotifierProvider).currentMood ?? 'adventurous';
 
-    for (final destination in destinations) {
-      try {
-        final results = await service.searchPlaces("${destination.split(' ')[0]} $cityName");
-        if (results.isNotEmpty) {
-          allResults.add(results.first);
-        }
-      } catch (e) {
-        debugPrint('Error fetching destination $destination: $e');
+    try {
+      final places = await PlacesCacheUtils.tryLoadExplorePlaces(
+        Supabase.instance.client,
+        mood.toLowerCase().trim(),
+        cityName,
+      );
+      if (places == null || places.isEmpty) return [];
+      final sorted = List<Place>.from(places)
+        ..sort((a, b) => b.rating.compareTo(a.rating));
+      return sorted.take(12).toList();
+    } catch (e, st) {
+      if (kDebugMode) {
+        debugPrint('TrendingDestinations cache read failed: $e\n$st');
       }
+      return [];
     }
-
-    return allResults;
-  }
-
-  String getPhotoUrl(String photoReference) {
-    final service = ref.read(placesServiceProvider.notifier);
-    return service.getPhotoUrl(photoReference);
   }
 }

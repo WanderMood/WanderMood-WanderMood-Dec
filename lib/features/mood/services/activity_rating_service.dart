@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:wandermood/core/utils/moody_clock.dart';
 import '../models/activity_rating.dart';
 
 final activityRatingServiceProvider = Provider<ActivityRatingService>((ref) {
@@ -191,7 +192,7 @@ class ActivityRatingService {
         timePreferences: timePreferences,
         topRatedPlaces: topPlaces,
         topRatedActivities: topActivities,
-        lastUpdated: DateTime.now(),
+        lastUpdated: MoodyClock.now(),
       );
 
       // Save pattern to database
@@ -227,7 +228,7 @@ class ActivityRatingService {
   /// Generate weekly reflection
   Future<WeeklyReflection?> generateWeeklyReflection(String userId) async {
     try {
-      final now = DateTime.now();
+      final now = MoodyClock.now();
       final weekStart = now.subtract(Duration(days: now.weekday - 1));
       final weekEnd = weekStart.add(const Duration(days: 7));
 

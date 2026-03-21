@@ -3,9 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/utils/performance_manager.dart';
 import '../../../places/application/places_service.dart';
-import '../../../places/providers/explore_places_provider.dart';
+import '../../../places/providers/moody_explore_provider.dart';
 import '../../../location/services/location_service.dart';
 import '../../../weather/application/enhanced_weather_service.dart';
+import '../../../weather/domain/models/weather_location.dart';
+
+/// Rotterdam — used only for manual API tests on this screen.
+const _kPerfTestWeatherLocation = WeatherLocation(
+  id: 'rotterdam_perf',
+  name: 'Rotterdam',
+  latitude: 51.9244,
+  longitude: 4.4777,
+);
 
 class PerformanceTestScreen extends ConsumerStatefulWidget {
   const PerformanceTestScreen({super.key});
@@ -398,7 +407,7 @@ class _PerformanceTestScreenState extends ConsumerState<PerformanceTestScreen>
                 
                 final stopwatch = Stopwatch()..start();
                 try {
-                  final places = await ref.read(explorePlacesProvider(city: 'Rotterdam').future);
+                  final places = await ref.read(moodyExploreAutoProvider.future);
                   stopwatch.stop();
                   _addLog('✅ Explore places: ${places.length} results in ${stopwatch.elapsedMilliseconds}ms');
                 } catch (e) {
@@ -406,7 +415,7 @@ class _PerformanceTestScreenState extends ConsumerState<PerformanceTestScreen>
                   _addLog('❌ Explore places failed in ${stopwatch.elapsedMilliseconds}ms: $e');
                 }
               },
-              child: const Text('Explore Places (Provider)'),
+              child: const Text('Explore (moody Edge)'),
             ),
           ],
         ),
@@ -437,13 +446,11 @@ class _PerformanceTestScreenState extends ConsumerState<PerformanceTestScreen>
                       final stopwatch = Stopwatch()..start();
                       try {
                         final weatherService = ref.read(enhancedWeatherServiceProvider.notifier);
-                        final weather = await weatherService.getCurrentWeather(51.9244, 4.4777);
+                        final weather =
+                            await weatherService.getCurrentWeather(_kPerfTestWeatherLocation);
                         stopwatch.stop();
-                        if (weather != null) {
-                          _addLog('✅ Weather: ${weather.description} (${weather.temperature}°C) in ${stopwatch.elapsedMilliseconds}ms');
-                        } else {
-                          _addLog('❌ Weather returned null in ${stopwatch.elapsedMilliseconds}ms');
-                        }
+                        final desc = weather.description ?? weather.condition;
+                        _addLog('✅ Weather: $desc (${weather.temperature}°C) in ${stopwatch.elapsedMilliseconds}ms');
                       } catch (e) {
                         stopwatch.stop();
                         _addLog('❌ Weather failed in ${stopwatch.elapsedMilliseconds}ms: $e');
@@ -462,7 +469,8 @@ class _PerformanceTestScreenState extends ConsumerState<PerformanceTestScreen>
                       final stopwatch = Stopwatch()..start();
                       try {
                         final weatherService = ref.read(enhancedWeatherServiceProvider.notifier);
-                        final forecast = await weatherService.getHourlyForecast(51.9244, 4.4777);
+                        final forecast = await weatherService
+                            .getHourlyForecast(_kPerfTestWeatherLocation);
                         stopwatch.stop();
                         _addLog('✅ Forecast: ${forecast.length} hours in ${stopwatch.elapsedMilliseconds}ms');
                       } catch (e) {
@@ -505,7 +513,9 @@ class _PerformanceTestScreenState extends ConsumerState<PerformanceTestScreen>
                   final futures = [
                     LocationService.getCurrentLocation(),
                     ref.read(placesServiceProvider.notifier).getNearbyPlaces(51.9244, 4.4777),
-                    ref.read(enhancedWeatherServiceProvider.notifier).getCurrentWeather(51.9244, 4.4777),
+                    ref
+                        .read(enhancedWeatherServiceProvider.notifier)
+                        .getCurrentWeather(_kPerfTestWeatherLocation),
                   ];
                   
                   await Future.wait(futures);

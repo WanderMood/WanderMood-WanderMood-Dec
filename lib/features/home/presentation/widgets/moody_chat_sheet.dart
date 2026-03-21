@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,6 +8,7 @@ import 'package:wandermood/core/services/wandermood_ai_service.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/features/plans/presentation/screens/plan_loading_screen.dart';
 
 // WanderMood v2 — Moody chat (Screen 9)
@@ -21,14 +24,15 @@ class _ChatMsg {
   final String message;
   final bool isUser;
   final DateTime timestamp;
-  _ChatMsg({required this.message, required this.isUser, required this.timestamp});
+  _ChatMsg(
+      {required this.message, required this.isUser, required this.timestamp});
 }
 
 /// Opens the Moody chat bottom sheet — the same UI from the original MoodHomeScreen.
 /// Can be called from any screen that has access to a [BuildContext] and a [WidgetRef].
 void showMoodyChatSheet(BuildContext context, WidgetRef ref) {
   final moods = ref.read(dailyMoodStateNotifierProvider).selectedMoods;
-  final conversationId = 'conv_${DateTime.now().millisecondsSinceEpoch}';
+  final conversationId = 'conv_${MoodyClock.now().millisecondsSinceEpoch}';
   final chatMessages = <_ChatMsg>[];
   final chatController = TextEditingController();
   var isAILoading = false;
@@ -47,7 +51,8 @@ void showMoodyChatSheet(BuildContext context, WidgetRef ref) {
     if (text.trim().isEmpty || isAILoading) return;
 
     setModalState(() {
-      chatMessages.add(_ChatMsg(message: text.trim(), isUser: true, timestamp: DateTime.now()));
+      chatMessages.add(_ChatMsg(
+          message: text.trim(), isUser: true, timestamp: MoodyClock.now()));
       isAILoading = true;
     });
     chatController.clear();
@@ -64,15 +69,19 @@ void showMoodyChatSheet(BuildContext context, WidgetRef ref) {
       );
 
       setModalState(() {
-        chatMessages.add(_ChatMsg(message: response.message, isUser: false, timestamp: DateTime.now()));
+        chatMessages.add(_ChatMsg(
+            message: response.message,
+            isUser: false,
+            timestamp: MoodyClock.now()));
         isAILoading = false;
       });
     } catch (e) {
       setModalState(() {
         chatMessages.add(_ChatMsg(
-          message: "Oops! I'm having trouble connecting right now. Can you try again? 🤔",
+          message:
+              "Oops! I'm having trouble connecting right now. Can you try again? 🤔",
           isUser: false,
-          timestamp: DateTime.now(),
+          timestamp: MoodyClock.now(),
         ));
         isAILoading = false;
       });
@@ -83,87 +92,106 @@ void showMoodyChatSheet(BuildContext context, WidgetRef ref) {
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withOpacity(0.75),
     useSafeArea: true,
     builder: (context) {
-      return DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (context, scrollController) {
-          return StatefulBuilder(
-            builder: (context, setModalState) {
-              return ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
-                ),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Column(
-                      children: const [
-                        Expanded(flex: 5, child: ColoredBox(color: _wmSkyTint)),
-                        Expanded(flex: 5, child: ColoredBox(color: _wmCream)),
-                      ],
+      return ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: DraggableScrollableSheet(
+            initialChildSize: 0.9,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            builder: (context, scrollController) {
+              return StatefulBuilder(
+                builder: (context, setModalState) {
+                  return ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
                     ),
-                    Column(
+                    child: Stack(
+                      fit: StackFit.expand,
                       children: [
-                        const _MoodyChatHeader(),
-                        Expanded(
-                          child: chatMessages.isEmpty
-                              ? const _MoodyChatEmptyState()
-                              : Column(
-                                  children: [
-                                    Expanded(
-                                      child: ListView.builder(
-                                        controller: scrollController,
-                                        padding: const EdgeInsets.symmetric(vertical: 12),
-                                        itemCount: chatMessages.length,
-                                        itemBuilder: (context, index) {
-                                          return _MessageBubble(msg: chatMessages[index]);
-                                        },
-                                      ),
-                                    ),
-                                    if (isAILoading) const _MoodyTypingIndicator(),
-                                  ],
-                                ),
+                        Column(
+                          children: const [
+                            Expanded(
+                                flex: 5, child: ColoredBox(color: _wmSkyTint)),
+                            Expanded(
+                                flex: 5, child: ColoredBox(color: _wmCream)),
+                          ],
                         ),
-                        if (chatMessages.isNotEmpty)
-                          _CreatePlanFromChat(
-                            chatMessages: chatMessages,
-                            onCreatePlan: () {
-                              final suggestedMoods = _suggestMoodsFromMessages(chatMessages);
-                              final planMoods = suggestedMoods.isNotEmpty
-                                  ? suggestedMoods
-                                  : (moods.isNotEmpty ? moods : ['adventurous']);
+                        Column(
+                          children: [
+                            const _MoodyChatHeader(),
+                            Expanded(
+                              child: chatMessages.isEmpty
+                                  ? const _MoodyChatEmptyState()
+                                  : Column(
+                                      children: [
+                                        Expanded(
+                                          child: ListView.builder(
+                                            controller: scrollController,
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 12),
+                                            itemCount: chatMessages.length,
+                                            itemBuilder: (context, index) {
+                                              return _MessageBubble(
+                                                  msg: chatMessages[index]);
+                                            },
+                                          ),
+                                        ),
+                                        if (isAILoading)
+                                          const _MoodyTypingIndicator(),
+                                      ],
+                                    ),
+                            ),
+                            if (chatMessages.isNotEmpty)
+                              _CreatePlanFromChat(
+                                chatMessages: chatMessages,
+                                onCreatePlan: () {
+                                  final suggestedMoods =
+                                      _suggestMoodsFromMessages(chatMessages);
+                                  final planMoods = suggestedMoods.isNotEmpty
+                                      ? suggestedMoods
+                                      : (moods.isNotEmpty
+                                          ? moods
+                                          : ['adventurous']);
 
-                              ref.read(dailyMoodStateNotifierProvider.notifier).setMoodSelection(
-                                    mood: planMoods.first,
-                                    selectedMoods: planMoods,
+                                  ref
+                                      .read(dailyMoodStateNotifierProvider
+                                          .notifier)
+                                      .setMoodSelection(
+                                        mood: planMoods.first,
+                                        selectedMoods: planMoods,
+                                      );
+
+                                  Navigator.pop(context);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => PlanLoadingScreen(
+                                          selectedMoods: planMoods),
+                                    ),
                                   );
-
-                              Navigator.pop(context);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => PlanLoadingScreen(selectedMoods: planMoods),
-                                ),
-                              );
-                            },
-                          ),
-                        _MoodyChatInput(
-                          controller: chatController,
-                          isLoading: isAILoading,
-                          onSend: (text) => sendMessage(text, setModalState),
+                                },
+                              ),
+                            _MoodyChatInput(
+                              controller: chatController,
+                              isLoading: isAILoading,
+                              onSend: (text) =>
+                                  sendMessage(text, setModalState),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
+                  );
+                },
               );
             },
-          );
-        },
+          ),
+        ),
       );
     },
   );
@@ -179,12 +207,8 @@ class _MoodyChatHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [_wmSkyTint.withOpacity(0.85), Colors.transparent],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
+      decoration: const BoxDecoration(
+        color: _wmSkyTint,
       ),
       child: Column(
         children: [
@@ -231,7 +255,8 @@ class _MoodyChatHeader extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: _wmSky,
                               shape: BoxShape.circle,
-                              border: Border.all(color: _wmParchment, width: 0.5),
+                              border:
+                                  Border.all(color: _wmParchment, width: 0.5),
                             ),
                             child: const SizedBox(width: 8, height: 8),
                           ),
@@ -261,7 +286,8 @@ class _MoodyChatHeader extends StatelessWidget {
                   ),
                   child: IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close_rounded, color: Colors.grey, size: 20),
+                    icon: const Icon(Icons.close_rounded,
+                        color: Colors.grey, size: 20),
                     padding: EdgeInsets.zero,
                   ),
                 ),
@@ -338,7 +364,8 @@ class _MessageBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
       child: Row(
-        mainAxisAlignment: msg.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:
+            msg.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!msg.isUser) ...[
@@ -376,8 +403,12 @@ class _MessageBubble extends StatelessWidget {
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(20),
                   topRight: const Radius.circular(20),
-                  bottomLeft: msg.isUser ? const Radius.circular(20) : const Radius.circular(4),
-                  bottomRight: msg.isUser ? const Radius.circular(4) : const Radius.circular(20),
+                  bottomLeft: msg.isUser
+                      ? const Radius.circular(20)
+                      : const Radius.circular(4),
+                  bottomRight: msg.isUser
+                      ? const Radius.circular(4)
+                      : const Radius.circular(20),
                 ),
                 boxShadow: const [],
               ),
@@ -441,7 +472,8 @@ class _MoodyTypingIndicator extends StatelessWidget {
                   height: 18,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(_wmForest.withOpacity(0.75)),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        _wmForest.withOpacity(0.75)),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -469,7 +501,8 @@ class _MoodyTypingIndicator extends StatelessWidget {
 class _CreatePlanFromChat extends StatelessWidget {
   final List<_ChatMsg> chatMessages;
   final VoidCallback onCreatePlan;
-  const _CreatePlanFromChat({required this.chatMessages, required this.onCreatePlan});
+  const _CreatePlanFromChat(
+      {required this.chatMessages, required this.onCreatePlan});
 
   @override
   Widget build(BuildContext context) {
@@ -492,14 +525,16 @@ class _CreatePlanFromChat extends StatelessWidget {
           icon: const Icon(Icons.auto_awesome, size: 20),
           label: Text(
             '✨ Create My Perfect Plan',
-            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+            style:
+                GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           style: OutlinedButton.styleFrom(
             foregroundColor: _wmForest,
             backgroundColor: Colors.transparent,
             side: BorderSide.none,
             padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
         ),
       ),
@@ -542,8 +577,10 @@ class _MoodyChatInput extends StatelessWidget {
               controller: controller,
               decoration: InputDecoration(
                 hintText: "What's your mood today?",
-                hintStyle: GoogleFonts.poppins(color: Colors.grey[500], fontSize: 16),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                hintStyle:
+                    GoogleFonts.poppins(color: Colors.grey[500], fontSize: 16),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
                 filled: true,
                 fillColor: const Color(0xFFF8FAFC),
                 enabledBorder: OutlineInputBorder(
@@ -569,7 +606,8 @@ class _MoodyChatInput extends StatelessWidget {
                   ),
                 ),
               ),
-              style: GoogleFonts.poppins(fontSize: 16, color: const Color(0xFF1A202C)),
+              style: GoogleFonts.poppins(
+                  fontSize: 16, color: const Color(0xFF1A202C)),
               onSubmitted: onSend,
             ),
           ),
@@ -596,9 +634,11 @@ class _MoodyChatInput extends StatelessWidget {
                       ? const SizedBox(
                           width: 22,
                           height: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2.5, color: Colors.white),
                         )
-                      : const Icon(Icons.send_rounded, color: Colors.white, size: 22),
+                      : const Icon(Icons.send_rounded,
+                          color: Colors.white, size: 22),
                 ),
               ),
             ),
@@ -620,22 +660,27 @@ List<String> _suggestMoodsFromMessages(List<_ChatMsg> messages) {
 
   final suggestedMoods = <String>[];
 
-  if (chatText.contains(RegExp(r'\b(food|eat|hungry|restaurant|dinner|lunch|asian|cuisine|tasty|sushi)\b'))) {
+  if (chatText.contains(RegExp(
+      r'\b(food|eat|hungry|restaurant|dinner|lunch|asian|cuisine|tasty|sushi)\b'))) {
     suggestedMoods.add('Foody');
   }
   if (chatText.contains(RegExp(r'\b(romantic|date|love|couple|intimate)\b'))) {
     suggestedMoods.add('Romantic');
   }
-  if (chatText.contains(RegExp(r'\b(adventure|explore|active|exciting|outdoor)\b'))) {
+  if (chatText
+      .contains(RegExp(r'\b(adventure|explore|active|exciting|outdoor)\b'))) {
     suggestedMoods.add('Adventure');
   }
-  if (chatText.contains(RegExp(r'\b(chill|relax|calm|peaceful|tired|nothing much)\b'))) {
+  if (chatText.contains(
+      RegExp(r'\b(chill|relax|calm|peaceful|tired|nothing much)\b'))) {
     suggestedMoods.add('Relaxed');
   }
-  if (chatText.contains(RegExp(r'\b(energy|energetic|party|parties|dance|active|lively|bar|club|going out)\b'))) {
+  if (chatText.contains(RegExp(
+      r'\b(energy|energetic|party|parties|dance|active|lively|bar|club|going out)\b'))) {
     suggestedMoods.add('Energetic');
   }
-  if (chatText.contains(RegExp(r'\b(surprise|different|new|unique|creative)\b'))) {
+  if (chatText
+      .contains(RegExp(r'\b(surprise|different|new|unique|creative)\b'))) {
     suggestedMoods.add('Surprise');
   }
 

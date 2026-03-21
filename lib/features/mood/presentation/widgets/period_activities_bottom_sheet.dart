@@ -6,6 +6,7 @@ import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_pro
 import 'package:wandermood/features/mood/presentation/widgets/activity_rating_sheet.dart';
 import 'dart:math' as math;
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 
 class PeriodActivitiesBottomSheet extends ConsumerStatefulWidget {
   final Map<String, dynamic> period;
@@ -59,7 +60,7 @@ class _PeriodActivitiesBottomSheetState extends ConsumerState<PeriodActivitiesBo
                         activity.rawData['title'] as String? ?? 
                         'Activity';
     final location = activity.rawData['location'] as String?;
-    final activityId = activity.rawData['id']?.toString() ?? DateTime.now().toString();
+    final activityId = activity.rawData['id']?.toString() ?? MoodyClock.now().toString();
 
     // Show rating sheet
     await showModalBottomSheet(
@@ -448,7 +449,7 @@ class _PeriodActivitiesBottomSheetState extends ConsumerState<PeriodActivitiesBo
     final isCompleted = activity.status == ActivityStatus.completed;
 
     return Dismissible(
-      key: Key(activity.rawData['id']?.toString() ?? DateTime.now().toString()),
+      key: Key(activity.rawData['id']?.toString() ?? MoodyClock.now().toString()),
       background: _buildSwipeBackground(
         color: const Color(0xFF2A6049),
         icon: Icons.check_circle,

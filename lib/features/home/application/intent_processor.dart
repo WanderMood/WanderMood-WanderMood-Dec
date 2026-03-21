@@ -1,3 +1,4 @@
+import 'package:wandermood/core/utils/moody_clock.dart';
 import '../../../features/places/models/place.dart';
 import 'context_manager.dart';
 
@@ -223,7 +224,7 @@ class IntentProcessor {
       
     } else {
       // Fallback to basic time-based filtering
-      final currentHour = DateTime.now().hour;
+      final currentHour = MoodyClock.now().hour;
       
       if (currentHour >= 6 && currentHour < 12) {
         filteredPlaces = _filterByActivities(places, ['cafe', 'coffee', 'park', 'market', 'breakfast']);

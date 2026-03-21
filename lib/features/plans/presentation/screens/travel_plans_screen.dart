@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/places/providers/bookings_provider.dart';
-import 'package:wandermood/features/places/providers/explore_places_provider.dart';
+import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/features/places/models/booking.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
@@ -428,7 +428,7 @@ class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> {
   }
 
   Widget _buildEnhancedEmptyState(BuildContext context, WidgetRef ref) {
-    final placesAsync = ref.watch(explorePlacesProvider(city: 'Rotterdam'));
+    final placesAsync = ref.watch(moodyHubExploreCacheOnlyProvider);
     
     return placesAsync.when(
       loading: () => const Center(

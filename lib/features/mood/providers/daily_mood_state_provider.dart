@@ -1,3 +1,4 @@
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -49,7 +50,7 @@ class DailyMoodStateNotifier extends _$DailyMoodStateNotifier {
         state = state.copyWith(
           hasSelectedMoodToday: true,
           currentMood: inferredMood,
-          lastMoodSelection: DateTime.now(),
+          lastMoodSelection: MoodyClock.now(),
           selectedMoods: [inferredMood],
           plannedActivities: activities,
           todayActivitiesCount: activities.length,
@@ -74,7 +75,7 @@ class DailyMoodStateNotifier extends _$DailyMoodStateNotifier {
 
     if (lastSelectionString != null) {
       final lastSelection = DateTime.parse(lastSelectionString);
-      final today = DateTime.now();
+      final today = MoodyClock.now();
       
       // Check if mood was selected today
       final hasSelectedToday = lastSelection.year == today.year &&
@@ -129,7 +130,7 @@ class DailyMoodStateNotifier extends _$DailyMoodStateNotifier {
     required List<String> selectedMoods,
     String? conversationId,
   }) async {
-    final now = DateTime.now();
+    final now = MoodyClock.now();
     final activities = await _loadPlannedActivities();
     
     state = state.copyWith(
@@ -152,7 +153,7 @@ class DailyMoodStateNotifier extends _$DailyMoodStateNotifier {
   Future<void> updateMood(String newMood) async {
     state = state.copyWith(
       currentMood: newMood,
-      lastMoodSelection: DateTime.now(),
+      lastMoodSelection: MoodyClock.now(),
     );
     await _saveStateToPrefs();
   }

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'check_in_service.dart';
 import '../models/check_in.dart';
 import '../../../core/services/user_preferences_service.dart';
@@ -52,7 +53,7 @@ class MoodyHubContentService {
   /// Increment visit count (call this when hub opens)
   Future<void> incrementVisitCount() async {
     final prefs = await SharedPreferences.getInstance();
-    final today = DateTime.now().toIso8601String().substring(0, 10);
+    final today = MoodyClock.now().toIso8601String().substring(0, 10);
     final lastVisit = prefs.getString(_lastVisitDateKey);
     
     // Only increment once per day
@@ -115,7 +116,7 @@ class MoodyHubContentService {
     // Get previous check-in context
     final lastCheckIn = checkIns.isNotEmpty ? checkIns.first : null;
     final hasRecentActivity = lastCheckIn != null && 
-        DateTime.now().difference(lastCheckIn.timestamp).inHours < 24;
+        MoodyClock.now().difference(lastCheckIn.timestamp).inHours < 24;
     
     switch (pillar) {
       case ContentPillar.tripIdea:

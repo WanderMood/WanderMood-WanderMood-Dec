@@ -4,8 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../application/dynamic_grouping_service.dart';
 import '../application/context_manager.dart';
 import '../../places/models/place.dart';
-import '../../places/providers/explore_places_provider.dart';
-import '../../../core/domain/providers/location_notifier_provider.dart';
+import '../../places/providers/moody_explore_provider.dart';
 import 'smart_context_provider.dart';
 
 /// Dynamic grouping result model
@@ -163,11 +162,8 @@ final filteredPlacesProvider = Provider<List<Place>>((ref) {
   // Keep this provider alive to prevent constant rebuilds
   ref.keepAlive();
   
-  final locationState = ref.watch(locationNotifierProvider);
-  final city = locationState.value ?? 'Rotterdam';
-  
-  // Use Edge Function data instead of old Google Places API
-  final placesAsync = ref.read(moodyExploreAutoProvider);
+  // places_cache aggregate only — no Edge/Google from grouping helpers
+  final placesAsync = ref.watch(moodyHubExploreCacheOnlyProvider);
   
   return placesAsync.when(
     data: (places) => places,

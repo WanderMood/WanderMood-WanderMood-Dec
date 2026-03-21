@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import '../../services/trending_activities_service.dart';
 import '../../models/trending_activity.dart';
 import '../../../places/models/place.dart';
-import '../../../places/providers/explore_places_provider.dart';
+import '../../../places/providers/moody_explore_provider.dart';
 import '../../../places/presentation/widgets/place_card.dart';
 
 class TrendingDetailScreen extends ConsumerStatefulWidget {
@@ -60,7 +59,7 @@ class _TrendingDetailScreenState extends ConsumerState<TrendingDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    final explorePlacesAsync = ref.watch(explorePlacesProvider());
+    final explorePlacesAsync = ref.watch(moodyHubExploreCacheOnlyProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAF9),

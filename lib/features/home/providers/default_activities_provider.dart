@@ -1,9 +1,10 @@
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Provider for default activities based on time of day
 final defaultActivitiesProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   // Use hardcoded default activities instead of trying to fetch from API
-  final hour = DateTime.now().hour;
+  final hour = MoodyClock.now().hour;
   
   // Create default activities based on time of day
   final List<Map<String, dynamic>> defaultActivities = [];

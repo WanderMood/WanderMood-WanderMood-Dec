@@ -730,15 +730,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                   borderSide: const BorderSide(color: _wmForest, width: 2),
                                 ),
                                 contentPadding: const EdgeInsets.all(16),
-                                counterText: '',
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: Text(
-                                '${_bioController.text.length}/150',
-                                style: GoogleFonts.poppins(
+                                counterStyle: GoogleFonts.poppins(
                                   fontSize: 12,
                                   color: _wmStone,
                                 ),

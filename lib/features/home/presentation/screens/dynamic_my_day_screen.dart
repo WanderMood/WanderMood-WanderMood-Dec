@@ -1,3 +1,4 @@
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:flutter/material.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:flutter/services.dart';
@@ -9,19 +10,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:math';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'dynamic_my_day_provider.dart';
+import 'package:wandermood/features/home/presentation/providers/my_day_free_time_cache_provider.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import '../../../profile/presentation/widgets/profile_drawer.dart';
 import '../../../profile/domain/providers/profile_provider.dart';
 import '../../../weather/providers/weather_provider.dart';
-import '../../../places/providers/explore_places_provider.dart';
-import '../../../places/providers/moody_explore_provider.dart';
-import '../../../places/models/place.dart';
-import '../../../../core/domain/providers/location_notifier_provider.dart';
-import '../../../../core/providers/user_location_provider.dart';
-import 'main_screen.dart';
 import '../widgets/day_execution_hero_card.dart';
 import '../widgets/my_day_free_time_carousel.dart';
 import '../widgets/my_day_get_ready_sheet.dart';
@@ -728,7 +723,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
   Widget _buildNoPlanGreetingCard() {
     final l10n = AppLocalizations.of(context)!;
-    final hour = DateTime.now().hour;
+    final hour = MoodyClock.now().hour;
     final timeConfig = TimeBasedTheme.getConfigForHour(hour);
 
     final config = _emptyStateGreetingConfig(
@@ -790,7 +785,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   Widget _buildEnhancedFreeTimeCard(Map<String, dynamic> status) {
-    final hour = DateTime.now().hour;
+    final hour = MoodyClock.now().hour;
     final timeConfig = TimeBasedTheme.getConfigForHour(hour);
     
     return Consumer(
@@ -1925,7 +1920,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       return l10n.myDayNoPlanHeaderSubtitle;
     }
 
-    final hour = DateTime.now().hour;
+    final hour = MoodyClock.now().hour;
     if (hour < 12) {
       return l10n.myDayHeaderMorning;
     }
@@ -2741,152 +2736,16 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   Widget _buildFreeTimeCarousel() {
-    final activities = _getFreeTimeActivities();
-
-    return MyDayFreeTimeCarousel(
-      activities: activities,
-      onActivityTap: _showActivityDetails,
-      onSaveTap: _saveActivity,
-      onDirectionsTap: _openDirections,
-    );
-  }
-
-  List<Map<String, dynamic>> _getFreeTimeActivities() {
-    // Get user's actual city from location provider
-    final locationAsync = ref.watch(locationNotifierProvider);
-    final city = locationAsync.valueOrNull ?? 'Rotterdam';
-    
-    // Get user's current position for accurate distance calculation
-    final userPositionAsync = ref.watch(userLocationProvider);
-    final userPosition = userPositionAsync.valueOrNull;
-    
-    // Use Edge Function data instead of old Google Places API
-    return ref.watch(moodyExploreAutoProvider).when(
-      data: (places) {
-        if (places.isEmpty) {
-          // Fallback to a few real places if API fails
-          return [
-            {
-              'title': 'Markthal Rotterdam',
-              'description': 'Iconic food market with local and international cuisine',
-              'category': 'food',
-              'distance': '1.2 km',
-              'duration': 90,
-              'imageUrl': 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&q=80',
-            },
-            {
-              'title': 'Kralingse Bos',
-              'description': 'Beautiful park with walking trails and lake',
-              'category': 'nature',
-              'distance': '3.5 km',
-              'duration': 120,
-              'imageUrl': 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80',
-            },
-          ];
-        }
-        
-        // Shuffle places to show different ones each time
-        final shuffledPlaces = List<Place>.from(places)..shuffle(Random());
-        
-        // Convert real places to the format expected by the carousel (take 5 random ones)
-        return shuffledPlaces.take(5).map((place) {
-          // Determine category based on place types
-          String category = 'culture';
-          if (place.types.contains('restaurant') || place.types.contains('cafe') || place.types.contains('food')) {
-            category = 'food';
-          } else if (place.types.contains('park') || place.types.contains('nature')) {
-            category = 'nature';
-          } else if (place.types.contains('gym') || place.types.contains('fitness')) {
-            category = 'exercise';
-          }
-          
-          // Get image URL - use first photo if available, otherwise fallback
-          String imageUrl = 'assets/images/fallbacks/default.jpg'; // Default fallback
-          if (place.photos.isNotEmpty) {
-            imageUrl = place.photos.first;
-          } else {
-            // Category-specific fallback images using existing assets
-            switch (category) {
-              case 'food':
-                imageUrl = 'assets/images/fallbacks/restaurant.jpg';
-                break;
-              case 'nature':
-                imageUrl = 'assets/images/fallbacks/park.jpg';
-                break;
-              case 'exercise':
-                imageUrl = 'assets/images/fallbacks/default.jpg';
-                break;
-              default:
-                imageUrl = 'assets/images/fallbacks/default.jpg';
-            }
-          }
-          
-          // Calculate estimated duration based on place type
-          int duration = 60; // Default 1 hour
-          if (place.types.contains('restaurant')) {
-            duration = 90;
-          } else if (place.types.contains('museum')) {
-            duration = 120;
-          } else if (place.types.contains('park')) {
-            duration = 75;
-          }
-          
-          // Calculate distance from user's actual location (or city center as fallback)
-          double userLat, userLng;
-          if (userPosition != null) {
-            userLat = userPosition.latitude;
-            userLng = userPosition.longitude;
-          } else {
-            // Fallback to city center coordinates
-            final cityCoords = _getCityCoordinates(city);
-            userLat = cityCoords['lat']!;
-            userLng = cityCoords['lng']!;
-          }
-          
-          final distance = _calculateDistance(
-            userLat, userLng,
-            place.location.lat, place.location.lng,
-          );
-          
-          return {
-            'title': place.name,
-            'description': place.description ?? 'Discover this amazing place in $city',
-            'category': category,
-            'distance': '${distance.toStringAsFixed(1)} km',
-            'duration': duration,
-            'imageUrl': imageUrl,
-            'place': place, // Store the original place object for navigation
-          };
-        }).toList();
-      },
-      loading: () => [
-        {
-          'title': 'Loading...',
-          'description': 'Finding great activities near you',
-          'category': 'loading',
-          'distance': '--',
-          'duration': 0,
-          'imageUrl': 'assets/images/fallbacks/default.jpg',
-        }
-      ],
-      error: (error, stack) => [
-        {
-          'title': 'Markthal Rotterdam',
-          'description': 'Iconic food market with local and international cuisine',
-          'category': 'food',
-          'distance': '1.2 km',
-          'duration': 90,
-          'imageUrl': 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&q=80',
-        },
-        {
-          'title': 'Erasmus Bridge',
-          'description': 'Iconic bridge perfect for photos and walks',
-          'category': 'culture',
-          'distance': '0.8 km',
-          'duration': 30,
-          'imageUrl': 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&q=80',
-        },
-      ],
+    final async = ref.watch(myDayFreeTimeActivitiesProvider);
+    return async.when(
+      data: (activities) => MyDayFreeTimeCarousel(
+        activities: activities,
+        onActivityTap: _showActivityDetails,
+        onSaveTap: _saveActivity,
+        onDirectionsTap: _openDirections,
+      ),
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 
@@ -2897,42 +2756,6 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         return MyDayWeatherDialog(weather: weather);
       },
     );
-  }
-
-  // Helper method to calculate distance between two coordinates using Haversine formula
-  // Helper method to get city coordinates
-  Map<String, double> _getCityCoordinates(String cityName) {
-    final cityCoords = <String, Map<String, double>>{
-      'Rotterdam': {'lat': 51.9225, 'lng': 4.4792},
-      'Amsterdam': {'lat': 52.3676, 'lng': 4.9041},
-      'The Hague': {'lat': 52.0705, 'lng': 4.3007},
-      'Utrecht': {'lat': 52.0907, 'lng': 5.1214},
-      'Eindhoven': {'lat': 51.4416, 'lng': 5.4697},
-      'Groningen': {'lat': 53.2194, 'lng': 6.5665},
-      'Delft': {'lat': 52.0067, 'lng': 4.3556},
-    };
-    return cityCoords[cityName] ?? cityCoords['Rotterdam']!;
-  }
-
-  double _calculateDistance(double lat1, double lng1, double lat2, double lng2) {
-    const double earthRadius = 6371; // Earth's radius in kilometers
-    
-    final double dLat = _degreeToRadian(lat2 - lat1);
-    final double dLng = _degreeToRadian(lng2 - lng1);
-    final double lat1Rad = _degreeToRadian(lat1);
-    final double lat2Rad = _degreeToRadian(lat2);
-    
-    final double a = 
-        pow(sin(dLat / 2), 2) +
-        cos(lat1Rad) * cos(lat2Rad) * 
-        pow(sin(dLng / 2), 2);
-    final double c = 2 * asin(sqrt(a));
-    
-    return earthRadius * c;
-  }
-
-  double _degreeToRadian(double degree) {
-    return degree * (pi / 180);
   }
 
   void _saveActivity(Map<String, dynamic> activity) {
@@ -2946,11 +2769,17 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     try {
       // Check if maps are available
       final availableMaps = await MapLauncher.installedMaps;
-      
+      final lat = (activity['lat'] as num?)?.toDouble();
+      final lng = (activity['lng'] as num?)?.toDouble();
+      final hasCoords = lat != null && lng != null && lat != 0 && lng != 0;
+
       if (availableMaps.isNotEmpty) {
         // Use the first available map app
+        final coords = hasCoords && lat != null && lng != null
+            ? Coords(lat, lng)
+            : Coords(51.9225, 4.4792);
         await availableMaps.first.showMarker(
-          coords: Coords(40.7128, -74.0060), // Default NYC coordinates
+          coords: coords,
           title: activity['title'] ?? 'Activity Location',
           description: activity['description'] ?? '',
         );

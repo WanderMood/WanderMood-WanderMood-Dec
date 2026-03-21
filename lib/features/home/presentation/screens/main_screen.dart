@@ -1,22 +1,22 @@
+import 'dart:ui' show ImageFilter;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wandermood/features/home/presentation/screens/explore_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_screen.dart';
-import 'package:wandermood/features/plans/widgets/activity_detail_screen.dart';
-import 'package:wandermood/features/home/presentation/screens/free_time_activities_screen.dart';
-import 'package:wandermood/features/home/presentation/screens/mood_home_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/redesigned_moody_hub.dart';
+import 'package:wandermood/features/home/presentation/screens/moody_idle_screen.dart';
+import 'package:wandermood/core/utils/moody_idle_checker.dart';
+import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/features/social/presentation/screens/wanderfeed_coming_soon_screen.dart';
 import 'package:wandermood/features/profile/presentation/screens/user_profile_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.dart';
-import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
-import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:wandermood/core/utils/auth_helper.dart';
+import 'package:wandermood/features/home/presentation/widgets/hoe_was_je_dag_sheet.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -57,81 +57,189 @@ class MainScreen extends ConsumerStatefulWidget {
 }
 
 class _MainScreenState extends ConsumerState<MainScreen> {
-  bool _hasPrefetched = false; // Prevent prefetch on hot reload
-  
+  bool _idleGateCompleted = false;
+
   @override
   void initState() {
     super.initState();
     // Set the initial tab index in the provider - delayed to avoid lifecycle conflicts
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.microtask(() {
-              if (mounted) {
-      // Check if we have a tab index from route parameters
-      final tabFromExtra = widget.extra?['tab'] as int?;
+      Future(() async {
+        if (!mounted) return;
+        // Check if we have a tab index from route parameters
+        final tabFromExtra = widget.extra?['tab'] as int?;
         final finalTab = tabFromExtra ?? widget.initialTabIndex;
-        debugPrint('🎯 MainScreen: Setting tab to $finalTab (extra: $tabFromExtra, initial: ${widget.initialTabIndex})');
+        debugPrint(
+            '🎯 MainScreen: Setting tab to $finalTab (extra: $tabFromExtra, initial: ${widget.initialTabIndex})');
         ref.read(mainTabProvider.notifier).state = finalTab;
         debugPrint('✅ MainScreen: Tab provider set to ${ref.read(mainTabProvider)}');
-          
-          // CRITICAL: Only prefetch once (not on hot reload)
-          // User is authenticated, session established, preferences set - perfect timing
-          if (!_hasPrefetched) {
-            _hasPrefetched = true;
-            _prefetchPlacesInBackground();
-          }
-      }
+
+        // Places / Explore: no prefetch on launch — cache-first; Explore loads on open (Google Places prompt).
+
+        await _showMoodyIdleGateIfNeeded();
       });
     });
   }
-  
-  /// Prefetch places in background for instant Explore screen
-  /// 
-  /// FIX #2: Delay prefetch until session is guaranteed
-  /// Only runs if all 3 conditions are true:
-  /// - currentUser != null
-  /// - currentSession != null
-  /// - accessToken != null
-  /// 
-  /// If prefetch fails, Explore will load on demand anyway
-  Future<void> _prefetchPlacesInBackground() async {
-    try {
-      // FIX #2: Ensure session is valid before prefetch
-      await AuthHelper.ensureValidSession();
-      
-      // FIX #2: Verify all 3 conditions are true
-      final user = Supabase.instance.client.auth.currentUser;
-      final session = Supabase.instance.client.auth.currentSession;
-      final token = session?.accessToken;
-      
-      debugPrint('🔑 Prefetch Auth Check (Fix #2):');
-      debugPrint('   currentUser != null: ${user != null}');
-      debugPrint('   currentSession != null: ${session != null}');
-      debugPrint('   accessToken != null: ${token != null}');
-      if (token != null) {
-        debugPrint('   Token preview: ${token.substring(0, 20)}...');
-      }
-      
-      // FIX #2: Only prefetch if ALL 3 are true
-      if (user == null || session == null || token == null) {
-        debugPrint('⚠️ Prefetch blocked: Missing auth state (user: ${user != null}, session: ${session != null}, token: ${token != null})');
-        return;
-      }
-      
-      debugPrint('✅ All auth checks passed - starting background prefetch...');
-      
-      // Non-blocking - don't await, let it run in background
-      ref.read(moodyExploreAutoProvider.future).then((places) {
-        debugPrint('✅ Background prefetch complete: ${places.length} places ready for Explore');
-      }).catchError((e) {
-        debugPrint('⚠️ Background prefetch failed: $e (Explore will load on demand)');
-        // This is fine - Explore screen will load places when user navigates to it
-      });
-    } catch (e) {
-      debugPrint('⚠️ Could not start background prefetch: $e');
-      // Non-critical - Explore will load on demand
+
+  /// After 30+ min away, full-screen Moody idle; then timestamps next session baseline.
+  Future<void> _showMoodyIdleGateIfNeeded() async {
+    if (!mounted || _idleGateCompleted) return;
+
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      await MoodyIdleChecker.recordAppOpen();
+      _idleGateCompleted = true;
+      return;
     }
+
+    final showIdle = await MoodyIdleChecker.shouldShowIdleScreen();
+    if (!mounted) return;
+
+    if (showIdle) {
+      final idleState = MoodyIdleChecker.getIdleState();
+      String? topInterest;
+      try {
+        final row = await Supabase.instance.client
+            .from('user_preference_patterns')
+            .select('top_rated_activities')
+            .eq('user_id', user.id)
+            .maybeSingle();
+        if (row != null) {
+          final list = row['top_rated_activities'] as List<dynamic>?;
+          if (list != null && list.isNotEmpty) {
+            topInterest = list.first.toString();
+          }
+        }
+      } catch (e) {
+        debugPrint('⚠️ Idle gate: preference patterns skipped: $e');
+      }
+
+      final prefs = ref.read(preferencesProvider);
+      final prefsMap = <String, dynamic>{
+        'communication_style': prefs.communicationStyle,
+        'selected_moods': prefs.selectedMoods,
+        'travel_interests': prefs.travelInterests,
+        'planning_pace': prefs.planningPace,
+        'budget_level': prefs.budgetLevel,
+        'home_base': prefs.homeBase,
+        'travel_styles': prefs.travelStyles,
+      };
+
+      if (mounted) {
+        try {
+          await Navigator.of(context).push<void>(
+            PageRouteBuilder<void>(
+              opaque: true,
+              fullscreenDialog: true,
+              pageBuilder: (ctx, _, __) => MoodyIdleScreen(
+                idleState: idleState,
+                userPreferences: prefsMap,
+                topInterest: topInterest,
+                onComplete: () => Navigator.of(ctx).pop(),
+              ),
+            ),
+          );
+        } catch (e, st) {
+          debugPrint('⚠️ Idle gate push failed: $e\n$st');
+        }
+      }
+    }
+
+    await MoodyIdleChecker.recordAppOpen();
+    _idleGateCompleted = true;
   }
-  
+
+  /// Debug-only: open any [MoodyIdleState] for UI review (stripped from release).
+  Future<void> _showMoodyIdleStatePreviewPicker(BuildContext context) async {
+    final prefs = ref.read(preferencesProvider);
+    final prefsMap = <String, dynamic>{
+      'communication_style': prefs.communicationStyle,
+      'selected_moods': prefs.selectedMoods,
+      'travel_interests': prefs.travelInterests,
+      'planning_pace': prefs.planningPace,
+      'budget_level': prefs.budgetLevel,
+      'home_base': prefs.homeBase,
+      'travel_styles': prefs.travelStyles,
+    };
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetCtx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: Text(
+                  'Preview Moody idle (debug)',
+                  style: Theme.of(sheetCtx).textTheme.titleMedium,
+                ),
+              ),
+              for (final s in MoodyIdleState.values)
+                ListTile(
+                  title: Text(s.name),
+                  onTap: () {
+                    Navigator.of(sheetCtx).pop();
+                    Navigator.of(context).push<void>(
+                      PageRouteBuilder<void>(
+                        opaque: true,
+                        fullscreenDialog: true,
+                        pageBuilder: (ctx, _, __) => MoodyIdleScreen(
+                          idleState: s,
+                          userPreferences: prefsMap,
+                          topInterest: null,
+                          afternoonInterestCategory:
+                              s == MoodyIdleState.afternoon ? 'food' : null,
+                          onComplete: () => Navigator.of(ctx).pop(),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Debug-only: open [HoeWasJeDagSheet] without 20:00 / DB gates (stripped from release).
+  Future<void> _showHoeWasJeDagDebugPreview(BuildContext context) async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      debugPrint('HoeWasJeDag debug: no signed-in user');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sign in to preview Hoe was je dag')),
+        );
+      }
+      return;
+    }
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.72),
+      useSafeArea: true,
+      builder: (sheetContext) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: HoeWasJeDagSheet(
+            completedActivities: const [
+              'Debug: museum bezoek',
+              'Debug: avondwandeling',
+            ],
+            userId: user.id,
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void didUpdateWidget(MainScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -191,39 +299,110 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     debugPrint('📱 MainScreen build: hasSeenIntro = $hasSeenIntro');
     debugPrint('📱 MainScreen build: shouldHideBottomNav = $shouldHideBottomNav');
     
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F0E8), // wmCream — QA / design system
-      drawer: const ProfileDrawer(),
-      extendBody: true, // Allow body to extend behind the floating nav bar
-      body: screens[selectedIndex],
-      bottomNavigationBar: shouldHideBottomNav
-          ? null
-          : Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8), // Reduced bottom padding to 8
-              child: SafeArea(
-                top: false,
-                bottom: false, // Keep false to manually control position
-                child: Container(
-                  padding: const EdgeInsets.only(top: 8, left: 6, right: 6, bottom: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: const Color(0xFFE8E2D8), width: 1), // wmParchment
-                    boxShadow: const [],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildRegularNavItem(context, ref, selectedIndex, 0, 'My Day', Icons.calendar_today_outlined, Icons.calendar_today, _navWmForest, _navWmForestTint),
-                      _buildRegularNavItem(context, ref, selectedIndex, 1, 'Explore', Icons.explore_outlined, Icons.explore, _navWmForest, _navWmForestTint),
-                      _buildCenterMoodyButton(context, ref, selectedIndex),
-                      _buildRegularNavItem(context, ref, selectedIndex, 3, 'WanderFeed', Icons.people_outline, Icons.people, _navWmForest, _navWmForestTint),
-                      _buildRegularNavItem(context, ref, selectedIndex, 4, 'Profile', Icons.person_outline, Icons.person, _navWmForest, _navWmForestTint),
-                    ],
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Scaffold(
+          backgroundColor: const Color(0xFFF5F0E8), // wmCream — QA / design system
+          drawer: const ProfileDrawer(),
+          extendBody: true, // Allow body to extend behind the floating nav bar
+          body: screens[selectedIndex],
+          bottomNavigationBar: shouldHideBottomNav
+              ? null
+              : Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8), // Reduced bottom padding to 8
+                  child: SafeArea(
+                    top: false,
+                    bottom: false, // Keep false to manually control position
+                    child: Container(
+                      padding: const EdgeInsets.only(top: 8, left: 6, right: 6, bottom: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: const Color(0xFFE8E2D8), width: 1), // wmParchment
+                        boxShadow: const [],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildRegularNavItem(context, ref, selectedIndex, 0, 'My Day', Icons.calendar_today_outlined, Icons.calendar_today, _navWmForest, _navWmForestTint),
+                          _buildRegularNavItem(context, ref, selectedIndex, 1, 'Explore', Icons.explore_outlined, Icons.explore, _navWmForest, _navWmForestTint),
+                          _buildCenterMoodyButton(context, ref, selectedIndex),
+                          _buildRegularNavItem(context, ref, selectedIndex, 3, 'WanderFeed', Icons.people_outline, Icons.people, _navWmForest, _navWmForestTint),
+                          _buildRegularNavItem(context, ref, selectedIndex, 4, 'Profile', Icons.person_outline, Icons.person, _navWmForest, _navWmForestTint),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
+        ),
+        if (kDebugMode)
+          Positioned(
+            right: 8,
+            bottom: shouldHideBottomNav ? 16 : 88,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Material(
+                  elevation: 4,
+                  borderRadius: BorderRadius.circular(20),
+                  color: const Color(0xFF2A6049).withValues(alpha: 0.92),
+                  child: InkWell(
+                    onTap: () => _showMoodyIdleStatePreviewPicker(context),
+                    borderRadius: BorderRadius.circular(20),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.bedtime_outlined, size: 18, color: Colors.white),
+                          SizedBox(width: 6),
+                          Text(
+                            'Idle',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Material(
+                  elevation: 4,
+                  borderRadius: BorderRadius.circular(20),
+                  color: const Color(0xFF4A4640).withValues(alpha: 0.92),
+                  child: InkWell(
+                    onTap: () => _showHoeWasJeDagDebugPreview(context),
+                    borderRadius: BorderRadius.circular(20),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.nightlight_round, size: 18, color: Colors.white),
+                          SizedBox(width: 6),
+                          Text(
+                            'EOD',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
+          ),
+      ],
     );
   }
 

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:wandermood/features/places/models/place.dart';
-import 'package:wandermood/features/places/providers/explore_places_provider.dart';
 import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
@@ -93,8 +92,8 @@ class _FreeTimeActivitiesScreenState extends ConsumerState<FreeTimeActivitiesScr
 
   @override
   Widget build(BuildContext context) {
-    // 🚨 OPTIMIZATION: Use Edge Function for 75+ places instead of old Google API
-    final placesAsync = ref.watch(moodyExploreAutoProvider);
+    // places_cache only — open Explore to populate aggregate (no Edge call from this screen)
+    final placesAsync = ref.watch(moodyHubExploreCacheOnlyProvider);
     
     return Scaffold(
               body: Stack(
