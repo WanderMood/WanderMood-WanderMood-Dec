@@ -311,7 +311,7 @@ class ProfileSettingsService {
       print('📸 Starting photo upload process...');
       
       // For now, generate a user-specific avatar URL based on their email
-      final avatarUrl = 'https://ui-avatars.com/api/?name=${user.email?.substring(0, 1) ?? 'U'}&background=12B347&color=fff&size=200';
+      final avatarUrl = 'https://ui-avatars.com/api/?name=${user.email?.substring(0, 1) ?? 'U'}&background=2A6049&color=fff&size=200';
       print('📸 Generated avatar URL: $avatarUrl');
 
       // Update profile with the avatar URL

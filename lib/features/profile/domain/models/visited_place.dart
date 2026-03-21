@@ -134,7 +134,7 @@ class VisitedPlace {
       case 'thoughtful':
         return const Color(0xFF6366F1);
       case 'chill':
-        return const Color(0xFF12B347);
+        return const Color(0xFF2A6049);
       default:
         return Colors.white;
     }

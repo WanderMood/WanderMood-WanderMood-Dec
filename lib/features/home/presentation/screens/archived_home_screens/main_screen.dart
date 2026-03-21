@@ -131,7 +131,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF12B347).withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? const Color(0xFF2A6049).withOpacity(0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -148,7 +148,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? const Color(0xFF12B347) : Colors.grey.shade600,
+                color: isSelected ? const Color(0xFF2A6049) : Colors.grey.shade600,
               ),
             ),
           ],

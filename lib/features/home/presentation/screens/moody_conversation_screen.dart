@@ -13,6 +13,16 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/home/domain/enums/moody_feature.dart';
 import 'package:wandermood/features/plans/presentation/screens/plan_loading_screen.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+
+// WanderMood v2 — Moody conversation overlay (aligned with moody_chat_sheet / Screen 9)
+const Color _wmSkyTint = Color(0xFFEDF5F9);
+const Color _wmCream = Color(0xFFF5F0E8);
+const Color _wmSky = Color(0xFFA8C8DC);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmForestTint = Color(0xFFEBF3EE);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmCharcoal = Color(0xFF1E1C18);
 
 class MoodyConversationScreen extends ConsumerStatefulWidget {
   final VoidCallback onClose;
@@ -331,14 +341,10 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
     if (_conversationCompleted) return;
     
     if (!_speechRecognitionAvailable) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Speech recognition is not available on this device',
-            style: GoogleFonts.poppins(),
-          ),
-          backgroundColor: Colors.red.shade400,
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Speech recognition is not available on this device',
+        isError: true,
       );
       return;
     }
@@ -816,13 +822,14 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE8F5E9),
+                        color: _wmForestTint,
                         borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: _wmParchment.withOpacity(0.8)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.check_circle, color: Color(0xFF12B347), size: 16),
+                          const Icon(Icons.check_circle, color: _wmForest, size: 16),
                           const SizedBox(width: 6),
                           Text(
                             mood,
@@ -845,9 +852,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                   width: 200,
                   child: LinearProgressIndicator(
                     backgroundColor: Colors.grey.shade200,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      const Color(0xFF12B347),
-                    ),
+                    valueColor: const AlwaysStoppedAnimation<Color>(_wmForest),
                   ),
                 ).animate(
                   onPlay: (controller) => controller.repeat(),
@@ -977,8 +982,8 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                 child: Container(
                   width: MediaQuery.of(context).size.width * 0.9,
                   height: MediaQuery.of(context).size.height * 0.75,
+                  clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
-                    color: Colors.white,
                     borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
@@ -988,7 +993,16 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                       ),
                     ],
                   ),
-                  child: Column(
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Column(
+                        children: const [
+                          Expanded(flex: 4, child: ColoredBox(color: _wmSkyTint)),
+                          Expanded(flex: 6, child: ColoredBox(color: _wmCream)),
+                        ],
+                      ),
+                      Column(
                     children: [
                       // Header with title and close button
                       Padding(
@@ -1013,21 +1027,34 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                         ),
                       ),
                       
-                      // Moody character
+                      // Moody character (sky halo — v2)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: MoodyCharacter(
-                          size: 120,
-                          mood: _isProcessing ? 'thinking' : (_isSpeaking ? 'talking' : 'happy'),
-                          currentFeature: MoodyFeature.none,
-                          mouthScaleFactor: _isSpeaking ? 1.2 : 1.0,
-                        ).animate(
-                          onPlay: (controller) => controller.repeat(reverse: true),
-                        ).scale(
-                          duration: const Duration(milliseconds: 2000),
-                          begin: const Offset(1.0, 1.0),
-                          end: const Offset(1.05, 1.05),
-                          curve: Curves.easeInOut,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _wmSky,
+                            boxShadow: [
+                              BoxShadow(
+                                color: _wmSky.withOpacity(0.35),
+                                blurRadius: 20,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: MoodyCharacter(
+                            size: 120,
+                            mood: _isProcessing ? 'thinking' : (_isSpeaking ? 'talking' : 'happy'),
+                            currentFeature: MoodyFeature.none,
+                            mouthScaleFactor: _isSpeaking ? 1.2 : 1.0,
+                          ).animate(
+                            onPlay: (controller) => controller.repeat(reverse: true),
+                          ).scale(
+                            duration: const Duration(milliseconds: 2000),
+                            begin: const Offset(1.0, 1.0),
+                            end: const Offset(1.05, 1.05),
+                            curve: Curves.easeInOut,
+                          ),
                         ),
                       ),
                       
@@ -1045,10 +1072,10 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontStyle: FontStyle.italic,
-                            color: _isSpeaking 
-                                ? Colors.blue.shade700
-                                : (_isListening 
-                                    ? const Color(0xFF12B347) 
+                            color: _isSpeaking
+                                ? _wmForest
+                                : (_isListening
+                                    ? _wmForest
                                     : Colors.black54),
                           ),
                         ),
@@ -1077,15 +1104,15 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                                   return Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: Color(0xFFE3F2FD),
+                                      color: _wmForestTint,
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: Colors.blue.shade100),
+                                      border: Border.all(color: _wmParchment.withOpacity(0.9)),
                                     ),
                                     child: Text(
                                       mood,
                                       style: GoogleFonts.poppins(
                                         fontSize: 12,
-                                        color: Colors.blue.shade800,
+                                        color: _wmForest,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -1107,7 +1134,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                                 height: 4,
                                 margin: const EdgeInsets.symmetric(horizontal: 2),
                                 decoration: BoxDecoration(
-                                  color: isActive ? const Color(0xFF12B347) : Colors.grey.shade200,
+                                  color: isActive ? _wmForest : Colors.grey.shade200,
                                   borderRadius: BorderRadius.circular(2),
                                 ),
                               ),
@@ -1136,6 +1163,9 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                         padding: const EdgeInsets.all(16.0),
                         decoration: BoxDecoration(
                           color: Colors.white,
+                          border: Border(
+                            top: BorderSide(color: _wmParchment.withOpacity(0.65)),
+                          ),
                           borderRadius: const BorderRadius.vertical(
                             bottom: Radius.circular(30),
                           ),
@@ -1154,20 +1184,34 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                               child: TextField(
                                 controller: _textController,
                                 decoration: InputDecoration(
-                                  hintText: _isListening 
-                                      ? "Listening..." 
+                                  hintText: _isListening
+                                      ? "Listening..."
                                       : "Type your message...",
                                   hintStyle: GoogleFonts.poppins(color: Colors.black45),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: BorderSide.none,
-                                  ),
                                   filled: true,
-                                  fillColor: Colors.grey.withOpacity(0.1),
+                                  fillColor: const Color(0xFFF8FAFC),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                    borderSide: BorderSide(
+                                      color: _wmParchment,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                    borderSide: const BorderSide(
+                                      color: _wmForest,
+                                      width: 2,
+                                    ),
+                                  ),
                                   contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 20, 
+                                    horizontal: 20,
                                     vertical: 12,
                                   ),
+                                ),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 15,
+                                  color: _wmCharcoal,
                                 ),
                                 enabled: !_isListening && !_conversationCompleted,
                                 onChanged: (value) {
@@ -1194,13 +1238,13 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                                 decoration: BoxDecoration(
                                   color: _conversationCompleted
                                       ? Colors.grey.withOpacity(0.5)
-                                      : const Color(0xFF12B347),
+                                      : _wmForest,
                                   shape: BoxShape.circle,
-                                  boxShadow: _conversationCompleted 
-                                      ? [] 
+                                  boxShadow: _conversationCompleted
+                                      ? []
                                       : [
                                           BoxShadow(
-                                            color: const Color(0xFF12B347).withOpacity(0.4),
+                                            color: _wmForest.withOpacity(0.35),
                                             blurRadius: 10,
                                             spreadRadius: 1,
                                           ),
@@ -1248,7 +1292,9 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                       ),
                     ],
                   ),
-                ),
+                ],
+              ),
+            ),
               ),
             ),
           ),
@@ -1271,7 +1317,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
               width: 32,
               height: 32,
               decoration: const BoxDecoration(
-                color: Color(0xFFE3F2FD),
+                color: _wmSky,
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -1284,7 +1330,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                     errorBuilder: (context, error, stackTrace) {
                       return const Icon(
                         Icons.face,
-                        color: Color(0xFF2196F3),
+                        color: _wmForest,
                         size: 20,
                       );
                     },
@@ -1299,16 +1345,25 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                color: isUser 
-                    ? const Color(0xFFE8F5E9)
-                    : const Color(0xFFE3F2FD),
+                gradient: isUser
+                    ? const LinearGradient(
+                        colors: [_wmForest, Color(0xFF347558)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : const LinearGradient(
+                        colors: [_wmForestTint, _wmSkyTint],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Text(
                 message.text,
                 style: GoogleFonts.poppins(
-                  color: Colors.black87,
+                  color: isUser ? Colors.white : _wmCharcoal,
                   fontSize: 14,
+                  height: 1.35,
                 ),
               ),
             ),
@@ -1320,13 +1375,17 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
               width: 32,
               height: 32,
               decoration: const BoxDecoration(
-                color: Color(0xFFE8F5E9),
+                gradient: LinearGradient(
+                  colors: [_wmForest, Color(0xFF347558)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 shape: BoxShape.circle,
               ),
               child: const Center(
                 child: Icon(
                   Icons.person,
-                  color: Color(0xFF12B347),
+                  color: Colors.white,
                   size: 20,
                 ),
               ),

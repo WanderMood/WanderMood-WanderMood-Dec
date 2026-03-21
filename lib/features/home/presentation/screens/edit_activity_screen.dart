@@ -75,8 +75,8 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF12B347).withOpacity(0.1),
-              const Color(0xFF12B347).withOpacity(0.05),
+              const Color(0xFF2A6049).withOpacity(0.1),
+              const Color(0xFF2A6049).withOpacity(0.05),
               Colors.white,
             ],
           ),
@@ -114,7 +114,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
                         ),
                         child: const Icon(
                           Icons.arrow_back,
-                          color: Color(0xFF12B347),
+                          color: Color(0xFF2A6049),
                           size: 20,
                         ),
                       ),
@@ -126,7 +126,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
                         style: GoogleFonts.museoModerno(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF12B347),
+                          color: const Color(0xFF2A6049),
                         ),
                       ),
                     ),
@@ -146,7 +146,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
                       ),
                       child: const Icon(
                         Icons.bookmark,
-                        color: Color(0xFF12B347),
+                        color: Color(0xFF2A6049),
                         size: 20,
                       ),
                     ),
@@ -186,15 +186,15 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
                                 color: Colors.grey[300],
                                 child: const Center(
                                   child: CircularProgressIndicator(
-                                    color: Color(0xFF12B347),
+                                    color: Color(0xFF2A6049),
                                   ),
                                 ),
                               ),
                               errorWidget: (context, url, error) => Container(
-                                color: const Color(0xFF12B347).withOpacity(0.2),
+                                color: const Color(0xFF2A6049).withOpacity(0.2),
                                 child: const Icon(
                                   Icons.image,
-                                  color: Color(0xFF12B347),
+                                  color: Color(0xFF2A6049),
                                   size: 50,
                                 ),
                               ),
@@ -225,7 +225,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
                                 children: [
                                   Icon(
                                     Icons.info_outline,
-                                    color: const Color(0xFF12B347),
+                                    color: const Color(0xFF2A6049),
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
@@ -311,7 +311,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
                                 children: [
                                   Icon(
                                     Icons.edit,
-                                    color: const Color(0xFF12B347),
+                                    color: const Color(0xFF2A6049),
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
@@ -414,7 +414,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
                                 icon: const Icon(Icons.save),
                                 label: const Text('Update Booking'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF12B347),
+                                  backgroundColor: const Color(0xFF2A6049),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
@@ -519,7 +519,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
         ),
         prefixIcon: Icon(
           icon,
-          color: const Color(0xFF12B347),
+          color: const Color(0xFF2A6049),
           size: 20,
         ),
         border: OutlineInputBorder(
@@ -528,7 +528,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF12B347), width: 2),
+          borderSide: const BorderSide(color: Color(0xFF2A6049), width: 2),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -559,7 +559,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
           children: [
             Icon(
               icon,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
               size: 20,
             ),
             const SizedBox(width: 12),
@@ -624,7 +624,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: const Color(0xFF12B347),
+              primary: const Color(0xFF2A6049),
             ),
           ),
           child: child!,
@@ -647,7 +647,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: const Color(0xFF12B347),
+              primary: const Color(0xFF2A6049),
             ),
           ),
           child: child!,
@@ -677,7 +677,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const CircularProgressIndicator(
-                color: Color(0xFF12B347),
+                color: Color(0xFF2A6049),
               ),
               const SizedBox(height: 16),
               Text(
@@ -707,7 +707,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
               children: [
                 Icon(
                   Icons.check_circle,
-                  color: const Color(0xFF12B347),
+                  color: const Color(0xFF2A6049),
                   size: 24,
                 ),
                 const SizedBox(width: 8),
@@ -715,7 +715,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
                   'Booking Updated!',
                   style: GoogleFonts.museoModerno(
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF12B347),
+                    color: const Color(0xFF2A6049),
                   ),
                 ),
               ],
@@ -735,9 +735,9 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF12B347).withOpacity(0.1),
+                    color: const Color(0xFF2A6049).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFF12B347).withOpacity(0.3)),
+                    border: Border.all(color: const Color(0xFF2A6049).withOpacity(0.3)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -747,7 +747,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF12B347),
+                          color: const Color(0xFF2A6049),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -756,7 +756,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF12B347),
+                          color: const Color(0xFF2A6049),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -765,7 +765,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF12B347),
+                          color: const Color(0xFF2A6049),
                         ),
                       ),
                       if (notes.isNotEmpty) ...[
@@ -775,7 +775,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF12B347),
+                            color: const Color(0xFF2A6049),
                           ),
                         ),
                       ],
@@ -795,7 +795,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF12B347),
+                  backgroundColor: const Color(0xFF2A6049),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -840,7 +840,7 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
               '"${widget.activity['title']}"',
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF12B347),
+                color: const Color(0xFF2A6049),
               ),
             ),
             const SizedBox(height: 8),

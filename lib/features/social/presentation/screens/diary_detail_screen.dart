@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class DiaryDetailScreen extends ConsumerStatefulWidget {
   final String entryId;
@@ -77,7 +78,7 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
                 IconButton(
                   icon: Icon(
                     _hasSaved ? Icons.bookmark : Icons.bookmark_border,
-                    color: _hasSaved ? const Color(0xFF12B347) : const Color(0xFF718096),
+                    color: _hasSaved ? const Color(0xFF2A6049) : const Color(0xFF718096),
                   ),
                   onPressed: () {
                     setState(() {
@@ -147,15 +148,15 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
                   height: 50,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFF12B347).withOpacity(0.1),
+                    color: const Color(0xFF2A6049).withOpacity(0.1),
                     border: Border.all(
-                      color: const Color(0xFF12B347),
+                      color: const Color(0xFF2A6049),
                       width: 2,
                     ),
                   ),
                   child: const Icon(
                     Icons.person,
-                    color: Color(0xFF12B347),
+                    color: Color(0xFF2A6049),
                     size: 24,
                   ),
                 ),
@@ -251,10 +252,10 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
               children: (_demoEntry['tags'] as List<String>).map((tag) => Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF12B347).withOpacity(0.1),
+                  color: const Color(0xFF2A6049).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: const Color(0xFF12B347).withOpacity(0.3),
+                    color: const Color(0xFF2A6049).withOpacity(0.3),
                     width: 1,
                   ),
                 ),
@@ -263,7 +264,7 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF12B347),
+                    color: const Color(0xFF2A6049),
                   ),
                 ),
               )).toList(),
@@ -293,12 +294,12 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF12B347).withOpacity(0.1),
+                    color: const Color(0xFF2A6049).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: const Icon(
                     Icons.photo_library_outlined,
-                    color: Color(0xFF12B347),
+                    color: Color(0xFF2A6049),
                     size: 30,
                   ),
                 ),
@@ -386,7 +387,7 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFF12B347).withOpacity(0.1),
+              color: const Color(0xFF2A6049).withOpacity(0.1),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Text(
@@ -394,7 +395,7 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF12B347),
+                color: const Color(0xFF2A6049),
               ),
             ),
           ),
@@ -516,7 +517,7 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(25),
-                  borderSide: const BorderSide(color: Color(0xFF12B347)),
+                  borderSide: const BorderSide(color: Color(0xFF2A6049)),
                 ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -534,7 +535,7 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
             width: 44,
             height: 44,
             decoration: const BoxDecoration(
-              color: Color(0xFF12B347),
+              color: Color(0xFF2A6049),
               shape: BoxShape.circle,
             ),
             child: IconButton(
@@ -547,14 +548,10 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
                 if (_commentController.text.trim().isNotEmpty) {
                   // Add comment logic here
                   _commentController.clear();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Comment added! 💬',
-                        style: GoogleFonts.poppins(),
-                      ),
-                      backgroundColor: const Color(0xFF12B347),
-                    ),
+                  showWanderMoodToast(
+                    context,
+                    message: 'Comment added! 💬',
+                    backgroundColor: const Color(0xFF2A6049),
                   );
                 }
               },
@@ -580,7 +577,7 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
       case 'curious':
         return const Color(0xFF9C27B0);
       default:
-        return const Color(0xFF12B347);
+        return const Color(0xFF2A6049);
     }
   }
 

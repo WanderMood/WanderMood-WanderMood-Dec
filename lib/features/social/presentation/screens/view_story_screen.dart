@@ -157,7 +157,7 @@ class _ViewStoryScreenState extends ConsumerState<ViewStoryScreen> with SingleTi
                             color: Colors.grey[900],
                             child: const Center(
                               child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
                               ),
                             ),
                           );

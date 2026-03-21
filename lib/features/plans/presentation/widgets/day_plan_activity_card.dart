@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +14,18 @@ import 'package:wandermood/features/plans/data/services/scheduled_activity_servi
 import 'package:wandermood/features/plans/presentation/providers/place_open_now_provider.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+
+/// v2 design tokens — day plan result cards
+const Color _wmWhite = Color(0xFFFFFFFF);
+const Color _wmCream = Color(0xFFF5F0E8);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmForestTint = Color(0xFFEBF3EE);
+const Color _wmSky = Color(0xFFA8C8DC);
+const Color _wmCharcoal = Color(0xFF1E1C18);
+const Color _wmDusk = Color(0xFF4A4640);
+const Color _wmSeeActivityText = Color(0xFF1A3D50);
 
 /// Day Plan activity card matching the reference design:
 /// gradient accent bar, image with overlays (mood match, category, rating, actions),
@@ -48,21 +59,6 @@ class DayPlanActivityCard extends ConsumerStatefulWidget {
 class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
   bool _isAdding = false;
   bool _isAdded = false;
-
-  /// Gradient for accent bar and "See activity" button by time slot / category.
-  LinearGradient _cardGradient() {
-    final first = widget.activity.tags.isNotEmpty ? widget.activity.tags.first.toLowerCase() : '';
-    if (first.contains('cultural') || first.contains('museum') || first.contains('art')) {
-      return const LinearGradient(colors: [Color(0xFFA78BFA), Color(0xFF6366F1)], begin: Alignment.centerLeft, end: Alignment.centerRight);
-    }
-    if (first.contains('food') || first.contains('dining') || first.contains('restaurant')) {
-      return const LinearGradient(colors: [Color(0xFFFBBF24), Color(0xFFF97316)], begin: Alignment.centerLeft, end: Alignment.centerRight);
-    }
-    if (first.contains('market') || first.contains('dining')) {
-      return const LinearGradient(colors: [Color(0xFFFB7185), Color(0xFFF43F5E)], begin: Alignment.centerLeft, end: Alignment.centerRight);
-    }
-    return const LinearGradient(colors: [Color(0xFFF472B6), Color(0xFFFB7185)], begin: Alignment.centerLeft, end: Alignment.centerRight);
-  }
 
   String get _durationText {
     if (widget.activity.duration >= 60) {
@@ -146,8 +142,10 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.dayPlanCardUnableToOpenDirections), backgroundColor: Colors.red),
+        showWanderMoodToast(
+          context,
+          message: AppLocalizations.of(context)!.dayPlanCardUnableToOpenDirections,
+          isError: true,
         );
       }
     }
@@ -159,8 +157,10 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
       await SharingService.sharePlace(place);
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.dayPlanCardFailedToShare), backgroundColor: Colors.red),
+        showWanderMoodToast(
+          context,
+          message: AppLocalizations.of(context)!.dayPlanCardFailedToShare,
+          isError: true,
         );
       }
     }
@@ -177,14 +177,17 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
         await savedPlacesService.unsavePlace(place.id);
         ref.invalidate(savedPlacesProvider);
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.dayPlanCardRemovedFromSaved(place.name)), backgroundColor: Colors.orange),
+          showWanderMoodToast(
+            context,
+            message: AppLocalizations.of(context)!.dayPlanCardRemovedFromSaved(place.name),
           );
         }
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.dayPlanCardFailedToRemove(place.name)), backgroundColor: Colors.red),
+          showWanderMoodToast(
+            context,
+            message: AppLocalizations.of(context)!.dayPlanCardFailedToRemove(place.name),
+            isError: true,
           );
         }
       }
@@ -195,20 +198,17 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
       await savedPlacesService.savePlace(place);
       ref.invalidate(savedPlacesProvider);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.dayPlanCardSavedToMoodyHub(place.name)),
-            backgroundColor: const Color(0xFF12B347),
-          ),
+        showWanderMoodToast(
+          context,
+          message: AppLocalizations.of(context)!.dayPlanCardSavedToMoodyHub(place.name),
         );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.dayPlanCardCouldNotSaveMoodyHub),
-            backgroundColor: Colors.orange,
-          ),
+        showWanderMoodToast(
+          context,
+          message: AppLocalizations.of(context)!.dayPlanCardCouldNotSaveMoodyHub,
+          isError: true,
         );
       }
     }
@@ -237,11 +237,9 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
       }
       
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.dayPlanCardAddedToMyDay(widget.activity.name)),
-            backgroundColor: const Color(0xFF12B347),
-          ),
+        showWanderMoodToast(
+          context,
+          message: AppLocalizations.of(context)!.dayPlanCardAddedToMyDay(widget.activity.name),
         );
       }
     } catch (e) {
@@ -251,11 +249,10 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
         });
       }
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.dayPlanCardCouldNotAddMyDay),
-            backgroundColor: Colors.orange,
-          ),
+        showWanderMoodToast(
+          context,
+          message: AppLocalizations.of(context)!.dayPlanCardCouldNotAddMyDay,
+          isError: true,
         );
       }
     }
@@ -263,7 +260,6 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
 
   @override
   Widget build(BuildContext context) {
-    final gradient = _cardGradient();
     final savedPlacesAsync = ref.watch(savedPlacesProvider);
     final place = activityToPlace(widget.activity);
     final isFavorite = savedPlacesAsync.value?.any((sp) => sp.place.id == place.id) ?? false;
@@ -277,30 +273,23 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () => widget.onTap(widget.activity, distanceKm: widget.distanceKm),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFFF3F4F6), width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 20,
-                offset: const Offset(0, 4),
-                spreadRadius: 0,
-              ),
-            ],
+            color: _wmWhite,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _wmParchment, width: 0.5),
           ),
           clipBehavior: Clip.antiAlias,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Gradient accent bar
+              // Accent bar — wmForest (v2)
               Container(
-                height: 8,
-                decoration: BoxDecoration(gradient: gradient),
+                height: 4,
+                width: double.infinity,
+                color: _wmForest,
               ),
               // Image section: use activity.imageUrl, or fetch from Places API (same as Explore) when empty
               SizedBox(
@@ -324,35 +313,34 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                         ),
                       ),
                     ),
-                    // Rating badge (bottom-left) – gradient + glassy
+                    // Rating badge (bottom-left)
                     Positioned(
                       bottom: 12,
                       left: 12,
-                      child: _glassyGradientPill(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFFF9E6), Color(0xFFFFF3CC)],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: _wmForest,
+                          borderRadius: BorderRadius.circular(999),
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.star, size: 16, color: Color(0xFFFBBF24)),
+                            const Icon(Icons.star, size: 14, color: Colors.white),
                             const SizedBox(width: 4),
                             Text(
                               widget.activity.rating.toStringAsFixed(1),
                               style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF1F2937),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                    // Action buttons (bottom-right): Directions, Share, Heart
+                    // Action buttons (bottom-right): white + parchment + forest icons (v2)
                     Positioned(
                       bottom: 12,
                       right: 12,
@@ -361,19 +349,17 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                         children: [
                           _imageActionButton(
                             icon: Icons.directions,
-                            color: const Color(0xFF2563EB),
                             onTap: () => _openDirections(context),
                           ),
                           const SizedBox(width: 8),
                           _imageActionButton(
                             icon: Icons.share,
-                            color: const Color(0xFF9333EA),
                             onTap: () => _share(context),
                           ),
                           const SizedBox(width: 8),
                           _imageActionButton(
                             icon: isFavorite ? Icons.favorite : Icons.favorite_border,
-                            color: isFavorite ? Colors.red : Colors.grey.shade700,
+                            iconColor: isFavorite ? const Color(0xFFE05C5C) : _wmForest,
                             onTap: () => _toggleFavorite(context, ref),
                           ),
                         ],
@@ -394,27 +380,34 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                       style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1F2937),
+                        color: _wmCharcoal,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
-                    // Mood tags (gradient + glassy pills)
+                    // Category / mood tags — wmForestTint + wmForest (v2)
                     Wrap(
                       spacing: 6,
                       runSpacing: 6,
                       children: widget.activity.tags.take(5).map((tag) {
-                        final style = _tagGradient(tag);
-                        return _glassyGradientPill(
-                          gradient: style,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        final label = tag.length > 2
+                            ? '${tag[0].toUpperCase()}${tag.substring(1)}'
+                            : tag.toUpperCase();
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: _wmForestTint,
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(color: _wmParchment, width: 0.5),
+                          ),
                           child: Text(
-                            tag.length > 2 ? '${tag[0].toUpperCase()}${tag.substring(1)}' : tag.toUpperCase(),
+                            label,
                             style: GoogleFonts.poppins(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: _wmForest,
+                              letterSpacing: 0.2,
                             ),
                           ),
                         );
@@ -460,51 +453,24 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        _infoPill(
+                        _flatMetaPill(
                           icon: Icons.schedule,
                           label: _durationText,
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFBFDBFE), Color(0xFF67E8F9)],
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                          ),
-                          iconColor: const Color(0xFF2563EB),
                         ),
-                        _infoPill(
+                        _flatMetaPill(
                           icon: Icons.euro,
                           label: _priceText(context),
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFD1FAE5), Color(0xFFA7F3D0)],
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                          ),
-                          iconColor: const Color(0xFF059669),
                         ),
                         if (widget.distanceKm != null)
-                          _infoPill(
+                          _flatMetaPill(
                             icon: Icons.location_on,
                             label: widget.distanceKm!,
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFED7AA), Color(0xFFFBCFE8)],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                            iconColor: const Color(0xFFEA580C),
                           ),
-                        // Only show Open/Closed when we have live data from Google Places (placeId)
                         if (isOpenNow != null)
-                          _infoPill(
+                          _flatMetaPill(
                             icon: Icons.circle,
                             label: isOpenNow ? AppLocalizations.of(context)!.dayPlanCardOpenNow : AppLocalizations.of(context)!.dayPlanCardClosed,
-                            gradient: LinearGradient(
-                              colors: isOpenNow
-                                  ? const [Color(0xFF4ADE80), Color(0xFF10B981)]
-                                  : [Colors.grey.shade400, Colors.grey.shade500],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                            iconColor: Colors.white,
-                            isPulsingDot: isOpenNow,
+                            isOpenDot: isOpenNow,
                           ),
                       ],
                     ),
@@ -516,38 +482,38 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                           child: widget.onNotFeelingThis != null
                               ? OutlinedButton.icon(
                                   onPressed: widget.onNotFeelingThis,
-                                  icon: const Icon(Icons.refresh_rounded, size: 18, color: Color(0xFF4CAF50)),
+                                  icon: const Icon(Icons.refresh_rounded, size: 18, color: _wmForest),
                                   label: Text(
                                     AppLocalizations.of(context)!.dayPlanCardNotFeelingThis,
                                     style: GoogleFonts.poppins(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF4CAF50),
+                                      fontWeight: FontWeight.w600,
+                                      color: _wmForest,
                                     ),
                                   ),
                                   style: OutlinedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(vertical: 14),
-                                    side: const BorderSide(color: Color(0xFF4CAF50), width: 2),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                    backgroundColor: Colors.white,
+                                    side: const BorderSide(color: _wmForest, width: 1.5),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                                    backgroundColor: _wmWhite,
                                   ),
                                 )
                               : OutlinedButton.icon(
                                   onPressed: () => _openDirections(context),
-                                  icon: const Icon(Icons.directions, size: 18, color: Color(0xFF2563EB)),
+                                  icon: const Icon(Icons.directions, size: 18, color: _wmForest),
                                   label: Text(
                                     AppLocalizations.of(context)!.dayPlanCardDirections,
                                     style: GoogleFonts.poppins(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF374151),
+                                      fontWeight: FontWeight.w600,
+                                      color: _wmDusk,
                                     ),
                                   ),
                                   style: OutlinedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(vertical: 14),
-                                    side: const BorderSide(color: Color(0xFFE5E7EB), width: 2),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                    backgroundColor: Colors.white,
+                                    side: const BorderSide(color: _wmParchment, width: 1.5),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                                    backgroundColor: _wmWhite,
                                   ),
                                 ),
                         ),
@@ -557,19 +523,12 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                             color: Colors.transparent,
                             child: InkWell(
                               onTap: () => widget.onTap(widget.activity, distanceKm: widget.distanceKm),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(999),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(vertical: 14),
                                 decoration: BoxDecoration(
-                                  gradient: gradient,
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
+                                  color: _wmSky,
+                                  borderRadius: BorderRadius.circular(999),
                                 ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -578,8 +537,8 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                                       AppLocalizations.of(context)!.dayPlanCardSeeActivity,
                                       style: GoogleFonts.poppins(
                                         fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                        color: _wmSeeActivityText,
                                       ),
                                     ),
                                     const SizedBox(width: 6),
@@ -602,12 +561,12 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                             ? const SizedBox(
                                 width: 16, 
                                 height: 16, 
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF7C3AED)),
+                                child: CircularProgressIndicator(strokeWidth: 2, color: _wmForest),
                               )
                             : Icon(
                                 _isAdded ? Icons.check_circle_rounded : Icons.calendar_today_rounded, 
                                 size: 16, 
-                                color: _isAdded ? Colors.white : const Color(0xFF7C3AED),
+                                color: _isAdded ? Colors.white : _wmForest,
                               ),
                         label: Text(
                           _isAdded 
@@ -615,26 +574,18 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                               : AppLocalizations.of(context)!.dayPlanCardAddToMyDay,
                           style: GoogleFonts.poppins(
                             fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: _isAdded ? Colors.white : const Color(0xFF7C3AED),
+                            fontWeight: FontWeight.w600,
+                            color: _isAdded ? Colors.white : _wmForest,
                           ),
                         ),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           side: BorderSide(
-                            color: _isAdded ? const Color(0xFF12B347) : const Color(0xFF7C3AED), 
-                            width: 2,
+                            color: _isAdded ? _wmForest : _wmForest, 
+                            width: 1.5,
                           ),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          backgroundColor: _isAdded ? const Color(0xFF12B347) : const Color(0xFFF5F3FF),
-                        ).copyWith(
-                          // Ensure disabled state still shows the custom colors
-                          foregroundColor: WidgetStateProperty.resolveWith((states) {
-                            if (states.contains(WidgetState.disabled)) {
-                              return _isAdded ? Colors.white : const Color(0xFF7C3AED);
-                            }
-                            return null; // Defer to default
-                          }),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                          backgroundColor: _isAdded ? _wmForest : _wmWhite,
                         ),
                       ),
                     ),
@@ -648,93 +599,39 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
     );
   }
 
-  LinearGradient _tagGradient(String tag) {
-    final t = tag.toLowerCase();
-    if (t.contains('cultural') || t.contains('culture')) {
-      return const LinearGradient(colors: [Color(0xFFA78BFA), Color(0xFF6366F1)], begin: Alignment.centerLeft, end: Alignment.centerRight);
-    }
-    if (t.contains('food') || t.contains('foodie') || t.contains('dining')) {
-      return const LinearGradient(colors: [Color(0xFFFBBF24), Color(0xFFF97316)], begin: Alignment.centerLeft, end: Alignment.centerRight);
-    }
-    if (t.contains('instagram') || t.contains('iconic')) {
-      return const LinearGradient(colors: [Color(0xFFF472B6), Color(0xFFFB7185)], begin: Alignment.centerLeft, end: Alignment.centerRight);
-    }
-    if (t.contains('indoor')) {
-      return const LinearGradient(colors: [Color(0xFF60A5FA), Color(0xFF22D3EE)], begin: Alignment.centerLeft, end: Alignment.centerRight);
-    }
-    if (t.contains('outdoor') || t.contains('walking') || t.contains('tour')) {
-      return const LinearGradient(colors: [Color(0xFFFB923C), Color(0xFFEF4444)], begin: Alignment.centerLeft, end: Alignment.centerRight);
-    }
-    return const LinearGradient(colors: [Color(0xFF9CA3AF), Color(0xFF6B7280)], begin: Alignment.centerLeft, end: Alignment.centerRight);
-  }
-
-  /// Gradient + glassy pill (frosted look with blur and semi-transparent gradient).
-  Widget _glassyGradientPill({
-    required LinearGradient gradient,
-    required EdgeInsets padding,
-    required Widget child,
-  }) {
-    final colors = gradient.colors;
-    final softGradient = LinearGradient(
-      colors: colors.map((c) => c.withOpacity(0.88)).toList(),
-      begin: gradient.begin,
-      end: gradient.end,
-    );
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(999),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            gradient: softGradient,
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: Colors.white.withOpacity(0.45), width: 1.2),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          child: child,
-        ),
-      ),
-    );
-  }
-
-  Widget _infoPill({
+  Widget _flatMetaPill({
     required IconData icon,
     required String label,
-    required LinearGradient gradient,
-    required Color iconColor,
-    bool isPulsingDot = false,
+    bool isOpenDot = false,
   }) {
-    return _glassyGradientPill(
-      gradient: gradient,
+    return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: _wmCream,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: _wmParchment, width: 0.5),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (isPulsingDot)
+          if (isOpenDot)
             Container(
               width: 8,
               height: 8,
               decoration: const BoxDecoration(
-                color: Colors.white,
+                color: _wmForest,
                 shape: BoxShape.circle,
               ),
             )
           else
-            Icon(icon, size: 14, color: iconColor),
+            Icon(icon, size: 14, color: _wmForest),
           const SizedBox(width: 6),
           Text(
             label,
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: isPulsingDot ? Colors.white : const Color(0xFF374151),
+              color: _wmCharcoal,
             ),
           ),
         ],
@@ -744,38 +641,23 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
 
   Widget _imageActionButton({
     required IconData icon,
-    required Color color,
     required VoidCallback onTap,
+    Color? iconColor,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: ClipOval(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withOpacity(0.92),
-                  Colors.white.withOpacity(0.75),
-                ],
-              ),
-              border: Border.all(color: Colors.white.withOpacity(0.6), width: 1),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Icon(icon, size: 20, color: color),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: _wmWhite,
+            shape: BoxShape.circle,
+            border: Border.all(color: _wmParchment, width: 0.5),
           ),
+          child: Icon(icon, size: 20, color: iconColor ?? _wmForest),
         ),
       ),
     );

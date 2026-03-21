@@ -20,6 +20,10 @@ import 'package:wandermood/core/utils/auth_helper.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// v2 bottom nav — Screen 11 (active = wmForest, pill bg = wmForestTint)
+const Color _navWmForest = Color(0xFF2A6049);
+const Color _navWmForestTint = Color(0xFFEBF3EE);
+
 // Create a Provider for the tab controller
 final mainTabProvider = StateProvider<int>((ref) => 0);
 
@@ -188,7 +192,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     debugPrint('📱 MainScreen build: shouldHideBottomNav = $shouldHideBottomNav');
     
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFDF5), // Match app's beige background
+      backgroundColor: const Color(0xFFF5F0E8), // wmCream — QA / design system
       drawer: const ProfileDrawer(),
       extendBody: true, // Allow body to extend behind the floating nav bar
       body: screens[selectedIndex],
@@ -204,17 +208,17 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: const Color(0xFFF3F4F6), width: 2),
+                    border: Border.all(color: const Color(0xFFE8E2D8), width: 1), // wmParchment
                     boxShadow: const [],
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildRegularNavItem(context, ref, selectedIndex, 0, 'My Day', Icons.calendar_today_outlined, Icons.calendar_today, const Color(0xFF2A6049), const Color(0xFFEAF5EE)),
-                      _buildRegularNavItem(context, ref, selectedIndex, 1, 'Explore', Icons.explore_outlined, Icons.explore, const Color(0xFF2A6049), const Color(0xFFEAF5EE)),
+                      _buildRegularNavItem(context, ref, selectedIndex, 0, 'My Day', Icons.calendar_today_outlined, Icons.calendar_today, _navWmForest, _navWmForestTint),
+                      _buildRegularNavItem(context, ref, selectedIndex, 1, 'Explore', Icons.explore_outlined, Icons.explore, _navWmForest, _navWmForestTint),
                       _buildCenterMoodyButton(context, ref, selectedIndex),
-                      _buildRegularNavItem(context, ref, selectedIndex, 3, 'WanderFeed', Icons.people_outline, Icons.people, const Color(0xFF2A6049), const Color(0xFFEAF5EE)),
-                      _buildRegularNavItem(context, ref, selectedIndex, 4, 'Profile', Icons.person_outline, Icons.person, const Color(0xFF2A6049), const Color(0xFFEAF5EE)),
+                      _buildRegularNavItem(context, ref, selectedIndex, 3, 'WanderFeed', Icons.people_outline, Icons.people, _navWmForest, _navWmForestTint),
+                      _buildRegularNavItem(context, ref, selectedIndex, 4, 'Profile', Icons.person_outline, Icons.person, _navWmForest, _navWmForestTint),
                     ],
                   ),
                 ),
@@ -308,8 +312,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 height: 48,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isSelected ? const Color(0xFFEAF5EE) : Colors.grey.shade100,
-                  border: isSelected ? Border.all(color: const Color(0xFF2A6049).withOpacity(0.4), width: 1.5) : null,
+                  color: isSelected ? _navWmForestTint : Colors.grey.shade100,
+                  border: isSelected ? Border.all(color: _navWmForest.withOpacity(0.4), width: 1.5) : null,
                   boxShadow: const [],
                 ),
                 child: Center(
@@ -325,7 +329,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 9,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? const Color(0xFF059669) : Colors.grey.shade500,
+                  color: isSelected ? _navWmForest : Colors.grey.shade500,
                 ),
               ),
             ],

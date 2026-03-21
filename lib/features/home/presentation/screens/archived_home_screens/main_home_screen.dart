@@ -19,6 +19,7 @@ import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 // Home screen after unlocking app (with nav bar and today's plan)
 class MainHomeScreen extends ConsumerStatefulWidget {
@@ -134,7 +135,7 @@ class _MainHomeScreenState extends ConsumerState<MainHomeScreen> {
             ),
           ),
           floatingActionButton: FloatingActionButton(
-            backgroundColor: const Color(0xFF12B347),
+            backgroundColor: const Color(0xFF2A6049),
             onPressed: () {
               Navigator.push(
                 context,
@@ -144,11 +145,10 @@ class _MainHomeScreenState extends ConsumerState<MainHomeScreen> {
                     onActivitySelect: (activity) {
                       // Handle activity selection
                       Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Added ${activity.name} to your day!'),
-                          backgroundColor: const Color(0xFF12B347),
-                        ),
+                      showWanderMoodToast(
+                        context,
+                        message: 'Added ${activity.name} to your day!',
+                        backgroundColor: const Color(0xFF2A6049),
                       );
                     },
                   ),
@@ -177,7 +177,7 @@ class _MainHomeScreenState extends ConsumerState<MainHomeScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF12B347).withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? const Color(0xFF2A6049).withOpacity(0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -194,7 +194,7 @@ class _MainHomeScreenState extends ConsumerState<MainHomeScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? const Color(0xFF12B347) : Colors.grey.shade600,
+                color: isSelected ? const Color(0xFF2A6049) : Colors.grey.shade600,
               ),
             ),
           ],
@@ -361,11 +361,10 @@ class _MainHomeScreenState extends ConsumerState<MainHomeScreen> {
                                 onActivitySelect: (activity) {
                                   // Handle activity selection
                                   Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Added ${activity.name} to your day!'),
-                                      backgroundColor: const Color(0xFF12B347),
-                                    ),
+                                  showWanderMoodToast(
+                                    context,
+                                    message: 'Added ${activity.name} to your day!',
+                                    backgroundColor: const Color(0xFF2A6049),
                                   );
                                 },
                               ),
@@ -374,14 +373,14 @@ class _MainHomeScreenState extends ConsumerState<MainHomeScreen> {
                         },
                         icon: const Icon(
                           Icons.casino,
-                          color: Color(0xFF12B347),
+                          color: Color(0xFF2A6049),
                         ),
                         label: Text(
                           "Surprise Me!",
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF12B347),
+                            color: const Color(0xFF2A6049),
                           ),
                         ),
                       ),
@@ -716,7 +715,7 @@ class _MainHomeScreenState extends ConsumerState<MainHomeScreen> {
                       child: OutlinedButton(
                         onPressed: () {},
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFF12B347)),
+                          side: const BorderSide(color: Color(0xFF2A6049)),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -727,7 +726,7 @@ class _MainHomeScreenState extends ConsumerState<MainHomeScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF12B347),
+                            color: const Color(0xFF2A6049),
                           ),
                         ),
                       ),

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class CreateStoryScreen extends ConsumerStatefulWidget {
   const CreateStoryScreen({super.key});
@@ -36,13 +37,12 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Unable to pick image. Please try again or check your permissions.'),
-            backgroundColor: Colors.red.shade400,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 3),
-          ),
+        showWanderMoodToast(
+          context,
+          message:
+              'Unable to pick image. Please try again or check your permissions.',
+          isError: true,
+          duration: const Duration(seconds: 3),
         );
       }
       debugPrint('Error picking image: $e');
@@ -56,7 +56,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Color(0xFF12B347)),
+              leading: const Icon(Icons.photo_library, color: Color(0xFF2A6049)),
               title: Text(
                 'Gallery',
                 style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
@@ -67,7 +67,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_camera, color: Color(0xFF12B347)),
+              leading: const Icon(Icons.photo_camera, color: Color(0xFF2A6049)),
               title: Text(
                 'Camera',
                 style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
@@ -85,8 +85,9 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
 
   void _postStory() async {
     if (_selectedImage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an image')),
+      showWanderMoodToast(
+        context,
+        message: 'Please select an image',
       );
       return;
     }
@@ -104,8 +105,9 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
 
     if (mounted) {
       Navigator.of(context).pop(true); // Return true to indicate success
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Story posted successfully!')),
+      showWanderMoodToast(
+        context,
+        message: 'Story posted successfully!',
       );
     }
   }
@@ -129,11 +131,11 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
             style: GoogleFonts.museoModerno(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
             ),
           ),
           leading: IconButton(
-            icon: const Icon(Icons.close, color: Color(0xFF12B347)),
+            icon: const Icon(Icons.close, color: Color(0xFF2A6049)),
             onPressed: () => Navigator.of(context).pop(),
           ),
           actions: [
@@ -144,7 +146,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: _isLoading ? Colors.grey : const Color(0xFF12B347),
+                  color: _isLoading ? Colors.grey : const Color(0xFF2A6049),
                 ),
               ),
             ),
@@ -153,7 +155,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
         body: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
                 ),
               )
             : SingleChildScrollView(
@@ -172,7 +174,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                             color: Colors.grey[200],
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: const Color(0xFF12B347).withOpacity(0.3),
+                              color: const Color(0xFF2A6049).withOpacity(0.3),
                               width: 1,
                             ),
                           ),
@@ -244,7 +246,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(
                           Icons.location_on_outlined,
-                          color: Color(0xFF12B347),
+                          color: Color(0xFF2A6049),
                         ),
                         title: Text(
                           'Add Location',
@@ -256,8 +258,9 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Location feature coming soon!')),
+                          showWanderMoodToast(
+                            context,
+                            message: 'Location feature coming soon!',
                           );
                         },
                       ),
@@ -268,7 +271,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(
                           Icons.local_activity_outlined,
-                          color: Color(0xFF12B347),
+                          color: Color(0xFF2A6049),
                         ),
                         title: Text(
                           'Add Activity',
@@ -280,8 +283,9 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Activity tagging coming soon!')),
+                          showWanderMoodToast(
+                            context,
+                            message: 'Activity tagging coming soon!',
                           );
                         },
                       ),

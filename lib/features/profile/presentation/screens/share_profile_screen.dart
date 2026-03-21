@@ -7,10 +7,18 @@ import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
-import 'package:wandermood/core/extensions/string_extensions.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+
+// WanderMood v2 — Share Profile (Screen 13)
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmForestTint = Color(0xFFEBF3EE);
+const Color _wmSkyTint = Color(0xFFEDF5F9);
+const Color _wmSky = Color(0xFFA8C8DC);
+const Color _wmCream = Color(0xFFF5F0E8);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmCharcoal = Color(0xFF1E1C18);
+const Color _wmStone = Color(0xFF8C8780);
 
 enum ShareProfileScreenType { main, qr, link }
 
@@ -94,11 +102,11 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
     return profileAsync.when(
       data: (profile) => _buildScreen(profile),
       loading: () => Scaffold(
-        backgroundColor: const Color(0xFFFFF7ED),
+        backgroundColor: _wmCream,
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (error, stack) => Scaffold(
-        backgroundColor: const Color(0xFFFFF7ED),
+        backgroundColor: _wmCream,
         body: Center(
           child: Text(AppLocalizations.of(context)!.profileErrorLoad),
         ),
@@ -134,12 +142,12 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
         : 'adventurous';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF7ED),
+      backgroundColor: _wmCream,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.grey),
+          icon: const Icon(Icons.close, color: _wmStone),
           onPressed: () => context.pop(),
         ),
         title: Text(
@@ -147,7 +155,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.grey[800],
+            color: _wmCharcoal,
           ),
         ),
         centerTitle: true,
@@ -161,7 +169,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFF2A6049),
+                color: _wmForest,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: const [],
               ),
@@ -184,7 +192,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                             style: GoogleFonts.poppins(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFF2A6049),
+                              color: _wmForest,
                             ),
                           ),
                         ),
@@ -252,8 +260,8 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                     icon: Icons.qr_code,
                     label: l10n.shareProfileQRCode,
                     subtitle: l10n.shareProfileScanToConnect,
-                    gradient: const [Color(0xFFEAF5EE), Color(0xFFEAF5EE)],
-                    iconColor: const Color(0xFF2A6049),
+                    badgeBackground: _wmForestTint,
+                    iconColor: _wmForest,
                     onTap: () => setState(() => _currentScreen = ShareProfileScreenType.qr),
                   ),
                 ),
@@ -263,8 +271,8 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                     icon: Icons.link,
                     label: l10n.shareProfileCopyLink,
                     subtitle: l10n.shareProfileShareAnywhere,
-                    gradient: const [Color(0xFFEDF5F9), Color(0xFFEDF5F9)],
-                    iconColor: const Color(0xFFA8C8DC),
+                    badgeBackground: _wmSkyTint,
+                    iconColor: _wmSky,
                     onTap: () => setState(() => _currentScreen = ShareProfileScreenType.link),
                   ),
                 ),
@@ -277,7 +285,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
+                color: _wmCharcoal,
               ),
             ),
             const SizedBox(height: 12),
@@ -319,7 +327,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.people, color: Color(0xFF6B7280), size: 24),
+                  const Icon(Icons.people, color: _wmStone, size: 24),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -330,7 +338,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Colors.grey[800],
+                            color: _wmCharcoal,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -338,7 +346,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                           l10n.shareProfileAnyoneCanView,
                           style: GoogleFonts.poppins(
                             fontSize: 12,
-                            color: Colors.grey[500],
+                            color: _wmStone,
                           ),
                         ),
                       ],
@@ -365,7 +373,10 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                         }
                       }
                     },
-                    activeColor: const Color(0xFFFF7E5F),
+                    activeThumbColor: Colors.white,
+                    activeTrackColor: _wmForest.withOpacity(0.45),
+                    inactiveThumbColor: Colors.white,
+                    inactiveTrackColor: _wmParchment,
                   ),
                 ],
               ),
@@ -402,7 +413,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
     required IconData icon,
     required String label,
     required String subtitle,
-    required List<Color> gradient,
+    required Color badgeBackground,
     required Color iconColor,
     required VoidCallback onTap,
   }) {
@@ -413,6 +424,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: _wmParchment),
           boxShadow: const [],
         ),
         child: Column(
@@ -421,7 +433,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: gradient),
+                color: badgeBackground,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: const [],
               ),
@@ -433,7 +445,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
+                color: _wmCharcoal,
               ),
             ),
             const SizedBox(height: 4),
@@ -441,7 +453,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               subtitle,
               style: GoogleFonts.poppins(
                 fontSize: 12,
-                color: Colors.grey[500],
+                color: _wmStone,
               ),
             ),
           ],
@@ -493,12 +505,12 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
     final qrData = 'https://$_profileUrl';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF7ED),
+      backgroundColor: _wmCream,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.grey),
+          icon: const Icon(Icons.arrow_back, color: _wmStone),
           onPressed: () => setState(() => _currentScreen = ShareProfileScreenType.main),
         ),
         title: Text(
@@ -506,7 +518,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.grey[800],
+            color: _wmCharcoal,
           ),
         ),
         centerTitle: true,
@@ -521,6 +533,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: _wmParchment),
                 boxShadow: const [],
               ),
               child: Column(
@@ -537,14 +550,14 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey[800],
+                      color: _wmCharcoal,
                     ),
                   ),
                   Text(
                     '@$username',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
-                      color: Colors.grey[500],
+                      color: _wmStone,
                     ),
                   ),
                 ],
@@ -557,6 +570,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: _wmParchment),
                 boxShadow: const [],
               ),
               child: Row(
@@ -564,13 +578,11 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                   Container(
                     width: 40,
                     height: 40,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF3B82F6), Color(0xFFA855F7)],
-                      ),
+                    decoration: const BoxDecoration(
+                      color: _wmForestTint,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+                    child: const Icon(Icons.auto_awesome, color: _wmForest, size: 20),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -582,7 +594,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.grey[800],
+                            color: _wmCharcoal,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -590,7 +602,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                           l10n.shareProfileQRInstructions,
                           style: GoogleFonts.poppins(
                             fontSize: 14,
-                            color: Colors.grey[600],
+                            color: _wmStone,
                           ),
                         ),
                       ],
@@ -606,14 +618,12 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               child: ElevatedButton(
                 onPressed: _handleDownloadQR,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _qrDownloaded
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFFFF7E5F),
+                  backgroundColor: _qrDownloaded ? _wmForest.withOpacity(0.85) : _wmForest,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  elevation: 4,
+                  elevation: 0,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -643,23 +653,24 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                   await Share.share(l10n.shareProfileShareMessage('https://$_profileUrl'));
                 },
                 style: OutlinedButton.styleFrom(
+                  foregroundColor: _wmCharcoal,
                   padding: const EdgeInsets.symmetric(vertical: 14),
+                  side: const BorderSide(color: _wmParchment, width: 1.5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
-                    side: BorderSide(color: Colors.grey[300]!),
                   ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.share, color: Colors.grey),
+                    const Icon(Icons.share, color: _wmForest),
                     const SizedBox(width: 8),
                     Text(
                       l10n.shareProfileShareQRImage,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey[700],
+                        color: _wmCharcoal,
                       ),
                     ),
                   ],
@@ -677,15 +688,14 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
     final userName = profile?.fullName ?? l10n.profileFallbackUser;
     final username = profile?.username ?? l10n.shareProfileDefaultUsername;
     final bio = profile?.bio ?? l10n.shareProfileDefaultBio;
-    final profileLink = 'https://$_profileUrl';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF7ED),
+      backgroundColor: _wmCream,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.grey),
+          icon: const Icon(Icons.arrow_back, color: _wmStone),
           onPressed: () => setState(() => _currentScreen = ShareProfileScreenType.main),
         ),
         title: Text(
@@ -693,7 +703,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.grey[800],
+            color: _wmCharcoal,
           ),
         ),
         centerTitle: true,
@@ -709,6 +719,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: _wmParchment),
                 boxShadow: const [],
               ),
               child: Row(
@@ -717,10 +728,9 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                     width: 64,
                     height: 64,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFFF7E5F), Color(0xFFF5609F)],
-                      ),
+                      color: Colors.white,
                       shape: BoxShape.circle,
+                      border: Border.all(color: _wmParchment, width: 2),
                     ),
                     child: Center(
                       child: Text(
@@ -728,7 +738,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                         style: GoogleFonts.poppins(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: _wmForest,
                         ),
                       ),
                     ),
@@ -743,14 +753,14 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Colors.grey[800],
+                            color: _wmCharcoal,
                           ),
                         ),
                         Text(
                           '@$username',
                           style: GoogleFonts.poppins(
                             fontSize: 14,
-                            color: Colors.grey[500],
+                            color: _wmStone,
                           ),
                         ),
                       ],
@@ -764,7 +774,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               bio,
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: _wmStone,
               ),
             ),
             const SizedBox(height: 24),
@@ -772,13 +782,9 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFFFF7E5F).withOpacity(0.1),
-                    const Color(0xFFF5609F).withOpacity(0.1),
-                  ],
-                ),
+                color: _wmSkyTint,
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: _wmParchment),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -788,7 +794,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey[600],
+                      color: _wmStone,
                       letterSpacing: 1,
                     ),
                   ),
@@ -798,18 +804,19 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: _wmParchment),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.link, color: Colors.grey, size: 20),
+                        const Icon(Icons.link, color: _wmSky, size: 20),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             _profileUrl,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
                               fontFamily: 'monospace',
-                              color: Colors.grey,
+                              color: _wmCharcoal.withOpacity(0.75),
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -827,14 +834,13 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               child: ElevatedButton(
                 onPressed: _handleCopyLink,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _copied
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFFFF7E5F),
+                  backgroundColor:
+                      _copied ? _wmForest.withOpacity(0.85) : _wmForest,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  elevation: 4,
+                  elevation: 0,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -863,7 +869,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
+                color: _wmStone,
                 letterSpacing: 1,
               ),
             ),
@@ -916,9 +922,9 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFDBEAFE),
+                color: _wmSkyTint,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFF93C5FD), width: 2),
+                border: Border.all(color: _wmParchment),
               ),
               child: Row(
                 children: [
@@ -926,7 +932,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                     width: 32,
                     height: 32,
                     decoration: const BoxDecoration(
-                      color: Color(0xFF3B82F6),
+                      color: _wmSky,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.info, color: Colors.white, size: 20),
@@ -937,7 +943,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
                       l10n.shareProfileLinkInfo,
                       style: GoogleFonts.poppins(
                         fontSize: 13,
-                        color: const Color(0xFF1E40AF),
+                        color: _wmCharcoal,
                       ),
                     ),
                   ),
@@ -968,7 +974,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey[200]!),
+          border: Border.all(color: _wmParchment),
           boxShadow: const [],
         ),
         child: Column(
@@ -988,7 +994,7 @@ class _ShareProfileScreenState extends ConsumerState<ShareProfileScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[700],
+                color: _wmCharcoal,
               ),
             ),
           ],

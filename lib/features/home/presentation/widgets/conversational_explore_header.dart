@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+// WanderMood v2 Explore tokens (SCREEN 6)
+const Color _wmCream = Color(0xFFF5F0E8);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmForestTint = Color(0xFFEBF3EE);
+const Color _wmStone = Color(0xFF8C8780);
+
 class ConversationalExploreHeader extends StatefulWidget {
   final Function(String) onIntentSelected;
   final Function(String) onSearchChanged;
@@ -34,50 +41,31 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
   final TextEditingController _searchController = TextEditingController();
   String _selectedCategory = 'All';
   
-  // Category filters
+  // Category filters (ids map to ExploreScreen intent / category)
   final List<Map<String, dynamic>> _categoryFilters = [
-    {
-      'id': 'all',
-      'label': 'All',
-      'emoji': '✨',
-      'color': const Color(0xFF12B347), // Green
-    },
-    {
-      'id': 'food',
-      'label': 'Food',
-      'emoji': '🍽️',
-      'color': const Color(0xFFE55B4C), // Red
-    },
-    {
-      'id': 'culture',
-      'label': 'Culture',
-      'emoji': '🎭',
-      'color': const Color(0xFF6B5B95), // Purple
-    },
-    {
-      'id': 'outdoor',
-      'label': 'Outdoor',
-      'emoji': '🌳',
-      'color': const Color(0xFF52C41A), // Green
-    },
-    {
-      'id': 'shopping',
-      'label': 'Shopping',
-      'emoji': '🛍️',
-      'color': const Color(0xFF4A90E2), // Blue
-    },
-    {
-      'id': 'nightlife',
-      'label': 'Nightlife',
-      'emoji': '🌙',
-      'color': const Color(0xFF6C757D), // Dark gray
-    },
+    {'id': 'all', 'label': 'All', 'emoji': '✨'},
+    {'id': 'food', 'label': 'Food', 'emoji': '🍽️'},
+    {'id': 'culture', 'label': 'Culture', 'emoji': '🎭'},
+    {'id': 'outdoor', 'label': 'Outdoor', 'emoji': '🌳'},
+    {'id': 'shopping', 'label': 'Shopping', 'emoji': '🛍️'},
+    {'id': 'nightlife', 'label': 'Nightlife', 'emoji': '🌙'},
   ];
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(ConversationalExploreHeader oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedIntent != oldWidget.selectedIntent) {
+      final chipId = widget.selectedIntent.isEmpty ? 'all' : widget.selectedIntent;
+      if (chipId != _selectedCategory) {
+        setState(() => _selectedCategory = chipId);
+      }
+    }
   }
 
   @override
@@ -160,7 +148,7 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(25),
                   borderSide: BorderSide(
-                    color: const Color(0xFF12B347).withOpacity(0.5),
+                    color: _wmForest.withValues(alpha: 0.45),
                     width: 1,
                   ),
                 ),
@@ -203,7 +191,7 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF12B347),
+                          color: _wmForest,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -251,29 +239,12 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: isSelected 
-                    ? category['color'] 
-                    : Colors.white,
+                  color: isSelected ? _wmForestTint : _wmCream,
                   borderRadius: BorderRadius.circular(22),
                   border: Border.all(
-                    color: isSelected 
-                      ? category['color'] 
-                      : Colors.grey[200]!,
-                    width: 1,
+                    color: isSelected ? _wmForest : _wmParchment,
+                    width: isSelected ? 1.5 : 0.5,
                   ),
-                  boxShadow: isSelected ? [
-                    BoxShadow(
-                      color: category['color'].withOpacity(0.2),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ] : [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 2,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -288,7 +259,7 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: isSelected ? Colors.white : Colors.black87,
+                        color: isSelected ? _wmForest : _wmStone,
                       ),
                     ),
                   ],
@@ -316,28 +287,21 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Colors.grey[700],
+              color: _wmStone,
             ),
           ),
         // View toggle buttons
         Container(
           height: 40,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: _wmParchment,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey[200]!),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 2,
-                offset: const Offset(0, 1),
-              ),
-            ],
+            border: Border.all(color: _wmParchment, width: 0.5),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // List view button
+              // List view button — unselected segment uses wmParchment bg (SCREEN 6)
               InkWell(
                 onTap: () {
                   widget.onViewToggle(false, false);
@@ -346,13 +310,13 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: (!widget.isGridView && !widget.isMapView) ? const Color(0xFF12B347) : Colors.transparent,
+                    color: (!widget.isGridView && !widget.isMapView) ? _wmForest : _wmParchment,
                     borderRadius: const BorderRadius.horizontal(left: Radius.circular(7)),
                   ),
                   child: Icon(
                     Icons.view_list,
                     size: 20,
-                    color: (!widget.isGridView && !widget.isMapView) ? Colors.white : Colors.grey[600],
+                    color: (!widget.isGridView && !widget.isMapView) ? Colors.white : _wmStone,
                   ),
                 ),
               ),
@@ -365,12 +329,12 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: widget.isGridView ? const Color(0xFF12B347) : Colors.transparent,
+                    color: widget.isGridView ? _wmForest : _wmParchment,
                   ),
                   child: Icon(
                     Icons.grid_view,
                     size: 20,
-                    color: widget.isGridView ? Colors.white : Colors.grey[600],
+                    color: widget.isGridView ? Colors.white : _wmStone,
                   ),
                 ),
               ),
@@ -383,13 +347,13 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: widget.isMapView ? const Color(0xFF12B347) : Colors.transparent,
+                    color: widget.isMapView ? _wmForest : _wmParchment,
                     borderRadius: const BorderRadius.horizontal(right: Radius.circular(7)),
                   ),
                   child: Icon(
                     Icons.map,
                     size: 20,
-                    color: widget.isMapView ? Colors.white : Colors.grey[600],
+                    color: widget.isMapView ? Colors.white : _wmStone,
                   ),
                 ),
               ),

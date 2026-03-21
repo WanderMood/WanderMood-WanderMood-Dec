@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../application/mood_service.dart';
 import '../../domain/models/mood_data.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class MoodInputCard extends ConsumerStatefulWidget {
   final Function(MoodData)? onMoodSaved;
@@ -81,18 +82,16 @@ class _MoodInputCardState extends ConsumerState<MoodInputCard> {
         _selectedMoodType = 'happy';
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Mood succesvol opgeslagen!'),
-          backgroundColor: Colors.green,
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Mood succesvol opgeslagen!',
+        backgroundColor: Colors.green,
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Fout bij het opslaan van mood: $e'),
-          backgroundColor: Colors.red,
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Fout bij het opslaan van mood: $e',
+        isError: true,
       );
     } finally {
       setState(() => _isSubmitting = false);

@@ -152,7 +152,7 @@ class _TrendingScreenState extends State<TrendingScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF12B347),
+                                color: const Color(0xFF2A6049),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(
@@ -349,7 +349,7 @@ class _TrendingScreenState extends State<TrendingScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF12B347),
+                      color: const Color(0xFF2A6049),
                       borderRadius: BorderRadius.circular(8),
                       boxShadow: [
                         BoxShadow(
@@ -476,13 +476,13 @@ class _TrendingScreenState extends State<TrendingScreen> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF12B347),
+                        color: Color(0xFF2A6049),
                       ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(

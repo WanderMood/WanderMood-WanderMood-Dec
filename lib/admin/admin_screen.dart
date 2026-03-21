@@ -103,7 +103,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        backgroundColor: const Color(0xFF12B347),
+        backgroundColor: const Color(0xFF2A6049),
         foregroundColor: Colors.white,
       ),
       body: Padding(
@@ -189,7 +189,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
               icon: const Icon(Icons.info),
               label: const Text('Get Cache Stats'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF12B347),
+                backgroundColor: const Color(0xFF2A6049),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),

@@ -8,6 +8,7 @@ import '../../../places/domain/models/place.dart';
 import '../../../../core/providers/user_location_provider.dart';
 import '../../../../core/providers/preferences_provider.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class LocationPickerScreen extends ConsumerStatefulWidget {
   final String? currentLocation;
@@ -128,21 +129,18 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
       ref.invalidate(preferencesProvider);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Location updated to ${suggestion.description}'),
-            backgroundColor: Colors.green,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Location updated to ${suggestion.description}',
         );
         context.pop(suggestion.description);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error saving location: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Error saving location: $e',
+          isError: true,
         );
       }
     }

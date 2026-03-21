@@ -8,6 +8,15 @@ import 'package:wandermood/core/domain/providers/location_notifier_provider.dart
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/plans/presentation/screens/plan_loading_screen.dart';
 
+// WanderMood v2 — Moody chat (Screen 9)
+const Color _wmSkyTint = Color(0xFFEDF5F9);
+const Color _wmCream = Color(0xFFF5F0E8);
+const Color _wmSky = Color(0xFFA8C8DC);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmForestTint = Color(0xFFEBF3EE);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmCharcoal = Color(0xFF1E1C18);
+
 class _ChatMsg {
   final String message;
   final bool isUser;
@@ -83,72 +92,71 @@ void showMoodyChatSheet(BuildContext context, WidgetRef ref) {
         builder: (context, scrollController) {
           return StatefulBuilder(
             builder: (context, setModalState) {
-              return Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFFFAFCFA), Color(0xFFF8FAF9)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    topRight: Radius.circular(24),
-                  ),
+              return ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
                 ),
-                child: Column(
+                child: Stack(
+                  fit: StackFit.expand,
                   children: [
-                    // Header
-                    _MoodyChatHeader(),
-
-                    // Chat area
-                    Expanded(
-                      child: chatMessages.isEmpty
-                          ? _MoodyChatEmptyState()
-                          : Column(
-                              children: [
-                                Expanded(
-                                  child: ListView.builder(
-                                    controller: scrollController,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    itemCount: chatMessages.length,
-                                    itemBuilder: (context, index) {
-                                      return _MessageBubble(msg: chatMessages[index]);
-                                    },
-                                  ),
-                                ),
-                                if (isAILoading) _MoodyTypingIndicator(),
-                              ],
-                            ),
+                    Column(
+                      children: const [
+                        Expanded(flex: 5, child: ColoredBox(color: _wmSkyTint)),
+                        Expanded(flex: 5, child: ColoredBox(color: _wmCream)),
+                      ],
                     ),
+                    Column(
+                      children: [
+                        const _MoodyChatHeader(),
+                        Expanded(
+                          child: chatMessages.isEmpty
+                              ? const _MoodyChatEmptyState()
+                              : Column(
+                                  children: [
+                                    Expanded(
+                                      child: ListView.builder(
+                                        controller: scrollController,
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        itemCount: chatMessages.length,
+                                        itemBuilder: (context, index) {
+                                          return _MessageBubble(msg: chatMessages[index]);
+                                        },
+                                      ),
+                                    ),
+                                    if (isAILoading) const _MoodyTypingIndicator(),
+                                  ],
+                                ),
+                        ),
+                        if (chatMessages.isNotEmpty)
+                          _CreatePlanFromChat(
+                            chatMessages: chatMessages,
+                            onCreatePlan: () {
+                              final suggestedMoods = _suggestMoodsFromMessages(chatMessages);
+                              final planMoods = suggestedMoods.isNotEmpty
+                                  ? suggestedMoods
+                                  : (moods.isNotEmpty ? moods : ['adventurous']);
 
-                    // "Create My Perfect Plan" button
-                    if (chatMessages.isNotEmpty)
-                      _CreatePlanFromChat(
-                        chatMessages: chatMessages,
-                        onCreatePlan: () {
-                          final suggestedMoods = _suggestMoodsFromMessages(chatMessages);
-                          final planMoods = suggestedMoods.isNotEmpty ? suggestedMoods : (moods.isNotEmpty ? moods : ['adventurous']);
+                              ref.read(dailyMoodStateNotifierProvider.notifier).setMoodSelection(
+                                    mood: planMoods.first,
+                                    selectedMoods: planMoods,
+                                  );
 
-                          ref.read(dailyMoodStateNotifierProvider.notifier).setMoodSelection(
-                            mood: planMoods.first,
-                            selectedMoods: planMoods,
-                          );
-
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PlanLoadingScreen(selectedMoods: planMoods),
-                            ),
-                          );
-                        },
-                      ),
-
-                    // Input
-                    _MoodyChatInput(
-                      controller: chatController,
-                      isLoading: isAILoading,
-                      onSend: (text) => sendMessage(text, setModalState),
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => PlanLoadingScreen(selectedMoods: planMoods),
+                                ),
+                              );
+                            },
+                          ),
+                        _MoodyChatInput(
+                          controller: chatController,
+                          isLoading: isAILoading,
+                          onSend: (text) => sendMessage(text, setModalState),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -165,13 +173,15 @@ void showMoodyChatSheet(BuildContext context, WidgetRef ref) {
 // Header
 // ---------------------------------------------------------------------------
 class _MoodyChatHeader extends StatelessWidget {
+  const _MoodyChatHeader();
+
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [const Color(0xFF2A6049).withOpacity(0.03), Colors.transparent],
+          colors: [_wmSkyTint.withOpacity(0.85), Colors.transparent],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -194,14 +204,10 @@ class _MoodyChatHeader extends StatelessWidget {
                 Container(
                   width: 56,
                   height: 56,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    boxShadow: const [],
+                    color: _wmSky,
+                    boxShadow: [],
                   ),
                   child: const Center(child: MoodyCharacter(size: 32)),
                 ),
@@ -221,12 +227,13 @@ class _MoodyChatHeader extends StatelessWidget {
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          const DecoratedBox(
+                          DecoratedBox(
                             decoration: BoxDecoration(
-                              color: Color(0xFF10B149),
+                              color: _wmSky,
                               shape: BoxShape.circle,
+                              border: Border.all(color: _wmParchment, width: 0.5),
                             ),
-                            child: SizedBox(width: 8, height: 8),
+                            child: const SizedBox(width: 8, height: 8),
                           ),
                           const SizedBox(width: 8),
                           Flexible(
@@ -271,6 +278,8 @@ class _MoodyChatHeader extends StatelessWidget {
 // Empty State
 // ---------------------------------------------------------------------------
 class _MoodyChatEmptyState extends StatelessWidget {
+  const _MoodyChatEmptyState();
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -283,16 +292,9 @@ class _MoodyChatEmptyState extends StatelessWidget {
             height: 140,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF2A6049).withOpacity(0.08),
-                  const Color(0xFF2A6049).withOpacity(0.03),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: _wmSky.withOpacity(0.35),
               border: Border.all(
-                color: const Color(0xFF2A6049).withOpacity(0.15),
+                color: _wmSky.withOpacity(0.65),
                 width: 2,
               ),
               boxShadow: const [],
@@ -303,9 +305,9 @@ class _MoodyChatEmptyState extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             decoration: BoxDecoration(
-              color: const Color(0xFFF7FAFC),
+              color: Colors.white.withOpacity(0.92),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF2A6049).withOpacity(0.1)),
+              border: Border.all(color: _wmParchment.withOpacity(0.9)),
             ),
             child: Text(
               "I know Rotterdam like the back of my hand! Tell me your mood, and I'll craft the perfect day just for you. Whether you're feeling adventurous, romantic, or need some chill vibes - I've got you covered! 🎯",
@@ -343,14 +345,10 @@ class _MessageBubble extends StatelessWidget {
             Container(
               width: 36,
               height: 36,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: const [],
+                color: _wmSky,
+                boxShadow: [],
               ),
               child: const Center(child: MoodyCharacter(size: 20)),
             ),
@@ -366,12 +364,12 @@ class _MessageBubble extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: msg.isUser
                     ? const LinearGradient(
-                        colors: [Color(0xFF007AFF), Color(0xFF0051D5)],
+                        colors: [_wmForest, Color(0xFF347558)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       )
                     : const LinearGradient(
-                        colors: [Color(0xFFE8F5E8), Color(0xFFF5FBF5)],
+                        colors: [_wmForestTint, _wmSkyTint],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -387,7 +385,7 @@ class _MessageBubble extends StatelessWidget {
                 msg.message,
                 style: GoogleFonts.poppins(
                   fontSize: 15,
-                  color: msg.isUser ? Colors.white : const Color(0xFF2D3748),
+                  color: msg.isUser ? Colors.white : _wmCharcoal,
                   height: 1.4,
                 ),
               ),
@@ -403,6 +401,8 @@ class _MessageBubble extends StatelessWidget {
 // Typing Indicator
 // ---------------------------------------------------------------------------
 class _MoodyTypingIndicator extends StatelessWidget {
+  const _MoodyTypingIndicator();
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -412,10 +412,10 @@ class _MoodyTypingIndicator extends StatelessWidget {
           Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(colors: [Color(0xFF2A6049), Color(0xFF2A6049)]),
-              boxShadow: const [],
+              color: _wmSky,
+              boxShadow: [],
             ),
             child: const Center(child: MoodyCharacter(size: 22)),
           ),
@@ -423,7 +423,8 @@ class _MoodyTypingIndicator extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: BoxDecoration(
-              color: const Color(0xFFF0F9F0),
+              color: _wmSkyTint.withOpacity(0.95),
+              border: Border.all(color: _wmParchment.withOpacity(0.6)),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
@@ -440,7 +441,7 @@ class _MoodyTypingIndicator extends StatelessWidget {
                   height: 18,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF2A6049).withOpacity(0.7)),
+                    valueColor: AlwaysStoppedAnimation<Color>(_wmForest.withOpacity(0.75)),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -479,12 +480,12 @@ class _CreatePlanFromChat extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              const Color(0xFF2A6049).withOpacity(0.05),
-              const Color(0xFF2A6049).withOpacity(0.02),
+              _wmForest.withOpacity(0.05),
+              _wmForest.withOpacity(0.02),
             ],
           ),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF2A6049).withOpacity(0.2)),
+          border: Border.all(color: _wmForest.withOpacity(0.2)),
         ),
         child: OutlinedButton.icon(
           onPressed: onCreatePlan,
@@ -494,7 +495,7 @@ class _CreatePlanFromChat extends StatelessWidget {
             style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           style: OutlinedButton.styleFrom(
-            foregroundColor: const Color(0xFF2A6049),
+            foregroundColor: _wmForest,
             backgroundColor: Colors.transparent,
             side: BorderSide.none,
             padding: const EdgeInsets.symmetric(vertical: 14),
@@ -547,15 +548,15 @@ class _MoodyChatInput extends StatelessWidget {
                 fillColor: const Color(0xFFF8FAFC),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(28),
-                  borderSide: const BorderSide(
-                    color: Color(0xFFD8D0C4),
+                  borderSide: BorderSide(
+                    color: _wmParchment,
                     width: 1.5,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(28),
                   borderSide: const BorderSide(
-                    color: Color(0xFF2A6049),
+                    color: _wmForest,
                     width: 2,
                   ),
                 ),
@@ -563,7 +564,7 @@ class _MoodyChatInput extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 4),
                   child: Icon(
                     Icons.psychology_outlined,
-                    color: const Color(0xFF2A6049).withOpacity(0.75),
+                    color: _wmForest.withOpacity(0.75),
                     size: 22,
                   ),
                 ),
@@ -578,7 +579,7 @@ class _MoodyChatInput extends StatelessWidget {
             height: 52,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
+                colors: [_wmForest, _wmForest],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),

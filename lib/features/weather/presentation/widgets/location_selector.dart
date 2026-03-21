@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../domain/models/location.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class LocationSelector extends ConsumerStatefulWidget {
   final Location? selectedLocation;
@@ -48,11 +49,10 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
         name: 'Rotterdam',
       );
       widget.onLocationSelected(rotterdamLocation);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Locatie ingesteld op Rotterdam'),
-          backgroundColor: Colors.blue,
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Locatie ingesteld op Rotterdam',
+        backgroundColor: Colors.blue,
       );
     } finally {
       setState(() => _isLoading = false);
@@ -156,7 +156,7 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
                     Container(
                       margin: const EdgeInsets.only(right: 8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: IconButton(
@@ -198,7 +198,7 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
                       itemBuilder: (context, index) {
                         final location = _searchResults[index];
                         return ListTile(
-                          leading: const Icon(Icons.location_on, color: Color(0xFF12B347)),
+                          leading: const Icon(Icons.location_on, color: Color(0xFF2A6049)),
                           title: Text(
                             location.name,
                             style: const TextStyle(
@@ -292,7 +292,7 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
   
   Widget _buildPopularLocationTile(String name, String country, double lat, double lng) {
     return ListTile(
-      leading: const Icon(Icons.location_city, color: Color(0xFF12B347)),
+      leading: const Icon(Icons.location_city, color: Color(0xFF2A6049)),
       title: Text(
         name,
         style: const TextStyle(

@@ -2,6 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
+
+/// v2 notification sheet + list chrome
+const Color _wmCream = Color(0xFFF5F0E8);
+const Color _wmWhite = Color(0xFFFFFFFF);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmCharcoal = Color(0xFF1E1C18);
+const Color _wmStone = Color(0xFF8C8780);
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({Key? key}) : super(key: key);
@@ -48,7 +58,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               onPressed: () => _showNotificationSettings(),
             ),
             IconButton(
-              icon: const Icon(Icons.done_all, color: Color(0xFF4CAF50)),
+              icon: const Icon(Icons.done_all, color: Color(0xFF2A6049)),
               onPressed: () => _markAllAsRead(),
             ),
           ],
@@ -141,14 +151,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF4CAF50) : Colors.white,
+          color: isSelected ? const Color(0xFF2A6049) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFF4CAF50) : Colors.grey[300]!,
+            color: isSelected ? const Color(0xFF2A6049) : Colors.grey[300]!,
           ),
           boxShadow: isSelected ? [
             BoxShadow(
-              color: const Color(0xFF4CAF50).withOpacity(0.3),
+              color: const Color(0xFF2A6049).withOpacity(0.3),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -189,7 +199,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         elevation: isUnread ? 4 : 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: isUnread ? const BorderSide(color: Color(0xFF4CAF50), width: 1) : BorderSide.none,
+          side: isUnread ? const BorderSide(color: Color(0xFF2A6049), width: 1) : BorderSide.none,
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
@@ -276,7 +286,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     height: 8,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Color(0xFF4CAF50),
+                      color: Color(0xFF2A6049),
                     ),
                   ),
                 
@@ -318,7 +328,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget _buildActionButton(Map<String, dynamic> notification) {
     final actionType = notification['actionType'];
     String buttonText = '';
-    Color buttonColor = const Color(0xFF4CAF50);
+    Color buttonColor = const Color(0xFF2A6049);
     
     switch (actionType) {
       case 'follow_back':
@@ -519,13 +529,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       _selectedFilter = filter;
     });
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Filtering by: $filter'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 1),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Filtering by: $filter',
+      backgroundColor: const Color(0xFF2A6049),
+      duration: const Duration(seconds: 1),
     );
   }
 
@@ -591,52 +599,42 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   void _openPost(Map<String, dynamic> notification) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Opening post...'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Opening post...',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
   void _openUserProfile(Map<String, dynamic> notification) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Opening ${notification['userName'] ?? 'user'} profile...'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Opening ${notification['userName'] ?? 'user'} profile...',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
   void _openTrendingPost(Map<String, dynamic> notification) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Opening trending post...'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Opening trending post...',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
   void _openMentionPost(Map<String, dynamic> notification) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Opening mention...'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Opening mention...',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
   void _followUser(Map<String, dynamic> notification) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Following ${notification['userName'] ?? 'user'}!'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Following ${notification['userName'] ?? 'user'}!',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
@@ -660,11 +658,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Reply sent!'),
-                  backgroundColor: Color(0xFF4CAF50),
-                ),
+              showWanderMoodToast(
+                context,
+                message: 'Reply sent!',
+                backgroundColor: const Color(0xFF2A6049),
               );
             },
             child: const Text('Send'),
@@ -675,39 +672,30 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   void _acceptRequest(Map<String, dynamic> notification) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Request accepted!'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Request accepted!',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
   void _viewContent(Map<String, dynamic> notification) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Opening content...'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Opening content...',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
   void _deleteNotification(Map<String, dynamic> notification) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Notification deleted'),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: 'Undo',
-          textColor: Colors.white,
-          onPressed: () {
-            // Restore notification
-          },
-        ),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Notification deleted',
+      backgroundColor: Colors.red,
+      actionLabel: 'Undo',
+      onAction: () {
+        // Restore notification
+      },
     );
   }
 
@@ -728,57 +716,164 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   void _showNotificationSettings() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Notification Settings',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildSettingTile('Push Notifications', true),
-            _buildSettingTile('Email Notifications', false),
-            _buildSettingTile('Likes & Comments', true),
-            _buildSettingTile('New Followers', true),
-            _buildSettingTile('Mentions', true),
-            _buildSettingTile('Travel Updates', false),
-          ],
-        ),
-      ),
-    );
-  }
+    bool push = true;
+    bool email = false;
+    bool likesComments = true;
+    bool newFollowers = true;
+    bool mentions = true;
+    bool travelUpdates = false;
 
-  Widget _buildSettingTile(String title, bool value) {
-    return SwitchListTile(
-      title: Text(title),
-      value: value,
-      onChanged: (bool newValue) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$title ${newValue ? 'enabled' : 'disabled'}'),
-            backgroundColor: const Color(0xFF4CAF50),
-            behavior: SnackBarBehavior.floating,
-          ),
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        final l10n = AppLocalizations.of(sheetContext);
+        final bottomInset = MediaQuery.of(sheetContext).viewPadding.bottom;
+
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            Widget row(String title, bool value, ValueChanged<bool> onChanged) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                decoration: BoxDecoration(
+                  color: _wmWhite,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: _wmParchment, width: 0.5),
+                ),
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    switchTheme: SwitchThemeData(
+                      thumbColor: WidgetStateProperty.resolveWith((states) {
+                        if (states.contains(WidgetState.selected)) {
+                          return _wmWhite;
+                        }
+                        return _wmStone;
+                      }),
+                      trackColor: WidgetStateProperty.resolveWith((states) {
+                        if (states.contains(WidgetState.selected)) {
+                          return _wmForest;
+                        }
+                        return _wmParchment;
+                      }),
+                      trackOutlineColor: WidgetStateProperty.all(_wmParchment),
+                    ),
+                  ),
+                  child: SwitchListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    title: Text(
+                      title,
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: _wmCharcoal,
+                      ),
+                    ),
+                    value: value,
+                    onChanged: (v) {
+                      setModalState(() => onChanged(v));
+                      if (context.mounted) {
+                        showWanderMoodToast(
+                          context,
+                          message: '$title ${v ? 'on' : 'off'}',
+                        );
+                      }
+                    },
+                  ),
+                ),
+              );
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(bottom: bottomInset > 0 ? bottomInset : 16),
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: _wmCream,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Center(
+                          child: Container(
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: _wmParchment,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          l10n?.settingsNotificationsTitle ?? 'Notifications',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: _wmCharcoal,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          l10n?.settingsNotificationsSubtitle ?? 'Choose how we reach you',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            color: _wmStone,
+                            height: 1.35,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          (l10n?.notificationsMethodsTitle ?? 'How we notify you').toUpperCase(),
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 1.0,
+                            color: _wmStone,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        row('Push notifications', push, (v) => push = v),
+                        row('Email notifications', email, (v) => email = v),
+                        const SizedBox(height: 16),
+                        Text(
+                          (l10n?.notificationsWhatToNotifyTitle ?? 'What to notify').toUpperCase(),
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 1.0,
+                            color: _wmStone,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        row('Likes & comments', likesComments, (v) => likesComments = v),
+                        row('New followers', newFollowers, (v) => newFollowers = v),
+                        row('Mentions', mentions, (v) => mentions = v),
+                        row('Travel updates', travelUpdates, (v) => travelUpdates = v),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
         );
       },
-      activeColor: const Color(0xFF4CAF50),
     );
   }
 
   void _markAllAsRead() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('All notifications marked as read'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'All notifications marked as read',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 } 

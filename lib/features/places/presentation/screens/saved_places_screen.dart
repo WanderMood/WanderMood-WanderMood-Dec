@@ -7,6 +7,7 @@ import '../../services/saved_places_service.dart';
 import '../../models/place.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
 
 class SavedPlacesScreen extends ConsumerStatefulWidget {
@@ -115,7 +116,7 @@ class _SavedPlacesScreenState extends ConsumerState<SavedPlacesScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF12B347),
+              backgroundColor: const Color(0xFF2A6049),
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -385,12 +386,12 @@ class _SavedPlacesScreenState extends ConsumerState<SavedPlacesScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF12B347).withOpacity(0.1),
+                          color: const Color(0xFF2A6049).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
                           Icons.directions,
-                          color: Color(0xFF12B347),
+                          color: Color(0xFF2A6049),
                           size: 20,
                         ),
                       ),
@@ -525,25 +526,12 @@ class _SavedPlacesScreenState extends ConsumerState<SavedPlacesScreen> {
     
     savedPlacesService.unsavePlace(savedPlace.placeId);
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.bookmark_remove, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                '${savedPlace.placeName} removed',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.grey.shade700,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: const Duration(seconds: 3),
-      ),
+    showWanderMoodToast(
+      context,
+      message: '${savedPlace.placeName} removed',
+      duration: const Duration(seconds: 3),
+      backgroundColor: Colors.grey.shade700,
+      leading: const Icon(Icons.bookmark_remove, color: Colors.white),
     );
   }
 

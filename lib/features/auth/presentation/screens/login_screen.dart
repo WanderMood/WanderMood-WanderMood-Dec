@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/auth/application/social_auth_service.dart';
 import 'package:wandermood/features/auth/domain/providers/auth_provider.dart';
 import 'package:wandermood/features/auth/application/auth_service.dart';
@@ -130,8 +131,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           },
           onError: (error) {
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(error)),
+              showWanderMoodToast(
+                context,
+                message: error,
+                isError: true,
               );
             }
           },
@@ -164,12 +167,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       } else {
         print('❌ Social Sign-In: Authentication failed - no user returned');
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Sign-in was cancelled or failed. Please try again.'),
-              backgroundColor: Colors.orange.shade400,
-              behavior: SnackBarBehavior.floating,
-            ),
+          showWanderMoodToast(
+            context,
+            message: 'Sign-in was cancelled or failed. Please try again.',
+            backgroundColor: Colors.orange.shade400,
           );
         }
       }
@@ -191,13 +192,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           errorMessage = 'Facebook Sign-In setup incomplete. Please use email/password for now.';
         }
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.red.shade400,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 4),
-          ),
+        showWanderMoodToast(
+          context,
+          message: errorMessage,
+          isError: true,
+          duration: const Duration(seconds: 4),
         );
       }
     } finally {
@@ -266,7 +265,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       style: GoogleFonts.museoModerno(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF4CAF50),
+                        color: const Color(0xFF2A6049),
                       ),
                     ),
                   ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.2, end: 0),
@@ -390,7 +389,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               child: ElevatedButton(
                                 onPressed: _isLoading ? null : _handleLogin,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF4CAF50),
+                                  backgroundColor: const Color(0xFF2A6049),
                                   foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
@@ -472,7 +471,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         child: Text(
                           'Register',
                           style: GoogleFonts.poppins(
-                            color: const Color(0xFF4CAF50),
+                            color: const Color(0xFF2A6049),
                             fontWeight: FontWeight.w600,
                           ),
                         ),

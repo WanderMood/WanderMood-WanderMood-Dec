@@ -22,6 +22,9 @@
   "myDayEmptyCreateButton": "Meinen Tag planen",
   "myDayEmptyBrowseButton": "Aktivitäten ansehen",
   "myDayEmptyAskMoodyButton": "Moody fragen",
+  "myDayQuickAddActivity": "Aktivität hinzufügen",
+  "moodyFeedbackPromptBody": "Wie läuft's? Tippe und erzähl mir von deinem Tag!",
+  "moodyFeedbackShareAction": "Feedback teilen",
   "myDayEmptyInspiredTitle": "Lass dich inspirieren",
   "myDayInspiredCafesTitle": "Cafés entdecken",
   "myDayInspiredCafesSubtitle": "Finde gemütliche Orte zum Entspannen",
@@ -328,6 +331,17 @@
   "profileEditVibesDone": "Fertig",
   "profileMoodJourneyTitle": "Deine Stimmungsreise",
   "profileMoodJourneySubtitle": "Deine Stimmungsverlauf ansehen",
+  "moodHistoryIntro": "Eine ruhige Zeitleiste deiner Gefühle.",
+  "moodHistorySectionRecent": "Kürzlich",
+  "moodHistorySectionTimeline": "Zeitleiste",
+  "moodHistoryEmptyTitle": "Deine Reise beginnt hier",
+  "moodHistoryEmptyBody": "Check-in über Moody Hub oder Mein Tag—deine Momente erscheinen darunter.",
+  "moodHistoryLoginRequired": "Melde dich an, um deine Stimmungsreise zu sehen.",
+  "moodHistoryErrorUser": "Konto konnte nicht geladen werden.",
+  "moodHistoryErrorMoods": "Stimmungen konnten nicht geladen werden.",
+  "moodHistoryTodayBadge": "Heute",
+  "moodHistoryDayToday": "Heute",
+  "moodHistoryDayYesterday": "Gestern",
   "profileTravelGlobeTitle": "Dein Reise-Globus",
   "profileTravelGlobeSubtitle": "Entdecke deine Reisegeschichte",
   "profilePreferencesTitle": "Deine Präferenzen",
@@ -713,6 +727,8 @@
   "noPlanFindMeCoffee": "☕ Finde Kaffee für mich",
   "noPlanGetMeMoving": "🏃 Bring mich in Bewegung",
   "noPlanJustChat": "Einfach plaudern",
-  "noPlanPlanLater": "Vielleicht später"
+  "noPlanPlanLater": "Vielleicht später",
+
+  "myDayHeroActiveSubtitle": "Du bist gerade bei dieser Aktivität."
 }
 

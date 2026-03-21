@@ -148,7 +148,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                                 style: GoogleFonts.museoModerno(
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF12B347),
+                                  color: const Color(0xFF2A6049),
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -158,7 +158,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                                   IconButton(
                                     icon: const Icon(
                                       Icons.refresh,
-                                      color: Color(0xFF12B347),
+                                      color: Color(0xFF2A6049),
                                     ),
                                     onPressed: () {
                                       // Force refresh activities
@@ -224,7 +224,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                               Container(
                                 width: 10,
                                 decoration: const BoxDecoration(
-                                  color: Color(0xFF12B347),
+                                  color: Color(0xFF2A6049),
                                   borderRadius: BorderRadius.only(
                                     topLeft: Radius.circular(24),
                                     bottomLeft: Radius.circular(24),
@@ -244,13 +244,13 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFF12B347).withOpacity(0.1),
+                                              color: const Color(0xFF2A6049).withOpacity(0.1),
                                               borderRadius: BorderRadius.circular(12),
                                             ),
                                             child: Text(
                                               'Now',
                                               style: GoogleFonts.poppins(
-                                                color: const Color(0xFF12B347),
+                                                color: const Color(0xFF2A6049),
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: 12,
                                               ),
@@ -335,7 +335,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                               );
                             },
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF12B347),
+                              foregroundColor: const Color(0xFF2A6049),
                               padding: EdgeInsets.zero,
                               minimumSize: const Size(50, 30),
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -345,7 +345,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
-                                color: const Color(0xFF12B347),
+                                color: const Color(0xFF2A6049),
                               ),
                             ),
                           ),
@@ -361,7 +361,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                         child: Padding(
                           padding: EdgeInsets.all(32.0),
                           child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
                           ),
                         ),
                       ),
@@ -404,7 +404,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                                   ref.read(mainTabProvider.notifier).state = 1; // Switch to Explore tab
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF12B347),
+                                  backgroundColor: const Color(0xFF2A6049),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                   shape: RoundedRectangleBorder(
@@ -579,7 +579,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF12B347).withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? const Color(0xFF2A6049).withOpacity(0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -589,7 +589,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
             Icon(
               icon,
               size: 24,
-              color: isSelected ? const Color(0xFF12B347) : Colors.grey.shade600,
+              color: isSelected ? const Color(0xFF2A6049) : Colors.grey.shade600,
             ),
             const SizedBox(height: 2),
             Text(
@@ -597,7 +597,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? const Color(0xFF12B347) : Colors.grey.shade600,
+                color: isSelected ? const Color(0xFF2A6049) : Colors.grey.shade600,
               ),
             ),
           ],
@@ -827,12 +827,12 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: isConfirmed 
-                          ? const Color(0xFF12B347).withOpacity(0.1) 
+                          ? const Color(0xFF2A6049).withOpacity(0.1) 
                           : Colors.orange.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
-                            color: isConfirmed ? const Color(0xFF12B347).withOpacity(0.1) : Colors.orange.withOpacity(0.1),
+                            color: isConfirmed ? const Color(0xFF2A6049).withOpacity(0.1) : Colors.orange.withOpacity(0.1),
                             blurRadius: 4,
                             spreadRadius: 0,
                           )
@@ -843,7 +843,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                         style: GoogleFonts.poppins(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: isConfirmed ? const Color(0xFF12B347) : Colors.orange,
+                          color: isConfirmed ? const Color(0xFF2A6049) : Colors.orange,
                         ),
                       ),
                     ),
@@ -861,7 +861,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(activityIcon, color: const Color(0xFF12B347), size: 20),
+                    Icon(activityIcon, color: const Color(0xFF2A6049), size: 20),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
@@ -932,7 +932,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
           const SizedBox(height: 8),
           Row(
             children: [
-              Icon(activityIcon, color: const Color(0xFF12B347), size: 24),
+              Icon(activityIcon, color: const Color(0xFF2A6049), size: 24),
               const SizedBox(width: 8),
               Text(
                 _getActivityTypeFromTitle(title),
@@ -993,7 +993,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.info_outline, color: Color(0xFF12B347)),
+                const Icon(Icons.info_outline, color: Color(0xFF2A6049)),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -1278,7 +1278,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                                 style: GoogleFonts.museoModerno(
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF12B347),
+                                  color: const Color(0xFF2A6049),
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -1334,7 +1334,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                               Container(
                                 width: 10,
                                 decoration: const BoxDecoration(
-                                  color: Color(0xFF12B347),
+                                  color: Color(0xFF2A6049),
                                   borderRadius: BorderRadius.only(
                                     topLeft: Radius.circular(24),
                                     bottomLeft: Radius.circular(24),
@@ -1354,13 +1354,13 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFF12B347).withOpacity(0.1),
+                                              color: const Color(0xFF2A6049).withOpacity(0.1),
                                               borderRadius: BorderRadius.circular(12),
                                             ),
                                             child: Text(
                                               'Now',
                                               style: GoogleFonts.poppins(
-                                                color: const Color(0xFF12B347),
+                                                color: const Color(0xFF2A6049),
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: 12,
                                               ),
@@ -1445,7 +1445,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                               );
                             },
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF12B347),
+                              foregroundColor: const Color(0xFF2A6049),
                               padding: EdgeInsets.zero,
                               minimumSize: const Size(50, 30),
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -1455,7 +1455,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
-                                color: const Color(0xFF12B347),
+                                color: const Color(0xFF2A6049),
                               ),
                             ),
                           ),
@@ -1471,7 +1471,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                         child: Padding(
                           padding: EdgeInsets.all(32.0),
                           child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
                           ),
                         ),
                       ),
@@ -1514,7 +1514,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                                   ref.read(mainTabProvider.notifier).state = 1; // Switch to Explore tab
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF12B347),
+                                  backgroundColor: const Color(0xFF2A6049),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                   shape: RoundedRectangleBorder(
@@ -1604,7 +1604,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF12B347).withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? const Color(0xFF2A6049).withOpacity(0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -1614,7 +1614,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
             Icon(
               icon,
               size: 24,
-              color: isSelected ? const Color(0xFF12B347) : Colors.grey.shade600,
+              color: isSelected ? const Color(0xFF2A6049) : Colors.grey.shade600,
             ),
             const SizedBox(height: 2),
             Text(
@@ -1622,7 +1622,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? const Color(0xFF12B347) : Colors.grey.shade600,
+                color: isSelected ? const Color(0xFF2A6049) : Colors.grey.shade600,
               ),
             ),
           ],
@@ -1852,12 +1852,12 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: isConfirmed 
-                          ? const Color(0xFF12B347).withOpacity(0.1) 
+                          ? const Color(0xFF2A6049).withOpacity(0.1) 
                           : Colors.orange.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
-                            color: isConfirmed ? const Color(0xFF12B347).withOpacity(0.1) : Colors.orange.withOpacity(0.1),
+                            color: isConfirmed ? const Color(0xFF2A6049).withOpacity(0.1) : Colors.orange.withOpacity(0.1),
                             blurRadius: 4,
                             spreadRadius: 0,
                           )
@@ -1868,7 +1868,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                         style: GoogleFonts.poppins(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: isConfirmed ? const Color(0xFF12B347) : Colors.orange,
+                          color: isConfirmed ? const Color(0xFF2A6049) : Colors.orange,
                         ),
                       ),
                     ),
@@ -1886,7 +1886,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(activityIcon, color: const Color(0xFF12B347), size: 20),
+                    Icon(activityIcon, color: const Color(0xFF2A6049), size: 20),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
@@ -1957,7 +1957,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
           const SizedBox(height: 8),
           Row(
             children: [
-              Icon(activityIcon, color: const Color(0xFF12B347), size: 24),
+              Icon(activityIcon, color: const Color(0xFF2A6049), size: 24),
               const SizedBox(width: 8),
               Text(
                 _getActivityTypeFromTitle(title),
@@ -2018,7 +2018,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.info_outline, color: Color(0xFF12B347)),
+                const Icon(Icons.info_outline, color: Color(0xFF2A6049)),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -2224,7 +2224,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF12B347).withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? const Color(0xFF2A6049).withOpacity(0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -2234,7 +2234,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             Icon(
               icon,
               size: 24,
-              color: isSelected ? const Color(0xFF12B347) : Colors.grey.shade600,
+              color: isSelected ? const Color(0xFF2A6049) : Colors.grey.shade600,
             ),
             const SizedBox(height: 2),
             Text(
@@ -2242,7 +2242,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? const Color(0xFF12B347) : Colors.grey.shade600,
+                color: isSelected ? const Color(0xFF2A6049) : Colors.grey.shade600,
               ),
             ),
           ],

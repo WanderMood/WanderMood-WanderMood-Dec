@@ -103,11 +103,16 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF12B347),
+        seedColor: const Color(0xFF2A6049),
         brightness: Brightness.light,
       ),
       scaffoldBackgroundColor: Colors.transparent,
       textTheme: GoogleFonts.poppinsTextTheme(),
+      drawerTheme: DrawerThemeData(
+        scrimColor: Colors.black.withValues(alpha: 0.4),
+        elevation: 0,
+        shape: const RoundedRectangleBorder(),
+      ),
     );
   }
 
@@ -119,6 +124,11 @@ class AppTheme {
         brightness: Brightness.dark,
       ),
       scaffoldBackgroundColor: Colors.transparent,
+      drawerTheme: DrawerThemeData(
+        scrimColor: Colors.black.withValues(alpha: 0.4),
+        elevation: 0,
+        shape: const RoundedRectangleBorder(),
+      ),
       textTheme: GoogleFonts.poppinsTextTheme(
         ThemeData.dark().textTheme,
       ).apply(

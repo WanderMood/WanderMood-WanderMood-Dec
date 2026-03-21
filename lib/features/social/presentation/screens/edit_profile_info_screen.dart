@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/social/domain/providers/profile_settings_providers.dart';
 
 class EditProfileInfoScreen extends ConsumerStatefulWidget {
@@ -40,7 +41,7 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
     'Cultural': const Color(0xFF3F51B5),
     'Peaceful': const Color(0xFF009688),
     'Social': const Color(0xFFFF9800),
-    'Spontaneous': const Color(0xFF4CAF50),
+    'Spontaneous': const Color(0xFF2A6049),
     'Romantic': const Color(0xFF9C27B0),
     'Curious': const Color(0xFF2196F3),
     'Relaxed': const Color(0xFF8BC34A),
@@ -91,19 +92,13 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
       ref.invalidate(currentUserProfileProvider);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 12),
-                Text('Profile updated successfully!'),
-              ],
-            ),
-            backgroundColor: Color(0xFF12B347),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Profile updated successfully!',
+          backgroundColor: const Color(0xFF2A6049),
+          leading: const Icon(Icons.check_circle, color: Colors.white, size: 22),
         );
-        
+
         // Small delay for user to see the success message
         await Future.delayed(const Duration(milliseconds: 500));
         context.pop();
@@ -123,19 +118,13 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
         ref.invalidate(currentUserProfileProvider);
         
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Row(
-                children: [
-                  Icon(Icons.check_circle, color: Colors.white),
-                  SizedBox(width: 12),
-                  Text('Profile updated successfully! (Development mode)'),
-                ],
-              ),
-              backgroundColor: Color(0xFF12B347),
-            ),
+          showWanderMoodToast(
+            context,
+            message: 'Profile updated successfully! (Development mode)',
+            backgroundColor: const Color(0xFF2A6049),
+            leading: const Icon(Icons.check_circle, color: Colors.white, size: 22),
           );
-          
+
           // Small delay for user to see the success message
           await Future.delayed(const Duration(milliseconds: 500));
           context.pop();
@@ -143,22 +132,14 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
       } else {
         // Real error that we can't handle
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.error, color: Colors.white),
-                  const SizedBox(width: 12),
-                  Expanded(child: Text('Error updating profile: ${e.toString()}')),
-                ],
-              ),
-              backgroundColor: Colors.red,
-              action: SnackBarAction(
-                label: 'Retry',
-                textColor: Colors.white,
-                onPressed: _saveChanges,
-              ),
-            ),
+          showWanderMoodToast(
+            context,
+            message: 'Error updating profile: ${e.toString()}',
+            isError: true,
+            leading: const Icon(Icons.error, color: Colors.white, size: 22),
+            actionLabel: 'Retry',
+            onAction: _saveChanges,
+            duration: const Duration(seconds: 4),
           );
         }
       }
@@ -184,24 +165,18 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
 
         // Show immediate visual feedback that something is happening
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Row(
-                children: [
-                  SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  ),
-                  SizedBox(width: 12),
-                  Text('Uploading photo...'),
-                ],
+          showWanderMoodToast(
+            context,
+            message: 'Uploading photo...',
+            backgroundColor: const Color(0xFF2A6049),
+            duration: const Duration(seconds: 2),
+            leading: const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               ),
-              backgroundColor: Color(0xFF12B347),
-              duration: Duration(seconds: 2),
             ),
           );
         }
@@ -213,18 +188,12 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
           // Refresh the profile provider to update the avatar immediately
           ref.invalidate(currentUserProfileProvider);
           
-          ScaffoldMessenger.of(context).clearSnackBars();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Row(
-                children: [
-                  Icon(Icons.check_circle, color: Colors.white),
-                  SizedBox(width: 12),
-                  Text('Profile photo updated successfully!'),
-                ],
-              ),
-              backgroundColor: Color(0xFF12B347),
-            ),
+          dismissWanderMoodToast();
+          showWanderMoodToast(
+            context,
+            message: 'Profile photo updated successfully!',
+            backgroundColor: const Color(0xFF2A6049),
+            leading: const Icon(Icons.check_circle, color: Colors.white, size: 22),
           );
         } else {
           throw Exception('Failed to upload image');
@@ -233,23 +202,15 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
     } catch (e) {
       print('Error changing profile photo: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.error, color: Colors.white),
-                const SizedBox(width: 12),
-                Expanded(child: Text('Error uploading photo: ${e.toString()}')),
-              ],
-            ),
-            backgroundColor: Colors.red,
-            action: SnackBarAction(
-              label: 'Retry',
-              textColor: Colors.white,
-              onPressed: _changeProfilePhoto,
-            ),
-          ),
+        dismissWanderMoodToast();
+        showWanderMoodToast(
+          context,
+          message: 'Error uploading photo: ${e.toString()}',
+          isError: true,
+          leading: const Icon(Icons.error, color: Colors.white, size: 22),
+          actionLabel: 'Retry',
+          onAction: _changeProfilePhoto,
+          duration: const Duration(seconds: 4),
         );
       }
     } finally {
@@ -287,7 +248,7 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF12B347),
+                  color: const Color(0xFF2A6049),
                 ),
               ),
             ),
@@ -313,7 +274,7 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: profile?.imageUrl != null ? null : const LinearGradient(
-                                  colors: [Color(0xFF12B347), Color(0xFF0D8F39)],
+                                  colors: [Color(0xFF2A6049), Color(0xFF0D8F39)],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
@@ -350,7 +311,7 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFF12B347), Color(0xFF0D8F39)],
+                                  colors: [Color(0xFF2A6049), Color(0xFF0D8F39)],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
@@ -380,7 +341,7 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFF12B347), Color(0xFF0D8F39)],
+                                  colors: [Color(0xFF2A6049), Color(0xFF0D8F39)],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
@@ -410,11 +371,11 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
                       const SizedBox(height: 12),
                       TextButton.icon(
                         onPressed: _changeProfilePhoto,
-                        icon: const Icon(Icons.camera_alt, color: Color(0xFF12B347)),
+                        icon: const Icon(Icons.camera_alt, color: Color(0xFF2A6049)),
                         label: Text(
                           'Change Photo',
                           style: GoogleFonts.poppins(
-                            color: const Color(0xFF12B347),
+                            color: const Color(0xFF2A6049),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -571,7 +532,7 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF12B347), width: 2),
+              borderSide: const BorderSide(color: Color(0xFF2A6049), width: 2),
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),

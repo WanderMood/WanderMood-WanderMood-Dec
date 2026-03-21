@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
   final String email;
@@ -133,11 +134,10 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     } catch (e) {
       debugPrint('❌ Error in _proceedToOnboarding: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Error: ${e.toString()}',
+          isError: true,
         );
       }
     }
@@ -156,22 +156,19 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       );
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Verification email sent! Please check your inbox.'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Verification email sent! Please check your inbox.',
+          duration: const Duration(seconds: 2),
         );
       }
     } on AuthException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to resend email: ${e.message}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Failed to resend email: ${e.message}',
+          isError: true,
+          duration: const Duration(seconds: 3),
         );
       }
     } finally {

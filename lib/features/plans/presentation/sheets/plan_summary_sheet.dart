@@ -116,7 +116,7 @@ class PlanSummarySheet extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
+                backgroundColor: const Color(0xFF2A6049),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
@@ -177,7 +177,7 @@ class PlanSummarySheet extends StatelessWidget {
             spreadRadius: 0,
           ),
           BoxShadow(
-            color: const Color(0xFF4CAF50).withOpacity(0.05),
+            color: const Color(0xFF2A6049).withOpacity(0.05),
             blurRadius: 4,
             offset: const Offset(0, 4),
             spreadRadius: -2,

@@ -122,7 +122,7 @@ class AccountSecurityScreen extends ConsumerWidget {
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF16A34A), // green-600
+                                  color: const Color(0xFF2A6049), // wmForest
                                 ),
                               ),
                             ),

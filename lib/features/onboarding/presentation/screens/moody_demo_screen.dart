@@ -362,7 +362,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
                 gradient: message.isFromMoody 
                     ? null
                     : const LinearGradient(
-                        colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+                        colors: [Color(0xFF2A6049), Color(0xFF66BB6A)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -380,7 +380,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
                   BoxShadow(
                     color: message.isFromMoody 
                         ? Colors.black.withOpacity(0.08)
-                        : const Color(0xFF4CAF50).withOpacity(0.3),
+                        : const Color(0xFF2A6049).withOpacity(0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -597,7 +597,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
                     _onContinue();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4CAF50),
+                    backgroundColor: const Color(0xFF2A6049),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
@@ -620,7 +620,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
                   AppLocalizations.of(context)!.demoReadyToSignUp,
                   style: const TextStyle(
                     fontSize: 15,
-                    color: Color(0xFF4CAF50),
+                    color: Color(0xFF2A6049),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -745,7 +745,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
       width: isActive ? 24 : 8,
       height: 8,
       decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF4CAF50) : Colors.grey[300],
+        color: isActive ? const Color(0xFF2A6049) : Colors.grey[300],
         borderRadius: BorderRadius.circular(4),
       ),
     );

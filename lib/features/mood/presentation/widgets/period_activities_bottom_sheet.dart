@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/features/mood/presentation/widgets/activity_rating_sheet.dart';
 import 'dart:math' as math;
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class PeriodActivitiesBottomSheet extends ConsumerStatefulWidget {
   final Map<String, dynamic> period;
@@ -71,14 +72,10 @@ class _PeriodActivitiesBottomSheetState extends ConsumerState<PeriodActivitiesBo
         placeName: location,
         currentMood: widget.currentMood,
         onRated: () {
-          // Show success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('$activityName completed! 🎉'),
-              backgroundColor: const Color(0xFF12B347),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
+          showWanderMoodToast(
+            context,
+            message: '$activityName completed! 🎉',
+            backgroundColor: const Color(0xFF2A6049),
           );
         },
       ),
@@ -390,7 +387,7 @@ class _PeriodActivitiesBottomSheetState extends ConsumerState<PeriodActivitiesBo
                 _buildEmptyStateAction(
                   icon: Icons.explore,
                   label: 'Explore',
-                  color: const Color(0xFF12B347),
+                  color: const Color(0xFF2A6049),
                   onTap: () {
                     // TODO: Navigate to explore
                   },
@@ -453,7 +450,7 @@ class _PeriodActivitiesBottomSheetState extends ConsumerState<PeriodActivitiesBo
     return Dismissible(
       key: Key(activity.rawData['id']?.toString() ?? DateTime.now().toString()),
       background: _buildSwipeBackground(
-        color: const Color(0xFF12B347),
+        color: const Color(0xFF2A6049),
         icon: Icons.check_circle,
         label: 'Complete',
         alignment: Alignment.centerLeft,
@@ -648,7 +645,7 @@ class _PeriodActivitiesBottomSheetState extends ConsumerState<PeriodActivitiesBo
                 padding: const EdgeInsets.all(16),
                 child: Icon(
                   isCompleted ? Icons.check_circle : Icons.circle_outlined,
-                  color: isCompleted ? const Color(0xFF12B347) : const Color(0xFFCBD5E0),
+                  color: isCompleted ? const Color(0xFF2A6049) : const Color(0xFFCBD5E0),
                   size: 28,
                 ),
               ),

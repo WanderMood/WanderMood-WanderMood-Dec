@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class MoodSelectionWidget extends StatefulWidget {
   final Function(List<String>) onMoodsSelected;
@@ -44,11 +45,10 @@ class _MoodSelectionWidgetState extends State<MoodSelectionWidget> {
           _selectedMoods.add(mood);
         } else {
           // Show notification about the limit
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('You can select up to ${widget.maxSelections} moods'),
-              backgroundColor: const Color(0xFF4CAF50),
-            ),
+          showWanderMoodToast(
+            context,
+            message: 'You can select up to ${widget.maxSelections} moods',
+            backgroundColor: const Color(0xFF2A6049),
           );
         }
       }
@@ -74,7 +74,7 @@ class _MoodSelectionWidgetState extends State<MoodSelectionWidget> {
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF4CAF50),
+              color: Color(0xFF2A6049),
             ),
           ),
         ),
@@ -150,7 +150,7 @@ class _MoodSelectionWidgetState extends State<MoodSelectionWidget> {
                   'Selected moods:',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF4CAF50),
+                    color: Color(0xFF2A6049),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -161,7 +161,7 @@ class _MoodSelectionWidgetState extends State<MoodSelectionWidget> {
                       mood,
                       style: const TextStyle(color: Colors.white),
                     ),
-                    backgroundColor: const Color(0xFF4CAF50),
+                    backgroundColor: const Color(0xFF2A6049),
                     deleteIconColor: Colors.white,
                     onDeleted: () => _toggleMood(mood),
                   )).toList(),

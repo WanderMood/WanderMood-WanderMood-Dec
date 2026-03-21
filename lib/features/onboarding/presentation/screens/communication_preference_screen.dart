@@ -170,7 +170,7 @@ class _CommunicationPreferenceScreenState extends ConsumerState<CommunicationPre
                       margin: const EdgeInsets.symmetric(horizontal: 1.5),
                       decoration: BoxDecoration(
                         color: index < 1 
-                          ? const Color(0xFF4CAF50)
+                          ? const Color(0xFF2A6049)
                           : Colors.grey.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
@@ -193,7 +193,7 @@ class _CommunicationPreferenceScreenState extends ConsumerState<CommunicationPre
                           style: GoogleFonts.museoModerno(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFF4CAF50),
+                            color: const Color(0xFF2A6049),
                           ),
                         ).animate()
                          .fadeIn(duration: 600.ms)

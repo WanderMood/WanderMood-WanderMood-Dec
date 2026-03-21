@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../application/recommendation_service.dart';
 import '../../domain/models/travel_recommendation.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class RecommendationsPage extends ConsumerStatefulWidget {
   const RecommendationsPage({super.key});
@@ -130,18 +131,17 @@ class _RecommendationsPageState extends ConsumerState<RecommendationsPage> {
                         .read(recommendationServiceProvider.notifier)
                         .toggleFavorite(recommendation.id);
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Favorite updated successfully'),
-                        ),
+                      showWanderMoodToast(
+                        context,
+                        message: 'Favorite updated successfully',
                       );
                     }
                   } catch (e) {
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Error updating favorite: $e'),
-                        ),
+                      showWanderMoodToast(
+                        context,
+                        message: 'Error updating favorite: $e',
+                        isError: true,
                       );
                     }
                   }

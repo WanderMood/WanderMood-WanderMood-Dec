@@ -124,7 +124,7 @@ class FreeActivitiesScreen extends StatelessWidget {
                                         vertical: 6,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF12B347).withOpacity(0.1),
+                                        color: const Color(0xFF2A6049).withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Text(
@@ -132,7 +132,7 @@ class FreeActivitiesScreen extends StatelessWidget {
                                         style: GoogleFonts.poppins(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
-                                          color: const Color(0xFF12B347),
+                                          color: const Color(0xFF2A6049),
                                         ),
                                       ),
                                     ),

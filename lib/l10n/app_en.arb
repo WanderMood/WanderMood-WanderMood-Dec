@@ -25,6 +25,9 @@
   "myDayEmptyCreateButton": "Create My Day",
   "myDayEmptyBrowseButton": "Browse Activities",
   "myDayEmptyAskMoodyButton": "Ask Moody",
+  "myDayQuickAddActivity": "Add activity",
+  "moodyFeedbackPromptBody": "How's it going? Tap to tell me about your experience!",
+  "moodyFeedbackShareAction": "Share feedback",
   "myDayEmptyInspiredTitle": "Get inspired",
   "myDayInspiredCafesTitle": "Discover cafes",
   "myDayInspiredCafesSubtitle": "Find cozy spots to relax",
@@ -379,6 +382,13 @@
   "profileStatsPlacesTitle": "Places",
   "profileStatsPlacesSubtitle": "Tap to explore",
   "profileStatsTopMoodTitle": "Top Mood",
+  "profileStatsStreakTitle": "Streak",
+  "profileTopMoodEmpty": "None yet",
+  "profileSavedPlacesTitle": "Saved places",
+  "profileSavedPlacesSeeAll": "See all",
+  "profileSavedPlacesEmpty": "No saved places yet",
+  "profileEditProfileButton": "Edit profile",
+  "profileAppSettingsLink": "App settings",
 
   "profileFavoriteVibesTitle": "Your Favorite Vibes",
   "profileFavoriteVibesEdit": "Edit",
@@ -386,6 +396,18 @@
 
   "profileMoodJourneyTitle": "Your Mood Journey",
   "profileMoodJourneySubtitle": "View your mood history",
+
+  "moodHistoryIntro": "A calm timeline of how you've been feeling.",
+  "moodHistorySectionRecent": "Recent",
+  "moodHistorySectionTimeline": "Timeline",
+  "moodHistoryEmptyTitle": "Your journey starts here",
+  "moodHistoryEmptyBody": "Check in from Moody Hub or My Day—your moments will line up below.",
+  "moodHistoryLoginRequired": "Sign in to see your mood journey.",
+  "moodHistoryErrorUser": "Something went wrong loading your account.",
+  "moodHistoryErrorMoods": "Something went wrong loading moods.",
+  "moodHistoryTodayBadge": "Today",
+  "moodHistoryDayToday": "Today",
+  "moodHistoryDayYesterday": "Yesterday",
 
   "profileTravelGlobeTitle": "Your Travel Globe",
   "profileTravelGlobeSubtitle": "Explore your travel journey",
@@ -516,10 +538,12 @@
   "shareProfileLinkInfo": "Anyone with this link can view your public profile. You can change your privacy settings anytime.",
 
   "drawerYourJourney": "Your Journey",
+  "drawerNavigation": "Navigation",
   "drawerSettings": "Settings",
   "drawerAccount": "Account",
   "drawerMoodHistory": "Mood History",
   "drawerSavedPlaces": "Saved Places",
+  "drawerMyAgenda": "My Agenda",
   "drawerMyBookings": "My Bookings",
   "drawerAppSettings": "App Settings",
   "drawerNotifications": "Notifications",
@@ -1131,6 +1155,8 @@
   "noPlanFindMeCoffee": "☕ Find me coffee",
   "noPlanGetMeMoving": "🏃 Get me moving",
   "noPlanJustChat": "Just chat",
-  "noPlanPlanLater": "Maybe later"
+  "noPlanPlanLater": "Maybe later",
+
+  "myDayHeroActiveSubtitle": "You're in this activity right now."
 }
 

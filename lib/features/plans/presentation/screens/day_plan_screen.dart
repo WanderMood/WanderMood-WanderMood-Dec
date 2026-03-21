@@ -8,7 +8,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:intl/intl.dart';
-import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/plans/widgets/activity_detail_screen.dart';
 import 'package:wandermood/features/plans/services/activity_generator_service.dart';
 import 'package:wandermood/core/services/wandermood_ai_service.dart' as ai_service;
@@ -241,17 +240,10 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: const Color(0xFFF1F5F9), // Light slate border
-          width: 2,
+          color: const Color(0xFFE8E2D8),
+          width: 0.5,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2A6049).withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-            spreadRadius: -4,
-          ),
-        ],
+        boxShadow: const [],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,7 +263,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF0F9F8F),
+                    color: const Color(0xFF2A6049),
                     letterSpacing: 0.3,
                   ),
                 ),
@@ -333,7 +325,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
       icon: const Icon(
         Icons.refresh_rounded,
         size: 16,
-        color: Color(0xFF4CAF50),
+        color: Color(0xFF2A6049),
       ),
       label: Text(
         remainingRefreshes == 3 
@@ -341,7 +333,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
           : AppLocalizations.of(context)!.dayPlanTryAgainLeft(remainingRefreshes.toString()),
         style: const TextStyle(
           fontSize: 14,
-          color: Color(0xFF4CAF50),
+          color: Color(0xFF2A6049),
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -441,35 +433,16 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const wmCream = Color(0xFFF5F0E8);
+    const wmForest = Color(0xFF2A6049);
+    const wmForestTint = Color(0xFFEBF3EE);
+    const wmParchment = Color(0xFFE8E2D8);
+    const wmCharcoal = Color(0xFF1E1C18);
+
     return Scaffold(
+      backgroundColor: wmCream,
       body: Stack(
         children: [
-          const SwirlBackground(child: SizedBox.expand()),
-          // Softer, gender-neutral header gradient
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: MediaQuery.of(context).padding.top + 220,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFFFD8A8),
-                    Color(0xFFE7DAFF),
-                    Color(0xFFDDF4EE),
-                  ],
-                  stops: [0.0, 0.5, 1.0],
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(32),
-                  bottomRight: Radius.circular(32),
-                ),
-              ),
-            ),
-          ),
           SafeArea(
             child: Column(
               children: [
@@ -482,22 +455,23 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.4),
-                              borderRadius: BorderRadius.circular(12),
+                              color: wmForestTint,
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(color: wmParchment, width: 0.5),
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.auto_awesome, size: 16, color: Color(0xFFB45309)),
+                                const Icon(Icons.auto_awesome, size: 14, color: wmForest),
                                 const SizedBox(width: 6),
                                 Text(
                                   AppLocalizations.of(context)!.dayPlanTodayItinerary,
                                   style: GoogleFonts.poppins(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: const Color(0xFF92400E),
-                                    letterSpacing: 0.8,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: wmForest,
+                                    letterSpacing: 0.2,
                                   ),
                                 ),
                               ],
@@ -508,10 +482,11 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                       const SizedBox(height: 12),
                       Text(
                         AppLocalizations.of(context)!.dayPlanBasedOn,
-                        style: GoogleFonts.museoModerno(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          color: const Color(0xFF1E293B),
+                        style: GoogleFonts.poppins(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w700,
+                          color: wmCharcoal,
+                          letterSpacing: -0.5,
                           height: 1.1,
                         ),
                       ),
@@ -634,13 +609,8 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
               decoration: BoxDecoration(
                 color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 12,
-                    offset: const Offset(0, -4),
-                  ),
-                ],
+                border: Border(top: BorderSide(color: wmParchment.withValues(alpha: 0.8), width: 0.5)),
+                boxShadow: const [],
               ),
               child: SafeArea(
                 top: false,
@@ -684,7 +654,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF5BB32A),
+                      backgroundColor: wmForest,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(

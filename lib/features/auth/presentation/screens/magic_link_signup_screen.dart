@@ -235,7 +235,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                      borderSide: const BorderSide(color: Color(0xFF2A6049), width: 2),
                     ),
                     errorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -290,9 +290,9 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _sendMagicLink,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4CAF50),
+                      backgroundColor: const Color(0xFF2A6049),
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor: const Color(0xFF4CAF50).withOpacity(0.5),
+                      disabledBackgroundColor: const Color(0xFF2A6049).withOpacity(0.5),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -446,7 +446,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF4CAF50),
+                color: Color(0xFF2A6049),
               ),
               textAlign: TextAlign.center,
             ),
@@ -456,8 +456,8 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
           _buildSuccessInstructionCard(
             context,
             emoji: '✅',
-            iconColor: const Color(0xFF4CAF50),
-            borderColor: const Color(0xFF4CAF50),
+            iconColor: const Color(0xFF2A6049),
+            borderColor: const Color(0xFF2A6049),
             text: l10n.signupClickLinkInEmail,
           ),
           const SizedBox(height: 10),
@@ -536,12 +536,12 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                 _emailSent = false;
               });
             },
-            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF4CAF50), size: 20),
+            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF2A6049), size: 20),
             label: Text(
               l10n.signupTryAgain,
               style: const TextStyle(
                 fontSize: 15,
-                color: Color(0xFF4CAF50),
+                color: Color(0xFF2A6049),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -636,7 +636,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
         const SizedBox(height: 10),
         _buildUnlockCard(context, '📍', const Color(0xFFFFC107), l10n.signupUnlockFavorites),
         const SizedBox(height: 10),
-        _buildUnlockCard(context, '📅', const Color(0xFF4CAF50), l10n.signupUnlockDayPlans),
+        _buildUnlockCard(context, '📅', const Color(0xFF2A6049), l10n.signupUnlockDayPlans),
         const SizedBox(height: 10),
         _buildUnlockCard(context, '✨', const Color(0xFF673AB7), l10n.signupUnlockMoodMatching),
         const SizedBox(height: 12),
@@ -693,14 +693,14 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
               ),
             ),
           ),
-          const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 22),
+          const Icon(Icons.check_circle, color: Color(0xFF2A6049), size: 22),
         ],
       ),
     );
   }
 
   Widget _buildRatingTestimonialCard(BuildContext context, AppLocalizations l10n, String testimonialCity) {
-    const green = Color(0xFF4CAF50);
+    const green = Color(0xFF2A6049);
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
       decoration: BoxDecoration(

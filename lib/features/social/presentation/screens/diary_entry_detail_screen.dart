@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../social/domain/models/diary_entry.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class DiaryEntryDetailScreen extends StatefulWidget {
   final DiaryEntry entry;
@@ -326,7 +327,7 @@ class _DiaryEntryDetailScreenState extends State<DiaryEntryDetailScreen>
                                   icon: const Icon(Icons.favorite_border),
                                   label: const Text('Like'),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF12B347),
+                                    backgroundColor: const Color(0xFF2A6049),
                                     foregroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(vertical: 12),
                                     shape: RoundedRectangleBorder(
@@ -342,8 +343,8 @@ class _DiaryEntryDetailScreenState extends State<DiaryEntryDetailScreen>
                                   icon: const Icon(Icons.comment_outlined),
                                   label: const Text('Comment'),
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: const Color(0xFF12B347),
-                                    side: const BorderSide(color: Color(0xFF12B347)),
+                                    foregroundColor: const Color(0xFF2A6049),
+                                    side: const BorderSide(color: Color(0xFF2A6049)),
                                     padding: const EdgeInsets.symmetric(vertical: 12),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
@@ -448,7 +449,7 @@ class _DiaryEntryDetailScreenState extends State<DiaryEntryDetailScreen>
       case 'wonder':
         return const Color(0xFF9C27B0);
       case 'peaceful':
-        return const Color(0xFF4CAF50);
+        return const Color(0xFF2A6049);
       case 'excited':
         return const Color(0xFFFF9800);
       case 'grateful':
@@ -486,32 +487,27 @@ class _DiaryEntryDetailScreenState extends State<DiaryEntryDetailScreen>
   }
 
   void _shareEntry() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Shared "${widget.entry.title ?? 'Travel story'}"!'),
-        backgroundColor: const Color(0xFF12B347),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Shared "${widget.entry.title ?? 'Travel story'}"!',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
   void _saveEntry() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Saved "${widget.entry.title ?? 'Travel story'}" to your collection!'),
-        backgroundColor: const Color(0xFF12B347),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message:
+          'Saved "${widget.entry.title ?? 'Travel story'}" to your collection!',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
   void _likeEntry() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Liked "${widget.entry.title ?? 'Travel story'}"! ❤️'),
-        backgroundColor: const Color(0xFF12B347),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Liked "${widget.entry.title ?? 'Travel story'}"! ❤️',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
@@ -557,7 +553,7 @@ class _DiaryEntryDetailScreenState extends State<DiaryEntryDetailScreen>
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF12B347)),
+                    borderSide: const BorderSide(color: Color(0xFF2A6049)),
                   ),
                 ),
               ),
@@ -567,16 +563,14 @@ class _DiaryEntryDetailScreenState extends State<DiaryEntryDetailScreen>
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Comment posted! 💬'),
-                        backgroundColor: Color(0xFF12B347),
-                        behavior: SnackBarBehavior.floating,
-                      ),
+                    showWanderMoodToast(
+                      context,
+                      message: 'Comment posted! 💬',
+                      backgroundColor: const Color(0xFF2A6049),
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF12B347),
+                    backgroundColor: const Color(0xFF2A6049),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(

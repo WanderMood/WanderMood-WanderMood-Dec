@@ -19,6 +19,17 @@ import 'package:wandermood/core/services/moody_ai_service.dart';
 import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/features/places/services/reviews_cache_service.dart';
 import 'package:wandermood/core/widgets/data_source_badge.dart';
+import 'package:wandermood/core/providers/user_location_provider.dart';
+import 'package:wandermood/core/services/distance_service.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
+
+/// WanderMood v2 — Place detail (SCREEN 8)
+const Color _pdWmWhite = Color(0xFFFFFFFF);
+const Color _pdWmCream = Color(0xFFF5F0E8);
+const Color _pdWmParchment = Color(0xFFE8E2D8);
+const Color _pdWmForest = Color(0xFF2A6049);
+const Color _pdWmForestTint = Color(0xFFEBF3EE);
+const Color _pdWmCharcoal = Color(0xFF1E1C18);
 
 class PlaceDetailScreen extends ConsumerStatefulWidget {
   final String placeId;
@@ -131,9 +142,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           error: (error, stack) => _buildErrorState(error),
         ),
         bottomNavigationBar: _cachedPlace != null
-            ? (_isPlaceBookable(_cachedPlace!)
-                ? _buildBookingButton(_cachedPlace!)
-                : const SizedBox.shrink())
+            ? _buildBottomActionBar(_cachedPlace!)
             : const SizedBox.shrink(),
       );
   }
@@ -151,10 +160,16 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return Scaffold(
         backgroundColor: const Color(0xFFF5F0E8),
         body: _buildPlaceDetail(place),
-        bottomNavigationBar: _isPlaceBookable(place)
-            ? _buildBookingButton(place)
-            : const SizedBox.shrink(),
+        bottomNavigationBar: _buildBottomActionBar(place),
       );
+  }
+
+  /// Book when bookable; otherwise primary directions CTA (v2 SCREEN 8).
+  Widget _buildBottomActionBar(Place place) {
+    if (_isPlaceBookable(place)) {
+      return _buildBookingButton(place);
+    }
+    return _buildDirectionsBar(place);
   }
 
   Widget _buildPlaceDetail(Place place) {
@@ -362,15 +377,17 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
+                        color: _pdWmForestTint,
                         borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: _pdWmParchment, width: 0.5),
                       ),
                       child: Text(
                         activity,
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: const Color(0xFF2A6049),
+                          letterSpacing: 0.2,
+                          color: _pdWmForest,
                         ),
                       ),
                     );
@@ -485,48 +502,21 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 24),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.white.withOpacity(0.9),
-              Colors.white.withOpacity(0.7),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: _pdWmWhite,
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
-            color: const Color(0xFF2A6049).withOpacity(0.2),
-            width: 1.5,
+            color: _pdWmParchment,
+            width: 0.5,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF2A6049).withOpacity(0.1),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          boxShadow: const [],
         ),
         child: TabBar(
         controller: _tabController,
         labelColor: Colors.white,
         unselectedLabelColor: const Color(0xFF2A6049),
         indicator: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFF2A6049),
-              Color(0xFF0D8A35),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: _pdWmForest,
           borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF2A6049).withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         labelStyle: GoogleFonts.poppins(
@@ -567,6 +557,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // v2: Duration / Price / Distance — uniform tiles (SCREEN 8)
+          _buildQuickStatsRow(place),
+          const SizedBox(height: 24),
           // About section - title only
           Row(
             children: [
@@ -760,7 +753,6 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         child: _buildColorfulFeatureChip(
                           place.isIndoor ? '🏠' : '☀️',
                           place.isIndoor ? 'Indoor Vibes' : 'Outdoor Fun',
-                          place.isIndoor ? const Color(0xFFE1BEE7) : const Color(0xFFFFE0B2), // Softer pastel colors
                         ),
                       );
                     } else if (index == 1) {
@@ -769,7 +761,6 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         child: _buildColorfulFeatureChip(
                           _getEnergyEmoji(place.energyLevel),
                           '${place.energyLevel} Energy',
-                          _getSoftEnergyColor(place.energyLevel),
                         ),
                       );
                     } else {
@@ -778,7 +769,6 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         child: _buildColorfulFeatureChip(
                           _getCategoryEmoji(place.types.first),
                           place.types.first.replaceAll('_', ' ').toUpperCase(),
-                          _getSoftCategoryColor(place.types.first),
                         ),
                       );
                     }
@@ -813,6 +803,109 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     }
     
     return cleanName.trim();
+  }
+
+  /// Duration / Price / Distance — three matching tiles: wmCream + wmParchment + wmForest icons (SCREEN 8).
+  Widget _buildQuickStatsRow(Place place) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: _buildStandaloneInfoTile(
+            icon: Icons.schedule,
+            label: 'Duration',
+            value: _getDurationText(place),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _buildStandaloneInfoTile(
+            icon: Icons.euro,
+            label: 'Price',
+            value: _getCostText(place),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _buildStandaloneInfoTile(
+            icon: Icons.directions_walk,
+            label: 'Distance',
+            value: _distanceLineForPlace(place),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStandaloneInfoTile({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _pdWmCream,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _pdWmParchment, width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: _pdWmForest),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.2,
+                    color: _pdWmCharcoal.withValues(alpha: 0.55),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              height: 1.25,
+              color: _pdWmCharcoal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _distanceLineForPlace(Place place) {
+    return ref.watch(userLocationProvider).when(
+      data: (pos) {
+        if (pos == null) {
+          return 'Open maps';
+        }
+        final km = DistanceService.calculateDistance(
+          pos.latitude,
+          pos.longitude,
+          place.location.lat,
+          place.location.lng,
+        );
+        return DistanceService.formatDistance(km);
+      },
+      loading: () => '…',
+      error: (_, __) => 'Open maps',
+    );
   }
 
   /// New "Good to know" section - lighter and more decision-focused
@@ -934,8 +1027,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.6),
+        color: _pdWmCream,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _pdWmParchment, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -949,7 +1043,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 style: GoogleFonts.poppins(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: Colors.grey[600],
+                  letterSpacing: 0.2,
+                  color: _pdWmCharcoal.withValues(alpha: 0.55),
                 ),
               ),
             ],
@@ -960,7 +1055,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF2E2E2E),
+              color: _pdWmCharcoal,
             ),
           ),
         ],
@@ -1413,16 +1508,14 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return 'Check opening hours for best times';
   }
 
-  Widget _buildColorfulFeatureChip(String emoji, String label, Color color) {
+  /// Category / feature pills — v2 forest system (SCREEN 8).
+  Widget _buildColorfulFeatureChip(String emoji, String label) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2), // Slightly more visible background
+        color: _pdWmForestTint,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withOpacity(0.5), // More visible border
-          width: 1,
-        ),
+        border: Border.all(color: _pdWmParchment, width: 0.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1435,21 +1528,15 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           Text(
             label,
             style: GoogleFonts.poppins(
-              color: _getReadableTextColor(color), // High contrast text
-              fontWeight: FontWeight.w600, // Bolder for readability
-              fontSize: 11,
+              color: _pdWmForest,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+              letterSpacing: 0.2,
             ),
           ),
         ],
       ),
     );
-  }
-
-  // Get readable text color based on background
-  Color _getReadableTextColor(Color backgroundColor) {
-    // Use a darker, more saturated version of the color for text
-    final hsl = HSLColor.fromColor(backgroundColor);
-    return hsl.withLightness(0.3).withSaturation(0.8).toColor();
   }
 
   String _getEnergyEmoji(String energyLevel) {
@@ -1462,33 +1549,6 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         return '🔥';
       default:
         return '⚡';
-    }
-  }
-
-  Color _getEnergyColor(String energyLevel) {
-    switch (energyLevel.toLowerCase()) {
-      case 'low':
-        return Colors.blue;
-      case 'medium':
-        return Colors.amber;
-      case 'high':
-        return Colors.red;
-      default:
-        return Colors.amber;
-    }
-  }
-
-  // Softer pastel versions for the carousel
-  Color _getSoftEnergyColor(String energyLevel) {
-    switch (energyLevel.toLowerCase()) {
-      case 'low':
-        return const Color(0xFFB3E5FC); // Soft blue
-      case 'medium':
-        return const Color(0xFFFFF9C4); // Soft yellow
-      case 'high':
-        return const Color(0xFFFFCDD2); // Soft red/pink
-      default:
-        return const Color(0xFFFFF9C4); // Soft yellow
     }
   }
 
@@ -1512,53 +1572,6 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         return '🎨';
       default:
         return '📍';
-    }
-  }
-
-  Color _getCategoryColor(String category) {
-    switch (category.toLowerCase()) {
-      case 'tourist_attraction':
-        return Colors.indigo;
-      case 'museum':
-        return Colors.brown;
-      case 'park':
-        return Colors.green;
-      case 'restaurant':
-        return Colors.deepOrange;
-      case 'shopping':
-        return Colors.pink;
-      case 'entertainment':
-        return Colors.purple;
-      case 'nature':
-        return Colors.teal;
-      case 'culture':
-        return Colors.deepPurple;
-      default:
-        return const Color(0xFF2A6049);
-    }
-  }
-
-  // Softer pastel versions for the carousel
-  Color _getSoftCategoryColor(String category) {
-    switch (category.toLowerCase()) {
-      case 'tourist_attraction':
-        return const Color(0xFFC5CAE9); // Soft indigo
-      case 'museum':
-        return const Color(0xFFD7CCC8); // Soft brown
-      case 'park':
-        return const Color(0xFFC8E6C9); // Soft green
-      case 'restaurant':
-        return const Color(0xFFFFE0B2); // Soft orange
-      case 'shopping':
-        return const Color(0xFFF8BBD0); // Soft pink
-      case 'entertainment':
-        return const Color(0xFFE1BEE7); // Soft purple
-      case 'nature':
-        return const Color(0xFFB2DFDB); // Soft teal
-      case 'culture':
-        return const Color(0xFFD1C4E9); // Soft deep purple
-      default:
-        return const Color(0xFFC8E6C9); // Soft green
     }
   }
 
@@ -2528,10 +2541,10 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFDF5),
+        color: _pdWmCream,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, -4),
           ),
@@ -2539,27 +2552,19 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       ),
       child: SafeArea(
         top: false,
-        child: GestureDetector(
-          onTap: () => _showBookingSheet(place),
-          child: Container(
-            height: 56,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFF2A6049),
-                  Color(0xFF0D8A35),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
+        child: SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: ElevatedButton(
+            onPressed: () => _showBookingSheet(place),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _pdWmForest,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
               ),
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF2A6049).withOpacity(0.35),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -2567,7 +2572,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
@@ -2579,6 +2584,57 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 const SizedBox(width: 10),
                 Text(
                   '✨ Book Your Adventure!',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Primary maps CTA when booking is not shown (SCREEN 8 — Directions / Route).
+  Widget _buildDirectionsBar(Place place) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+      decoration: BoxDecoration(
+        color: _pdWmCream,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: ElevatedButton(
+            onPressed: () => _openInMaps(place),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _pdWmForest,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.directions, size: 22, color: Colors.white),
+                const SizedBox(width: 10),
+                Text(
+                  AppLocalizations.of(context)!.activityDetailDirections,
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,

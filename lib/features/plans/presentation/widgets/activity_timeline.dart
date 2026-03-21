@@ -48,7 +48,7 @@ class TimelinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF12B347).withOpacity(0.2)
+      ..color = const Color(0xFF2A6049).withOpacity(0.2)
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 
@@ -146,7 +146,7 @@ class TimelineItem extends StatelessWidget {
             Container(
               width: 2,
               height: 20,
-              color: const Color(0xFF12B347).withOpacity(0.2),
+              color: const Color(0xFF2A6049).withOpacity(0.2),
             ),
             Container(
               width: 12,
@@ -155,7 +155,7 @@ class TimelineItem extends StatelessWidget {
                 color: Colors.white,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: const Color(0xFF12B347),
+                  color: const Color(0xFF2A6049),
                   width: 2,
                 ),
               ),

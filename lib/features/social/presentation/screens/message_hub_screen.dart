@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/social/domain/models/social_post.dart';
 import 'package:wandermood/features/social/domain/providers/social_providers.dart';
 
@@ -81,24 +82,25 @@ class _MessageHubScreenState extends ConsumerState<MessageHubScreen> {
             style: GoogleFonts.museoModerno(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
             ),
           ),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF12B347)),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF2A6049)),
             onPressed: () => Navigator.of(context).pop(),
           ),
           actions: [
             IconButton(
               icon: const Icon(
                 Icons.edit_square,
-                color: Color(0xFF12B347),
+                color: Color(0xFF2A6049),
                 size: 24,
               ),
               onPressed: () {
                 // Open new message composer
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('New message feature coming soon!')),
+                showWanderMoodToast(
+                  context,
+                  message: 'New message feature coming soon!',
                 );
               },
             ),
@@ -160,7 +162,7 @@ class _MessageHubScreenState extends ConsumerState<MessageHubScreen> {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        color: isUnread ? const Color(0xFF12B347).withOpacity(0.05) : Colors.transparent,
+                        color: isUnread ? const Color(0xFF2A6049).withOpacity(0.05) : Colors.transparent,
                         border: Border(
                           bottom: BorderSide(
                             color: Colors.grey.shade200,
@@ -185,7 +187,7 @@ class _MessageHubScreenState extends ConsumerState<MessageHubScreen> {
                                     width: 14,
                                     height: 14,
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF12B347),
+                                      color: const Color(0xFF2A6049),
                                       shape: BoxShape.circle,
                                       border: Border.all(
                                         color: Colors.white,
@@ -218,7 +220,7 @@ class _MessageHubScreenState extends ConsumerState<MessageHubScreen> {
                                       _getTimeString(timestamp),
                                       style: GoogleFonts.poppins(
                                         fontSize: 12,
-                                        color: isUnread ? const Color(0xFF12B347) : Colors.grey,
+                                        color: isUnread ? const Color(0xFF2A6049) : Colors.grey,
                                         fontWeight: isUnread ? FontWeight.w500 : FontWeight.w400,
                                       ),
                                     ),
@@ -393,7 +395,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         backgroundColor: Colors.white,
         elevation: 1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF12B347)),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF2A6049)),
           onPressed: () => Navigator.of(context).pop(),
         ),
         titleSpacing: 0,
@@ -419,7 +421,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                   'Online',
                   style: GoogleFonts.poppins(
                     fontSize: 12,
-                    color: const Color(0xFF12B347),
+                    color: const Color(0xFF2A6049),
                   ),
                 ),
               ],
@@ -430,22 +432,24 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           IconButton(
             icon: const Icon(
               Icons.call,
-              color: Color(0xFF12B347),
+              color: Color(0xFF2A6049),
             ),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Call feature coming soon!')),
+              showWanderMoodToast(
+                context,
+                message: 'Call feature coming soon!',
               );
             },
           ),
           IconButton(
             icon: const Icon(
               Icons.videocam,
-              color: Color(0xFF12B347),
+              color: Color(0xFF2A6049),
             ),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Video call feature coming soon!')),
+              showWanderMoodToast(
+                context,
+                message: 'Video call feature coming soon!',
               );
             },
           ),
@@ -454,7 +458,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
               ),
             )
           : Column(
@@ -483,7 +487,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: isMe ? const Color(0xFF12B347) : Colors.white,
+                            color: isMe ? const Color(0xFF2A6049) : Colors.white,
                             borderRadius: BorderRadius.circular(20).copyWith(
                               bottomRight: isMe ? const Radius.circular(0) : null,
                               bottomLeft: !isMe ? const Radius.circular(0) : null,
@@ -542,11 +546,12 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                         IconButton(
                           icon: const Icon(
                             Icons.photo,
-                            color: Color(0xFF12B347),
+                            color: Color(0xFF2A6049),
                           ),
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Photo sharing coming soon!')),
+                            showWanderMoodToast(
+                              context,
+                              message: 'Photo sharing coming soon!',
                             );
                           },
                         ),
@@ -574,7 +579,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                         ),
                         const SizedBox(width: 8),
                         CircleAvatar(
-                          backgroundColor: const Color(0xFF12B347),
+                          backgroundColor: const Color(0xFF2A6049),
                           child: IconButton(
                             icon: const Icon(
                               Icons.send,

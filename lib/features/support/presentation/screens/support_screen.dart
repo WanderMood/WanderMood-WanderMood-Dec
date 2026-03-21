@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class SupportScreen extends ConsumerStatefulWidget {
   const SupportScreen({Key? key}) : super(key: key);
@@ -56,7 +57,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
             style: GoogleFonts.museoModerno(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
             ),
           ),
           leading: IconButton(
@@ -141,7 +142,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF12B347),
+                      color: const Color(0xFF2A6049),
                     ),
                   ),
                 ),
@@ -178,7 +179,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                           _expandedItems[index] 
                               ? Icons.keyboard_arrow_up 
                               : Icons.keyboard_arrow_down,
-                          color: const Color(0xFF12B347),
+                          color: const Color(0xFF2A6049),
                         ),
                         children: [
                           Padding(
@@ -208,7 +209,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF12B347),
+                      color: const Color(0xFF2A6049),
                     ),
                   ),
                 ),
@@ -276,7 +277,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
             Icon(
               icon,
               size: 32,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
             ),
             const SizedBox(height: 8),
             Text(
@@ -301,7 +302,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
     Widget? trailing,
   }) {
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFF12B347)),
+      leading: Icon(icon, color: const Color(0xFF2A6049)),
       title: Text(
         title,
         style: GoogleFonts.poppins(
@@ -342,7 +343,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF12B347),
+                color: const Color(0xFF2A6049),
               ),
             ),
             const SizedBox(height: 16),
@@ -360,7 +361,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
             child: Text(
               'Close',
               style: GoogleFonts.poppins(
-                color: const Color(0xFF12B347),
+                color: const Color(0xFF2A6049),
               ),
             ),
           ),
@@ -371,35 +372,17 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
   
   // Send feedback action
   void _sendFeedback() {
-    // Open feedback form or email
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Opening feedback form...'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    showWanderMoodToast(context, message: 'Opening feedback form...');
   }
   
   // Show tutorial action
   void _showTutorial() {
-    // Show app tutorial
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Opening app tutorial...'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    showWanderMoodToast(context, message: 'Opening app tutorial...');
   }
   
   // Report issue action
   void _reportIssue() {
-    // Open issue reporting form
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Opening issue report form...'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    showWanderMoodToast(context, message: 'Opening issue report form...');
   }
 
   /// Open Privacy Policy in external browser
@@ -410,21 +393,22 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Unable to open Privacy Policy. Please check your internet connection.'),
-              duration: Duration(seconds: 3),
-            ),
+          showWanderMoodToast(
+            context,
+            message:
+                'Unable to open Privacy Policy. Please check your internet connection.',
+            isError: true,
+            duration: const Duration(seconds: 3),
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error opening Privacy Policy: $e'),
-            duration: const Duration(seconds: 3),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Error opening Privacy Policy: $e',
+          isError: true,
+          duration: const Duration(seconds: 3),
         );
       }
     }
@@ -438,21 +422,22 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Unable to open Terms of Service. Please check your internet connection.'),
-              duration: Duration(seconds: 3),
-            ),
+          showWanderMoodToast(
+            context,
+            message:
+                'Unable to open Terms of Service. Please check your internet connection.',
+            isError: true,
+            duration: const Duration(seconds: 3),
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error opening Terms of Service: $e'),
-            duration: const Duration(seconds: 3),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Error opening Terms of Service: $e',
+          isError: true,
+          duration: const Duration(seconds: 3),
         );
       }
     }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../providers/settings_providers.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class ActiveSessionsScreen extends ConsumerWidget {
   const ActiveSessionsScreen({super.key});
@@ -312,20 +313,18 @@ class ActiveSessionsScreen extends ConsumerWidget {
       await supabase.from('active_sessions').delete().eq('id', session.id);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Device signed out successfully'),
-            backgroundColor: Colors.green,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Device signed out successfully',
+          backgroundColor: Colors.green,
         );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error signing out device: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Error signing out device: $e',
+          isError: true,
         );
       }
     }
@@ -372,20 +371,18 @@ class ActiveSessionsScreen extends ConsumerWidget {
           .eq('is_current', false);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('All other devices signed out successfully'),
-            backgroundColor: Colors.green,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'All other devices signed out successfully',
+          backgroundColor: Colors.green,
         );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error signing out devices: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Error signing out devices: $e',
+          isError: true,
         );
       }
     }

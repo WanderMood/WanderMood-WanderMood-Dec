@@ -7,6 +7,7 @@ import 'package:wandermood/features/social/domain/models/social_post.dart';
 import 'package:wandermood/features/social/domain/providers/social_providers.dart';
 import 'package:wandermood/features/auth/providers/user_provider.dart';
 import 'package:wandermood/features/social/presentation/screens/create_post_screen.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 // Current user provider - in a real app this would get the authenticated user
 final currentUserIdProvider = Provider<String>((ref) => 'user1');
@@ -44,7 +45,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> with Sing
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.settings, color: Color(0xFF12B347)),
+              leading: const Icon(Icons.settings, color: Color(0xFF2A6049)),
               title: Text(
                 'Settings',
                 style: GoogleFonts.poppins(
@@ -57,7 +58,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> with Sing
               },
             ),
             ListTile(
-              leading: const Icon(Icons.bookmark_border, color: Color(0xFF12B347)),
+              leading: const Icon(Icons.bookmark_border, color: Color(0xFF2A6049)),
               title: Text(
                 'Saved Posts',
                 style: GoogleFonts.poppins(
@@ -66,16 +67,14 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> with Sing
               ),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Saved posts are not available yet.'),
-                    duration: Duration(seconds: 2),
-                  ),
+                showWanderMoodToast(
+                  context,
+                  message: 'Saved posts are not available yet.',
                 );
               },
             ),
             ListTile(
-              leading: const Icon(Icons.people_outline, color: Color(0xFF12B347)),
+              leading: const Icon(Icons.people_outline, color: Color(0xFF2A6049)),
               title: Text(
                 'Close Friends',
                 style: GoogleFonts.poppins(
@@ -84,16 +83,14 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> with Sing
               ),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Close friends is not available yet.'),
-                    duration: Duration(seconds: 2),
-                  ),
+                showWanderMoodToast(
+                  context,
+                  message: 'Close friends is not available yet.',
                 );
               },
             ),
             ListTile(
-              leading: const Icon(Icons.help_outline, color: Color(0xFF12B347)),
+              leading: const Icon(Icons.help_outline, color: Color(0xFF2A6049)),
               title: Text(
                 'Help',
                 style: GoogleFonts.poppins(
@@ -155,7 +152,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> with Sing
               pinned: true,
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.menu, color: Color(0xFF12B347)),
+                  icon: const Icon(Icons.menu, color: Color(0xFF2A6049)),
                   onPressed: _showSettingsMenu,
                 ),
               ],
@@ -258,12 +255,12 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> with Sing
                   onPressed: _navigateToEditProfile,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF12B347),
+                    foregroundColor: const Color(0xFF2A6049),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                       side: const BorderSide(
-                        color: Color(0xFF12B347),
+                        color: Color(0xFF2A6049),
                         width: 1,
                       ),
                     ),
@@ -306,14 +303,14 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> with Sing
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF12B347).withOpacity(0.1),
+                            color: const Color(0xFF2A6049).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
                             interest,
                             style: GoogleFonts.poppins(
                               fontSize: 14,
-                              color: const Color(0xFF12B347),
+                              color: const Color(0xFF2A6049),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -330,9 +327,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> with Sing
               delegate: _SliverAppBarDelegate(
                 TabBar(
                   controller: _tabController,
-                  labelColor: const Color(0xFF12B347),
+                  labelColor: const Color(0xFF2A6049),
                   unselectedLabelColor: Colors.grey,
-                  indicatorColor: const Color(0xFF12B347),
+                  indicatorColor: const Color(0xFF2A6049),
                   tabs: const [
                     Tab(icon: Icon(Icons.grid_on)),
                     Tab(icon: Icon(Icons.bookmark_border)),
@@ -374,7 +371,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> with Sing
                                     context.push('/social/create-post');
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF12B347),
+                                    backgroundColor: const Color(0xFF2A6049),
                                     foregroundColor: Colors.white,
                                   ),
                                   child: Text(

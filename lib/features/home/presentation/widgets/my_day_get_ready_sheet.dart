@@ -14,6 +14,7 @@ import 'package:wandermood/features/home/presentation/widgets/moody_character.da
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/features/weather/providers/weather_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 Future<void> showMyDayGetReadySheet({
   required BuildContext context,
@@ -678,7 +679,7 @@ class _ExcitingGetReadySheetContentState
                                 'Ready to go!',
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
-                                  color: const Color(0xFF16A34A),
+                                  color: const Color(0xFF2A6049),
                                   fontStyle: FontStyle.italic,
                                 ),
                               ),
@@ -692,7 +693,7 @@ class _ExcitingGetReadySheetContentState
                           : Icons.circle_outlined,
                       size: 24,
                       color: checked
-                          ? const Color(0xFF16A34A)
+                          ? const Color(0xFF2A6049)
                           : Colors.grey.shade400,
                     ),
                   ],
@@ -828,7 +829,7 @@ class _ExcitingGetReadySheetContentState
                 l10n.getReadyReminderAt(widget.formatTime(reminderTime)),
                 style: GoogleFonts.poppins(
                   fontSize: 12,
-                  color: const Color(0xFF16A34A),
+                  color: const Color(0xFF2A6049),
                 ),
               )
             : null,
@@ -836,12 +837,9 @@ class _ExcitingGetReadySheetContentState
         onChanged: (value) {
           setState(() => _reminderOn = value);
           if (value) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  l10n.getReadyReminderAt(widget.formatTime(reminderTime)),
-                ),
-              ),
+            showWanderMoodToast(
+              context,
+              message: l10n.getReadyReminderAt(widget.formatTime(reminderTime)),
             );
           }
         },
@@ -944,12 +942,9 @@ class _ExcitingGetReadySheetContentState
   void _showCalendarSnackBar() {
     if (!mounted) return;
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '${l10n.getReadyQuickCalendar} – open in browser or app',
-        ),
-      ),
+    showWanderMoodToast(
+      context,
+      message: '${l10n.getReadyQuickCalendar} – open in browser or app',
     );
   }
 
@@ -999,9 +994,7 @@ class _ExcitingGetReadySheetContentState
 
   void _showPlaylistSnackBar() {
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.getReadyVibePlaylist)),
-    );
+    showWanderMoodToast(context, message: l10n.getReadyVibePlaylist);
   }
 
   Widget _buildPrimaryCta(AppLocalizations l10n) {
@@ -1014,7 +1007,7 @@ class _ExcitingGetReadySheetContentState
           Navigator.pop(context);
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF16A34A),
+          backgroundColor: const Color(0xFF2A6049), // wmForest
           foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(

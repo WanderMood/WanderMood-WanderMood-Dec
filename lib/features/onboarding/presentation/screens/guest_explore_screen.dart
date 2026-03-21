@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 /// Guest Explore Screen
 /// 
@@ -91,25 +92,14 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
 
   void _onSaveTap(_SamplePlace place) {
     // Can't save as guest - show signup prompt
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.lock_outline, color: Colors.white, size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(AppLocalizations.of(context)!.guestSignUpToSaveFavorites),
-            ),
-          ],
-        ),
-        action: SnackBarAction(
-          label: AppLocalizations.of(context)!.guestSignUp,
-          onPressed: _navigateToSignup,
-        ),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: const Duration(seconds: 4),
-      ),
+    final l10n = AppLocalizations.of(context)!;
+    showWanderMoodToast(
+      context,
+      message: l10n.guestSignUpToSaveFavorites,
+      duration: const Duration(seconds: 4),
+      leading: const Icon(Icons.lock_outline, color: Colors.white, size: 20),
+      actionLabel: l10n.guestSignUp,
+      onAction: _navigateToSignup,
     );
   }
 
@@ -147,7 +137,7 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _navigateToSignup,
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: const Color(0xFF2A6049),
         foregroundColor: Colors.white,
         icon: const Icon(Icons.star_rounded, color: Colors.white),
         label: Text(
@@ -186,7 +176,7 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
                   style: GoogleFonts.museoModerno(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF4CAF50),
+                    color: const Color(0xFF2A6049),
                   ),
                 ),
                 Text(
@@ -204,17 +194,17 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0xFF4CAF50).withOpacity(0.12),
+              color: const Color(0xFF2A6049).withOpacity(0.12),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: const Color(0xFF4CAF50).withOpacity(0.35),
+                color: const Color(0xFF2A6049).withOpacity(0.35),
                 width: 1,
               ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.person_outline_rounded, size: 18, color: const Color(0xFF4CAF50)),
+                Icon(Icons.person_outline_rounded, size: 18, color: const Color(0xFF2A6049)),
                 const SizedBox(width: 6),
                 Text(
                   AppLocalizations.of(context)!.guestGuest,

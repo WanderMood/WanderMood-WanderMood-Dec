@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class ActivityFeedScreen extends StatefulWidget {
   const ActivityFeedScreen({Key? key}) : super(key: key);
@@ -44,14 +45,14 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                             style: GoogleFonts.poppins(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFF4CAF50),
+                              color: const Color(0xFF2A6049),
                             ),
                           ),
                           const Spacer(),
                           IconButton(
                             icon: const Icon(
                               Icons.notifications_outlined,
-                              color: Color(0xFF4CAF50),
+                              color: Color(0xFF2A6049),
                               size: 28,
                             ),
                             onPressed: () => _showNotifications(),
@@ -101,7 +102,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                     padding: EdgeInsets.all(20),
                     child: Center(
                       child: CircularProgressIndicator(
-                        color: Color(0xFF4CAF50),
+                        color: Color(0xFF2A6049),
                       ),
                     ),
                   ),
@@ -135,7 +136,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                 children: [
                   Icon(
                     Icons.auto_stories,
-                    color: const Color(0xFF4CAF50),
+                    color: const Color(0xFF2A6049),
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -154,7 +155,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                       'View All',
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: const Color(0xFF4CAF50),
+                        color: const Color(0xFF2A6049),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -194,7 +195,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFF4CAF50),
+                    const Color(0xFF2A6049),
                     const Color(0xFF81C784),
                   ],
                 ),
@@ -251,17 +252,17 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected 
-              ? const Color(0xFF4CAF50) 
+              ? const Color(0xFF2A6049) 
               : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected 
-                ? const Color(0xFF4CAF50) 
+                ? const Color(0xFF2A6049) 
                 : Colors.grey[300]!,
           ),
           boxShadow: isSelected ? [
             BoxShadow(
-              color: const Color(0xFF4CAF50).withOpacity(0.3),
+              color: const Color(0xFF2A6049).withOpacity(0.3),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -329,7 +330,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                               Icon(
                                 Icons.verified,
                                 size: 16,
-                                color: const Color(0xFF4CAF50),
+                                color: const Color(0xFF2A6049),
                               ),
                             ],
                           ],
@@ -476,7 +477,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
 
   Color _getUserColor(String name) {
     final colors = [
-      const Color(0xFF4CAF50),
+      const Color(0xFF2A6049),
       const Color(0xFF2196F3),
       const Color(0xFFFF9800),
       const Color(0xFF9C27B0),
@@ -616,32 +617,26 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   }
 
   void _viewAllStories() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Opening all travel stories...'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Opening all travel stories...',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
   void _viewStory(Map<String, dynamic> story) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Opening ${story['author']}\'s story...'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Opening ${story['author']}\'s story...',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
   void _onFilterChanged(String filter) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Filtering by: $filter'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Filtering by: $filter',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
@@ -651,13 +646,11 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
       context.push('/social/profile/$userId');
     } else {
       // Fallback: show a snackbar if userId is not available
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Opening ${activity['user']}\'s profile...'),
-          backgroundColor: const Color(0xFF4CAF50),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 2),
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Opening ${activity['user']}\'s profile...',
+        backgroundColor: const Color(0xFF2A6049),
+        duration: const Duration(seconds: 2),
       );
     }
   }
@@ -701,12 +694,10 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   }
 
   void _likePost(Map<String, dynamic> activity) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Liked ${activity['user']}\'s post!'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Liked ${activity['user']}\'s post!',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
@@ -730,11 +721,10 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Comment posted!'),
-                  backgroundColor: Color(0xFF4CAF50),
-                ),
+              showWanderMoodToast(
+                context,
+                message: 'Comment posted!',
+                backgroundColor: const Color(0xFF2A6049),
               );
             },
             child: const Text('Post'),
@@ -745,42 +735,34 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   }
 
   void _sharePost(Map<String, dynamic> activity) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Shared ${activity['user']}\'s post!'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Shared ${activity['user']}\'s post!',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
   void _savePost(Map<String, dynamic> activity) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Saved ${activity['user']}\'s post!'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Saved ${activity['user']}\'s post!',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
   void _followUser(String username) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Following $username!'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Following $username!',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
   void _reportPost(Map<String, dynamic> activity) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Reported ${activity['user']}\'s post'),
-        backgroundColor: const Color(0xFFFF6B6B),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Reported ${activity['user']}\'s post',
+      backgroundColor: const Color(0xFFFF6B6B),
     );
   }
 } 

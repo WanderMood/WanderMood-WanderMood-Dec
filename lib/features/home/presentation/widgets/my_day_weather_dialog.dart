@@ -38,7 +38,7 @@ class MyDayWeatherDialog extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close, color: Color(0xFF8A847B)),
+                  icon: const Icon(Icons.close, color: Color(0xFF8C8780)), // wmStone
                 ),
               ],
             ),
@@ -68,7 +68,7 @@ class MyDayWeatherDialog extends StatelessWidget {
                         weather!.condition,
                         style: GoogleFonts.poppins(
                           fontSize: 18,
-                          color: const Color(0xFF8A847B),
+                          color: const Color(0xFF8C8780), // wmStone
                         ),
                       ),
                     ],
@@ -81,7 +81,7 @@ class MyDayWeatherDialog extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFFFFF),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFD8D0C4), width: 0.5),
+                  border: Border.all(color: const Color(0xFFE8E2D8), width: 1),
                 ),
                 child: Column(
                   children: [
@@ -89,12 +89,12 @@ class MyDayWeatherDialog extends StatelessWidget {
                       label: 'Feels Like',
                       value: '${weather!.details['feelsLike']?.round() ?? '--'}°C',
                     ),
-                    const Divider(height: 16, thickness: 1, color: Color(0xFFD8D0C4)),
+                    const Divider(height: 16, thickness: 1, color: Color(0xFFE8E2D8)),
                     _WeatherDetailRow(
                       label: 'Humidity',
                       value: '${weather!.details['humidity'] ?? '--'}%',
                     ),
-                    const Divider(height: 16, thickness: 1, color: Color(0xFFD8D0C4)),
+                    const Divider(height: 16, thickness: 1, color: Color(0xFFE8E2D8)),
                     _WeatherDetailRow(
                       label: 'Description',
                       value: weather!.details['description'] ?? 'Clear skies',

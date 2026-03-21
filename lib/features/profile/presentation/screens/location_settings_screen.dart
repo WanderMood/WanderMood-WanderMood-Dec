@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import '../widgets/settings_screen_template.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class LocationSettingsScreen extends ConsumerStatefulWidget {
   const LocationSettingsScreen({super.key});
@@ -58,22 +59,19 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
         }, onConflict: 'user_id');
         
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.locationSnackbarUpdated),
-              backgroundColor: Colors.green,
-            ),
+          showWanderMoodToast(
+            context,
+            message: l10n.locationSnackbarUpdated,
           );
         }
       }
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.locationSnackbarError(e.toString())),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: l10n.locationSnackbarError(e.toString()),
+          isError: true,
         );
       }
     }

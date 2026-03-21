@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import '../providers/settings_providers.dart';
 import '../widgets/settings_screen_template.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class DataStorageScreen extends ConsumerStatefulWidget {
   const DataStorageScreen({super.key});
@@ -91,20 +92,18 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
       await Share.shareXFiles([XFile(file.path)], text: l10n.dataStorageExportFileTitle);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.dataStorageExportSuccess),
-            backgroundColor: Colors.green,
-          ),
+        showWanderMoodToast(
+          context,
+          message: l10n.dataStorageExportSuccess,
+          backgroundColor: Colors.green,
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.dataStorageExportFailed(e.toString())),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: l10n.dataStorageExportFailed(e.toString()),
+          isError: true,
         );
       }
     } finally {
@@ -123,21 +122,19 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
       }
       await _calculateStorageSize();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.dataStorageCacheCleared),
-            backgroundColor: Colors.green,
-          ),
+        showWanderMoodToast(
+          context,
+          message: AppLocalizations.of(context)!.dataStorageCacheCleared,
+          backgroundColor: Colors.green,
         );
       }
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.dataStorageCacheFailed(e.toString())),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: l10n.dataStorageCacheFailed(e.toString()),
+          isError: true,
         );
       }
     } finally {
@@ -288,7 +285,7 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF16A34A),
+                                  color: const Color(0xFF2A6049),
                                 ),
                               ),
                             ),

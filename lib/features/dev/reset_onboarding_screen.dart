@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 /// Development screen to reset onboarding flags for testing
 /// Only available in debug mode
@@ -47,11 +48,10 @@ class ResetOnboardingScreen extends StatelessWidget {
                 await prefs.remove('has_completed_first_plan');
                 
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Onboarding flags cleared! Restart the app.'),
-                      backgroundColor: Colors.green,
-                    ),
+                  showWanderMoodToast(
+                    context,
+                    message: 'Onboarding flags cleared! Restart the app.',
+                    backgroundColor: Colors.green,
                   );
                   
                   // Navigate back to splash

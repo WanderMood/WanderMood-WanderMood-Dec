@@ -12,6 +12,7 @@ import 'dart:math' as math;
 import 'package:wandermood/features/home/domain/enums/moody_feature.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_chat_sheet.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_feedback_prompt_card.dart';
 import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/plans/presentation/screens/plan_loading_screen.dart';
@@ -27,6 +28,41 @@ import 'package:wandermood/features/mood/services/activity_rating_service.dart';
 import 'package:wandermood/features/mood/models/activity_rating.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+/// WanderMood v2 design tokens (Moody Hub — active plan)
+const Color _wmWhite = Color(0xFFFFFFFF);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmForestTint = Color(0xFFEBF3EE);
+const Color _wmSkyTint = Color(0xFFEDF5F9);
+const Color _wmSky = Color(0xFFA8C8DC);
+const Color _wmSunset = Color(0xFFE8784A);
+const Color _wmSunsetTint = Color(0xFFFDF0E8);
+const Color _wmCharcoal = Color(0xFF1E1C18);
+const Color _wmStone = Color(0xFF8C8780);
+
+/// Journey strip between period bubbles: forest when done, sunset when active, parchment otherwise.
+BoxDecoration _journeyConnectorDecoration({
+  required bool completed,
+  required bool live,
+}) {
+  if (completed) {
+    return BoxDecoration(
+      borderRadius: BorderRadius.circular(2),
+      gradient: const LinearGradient(colors: [_wmForest, _wmForest]),
+    );
+  }
+  if (live) {
+    return BoxDecoration(
+      borderRadius: BorderRadius.circular(2),
+      gradient: const LinearGradient(colors: [_wmSunset, _wmSunset]),
+    );
+  }
+  return BoxDecoration(
+    borderRadius: BorderRadius.circular(2),
+    color: _wmParchment.withValues(alpha: 0.7),
+  );
+}
 
 class RedesignedMoodyHub extends ConsumerStatefulWidget {
   const RedesignedMoodyHub({super.key});
@@ -61,7 +97,7 @@ class _RedesignedMoodyHubState extends ConsumerState<RedesignedMoodyHub> {
     final dailyMoodState = ref.watch(dailyMoodStateNotifierProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFDF5),
+      backgroundColor: const Color(0xFFF5F0E8), // wmCream — QA / design system
       body: todayActivities.when(
         data: (activities) {
           final nonCancelled = activities
@@ -161,7 +197,7 @@ class _MoodyHubWithPlan extends ConsumerWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
-                        color: const Color(0xFF1A1A2E),
+                        color: _wmCharcoal,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -170,7 +206,7 @@ class _MoodyHubWithPlan extends ConsumerWidget {
                         text: TextSpan(
                           style: GoogleFonts.poppins(
                             fontSize: 14,
-                            color: Colors.grey.shade600,
+                            color: _wmStone,
                           ),
                           children: [
                             const TextSpan(text: "You're on a "),
@@ -194,16 +230,26 @@ class _MoodyHubWithPlan extends ConsumerWidget {
                   ],
                 ),
               ),
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFDCFCE7), Color(0xFFBBF7D0)],
-                  ),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => _openMoodyChat(context, ref),
                   borderRadius: BorderRadius.circular(16),
+                  child: Ink(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: _wmSunsetTint,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: _wmParchment, width: 0.5),
+                    ),
+                    child: const Icon(
+                      Icons.auto_awesome_rounded,
+                      color: _wmSunset,
+                      size: 24,
+                    ),
+                  ),
                 ),
-                child: const Icon(Icons.auto_awesome, color: Color(0xFF2A6049), size: 24),
               ),
             ],
           ),
@@ -235,24 +281,22 @@ class _MoodyHubWithPlan extends ConsumerWidget {
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF1A1A2E),
+              color: _wmCharcoal,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             '${completed.length}/${activities.length} completed',
-            style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey.shade500),
+            style: GoogleFonts.poppins(fontSize: 13, color: _wmStone),
           ),
           const SizedBox(height: 12),
 
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFF9FAFB), Colors.white],
-              ),
+              color: _wmWhite,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFF3F4F6), width: 2),
+              border: Border.all(color: _wmParchment, width: 0.5),
             ),
             child: Column(
               children: [
@@ -270,11 +314,9 @@ class _MoodyHubWithPlan extends ConsumerWidget {
                       child: Container(
                         height: 3,
                         margin: const EdgeInsets.symmetric(horizontal: 4),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(2),
-                          gradient: periodDone(morningActivities)
-                              ? const LinearGradient(colors: [Color(0xFF4ADE80), Color(0xFFFB923C)])
-                              : LinearGradient(colors: [Colors.grey.shade200, Colors.grey.shade200]),
+                        decoration: _journeyConnectorDecoration(
+                          completed: periodDone(morningActivities),
+                          live: periodNow('morning') && !periodDone(morningActivities),
                         ),
                       ),
                     ),
@@ -290,11 +332,9 @@ class _MoodyHubWithPlan extends ConsumerWidget {
                       child: Container(
                         height: 3,
                         margin: const EdgeInsets.symmetric(horizontal: 4),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(2),
-                          gradient: periodDone(afternoonActivities)
-                              ? const LinearGradient(colors: [Color(0xFFFB923C), Color(0xFFA78BFA)])
-                              : LinearGradient(colors: [Colors.grey.shade200, Colors.grey.shade200]),
+                        decoration: _journeyConnectorDecoration(
+                          completed: periodDone(afternoonActivities),
+                          live: periodNow('afternoon') && !periodDone(afternoonActivities),
                         ),
                       ),
                     ),
@@ -331,7 +371,7 @@ class _MoodyHubWithPlan extends ConsumerWidget {
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF1A1A2E),
+              color: _wmCharcoal,
             ),
           ),
           const SizedBox(height: 12),
@@ -340,9 +380,9 @@ class _MoodyHubWithPlan extends ConsumerWidget {
               Expanded(
                 child: _QuickActionCard(
                   icon: Icons.chat_bubble_outline_rounded,
-                  iconColor: const Color(0xFF9333EA),
-                  bgGradient: const [Color(0xFFFAF5FF), Color(0xFFFCE7F3)],
-                  borderColor: const Color(0xFFE9D5FF),
+                  iconColor: _wmForest,
+                  bgGradient: const [_wmSkyTint, _wmSkyTint],
+                  borderColor: _wmSky,
                   title: 'Ask Moody',
                   subtitle: 'Get suggestions',
                   onTap: () => _openMoodyChat(context, ref),
@@ -352,9 +392,9 @@ class _MoodyHubWithPlan extends ConsumerWidget {
               Expanded(
                 child: _QuickActionCard(
                   icon: Icons.add_rounded,
-                  iconColor: const Color(0xFF2563EB),
-                  bgGradient: const [Color(0xFFEFF6FF), Color(0xFFECFDF5)],
-                  borderColor: const Color(0xFFBFDBFE),
+                  iconColor: _wmForest,
+                  bgGradient: const [_wmForestTint, _wmForestTint],
+                  borderColor: _wmParchment,
                   title: 'Add Activity',
                   subtitle: 'Extend your day',
                   onTap: () {
@@ -367,78 +407,7 @@ class _MoodyHubWithPlan extends ConsumerWidget {
 
           const SizedBox(height: 24),
 
-          // --- Moody Chat Prompt ---
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFF0FDF4), Color(0xFFECFDF5)],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFBBF7D0), width: 2),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF67E8F9), Color(0xFF93C5FD)],
-                    ),
-                  ),
-                  child: const Center(child: Text('😊', style: TextStyle(fontSize: 20))),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text.rich(
-                        TextSpan(children: [
-                          TextSpan(
-                            text: "How's it going? ",
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                              color: const Color(0xFF1A1A2E),
-                            ),
-                          ),
-                          TextSpan(
-                            text: 'Tap to tell me about your experience!',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.grey.shade700,
-                            ),
-                          ),
-                        ]),
-                      ),
-                      const SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: () => _openMoodyChat(context, ref),
-                        child: Row(
-                          children: [
-                            Text(
-                              'Share feedback',
-                              style: GoogleFonts.poppins(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF2A6049),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(Icons.chevron_right, size: 18, color: Color(0xFF2A6049)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          const MoodyFeedbackPromptCard(),
         ],
       ),
     );
@@ -664,13 +633,9 @@ class _MoodPlanSummaryCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFF0FDF4), Color(0xFFECFDF5), Color(0xFFFDF4FF)],
-        ),
+        color: _wmWhite,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFD1FAE5), width: 2),
+        border: Border.all(color: _wmParchment, width: 0.5),
         boxShadow: const [],
       ),
       child: Column(
@@ -682,10 +647,9 @@ class _MoodPlanSummaryCard extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFBBF7D0), Color(0xFFDDD6FE)],
-                  ),
+                  color: _wmForestTint,
                   borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: _wmParchment, width: 0.5),
                 ),
                 child: const Center(
                   child: Text('✨', style: TextStyle(fontSize: 22)),
@@ -698,7 +662,7 @@ class _MoodPlanSummaryCard extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 21,
                     fontWeight: FontWeight.w800,
-                    color: const Color(0xFF1A1A2E),
+                    color: _wmCharcoal,
                     height: 1.2,
                   ),
                 ),
@@ -711,7 +675,7 @@ class _MoodPlanSummaryCard extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.grey.shade700,
+              color: _wmStone,
               height: 1.45,
             ),
           ),
@@ -1048,26 +1012,29 @@ class _HeroButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: filled ? const Color(0xFF2A6049) : Colors.white,
+      color: filled ? _wmForest : _wmWhite,
       borderRadius: BorderRadius.circular(16),
-      elevation: 4,
-      shadowColor: Colors.black.withOpacity(0.1),
+      elevation: 0,
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
-        child: Padding(
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: filled ? null : Border.all(color: _wmParchment, width: 0.5),
+          ),
           padding: const EdgeInsets.symmetric(vertical: 14),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 18, color: filled ? Colors.white : const Color(0xFF1A1A2E)),
+              Icon(icon, size: 18, color: filled ? Colors.white : _wmCharcoal),
               const SizedBox(width: 8),
               Text(
                 label,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: filled ? Colors.white : const Color(0xFF1A1A2E),
+                  color: filled ? Colors.white : _wmCharcoal,
                 ),
               ),
             ],
@@ -1147,19 +1114,23 @@ class _TimelineBubbleState extends State<_TimelineBubble>
     final List<Color> gradient;
     final Color iconColor;
     final String statusText;
+    final BoxBorder? circleBorder;
 
     if (widget.isDone) {
-      gradient = const [Color(0xFF4ADE80), Color(0xFF10B981)];
+      gradient = const [_wmForest, _wmForest];
       iconColor = Colors.white;
       statusText = 'Done';
+      circleBorder = null;
     } else if (widget.isNow) {
-      gradient = const [Color(0xFFFB923C), Color(0xFFEC4899)];
+      gradient = const [_wmSunset, _wmSunset];
       iconColor = Colors.white;
       statusText = 'Now';
+      circleBorder = null;
     } else {
-      gradient = [Colors.grey.shade100, Colors.grey.shade100];
-      iconColor = Colors.grey.shade400;
+      gradient = const [_wmWhite, _wmWhite];
+      iconColor = _wmStone;
       statusText = 'Later';
+      circleBorder = Border.all(color: _wmParchment, width: 0.5);
     }
 
     return Column(
@@ -1175,23 +1146,8 @@ class _TimelineBubbleState extends State<_TimelineBubble>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(colors: gradient),
-                  boxShadow: widget.isNow
-                      ? [
-                          BoxShadow(
-                            color: const Color(0xFFFB923C).withOpacity(0.4),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          )
-                        ]
-                      : widget.isDone
-                          ? [
-                              BoxShadow(
-                                color: const Color(0xFF10B981).withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              )
-                            ]
-                          : [],
+                  border: circleBorder,
+                  boxShadow: const [],
                 ),
                 child: Icon(widget.icon, size: 28, color: iconColor),
               ),
@@ -1204,11 +1160,11 @@ class _TimelineBubbleState extends State<_TimelineBubble>
                   width: 22,
                   height: 22,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: _wmWhite,
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF10B981), width: 2),
+                    border: Border.all(color: _wmForest, width: 1.5),
                   ),
-                  child: const Icon(Icons.check_rounded, size: 14, color: Color(0xFF10B981)),
+                  child: const Icon(Icons.check_rounded, size: 14, color: _wmForest),
                 ),
               ),
           ],
@@ -1219,7 +1175,7 @@ class _TimelineBubbleState extends State<_TimelineBubble>
           style: GoogleFonts.poppins(
             fontSize: 11,
             fontWeight: FontWeight.w700,
-            color: widget.isFuture ? Colors.grey.shade500 : const Color(0xFF1A1A2E),
+            color: widget.isFuture ? _wmStone : _wmCharcoal,
           ),
         ),
         widget.isNow
@@ -1230,7 +1186,7 @@ class _TimelineBubbleState extends State<_TimelineBubble>
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFFEA580C),
+                    color: _wmSunset,
                   ),
                 ),
               )
@@ -1239,9 +1195,7 @@ class _TimelineBubbleState extends State<_TimelineBubble>
                 style: GoogleFonts.poppins(
                   fontSize: 11,
                   fontWeight: widget.isDone ? FontWeight.w500 : FontWeight.w400,
-                  color: widget.isDone
-                      ? const Color(0xFF2A6049)
-                      : Colors.grey.shade400,
+                  color: widget.isDone ? _wmForest : _wmStone,
                 ),
               ),
       ],
@@ -1269,9 +1223,9 @@ class _NextUpPreview extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: _wmWhite,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFF3F4F6), width: 2),
+          border: Border.all(color: _wmParchment, width: 0.5),
         ),
         child: Row(
           children: [
@@ -1294,7 +1248,7 @@ class _NextUpPreview extends StatelessWidget {
                 children: [
                   Text(
                     'Up Next',
-                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey.shade500),
+                    style: GoogleFonts.poppins(fontSize: 12, color: _wmStone),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -1302,19 +1256,19 @@ class _NextUpPreview extends StatelessWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF1A1A2E),
+                      color: _wmCharcoal,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     timeStr,
-                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey.shade600),
+                    style: GoogleFonts.poppins(fontSize: 12, color: _wmStone),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, size: 22, color: Colors.grey.shade400),
+            Icon(Icons.chevron_right_rounded, size: 22, color: _wmStone),
           ],
         ),
       ),
@@ -1372,7 +1326,7 @@ class _QuickActionCard extends StatelessWidget {
               colors: bgGradient,
             ),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: borderColor, width: 2),
+            border: Border.all(color: borderColor, width: 0.5),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1384,12 +1338,12 @@ class _QuickActionCard extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1A1A2E),
+                  color: _wmCharcoal,
                 ),
               ),
               Text(
                 subtitle,
-                style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey.shade600),
+                style: GoogleFonts.poppins(fontSize: 12, color: _wmStone),
               ),
             ],
           ),
@@ -1571,7 +1525,13 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan> with SingleTic
                 ).animate().fadeIn(delay: 400.ms, duration: 600.ms).scale(begin: const Offset(0.9, 0.9), end: const Offset(1.0, 1.0), curve: Curves.easeOut),
               ),
 
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.0),
+                child: MoodyFeedbackPromptCard(),
+              ),
+
+              const SizedBox(height: 24),
 
               // Action Chips
               Padding(
@@ -1641,7 +1601,7 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan> with SingleTic
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(50),
-                          border: Border.all(color: const Color(0xFFD8D0C4), width: 0.5),
+                          border: Border.all(color: const Color(0xFFE8E2D8), width: 1.5),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,

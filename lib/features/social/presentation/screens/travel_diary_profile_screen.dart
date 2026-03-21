@@ -8,6 +8,7 @@ import '../../domain/models/user_profile.dart';
 import '../../application/providers/diary_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class TravelDiaryProfileScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -48,7 +49,7 @@ class _TravelDiaryProfileScreenState extends ConsumerState<TravelDiaryProfileScr
   Widget _buildLoadingScreen() {
     return const Center(
       child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
       ),
     );
   }
@@ -218,7 +219,7 @@ class _TravelDiaryProfileScreenState extends ConsumerState<TravelDiaryProfileScr
                     end: Alignment.bottomRight,
                   ),
                   border: Border.all(
-                    color: const Color(0xFF12B347),
+                    color: const Color(0xFF2A6049),
                     width: 3,
                   ),
                 ),
@@ -389,7 +390,7 @@ class _TravelDiaryProfileScreenState extends ConsumerState<TravelDiaryProfileScr
         Icon(
           icon,
           size: 24,
-          color: const Color(0xFF12B347),
+          color: const Color(0xFF2A6049),
         ),
         const SizedBox(height: 8),
         Text(
@@ -422,7 +423,7 @@ class _TravelDiaryProfileScreenState extends ConsumerState<TravelDiaryProfileScr
             child: ElevatedButton(
               onPressed: () => _toggleFollow(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _isFollowing ? const Color(0xFF718096) : const Color(0xFF12B347),
+                backgroundColor: _isFollowing ? const Color(0xFF718096) : const Color(0xFF2A6049),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
@@ -454,8 +455,8 @@ class _TravelDiaryProfileScreenState extends ConsumerState<TravelDiaryProfileScr
             child: OutlinedButton(
               onPressed: () => _sendThankYou(),
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF12B347),
-                side: const BorderSide(color: Color(0xFF12B347), width: 2),
+                foregroundColor: const Color(0xFF2A6049),
+                side: const BorderSide(color: Color(0xFF2A6049), width: 2),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -488,7 +489,7 @@ class _TravelDiaryProfileScreenState extends ConsumerState<TravelDiaryProfileScr
       child: ElevatedButton(
         onPressed: () => _navigateToWriteEntry(),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF12B347),
+          backgroundColor: const Color(0xFF2A6049),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
@@ -721,7 +722,7 @@ class _TravelDiaryProfileScreenState extends ConsumerState<TravelDiaryProfileScr
       case 'curious':
         return [const Color(0xFF667eea), const Color(0xFF764ba2)];
       default:
-        return [const Color(0xFF12B347), const Color(0xFF4ECDC4)];
+        return [const Color(0xFF2A6049), const Color(0xFF4ECDC4)];
     }
   }
 
@@ -738,7 +739,7 @@ class _TravelDiaryProfileScreenState extends ConsumerState<TravelDiaryProfileScr
       case 'social':
         return ('👥', const Color(0xFFFFE66D));
       default:
-        return ('✨', const Color(0xFF12B347));
+        return ('✨', const Color(0xFF2A6049));
     }
   }
 
@@ -761,7 +762,7 @@ class _TravelDiaryProfileScreenState extends ConsumerState<TravelDiaryProfileScr
       case 'relaxed':
         return const Color(0xFF81C784);
       default:
-        return const Color(0xFF12B347);
+        return const Color(0xFF2A6049);
     }
   }
 
@@ -794,30 +795,20 @@ class _TravelDiaryProfileScreenState extends ConsumerState<TravelDiaryProfileScr
       _isFollowing = !_isFollowing;
     });
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
+    showWanderMoodToast(
+      context,
+      message:
           _isFollowing ? 'Now following this traveler!' : 'Unfollowed',
-          style: GoogleFonts.poppins(),
-        ),
-        backgroundColor: _isFollowing ? const Color(0xFF12B347) : const Color(0xFF718096),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+      backgroundColor:
+          _isFollowing ? const Color(0xFF2A6049) : const Color(0xFF718096),
     );
   }
 
   void _sendThankYou() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Thank you sent! 💕',
-          style: GoogleFonts.poppins(),
-        ),
-        backgroundColor: const Color(0xFFFC466B),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Thank you sent! 💕',
+      backgroundColor: const Color(0xFFFC466B),
     );
   }
 
@@ -827,15 +818,9 @@ class _TravelDiaryProfileScreenState extends ConsumerState<TravelDiaryProfileScr
 
   void _openEntry(DiaryEntry entry) {
     // TODO: Navigate to detailed entry view
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Opening "${entry.title ?? 'Untitled'}"...',
-          style: GoogleFonts.poppins(),
-        ),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Opening "${entry.title ?? 'Untitled'}"...',
     );
   }
 
@@ -918,14 +903,10 @@ class _EditProfileModalState extends State<EditProfileModal> {
 
   void _saveProfile() async {
     if (_nameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Username cannot be empty',
-            style: GoogleFonts.poppins(),
-          ),
-          backgroundColor: const Color(0xFFE55B4C),
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Username cannot be empty',
+        isError: true,
       );
       return;
     }
@@ -943,29 +924,19 @@ class _EditProfileModalState extends State<EditProfileModal> {
       });
 
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Profile updated successfully!',
-            style: GoogleFonts.poppins(),
-          ),
-          backgroundColor: const Color(0xFF12B347),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Profile updated successfully!',
+        backgroundColor: const Color(0xFF2A6049),
       );
     }
   }
 
   void _selectPhoto() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Photo selection coming soon!',
-          style: GoogleFonts.poppins(),
-        ),
-        backgroundColor: const Color(0xFF12B347),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Photo selection coming soon!',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
@@ -1019,13 +990,13 @@ class _EditProfileModalState extends State<EditProfileModal> {
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
                           ),
                         )
                       : Text(
                           'Save',
                           style: GoogleFonts.poppins(
-                            color: const Color(0xFF12B347),
+                            color: const Color(0xFF2A6049),
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -1049,9 +1020,9 @@ class _EditProfileModalState extends State<EditProfileModal> {
                           height: 100,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: const Color(0xFF12B347).withOpacity(0.1),
+                            color: const Color(0xFF2A6049).withOpacity(0.1),
                             border: Border.all(
-                              color: const Color(0xFF12B347),
+                              color: const Color(0xFF2A6049),
                               width: 2,
                             ),
                           ),
@@ -1061,7 +1032,7 @@ class _EditProfileModalState extends State<EditProfileModal> {
                               style: GoogleFonts.poppins(
                                 fontSize: 32,
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFF12B347),
+                                color: const Color(0xFF2A6049),
                               ),
                             ),
                           ),
@@ -1074,7 +1045,7 @@ class _EditProfileModalState extends State<EditProfileModal> {
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: const BoxDecoration(
-                                color: Color(0xFF12B347),
+                                color: Color(0xFF2A6049),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -1126,10 +1097,10 @@ class _EditProfileModalState extends State<EditProfileModal> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFF12B347) : Colors.transparent,
+                            color: isSelected ? const Color(0xFF2A6049) : Colors.transparent,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: isSelected ? const Color(0xFF12B347) : const Color(0xFFE2E8F0),
+                              color: isSelected ? const Color(0xFF2A6049) : const Color(0xFFE2E8F0),
                             ),
                           ),
                           child: Text(
@@ -1176,7 +1147,7 @@ class _EditProfileModalState extends State<EditProfileModal> {
             color: const Color(0xFF2D3748),
           ),
           decoration: InputDecoration(
-            prefixIcon: Icon(icon, color: const Color(0xFF12B347)),
+            prefixIcon: Icon(icon, color: const Color(0xFF2A6049)),
             filled: true,
             fillColor: _isSaving ? const Color(0xFFF7FAFC).withOpacity(0.5) : const Color(0xFFF7FAFC),
             border: OutlineInputBorder(
@@ -1185,7 +1156,7 @@ class _EditProfileModalState extends State<EditProfileModal> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF12B347)),
+              borderSide: const BorderSide(color: Color(0xFF2A6049)),
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),

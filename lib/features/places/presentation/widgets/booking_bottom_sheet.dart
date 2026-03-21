@@ -161,12 +161,12 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isSelected 
-                      ? const Color(0xFF12B347) 
+                      ? const Color(0xFF2A6049) 
                       : Colors.grey[300]!,
                   width: isSelected ? 2 : 1,
                 ),
                 color: isSelected 
-                    ? const Color(0xFF12B347).withOpacity(0.05)
+                    ? const Color(0xFF2A6049).withOpacity(0.05)
                     : Colors.white,
               ),
               child: ListTile(
@@ -181,7 +181,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: isSelected 
-                          ? const Color(0xFF12B347) 
+                          ? const Color(0xFF2A6049) 
                           : Colors.grey[400]!,
                       width: 2,
                     ),
@@ -193,7 +193,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                             height: 10,
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Color(0xFF12B347),
+                              color: Color(0xFF2A6049),
                             ),
                           ),
                         )
@@ -204,7 +204,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: isSelected ? const Color(0xFF12B347) : Colors.black87,
+                    color: isSelected ? const Color(0xFF2A6049) : Colors.black87,
                   ),
                 ),
                 subtitle: Text(
@@ -219,7 +219,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: isSelected ? const Color(0xFF12B347) : Colors.black87,
+                    color: isSelected ? const Color(0xFF2A6049) : Colors.black87,
                   ),
                 ),
                 onTap: () {
@@ -276,7 +276,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
               children: [
                 const Icon(
                   Icons.calendar_today,
-                  color: Color(0xFF12B347),
+                  color: Color(0xFF2A6049),
                   size: 20,
                 ),
                 const SizedBox(width: 12),
@@ -334,12 +334,12 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                 ),
                 decoration: BoxDecoration(
                   color: isSelected 
-                      ? const Color(0xFF12B347) 
+                      ? const Color(0xFF2A6049) 
                       : Colors.grey[100],
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: isSelected 
-                        ? const Color(0xFF12B347) 
+                        ? const Color(0xFF2A6049) 
                         : Colors.grey[300]!,
                   ),
                 ),
@@ -382,7 +382,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
             children: [
               const Icon(
                 Icons.people,
-                color: Color(0xFF12B347),
+                color: Color(0xFF2A6049),
                 size: 20,
               ),
               const SizedBox(width: 12),
@@ -410,7 +410,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         color: _selectedGuests > 1 
-                            ? const Color(0xFF12B347) 
+                            ? const Color(0xFF2A6049) 
                             : Colors.grey[300],
                         shape: BoxShape.circle,
                       ),
@@ -435,7 +435,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         color: _selectedGuests < 20 
-                            ? const Color(0xFF12B347) 
+                            ? const Color(0xFF2A6049) 
                             : Colors.grey[300],
                         shape: BoxShape.circle,
                       ),
@@ -462,10 +462,10 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF12B347).withOpacity(0.05),
+        color: const Color(0xFF2A6049).withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF12B347).withOpacity(0.2),
+          color: const Color(0xFF2A6049).withOpacity(0.2),
         ),
       ),
       child: Column(
@@ -498,7 +498,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                 style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF12B347),
+                  color: const Color(0xFF2A6049),
                 ),
               ),
               Text(
@@ -506,7 +506,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                 style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF12B347),
+                  color: const Color(0xFF2A6049),
                 ),
               ),
             ],
@@ -522,7 +522,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
       child: ElevatedButton(
         onPressed: _processBooking,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF12B347),
+          backgroundColor: const Color(0xFF2A6049),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
@@ -551,7 +551,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: const Color(0xFF12B347),
+              primary: const Color(0xFF2A6049),
             ),
           ),
           child: child!,

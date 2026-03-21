@@ -7,6 +7,7 @@ import '../../../places/models/place.dart';
 import '../../../../core/extensions/string_extensions.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:math' as math;
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class EnhancedMoodCarousel extends ConsumerStatefulWidget {
   final List<Place> places;
@@ -124,11 +125,10 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
             child: InkWell(
               onTap: () {
                 // TODO: Shuffle/refresh recommendations
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Refreshing recommendations...'),
-                    duration: Duration(seconds: 1),
-                  ),
+                showWanderMoodToast(
+                  context,
+                  message: 'Refreshing recommendations...',
+                  duration: const Duration(seconds: 1),
                 );
               },
               borderRadius: BorderRadius.circular(12),
@@ -145,7 +145,7 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
                     ),
                   ],
                 ),
-                child: const Icon(Icons.refresh, size: 20, color: Color(0xFF12B347)),
+                child: const Icon(Icons.refresh, size: 20, color: Color(0xFF2A6049)),
               ),
             ),
           ),
@@ -345,7 +345,7 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
               child: const Icon(
                 Icons.bookmark,
                 size: 16,
-                color: Color(0xFF12B347),
+                color: Color(0xFF2A6049),
               ),
             ),
         ],
@@ -436,7 +436,7 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
                 child: _buildActionButton(
                   label: 'Add to day',
                   icon: Icons.add_circle_outline,
-                  color: const Color(0xFF12B347),
+                  color: const Color(0xFF2A6049),
                   onTap: () => _addToSchedule(context, place),
                 ),
               ),
@@ -719,13 +719,10 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
 
   void _addToSchedule(BuildContext context, Place place) {
     // TODO: Implement actual schedule addition
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${place.name} added to your day! 🎉'),
-        backgroundColor: const Color(0xFF12B347),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+    showWanderMoodToast(
+      context,
+      message: '${place.name} added to your day! 🎉',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
@@ -733,24 +730,18 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
     setState(() {
       _savedPlaces.add(place.id);
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${place.name} saved for later! 📌'),
-        backgroundColor: const Color(0xFF12B347),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+    showWanderMoodToast(
+      context,
+      message: '${place.name} saved for later! 📌',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 
   void _dismissPlace(Place place) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Okay, hiding ${place.name}'),
-        backgroundColor: Colors.grey.shade700,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Okay, hiding ${place.name}',
+      backgroundColor: Colors.grey.shade700,
     );
   }
 
@@ -769,11 +760,11 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
       final message = 'Check out ${place.name} on WanderMood! 🧳✨\n\n${place.address ?? ''}';
       await Share.share(message);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to share: $e'),
-          duration: const Duration(seconds: 2),
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Failed to share: $e',
+        isError: true,
+        duration: const Duration(seconds: 2),
       );
     }
   }

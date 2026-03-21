@@ -786,7 +786,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
                                 gradient: LinearGradient(
                                   colors: [
                                     const Color(0xFF5BB32A),
-                                    const Color(0xFF4CAF50),
+                                    const Color(0xFF2A6049),
                                     const Color(0xFF66BB6A),
                                   ],
                                 ),
@@ -903,7 +903,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
                                 gradient: LinearGradient(
                                   colors: [
                                     const Color(0xFF5BB32A).withOpacity(0.1),
-                                    const Color(0xFF4CAF50).withOpacity(0.1),
+                                    const Color(0xFF2A6049).withOpacity(0.1),
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(20),

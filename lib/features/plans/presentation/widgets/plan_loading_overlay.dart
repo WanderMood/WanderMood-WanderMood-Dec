@@ -42,14 +42,14 @@ class PlanLoadingOverlay extends StatelessWidget {
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF12B347),
+                color: const Color(0xFF2A6049),
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             // Loading indicator
             const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
             ),
           ],
         ),

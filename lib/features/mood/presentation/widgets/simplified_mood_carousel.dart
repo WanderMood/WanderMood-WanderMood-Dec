@@ -8,6 +8,7 @@ import '../../../places/services/saved_places_service.dart';
 import '../../../../core/extensions/string_extensions.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:math' as math;
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class SimplifiedMoodCarousel extends ConsumerStatefulWidget {
   final List<Place> places;
@@ -158,7 +159,7 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
                 child: const Icon(
                   Icons.refresh_rounded,
                   size: 22,
-                  color: Color(0xFF12B347),
+                  color: Color(0xFF2A6049),
                 ),
               ),
             ),
@@ -373,7 +374,7 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
               child: const Icon(
                 Icons.bookmark,
                 size: 18,
-                color: Color(0xFF12B347),
+                color: Color(0xFF2A6049),
               ),
             ),
         ],
@@ -533,7 +534,7 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
             child: ElevatedButton(
               onPressed: () => _handlePrimaryAction(context, place, timePeriod, needsBooking),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF12B347),
+                backgroundColor: const Color(0xFF2A6049),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
@@ -969,7 +970,7 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
                   _openGoogleMaps(place);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF12B347),
+                  backgroundColor: const Color(0xFF2A6049),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -994,16 +995,10 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
               child: TextButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  // Add as reminder
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Reminder set for ${place.name}'),
-                      backgroundColor: const Color(0xFF12B347),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
+                  showWanderMoodToast(
+                    context,
+                    message: 'Reminder set for ${place.name}',
+                    backgroundColor: const Color(0xFF2A6049),
                   );
                 },
                 child: Text(
@@ -1022,32 +1017,16 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
   }
 
   void _showSuccessMessage(BuildContext context, Place place, String period) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                '${place.name} added to your $period!',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF12B347),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: const Duration(seconds: 3),
-        action: SnackBarAction(
-          label: 'View',
-          textColor: Colors.white,
-          onPressed: () {
-            // TODO: Navigate to My Day
-          },
-        ),
-      ),
+    showWanderMoodToast(
+      context,
+      message: '${place.name} added to your $period!',
+      duration: const Duration(seconds: 3),
+      backgroundColor: const Color(0xFF2A6049),
+      leading: const Icon(Icons.check_circle, color: Colors.white),
+      actionLabel: 'View',
+      onAction: () {
+        // TODO: Navigate to My Day
+      },
     );
   }
 
@@ -1069,29 +1048,12 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
       try {
         await savedPlacesService.unsavePlace(place.id);
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.bookmark_border, color: Colors.white, size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    '${place.name} removed from saved',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.grey.shade700,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            duration: const Duration(seconds: 2),
-            margin: const EdgeInsets.all(16),
-          ),
+        showWanderMoodToast(
+          context,
+          message: '${place.name} removed from saved',
+          backgroundColor: Colors.grey.shade700,
+          duration: const Duration(seconds: 2),
+          leading: const Icon(Icons.bookmark_border, color: Colors.white, size: 20),
         );
       } catch (e) {
         if (kDebugMode) debugPrint('❌ Error unsaving place: $e');
@@ -1121,12 +1083,11 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
           _savedPlaces.remove(place.id);
         });
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to save ${place.name}. Please try again.'),
-            backgroundColor: Colors.red.shade400,
-            duration: const Duration(seconds: 3),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Failed to save ${place.name}. Please try again.',
+          isError: true,
+          duration: const Duration(seconds: 3),
         );
       }
     }
@@ -1155,88 +1116,39 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
       });
       // Show error message
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to save ${place.name}. Please try again.'),
-          backgroundColor: Colors.red.shade400,
-          duration: const Duration(seconds: 3),
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Failed to save ${place.name}. Please try again.',
+        isError: true,
+        duration: const Duration(seconds: 3),
       );
     }
   }
 
   void _showSavedMessage(Place place) {
-    // Dismiss any existing snackbars first
-    ScaffoldMessenger.of(context).clearSnackBars();
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        key: Key('save_${place.id}'),
-        content: Row(
-          children: [
-            const Icon(Icons.bookmark, color: Colors.white, size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                '${place.name} saved for later!',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF12B347),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.all(16),
-      ),
+    showWanderMoodToast(
+      context,
+      message: '${place.name} saved for later!',
+      duration: const Duration(seconds: 3),
+      backgroundColor: const Color(0xFF2A6049),
+      leading: const Icon(Icons.bookmark, color: Colors.white, size: 20),
     );
   }
 
   void _showDismissMessage(Place place) {
-    // Dismiss any existing snackbars first
-    ScaffoldMessenger.of(context).clearSnackBars();
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        key: Key('dismiss_${place.id}'),
-        content: Row(
-          children: [
-            const Icon(Icons.cancel_outlined, color: Colors.white, size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                '${place.name} hidden',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.grey.shade700,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: const Duration(seconds: 4),
-        margin: const EdgeInsets.all(16),
-        action: SnackBarAction(
-          label: 'Undo',
-          textColor: Colors.white,
-          onPressed: () {
-            if (!mounted) return;
-            setState(() {
-              _dismissedPlaces.remove(place.id);
-            });
-            if (mounted) {
-              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            }
-          },
-        ),
-      ),
+    showWanderMoodToast(
+      context,
+      message: '${place.name} hidden',
+      duration: const Duration(seconds: 4),
+      backgroundColor: Colors.grey.shade700,
+      leading: const Icon(Icons.cancel_outlined, color: Colors.white, size: 20),
+      actionLabel: 'Undo',
+      onAction: () {
+        if (!mounted) return;
+        setState(() {
+          _dismissedPlaces.remove(place.id);
+        });
+      },
     );
   }
 

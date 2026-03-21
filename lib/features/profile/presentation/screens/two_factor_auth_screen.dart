@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../providers/settings_providers.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class TwoFactorAuthScreen extends ConsumerStatefulWidget {
   const TwoFactorAuthScreen({super.key});
@@ -222,15 +223,11 @@ class _TwoFactorAuthScreenState extends ConsumerState<TwoFactorAuthScreen> {
       ref.invalidate(accountSecurityProvider);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              enable
-                  ? '2FA setup started. Please complete the setup process.'
-                  : '2FA has been disabled.',
-            ),
-            backgroundColor: Colors.green,
-          ),
+        showWanderMoodToast(
+          context,
+          message: enable
+              ? '2FA setup started. Please complete the setup process.'
+              : '2FA has been disabled.',
         );
         if (!enable) {
           context.pop();
@@ -238,11 +235,10 @@ class _TwoFactorAuthScreenState extends ConsumerState<TwoFactorAuthScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Error: $e',
+          isError: true,
         );
       }
     } finally {

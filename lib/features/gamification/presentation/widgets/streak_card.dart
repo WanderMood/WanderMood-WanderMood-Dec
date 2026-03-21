@@ -27,7 +27,7 @@ class StreakCard extends ConsumerWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              const Color(0xFF12B347).withOpacity(0.9),
+              const Color(0xFF2A6049).withOpacity(0.9),
               const Color(0xFF0F9D3E),
             ],
             begin: Alignment.topLeft,
@@ -36,7 +36,7 @@ class StreakCard extends ConsumerWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF12B347).withOpacity(0.3),
+              color: const Color(0xFF2A6049).withOpacity(0.3),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

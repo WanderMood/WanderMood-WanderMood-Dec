@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class PlanConfirmationScreen extends StatelessWidget {
   final List<Activity> activities;
@@ -24,7 +25,7 @@ class PlanConfirmationScreen extends StatelessWidget {
         barrierDismissible: false,
         builder: (context) => const Center(
           child: CircularProgressIndicator(
-            color: Color(0xFF12B347),
+            color: Color(0xFF2A6049),
           ),
         ),
       );
@@ -38,15 +39,11 @@ class PlanConfirmationScreen extends StatelessWidget {
       // Close loading indicator
       Navigator.pop(context);
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
+      showWanderMoodToast(
+        context,
+        message:
             'Booking successful! Check your email for confirmation.',
-            style: GoogleFonts.poppins(),
-          ),
-          backgroundColor: const Color(0xFF12B347),
-        ),
+        backgroundColor: const Color(0xFF2A6049),
       );
 
       // Navigate to booking confirmation screen
@@ -55,15 +52,10 @@ class PlanConfirmationScreen extends StatelessWidget {
       // Close loading indicator
       Navigator.pop(context);
 
-      // Show error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Unable to complete booking. Please try again.',
-            style: GoogleFonts.poppins(),
-          ),
-          backgroundColor: Colors.red,
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Unable to complete booking. Please try again.',
+        isError: true,
       );
     }
   }
@@ -77,7 +69,7 @@ class PlanConfirmationScreen extends StatelessWidget {
         barrierDismissible: false,
         builder: (context) => const Center(
           child: CircularProgressIndicator(
-            color: Color(0xFF12B347),
+            color: Color(0xFF2A6049),
           ),
         ),
       );
@@ -88,15 +80,10 @@ class PlanConfirmationScreen extends StatelessWidget {
       // Close loading indicator
       Navigator.pop(context);
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Plan saved! You can find it in your saved plans.',
-            style: GoogleFonts.poppins(),
-          ),
-          backgroundColor: const Color(0xFF12B347),
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Plan saved! You can find it in your saved plans.',
+        backgroundColor: const Color(0xFF2A6049),
       );
 
       // Navigate to saved plans screen
@@ -105,15 +92,10 @@ class PlanConfirmationScreen extends StatelessWidget {
       // Close loading indicator
       Navigator.pop(context);
 
-      // Show error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Unable to save plan. Please try again.',
-            style: GoogleFonts.poppins(),
-          ),
-          backgroundColor: Colors.red,
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Unable to save plan. Please try again.',
+        isError: true,
       );
     }
   }
@@ -121,14 +103,10 @@ class PlanConfirmationScreen extends StatelessWidget {
   // Handle Start with Free Activities - Navigate to free activities view
   void _handleStartFreeActivities(BuildContext context) {
     if (freeActivities.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'No free activities available in this plan.',
-            style: GoogleFonts.poppins(),
-          ),
-          backgroundColor: Colors.orange,
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'No free activities available in this plan.',
+        backgroundColor: Colors.orange,
       );
       return;
     }
@@ -241,7 +219,7 @@ class PlanConfirmationScreen extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () => _handleBookNow(context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF12B347),
+                      backgroundColor: const Color(0xFF2A6049),
                       foregroundColor: Colors.white,
                       minimumSize: const Size(double.infinity, 56),
                       shape: RoundedRectangleBorder(
@@ -263,10 +241,10 @@ class PlanConfirmationScreen extends StatelessWidget {
                   OutlinedButton(
                     onPressed: () => _handleBookLater(context),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF12B347),
+                      foregroundColor: const Color(0xFF2A6049),
                       minimumSize: const Size(double.infinity, 56),
                       side: const BorderSide(
-                        color: Color(0xFF12B347),
+                        color: Color(0xFF2A6049),
                         width: 2,
                       ),
                       shape: RoundedRectangleBorder(
@@ -288,7 +266,7 @@ class PlanConfirmationScreen extends StatelessWidget {
                   TextButton(
                     onPressed: () => _handleStartFreeActivities(context),
                     style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFF12B347),
+                      foregroundColor: const Color(0xFF2A6049),
                       minimumSize: const Size(double.infinity, 40),
                     ),
                     child: Text(

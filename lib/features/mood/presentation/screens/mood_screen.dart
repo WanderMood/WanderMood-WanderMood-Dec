@@ -8,6 +8,7 @@ import 'package:wandermood/features/mood/domain/mood.dart';
 import 'package:wandermood/features/mood/presentation/screens/mood_history_screen.dart';
 import 'package:wandermood/features/mood/domain/models/mood_data.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class MoodScreen extends ConsumerStatefulWidget {
   const MoodScreen({super.key});
@@ -64,7 +65,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                   style: GoogleFonts.museoModerno(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF4CAF50),
+                    color: const Color(0xFF2A6049),
                   ),
                 ),
                 IconButton(
@@ -78,7 +79,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                   },
                   icon: const Icon(
                     Icons.history,
-                    color: Color(0xFF4CAF50),
+                    color: Color(0xFF2A6049),
                   ),
                   tooltip: 'Stemmingsgeschiedenis',
                 ),
@@ -126,10 +127,10 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF4CAF50).withOpacity(0.2) : Colors.white,
+                      color: isSelected ? const Color(0xFF2A6049).withOpacity(0.2) : Colors.white,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade300,
+                        color: isSelected ? const Color(0xFF2A6049) : Colors.grey.shade300,
                       ),
                     ),
                     alignment: Alignment.center,
@@ -138,7 +139,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? const Color(0xFF4CAF50) : Colors.black87,
+                        color: isSelected ? const Color(0xFF2A6049) : Colors.black87,
                       ),
                     ),
                   ),
@@ -166,7 +167,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                       min: 1,
                       max: 10,
                       divisions: 9,
-                      activeColor: const Color(0xFF4CAF50),
+                      activeColor: const Color(0xFF2A6049),
                       onChanged: (value) {
                         setState(() {
                           _energyLevel = value;
@@ -175,7 +176,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                     ),
                   ),
                 ),
-                const Icon(Icons.battery_full, color: Color(0xFF4CAF50)),
+                const Icon(Icons.battery_full, color: Color(0xFF2A6049)),
               ],
             ).animate().fadeIn(delay: 400.ms, duration: 500.ms),
             
@@ -210,10 +211,10 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF4CAF50).withOpacity(0.2) : Colors.white,
+                      color: isSelected ? const Color(0xFF2A6049).withOpacity(0.2) : Colors.white,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade300,
+                        color: isSelected ? const Color(0xFF2A6049) : Colors.grey.shade300,
                       ),
                     ),
                     alignment: Alignment.center,
@@ -222,7 +223,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? const Color(0xFF4CAF50) : Colors.black87,
+                        color: isSelected ? const Color(0xFF2A6049) : Colors.black87,
                       ),
                     ),
                   ),
@@ -267,7 +268,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
               child: ElevatedButton(
                 onPressed: _isSaving ? null : _saveMood,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
+                  backgroundColor: const Color(0xFF2A6049),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -305,18 +306,17 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
       style: const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.bold,
-        color: Color(0xFF4CAF50),
+        color: Color(0xFF2A6049),
       ),
     );
   }
   
   Future<void> _saveMood() async {
     if (_selectedMood == null || _selectedActivity == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.selectMoodAndActivity),
-          backgroundColor: Colors.red,
-        ),
+      showWanderMoodToast(
+        context,
+        message: AppLocalizations.of(context)!.selectMoodAndActivity,
+        isError: true,
       );
       return;
     }
@@ -342,11 +342,10 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
       await ref.read(moodServiceProvider.notifier).saveMoodData(mood);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Stemming opgeslagen!'),
-            backgroundColor: Colors.green,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Stemming opgeslagen!',
+          backgroundColor: Colors.green,
         );
 
         setState(() {
@@ -358,11 +357,10 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Fout bij opslaan: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Fout bij opslaan: $e',
+          isError: true,
         );
       }
     } finally {

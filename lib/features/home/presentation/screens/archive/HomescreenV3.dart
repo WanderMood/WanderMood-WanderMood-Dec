@@ -49,20 +49,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       children: [
                         CircleAvatar(
                           radius: 22,
-                          backgroundColor: Color(0xFF12B347),
+                          backgroundColor: Color(0xFF2A6049),
                           child: Icon(Icons.person, color: Colors.white, size: 24),
                         ),
                         const SizedBox(width: 12),
                         Row(
                           children: [
-                            Icon(Icons.location_on, color: Color(0xFF12B347), size: 16),
+                            Icon(Icons.location_on, color: Color(0xFF2A6049), size: 16),
                             const SizedBox(width: 4),
                             Text(
                               'Washington DC',
                               style: GoogleFonts.openSans(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
-                                color: Color(0xFF12B347),
+                                color: Color(0xFF2A6049),
                               ),
                             ),
                           ],
@@ -79,21 +79,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.wb_sunny, color: Color(0xFF12B347), size: 20),
+                              Icon(Icons.wb_sunny, color: Color(0xFF2A6049), size: 20),
                               const SizedBox(width: 4),
                               Text(
                                 '32°',
                                 style: GoogleFonts.openSans(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF12B347),
+                                  color: Color(0xFF2A6049),
                                 ),
                               ),
                             ],
                           ),
                         ),
                         const SizedBox(width: 12),
-                        Icon(Icons.notifications_none, color: Color(0xFF12B347), size: 24),
+                        Icon(Icons.notifications_none, color: Color(0xFF2A6049), size: 24),
                       ],
                     ),
                   ],
@@ -117,7 +117,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           style: GoogleFonts.openSans(
                             fontSize: 32,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF12B347),
+                            color: Color(0xFF2A6049),
                           ),
                         ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
 
@@ -315,7 +315,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   // Hier komt de navigatie logica
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Color(0xFF12B347),
+                                  backgroundColor: Color(0xFF2A6049),
                                   foregroundColor: Colors.white,
                                   padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                                   shape: RoundedRectangleBorder(
@@ -389,13 +389,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: Color(0xFF12B347).withOpacity(0.1),
+                    color: Color(0xFF2A6049).withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.grid_view,
                     size: 24,
-                    color: Color(0xFF12B347),
+                    color: Color(0xFF2A6049),
                   ),
                 ),
                 _buildNavItem(3, Icons.calendar_today_outlined, 'Agenda', false),
@@ -528,7 +528,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           color: isSelected ? bgColor.withOpacity(0.7) : bgColor,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? Color(0xFF12B347) : bgColor.withOpacity(0.3),
+            color: isSelected ? Color(0xFF2A6049) : bgColor.withOpacity(0.3),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
@@ -550,7 +550,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Container(
                   padding: EdgeInsets.all(2),
                   decoration: BoxDecoration(
-                    color: Color(0xFF12B347),
+                    color: Color(0xFF2A6049),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -576,7 +576,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       style: GoogleFonts.openSans(
                         fontSize: 11,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                        color: isSelected ? Color(0xFF12B347) : Color(0xFF1A4A24),
+                        color: isSelected ? Color(0xFF2A6049) : Color(0xFF1A4A24),
                       ),
                       textAlign: TextAlign.center,
                       maxLines: 1,
@@ -613,7 +613,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Icon(
               icon,
-              color: isActive ? Color(0xFF12B347) : Color(0xFF9D9DA5),
+              color: isActive ? Color(0xFF2A6049) : Color(0xFF9D9DA5),
               size: 24,
             ),
             SizedBox(height: 4),
@@ -621,7 +621,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               label,
               style: GoogleFonts.openSans(
                 fontSize: 12,
-                color: isActive ? Color(0xFF12B347) : Color(0xFF9D9DA5),
+                color: isActive ? Color(0xFF2A6049) : Color(0xFF9D9DA5),
               ),
             ),
         ],
@@ -1213,7 +1213,7 @@ class _DashboardTabState extends State<DashboardTab> {
               
               Row(
                 children: [
-                  const Icon(Icons.location_on, color: Color(0xFF4CAF50), size: 16),
+                  const Icon(Icons.location_on, color: Color(0xFF2A6049), size: 16),
                   const SizedBox(width: 4),
                   Text(
                     'Washington DC',
@@ -1251,7 +1251,7 @@ class _DashboardTabState extends State<DashboardTab> {
               
               const SizedBox(width: 8),
               
-              const Icon(Icons.notifications, color: Color(0xFF4CAF50), size: 20)
+              const Icon(Icons.notifications, color: Color(0xFF2A6049), size: 20)
                   .animate().fadeIn(delay: 300.ms, duration: 400.ms),
             ],
           ),
@@ -1263,7 +1263,7 @@ class _DashboardTabState extends State<DashboardTab> {
             style: GoogleFonts.poppins(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF4CAF50),
+              color: const Color(0xFF2A6049),
             ),
           ).animate().fadeIn(delay: 400.ms, duration: 400.ms).slideY(begin: 0.2, end: 0),
           

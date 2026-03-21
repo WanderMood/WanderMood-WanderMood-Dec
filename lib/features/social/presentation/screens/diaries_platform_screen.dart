@@ -8,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../social/application/providers/diary_provider.dart';
@@ -26,7 +28,7 @@ class BubbleTailPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..shader = const LinearGradient(
-        colors: [Color(0xFF12B347), Color(0xFF4ECDC4)],
+        colors: [Color(0xFF2A6049), Color(0xFF4ECDC4)],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
@@ -72,7 +74,7 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
       icon: Icons.explore_outlined,
       activeIcon: Icons.explore,
       label: 'Discover',
-      color: const Color(0xFF12B347),
+      color: const Color(0xFF2A6049),
     ),
     DiaryTab(
       icon: Icons.dynamic_feed_outlined,
@@ -155,7 +157,7 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
           style: GoogleFonts.museoModerno(
             fontSize: 32,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF12B347),
+            color: const Color(0xFF2A6049),
             letterSpacing: 0.5,
           ),
         ),
@@ -343,7 +345,7 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
                 const SizedBox(width: 8),
                 _buildMoodChip('💕', 'Romantic', const Color(0xFFE91E63)),
                 const SizedBox(width: 8),
-                _buildMoodChip('🧘', 'Peaceful', const Color(0xFF4CAF50)),
+                _buildMoodChip('🧘', 'Peaceful', const Color(0xFF2A6049)),
               ],
             ),
             const SizedBox(height: 8),
@@ -462,10 +464,10 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF4CAF50) : Colors.white,
+                      color: isSelected ? const Color(0xFF2A6049) : Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isSelected ? const Color(0xFF4CAF50) : const Color(0xFFE2E8F0),
+                        color: isSelected ? const Color(0xFF2A6049) : const Color(0xFFE2E8F0),
                         width: isSelected ? 2 : 1,
                       ),
                       boxShadow: [
@@ -600,7 +602,7 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
+              backgroundColor: const Color(0xFF2A6049),
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -706,7 +708,7 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
                     const Spacer(),
                     TextButton(
                       onPressed: () => _submitEnhancedPost(image, captionController.text, locationController.text, selectedMood),
-                      child: Text('Share', style: GoogleFonts.poppins(color: const Color(0xFF4CAF50), fontWeight: FontWeight.w600)),
+                      child: Text('Share', style: GoogleFonts.poppins(color: const Color(0xFF2A6049), fontWeight: FontWeight.w600)),
                     ),
                   ],
                 ),
@@ -796,7 +798,7 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF4CAF50)),
+                            borderSide: const BorderSide(color: Color(0xFF2A6049)),
                           ),
                         ),
                       ),
@@ -807,7 +809,7 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
                       TextField(
                         controller: locationController,
                         decoration: InputDecoration(
-                          prefixIcon: const Icon(Icons.location_on, color: Color(0xFF4CAF50)),
+                          prefixIcon: const Icon(Icons.location_on, color: Color(0xFF2A6049)),
                           hintText: 'Add location...',
                           hintStyle: GoogleFonts.poppins(color: Colors.grey[500]),
                           border: OutlineInputBorder(
@@ -816,7 +818,7 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF4CAF50)),
+                            borderSide: const BorderSide(color: Color(0xFF2A6049)),
                           ),
                         ),
                       ),
@@ -883,22 +885,16 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
     Navigator.pop(context); // Close the modal
     
     // Show loading indicator
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-            ),
-            const SizedBox(width: 12),
-            Text('Sharing your ${mood.toLowerCase()} moment...', style: GoogleFonts.poppins()),
-          ],
-        ),
-        backgroundColor: _getMoodTagColor(mood),
-        duration: const Duration(seconds: 2),
+    showWanderMoodToast(
+      context,
+      message: 'Sharing your ${mood.toLowerCase()} moment...',
+      leading: const SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
       ),
+      backgroundColor: _getMoodTagColor(mood),
+      duration: const Duration(seconds: 2),
     );
     
     try {
@@ -933,35 +929,27 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
       
       // Show success and navigate to see the post
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Your ${mood.toLowerCase()} moment has been shared! ✨',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-            ),
-            backgroundColor: const Color(0xFF4CAF50),
-            action: SnackBarAction(
-              label: 'View',
-              textColor: Colors.white,
-              onPressed: () {
-                // Switch to Activity tab to see the new post
-                setState(() {
-                  _currentIndex = 1;
-                });
-              },
-            ),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Your ${mood.toLowerCase()} moment has been shared! ✨',
+          duration: const Duration(seconds: 4),
+          actionLabel: 'View',
+          onAction: () {
+            // Switch to Activity tab to see the new post
+            setState(() {
+              _currentIndex = 1;
+            });
+          },
         );
       }
       
     } catch (e) {
       // Handle error
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to share post: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Failed to share post: $e',
+          isError: true,
         );
       }
     }
@@ -1002,11 +990,9 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
 
   void _showNotifications() {
     // TODO: Show notifications panel
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Notifications feature coming soon! 🔔', style: GoogleFonts.poppins()),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Notifications feature coming soon! 🔔',
     );
   }
 
@@ -1030,7 +1016,7 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
       case 'romantic':
         return const Color(0xFFE91E63); // Pink
       case 'peaceful':
-        return const Color(0xFF4CAF50); // Green
+        return const Color(0xFF2A6049); // Green
       case 'excited':
         return const Color(0xFFFF9800); // Orange
       case 'grateful':
@@ -1082,11 +1068,9 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
 
   void _showSearch() {
     // TODO: Show search interface
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Search feature coming soon! 🔍', style: GoogleFonts.poppins()),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Search feature coming soon! 🔍',
     );
   }
 
@@ -1142,16 +1126,10 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
     });
     
     // Show feedback message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-        ),
-        backgroundColor: const Color(0xFF12B347),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(milliseconds: 1000),
-      ),
+    showWanderMoodToast(
+      context,
+      message: message,
+      duration: const Duration(milliseconds: 1000),
     );
     
     // Navigate back with slight delay for feedback
@@ -1198,18 +1176,15 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
         errorMessage = 'Camera is not available on this device.';
       }
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMessage),
-          backgroundColor: Colors.red,
-          action: SnackBarAction(
-            label: 'Settings',
-            textColor: Colors.white,
-            onPressed: () {
-              // TODO: Open app settings
-            },
-          ),
-        ),
+      showWanderMoodToast(
+        context,
+        message: errorMessage,
+        isError: true,
+        duration: const Duration(seconds: 4),
+        actionLabel: 'Settings',
+        onAction: () {
+          // TODO: Open app settings
+        },
       );
     }
   }
@@ -1251,10 +1226,10 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50).withOpacity(0.1),
+                  color: const Color(0xFF2A6049).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.camera_alt, color: Color(0xFF4CAF50)),
+                child: const Icon(Icons.camera_alt, color: Color(0xFF2A6049)),
               ),
               title: Text('Take Photo', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
               subtitle: Text('Capture the moment', style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600])),
@@ -1328,7 +1303,7 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
                     const Spacer(),
                     TextButton(
                       onPressed: () => _submitPost(image, captionController.text, locationController.text, selectedMood),
-                      child: Text('Share', style: GoogleFonts.poppins(color: const Color(0xFF4CAF50), fontWeight: FontWeight.w600)),
+                      child: Text('Share', style: GoogleFonts.poppins(color: const Color(0xFF2A6049), fontWeight: FontWeight.w600)),
                     ),
                   ],
                 ),
@@ -1368,7 +1343,7 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF4CAF50)),
+                            borderSide: const BorderSide(color: Color(0xFF2A6049)),
                           ),
                         ),
                       ),
@@ -1379,7 +1354,7 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
                       TextField(
                         controller: locationController,
                         decoration: InputDecoration(
-                          prefixIcon: const Icon(Icons.location_on, color: Color(0xFF4CAF50)),
+                          prefixIcon: const Icon(Icons.location_on, color: Color(0xFF2A6049)),
                           hintText: 'Add location...',
                           hintStyle: GoogleFonts.poppins(color: Colors.grey[500]),
                           border: OutlineInputBorder(
@@ -1388,7 +1363,7 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF4CAF50)),
+                            borderSide: const BorderSide(color: Color(0xFF2A6049)),
                           ),
                         ),
                       ),
@@ -1453,22 +1428,15 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
     Navigator.pop(context); // Close the modal
     
     // Show loading indicator
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-            ),
-            const SizedBox(width: 12),
-            Text('Sharing your moment...', style: GoogleFonts.poppins()),
-          ],
-        ),
-        backgroundColor: const Color(0xFF4CAF50),
-        duration: const Duration(seconds: 3),
+    showWanderMoodToast(
+      context,
+      message: 'Sharing your moment...',
+      leading: const SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
       ),
+      duration: const Duration(seconds: 3),
     );
 
     try {
@@ -1476,11 +1444,9 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
       // For now, just show success message
       await Future.delayed(const Duration(seconds: 2)); // Simulate upload
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('✨ Your moment has been shared!', style: GoogleFonts.poppins()),
-          backgroundColor: const Color(0xFF4CAF50),
-        ),
+      showWanderMoodToast(
+        context,
+        message: '✨ Your moment has been shared!',
       );
 
       // Refresh the feed
@@ -1488,11 +1454,10 @@ class _DiariesPlatformScreenState extends ConsumerState<DiariesPlatformScreen>
       ref.invalidate(friendsDiaryFeedProvider);
 
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to share post: $e'),
-          backgroundColor: Colors.red,
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Failed to share post: $e',
+        isError: true,
       );
     }
   }
@@ -1829,30 +1794,18 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
     });
     
     // Show friends filter applied message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.people, color: Colors.white, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              'Now showing posts from friends only',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF667eea),
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: 'Show All',
-          textColor: Colors.white,
-          onPressed: () {
-            setState(() {
-              _selectedSortFilter = 'Latest';
-            });
-          },
-        ),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Now showing posts from friends only',
+      leading: const Icon(Icons.people, color: Colors.white, size: 20),
+      backgroundColor: const Color(0xFF667eea),
+      duration: const Duration(seconds: 4),
+      actionLabel: 'Show All',
+      onAction: () {
+        setState(() {
+          _selectedSortFilter = 'Latest';
+        });
+      },
     );
     
     // Invalidate providers to refresh feed with friends filter
@@ -1865,21 +1818,11 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
     switch (action) {
       case 'view_post':
         // Navigate to specific post
-        ScaffoldMessenger.of(this.context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.article, color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  'Opening $context\'s post...',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-            backgroundColor: const Color(0xFF667eea),
-            behavior: SnackBarBehavior.floating,
-          ),
+        showWanderMoodToast(
+          this.context,
+          message: 'Opening $context\'s post...',
+          leading: const Icon(Icons.article, color: Colors.white, size: 20),
+          backgroundColor: const Color(0xFF667eea),
         );
         break;
         
@@ -1908,21 +1851,10 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
         setState(() {
           _selectedSortFilter = 'Nearby';
         });
-        ScaffoldMessenger.of(this.context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.explore, color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  'Showing posts from Rotterdam area',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-            backgroundColor: const Color(0xFF12B347),
-            behavior: SnackBarBehavior.floating,
-          ),
+        showWanderMoodToast(
+          this.context,
+          message: 'Showing posts from Rotterdam area',
+          leading: const Icon(Icons.explore, color: Colors.white, size: 20),
         );
         break;
     }
@@ -1953,12 +1885,9 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(this.context).showSnackBar(
-                SnackBar(
-                  content: Text('Reply sent to $username!'),
-                  backgroundColor: const Color(0xFF12B347),
-                  behavior: SnackBarBehavior.floating,
-                ),
+              showWanderMoodToast(
+                this.context,
+                message: 'Reply sent to $username!',
               );
             },
             style: ElevatedButton.styleFrom(
@@ -2143,7 +2072,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
               'Your post is trending in Utrecht! 🎉',
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                color: const Color(0xFF12B347),
+                color: const Color(0xFF2A6049),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -2372,26 +2301,13 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
 
   void _onFollowBack(String userId, String name) {
     // Simulate follow back action
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.person_add, color: Colors.white, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              'You are now following $name!',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF12B347),
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: 'View Profile',
-          textColor: Colors.white,
-          onPressed: () => _onProfileTap(userId, name),
-        ),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'You are now following $name!',
+      leading: const Icon(Icons.person_add, color: Colors.white, size: 20),
+      duration: const Duration(seconds: 4),
+      actionLabel: 'View Profile',
+      onAction: () => _onProfileTap(userId, name),
     );
     
     // Could also update following status in database here
@@ -2797,12 +2713,9 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(this.context).showSnackBar(
-                SnackBar(
-                  content: Text('Message sent to $name!'),
-                  backgroundColor: const Color(0xFF12B347),
-                  behavior: SnackBarBehavior.floating,
-                ),
+              showWanderMoodToast(
+                this.context,
+                message: 'Message sent to $name!',
               );
             },
             style: ElevatedButton.styleFrom(
@@ -2952,7 +2865,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
                       style: GoogleFonts.poppins(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                       ),
                     ),
                   ),
@@ -3032,7 +2945,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
                     runSpacing: 4,
                     children: [
                       _buildVibeTag(spot['type'], const Color(0xFF667eea)),
-                      _buildVibeTag(spot['vibe'][0], const Color(0xFF12B347)),
+                      _buildVibeTag(spot['vibe'][0], const Color(0xFF2A6049)),
                     ],
                   ),
                   
@@ -3058,14 +2971,14 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
                       Icon(
                         Icons.people,
                         size: 12,
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         '${spot['friendsVisited']} friends visited',
                         style: GoogleFonts.poppins(
                           fontSize: 11,
-                          color: const Color(0xFF12B347),
+                          color: const Color(0xFF2A6049),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -3155,11 +3068,11 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
       case 'romantic':
         return [const Color(0xFFFF6B6B), const Color(0xFFFFE66D)];
       case 'trendy':
-        return [const Color(0xFF12B347), const Color(0xFF4ECDC4)];
+        return [const Color(0xFF2A6049), const Color(0xFF4ECDC4)];
       case 'cultural':
         return [const Color(0xFF8E2DE2), const Color(0xFF4A00E0)];
       default:
-        return [const Color(0xFF12B347), const Color(0xFF4ECDC4)];
+        return [const Color(0xFF2A6049), const Color(0xFF4ECDC4)];
     }
   }
 
@@ -3260,7 +3173,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
                           Icon(
                             Icons.star,
                             size: 14,
-                            color: const Color(0xFF12B347),
+                            color: const Color(0xFF2A6049),
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -3268,7 +3181,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFF12B347),
+                              color: const Color(0xFF2A6049),
                             ),
                           ),
                         ],
@@ -3375,7 +3288,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
                     children: [
                       _buildDetailVibeTag(spot['type'], const Color(0xFF667eea)),
                       ...spot['vibe'].map<Widget>((vibe) => 
-                        _buildDetailVibeTag(vibe, const Color(0xFF12B347))),
+                        _buildDetailVibeTag(vibe, const Color(0xFF2A6049))),
                       ...spot['tags'].map<Widget>((tag) => 
                         _buildDetailVibeTag(tag, const Color(0xFF718096))),
                     ],
@@ -3411,11 +3324,10 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
                         child: OutlinedButton.icon(
                           onPressed: () {
                             Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Directions to ${spot['name']}'),
-                                backgroundColor: const Color(0xFF667eea),
-                              ),
+                            showWanderMoodToast(
+                              context,
+                              message: 'Directions to ${spot['name']}',
+                              backgroundColor: const Color(0xFF667eea),
                             );
                           },
                           icon: const Icon(Icons.directions),
@@ -3432,17 +3344,15 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
                         child: ElevatedButton.icon(
                           onPressed: () {
                             Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Saved ${spot['name']} to your list!'),
-                                backgroundColor: const Color(0xFF12B347),
-                              ),
+                            showWanderMoodToast(
+                              context,
+                              message: 'Saved ${spot['name']} to your list!',
                             );
                           },
                           icon: const Icon(Icons.bookmark_add),
                           label: Text('Save Spot'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF12B347),
+                            backgroundColor: const Color(0xFF2A6049),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
@@ -3513,15 +3423,13 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Business signup coming soon!'),
-                  backgroundColor: Color(0xFF12B347),
-                ),
+              showWanderMoodToast(
+                context,
+                message: 'Business signup coming soon!',
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF12B347),
+              backgroundColor: const Color(0xFF2A6049),
             ),
             child: Text('Learn More'),
           ),
@@ -4081,7 +3989,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
           style: GoogleFonts.museoModerno(
             fontSize: 32,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF12B347),
+            color: const Color(0xFF2A6049),
             letterSpacing: 0.5,
           ),
         ),
@@ -4098,7 +4006,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
           style: GoogleFonts.museoModerno(
             fontSize: 32,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF12B347),
+            color: const Color(0xFF2A6049),
             letterSpacing: 0.5,
           ),
         ),
@@ -4138,7 +4046,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
           suffixIcon: IconButton(
             icon: Icon(
               _showFilters ? Icons.tune : Icons.tune_outlined,
-              color: _showFilters ? const Color(0xFF12B347) : const Color(0xFF9CA3AF),
+              color: _showFilters ? const Color(0xFF2A6049) : const Color(0xFF9CA3AF),
               size: 20,
             ),
             onPressed: () {
@@ -4161,7 +4069,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
         _buildQuickActionChip(
           icon: Icons.explore,
           label: 'Explore',
-          color: const Color(0xFF12B347),
+          color: const Color(0xFF2A6049),
           onTap: () {},
         ),
         const SizedBox(width: 8),
@@ -4231,14 +4139,14 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF12B347), Color(0xFF4ECDC4)],
+            colors: [Color(0xFF2A6049), Color(0xFF4ECDC4)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF12B347).withOpacity(0.3),
+              color: const Color(0xFF2A6049).withOpacity(0.3),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -4288,17 +4196,17 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: isSelected 
-                        ? const Color(0xFF12B347) 
+                        ? const Color(0xFF2A6049) 
                         : Colors.white,
                     borderRadius: BorderRadius.circular(25),
                     border: Border.all(
                       color: isSelected 
-                          ? const Color(0xFF12B347) 
+                          ? const Color(0xFF2A6049) 
                           : const Color(0xFFE2E8F0),
                     ),
                     boxShadow: isSelected ? [
                       BoxShadow(
-                        color: const Color(0xFF12B347).withOpacity(0.3),
+                        color: const Color(0xFF2A6049).withOpacity(0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -4367,7 +4275,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
               },
               loading: () => const Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFF12B347),
+                  color: Color(0xFF2A6049),
                 ),
               ),
               error: (_, __) => const SizedBox.shrink(),
@@ -4724,7 +4632,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
                     'Join as business',
                     style: GoogleFonts.poppins(
                       fontSize: 13,
-                      color: const Color(0xFF12B347),
+                      color: const Color(0xFF2A6049),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -4768,7 +4676,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
                     'See All',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
-                      color: const Color(0xFF12B347),
+                      color: const Color(0xFF2A6049),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -4843,7 +4751,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50).withOpacity(0.1),
+                  color: const Color(0xFF2A6049).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -4851,7 +4759,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF4CAF50),
+                    color: const Color(0xFF2A6049),
                   ),
                 ),
               ),
@@ -4931,11 +4839,9 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
     return GestureDetector(
       onTap: () {
         // Show detailed view or navigate to post
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Opening "${recommendation['title']}"'),
-            backgroundColor: const Color(0xFF4CAF50),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Opening "${recommendation['title']}"',
         );
       },
       child: Container(
@@ -5036,7 +4942,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
                             recommendation['reason'],
                             style: GoogleFonts.poppins(
                               fontSize: 9,
-                              color: const Color(0xFF4CAF50),
+                              color: const Color(0xFF2A6049),
                               fontWeight: FontWeight.w500,
                             ),
                             maxLines: 1,
@@ -5123,11 +5029,10 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
                   setState(() {
                     _selectedSortFilter = 'Nearby';
                   });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Showing all nearby posts'),
-                      backgroundColor: const Color(0xFF3B82F6),
-                    ),
+                  showWanderMoodToast(
+                    context,
+                    message: 'Showing all nearby posts',
+                    backgroundColor: const Color(0xFF3B82F6),
                   );
                 },
                 child: Text(
@@ -5328,11 +5233,10 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
     
     return GestureDetector(
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Opening "${post['title']}"'),
-            backgroundColor: const Color(0xFF3B82F6),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Opening "${post['title']}"',
+          backgroundColor: const Color(0xFF3B82F6),
         );
       },
       child: Container(
@@ -5638,11 +5542,10 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
     
     return GestureDetector(
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Filtering by ${mood['mood']}'),
-            backgroundColor: tagColor,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Filtering by ${mood['mood']}',
+          backgroundColor: tagColor,
         );
       },
       child: Container(
@@ -5705,7 +5608,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
             height: 60,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF4CAF50), width: 2),
+              border: Border.all(color: const Color(0xFF2A6049), width: 2),
             ),
             child: ClipOval(
               child: Image.network(
@@ -5722,7 +5625,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
                         colors: [
-                          const Color(0xFF12B347),
+                          const Color(0xFF2A6049),
                           const Color(0xFF4ECDC4),
                         ],
                       ),
@@ -5924,7 +5827,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
               ref.invalidate(friendsDiaryFeedProvider);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF12B347),
+              backgroundColor: const Color(0xFF2A6049),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -6058,14 +5961,9 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
 
   void _onEntryTap(BuildContext context, DiaryEntry entry) {
     // Navigate to diary detail
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Opening "${entry.title ?? 'Story'}"...',
-          style: GoogleFonts.poppins(),
-        ),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Opening "${entry.title ?? 'Story'}"...',
     );
   }
 
@@ -6090,14 +5988,9 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
   }
 
   void _onComment(BuildContext context, DiaryEntry entry) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Comments feature coming soon! 💬',
-          style: GoogleFonts.poppins(),
-        ),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Comments feature coming soon! 💬',
     );
   }
 
@@ -6112,7 +6005,7 @@ class _DiaryHomeFeedState extends ConsumerState<DiaryHomeFeed> {
       case 'romantic':
         return const Color(0xFFE91E63); // Pink
       case 'peaceful':
-        return const Color(0xFF4CAF50); // Green
+        return const Color(0xFF2A6049); // Green
       case 'excited':
         return const Color(0xFFFF9800); // Orange
       case 'grateful':
@@ -6485,7 +6378,7 @@ class DiaryFeedCard extends StatelessWidget {
       case 'romantic':
         return const Color(0xFFE91E63); // Pink
       case 'peaceful':
-        return const Color(0xFF4CAF50); // Green
+        return const Color(0xFF2A6049); // Green
       case 'excited':
         return const Color(0xFFFF9800); // Orange
       case 'grateful':
@@ -6541,7 +6434,7 @@ class DiaryFeedCard extends StatelessWidget {
             const SizedBox(height: 20),
             
             ListTile(
-              leading: const Icon(Icons.bookmark_outline, color: Color(0xFF4CAF50)),
+              leading: const Icon(Icons.bookmark_outline, color: Color(0xFF2A6049)),
               title: Text('Save Post', style: GoogleFonts.poppins()),
               onTap: () => Navigator.pop(context),
             ),
@@ -6721,7 +6614,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
                   child: const Icon(
                     Icons.edit_outlined,
                     size: 20,
-                    color: Color(0xFF12B347),
+                    color: Color(0xFF2A6049),
                   ),
                 ),
               ),
@@ -6742,7 +6635,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: profile?.imageUrl != null ? null : const LinearGradient(
-                      colors: [Color(0xFF12B347), Color(0xFF0D8B2F)],
+                      colors: [Color(0xFF2A6049), Color(0xFF0D8B2F)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -6752,7 +6645,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF12B347).withOpacity(0.3),
+                        color: const Color(0xFF2A6049).withOpacity(0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -6782,7 +6675,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF12B347), Color(0xFF0D8B2F)],
+                      colors: [Color(0xFF2A6049), Color(0xFF0D8B2F)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -6792,7 +6685,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF12B347).withOpacity(0.3),
+                        color: const Color(0xFF2A6049).withOpacity(0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -6815,7 +6708,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF12B347), Color(0xFF0D8B2F)],
+                      colors: [Color(0xFF2A6049), Color(0xFF0D8B2F)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -6825,7 +6718,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF12B347).withOpacity(0.3),
+                        color: const Color(0xFF2A6049).withOpacity(0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -6890,7 +6783,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: const Color(0xFF12B347).withOpacity(0.2),
+                              color: const Color(0xFF2A6049).withOpacity(0.2),
                               width: 1,
                             ),
                             boxShadow: [
@@ -7008,7 +6901,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
 
   Widget _buildMoodCloudContent(List<String> moods) {
     final colors = [
-      const Color(0xFF12B347), // Main brand green
+      const Color(0xFF2A6049), // Main brand green
       const Color(0xFF4ECDC4), // Teal  
       const Color(0xFF667eea), // Blue
       const Color(0xFFE91E63), // Pink
@@ -7126,7 +7019,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
                     color: Colors.white.withOpacity(0.7),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: const Color(0xFF12B347).withOpacity(0.1),
+                      color: const Color(0xFF2A6049).withOpacity(0.1),
                       width: 1,
                     ),
                     boxShadow: [
@@ -7143,7 +7036,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
                     children: [
                       Icon(
                         stat['icon'] as IconData,
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                         size: 20,
                       ),
                       const SizedBox(height: 8),
@@ -7233,7 +7126,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
         color: Colors.white.withOpacity(0.5),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF12B347).withOpacity(0.1),
+          color: const Color(0xFF2A6049).withOpacity(0.1),
           width: 1,
         ),
         boxShadow: [
@@ -7249,7 +7142,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: const Color(0xFF12B347).withOpacity(0.1),
+              color: const Color(0xFF2A6049).withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: const Text('🌿', style: TextStyle(fontSize: 14)),
@@ -7342,7 +7235,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF12B347) : Colors.white,
+          color: isActive ? const Color(0xFF2A6049) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -7372,14 +7265,14 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF4CAF50), Color(0xFF45A049)],
+            colors: [Color(0xFF2A6049), Color(0xFF45A049)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF4CAF50).withOpacity(0.3),
+              color: const Color(0xFF2A6049).withOpacity(0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -7407,12 +7300,9 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
   void _openPhotoCreation() {
     // Switch to the Discover tab (index 1) which is now the photo creation tab
     // This assumes we're in the main platform screen context
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Tap the camera tab to add photos!', style: GoogleFonts.poppins()),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Tap the camera tab to add photos!',
     );
   }
 
@@ -7582,7 +7472,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
                                   ? loadingProgress.cumulativeBytesLoaded /
                                       loadingProgress.expectedTotalBytes!
                                   : null,
-                              color: const Color(0xFF12B347),
+                              color: const Color(0xFF2A6049),
                               strokeWidth: 2,
                             ),
                           ),
@@ -7847,7 +7737,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
             const Icon(
               Icons.map_outlined,
               size: 48,
-              color: Color(0xFF12B347),
+              color: Color(0xFF2A6049),
             ),
             const SizedBox(height: 12),
             Text(
@@ -7881,7 +7771,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
           const Icon(
             Icons.auto_stories_outlined,
             size: 48,
-            color: Color(0xFF12B347),
+            color: Color(0xFF2A6049),
           ),
           const SizedBox(height: 16),
           Text(
@@ -7910,7 +7800,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFF12B347),
+                color: const Color(0xFF2A6049),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
@@ -7958,20 +7848,17 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
         final imageUrl = await actions.uploadProfilePhoto(image.path);
         
         if (imageUrl != null && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Profile photo updated!'),
-              backgroundColor: Color(0xFF12B347),
-            ),
+          showWanderMoodToast(
+            context,
+            message: 'Profile photo updated!',
           );
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error uploading photo: $e'),
-              backgroundColor: Colors.red,
-            ),
+          showWanderMoodToast(
+            context,
+            message: 'Error uploading photo: $e',
+            isError: true,
           );
         }
       }
@@ -7979,26 +7866,23 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
   }
 
   void _navigateToMoodPreferences() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Travel Mood Preferences coming soon!'),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Travel Mood Preferences coming soon!',
     );
   }
 
   void _navigateToPrivacySettings() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Privacy Settings coming soon!'),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Privacy Settings coming soon!',
     );
   }
 
   void _navigateToGeneralSettings() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('General Settings coming soon!'),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'General Settings coming soon!',
     );
   }
 
@@ -8119,12 +8003,11 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
       context.push('/social/post/${visit['postId']}');
     } else {
       // Show message if no post exists for this visit
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No diary post found for this visit'),
-          backgroundColor: Colors.orange,
-          duration: Duration(seconds: 2),
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'No diary post found for this visit',
+        backgroundColor: Colors.orange,
+        duration: const Duration(seconds: 2),
       );
     }
   }
@@ -8164,7 +8047,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
           const SizedBox(height: 20),
           
           ListTile(
-            leading: const Icon(Icons.edit_outlined, color: Color(0xFF12B347)),
+            leading: const Icon(Icons.edit_outlined, color: Color(0xFF2A6049)),
             title: Text('Edit Profile Info', style: GoogleFonts.poppins()),
             subtitle: Text('Update bio, location, travel vibes', style: GoogleFonts.poppins(fontSize: 12)),
             onTap: () {
@@ -8173,7 +8056,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
             },
           ),
           ListTile(
-            leading: const Icon(Icons.photo_camera_outlined, color: Color(0xFF12B347)),
+            leading: const Icon(Icons.photo_camera_outlined, color: Color(0xFF2A6049)),
             title: Text('Change Profile Photo', style: GoogleFonts.poppins()),
             onTap: () {
               Navigator.pop(context);
@@ -8181,7 +8064,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
             },
           ),
           ListTile(
-            leading: const Icon(Icons.mood_outlined, color: Color(0xFF12B347)),
+            leading: const Icon(Icons.mood_outlined, color: Color(0xFF2A6049)),
             title: Text('Travel Mood Preferences', style: GoogleFonts.poppins()),
             onTap: () {
               Navigator.pop(context);
@@ -8189,7 +8072,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
             },
           ),
           ListTile(
-            leading: const Icon(Icons.visibility_outlined, color: Color(0xFF12B347)),
+            leading: const Icon(Icons.visibility_outlined, color: Color(0xFF2A6049)),
             title: Text('Privacy Settings', style: GoogleFonts.poppins()),
             subtitle: Text('Control who can see your stories', style: GoogleFonts.poppins(fontSize: 12)),
             onTap: () {
@@ -8198,7 +8081,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
             },
           ),
           ListTile(
-            leading: const Icon(Icons.settings_outlined, color: Color(0xFF12B347)),
+            leading: const Icon(Icons.settings_outlined, color: Color(0xFF2A6049)),
             title: Text('General Settings', style: GoogleFonts.poppins()),
             onTap: () {
               Navigator.pop(context);
@@ -8234,7 +8117,7 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
       case 'wonder':
         return const Color(0xFFE91E63);
       default:
-        return const Color(0xFF12B347);
+        return const Color(0xFF2A6049);
     }
   }
 
@@ -8264,12 +8147,10 @@ class _DiaryProfileTabState extends ConsumerState<DiaryProfileTab> with SingleTi
   }
 
   void _openEntry(DiaryEntry entry) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Opening: ${entry.title ?? "Untitled Entry"}'),
-        backgroundColor: const Color(0xFF4ECDC4),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Opening: ${entry.title ?? "Untitled Entry"}',
+      backgroundColor: const Color(0xFF4ECDC4),
     );
   }
 }
@@ -8352,7 +8233,7 @@ class _PhotoCreationTabState extends ConsumerState<PhotoCreationTab> {
                 child: ElevatedButton(
                   onPressed: () => _takePhoto(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4CAF50),
+                    backgroundColor: const Color(0xFF2A6049),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -8428,11 +8309,10 @@ class _PhotoCreationTabState extends ConsumerState<PhotoCreationTab> {
         _showCreatePostDialog(image);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to take photo: $e'),
-          backgroundColor: Colors.red,
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Failed to take photo: $e',
+        isError: true,
       );
     }
   }
@@ -8451,11 +8331,10 @@ class _PhotoCreationTabState extends ConsumerState<PhotoCreationTab> {
         _showCreatePostDialog(image);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to pick image: $e'),
-          backgroundColor: Colors.red,
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Failed to pick image: $e',
+        isError: true,
       );
     }
   }
@@ -8506,7 +8385,7 @@ class _PhotoCreationTabState extends ConsumerState<PhotoCreationTab> {
                     const Spacer(),
                     TextButton(
                       onPressed: () => _submitPost(image, captionController.text, locationController.text, selectedMood),
-                      child: Text('Share', style: GoogleFonts.poppins(color: const Color(0xFF4CAF50), fontWeight: FontWeight.w600)),
+                      child: Text('Share', style: GoogleFonts.poppins(color: const Color(0xFF2A6049), fontWeight: FontWeight.w600)),
                     ),
                   ],
                 ),
@@ -8546,7 +8425,7 @@ class _PhotoCreationTabState extends ConsumerState<PhotoCreationTab> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF4CAF50)),
+                            borderSide: const BorderSide(color: Color(0xFF2A6049)),
                           ),
                         ),
                       ),
@@ -8557,7 +8436,7 @@ class _PhotoCreationTabState extends ConsumerState<PhotoCreationTab> {
                       TextField(
                         controller: locationController,
                         decoration: InputDecoration(
-                          prefixIcon: const Icon(Icons.location_on, color: Color(0xFF4CAF50)),
+                          prefixIcon: const Icon(Icons.location_on, color: Color(0xFF2A6049)),
                           hintText: 'Add location...',
                           hintStyle: GoogleFonts.poppins(color: Colors.grey[500]),
                           border: OutlineInputBorder(
@@ -8566,7 +8445,7 @@ class _PhotoCreationTabState extends ConsumerState<PhotoCreationTab> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF4CAF50)),
+                            borderSide: const BorderSide(color: Color(0xFF2A6049)),
                           ),
                         ),
                       ),
@@ -8631,33 +8510,24 @@ class _PhotoCreationTabState extends ConsumerState<PhotoCreationTab> {
     Navigator.pop(context); // Close the modal
     
     // Show loading indicator
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-            ),
-            const SizedBox(width: 12),
-            Text('Sharing your moment...', style: GoogleFonts.poppins()),
-          ],
-        ),
-        backgroundColor: const Color(0xFF4CAF50),
-        duration: const Duration(seconds: 3),
+    showWanderMoodToast(
+      context,
+      message: 'Sharing your moment...',
+      leading: const SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
       ),
+      duration: const Duration(seconds: 3),
     );
 
     try {
       // TODO: Implement actual post creation with photo upload
       await Future.delayed(const Duration(seconds: 2)); // Simulate upload
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('✨ Your moment has been shared!', style: GoogleFonts.poppins()),
-          backgroundColor: const Color(0xFF4CAF50),
-        ),
+      showWanderMoodToast(
+        context,
+        message: '✨ Your moment has been shared!',
       );
 
       // Refresh the feed
@@ -8665,11 +8535,10 @@ class _PhotoCreationTabState extends ConsumerState<PhotoCreationTab> {
       ref.invalidate(friendsDiaryFeedProvider);
 
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to share post: $e'),
-          backgroundColor: Colors.red,
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Failed to share post: $e',
+        isError: true,
       );
     }
   }
@@ -8692,7 +8561,7 @@ class _PhotoCreationTabState extends ConsumerState<PhotoCreationTab> {
       case 'energetic':
         return const Color(0xFFFF9800);
       default:
-        return const Color(0xFF12B347);
+        return const Color(0xFF2A6049);
     }
   }
 
@@ -8784,7 +8653,7 @@ class _MyFeedScreen extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
             children: [
-              const Icon(Icons.photo_camera, color: Color(0xFF4CAF50), size: 24),
+              const Icon(Icons.photo_camera, color: Color(0xFF2A6049), size: 24),
               const SizedBox(width: 12),
               Text(
                 'My Feed',
@@ -9022,7 +8891,7 @@ class _MyFeedScreen extends ConsumerWidget {
         return const Color(0xFFFF9800);
       case 'grateful':
       case 'content':
-        return const Color(0xFF4CAF50);
+        return const Color(0xFF2A6049);
       default:
         return const Color(0xFF8E24AA);
     }
@@ -9256,12 +9125,11 @@ class _FollowersScreenState extends State<_FollowersScreen> {
                   followers.removeAt(index);
                 });
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${follower['name']} has been removed'),
-                    backgroundColor: const Color(0xFFE91E63),
-                    duration: const Duration(seconds: 2),
-                  ),
+                showWanderMoodToast(
+                  context,
+                  message: '${follower['name']} has been removed',
+                  backgroundColor: const Color(0xFFE91E63),
+                  duration: const Duration(seconds: 2),
                 );
               },
               child: Text(
@@ -9489,12 +9357,11 @@ class _FollowingScreenState extends State<_FollowingScreen> {
                   following.removeAt(index);
                 });
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('You unfollowed ${person['name']}'),
-                    backgroundColor: const Color(0xFFFF9800),
-                    duration: const Duration(seconds: 2),
-                  ),
+                showWanderMoodToast(
+                  context,
+                  message: 'You unfollowed ${person['name']}',
+                  backgroundColor: const Color(0xFFFF9800),
+                  duration: const Duration(seconds: 2),
                 );
               },
               child: Text(
@@ -9814,14 +9681,14 @@ class _PlaceDetailsScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF12B347).withOpacity(0.1),
+                            color: const Color(0xFF2A6049).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             visit['mood'] as String,
                             style: GoogleFonts.poppins(
                               fontSize: 12,
-                              color: const Color(0xFF12B347),
+                              color: const Color(0xFF2A6049),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -9896,14 +9763,14 @@ class _PlaceDetailsScreen extends StatelessWidget {
                         const Icon(
                           Icons.launch,
                           size: 14,
-                          color: Color(0xFF12B347),
+                          color: Color(0xFF2A6049),
                         ),
                         const SizedBox(width: 4),
                         Text(
                           'View full post',
                           style: GoogleFonts.poppins(
                             fontSize: 12,
-                            color: const Color(0xFF12B347),
+                            color: const Color(0xFF2A6049),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -9958,7 +9825,7 @@ class _ActivityFeedTabContentState extends State<ActivityFeedTabContent> {
                        style: GoogleFonts.museoModerno(
                          fontSize: 32,
                          fontWeight: FontWeight.bold,
-                         color: const Color(0xFF12B347),
+                         color: const Color(0xFF2A6049),
                          letterSpacing: 0.5,
                        ),
                      ),
@@ -10016,7 +9883,7 @@ class _ActivityFeedTabContentState extends State<ActivityFeedTabContent> {
               padding: EdgeInsets.all(20),
               child: Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFF4CAF50),
+                  color: Color(0xFF2A6049),
                 ),
               ),
             ),
@@ -10048,7 +9915,7 @@ class _ActivityFeedTabContentState extends State<ActivityFeedTabContent> {
                 children: [
                   Icon(
                     Icons.auto_stories,
-                    color: const Color(0xFF4CAF50),
+                    color: const Color(0xFF2A6049),
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -10067,7 +9934,7 @@ class _ActivityFeedTabContentState extends State<ActivityFeedTabContent> {
                       'View All',
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: const Color(0xFF4CAF50),
+                        color: const Color(0xFF2A6049),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -10107,12 +9974,12 @@ class _ActivityFeedTabContentState extends State<ActivityFeedTabContent> {
                 shape: BoxShape.circle,
                 gradient: story['hasStory'] ? const LinearGradient(
                   colors: [
-                    Color(0xFF4CAF50),
+                    Color(0xFF2A6049),
                     Color(0xFF81C784),
                   ],
                 ) : null,
                 border: Border.all(
-                  color: story['hasStory'] ? const Color(0xFF4CAF50) : Colors.grey[300]!, 
+                  color: story['hasStory'] ? const Color(0xFF2A6049) : Colors.grey[300]!, 
                   width: 2
                 ),
               ),
@@ -10137,7 +10004,7 @@ class _ActivityFeedTabContentState extends State<ActivityFeedTabContent> {
                           shape: BoxShape.circle,
                           gradient: const LinearGradient(
                             colors: [
-                              Color(0xFF4CAF50),
+                              Color(0xFF2A6049),
                               Color(0xFF81C784),
                             ],
                           ),
@@ -10162,7 +10029,7 @@ class _ActivityFeedTabContentState extends State<ActivityFeedTabContent> {
                           shape: BoxShape.circle,
                           gradient: const LinearGradient(
                             colors: [
-                              Color(0xFF4CAF50),
+                              Color(0xFF2A6049),
                               Color(0xFF81C784),
                             ],
                           ),
@@ -10223,17 +10090,17 @@ class _ActivityFeedTabContentState extends State<ActivityFeedTabContent> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected 
-              ? const Color(0xFF4CAF50) 
+              ? const Color(0xFF2A6049) 
               : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected 
-                ? const Color(0xFF4CAF50) 
+                ? const Color(0xFF2A6049) 
                 : Colors.grey[300]!,
           ),
           boxShadow: isSelected ? [
             BoxShadow(
-              color: const Color(0xFF4CAF50).withOpacity(0.3),
+              color: const Color(0xFF2A6049).withOpacity(0.3),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -10302,7 +10169,7 @@ class _ActivityFeedTabContentState extends State<ActivityFeedTabContent> {
                               Icon(
                                 Icons.verified,
                                 size: 16,
-                                color: const Color(0xFF4CAF50),
+                                color: const Color(0xFF2A6049),
                               ),
                             ],
                           ],
@@ -10384,7 +10251,7 @@ class _ActivityFeedTabContentState extends State<ActivityFeedTabContent> {
                         ),
                         child: Center(
                           child: CircularProgressIndicator(
-                            color: const Color(0xFF12B347),
+                            color: const Color(0xFF2A6049),
                             strokeWidth: 2,
                           ),
                         ),
@@ -10495,7 +10362,7 @@ class _ActivityFeedTabContentState extends State<ActivityFeedTabContent> {
 
   Color _getUserColor(String name) {
     final colors = [
-      const Color(0xFF4CAF50),
+      const Color(0xFF2A6049),
       const Color(0xFF2196F3),
       const Color(0xFFFF9800),
       const Color(0xFF9C27B0),
@@ -10639,13 +10506,10 @@ class _ActivityFeedTabContentState extends State<ActivityFeedTabContent> {
       context.push('/social/profile/$userId');
     } else {
       // Fallback: show a snackbar if userId is not available
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Opening ${activity['user']}\'s profile...'),
-          backgroundColor: const Color(0xFF4CAF50),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 2),
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Opening ${activity['user']}\'s profile...',
+        duration: const Duration(seconds: 2),
       );
     }
   }
@@ -10679,32 +10543,23 @@ class _ActivityFeedTabContentState extends State<ActivityFeedTabContent> {
   }
 
   void _viewAllStories() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Opening all travel stories...'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Opening all travel stories...',
     );
   }
 
   void _viewStory(Map<String, dynamic> story) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Opening ${story['author']}\'s story...'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Opening ${story['author']}\'s story...',
     );
   }
 
   void _onFilterChanged(String filter) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Filtering by: $filter'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Filtering by: $filter',
     );
   }
 
@@ -10747,12 +10602,9 @@ class _ActivityFeedTabContentState extends State<ActivityFeedTabContent> {
   }
 
   void _likePost(Map<String, dynamic> activity) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Liked ${activity['user']}\'s post!'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Liked ${activity['user']}\'s post!',
     );
   }
 
@@ -10776,11 +10628,9 @@ class _ActivityFeedTabContentState extends State<ActivityFeedTabContent> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Comment posted!'),
-                  backgroundColor: Color(0xFF4CAF50),
-                ),
+              showWanderMoodToast(
+                context,
+                message: 'Comment posted!',
               );
             },
             child: const Text('Post'),
@@ -10791,42 +10641,31 @@ class _ActivityFeedTabContentState extends State<ActivityFeedTabContent> {
   }
 
   void _sharePost(Map<String, dynamic> activity) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Shared ${activity['user']}\'s post!'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Shared ${activity['user']}\'s post!',
     );
   }
 
   void _savePost(Map<String, dynamic> activity) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Saved ${activity['user']}\'s post!'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Saved ${activity['user']}\'s post!',
     );
   }
 
   void _followUser(String username) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Following $username!'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Following $username!',
     );
   }
 
   void _reportPost(Map<String, dynamic> activity) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Reported ${activity['user']}\'s post'),
-        backgroundColor: const Color(0xFFFF6B6B),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Reported ${activity['user']}\'s post',
+      backgroundColor: const Color(0xFFFF6B6B),
     );
   }
 

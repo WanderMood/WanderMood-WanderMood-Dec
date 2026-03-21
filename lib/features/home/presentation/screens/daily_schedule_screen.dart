@@ -57,7 +57,7 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF12B347),
+              primary: Color(0xFF2A6049),
               onPrimary: Colors.white,
               surface: Colors.white,
               onSurface: Colors.black,
@@ -184,7 +184,7 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
                 children: [
                   const Icon(
                     Icons.calendar_today,
-                    color: Color(0xFF12B347),
+                    color: Color(0xFF2A6049),
                     size: 22,
                   ),
                   const SizedBox(width: 12),
@@ -211,7 +211,7 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
             child: _isLoading
                 ? const Center(
                     child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
                     ),
                   )
                 : _scheduledActivities == null || _scheduledActivities!.isEmpty
@@ -265,7 +265,7 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
                 // To be implemented: navigate to explore tab
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF12B347),
+                backgroundColor: const Color(0xFF2A6049),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
@@ -344,7 +344,7 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
             style: GoogleFonts.museoModerno(
               fontSize: 20,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
             ),
           ),
           if (subtitle != null) ...[
@@ -421,7 +421,7 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
                 style: GoogleFonts.museoModerno(
                   fontSize: 22,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF12B347),
+                  color: const Color(0xFF2A6049),
                 ),
               ),
             ],
@@ -493,7 +493,7 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
                         decoration: BoxDecoration(
                           color: isPast 
                             ? Colors.grey.withOpacity(0.2)
-                            : const Color(0xFF12B347).withOpacity(0.1),
+                            : const Color(0xFF2A6049).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
@@ -501,7 +501,7 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: isPast ? Colors.grey[600] : const Color(0xFF12B347),
+                            color: isPast ? Colors.grey[600] : const Color(0xFF2A6049),
                           ),
                         ),
                       ),

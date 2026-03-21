@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:wandermood/features/social/domain/models/diary_entry.dart';
 import 'package:wandermood/features/social/application/providers/diary_provider.dart';
@@ -120,14 +121,10 @@ class _CreateDiaryEntryScreenState extends ConsumerState<CreateDiaryEntryScreen>
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Failed to pick images: $e',
-            style: GoogleFonts.poppins(),
-          ),
-          backgroundColor: const Color(0xFFE55B4C),
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Failed to pick images: $e',
+        isError: true,
       );
     }
   }
@@ -221,7 +218,7 @@ class _CreateDiaryEntryScreenState extends ConsumerState<CreateDiaryEntryScreen>
           children: [
             Icon(
               icon,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
               size: 32,
             ),
             const SizedBox(height: 8),
@@ -273,7 +270,7 @@ class _CreateDiaryEntryScreenState extends ConsumerState<CreateDiaryEntryScreen>
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                       ),
                     ),
             ),
@@ -483,7 +480,7 @@ class _CreateDiaryEntryScreenState extends ConsumerState<CreateDiaryEntryScreen>
                       children: [
                         const Icon(
                           Icons.location_on_outlined,
-                          color: Color(0xFF12B347),
+                          color: Color(0xFF2A6049),
                           size: 18,
                         ),
                         const SizedBox(width: 12),
@@ -534,7 +531,7 @@ class _CreateDiaryEntryScreenState extends ConsumerState<CreateDiaryEntryScreen>
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF12B347),
+                    color: const Color(0xFF2A6049),
                     borderRadius: BorderRadius.circular(25),
                   ),
                   child: const Icon(
@@ -594,7 +591,7 @@ class _CreateDiaryEntryScreenState extends ConsumerState<CreateDiaryEntryScreen>
                       children: [
                         Icon(
                           Icons.add,
-                          color: Color(0xFF12B347),
+                          color: Color(0xFF2A6049),
                           size: 24,
                         ),
                         SizedBox(height: 4),
@@ -737,12 +734,12 @@ class _CreateDiaryEntryScreenState extends ConsumerState<CreateDiaryEntryScreen>
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: isSelected 
-                      ? const Color(0xFF12B347).withOpacity(0.1)
+                      ? const Color(0xFF2A6049).withOpacity(0.1)
                       : Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isSelected 
-                        ? const Color(0xFF12B347)
+                        ? const Color(0xFF2A6049)
                         : const Color(0xFFE2E8F0),
                     width: 1,
                   ),
@@ -753,7 +750,7 @@ class _CreateDiaryEntryScreenState extends ConsumerState<CreateDiaryEntryScreen>
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                     color: isSelected 
-                        ? const Color(0xFF12B347)
+                        ? const Color(0xFF2A6049)
                         : const Color(0xFF718096),
                   ),
                 ),
@@ -784,20 +781,16 @@ class _CreateDiaryEntryScreenState extends ConsumerState<CreateDiaryEntryScreen>
       case 'relaxed':
         return const Color(0xFF52C41A);
       default:
-        return const Color(0xFF12B347);
+        return const Color(0xFF2A6049);
     }
   }
 
   void _shareEntry() async {
     if (_selectedMood == null || _storyController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Please select a mood and write your story',
-            style: GoogleFonts.poppins(),
-          ),
-          backgroundColor: const Color(0xFFE55B4C),
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Please select a mood and write your story',
+        isError: true,
       );
       return;
     }
@@ -828,14 +821,10 @@ class _CreateDiaryEntryScreenState extends ConsumerState<CreateDiaryEntryScreen>
           _isSharing = false;
         });
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '✨ Your diary entry has been shared!',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-            ),
-            backgroundColor: const Color(0xFF12B347),
-          ),
+        showWanderMoodToast(
+          context,
+          message: '✨ Your diary entry has been shared!',
+          backgroundColor: const Color(0xFF2A6049),
         );
         
         // Invalidate the diary feed to refresh the data
@@ -851,14 +840,10 @@ class _CreateDiaryEntryScreenState extends ConsumerState<CreateDiaryEntryScreen>
           _isSharing = false;
         });
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Failed to share diary entry: $e',
-              style: GoogleFonts.poppins(),
-            ),
-            backgroundColor: const Color(0xFFE55B4C),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Failed to share diary entry: $e',
+          isError: true,
         );
       }
     }

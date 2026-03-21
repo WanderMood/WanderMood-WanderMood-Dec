@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/providers/profile_provider.dart';
 import '../widgets/settings_screen_template.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class PrivacySettingsScreen extends ConsumerStatefulWidget {
   const PrivacySettingsScreen({super.key});
@@ -43,20 +44,18 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
         profileVisibility: value,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profile visibility updated'),
-            backgroundColor: Colors.green,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Profile visibility updated',
+          backgroundColor: Colors.green,
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Error: $e',
+          isError: true,
         );
       }
     }
@@ -67,22 +66,20 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
     try {
       await ref.read(profileProvider.notifier).updateProfile(showEmail: value);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(value ? 'Email will be visible to others' : 'Email is now hidden'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
+        showWanderMoodToast(
+          context,
+          message: value ? 'Email will be visible to others' : 'Email is now hidden',
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
         );
       }
     } catch (e) {
       if (mounted) {
         setState(() => _showEmail = !value);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Error: $e',
+          isError: true,
         );
       }
     }
@@ -93,22 +90,20 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
     try {
       await ref.read(profileProvider.notifier).updateProfile(showAge: value);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(value ? 'Age will be visible to others' : 'Age is now hidden'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
+        showWanderMoodToast(
+          context,
+          message: value ? 'Age will be visible to others' : 'Age is now hidden',
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
         );
       }
     } catch (e) {
       if (mounted) {
         setState(() => _showAge = !value);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Error: $e',
+          isError: true,
         );
       }
     }
@@ -234,7 +229,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF16A34A),
+                                  color: const Color(0xFF2A6049),
                                 ),
                               ),
                             ),

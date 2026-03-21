@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/auth/domain/providers/auth_provider.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -57,12 +58,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             _isLoading = false;
           });
           
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(errorMessage),
-              backgroundColor: Colors.red.shade400,
-              behavior: SnackBarBehavior.floating,
-            ),
+          showWanderMoodToast(
+            context,
+            message: errorMessage,
+            isError: true,
           );
         }, 
         onSuccess: (successMessage) {
@@ -92,7 +91,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   
                   // Back button
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_rounded, color: Color(0xFF4CAF50)),
+                    icon: const Icon(Icons.arrow_back_ios_rounded, color: Color(0xFF2A6049)),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                   
@@ -103,7 +102,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     child: Text(
                       'WanderMood.',
                       style: GoogleFonts.museoModerno(
-                        color: const Color(0xFF4CAF50),
+                        color: const Color(0xFF2A6049),
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
                       ),
@@ -211,7 +210,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _sendResetLink,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
+                  backgroundColor: const Color(0xFF2A6049),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
@@ -258,7 +257,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             Icon(
               Icons.check_circle_outline,
               size: 70,
-              color: Color(0xFF4CAF50),
+              color: Color(0xFF2A6049),
             ).animate().scale(duration: 400.ms),
             
             const SizedBox(height: 20),
@@ -297,7 +296,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   Navigator.of(context).pop();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
+                  backgroundColor: const Color(0xFF2A6049),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),

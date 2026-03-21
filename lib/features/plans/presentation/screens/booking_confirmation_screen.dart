@@ -36,7 +36,7 @@ class BookingConfirmationScreen extends StatelessWidget {
               // Success Icon
               const Icon(
                 Icons.check_circle,
-                color: Color(0xFF12B347),
+                color: Color(0xFF2A6049),
                 size: 64,
               ),
               const SizedBox(height: 16),
@@ -85,7 +85,7 @@ class BookingConfirmationScreen extends StatelessWidget {
                   Navigator.of(context).pushReplacementNamed('/schedule');
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF12B347),
+                  backgroundColor: const Color(0xFF2A6049),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
@@ -107,7 +107,7 @@ class BookingConfirmationScreen extends StatelessWidget {
                   Navigator.of(context).pushReplacementNamed('/home');
                 },
                 style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF12B347),
+                  foregroundColor: const Color(0xFF2A6049),
                   padding: const EdgeInsets.symmetric(vertical: 8),
                 ),
                 child: Text(
@@ -140,7 +140,7 @@ class BookingConfirmationScreen extends StatelessWidget {
               width: 4,
               height: 40,
               decoration: BoxDecoration(
-                color: activity.isPaid ? const Color(0xFF12B347) : Colors.blue,
+                color: activity.isPaid ? const Color(0xFF2A6049) : Colors.blue,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -168,7 +168,7 @@ class BookingConfirmationScreen extends StatelessWidget {
             ),
             Icon(
               activity.isPaid ? Icons.confirmation_number : Icons.check_circle,
-              color: activity.isPaid ? const Color(0xFF12B347) : Colors.blue,
+              color: activity.isPaid ? const Color(0xFF2A6049) : Colors.blue,
             ),
           ],
         ),

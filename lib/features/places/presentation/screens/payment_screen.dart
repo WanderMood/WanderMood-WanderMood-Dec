@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/presentation/screens/booking_confirmation_screen.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class PaymentScreen extends StatefulWidget {
   final Place place;
@@ -170,7 +171,7 @@ class _PaymentScreenState extends State<PaymentScreen>
             children: [
               Icon(
                 Icons.receipt_long,
-                color: const Color(0xFF12B347),
+                color: const Color(0xFF2A6049),
                 size: 24,
               ),
               const SizedBox(width: 8),
@@ -207,7 +208,7 @@ class _PaymentScreenState extends State<PaymentScreen>
                 style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF12B347),
+                  color: const Color(0xFF2A6049),
                 ),
               ),
             ],
@@ -314,10 +315,10 @@ class _PaymentScreenState extends State<PaymentScreen>
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF12B347).withOpacity(0.05) : Colors.white,
+          color: isSelected ? const Color(0xFF2A6049).withOpacity(0.05) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? const Color(0xFF12B347) : Colors.grey[300]!,
+            color: isSelected ? const Color(0xFF2A6049) : Colors.grey[300]!,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -326,7 +327,7 @@ class _PaymentScreenState extends State<PaymentScreen>
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF12B347) : Colors.grey[100],
+                color: isSelected ? const Color(0xFF2A6049) : Colors.grey[100],
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -361,7 +362,7 @@ class _PaymentScreenState extends State<PaymentScreen>
             if (isSelected)
               const Icon(
                 Icons.check_circle,
-                color: Color(0xFF12B347),
+                color: Color(0xFF2A6049),
                 size: 24,
               ),
           ],
@@ -530,7 +531,7 @@ class _PaymentScreenState extends State<PaymentScreen>
                     _saveCard = value ?? false;
                   });
                 },
-                activeColor: const Color(0xFF12B347),
+                activeColor: const Color(0xFF2A6049),
               ),
               Expanded(
                 child: Text(
@@ -719,7 +720,7 @@ class _PaymentScreenState extends State<PaymentScreen>
       child: ElevatedButton(
         onPressed: _isProcessing ? null : _processPayment,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF12B347),
+          backgroundColor: const Color(0xFF2A6049),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
@@ -785,7 +786,7 @@ class _PaymentScreenState extends State<PaymentScreen>
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Got it',
-              style: GoogleFonts.poppins(color: const Color(0xFF12B347)),
+              style: GoogleFonts.poppins(color: const Color(0xFF2A6049)),
             ),
           ),
         ],
@@ -799,16 +800,10 @@ class _PaymentScreenState extends State<PaymentScreen>
     }
     
     if (_selectedPaymentMethod == 'ideal' && _selectedBank == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Please select your bank to continue with iDEAL',
-            style: GoogleFonts.poppins(),
-          ),
-          backgroundColor: Colors.red[600],
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Please select your bank to continue with iDEAL',
+        isError: true,
       );
       return;
     }

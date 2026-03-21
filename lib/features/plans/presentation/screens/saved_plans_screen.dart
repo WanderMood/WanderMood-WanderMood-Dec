@@ -75,7 +75,7 @@ class SavedPlansScreen extends StatelessWidget {
                       Navigator.of(context).pushReplacementNamed('/home');
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF12B347),
+                      backgroundColor: const Color(0xFF2A6049),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
@@ -190,7 +190,7 @@ class SavedPlansScreen extends StatelessWidget {
                       );
                     },
                     style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFF12B347),
+                      foregroundColor: const Color(0xFF2A6049),
                       padding: EdgeInsets.zero,
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,

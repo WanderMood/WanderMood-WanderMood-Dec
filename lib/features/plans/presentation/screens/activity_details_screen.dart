@@ -387,14 +387,14 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF4CAF50).withOpacity(0.1),
+                            color: const Color(0xFF2A6049).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
                             children: [
                               const Icon(
                                 Icons.access_time,
-                                color: Color(0xFF4CAF50),
+                                color: Color(0xFF2A6049),
                               ),
                               const SizedBox(width: 12),
                               Column(
@@ -412,7 +412,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                                     style: GoogleFonts.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                      color: const Color(0xFF4CAF50),
+                                      color: const Color(0xFF2A6049),
                                     ),
                                   ),
                                 ],
@@ -420,7 +420,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                               const SizedBox(width: 24),
                               const Icon(
                                 Icons.timelapse,
-                                color: Color(0xFF4CAF50),
+                                color: Color(0xFF2A6049),
                               ),
                               const SizedBox(width: 12),
                               Column(
@@ -438,7 +438,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                                     style: GoogleFonts.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                      color: const Color(0xFF4CAF50),
+                                      color: const Color(0xFF2A6049),
                                     ),
                                   ),
                                 ],
@@ -490,15 +490,15 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF4CAF50).withOpacity(0.25),
+                                  color: const Color(0xFF2A6049).withOpacity(0.25),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: const Color(0xFF4CAF50),
+                                    color: const Color(0xFF2A6049),
                                     width: 0.5,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF4CAF50).withOpacity(0.2),
+                                      color: const Color(0xFF2A6049).withOpacity(0.2),
                                       spreadRadius: 0,
                                       blurRadius: 3,
                                       offset: const Offset(0, 1),
@@ -509,7 +509,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                                   tag,
                                   style: GoogleFonts.poppins(
                                     fontSize: 12,
-                                    color: const Color(0xFF4CAF50),
+                                    color: const Color(0xFF2A6049),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -761,7 +761,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF12B347),
+                                  color: const Color(0xFF2A6049),
                                 ),
                               ),
                             ],
@@ -851,7 +851,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
               child: ElevatedButton(
                 onPressed: () => widget.onAddToPlanner(activity['id']),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isAddedToPlan ? Colors.grey[300] : const Color(0xFF4CAF50),
+                  backgroundColor: isAddedToPlan ? Colors.grey[300] : const Color(0xFF2A6049),
                   foregroundColor: isAddedToPlan ? Colors.grey[700] : Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(

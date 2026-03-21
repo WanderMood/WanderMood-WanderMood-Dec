@@ -106,7 +106,7 @@ class _QuickMoodSelectionScreenState extends ConsumerState<QuickMoodSelectionScr
                   style: GoogleFonts.poppins(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF4CAF50),
+                    color: const Color(0xFF2A6049),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -140,7 +140,7 @@ class _QuickMoodSelectionScreenState extends ConsumerState<QuickMoodSelectionScr
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _selectedMoods.isNotEmpty
-                          ? const Color(0xFF4CAF50)
+                          ? const Color(0xFF2A6049)
                           : Colors.grey.withOpacity(0.3),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),

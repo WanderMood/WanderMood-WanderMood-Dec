@@ -80,7 +80,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       'label': 'Chill',
       'value': 'chill',
       'subtitle': 'Taking it easy',
-      'gradient': [const Color(0xFF12B347), const Color(0xFF6DE89A)],
+      'gradient': [const Color(0xFF2A6049), const Color(0xFF6DE89A)],
     },
   ];
 
@@ -380,8 +380,8 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
                         colors: [
-                          const Color(0xFF12B347).withOpacity(0.3),
-                          const Color(0xFF12B347).withOpacity(0.0),
+                          const Color(0xFF2A6049).withOpacity(0.3),
+                          const Color(0xFF2A6049).withOpacity(0.0),
                         ],
                       ),
                     ),
@@ -411,12 +411,12 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                 width: double.infinity,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF12B347), Color(0xFF0E8F38)],
+                    colors: [Color(0xFF2A6049), Color(0xFF0E8F38)],
                   ),
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF12B347).withOpacity(0.4),
+                      color: const Color(0xFF2A6049).withOpacity(0.4),
                       blurRadius: 16,
                       offset: const Offset(0, 6),
                     ),
@@ -704,15 +704,15 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                               shape: BoxShape.circle,
                               gradient: RadialGradient(
                                 colors: [
-                                  const Color(0xFF12B347).withOpacity(0.25),
-                                  const Color(0xFF12B347).withOpacity(0.08),
-                                  const Color(0xFF12B347).withOpacity(0.0),
+                                  const Color(0xFF2A6049).withOpacity(0.25),
+                                  const Color(0xFF2A6049).withOpacity(0.08),
+                                  const Color(0xFF2A6049).withOpacity(0.0),
                                 ],
                               ),
                               boxShadow: [
                                 BoxShadow(
                                   color:
-                                      const Color(0xFF12B347).withOpacity(0.3),
+                                      const Color(0xFF2A6049).withOpacity(0.3),
                                   blurRadius: 30,
                                   spreadRadius: 5,
                                 ),
@@ -960,7 +960,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                     decoration: BoxDecoration(
                       gradient: isSelected
                           ? const LinearGradient(
-                              colors: [Color(0xFF12B347), Color(0xFF6DE89A)],
+                              colors: [Color(0xFF2A6049), Color(0xFF6DE89A)],
                             )
                           : null,
                       color: isSelected ? null : const Color(0xFFF7FAFC),
@@ -974,7 +974,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: const Color(0xFF12B347).withOpacity(0.3),
+                                color: const Color(0xFF2A6049).withOpacity(0.3),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
@@ -1041,7 +1041,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   [const Color(0xFFF59E0B), const Color(0xFFFBBF24)],
                   [const Color(0xFF6366F1), const Color(0xFF818CF8)],
                   [const Color(0xFFEC4899), const Color(0xFFF472B6)],
-                  [const Color(0xFF12B347), const Color(0xFF6DE89A)],
+                  [const Color(0xFF2A6049), const Color(0xFF6DE89A)],
                   [const Color(0xFF7B68EE), const Color(0xFF9F7AEA)],
                 ];
                 final colorIndex = _quickReactions.indexOf(reaction);
@@ -1187,7 +1187,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
         decoration: BoxDecoration(
           gradient: canSend
               ? const LinearGradient(
-                  colors: [Color(0xFF12B347), Color(0xFF0E8F38)],
+                  colors: [Color(0xFF2A6049), Color(0xFF0E8F38)],
                 )
               : null,
           color: canSend ? null : Colors.grey[300],
@@ -1195,7 +1195,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           boxShadow: canSend
               ? [
                   BoxShadow(
-                    color: const Color(0xFF12B347).withOpacity(0.4),
+                    color: const Color(0xFF2A6049).withOpacity(0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 6),
                   ),

@@ -84,6 +84,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get myDayEmptyAskMoodyButton => 'Demander à Moody';
 
   @override
+  String get myDayQuickAddActivity => 'Ajouter une activité';
+
+  @override
+  String get moodyFeedbackPromptBody =>
+      'Comment ça va ? Appuie pour me raconter ton expérience !';
+
+  @override
+  String get moodyFeedbackShareAction => 'Partager un retour';
+
+  @override
   String get myDayEmptyInspiredTitle => 'Trouve de l\'inspiration';
 
   @override
@@ -1089,6 +1099,27 @@ class AppLocalizationsFr extends AppLocalizations {
   String get profileStatsTopMoodTitle => 'Top humeur';
 
   @override
+  String get profileStatsStreakTitle => 'Streak';
+
+  @override
+  String get profileTopMoodEmpty => 'None yet';
+
+  @override
+  String get profileSavedPlacesTitle => 'Saved places';
+
+  @override
+  String get profileSavedPlacesSeeAll => 'See all';
+
+  @override
+  String get profileSavedPlacesEmpty => 'No saved places yet';
+
+  @override
+  String get profileEditProfileButton => 'Edit profile';
+
+  @override
+  String get profileAppSettingsLink => 'App settings';
+
+  @override
   String get profileFavoriteVibesTitle => 'Tes vibes préférées';
 
   @override
@@ -1102,6 +1133,41 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get profileMoodJourneySubtitle => 'Voir ton historique d\'humeur';
+
+  @override
+  String get moodHistoryIntro => 'Une frise calme de ce que tu as ressenti.';
+
+  @override
+  String get moodHistorySectionRecent => 'Récent';
+
+  @override
+  String get moodHistorySectionTimeline => 'Frise';
+
+  @override
+  String get moodHistoryEmptyTitle => 'Ton parcours commence ici';
+
+  @override
+  String get moodHistoryEmptyBody =>
+      'Enregistre ton humeur depuis Moody Hub ou Ma journée—tes moments s\'afficheront ici.';
+
+  @override
+  String get moodHistoryLoginRequired =>
+      'Connecte-toi pour voir ton parcours d\'humeur.';
+
+  @override
+  String get moodHistoryErrorUser => 'Impossible de charger ton compte.';
+
+  @override
+  String get moodHistoryErrorMoods => 'Impossible de charger les humeurs.';
+
+  @override
+  String get moodHistoryTodayBadge => 'Aujourd\'hui';
+
+  @override
+  String get moodHistoryDayToday => 'Aujourd\'hui';
+
+  @override
+  String get moodHistoryDayYesterday => 'Hier';
 
   @override
   String get profileTravelGlobeTitle => 'Ton globe voyageur';
@@ -1413,6 +1479,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get drawerYourJourney => 'Your Journey';
 
   @override
+  String get drawerNavigation => 'Navigation';
+
+  @override
   String get drawerSettings => 'Settings';
 
   @override
@@ -1423,6 +1492,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get drawerSavedPlaces => 'Saved Places';
+
+  @override
+  String get drawerMyAgenda => 'My Agenda';
 
   @override
   String get drawerMyBookings => 'My Bookings';
@@ -2877,4 +2949,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get noPlanPlanLater => 'Peut-être plus tard';
+
+  @override
+  String get myDayHeroActiveSubtitle => 'Tu es en plein dans cette activité.';
 }

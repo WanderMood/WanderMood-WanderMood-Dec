@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/social/domain/models/social_post.dart';
 import 'package:wandermood/features/social/domain/providers/social_providers.dart';
 
@@ -39,11 +40,10 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
       _isFollowing = !_isFollowing;
     });
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(_isFollowing ? 'Started following user' : 'Unfollowed user'),
-        duration: const Duration(seconds: 1),
-      ),
+    showWanderMoodToast(
+      context,
+      message: _isFollowing ? 'Started following user' : 'Unfollowed user',
+      duration: const Duration(seconds: 1),
     );
   }
   
@@ -63,11 +63,10 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
               ),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Report feature coming soon!'),
-                    duration: Duration(seconds: 2),
-                  ),
+                showWanderMoodToast(
+                  context,
+                  message: 'Report feature coming soon!',
+                  duration: const Duration(seconds: 2),
                 );
               },
             ),
@@ -81,11 +80,10 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
               ),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Block feature coming soon!'),
-                    duration: Duration(seconds: 2),
-                  ),
+                showWanderMoodToast(
+                  context,
+                  message: 'Block feature coming soon!',
+                  duration: const Duration(seconds: 2),
                 );
               },
             ),
@@ -99,11 +97,10 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
               ),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Share feature coming soon!'),
-                    duration: Duration(seconds: 2),
-                  ),
+                showWanderMoodToast(
+                  context,
+                  message: 'Share feature coming soon!',
+                  duration: const Duration(seconds: 2),
                 );
               },
             ),
@@ -114,11 +111,10 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
   }
   
   void _openDirectMessage(SocialProfile profile) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Messaging feature coming soon!'),
-        duration: Duration(seconds: 2),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Messaging feature coming soon!',
+      duration: const Duration(seconds: 2),
     );
   }
   
@@ -149,12 +145,12 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
               expandedHeight: 300,
               pinned: true,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Color(0xFF12B347)),
+                icon: const Icon(Icons.arrow_back, color: Color(0xFF2A6049)),
                 onPressed: () => Navigator.of(context).pop(),
               ),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.more_vert, color: Color(0xFF12B347)),
+                  icon: const Icon(Icons.more_vert, color: Color(0xFF2A6049)),
                   onPressed: _showOptions,
                 ),
               ],
@@ -261,15 +257,15 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _isFollowing 
                               ? Colors.white 
-                              : const Color(0xFF12B347),
+                              : const Color(0xFF2A6049),
                           foregroundColor: _isFollowing 
-                              ? const Color(0xFF12B347)
+                              ? const Color(0xFF2A6049)
                               : Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                             side: BorderSide(
-                              color: const Color(0xFF12B347),
+                              color: const Color(0xFF2A6049),
                               width: 1,
                             ),
                           ),
@@ -288,9 +284,9 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
                     OutlinedButton(
                       onPressed: () => _openDirectMessage(profileData),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF12B347),
+                        foregroundColor: const Color(0xFF2A6049),
                         side: const BorderSide(
-                          color: Color(0xFF12B347),
+                          color: Color(0xFF2A6049),
                           width: 1,
                         ),
                         shape: RoundedRectangleBorder(
@@ -337,14 +333,14 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF12B347).withOpacity(0.1),
+                            color: const Color(0xFF2A6049).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
                             interest,
                             style: GoogleFonts.poppins(
                               fontSize: 14,
-                              color: const Color(0xFF12B347),
+                              color: const Color(0xFF2A6049),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -361,9 +357,9 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
               delegate: _SliverAppBarDelegate(
                 TabBar(
                   controller: _tabController,
-                  labelColor: const Color(0xFF12B347),
+                  labelColor: const Color(0xFF2A6049),
                   unselectedLabelColor: Colors.grey,
-                  indicatorColor: const Color(0xFF12B347),
+                  indicatorColor: const Color(0xFF2A6049),
                   tabs: const [
                     Tab(icon: Icon(Icons.grid_on)),
                     Tab(icon: Icon(Icons.bookmark_border)),

@@ -346,12 +346,12 @@ class DynamicGroupingWidget extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(16),
                         gradient: LinearGradient(
                           colors: [
-                            const Color(0xFF12B347).withOpacity(0.1),
-                            const Color(0xFF12B347).withOpacity(0.05),
+                            const Color(0xFF2A6049).withOpacity(0.1),
+                            const Color(0xFF2A6049).withOpacity(0.05),
                           ],
                         ),
                         border: Border.all(
-                          color: const Color(0xFF12B347).withOpacity(0.4),
+                          color: const Color(0xFF2A6049).withOpacity(0.4),
                           width: 2,
                         ),
                       ),
@@ -364,7 +364,7 @@ class DynamicGroupingWidget extends ConsumerWidget {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF12B347),
+                                color: const Color(0xFF2A6049),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(

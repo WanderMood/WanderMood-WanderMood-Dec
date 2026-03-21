@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../features/plans/data/services/places_cache_service.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class CacheMonitorScreen extends StatefulWidget {
   const CacheMonitorScreen({Key? key}) : super(key: key);
@@ -43,13 +44,13 @@ class _CacheMonitorScreenState extends State<CacheMonitorScreen> {
   Future<void> _clearOldCache() async {
     try {
       await PlacesCacheService.clearOldCache();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Old cache entries cleared!')),
-      );
+      showWanderMoodToast(context, message: 'Old cache entries cleared!');
       _loadCacheStats(); // Reload stats
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error clearing cache: $e')),
+      showWanderMoodToast(
+        context,
+        message: 'Error clearing cache: $e',
+        isError: true,
       );
     }
   }

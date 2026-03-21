@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
   const CreatePostScreen({super.key});
@@ -54,13 +55,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Unable to pick images. Please try again or check your permissions.'),
-            backgroundColor: Colors.red.shade400,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 3),
-          ),
+        showWanderMoodToast(
+          context,
+          message:
+              'Unable to pick images. Please try again or check your permissions.',
+          isError: true,
+          duration: const Duration(seconds: 3),
         );
       }
       debugPrint('Error picking images: $e');
@@ -84,13 +84,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Unable to take photo. Please check camera permissions and try again.'),
-            backgroundColor: Colors.red.shade400,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 3),
-          ),
+        showWanderMoodToast(
+          context,
+          message:
+              'Unable to take photo. Please check camera permissions and try again.',
+          isError: true,
+          duration: const Duration(seconds: 3),
         );
       }
       debugPrint('Error taking photo: $e');
@@ -111,8 +110,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         if (_selectedTags.length < 5) { // Limit to 5 tags
           _selectedTags.add(tag);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('You can select up to 5 tags')),
+          showWanderMoodToast(
+            context,
+            message: 'You can select up to 5 tags',
           );
         }
       }
@@ -204,7 +204,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Color(0xFF12B347)),
+              leading: const Icon(Icons.photo_library, color: Color(0xFF2A6049)),
               title: Text(
                 'Choose from Gallery',
                 style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
@@ -215,7 +215,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_camera, color: Color(0xFF12B347)),
+              leading: const Icon(Icons.photo_camera, color: Color(0xFF2A6049)),
               title: Text(
                 'Take a Photo',
                 style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
@@ -233,8 +233,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   
   void _createPost() async {
     if (_selectedImages.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add at least one image')),
+      showWanderMoodToast(
+        context,
+        message: 'Please add at least one image',
       );
       return;
     }
@@ -252,8 +253,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     
     if (mounted) {
       Navigator.pop(context, true); // Return true for success
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Post created successfully!')),
+      showWanderMoodToast(
+        context,
+        message: 'Post created successfully!',
       );
     }
   }
@@ -277,11 +279,11 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             style: GoogleFonts.museoModerno(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
             ),
           ),
           leading: IconButton(
-            icon: const Icon(Icons.close, color: Color(0xFF12B347)),
+            icon: const Icon(Icons.close, color: Color(0xFF2A6049)),
             onPressed: () => Navigator.of(context).pop(),
           ),
           actions: [
@@ -292,7 +294,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: _isLoading ? Colors.grey : const Color(0xFF12B347),
+                  color: _isLoading ? Colors.grey : const Color(0xFF2A6049),
                 ),
               ),
             ),
@@ -301,7 +303,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         body: _isLoading 
           ? const Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
               ),
             )
           : SingleChildScrollView(
@@ -321,7 +323,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                             color: Colors.grey[200],
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: const Color(0xFF12B347).withOpacity(0.3),
+                              color: const Color(0xFF2A6049).withOpacity(0.3),
                               width: 1,
                             ),
                           ),
@@ -365,7 +367,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                         color: Colors.grey[200],
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
-                                          color: const Color(0xFF12B347).withOpacity(0.3),
+                                          color: const Color(0xFF2A6049).withOpacity(0.3),
                                           width: 1,
                                         ),
                                       ),
@@ -494,7 +496,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                           children: [
                             const Icon(
                               Icons.location_on_outlined,
-                              color: Color(0xFF12B347),
+                              color: Color(0xFF2A6049),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -535,7 +537,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                           children: [
                             const Icon(
                               Icons.local_activity_outlined,
-                              color: Color(0xFF12B347),
+                              color: Color(0xFF2A6049),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -576,18 +578,18 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFF12B347) : Colors.white,
+                              color: isSelected ? const Color(0xFF2A6049) : Colors.white,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: isSelected 
-                                    ? const Color(0xFF12B347) 
+                                    ? const Color(0xFF2A6049) 
                                     : Colors.grey.shade300,
                                 width: 1,
                               ),
                               boxShadow: isSelected 
                                   ? [
                                       BoxShadow(
-                                        color: const Color(0xFF12B347).withOpacity(0.2),
+                                        color: const Color(0xFF2A6049).withOpacity(0.2),
                                         blurRadius: 4,
                                         offset: const Offset(0, 2),
                                       ),

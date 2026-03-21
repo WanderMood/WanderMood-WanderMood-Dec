@@ -157,14 +157,14 @@ class ActivityDetailsCard extends StatelessWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF12B347).withOpacity(0.1),
+                          color: const Color(0xFF2A6049).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Text(
                           tag,
                           style: GoogleFonts.poppins(
                             fontSize: 14,
-                            color: const Color(0xFF12B347),
+                            color: const Color(0xFF2A6049),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -236,7 +236,7 @@ class ActivityDetailsCard extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: onBook,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF12B347),
+                        backgroundColor: const Color(0xFF2A6049),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 32,

@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/profile/domain/providers/current_user_profile_provider.dart';
-import 'package:wandermood/features/profile/presentation/screens/language_settings_screen.dart';
-import 'package:wandermood/features/profile/presentation/screens/help_support_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
+/// WanderMood v2 design tokens — side drawer
+const Color _wmWhite = Color(0xFFFFFFFF);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmForestTint = Color(0xFFEBF3EE);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmCharcoal = Color(0xFF1E1C18);
+const Color _wmStone = Color(0xFF8C8780);
+const Color _wmError = Color(0xFFE05C5C);
+
 class ProfileDrawer extends ConsumerWidget {
-  const ProfileDrawer({Key? key}) : super(key: key);
+  const ProfileDrawer({super.key});
 
   String _getTravellerLevel(BuildContext context, int? moodStreak) {
     final l10n = AppLocalizations.of(context)!;
@@ -28,263 +36,61 @@ class ProfileDrawer extends ConsumerWidget {
     final email = Supabase.instance.client.auth.currentUser?.email ?? '';
 
     return Drawer(
-      backgroundColor: const Color(0xFFFDF6EC),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topRight: Radius.circular(20),
-          bottomRight: Radius.circular(20),
-        ),
-      ),
-      elevation: 8,
-      shadowColor: Colors.black.withOpacity(0.15),
-      child: SafeArea(
-        child: Column(
-          children: [
-            // Header section with reduced height
-            SizedBox(
-              height: 180, // Reduced from 200
-              child: profileData.when(
-                data: (currentProfile) => Stack(
-                  children: [
-                    // Background gradient and pattern
-                    Container(
-                      width: double.infinity,
-                      height: 160,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            const Color(0xFF4CAF50).withOpacity(0.8),
-                            const Color(0xFF2E7D32).withOpacity(0.9),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // Overlay gradient for depth
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            const Color(0xFF4CAF50).withOpacity(0.9),
-                            const Color(0xFF2E7D32).withOpacity(0.95),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // Content with reduced padding
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8), // Reduced padding
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Stack(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  // Navigate to main profile screen (source of truth in bottom nav)
-                                  context.push('/profile');
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.2),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: CircleAvatar(
-                                    radius: 32, // Slightly reduced from 35
-                                    backgroundColor: Colors.white,
-                                    backgroundImage: (currentProfile?.avatarUrl ?? '').isNotEmpty
-                                        ? NetworkImage(currentProfile!.avatarUrl!)
-                                        : null,
-                                    child: (currentProfile?.avatarUrl ?? '').isEmpty
-                                        ? Text(
-                                            ((currentProfile?.fullName ?? currentProfile?.username) ?? l10n.profileFallbackUser).substring(0, 1).toUpperCase(),
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 24, // Reduced from 28
-                                              fontWeight: FontWeight.bold,
-                                              color: const Color(0xFF12B347),
-                                            ),
-                                          )
-                                        : null,
-                                  ),
-                                ),
-                              ),
-                              // Edit icon overlay
-                              Positioned(
-                                right: -4,
-                                bottom: -4,
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Icon(
-                                    Icons.edit,
-                                    size: 14, // Reduced from 16
-                                    color: Color(0xFF12B347),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8), // Reduced from 12
-                          Text(
-                            currentProfile?.fullName ?? currentProfile?.username ?? l10n.profileFallbackUser,
-                            style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontSize: 18, // Reduced from 20
-                              fontWeight: FontWeight.w600,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black.withOpacity(0.3),
-                                  offset: const Offset(0, 1),
-                                  blurRadius: 2,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 2), // Reduced from 4
-                          Text(
-                            email.isNotEmpty ? email : (currentProfile?.username != null ? '@${currentProfile!.username}' : ''),
-                            style: GoogleFonts.poppins(
-                              color: Colors.white.withOpacity(0.9),
-                              fontSize: 12, // Reduced from 14
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  offset: const Offset(0, 1),
-                                  blurRadius: 2,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 8), // Reduced from 12
-                          // Travel badge and streak
-                          Wrap(
-                            spacing: 6, // Reduced from 8
-                            runSpacing: 6, // Reduced from 8
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3), // Reduced padding
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(10), // Reduced from 12
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.3),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.stars,
-                                      color: Colors.amber,
-                                      size: 12, // Reduced from 14
-                                    ),
-                                    const SizedBox(width: 3), // Reduced from 4
-                                    Text(
-                                      _getTravellerLevel(context, currentProfile?.moodStreak),
-                                      style: GoogleFonts.poppins(
-                                        color: Colors.white,
-                                        fontSize: 10, // Reduced from 11
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3), // Reduced padding
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(10), // Reduced from 12
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.3),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.local_fire_department,
-                                      color: Colors.orange,
-                                      size: 12, // Reduced from 14
-                                    ),
-                                    const SizedBox(width: 3), // Reduced from 4
-                                    Text(
-                                      l10n.drawerDayStreak('${currentProfile?.moodStreak ?? 0}'),
-                                      style: GoogleFonts.poppins(
-                                        color: Colors.white,
-                                        fontSize: 10, // Reduced from 11
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                loading: () => Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF12B347), Color(0xFF0F9A3F)],
-                    ),
-                  ),
-                  child: const Center(
+      width: MediaQuery.sizeOf(context).width * 0.8,
+      backgroundColor: _wmWhite,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          profileData.when(
+            data: (currentProfile) => _DrawerForestHeader(
+              fullName: currentProfile?.fullName ??
+                  currentProfile?.username ??
+                  l10n.profileFallbackUser,
+              email: email.isNotEmpty
+                  ? email
+                  : (currentProfile?.username != null
+                      ? '@${currentProfile!.username}'
+                      : ''),
+              avatarUrl: currentProfile?.avatarUrl,
+              travellerLevel: _getTravellerLevel(context, currentProfile?.moodStreak),
+              streakLabel: l10n.drawerDayStreak('${currentProfile?.moodStreak ?? 0}'),
+              onAvatarTap: () {
+                Navigator.pop(context);
+                context.push('/profile');
+              },
+            ),
+            loading: () => ColoredBox(
+              color: _wmForest,
+              child: SafeArea(
+                bottom: false,
+                child: SizedBox(
+                  height: 200,
+                  child: Center(
                     child: CircularProgressIndicator(
-                      color: Colors.white,
+                      color: _wmWhite.withValues(alpha: 0.9),
+                      strokeWidth: 2,
                     ),
                   ),
                 ),
-                error: (_, __) => Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF12B347), Color(0xFF0F9A3F)],
-                    ),
-                  ),
+              ),
+            ),
+            error: (_, __) => ColoredBox(
+              color: _wmForest,
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
-                        Icons.error_outline,
-                        color: Colors.white,
-                        size: 32, // Reduced from 40
-                      ),
-                      const SizedBox(height: 6), // Reduced from 8
+                      Icon(Icons.error_outline, color: _wmWhite.withValues(alpha: 0.9), size: 32),
+                      const SizedBox(height: 8),
                       Text(
                         l10n.drawerErrorLoadingProfile,
+                        textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 12, // Reduced from 14
+                          color: _wmWhite.withValues(alpha: 0.9),
+                          fontSize: 13,
                         ),
                       ),
                     ],
@@ -292,185 +98,299 @@ class ProfileDrawer extends ConsumerWidget {
                 ),
               ),
             ),
-            // Menu items in a scrollable list
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 8),
-                    _buildSectionHeader(l10n.drawerYourJourney),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.history,
-                      title: l10n.drawerMoodHistory,
-                      onTap: () {
-                        Navigator.pop(context);
-                        context.push('/moods/history');
-                      },
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.favorite_border,
-                      title: l10n.drawerSavedPlaces,
-                      onTap: () {
-                        Navigator.pop(context);
-                        context.push('/places/saved');
-                      },
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.map_outlined,
-                      title: l10n.drawerMyBookings,
-                      onTap: () {
-                        Navigator.pop(context);
-                        context.push('/plans');
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    _buildSectionHeader(l10n.drawerSettings),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.settings_outlined,
-                      title: l10n.drawerAppSettings,
-                      onTap: () {
-                        Navigator.pop(context);
-                        // Route to Profile settings (the main settings hub)
-                        context.push('/profile');
-                      },
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.notifications_outlined,
-                      title: l10n.drawerNotifications,
-                      onTap: () {
-                        Navigator.pop(context);
-                        context.push('/notifications');
-                      },
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.language,
-                      title: l10n.drawerLanguage,
-                      onTap: () {
-                        Navigator.pop(context);
-                        // Route directly to Profile's Language Settings (the working one)
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LanguageSettingsScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.help_outline,
-                      title: l10n.drawerHelpSupport,
-                      onTap: () {
-                        Navigator.pop(context);
-                        // Route to Profile's Help & Support (the comprehensive one)
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const HelpSupportScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    _buildSectionHeader(l10n.drawerAccount),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.person_outline,
-                      title: l10n.drawerProfile,
-                      onTap: () {
-                        Navigator.pop(context);
-                        // Navigate to main profile screen (source of truth in bottom nav)
-                        context.push('/profile');
-                      },
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.logout,
-                      title: l10n.drawerLogOut,
-                      onTap: () async {
-                        try {
-                          await Supabase.instance.client.auth.signOut();
-                          if (context.mounted) {
-                            context.go('/auth/magic-link');
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(AppLocalizations.of(context)!.drawerErrorSigningOut(e.toString())),
-                                backgroundColor: Colors.red,
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
-                          }
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _sectionHeader(l10n.drawerNavigation),
+                  _DrawerMenuItem(
+                    icon: Icons.favorite_border,
+                    label: l10n.drawerSavedPlaces,
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push('/places/saved');
+                    },
+                  ),
+                  _sectionHeader(l10n.drawerSettings),
+                  _DrawerMenuItem(
+                    icon: Icons.settings_outlined,
+                    label: l10n.drawerAppSettings,
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push('/settings');
+                    },
+                  ),
+                  _DrawerMenuItem(
+                    icon: Icons.notifications_outlined,
+                    label: l10n.drawerNotifications,
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push('/notifications');
+                    },
+                  ),
+                  _DrawerMenuItem(
+                    icon: Icons.language,
+                    label: l10n.drawerLanguage,
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push('/settings/language');
+                    },
+                  ),
+                  _DrawerMenuItem(
+                    icon: Icons.help_outline,
+                    label: l10n.drawerHelpSupport,
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push('/settings/help');
+                    },
+                  ),
+                  _sectionHeader(l10n.drawerAccount),
+                  _DrawerMenuItem(
+                    icon: Icons.person_outline,
+                    label: l10n.drawerProfile,
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push('/profile');
+                    },
+                  ),
+                  _DrawerMenuItem(
+                    icon: Icons.logout,
+                    label: l10n.drawerLogOut,
+                    isDestructive: true,
+                    showChevron: false,
+                    onTap: () async {
+                      try {
+                        await Supabase.instance.client.auth.signOut();
+                        if (context.mounted) {
+                          context.go('/auth/magic-link');
                         }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
+                      } catch (e) {
+                        if (context.mounted) {
+                          showWanderMoodToast(
+                            context,
+                            message: AppLocalizations.of(context)!.drawerErrorSigningOut(e.toString()),
+                            isError: true,
+                          );
+                        }
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF757575),
-              letterSpacing: 0.5,
-            ),
-          ),
-          Divider(
-            height: 1,
-            thickness: 0.5,
-            color: Colors.black12,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDrawerItem(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      dense: true,
-      visualDensity: VisualDensity.compact,
-      leading: Icon(
-        icon,
-        color: const Color(0xFF12B347),
-        size: 22,
-      ),
-      title: Text(
-        title,
-        style: GoogleFonts.poppins(
-          fontSize: 14,
-          color: const Color(0xFF2D2D2D),
+  Widget _sectionHeader(String title) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Divider(height: 1, thickness: 0.5, color: _wmParchment),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+          child: Text(
+            title.toUpperCase(),
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: FontWeight.w400,
+              color: _wmStone,
+              letterSpacing: 1.0,
+            ),
+          ),
         ),
-      ),
-      onTap: onTap,
+      ],
     );
   }
-} 
+}
+
+class _DrawerForestHeader extends StatelessWidget {
+  final String fullName;
+  final String email;
+  final String? avatarUrl;
+  final String travellerLevel;
+  final String streakLabel;
+  final VoidCallback onAvatarTap;
+
+  const _DrawerForestHeader({
+    required this.fullName,
+    required this.email,
+    required this.avatarUrl,
+    required this.travellerLevel,
+    required this.streakLabel,
+    required this.onAvatarTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = fullName.trim().isNotEmpty ? fullName.trim()[0].toUpperCase() : '?';
+
+    return ColoredBox(
+      color: _wmForest,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GestureDetector(
+                onTap: onAvatarTap,
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: _wmWhite, width: 2),
+                  ),
+                  child: CircleAvatar(
+                    radius: 28,
+                    backgroundColor: _wmWhite,
+                    backgroundImage: (avatarUrl ?? '').isNotEmpty
+                        ? NetworkImage(avatarUrl!)
+                        : null,
+                    child: (avatarUrl ?? '').isEmpty
+                        ? Text(
+                            initial,
+                            style: GoogleFonts.poppins(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: _wmForest,
+                            ),
+                          )
+                        : null,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                fullName,
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: _wmWhite,
+                  letterSpacing: 0.3,
+                ),
+              ),
+              if (email.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  email,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: _wmWhite.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _HeaderBadge(text: travellerLevel),
+                  _HeaderBadge(text: streakLabel),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HeaderBadge extends StatelessWidget {
+  final String text;
+
+  const _HeaderBadge({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: _wmForestTint,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.poppins(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: _wmForest,
+          letterSpacing: 0.2,
+        ),
+      ),
+    );
+  }
+}
+
+class _DrawerMenuItem extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final bool isDestructive;
+  final bool showChevron;
+
+  const _DrawerMenuItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.isDestructive = false,
+    this.showChevron = true,
+  });
+
+  @override
+  State<_DrawerMenuItem> createState() => _DrawerMenuItemState();
+}
+
+class _DrawerMenuItemState extends State<_DrawerMenuItem> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final iconColor = widget.isDestructive ? _wmError : _wmForest;
+    final textColor = widget.isDestructive ? _wmError : _wmCharcoal;
+
+    return Material(
+      color: _pressed ? _wmForestTint : Colors.transparent,
+      child: InkWell(
+        onTap: widget.onTap,
+        onHighlightChanged: (v) => setState(() => _pressed = v),
+        splashFactory: NoSplash.splashFactory,
+        highlightColor: Colors.transparent,
+        child: SizedBox(
+          height: 52,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 40,
+                  child: Icon(widget.icon, size: 20, color: iconColor),
+                ),
+                Expanded(
+                  child: Text(
+                    widget.label,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                      color: textColor,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+                if (widget.showChevron)
+                  Icon(Icons.chevron_right, size: 22, color: _wmStone),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

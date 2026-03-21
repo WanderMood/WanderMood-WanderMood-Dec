@@ -9,6 +9,16 @@ import 'package:wandermood/features/mood/services/activity_rating_service.dart';
 
 import '../screens/dynamic_my_day_provider.dart';
 
+// Screen 3 — section headers wmForest, metadata wmStone; status chips v2 palette
+const Color _kWmForest = Color(0xFF2A6049);
+const Color _kWmForestTint = Color(0xFFEBF3EE);
+const Color _kWmStone = Color(0xFF8C8780);
+const Color _kWmParchment = Color(0xFFE8E2D8);
+const Color _kWmSunset = Color(0xFFE8784A);
+/// Darker than wmSky so white badge text passes contrast on timeline chips.
+const Color _kWmSkyDeep = Color(0xFF5B7F92);
+const Color _kWmCharcoal = Color(0xFF1E1C18);
+
 class MyDayTimelineSection extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -54,17 +64,17 @@ class MyDayTimelineSection extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.museoModerno(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF2A6049),
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: _kWmForest,
                     ),
                   ),
                   if (allCompleted) ...[
                     const SizedBox(width: 8),
                     Icon(
                       isCollapsed ? Icons.expand_more : Icons.expand_less,
-                      color: const Color(0xFF2A6049),
+                      color: _kWmForest,
                       size: 18,
                     ),
                   ],
@@ -73,10 +83,10 @@ class MyDayTimelineSection extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2A6049).withOpacity(0.1),
+                        color: _kWmForestTint,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: const Color(0xFF2A6049).withOpacity(0.3),
+                                        border: Border.all(
+                          color: _kWmForest.withValues(alpha: 0.35),
                         ),
                       ),
                       child: Row(
@@ -84,7 +94,7 @@ class MyDayTimelineSection extends StatelessWidget {
                         children: [
                           const Icon(
                             Icons.check_circle,
-                            color: Color(0xFF2A6049),
+                            color: _kWmForest,
                             size: 12,
                           ),
                           const SizedBox(width: 4),
@@ -93,7 +103,7 @@ class MyDayTimelineSection extends StatelessWidget {
                             style: GoogleFonts.poppins(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFF2A6049),
+                              color: _kWmForest,
                             ),
                           ),
                         ],
@@ -105,7 +115,7 @@ class MyDayTimelineSection extends StatelessWidget {
                     '${activities.length} ${activities.length == 1 ? 'activity' : 'activities'}',
                     style: GoogleFonts.poppins(
                       fontSize: 12,
-                      color: allCompleted ? const Color(0xFF2A6049) : Colors.grey[600],
+                      color: allCompleted ? _kWmForest : _kWmStone,
                       fontWeight: allCompleted ? FontWeight.w500 : FontWeight.normal,
                     ),
                   ),
@@ -117,7 +127,7 @@ class MyDayTimelineSection extends StatelessWidget {
               allCompleted ? 'Great job completing this section!' : subtitle,
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                color: allCompleted ? const Color(0xFF2A6049) : Colors.grey[600],
+                color: allCompleted ? _kWmForest : _kWmStone,
                 fontWeight: allCompleted ? FontWeight.w500 : FontWeight.normal,
               ),
             ),
@@ -184,11 +194,7 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
         : isAwaitingCompletion
             ? 'Done'
             : 'Directions';
-    final primaryColor = activity.status == ActivityStatus.completed
-        ? (hasReview ? const Color(0xFF2A6049) : const Color(0xFF8B5CF6))
-        : isAwaitingCompletion
-            ? const Color(0xFF2A6049)
-            : const Color(0xFF2A6049);
+    const primaryColor = _kWmForest;
     final activityType =
         (activity.rawData['category'] ?? activity.rawData['type'] ?? 'Activity')
             .toString();
@@ -208,26 +214,8 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
         height: 160,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 25,
-              offset: const Offset(0, 15),
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: cardStatus.color.withOpacity(0.2),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-              spreadRadius: -5,
-            ),
-          ],
+          border: Border.all(color: _kWmParchment, width: 0.5),
+          boxShadow: const [],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
@@ -251,8 +239,8 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                cardStatus.color.withOpacity(0.8),
-                                cardStatus.color.withOpacity(0.6),
+                                cardStatus.color.withValues(alpha: 0.85),
+                                cardStatus.color.withValues(alpha: 0.55),
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
@@ -382,14 +370,14 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: Colors.grey[700],
+                              color: _kWmCharcoal,
                             ),
                           ),
                           Text(
                             subtitleText,
                             style: GoogleFonts.poppins(
                               fontSize: 11,
-                              color: Colors.grey[500],
+                              color: _kWmStone,
                             ),
                           ),
                         ],
@@ -442,13 +430,14 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                             width: 32,
                             height: 32,
                             decoration: BoxDecoration(
-                              color: Colors.grey[100],
+                              color: _kWmForestTint,
                               borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: _kWmParchment, width: 0.5),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.more_vert,
                               size: 16,
-                              color: Colors.grey,
+                              color: _kWmStone,
                             ),
                           ),
                         ),
@@ -469,31 +458,31 @@ _ActivityCardStatus _buildCardStatus(EnhancedActivityData activity) {
   switch (activity.status) {
     case ActivityStatus.activeNow:
       return const _ActivityCardStatus(
-        color: Colors.red,
-        label: 'RIGHT NOW',
+        color: _kWmSunset,
+        label: 'NOW',
         icon: Icons.play_circle_filled,
       );
     case ActivityStatus.awaitingCompletion:
       return const _ActivityCardStatus(
-        color: Color(0xFFF59E0B),
+        color: _kWmSunset,
         label: 'CHECK IN',
         icon: Icons.hourglass_bottom_rounded,
       );
     case ActivityStatus.upcoming:
       return const _ActivityCardStatus(
-        color: Colors.orange,
+        color: _kWmSkyDeep,
         label: 'UPCOMING',
         icon: Icons.schedule,
       );
     case ActivityStatus.completed:
       return const _ActivityCardStatus(
-        color: Colors.green,
-        label: 'COMPLETED',
+        color: _kWmForest,
+        label: 'DONE',
         icon: Icons.check_circle,
       );
     default:
       return const _ActivityCardStatus(
-        color: Color(0xFF2A6049),
+        color: _kWmStone,
         label: 'SCHEDULED',
         icon: Icons.event,
       );

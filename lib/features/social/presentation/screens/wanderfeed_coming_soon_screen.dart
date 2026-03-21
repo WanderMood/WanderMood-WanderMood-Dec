@@ -19,7 +19,7 @@ class WanderFeedComingSoonScreen extends StatelessWidget {
             style: GoogleFonts.museoModerno(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
             ),
           ),
         ),
@@ -33,13 +33,13 @@ class WanderFeedComingSoonScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF12B347).withOpacity(0.1),
+                    color: const Color(0xFF2A6049).withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.people_outline,
                     size: 80,
-                    color: Color(0xFF12B347),
+                    color: Color(0xFF2A6049),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -91,7 +91,7 @@ class WanderFeedComingSoonScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF12B347).withOpacity(0.1),
+                    color: const Color(0xFF2A6049).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(25),
                   ),
                   child: Text(
@@ -99,7 +99,7 @@ class WanderFeedComingSoonScreen extends StatelessWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF12B347),
+                      color: const Color(0xFF2A6049),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -122,12 +122,12 @@ class WanderFeedComingSoonScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFF12B347).withOpacity(0.1),
+            color: const Color(0xFF2A6049).withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
             icon,
-            color: const Color(0xFF12B347),
+            color: const Color(0xFF2A6049),
             size: 24,
           ),
         ),

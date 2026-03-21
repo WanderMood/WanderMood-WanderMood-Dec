@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class TravelerProfileScreen extends StatefulWidget {
   final Map<String, dynamic> traveler;
@@ -27,12 +28,12 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF4CAF50)),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF2A6049)),
             onPressed: () => Navigator.pop(context),
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.more_vert, color: Color(0xFF4CAF50)),
+              icon: const Icon(Icons.more_vert, color: Color(0xFF2A6049)),
               onPressed: () => _showMoreOptions(),
             ),
           ],
@@ -49,7 +50,7 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF4CAF50),
+                      color: const Color(0xFF2A6049),
                     ),
                   ),
                 ).animate().fadeIn(duration: 400.ms),
@@ -93,7 +94,7 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
                                     width: 20,
                                     height: 20,
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF4CAF50),
+                                      color: const Color(0xFF2A6049),
                                       shape: BoxShape.circle,
                                       border: Border.all(color: Colors.white, width: 3),
                                     ),
@@ -117,7 +118,7 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF4CAF50),
+                              color: const Color(0xFF2A6049),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -179,10 +180,10 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF4CAF50).withOpacity(0.1),
+                                color: const Color(0xFF2A6049).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: const Color(0xFF4CAF50).withOpacity(0.3),
+                                  color: const Color(0xFF2A6049).withOpacity(0.3),
                                 ),
                               ),
                               child: Text(
@@ -190,7 +191,7 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF4CAF50),
+                                  color: const Color(0xFF2A6049),
                                 ),
                               ),
                             ),
@@ -293,20 +294,18 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
                                     setState(() {
                                       _isFollowing = !_isFollowing;
                                     });
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(_isFollowing 
-                                            ? 'Following ${widget.traveler['name']}' 
-                                            : 'Unfollowed ${widget.traveler['name']}'),
-                                        backgroundColor: const Color(0xFF4CAF50),
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
+                                    showWanderMoodToast(
+                                      context,
+                                      message: _isFollowing
+                                          ? 'Following ${widget.traveler['name']}'
+                                          : 'Unfollowed ${widget.traveler['name']}',
+                                      backgroundColor: const Color(0xFF2A6049),
                                     );
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: _isFollowing 
                                         ? Colors.grey[400] 
-                                        : const Color(0xFF4CAF50),
+                                        : const Color(0xFF2A6049),
                                     foregroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -328,8 +327,8 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
                                 child: OutlinedButton(
                                   onPressed: () => _sendMessage(),
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: const Color(0xFF4CAF50),
-                                    side: const BorderSide(color: Color(0xFF4CAF50)),
+                                    foregroundColor: const Color(0xFF2A6049),
+                                    side: const BorderSide(color: Color(0xFF2A6049)),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
                                     ),
@@ -366,10 +365,10 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
                                 children: _getTravelInterests().map((interest) => Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF4CAF50).withOpacity(0.1),
+                                    color: const Color(0xFF2A6049).withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: const Color(0xFF4CAF50).withOpacity(0.3),
+                                      color: const Color(0xFF2A6049).withOpacity(0.3),
                                     ),
                                   ),
                                   child: Text(
@@ -377,7 +376,7 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
                                     style: GoogleFonts.poppins(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
-                                      color: const Color(0xFF4CAF50),
+                                      color: const Color(0xFF2A6049),
                                     ),
                                   ),
                                 )).toList(),
@@ -438,12 +437,12 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFF4CAF50).withOpacity(0.1),
+              color: const Color(0xFF2A6049).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               activity['icon'],
-              color: const Color(0xFF4CAF50),
+              color: const Color(0xFF2A6049),
               size: 20,
             ),
           ),
@@ -484,7 +483,7 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
 
   Color _getTravelerColor(String name) {
     final colors = [
-      const Color(0xFF4CAF50),
+      const Color(0xFF2A6049),
       const Color(0xFF2196F3),
       const Color(0xFFFF9800),
       const Color(0xFF9C27B0),
@@ -597,11 +596,10 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Message sent to ${widget.traveler['name']}!'),
-                  backgroundColor: const Color(0xFF12B347),
-                ),
+              showWanderMoodToast(
+                context,
+                message: 'Message sent to ${widget.traveler['name']}!',
+                backgroundColor: const Color(0xFF2A6049),
               );
             },
             child: const Text('Send'),
@@ -612,29 +610,27 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
   }
 
   void _reportUser() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('User reported. Thank you for keeping our community safe.'),
-        backgroundColor: Color(0xFFFF6B6B),
-      ),
+    showWanderMoodToast(
+      context,
+      message:
+          'User reported. Thank you for keeping our community safe.',
+      backgroundColor: const Color(0xFFFF6B6B),
     );
   }
 
   void _blockUser() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${widget.traveler['name']} has been blocked.'),
-        backgroundColor: const Color(0xFF718096),
-      ),
+    showWanderMoodToast(
+      context,
+      message: '${widget.traveler['name']} has been blocked.',
+      backgroundColor: const Color(0xFF718096),
     );
   }
 
   void _shareProfile() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${widget.traveler['name']}\'s profile shared!'),
-        backgroundColor: const Color(0xFF12B347),
-      ),
+    showWanderMoodToast(
+      context,
+      message: '${widget.traveler['name']}\'s profile shared!',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
 } 

@@ -6,6 +6,7 @@ import 'package:wandermood/l10n/app_localizations.dart';
 import '../../domain/providers/profile_provider.dart';
 import '../../../../core/presentation/providers/local_theme_provider.dart';
 import '../widgets/settings_screen_template.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class ThemeSettingsScreen extends ConsumerStatefulWidget {
   const ThemeSettingsScreen({super.key});
@@ -49,11 +50,9 @@ class _ThemeSettingsScreenState extends ConsumerState<ThemeSettingsScreen> {
         } else {
           themeLabel = l10n.system;
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.themeUpdatedTo(themeLabel)),
-            backgroundColor: Colors.green,
-          ),
+        showWanderMoodToast(
+          context,
+          message: l10n.themeUpdatedTo(themeLabel),
         );
       }
     } catch (e) {
@@ -153,7 +152,7 @@ class _ThemeSettingsScreenState extends ConsumerState<ThemeSettingsScreen> {
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF16A34A),
+                                  color: const Color(0xFF2A6049),
                                 ),
                               ),
                             ),

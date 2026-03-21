@@ -27,6 +27,7 @@ import 'package:wandermood/features/weather/providers/weather_provider.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/plans/presentation/screens/plan_result_screen.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.dart';
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
 import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
@@ -246,7 +247,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         // Floating action button to show mood selector when card is hidden - with more vibrant color
         floatingActionButton: _selectedIndex == 0 && !_showMoodSelector ? FloatingActionButton(
           onPressed: _toggleMoodSelector,
-          backgroundColor: const Color(0xFF4CAF50),
+          backgroundColor: const Color(0xFF2A6049),
           foregroundColor: Colors.white,
           elevation: 6, // Enhanced elevation
           child: const Icon(Icons.mood, color: Colors.white),
@@ -308,7 +309,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.location_on, 
-                            color: const Color(0xFF4CAF50).withOpacity(0.8),
+                            color: const Color(0xFF2A6049).withOpacity(0.8),
                             size: 20,
                           ),
                           const SizedBox(width: 6),
@@ -329,7 +330,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                           ),
                           const SizedBox(width: 4),
                           Icon(Icons.arrow_drop_down, 
-                            color: const Color(0xFF4CAF50).withOpacity(0.8),
+                            color: const Color(0xFF2A6049).withOpacity(0.8),
                             size: 20,
                           ),
                         ],
@@ -388,12 +389,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF12B347), Color(0xFF0F9A3F)],
+            colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
           ),
           borderRadius: BorderRadius.circular(28),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF12B347).withOpacity(0.3),
+              color: const Color(0xFF2A6049).withOpacity(0.3),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -424,7 +425,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                       style: GoogleFonts.poppins(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                       ),
                     ),
                   ),
@@ -440,7 +441,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                   height: 24,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Color(0xFF12B347),
+                    color: Color(0xFF2A6049),
                   ),
                 ),
               ),
@@ -452,7 +453,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
               ),
               child: const Icon(
                 Icons.error_outline,
-                color: Color(0xFF12B347),
+                color: Color(0xFF2A6049),
               ),
             ),
           ),
@@ -480,7 +481,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF4CAF50).withOpacity(0.15),
+                    color: const Color(0xFF2A6049).withOpacity(0.15),
                     blurRadius: 20,
                     spreadRadius: 5,
                   ),
@@ -506,7 +507,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      const Color(0xFF4CAF50).withOpacity(0.15),
+                      const Color(0xFF2A6049).withOpacity(0.15),
                       const Color(0xFF81C784).withOpacity(0.1),
                     ],
                   ),
@@ -545,7 +546,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                           height: 6,
                           margin: const EdgeInsets.only(right: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF4CAF50).withOpacity(0.6 - (index * 0.15)),
+                            color: const Color(0xFF2A6049).withOpacity(0.6 - (index * 0.15)),
                             shape: BoxShape.circle,
                           ),
                         )
@@ -575,7 +576,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          const Color(0xFF4CAF50).withOpacity(0.15),
+                          const Color(0xFF2A6049).withOpacity(0.15),
                           const Color(0xFF81C784).withOpacity(0.1),
                         ],
                       ),
@@ -668,11 +669,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                       if (!openResult) {
                         // If we can't open settings directly, at least guide the user
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Please enable location in your device settings to continue.'),
-                              duration: Duration(seconds: 5),
-                            ),
+                          showWanderMoodToast(
+                            context,
+                            message:
+                                'Please enable location in your device settings to continue.',
+                            duration: const Duration(seconds: 5),
                           );
                         }
                       }
@@ -1064,7 +1065,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF12B347).withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? const Color(0xFF2A6049).withOpacity(0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -1081,7 +1082,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
               style: GoogleFonts.poppins(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? const Color(0xFF12B347) : Colors.grey.shade600,
+                color: isSelected ? const Color(0xFF2A6049) : Colors.grey.shade600,
               ),
             ),
           ],
@@ -1177,7 +1178,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                             child: Material(
                               color: Colors.transparent,
                               child: InkWell(
-                                splashColor: const Color(0xFF4CAF50).withOpacity(0.2),
+                                splashColor: const Color(0xFF2A6049).withOpacity(0.2),
                                 highlightColor: Colors.transparent,
                                 customBorder: const CircleBorder(),
                                 onTap: () {

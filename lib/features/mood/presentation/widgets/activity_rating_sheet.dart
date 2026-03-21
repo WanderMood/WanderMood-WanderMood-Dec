@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/activity_rating.dart';
 import '../../services/activity_rating_service.dart';
 import 'package:uuid/uuid.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class ActivityRatingSheet extends ConsumerStatefulWidget {
   final String activityId;
@@ -421,8 +422,10 @@ class _ActivityRatingSheetState extends ConsumerState<ActivityRatingSheet>
 
   Future<void> _submitRating() async {
     if (_stars == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a star rating')),
+      showWanderMoodToast(
+        context,
+        message: 'Please select a star rating',
+        isError: true,
       );
       return;
     }
@@ -452,13 +455,10 @@ class _ActivityRatingSheetState extends ConsumerState<ActivityRatingSheet>
     widget.onRated?.call();
 
     // Show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Thanks for rating! 🎉'),
-        backgroundColor: Colors.purple.shade600,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Thanks for rating! 🎉',
+      backgroundColor: Colors.purple.shade600,
     );
   }
 }

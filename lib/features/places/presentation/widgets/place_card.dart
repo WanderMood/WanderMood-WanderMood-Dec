@@ -16,6 +16,8 @@ import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:go_router/go_router.dart';
 
 class PlaceCard extends ConsumerWidget {
   final Place place;
@@ -26,6 +28,9 @@ class PlaceCard extends ConsumerWidget {
   final bool showAddToMyDayButton;
   /// When true, shows a "See activity" label (e.g. on Day Plan where we don't book yet).
   final bool showSeeActivityLabel;
+  /// Outer margin around the card. Use vertical-only when the parent already applies
+  /// horizontal padding (e.g. Explore list uses 16 like [DayPlanActivityCard] list).
+  final EdgeInsetsGeometry cardMargin;
 
   const PlaceCard({
     Key? key,
@@ -35,6 +40,7 @@ class PlaceCard extends ConsumerWidget {
     this.cityName,
     this.showAddToMyDayButton = true,
     this.showSeeActivityLabel = false,
+    this.cardMargin = const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
   }) : super(key: key);
 
   // Cache distance calculation to prevent spam
@@ -300,6 +306,46 @@ class PlaceCard extends ConsumerWidget {
     return '🇳🇱';
   }
 
+  /// Explore list: show a local address fragment (neighbourhood / street area), not country or redundant city.
+  String? _exploreLocationLeftLabel() {
+    final city = (cityName ?? _extractCityName()).trim();
+    final cityLc = city.toLowerCase();
+    if (place.address.isEmpty) return null;
+
+    var raw = place.address;
+    raw = raw.replaceAll(
+      RegExp(r',\s*(Netherlands|Nederland|The Netherlands)\s*$', caseSensitive: false),
+      '',
+    );
+    final parts = raw
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return null;
+
+    bool isCitySegment(String s) {
+      if (cityLc.isEmpty) return false;
+      final sl = s.toLowerCase();
+      if (sl == cityLc) return true;
+      return RegExp(r'\b' + RegExp.escape(cityLc) + r'\b', caseSensitive: false).hasMatch(s);
+    }
+
+    for (final s in parts) {
+      final sl = s.toLowerCase();
+      if (sl == 'netherlands' || sl == 'nederland' || sl == 'the netherlands') {
+        continue;
+      }
+      if (isCitySegment(s)) continue;
+      // Dutch postcode-only segment
+      if (RegExp(r'^\d{4}\s*[A-Za-z]{2}\s*$').hasMatch(s)) continue;
+      if (s.length >= 2 && s.length <= 52) {
+        return s.length > 40 ? '${s.substring(0, 37)}…' : s;
+      }
+    }
+    return null;
+  }
+
   /// Get emoji for activity tags based on activity type
   String _getActivityEmoji(String activity) {
     final activityLower = activity.toLowerCase();
@@ -473,7 +519,7 @@ class PlaceCard extends ConsumerWidget {
     }
     
     // Default color for other activities
-    return const Color(0xFF12B347); // App primary green
+    return const Color(0xFF2A6049); // App primary green
   }
 
   Widget _buildPlaceImage() {
@@ -548,7 +594,7 @@ class PlaceCard extends ConsumerWidget {
                 value: loadingProgress.expectedTotalBytes != null
                     ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
                     : null,
-                color: const Color(0xFF12B347),
+                color: const Color(0xFF2A6049),
               ),
             ),
           );
@@ -683,7 +729,7 @@ class PlaceCard extends ConsumerWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: cardMargin,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -731,7 +777,7 @@ class PlaceCard extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
                           color: place.openingHours!.isOpen 
-                              ? const Color(0xFF12B347) 
+                              ? const Color(0xFF2A6049) 
                               : Colors.red.withOpacity(0.9),
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
@@ -803,7 +849,7 @@ class PlaceCard extends ConsumerWidget {
                             ),
                             child: Icon(
                               Icons.directions,
-                              color: const Color(0xFF12B347),
+                              color: const Color(0xFF2A6049),
                               size: 20,
                             ),
                           ),
@@ -815,11 +861,10 @@ class PlaceCard extends ConsumerWidget {
                             try {
                               await SharingService.sharePlace(place);
                             } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Failed to share place: $e'),
-                                  backgroundColor: Colors.red,
-                                ),
+                              showWanderMoodToast(
+                                context,
+                                message: 'Failed to share place: $e',
+                                isError: true,
                               );
                             }
                           },
@@ -845,7 +890,7 @@ class PlaceCard extends ConsumerWidget {
                             ),
                             child: Icon(
                               Icons.share,
-                              color: const Color(0xFF12B347),
+                              color: const Color(0xFF2A6049),
                               size: 20,
                             ),
                           ),
@@ -877,7 +922,7 @@ class PlaceCard extends ConsumerWidget {
                               ),
                               child: Icon(
                                 Icons.calendar_today,
-                                color: const Color(0xFF12B347),
+                                color: const Color(0xFF2A6049),
                                 size: 20,
                               ),
                             ),
@@ -896,12 +941,11 @@ class PlaceCard extends ConsumerWidget {
                                 // Invalidate stream to refresh Saved Places screen
                                 ref.invalidate(savedPlacesProvider);
                                 
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('${place.name} removed from saved places'),
-                                    backgroundColor: Colors.orange,
-                                    duration: const Duration(seconds: 2),
-                                  ),
+                                showWanderMoodToast(
+                                  context,
+                                  message:
+                                      '${place.name} removed from saved places',
+                                  isWarning: true,
                                 );
                               } else {
                                 // Save
@@ -909,22 +953,19 @@ class PlaceCard extends ConsumerWidget {
                                 // Invalidate stream to refresh Saved Places screen
                                 ref.invalidate(savedPlacesProvider);
                                 
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('${place.name} saved to favorites!'),
-                                    backgroundColor: const Color(0xFF12B347),
-                                    duration: const Duration(seconds: 2),
-                                  ),
+                                showWanderMoodToast(
+                                  context,
+                                  message:
+                                      '${place.name} saved to favorites!',
                                 );
                               }
                             } catch (e) {
                               if (kDebugMode) debugPrint('❌ Error toggling favorite: $e');
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Failed to ${isFavorite ? 'remove' : 'save'} ${place.name}'),
-                                  backgroundColor: Colors.red,
-                                  duration: const Duration(seconds: 2),
-                                ),
+                              showWanderMoodToast(
+                                context,
+                                message:
+                                    'Failed to ${isFavorite ? 'remove' : 'save'} ${place.name}',
+                                isError: true,
                               );
                             }
                           },
@@ -1127,22 +1168,23 @@ class PlaceCard extends ConsumerWidget {
                     ),
                   ],
 
-                  // City with flag and distance
+                  // Local area + distance (v2: no country flag; avoid redundant city name)
                   Builder(
                     builder: (context) {
-                      final cityName = _extractCityName();
-                      final countryFlag = _getCountryFlag();
+                      final areaLabel = _exploreLocationLeftLabel();
                       final distance = _calculateDistance();
-                      
-                      if (cityName.isNotEmpty || distance != null) {
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 12),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              // Location with flag
-                              if (cityName.isNotEmpty) ...[
-                                Row(
+
+                      if (areaLabel == null && distance == null) {
+                        return const SizedBox.shrink();
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (areaLabel != null)
+                              Expanded(
+                                child: Row(
                                   children: [
                                     Icon(
                                       Icons.location_on,
@@ -1150,62 +1192,54 @@ class PlaceCard extends ConsumerWidget {
                                       size: 16,
                                     ),
                                     const SizedBox(width: 4),
-                                    Text(
-                                      cityName,
-                                      style: GoogleFonts.poppins(
-                                        color: Colors.grey[600],
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
+                                    Expanded(
+                                      child: Text(
+                                        areaLabel,
+                                        style: GoogleFonts.poppins(
+                                          color: Colors.grey[600],
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      countryFlag,
-                                      style: const TextStyle(fontSize: 16),
                                     ),
                                   ],
                                 ),
-                              ] else ...[
-                                const SizedBox.shrink(),
+                              )
+                            else
+                              const Spacer(),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (distance != null) ...[
+                                  const Icon(Icons.directions_walk, color: Color(0xFF2A6049), size: 16),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    distance,
+                                    style: GoogleFonts.poppins(
+                                      color: const Color(0xFF2A6049),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ] else ...[
+                                  Icon(Icons.location_off, color: Colors.grey[400]!, size: 16),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Distance unavailable',
+                                    style: GoogleFonts.poppins(
+                                      color: Colors.grey[500],
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ],
                               ],
-                              // Distance and accessibility
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                  // Removed accessibility icon - users can filter for accessibility instead
-                                  
-                                  // Distance
-                                  if (distance != null) ...[
-                                    Icon(Icons.directions_walk, color: const Color(0xFF12B347), size: 16),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      distance,
-                                      style: GoogleFonts.poppins(
-                                        color: const Color(0xFF12B347),
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ] else ...[
-                                    Icon(Icons.location_off, color: Colors.grey[400]!, size: 16),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      'Distance unavailable',
-                                      style: GoogleFonts.poppins(
-                                        color: Colors.grey[500],
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                  ],
-                                  ],
-                                ),
-                            ],
-                          ),
-                        );
-                      } else {
-                        return const SizedBox.shrink();
-                      }
+                            ),
+                          ],
+                        ),
+                      );
                     },
                   ),
 
@@ -1214,14 +1248,14 @@ class PlaceCard extends ConsumerWidget {
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Icon(Icons.visibility_outlined, size: 18, color: const Color(0xFF12B347)),
+                        Icon(Icons.visibility_outlined, size: 18, color: const Color(0xFF2A6049)),
                         const SizedBox(width: 6),
                         Text(
                           'See activity',
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF12B347),
+                            color: const Color(0xFF2A6049),
                           ),
                         ),
                       ],
@@ -1662,77 +1696,34 @@ class PlaceCard extends ConsumerWidget {
     }
   }
 
-  // Snackbar helpers
   void _showSuccessSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-          ),
-        ),
-        backgroundColor: const Color(0xFF12B347),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 3),
-        action: SnackBarAction(
-          label: 'View',
-          textColor: Colors.white,
-          onPressed: () {
-            // Navigate to My Day screen - this would need router context
-          },
-        ),
-      ),
+    showWanderMoodToast(
+      context,
+      message: message,
+      duration: const Duration(seconds: 4),
+      actionLabel: 'View',
+      onAction: () {
+        if (context.mounted) {
+          context.go('/main', extra: {'tab': 0});
+        }
+      },
     );
   }
 
   void _showInfoSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-          ),
-        ),
-        backgroundColor: Colors.orange,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 2),
-      ),
+    showWanderMoodToast(
+      context,
+      message: message,
+      isWarning: true,
     );
   }
 
   void _showErrorSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-          ),
-        ),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 3),
-      ),
+    showWanderMoodToast(
+      context,
+      message: message,
+      isError: true,
+      duration: const Duration(seconds: 3),
     );
   }
 } 

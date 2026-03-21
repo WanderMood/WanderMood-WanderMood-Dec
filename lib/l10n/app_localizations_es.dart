@@ -84,6 +84,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get myDayEmptyAskMoodyButton => 'Preguntar a Moody';
 
   @override
+  String get myDayQuickAddActivity => 'Añadir actividad';
+
+  @override
+  String get moodyFeedbackPromptBody =>
+      '¿Cómo va? Toca para contarme cómo te sientes.';
+
+  @override
+  String get moodyFeedbackShareAction => 'Compartir comentarios';
+
+  @override
   String get myDayEmptyInspiredTitle => 'Inspírate';
 
   @override
@@ -1086,6 +1096,27 @@ class AppLocalizationsEs extends AppLocalizations {
   String get profileStatsTopMoodTitle => 'Top estado de ánimo';
 
   @override
+  String get profileStatsStreakTitle => 'Streak';
+
+  @override
+  String get profileTopMoodEmpty => 'None yet';
+
+  @override
+  String get profileSavedPlacesTitle => 'Saved places';
+
+  @override
+  String get profileSavedPlacesSeeAll => 'See all';
+
+  @override
+  String get profileSavedPlacesEmpty => 'No saved places yet';
+
+  @override
+  String get profileEditProfileButton => 'Edit profile';
+
+  @override
+  String get profileAppSettingsLink => 'App settings';
+
+  @override
   String get profileFavoriteVibesTitle => 'Tus vibes favoritas';
 
   @override
@@ -1099,6 +1130,42 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get profileMoodJourneySubtitle => 'Ver tu historial de ánimo';
+
+  @override
+  String get moodHistoryIntro =>
+      'Una línea de tiempo tranquila de cómo te has sentido.';
+
+  @override
+  String get moodHistorySectionRecent => 'Reciente';
+
+  @override
+  String get moodHistorySectionTimeline => 'Línea de tiempo';
+
+  @override
+  String get moodHistoryEmptyTitle => 'Tu viaje empieza aquí';
+
+  @override
+  String get moodHistoryEmptyBody =>
+      'Registra tu ánimo desde Moody Hub o Mi día—tus momentos aparecerán abajo.';
+
+  @override
+  String get moodHistoryLoginRequired =>
+      'Inicia sesión para ver tu viaje de ánimo.';
+
+  @override
+  String get moodHistoryErrorUser => 'No se pudo cargar tu cuenta.';
+
+  @override
+  String get moodHistoryErrorMoods => 'No se pudieron cargar los ánimos.';
+
+  @override
+  String get moodHistoryTodayBadge => 'Hoy';
+
+  @override
+  String get moodHistoryDayToday => 'Hoy';
+
+  @override
+  String get moodHistoryDayYesterday => 'Ayer';
 
   @override
   String get profileTravelGlobeTitle => 'Tu globo viajero';
@@ -1410,6 +1477,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get drawerYourJourney => 'Your Journey';
 
   @override
+  String get drawerNavigation => 'Navigation';
+
+  @override
   String get drawerSettings => 'Settings';
 
   @override
@@ -1420,6 +1490,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get drawerSavedPlaces => 'Saved Places';
+
+  @override
+  String get drawerMyAgenda => 'My Agenda';
 
   @override
   String get drawerMyBookings => 'My Bookings';
@@ -2871,4 +2944,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noPlanPlanLater => 'Quizás más tarde';
+
+  @override
+  String get myDayHeroActiveSubtitle => 'Estás en esta actividad ahora mismo.';
 }

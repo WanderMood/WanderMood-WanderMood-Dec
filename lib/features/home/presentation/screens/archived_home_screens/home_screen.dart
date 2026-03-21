@@ -29,6 +29,7 @@ import 'package:wandermood/features/weather/providers/weather_provider.dart';
 import 'package:wandermood/features/plans/presentation/screens/plan_loading_screen.dart';
 import 'package:wandermood/features/plans/presentation/screens/plan_result_screen.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -284,7 +285,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                                 child: Material(
                                   color: Colors.transparent,
                                   child: InkWell(
-                                    splashColor: const Color(0xFF4CAF50).withOpacity(0.2),
+                                    splashColor: const Color(0xFF2A6049).withOpacity(0.2),
                                     highlightColor: Colors.transparent,
                                     customBorder: const CircleBorder(),
                                     onTap: () {
@@ -443,7 +444,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         // Floating action button to show mood selector when card is hidden - with more vibrant color
         floatingActionButton: !_showMoodSelector ? FloatingActionButton(
           onPressed: _toggleMoodSelector,
-          backgroundColor: const Color(0xFF4CAF50),
+          backgroundColor: const Color(0xFF2A6049),
           foregroundColor: Colors.white,
           elevation: 6, // Enhanced elevation
           child: const Icon(Icons.mood, color: Colors.white),
@@ -466,7 +467,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                 userData.when(
                   data: (data) => CircleAvatar(
                     radius: 24,
-                    backgroundColor: const Color(0xFF4CAF50),
+                    backgroundColor: const Color(0xFF2A6049),
                     backgroundImage: data?['avatarUrl'] != null 
                         ? NetworkImage(data!['avatarUrl']) 
                         : null,
@@ -490,7 +491,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                         mainAxisSize: MainAxisSize.min,
                       children: [
                           Icon(Icons.location_on, 
-                            color: const Color(0xFF4CAF50).withOpacity(0.8),
+                            color: const Color(0xFF2A6049).withOpacity(0.8),
                             size: 20,
                           ),
                           const SizedBox(width: 6),
@@ -511,7 +512,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                           ),
                           const SizedBox(width: 4),
                           Icon(Icons.arrow_drop_down, 
-                            color: const Color(0xFF4CAF50).withOpacity(0.8),
+                            color: const Color(0xFF2A6049).withOpacity(0.8),
                             size: 20,
                           ),
                         ],
@@ -573,7 +574,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF4CAF50).withOpacity(0.15),
+                    color: const Color(0xFF2A6049).withOpacity(0.15),
                     blurRadius: 20,
                     spreadRadius: 5,
                   ),
@@ -599,7 +600,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      const Color(0xFF4CAF50).withOpacity(0.15),
+                      const Color(0xFF2A6049).withOpacity(0.15),
                       const Color(0xFF81C784).withOpacity(0.1),
                     ],
                   ),
@@ -638,7 +639,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                           height: 6,
                           margin: const EdgeInsets.only(right: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF4CAF50).withOpacity(0.6 - (index * 0.15)),
+                            color: const Color(0xFF2A6049).withOpacity(0.6 - (index * 0.15)),
                             shape: BoxShape.circle,
                           ),
                         )
@@ -668,7 +669,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          const Color(0xFF4CAF50).withOpacity(0.15),
+                          const Color(0xFF2A6049).withOpacity(0.15),
                           const Color(0xFF81C784).withOpacity(0.1),
                         ],
                       ),
@@ -761,11 +762,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                       if (!openResult) {
                         // If we can't open settings directly, at least guide the user
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Please enable location in your device settings to continue.'),
-                              duration: Duration(seconds: 5),
-                            ),
+                          showWanderMoodToast(
+                            context,
+                            message:
+                                'Please enable location in your device settings to continue.',
+                            duration: const Duration(seconds: 5),
                           );
                         }
                       }

@@ -6,6 +6,13 @@ import 'package:wandermood/l10n/app_localizations.dart';
 import '../../domain/providers/profile_provider.dart';
 import '../widgets/settings_screen_template.dart';
 
+/// v2 tokens
+const Color _wmWhite = Color(0xFFFFFFFF);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmCharcoal = Color(0xFF1E1C18);
+const Color _wmStone = Color(0xFF8C8780);
+
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
@@ -67,15 +74,17 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     return SettingsScreenTemplate(
       title: l10n.settingsNotificationsTitle,
       onBack: () => context.pop(),
+      wanderMoodV2Chrome: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            l10n.notificationsMethodsTitle,
+            l10n.notificationsMethodsTitle.toUpperCase(),
             style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF374151),
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 1.0,
+              color: _wmStone,
             ),
           ),
           const SizedBox(height: 12),
@@ -110,11 +119,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            l10n.notificationsWhatToNotifyTitle,
+            l10n.notificationsWhatToNotifyTitle.toUpperCase(),
             style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF374151),
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 1.0,
+              color: _wmStone,
             ),
           ),
           const SizedBox(height: 12),
@@ -160,11 +170,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _wmWhite,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFFE5E7EB),
-          width: 2,
+          color: _wmParchment,
+          width: 0.5,
         ),
       ),
       child: Padding(
@@ -180,7 +190,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
-                      color: const Color(0xFF1F2937),
+                      color: _wmCharcoal,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -188,7 +198,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     subtitle,
                     style: GoogleFonts.poppins(
                       fontSize: 12,
-                      color: const Color(0xFF6B7280),
+                      color: _wmStone,
+                      height: 1.35,
                     ),
                   ),
                 ],
@@ -196,29 +207,28 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             ),
             GestureDetector(
               onTap: onChange,
-              child: Container(
-                width: 48,
-                height: 28,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(9999),
-                  gradient: checked
-                      ? const LinearGradient(
-                          colors: [Color(0xFFFB923C), Color(0xFFEC4899)],
-                        )
-                      : null,
-                  color: checked ? null : const Color(0xFFD1D5DB),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(2),
-                  child: AnimatedAlign(
-                    duration: const Duration(milliseconds: 200),
-                    alignment: checked ? Alignment.centerRight : Alignment.centerLeft,
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
+              child: Semantics(
+                toggled: checked,
+                label: label,
+                child: Container(
+                  width: 48,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(9999),
+                    color: checked ? _wmForest : _wmParchment,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2),
+                    child: AnimatedAlign(
+                      duration: const Duration(milliseconds: 200),
+                      alignment: checked ? Alignment.centerRight : Alignment.centerLeft,
+                      child: Container(
+                        width: 22,
+                        height: 22,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
                       ),
                     ),
                   ),

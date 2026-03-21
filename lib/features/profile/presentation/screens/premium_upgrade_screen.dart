@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../providers/settings_providers.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class PremiumUpgradeScreen extends ConsumerStatefulWidget {
   const PremiumUpgradeScreen({super.key});
@@ -72,21 +73,18 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
       ref.invalidate(subscriptionProvider);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Premium subscription activated!'),
-            backgroundColor: Colors.green,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Premium subscription activated!',
         );
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Payment failed: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Payment failed: $e',
+          isError: true,
         );
         setState(() => _isProcessing = false);
       }

@@ -82,13 +82,13 @@ class MoodyIntroOverlay extends ConsumerWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Color(0xFF12B347),
+                        Color(0xFF2A6049),
                         Color(0xFF6DE89A),
                       ],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF12B347).withOpacity(0.3),
+                        color: const Color(0xFF2A6049).withOpacity(0.3),
                         blurRadius: 20,
                         spreadRadius: 2,
                         offset: const Offset(0, 4),
@@ -193,7 +193,7 @@ class MoodyIntroOverlay extends ConsumerWidget {
                   child: ElevatedButton(
                     onPressed: onCreateDay,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF12B347),
+                      backgroundColor: const Color(0xFF2A6049),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(

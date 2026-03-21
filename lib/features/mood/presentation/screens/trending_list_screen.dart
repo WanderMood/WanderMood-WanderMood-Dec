@@ -126,7 +126,7 @@ class _TrendingListScreenState extends ConsumerState<TrendingListScreen>
       expandedHeight: 120,
       floating: false,
       pinned: true,
-      backgroundColor: const Color(0xFF12B347),
+      backgroundColor: const Color(0xFF2A6049),
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () => context.pop(),
@@ -157,7 +157,7 @@ class _TrendingListScreenState extends ConsumerState<TrendingListScreen>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFF12B347),
+                Color(0xFF2A6049),
                 Color(0xFF0E8B3A),
               ],
             ),
@@ -195,7 +195,7 @@ class _TrendingListScreenState extends ConsumerState<TrendingListScreen>
                     color: Colors.grey[500],
                     fontSize: 14,
                   ),
-                  prefixIcon: const Icon(Icons.search, color: Color(0xFF12B347)),
+                  prefixIcon: const Icon(Icons.search, color: Color(0xFF2A6049)),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
                           icon: const Icon(Icons.clear, color: Colors.grey),
@@ -278,10 +278,10 @@ class _TrendingListScreenState extends ConsumerState<TrendingListScreen>
                   selected: isSelected,
                   onSelected: (_) => onChanged(option),
                   backgroundColor: Colors.white,
-                  selectedColor: const Color(0xFF12B347),
+                  selectedColor: const Color(0xFF2A6049),
                   checkmarkColor: Colors.white,
                   side: BorderSide(
-                    color: isSelected ? const Color(0xFF12B347) : Colors.grey[300]!,
+                    color: isSelected ? const Color(0xFF2A6049) : Colors.grey[300]!,
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 ),
@@ -417,7 +417,7 @@ class _TrendingListScreenState extends ConsumerState<TrendingListScreen>
                       Icon(
                         Icons.people,
                         size: 16,
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -425,7 +425,7 @@ class _TrendingListScreenState extends ConsumerState<TrendingListScreen>
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF12B347),
+                          color: const Color(0xFF2A6049),
                         ),
                       ),
                       const Spacer(),
@@ -435,7 +435,7 @@ class _TrendingListScreenState extends ConsumerState<TrendingListScreen>
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF12B347).withOpacity(0.1),
+                          color: const Color(0xFF2A6049).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -443,7 +443,7 @@ class _TrendingListScreenState extends ConsumerState<TrendingListScreen>
                           style: GoogleFonts.poppins(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF12B347),
+                            color: const Color(0xFF2A6049),
                           ),
                         ),
                       ),
@@ -540,7 +540,7 @@ class _TrendingListScreenState extends ConsumerState<TrendingListScreen>
               });
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF12B347),
+              backgroundColor: const Color(0xFF2A6049),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
@@ -566,7 +566,7 @@ class _TrendingListScreenState extends ConsumerState<TrendingListScreen>
         child: Column(
           children: [
             const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
             ),
             const SizedBox(height: 16),
             Text(
@@ -613,7 +613,7 @@ class _TrendingListScreenState extends ConsumerState<TrendingListScreen>
                 ref.invalidate(trendingActivitiesProvider);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF12B347),
+                backgroundColor: const Color(0xFF2A6049),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(

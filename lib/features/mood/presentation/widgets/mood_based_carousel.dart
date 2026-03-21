@@ -14,6 +14,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../home/presentation/screens/dynamic_my_day_provider.dart';
 import '../../../home/presentation/screens/main_screen.dart';
 import '../../../places/services/saved_places_service.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class MoodBasedCarousel extends ConsumerWidget {
   final List<Place> places;
@@ -158,7 +159,7 @@ class MoodBasedCarousel extends ConsumerWidget {
                                 const Icon(
                                   Icons.location_on,
                                   size: 14,
-                                  color: Color(0xFF12B347),
+                                  color: Color(0xFF2A6049),
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -181,11 +182,11 @@ class MoodBasedCarousel extends ConsumerWidget {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF12B347).withOpacity(0.95),
+                              color: const Color(0xFF2A6049).withOpacity(0.95),
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF12B347).withOpacity(0.3),
+                                  color: const Color(0xFF2A6049).withOpacity(0.3),
                                   blurRadius: 12,
                                   spreadRadius: 2,
                                   offset: const Offset(0, 2),
@@ -316,22 +317,20 @@ class MoodBasedCarousel extends ConsumerWidget {
       await savedPlacesService.savePlace(place);
       
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${place.name} saved!'),
-            duration: const Duration(seconds: 2),
-            backgroundColor: const Color(0xFF12B347),
-          ),
+        showWanderMoodToast(
+          context,
+          message: '${place.name} saved!',
+          duration: const Duration(seconds: 2),
+          backgroundColor: const Color(0xFF2A6049),
         );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to save ${place.name}'),
-            backgroundColor: Colors.red.shade400,
-            duration: const Duration(seconds: 2),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Failed to save ${place.name}',
+          isError: true,
+          duration: const Duration(seconds: 2),
         );
       }
     }
@@ -414,44 +413,26 @@ class MoodBasedCarousel extends ConsumerWidget {
       ref.invalidate(todayActivitiesProvider);
       
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.white, size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    '${place.name} added to your $timePeriod!',
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: const Color(0xFF12B347),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            duration: const Duration(seconds: 3),
-            action: SnackBarAction(
-              label: 'View',
-              textColor: Colors.white,
-              onPressed: () {
-                // Navigate to My Day tab
-                ref.read(mainTabProvider.notifier).state = 0;
-              },
-            ),
-          ),
+        showWanderMoodToast(
+          context,
+          message: '${place.name} added to your $timePeriod!',
+          duration: const Duration(seconds: 3),
+          backgroundColor: const Color(0xFF2A6049),
+          leading: const Icon(Icons.check_circle, color: Colors.white, size: 20),
+          actionLabel: 'View',
+          onAction: () {
+            ref.read(mainTabProvider.notifier).state = 0;
+          },
         );
       }
     } catch (e) {
       if (kDebugMode) debugPrint('⚠️ Error adding place to schedule: $e');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to add ${place.name}. Please try again.'),
-            backgroundColor: Colors.red.shade400,
-            duration: const Duration(seconds: 3),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Failed to add ${place.name}. Please try again.',
+          isError: true,
+          duration: const Duration(seconds: 3),
         );
       }
     }
@@ -491,13 +472,13 @@ class MoodBasedCarousel extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             color: isPrimary
-                ? const Color(0xFF12B347)
+                ? const Color(0xFF2A6049)
                 : Colors.white.withOpacity(0.5),
             borderRadius: BorderRadius.circular(12),
             boxShadow: isPrimary
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF12B347).withOpacity(0.3),
+                      color: const Color(0xFF2A6049).withOpacity(0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),

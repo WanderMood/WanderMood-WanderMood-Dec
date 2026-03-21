@@ -6,6 +6,17 @@ import 'package:wandermood/features/places/providers/moody_explore_provider.dart
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'dart:ui';
 
+// v2 — travel mode dialogs / explainer (Screen 11)
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmForestDark = Color(0xFF347558);
+const Color _wmForestTint = Color(0xFFEBF3EE);
+const Color _wmSunset = Color(0xFFE8784A);
+const Color _wmSunsetTint = Color(0xFFFDF0E8);
+const Color _wmSky = Color(0xFFA8C8DC);
+const Color _wmSkyTint = Color(0xFFEDF5F9);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmStone = Color(0xFF8C8780);
+
 class TravelModeToggle extends ConsumerStatefulWidget {
   final bool isLocal; // true = Local Mode, false = Traveling
   final Function(bool) onModeChanged;
@@ -106,7 +117,6 @@ class _TravelModeToggleState extends ConsumerState<TravelModeToggle> {
                         icon: Icons.home,
                         label: l10n.profileModeLocal,
                         isActive: widget.isLocal,
-                        activeGradient: const [Color(0xFF2A6049), Color(0xFF2A6049)],
                         onTap: () => _handleToggleTap(true),
                       ),
                     ),
@@ -117,7 +127,6 @@ class _TravelModeToggleState extends ConsumerState<TravelModeToggle> {
                         icon: Icons.map,
                         label: l10n.profileModeTravel,
                         isActive: !widget.isLocal,
-                        activeGradient: const [Color(0xFF2A6049), Color(0xFF2A6049)],
                         onTap: () => _handleToggleTap(false),
                       ),
                     ),
@@ -139,7 +148,7 @@ class _TravelModeToggleState extends ConsumerState<TravelModeToggle> {
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.blue[600],
+                  color: const Color(0xFF2A6049),
                 ),
               ),
             ],
@@ -155,14 +164,12 @@ class _ToggleButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool isActive;
-  final List<Color> activeGradient;
   final VoidCallback onTap;
 
   const _ToggleButton({
     required this.icon,
     required this.label,
     required this.isActive,
-    required this.activeGradient,
     required this.onTap,
   });
 
@@ -170,39 +177,28 @@ class _ToggleButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
+        child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          gradient: isActive
-              ? LinearGradient(colors: activeGradient)
-              : null,
-          color: isActive ? null : const Color(0xFFD8D0C4),
+          color: isActive ? _wmForest : _wmParchment,
           borderRadius: BorderRadius.circular(50),
-          boxShadow: isActive
-              ? [
-                  BoxShadow(
-                    color: activeGradient[0].withOpacity(0.4),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
+          boxShadow: const [],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
-              color: isActive ? Colors.white : const Color(0xFF8A847B),
+              color: isActive ? Colors.white : _wmStone,
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: GoogleFonts.poppins(
-                color: isActive ? Colors.white : const Color(0xFF8A847B),
+                color: isActive ? Colors.white : _wmStone,
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
               ),
@@ -480,7 +476,7 @@ class _ConfirmationOverlayState extends State<_ConfirmationOverlay>
         icon: Icons.home,
         title: l10n.profileModeLocalTitle,
         description: l10n.profileModeLocalDescription,
-        gradient: [const Color(0xFF10B981), Color(0xFF059669)],
+        gradient: const [_wmForest, _wmForestDark],
         features: [
           _Feature(Icons.coffee, l10n.profileModeLocalFeature1),
           _Feature(Icons.auto_awesome, l10n.profileModeLocalFeature2),
@@ -492,7 +488,7 @@ class _ConfirmationOverlayState extends State<_ConfirmationOverlay>
         icon: Icons.map,
         title: l10n.profileModeTravelTitle,
         description: l10n.profileModeTravelDescription,
-        gradient: [const Color(0xFFF97316), Color(0xFFEC4899)],
+        gradient: const [_wmSunset, _wmForest],
         features: [
           _Feature(Icons.account_balance, l10n.profileModeTravelFeature1),
           _Feature(Icons.explore, l10n.profileModeTravelFeature2),
@@ -590,7 +586,7 @@ class _SuccessAnimationOverlayState extends State<_SuccessAnimationOverlay>
                   child: const Icon(
                     Icons.check,
                     size: 48,
-                    color: Color(0xFF10B981),
+                    color: _wmForest,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -626,7 +622,7 @@ class _SuccessAnimationOverlayState extends State<_SuccessAnimationOverlay>
         icon: Icons.home,
         title: l10n.profileModeLocalTitle,
         description: l10n.profileModeLocalDescription,
-        gradient: [const Color(0xFF10B981), Color(0xFF059669)],
+        gradient: const [_wmForest, _wmForestDark],
         features: [
           _Feature(Icons.coffee, l10n.profileModeLocalFeature1),
           _Feature(Icons.auto_awesome, l10n.profileModeLocalFeature2),
@@ -638,7 +634,7 @@ class _SuccessAnimationOverlayState extends State<_SuccessAnimationOverlay>
         icon: Icons.map,
         title: l10n.profileModeTravelTitle,
         description: l10n.profileModeTravelDescription,
-        gradient: [const Color(0xFFF97316), Color(0xFFEC4899)],
+        gradient: const [_wmSunset, _wmForest],
         features: [
           _Feature(Icons.account_balance, l10n.profileModeTravelFeature1),
           _Feature(Icons.explore, l10n.profileModeTravelFeature2),
@@ -809,7 +805,7 @@ class _ModeOverlayState extends State<_ModeOverlay>
                   child: const Icon(
                     Icons.check,
                     size: 24,
-                    color: Color(0xFF10B981),
+                    color: _wmForest,
                   ),
                 ),
               ],
@@ -827,7 +823,7 @@ class _ModeOverlayState extends State<_ModeOverlay>
         icon: Icons.home,
         title: l10n.profileModeLocalTitle,
         description: l10n.profileModeLocalDescription,
-        gradient: [const Color(0xFF10B981), Color(0xFF059669)],
+        gradient: const [_wmForest, _wmForestDark],
         features: [
           _Feature(Icons.coffee, l10n.profileModeLocalFeature1),
           _Feature(Icons.auto_awesome, l10n.profileModeLocalFeature2),
@@ -839,7 +835,7 @@ class _ModeOverlayState extends State<_ModeOverlay>
         icon: Icons.map,
         title: l10n.profileModeTravelTitle,
         description: l10n.profileModeTravelDescription,
-        gradient: [const Color(0xFFF97316), Color(0xFFEC4899)],
+        gradient: const [_wmSunset, _wmForest],
         features: [
           _Feature(Icons.account_balance, l10n.profileModeTravelFeature1),
           _Feature(Icons.explore, l10n.profileModeTravelFeature2),
@@ -895,16 +891,9 @@ class TravelModeExplanationModal extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.green[50]!,
-                          Colors.teal[50]!,
-                        ],
-                      ),
+                      color: _wmForestTint,
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.green[200]!, width: 2),
+                      border: Border.all(color: _wmParchment, width: 2),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -914,9 +903,9 @@ class TravelModeExplanationModal extends StatelessWidget {
                             Container(
                               width: 48,
                               height: 48,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFF10B981), Color(0xFF059669)],
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [_wmForest, _wmForestDark],
                                 ),
                                 shape: BoxShape.circle,
                               ),
@@ -943,10 +932,10 @@ class TravelModeExplanationModal extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _buildFeatureItem(Icons.check, Colors.green[600]!, l10n.profileModeLocalGem1),
-                        _buildFeatureItem(Icons.check, Colors.green[600]!, l10n.profileModeLocalGem2),
-                        _buildFeatureItem(Icons.check, Colors.green[600]!, l10n.profileModeLocalGem3),
-                        _buildFeatureItem(Icons.check, Colors.green[600]!, l10n.profileModeLocalGem4),
+                        _buildFeatureItem(Icons.check, _wmForest, l10n.profileModeLocalGem1),
+                        _buildFeatureItem(Icons.check, _wmForest, l10n.profileModeLocalGem2),
+                        _buildFeatureItem(Icons.check, _wmForest, l10n.profileModeLocalGem3),
+                        _buildFeatureItem(Icons.check, _wmForest, l10n.profileModeLocalGem4),
                         const SizedBox(height: 16),
                         Container(
                           padding: const EdgeInsets.all(12),
@@ -971,16 +960,9 @@ class TravelModeExplanationModal extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.orange[50]!,
-                          Colors.pink[50]!,
-                        ],
-                      ),
+                      color: _wmSunsetTint,
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.orange[200]!, width: 2),
+                      border: Border.all(color: _wmParchment, width: 2),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -990,9 +972,9 @@ class TravelModeExplanationModal extends StatelessWidget {
                             Container(
                               width: 48,
                               height: 48,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFFF97316), Color(0xFFEC4899)],
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [_wmSunset, _wmForest],
                                 ),
                                 shape: BoxShape.circle,
                               ),
@@ -1019,10 +1001,10 @@ class TravelModeExplanationModal extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _buildFeatureItem(Icons.check, Colors.orange[600]!, l10n.profileModeTravelSpot1),
-                        _buildFeatureItem(Icons.check, Colors.orange[600]!, l10n.profileModeTravelSpot2),
-                        _buildFeatureItem(Icons.check, Colors.orange[600]!, l10n.profileModeTravelSpot3),
-                        _buildFeatureItem(Icons.check, Colors.orange[600]!, l10n.profileModeTravelSpot4),
+                        _buildFeatureItem(Icons.check, _wmSunset, l10n.profileModeTravelSpot1),
+                        _buildFeatureItem(Icons.check, _wmSunset, l10n.profileModeTravelSpot2),
+                        _buildFeatureItem(Icons.check, _wmSunset, l10n.profileModeTravelSpot3),
+                        _buildFeatureItem(Icons.check, _wmSunset, l10n.profileModeTravelSpot4),
                         const SizedBox(height: 16),
                         Container(
                           padding: const EdgeInsets.all(12),
@@ -1047,9 +1029,9 @@ class TravelModeExplanationModal extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.blue[50],
+                      color: _wmSkyTint,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.blue[200]!, width: 2),
+                      border: Border.all(color: _wmParchment, width: 2),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1057,8 +1039,8 @@ class TravelModeExplanationModal extends StatelessWidget {
                         Container(
                           width: 32,
                           height: 32,
-                          decoration: BoxDecoration(
-                            color: Colors.blue[500],
+                          decoration: const BoxDecoration(
+                            color: _wmSky,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
@@ -1111,13 +1093,13 @@ class TravelModeExplanationModal extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange[500],
+                  backgroundColor: _wmForest,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  elevation: 4,
+                  elevation: 0,
                 ),
                 child: Text(
                   l10n.profileModeGotIt,

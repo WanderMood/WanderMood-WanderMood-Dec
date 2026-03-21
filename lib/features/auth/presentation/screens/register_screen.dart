@@ -9,6 +9,7 @@ import '../../domain/providers/auth_provider.dart';
 import '../../application/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/config/supabase_config.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -47,8 +48,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     
     if (!_acceptTerms) {
       debugPrint('Terms not accepted');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please accept the terms and conditions')),
+      showWanderMoodToast(
+        context,
+        message: 'Please accept the terms and conditions',
       );
       return;
     }
@@ -103,12 +105,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               final prefs = await SharedPreferences.getInstance();
               await prefs.setBool('hasCompletedPreferences', false);
               
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Account created successfully!'),
-                  backgroundColor: Colors.green,
-                  duration: Duration(seconds: 2),
-                ),
+              showWanderMoodToast(
+                context,
+                message: 'Account created successfully!',
+                duration: const Duration(seconds: 2),
               );
               
               // Navigate directly to onboarding
@@ -124,12 +124,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 await Supabase.instance.client.auth.signOut();
               }
               
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Account created! Please check your email at $email to verify your account.'),
-                  duration: const Duration(seconds: 5),
-                  backgroundColor: Colors.green,
-                ),
+              showWanderMoodToast(
+                context,
+                message: 'Account created! Please check your email at $email to verify your account.',
+                duration: const Duration(seconds: 5),
               );
               
               // Navigate to email verification screen
@@ -148,12 +146,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           // Handle "User already registered" case
           if (e.message.contains('User already registered')) {
             // Show more helpful message and redirect to login
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('This email is already registered. Please sign in instead.'),
-                backgroundColor: Colors.orange,
-                duration: Duration(seconds: 4),
-              ),
+            showWanderMoodToast(
+              context,
+              message: 'This email is already registered. Please sign in instead.',
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 4),
             );
             
             // Redirect to login screen after a short delay
@@ -163,11 +160,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               }
             });
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Signup failed: ${e.message}'),
-                backgroundColor: Colors.red,
-              ),
+            showWanderMoodToast(
+              context,
+              message: 'Signup failed: ${e.message}',
+              isError: true,
             );
           }
         }
@@ -175,11 +171,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         debugPrint('❌ Unexpected error: $e');
         if (mounted) {
           setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Signup failed: $e'),
-              backgroundColor: Colors.red,
-            ),
+          showWanderMoodToast(
+            context,
+            message: 'Signup failed: $e',
+            isError: true,
           );
         }
       }
@@ -187,8 +182,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       debugPrint('Exception during signup: $e');
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+        showWanderMoodToast(
+          context,
+          message: e.toString(),
+          isError: true,
         );
       }
     }
@@ -211,7 +208,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   
                   // Back button
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_rounded, color: Color(0xFF4CAF50)),
+                    icon: const Icon(Icons.arrow_back_ios_rounded, color: Color(0xFF2A6049)),
                     onPressed: () => context.go('/login'),
                   ),
                   
@@ -223,7 +220,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     style: GoogleFonts.museoModerno(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF4CAF50),
+                      color: const Color(0xFF2A6049),
                     ),
                   ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.2, end: 0),
                   
@@ -398,7 +395,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               child: ElevatedButton(
                                 onPressed: _isLoading ? null : _handleSignUp,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF4CAF50),
+                                  backgroundColor: const Color(0xFF2A6049),
                                   foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),

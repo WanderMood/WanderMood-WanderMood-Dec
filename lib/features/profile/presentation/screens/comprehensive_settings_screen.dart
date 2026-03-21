@@ -13,6 +13,7 @@ import '../providers/settings_providers.dart';
 import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class ComprehensiveSettingsScreen extends ConsumerStatefulWidget {
   const ComprehensiveSettingsScreen({super.key});
@@ -129,7 +130,7 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                     label: l10n.settingsPrivacyTitle,
                     subtitle: l10n.settingsPrivacySubtitle,
                     iconBgColor: const Color(0xFFDCFCE7), // green-100
-                    iconColor: const Color(0xFF16A34A), // green-600
+                    iconColor: const Color(0xFF2A6049), // wmForest
                     onTap: () => context.push('/settings/privacy'),
                   ),
                   
@@ -502,7 +503,6 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
 
   Future<void> _handleSignOut(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
     final shouldSignOut = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
@@ -543,11 +543,10 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.drawerErrorSigningOut(e.toString())),
-              backgroundColor: theme.colorScheme.error,
-            ),
+          showWanderMoodToast(
+            context,
+            message: l10n.drawerErrorSigningOut(e.toString()),
+            isError: true,
           );
         }
       }

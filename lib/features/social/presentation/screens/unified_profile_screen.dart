@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/social/domain/models/social_post.dart';
 import 'package:wandermood/features/social/domain/providers/social_providers.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -53,13 +54,12 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
       _isFollowing = !_isFollowing;
     });
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(_isFollowing ? 'Started following user' : 'Unfollowed user'),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),
+    showWanderMoodToast(
+      context,
+      message:
+          _isFollowing ? 'Started following user' : 'Unfollowed user',
+      backgroundColor: const Color(0xFF2A6049),
+      duration: const Duration(seconds: 2),
     );
   }
   
@@ -75,7 +75,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
           children: [
             if (_isOwnProfile) ...[
               ListTile(
-                leading: const Icon(Icons.settings, color: Color(0xFF4CAF50)),
+                leading: const Icon(Icons.settings, color: Color(0xFF2A6049)),
                 title: Text(
                   'Settings',
                   style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
@@ -87,7 +87,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
               ),
               // QR code sharing temporarily hidden - not yet implemented
               // ListTile(
-              //   leading: const Icon(Icons.qr_code, color: Color(0xFF4CAF50)),
+              //   leading: const Icon(Icons.qr_code, color: Color(0xFF2A6049)),
               //   title: Text(
               //     'Share Profile',
               //     style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
@@ -140,54 +140,44 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
   }
   
   void _sendMessage() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Messaging feature coming soon!'),
-        backgroundColor: Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-        duration: Duration(seconds: 2),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Messaging feature coming soon!',
+      backgroundColor: const Color(0xFF2A6049),
+      duration: const Duration(seconds: 2),
     );
   }
   
   void _showQRCode() {
     // QR code functionality for own profile
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('QR code sharing coming soon!'),
-        backgroundColor: Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'QR code sharing coming soon!',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
   
   void _reportUser() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Report feature coming soon!'),
-        backgroundColor: Colors.orange,
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Report feature coming soon!',
+      backgroundColor: Colors.orange,
     );
   }
   
   void _blockUser() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Block feature coming soon!'),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Block feature coming soon!',
+      isError: true,
     );
   }
   
   void _shareProfile() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Share feature coming soon!'),
-        backgroundColor: Colors.blue,
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Share feature coming soon!',
+      backgroundColor: Colors.blue,
     );
   }
   
@@ -202,7 +192,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: Color(0xFF4CAF50)),
+              const CircularProgressIndicator(color: Color(0xFF2A6049)),
               const SizedBox(height: 16),
               Text(
                 'Loading profile...',
@@ -230,12 +220,12 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
               expandedHeight: 300,
               pinned: true,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Color(0xFF4CAF50)),
+                icon: const Icon(Icons.arrow_back, color: Color(0xFF2A6049)),
                 onPressed: () => Navigator.of(context).pop(),
               ),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.more_vert, color: Color(0xFF4CAF50)),
+                  icon: const Icon(Icons.more_vert, color: Color(0xFF2A6049)),
                   onPressed: _showOptions,
                 ),
               ],
@@ -309,7 +299,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4CAF50),
+                    color: const Color(0xFF2A6049),
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 2),
                   ),
@@ -405,7 +395,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
+                  backgroundColor: const Color(0xFF2A6049),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
@@ -419,7 +409,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
               child: ElevatedButton(
                 onPressed: _toggleFollow,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _isFollowing ? Colors.grey[300] : const Color(0xFF4CAF50),
+                  backgroundColor: _isFollowing ? Colors.grey[300] : const Color(0xFF2A6049),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
@@ -441,17 +431,17 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
             //     onPressed: _sendMessage,
             //     icon: Icon(
             //       Icons.message,
-            //       color: const Color(0xFF4CAF50),
+            //       color: const Color(0xFF2A6049),
             //     ),
             //     label: Text(
             //       'Message',
             //       style: GoogleFonts.poppins(
             //         fontWeight: FontWeight.w600,
-            //         color: const Color(0xFF4CAF50),
+            //         color: const Color(0xFF2A6049),
             //       ),
             //     ),
             //     style: OutlinedButton.styleFrom(
-            //       side: const BorderSide(color: Color(0xFF4CAF50)),
+            //       side: const BorderSide(color: Color(0xFF2A6049)),
             //       padding: const EdgeInsets.symmetric(vertical: 12),
             //       shape: RoundedRectangleBorder(
             //         borderRadius: BorderRadius.circular(25),
@@ -554,10 +544,10 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
             children: interests.map((interest) => Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFF4CAF50).withOpacity(0.1),
+                color: const Color(0xFF2A6049).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: const Color(0xFF4CAF50).withOpacity(0.3),
+                  color: const Color(0xFF2A6049).withOpacity(0.3),
                 ),
               ),
               child: Text(
@@ -565,7 +555,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xFF4CAF50),
+                  color: const Color(0xFF2A6049),
                 ),
               ),
             )).toList(),
@@ -592,7 +582,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: const Color(0xFF4CAF50),
+          color: const Color(0xFF2A6049),
           borderRadius: BorderRadius.circular(12),
         ),
         labelColor: Colors.white,

@@ -22,6 +22,9 @@
   "myDayEmptyCreateButton": "Crear Mi Día",
   "myDayEmptyBrowseButton": "Ver actividades",
   "myDayEmptyAskMoodyButton": "Preguntar a Moody",
+  "myDayQuickAddActivity": "Añadir actividad",
+  "moodyFeedbackPromptBody": "¿Cómo va? Toca para contarme cómo te sientes.",
+  "moodyFeedbackShareAction": "Compartir comentarios",
   "myDayEmptyInspiredTitle": "Inspírate",
   "myDayInspiredCafesTitle": "Descubrir cafés",
   "myDayInspiredCafesSubtitle": "Encuentra sitios acogedores para relajarte",
@@ -328,6 +331,17 @@
   "profileEditVibesDone": "Listo",
   "profileMoodJourneyTitle": "Tu viaje de ánimo",
   "profileMoodJourneySubtitle": "Ver tu historial de ánimo",
+  "moodHistoryIntro": "Una línea de tiempo tranquila de cómo te has sentido.",
+  "moodHistorySectionRecent": "Reciente",
+  "moodHistorySectionTimeline": "Línea de tiempo",
+  "moodHistoryEmptyTitle": "Tu viaje empieza aquí",
+  "moodHistoryEmptyBody": "Registra tu ánimo desde Moody Hub o Mi día—tus momentos aparecerán abajo.",
+  "moodHistoryLoginRequired": "Inicia sesión para ver tu viaje de ánimo.",
+  "moodHistoryErrorUser": "No se pudo cargar tu cuenta.",
+  "moodHistoryErrorMoods": "No se pudieron cargar los ánimos.",
+  "moodHistoryTodayBadge": "Hoy",
+  "moodHistoryDayToday": "Hoy",
+  "moodHistoryDayYesterday": "Ayer",
   "profileTravelGlobeTitle": "Tu globo viajero",
   "profileTravelGlobeSubtitle": "Explora tu viaje",
   "profilePreferencesTitle": "Tus preferencias",
@@ -713,6 +727,8 @@
   "noPlanFindMeCoffee": "☕ Encuentra café para mí",
   "noPlanGetMeMoving": "🏃 Ponme en movimiento",
   "noPlanJustChat": "Solo charlar",
-  "noPlanPlanLater": "Quizás más tarde"
+  "noPlanPlanLater": "Quizás más tarde",
+
+  "myDayHeroActiveSubtitle": "Estás en esta actividad ahora mismo."
 }
 

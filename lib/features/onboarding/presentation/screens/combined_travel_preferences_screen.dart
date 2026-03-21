@@ -474,7 +474,7 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
                       margin: const EdgeInsets.symmetric(horizontal: 1.5),
                       decoration: BoxDecoration(
                         color: index < 4 
-                          ? const Color(0xFF4CAF50)
+                          ? const Color(0xFF2A6049)
                           : Colors.grey.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
@@ -505,7 +505,7 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
                     ),
                     child: const Icon(
                       Icons.arrow_back_ios_new,
-                      color: Color(0xFF4CAF50),
+                      color: Color(0xFF2A6049),
                       size: 20,
                     ),
                   ),
@@ -540,7 +540,7 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
                                 style: GoogleFonts.museoModerno(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF4CAF50),
+                                  color: const Color(0xFF2A6049),
                                 ),
                                 textAlign: TextAlign.center,
                               );
@@ -650,7 +650,7 @@ class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravel
                             : null,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _canContinue
-                              ? const Color(0xFF4CAF50)
+                              ? const Color(0xFF2A6049)
                               : Colors.grey.withOpacity(0.3),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(

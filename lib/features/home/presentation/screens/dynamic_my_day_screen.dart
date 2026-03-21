@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -28,10 +27,10 @@ import '../widgets/my_day_free_time_carousel.dart';
 import '../widgets/my_day_get_ready_sheet.dart';
 import '../widgets/my_day_timeline_section.dart';
 import '../widgets/my_day_weather_dialog.dart';
+import '../widgets/moody_feedback_prompt_card.dart';
 import 'package:wandermood/core/theme/time_based_theme.dart';
 import '../../providers/time_suggestion_provider.dart';
 import 'package:wandermood/core/presentation/painters/circle_pattern_painter.dart';
-import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 
 class DynamicMyDayScreen extends ConsumerStatefulWidget {
@@ -47,7 +46,6 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   final Map<String, bool> _collapsedSections = {}; // Track which sections are collapsed
   
   bool _hasInitialized = false; // Prevent invalidate on hot reload
-  DateTime? _lastRefreshTime; // ✅ Debounce refresh button
   
   @override
   void initState() {
@@ -65,6 +63,92 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         });
       });
     }
+  }
+
+  bool _timelineHasActivities(
+    AsyncValue<Map<String, List<EnhancedActivityData>>> async,
+  ) {
+    return async.maybeWhen(
+      data: (m) => m.values.fold<int>(0, (sum, list) => sum + list.length) > 0,
+      orElse: () => false,
+    );
+  }
+
+  /// v2 quick actions — 80px row: Ask Moody (sky) + Add activity (forest tint).
+  Widget _buildMyDayQuickActionsRow(AppLocalizations l10n) {
+    const wmSkyTint = Color(0xFFEDF5F9);
+    const wmSky = Color(0xFFA8C8DC);
+    const wmForestTint = Color(0xFFEBF3EE);
+    const wmParchment = Color(0xFFE8E2D8);
+    const wmForest = Color(0xFF2A6049);
+    const wmCharcoal = Color(0xFF1E1C18);
+
+    Widget tile({
+      required VoidCallback onTap,
+      required Color fill,
+      required Color borderColor,
+      required IconData icon,
+      required String label,
+    }) {
+      return Expanded(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(16),
+            child: Ink(
+              height: 80,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: fill,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: borderColor, width: 0.5),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: wmForest, size: 24),
+                  const SizedBox(height: 6),
+                  Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: wmCharcoal,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        tile(
+          onTap: () => _navigateToTab(2),
+          fill: wmSkyTint,
+          borderColor: wmSky,
+          icon: Icons.chat_bubble_outline_rounded,
+          label: l10n.myDayEmptyAskMoodyButton,
+        ),
+        const SizedBox(width: 12),
+        tile(
+          onTap: () => _navigateToTab(1),
+          fill: wmForestTint,
+          borderColor: wmParchment,
+          icon: Icons.add_rounded,
+          label: l10n.myDayQuickAddActivity,
+        ),
+      ],
+    );
   }
   
   @override
@@ -105,9 +189,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                       Text(
                         headerSubtitle,
                         style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          color: Colors.black87,
-                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF4A4640),
+                          height: 1.5,
                         ),
                       ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
                       
@@ -123,6 +208,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         loading: () => _buildLoadingStatusCard(),
                         error: (error, stack) => _buildErrorStatusCard(),
                       ),
+                      const SizedBox(height: 16),
+                      if (_timelineHasActivities(timelineActivities)) ...[
+                        _buildMyDayQuickActionsRow(l10n),
+                        const SizedBox(height: 16),
+                      ],
+                      const MoodyFeedbackPromptCard(),
                     ],
                   ),
                 ),
@@ -243,7 +334,18 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 ),
               ),
               const Spacer(),
-              const SizedBox(height: 24),
+              TextButton(
+                onPressed: () => context.push('/agenda'),
+                child: Text(
+                  l10n.drawerMyAgenda,
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF2A6049),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -292,7 +394,6 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
   Widget _buildHeaderRow({required bool isImmersive}) {
     final titleColor = isImmersive ? Colors.white : const Color(0xFF1E1C18);
-    final iconColor = isImmersive ? Colors.white : const Color(0xFF2A6049);
     final profileBgColor = isImmersive ? Colors.white.withOpacity(0.2) : Colors.white;
     final profileBorder = isImmersive ? Border.all(color: Colors.white.withOpacity(0.5), width: 1) : null;
     final shadowColor = isImmersive ? Colors.black.withOpacity(0.5) : Colors.black.withOpacity(0.1);
@@ -332,15 +433,15 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         ),
         const SizedBox(width: 16),
         
-        // Title
+        // Title (wmTitle — design system)
         Expanded(
           child: Text(
             'My Day',
-            style: GoogleFonts.museoModerno(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
+            style: GoogleFonts.poppins(
+              fontSize: 26,
+              fontWeight: FontWeight.w700,
               color: titleColor,
-              letterSpacing: 0.5,
+              letterSpacing: -0.5,
               shadows: isImmersive
                   ? [Shadow(color: shadowColor, blurRadius: 4, offset: const Offset(0, 2))]
                   : null,
@@ -348,74 +449,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2),
         ),
         
-        // Agenda and refresh
+        // Weather pill only (no reset / refresh / agenda in header)
         Row(
           children: [
-            // Temporary clear button for testing
-            if (kDebugMode)
-              IconButton(
-                onPressed: () async {
-                  try {
-                    await ref.read(scheduledActivityServiceProvider).clearAllScheduledActivities();
-                    ref.invalidate(scheduledActivitiesForTodayProvider);
-                    ref.invalidate(cachedActivitySuggestionsProvider);
-                    if (context.mounted) {
-                      showWanderMoodToast(
-                        context,
-                        message: 'Plan cleared! (Debug)',
-                      );
-                    }
-                  } catch (e) {
-                    debugPrint('Error clearing: \$e');
-                  }
-                },
-                icon: Icon(
-                  Icons.delete_sweep,
-                  color: Colors.redAccent,
-                  size: 24,
-                  shadows: isImmersive
-                      ? [Shadow(color: shadowColor, blurRadius: 4, offset: const Offset(0, 2))]
-                      : null,
-                ),
-              ),
-            // Agenda button
-            IconButton(
-              onPressed: () {
-                context.push('/agenda');
-              },
-              icon: Icon(
-                Icons.calendar_month,
-                color: iconColor,
-                size: 24,
-                shadows: isImmersive
-                    ? [Shadow(color: shadowColor, blurRadius: 4, offset: const Offset(0, 2))]
-                    : null,
-              ),
-            ),
-            // Refresh button
-            IconButton(
-              onPressed: () {
-                final now = DateTime.now();
-                if (_lastRefreshTime == null || now.difference(_lastRefreshTime!).inSeconds > 2) {
-                  _lastRefreshTime = now;
-                  debugPrint('🔄 My Day: Manual refresh triggered');
-                  ref.invalidate(scheduledActivitiesForTodayProvider);
-                  ref.invalidate(cachedActivitySuggestionsProvider);
-                } else {
-                  debugPrint('⏸️ My Day: Refresh blocked (debounced)');
-                }
-              },
-              icon: Icon(
-                Icons.refresh,
-                color: iconColor,
-                size: 24,
-                shadows: isImmersive
-                    ? [Shadow(color: shadowColor, blurRadius: 4, offset: const Offset(0, 2))]
-                    : null,
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Weather widget
             Consumer(
               builder: (context, ref, child) {
                 final weatherAsync = ref.watch(weatherProvider);
@@ -428,16 +464,11 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                            color: isImmersive ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.9),
+                            color: isImmersive ? Colors.white.withOpacity(0.15) : Colors.white,
                             borderRadius: BorderRadius.circular(20),
-                            border: isImmersive ? Border.all(color: Colors.white.withOpacity(0.3), width: 1) : null,
-                            boxShadow: isImmersive ? null : [
-                              BoxShadow(
-                                color: shadowColor,
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                            border: isImmersive
+                                ? Border.all(color: Colors.white.withOpacity(0.3), width: 1)
+                                : Border.all(color: const Color(0xFFE8E2D8), width: 0.5),
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(20),
@@ -446,7 +477,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.cloud_off, color: isImmersive ? Colors.white : Colors.grey, size: 20),
+                                  Icon(Icons.cloud_off, color: isImmersive ? Colors.white : const Color(0xFF8C8780), size: 20),
                                   const SizedBox(width: 6),
                                   Text(
                                     '--°',
@@ -503,16 +534,11 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: isImmersive ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.9),
+                          color: isImmersive ? Colors.white.withOpacity(0.15) : Colors.white,
                           borderRadius: BorderRadius.circular(20),
-                          border: isImmersive ? Border.all(color: Colors.white.withOpacity(0.3), width: 1) : null,
-                          boxShadow: isImmersive ? null : [
-                            BoxShadow(
-                              color: shadowColor,
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+                          border: isImmersive
+                              ? Border.all(color: Colors.white.withOpacity(0.3), width: 1)
+                              : Border.all(color: const Color(0xFFE8E2D8), width: 0.5),
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
@@ -541,16 +567,11 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   loading: () => Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isImmersive ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.9),
+                      color: isImmersive ? Colors.white.withOpacity(0.15) : Colors.white,
                       borderRadius: BorderRadius.circular(20),
-                      border: isImmersive ? Border.all(color: Colors.white.withOpacity(0.3), width: 1) : null,
-                      boxShadow: isImmersive ? null : [
-                        BoxShadow(
-                          color: shadowColor,
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                      border: isImmersive
+                          ? Border.all(color: Colors.white.withOpacity(0.3), width: 1)
+                          : Border.all(color: const Color(0xFFE8E2D8), width: 0.5),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -578,16 +599,11 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   error: (_, __) => Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isImmersive ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.9),
+                      color: isImmersive ? Colors.white.withOpacity(0.15) : Colors.white,
                       borderRadius: BorderRadius.circular(20),
-                      border: isImmersive ? Border.all(color: Colors.white.withOpacity(0.3), width: 1) : null,
-                      boxShadow: isImmersive ? null : [
-                        BoxShadow(
-                          color: shadowColor,
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                      border: isImmersive
+                          ? Border.all(color: Colors.white.withOpacity(0.3), width: 1)
+                          : Border.all(color: const Color(0xFFE8E2D8), width: 0.5),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -721,108 +737,53 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       timeConfig: timeConfig,
     );
 
-    String bgImageUrl;
-    if (hour < 12) {
-      bgImageUrl = 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?q=80&w=1200&auto=format&fit=crop';
-    } else if (hour < 17) {
-      bgImageUrl = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop';
-    } else {
-      bgImageUrl = 'https://images.unsplash.com/photo-1514565131-fce0801e5785?q=80&w=1200&auto=format&fit=crop';
-    }
-
+    // WanderMood v2 (Screen 2): no stock photo backgrounds — wmWhite card + tokens
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: const Color(0xFFE8E2D8)),
         boxShadow: const [],
       ),
-      child: Stack(
+      padding: const EdgeInsets.all(28),
+      child: Column(
         children: [
-          // Background Image
-          Positioned.fill(
-            child: CachedNetworkImage(
-              imageUrl: bgImageUrl,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
-                color: config.gradientColors.first,
-              ),
-              errorWidget: (context, url, error) => Container(
-                color: config.gradientColors.first,
-              ),
+          Container(
+            width: 86,
+            height: 86,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(0xFFEBF3EE),
             ),
-          ),
-          // Dark/Gradient Overlay for text readability
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.2),
-                    Colors.black.withOpacity(0.6),
-                  ],
-                ),
-              ),
+            child: Icon(
+              config.icon,
+              size: 44,
+              color: const Color(0xFF2A6049),
             ),
-          ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(28),
-            child: Column(
-              children: [
-                Container(
-                  width: 86,
-                  height: 86,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.2),
-                  ),
-                  child: ClipOval(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Container(
-                        color: Colors.white.withOpacity(0.1),
-                        child: Icon(
-                          config.icon,
-                          size: 44,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
-                const SizedBox(height: 16),
-                Text(
-                  config.title,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.5),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0, duration: 400.ms, curve: Curves.easeOut),
-                const SizedBox(height: 10),
-                Text(
-                  config.subtitle,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    height: 1.5,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white.withOpacity(0.9),
-                  ),
-                ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2, end: 0, duration: 400.ms, curve: Curves.easeOut),
-              ],
+          ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
+          const SizedBox(height: 16),
+          Text(
+            config.title,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 26,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF1E1C18),
+              letterSpacing: -0.5,
             ),
-          ),
+          ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0, duration: 400.ms, curve: Curves.easeOut),
+          const SizedBox(height: 10),
+          Text(
+            config.subtitle,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              height: 1.5,
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFF4A4640),
+            ),
+          ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2, end: 0, duration: 400.ms, curve: Curves.easeOut),
         ],
       ),
     ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.05, end: 0, curve: Curves.easeOut);
@@ -1723,7 +1684,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     child: ElevatedButton(
                       onPressed: () => context.goNamed('main', extra: {'tab': 2}),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF16C45B),
+                        backgroundColor: const Color(0xFF2A6049),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
@@ -2592,21 +2553,40 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   void _showActivityOptions(EnhancedActivityData activity) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFFFFFFFF),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        color: const Color(0xFFFFFFFF),
-        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Color(0xFFFFFFFF),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: EdgeInsets.fromLTRB(
+          24,
+          12,
+          24,
+          24 + MediaQuery.of(context).padding.bottom,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8E2D8),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
             Text(
               'Activity Options',
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
+                color: const Color(0xFF1E1C18),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             
             // View Details option
             ListTile(
@@ -2620,7 +2600,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 _showActivityDetails(activity.rawData);
               },
             ),
-            const Divider(height: 1, thickness: 1, color: Color(0xFFD8D0C4)),
+            const Divider(height: 1, thickness: 1, color: Color(0xFFE8E2D8)), // wmParchment
             
             // Save for Later option
             ListTile(
@@ -2634,7 +2614,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 _saveActivity(activity.rawData);
               },
             ),
-            const Divider(height: 1, thickness: 1, color: Color(0xFFD8D0C4)),
+            const Divider(height: 1, thickness: 1, color: Color(0xFFE8E2D8)),
             
             if (activity.status == ActivityStatus.awaitingCompletion)
               ListTile(
@@ -2656,7 +2636,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 },
               ),
             if (activity.status == ActivityStatus.awaitingCompletion)
-              const Divider(height: 1, thickness: 1, color: Color(0xFFD8D0C4)),
+              const Divider(height: 1, thickness: 1, color: Color(0xFFE8E2D8)),
             if (activity.status == ActivityStatus.awaitingCompletion)
               ListTile(
                 leading: Container(
@@ -2686,7 +2666,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 },
               ),
             if (activity.status == ActivityStatus.awaitingCompletion)
-              const Divider(height: 1, thickness: 1, color: Color(0xFFD8D0C4)),
+              const Divider(height: 1, thickness: 1, color: Color(0xFFE8E2D8)),
 
             // Share option
             ListTile(
@@ -2704,7 +2684,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 );
               },
             ),
-            const Divider(height: 1, thickness: 1, color: Color(0xFFD8D0C4)),
+            const Divider(height: 1, thickness: 1, color: Color(0xFFE8E2D8)),
             ListTile(
               leading: const Icon(Icons.directions, color: Color(0xFF2A6049)),
               title: Text(

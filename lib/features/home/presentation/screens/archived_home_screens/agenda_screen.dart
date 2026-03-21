@@ -58,7 +58,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
                   style: GoogleFonts.openSans(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF12B347),
+                    color: const Color(0xFF2A6049),
                   ),
                 ),
               ),
@@ -78,7 +78,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
                   calendarStyle: const CalendarStyle(
                     markersMaxCount: 1,
                     markerDecoration: BoxDecoration(
-                      color: Color(0xFF12B347),
+                      color: Color(0xFF2A6049),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -117,7 +117,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
                         style: GoogleFonts.openSans(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF12B347),
+                          color: const Color(0xFF2A6049),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -145,7 +145,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
       ),
       child: ListTile(
         leading: const CircleAvatar(
-          backgroundColor: Color(0xFF12B347),
+          backgroundColor: Color(0xFF2A6049),
           child: Icon(Icons.event, color: Colors.white),
         ),
         title: Text(
@@ -171,7 +171,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
   Widget _buildAddEventButton() {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF12B347),
+        backgroundColor: const Color(0xFF2A6049),
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 12),
         shape: RoundedRectangleBorder(

@@ -57,14 +57,14 @@ class _CacheStatsWidgetState extends State<CacheStatsWidget> {
           children: [
             Row(
               children: [
-                const Icon(Icons.savings, color: Color(0xFF12B347)),
+                const Icon(Icons.savings, color: Color(0xFF2A6049)),
                 const SizedBox(width: 8),
                 Text(
                   'Smart Cache Stats',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF12B347),
+                    color: const Color(0xFF2A6049),
                   ),
                 ),
               ],
@@ -108,7 +108,7 @@ class _CacheStatsWidgetState extends State<CacheStatsWidget> {
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
             ),
           ),
         ],

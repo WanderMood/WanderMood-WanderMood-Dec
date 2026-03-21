@@ -7,6 +7,7 @@ import 'package:wandermood/features/places/providers/trending_destinations_provi
 import 'package:wandermood/core/theme/app_theme.dart';
 import 'dart:math' as math;
 import 'package:wandermood/features/location/providers/location_provider.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class AllTrendingDestinationsScreen extends ConsumerStatefulWidget {
   final List<PlacesSearchResult> destinations;
@@ -69,17 +70,11 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
       });
       _micAnimationController.reset();
       
-      // Show a confirmation snackbar
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Sorted by "$selectedOption"'),
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          backgroundColor: const Color(0xFF12B347),
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Sorted by "$selectedOption"',
+        duration: const Duration(seconds: 2),
+        backgroundColor: const Color(0xFF2A6049),
       );
     });
   }
@@ -150,7 +145,7 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF12B347),
+                    color: const Color(0xFF2A6049),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -289,12 +284,10 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () {
-                    // Show a simple snackbar for now
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Would navigate to ${destination.name}'),
-                        duration: const Duration(seconds: 1),
-                      ),
+                    showWanderMoodToast(
+                      context,
+                      message: 'Would navigate to ${destination.name}',
+                      duration: const Duration(seconds: 1),
                     );
                   },
                   splashColor: Colors.white.withOpacity(0.1),
@@ -323,7 +316,7 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
           onPlay: (controller) => controller.repeat(reverse: true),
         ).shimmer(
           duration: const Duration(seconds: 3),
-          color: const Color(0xFF12B347).withOpacity(0.3),
+          color: const Color(0xFF2A6049).withOpacity(0.3),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -364,7 +357,7 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: !_isMapView 
-                          ? const Color(0xFF12B347).withOpacity(0.3)
+                          ? const Color(0xFF2A6049).withOpacity(0.3)
                           : Colors.transparent,
                       borderRadius: const BorderRadius.horizontal(
                         left: Radius.circular(20),
@@ -372,7 +365,7 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
                     ),
                     child: Icon(
                       Icons.view_list,
-                      color: !_isMapView ? const Color(0xFF12B347) : Colors.black54,
+                      color: !_isMapView ? const Color(0xFF2A6049) : Colors.black54,
                       size: 20,
                     ),
                   ),
@@ -388,7 +381,7 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: _isMapView 
-                          ? const Color(0xFF12B347).withOpacity(0.3)
+                          ? const Color(0xFF2A6049).withOpacity(0.3)
                           : Colors.transparent,
                       borderRadius: const BorderRadius.horizontal(
                         right: Radius.circular(20),
@@ -396,7 +389,7 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
                     ),
                     child: Icon(
                       Icons.map,
-                      color: _isMapView ? const Color(0xFF12B347) : Colors.black54,
+                      color: _isMapView ? const Color(0xFF2A6049) : Colors.black54,
                       size: 20,
                     ),
                   ),
@@ -475,7 +468,7 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
                                   color: Colors.white.withOpacity(0.8),
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
-                                    color: const Color(0xFF12B347).withOpacity(0.3),
+                                    color: const Color(0xFF2A6049).withOpacity(0.3),
                                     width: 1,
                                   ),
                                 ),
@@ -485,7 +478,7 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
                                     Text(
                                       _sortOption,
                                       style: GoogleFonts.poppins(
-                                        color: const Color(0xFF12B347),
+                                        color: const Color(0xFF2A6049),
                                         fontWeight: FontWeight.w500,
                                         fontSize: 14,
                                       ),
@@ -493,7 +486,7 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
                                     const Spacer(),
                                     const Icon(
                                       Icons.arrow_drop_down,
-                                      color: Color(0xFF12B347),
+                                      color: Color(0xFF2A6049),
                                     ),
                                   ],
                                 ),
@@ -537,7 +530,7 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
                   onPressed: _isListening ? _stopListening : _startListening,
                   backgroundColor: _isListening 
                       ? Colors.red 
-                      : const Color(0xFF12B347),
+                      : const Color(0xFF2A6049),
                   child: AnimatedBuilder(
                     animation: _micAnimationController,
                     builder: (context, child) {
@@ -551,7 +544,7 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
                                 height: 55.0 + (i * 5.0),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: const Color(0xFF12B347).withOpacity(
+                                  color: const Color(0xFF2A6049).withOpacity(
                                     0.5 - (i * 0.15) * _micAnimationController.value,
                                   ),
                                 ),
@@ -627,7 +620,7 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
             icon: const Icon(Icons.view_list),
             label: const Text('Switch to List View'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF12B347),
+              backgroundColor: const Color(0xFF2A6049),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               shape: RoundedRectangleBorder(
@@ -654,24 +647,24 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
           }
         },
         backgroundColor: Colors.white.withOpacity(0.8),
-        selectedColor: const Color(0xFF12B347).withOpacity(0.3),
-        checkmarkColor: const Color(0xFF12B347),
+        selectedColor: const Color(0xFF2A6049).withOpacity(0.3),
+        checkmarkColor: const Color(0xFF2A6049),
         labelStyle: GoogleFonts.poppins(
-          color: isSelected ? const Color(0xFF12B347) : Colors.black87,
+          color: isSelected ? const Color(0xFF2A6049) : Colors.black87,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(
             color: isSelected 
-                ? const Color(0xFF12B347) 
+                ? const Color(0xFF2A6049) 
                 : Colors.transparent,
             width: isSelected ? 1.5 : 0,
           ),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         elevation: isSelected ? 2 : 0,
-        shadowColor: isSelected ? const Color(0xFF12B347).withOpacity(0.3) : Colors.transparent,
+        shadowColor: isSelected ? const Color(0xFF2A6049).withOpacity(0.3) : Colors.transparent,
       ),
     );
   }
@@ -764,7 +757,7 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF12B347).withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? const Color(0xFF2A6049).withOpacity(0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -774,14 +767,14 @@ class _AllTrendingDestinationsScreenState extends ConsumerState<AllTrendingDesti
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? const Color(0xFF12B347) : Colors.black87,
+                color: isSelected ? const Color(0xFF2A6049) : Colors.black87,
               ),
             ),
             const Spacer(),
             if (isSelected)
               const Icon(
                 Icons.check_circle,
-                color: Color(0xFF12B347),
+                color: Color(0xFF2A6049),
               ),
           ],
         ),

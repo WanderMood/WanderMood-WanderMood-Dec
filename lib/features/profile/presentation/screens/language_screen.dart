@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:flutter/foundation.dart';
 
 class LanguageScreen extends ConsumerStatefulWidget {
@@ -68,7 +69,7 @@ class _LanguageScreenState extends ConsumerState<LanguageScreen> {
             style: GoogleFonts.museoModerno(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
             ),
           ),
           leading: IconButton(
@@ -123,7 +124,7 @@ class _LanguageScreenState extends ConsumerState<LanguageScreen> {
                   trailing: Radio<String>(
                     value: 'system',
                     groupValue: _selectedLanguage == 'system' ? 'system' : '',
-                    activeColor: const Color(0xFF12B347),
+                    activeColor: const Color(0xFF2A6049),
                     onChanged: (value) {
                       setState(() {
                         _selectedLanguage = 'system';
@@ -145,7 +146,7 @@ class _LanguageScreenState extends ConsumerState<LanguageScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF12B347),
+                    color: const Color(0xFF2A6049),
                   ),
                 ),
               ),
@@ -177,7 +178,7 @@ class _LanguageScreenState extends ConsumerState<LanguageScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                            color: isSelected ? const Color(0xFF12B347) : Colors.black87,
+                            color: isSelected ? const Color(0xFF2A6049) : Colors.black87,
                           ),
                         ),
                         subtitle: Text(
@@ -190,7 +191,7 @@ class _LanguageScreenState extends ConsumerState<LanguageScreen> {
                         trailing: Radio<String>(
                           value: language['name']!,
                           groupValue: _selectedLanguage,
-                          activeColor: const Color(0xFF12B347),
+                          activeColor: const Color(0xFF2A6049),
                           onChanged: (value) {
                             setState(() {
                               _selectedLanguage = value!;
@@ -216,7 +217,7 @@ class _LanguageScreenState extends ConsumerState<LanguageScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _applyLanguageChange,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF12B347),
+                      backgroundColor: const Color(0xFF2A6049),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -270,12 +271,9 @@ class _LanguageScreenState extends ConsumerState<LanguageScreen> {
       );
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Language changed to $_selectedLanguage'),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: const Color(0xFF12B347),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Language changed to $_selectedLanguage',
         );
         
         // Return to previous screen after applying
@@ -286,12 +284,10 @@ class _LanguageScreenState extends ConsumerState<LanguageScreen> {
         debugPrint('❌ Error updating language: $e');
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to update language: ${e.toString()}'),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Failed to update language: ${e.toString()}',
+          isError: true,
         );
       }
     } finally {

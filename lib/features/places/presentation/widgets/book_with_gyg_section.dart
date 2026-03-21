@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../domain/models/gyg_link.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 const String _appLink = 'https://gyg.me/edviennemerencia-app';
 const String _promoCode = 'EDVIENNEMERENCIA5';
@@ -53,7 +54,8 @@ class BookWithGygSection extends StatelessWidget {
         .toList();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
+      // 16 matches Explore list / day plan horizontal insets
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -136,7 +138,7 @@ class BookWithGygSection extends StatelessWidget {
               offset: const Offset(0, 12),
             ),
             BoxShadow(
-              color: const Color(0xFF12B347).withOpacity(0.2),
+              color: const Color(0xFF2A6049).withOpacity(0.2),
               blurRadius: 20,
               offset: const Offset(0, 8),
               spreadRadius: -5,
@@ -214,7 +216,7 @@ class BookWithGygSection extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -288,22 +290,15 @@ class BookWithGygSection extends StatelessWidget {
                         GestureDetector(
                           onTap: () {
                             Clipboard.setData(const ClipboardData(text: _promoCode));
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Code gekopieerd 💚',
-                                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                                ),
-                                backgroundColor: const Color(0xFF12B347),
-                                behavior: SnackBarBehavior.floating,
-                                duration: const Duration(seconds: 2),
-                              ),
+                            showWanderMoodToast(
+                              context,
+                              message: 'Code gekopieerd 💚',
                             );
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF12B347).withOpacity(0.9),
+                              color: const Color(0xFF2A6049).withOpacity(0.9),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -341,7 +336,7 @@ class BookWithGygSection extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFF12B347).withOpacity(0.25)),
+              border: Border.all(color: const Color(0xFF2A6049).withOpacity(0.25)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.03),
@@ -365,14 +360,18 @@ class BookWithGygSection extends StatelessWidget {
   }
 
   Widget _buildPoweredByLabel(BuildContext context) {
+    // v2: discrete caption footer (Explore SCREEN 6)
+    const wmStone = Color(0xFF8C8780);
     return Align(
       alignment: Alignment.centerLeft,
       child: Text(
         'Powered by GetYourGuide',
         style: GoogleFonts.poppins(
           fontSize: 11,
-          color: Colors.grey[400],
+          height: 1.3,
+          color: wmStone,
           fontWeight: FontWeight.w400,
+          letterSpacing: 0.15,
         ),
       ),
     );

@@ -106,7 +106,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                         width: 2,
                       ),
                     ),
@@ -123,7 +123,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                     children: [
                       const Icon(
                         Icons.location_on,
-                        color: Color(0xFF12B347),
+                        color: Color(0xFF2A6049),
                         size: 20,
                       ),
                       const SizedBox(width: 4),
@@ -132,7 +132,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: const Color(0xFF12B347),
+                          color: const Color(0xFF2A6049),
                         ),
                       ),
                     ],
@@ -188,7 +188,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                       style: GoogleFonts.poppins(
                         fontSize: 24,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                       ),
                     ),
 
@@ -215,7 +215,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                   onPressed: () {
                     // TODO: Implement mood selection
                   },
-                  backgroundColor: const Color(0xFF12B347),
+                  backgroundColor: const Color(0xFF2A6049),
                   child: const Icon(Icons.mood, color: Colors.white),
                 ),
               ),

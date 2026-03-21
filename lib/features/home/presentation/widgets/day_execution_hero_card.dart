@@ -5,6 +5,17 @@ import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_pro
 import 'package:wandermood/features/mood/models/activity_rating.dart';
 import 'package:wandermood/features/mood/services/activity_rating_service.dart';
 import 'package:wandermood/features/home/presentation/widgets/activity_review_sheet.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
+
+// WanderMood v2 tokens (Screen 3 — My Day execution hero)
+const Color _wmSky = Color(0xFFA8C8DC);
+const Color _wmSkyTint = Color(0xFFEDF5F9);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmCharcoal = Color(0xFF1E1C18);
+const Color _wmStone = Color(0xFF8C8780);
+const Color _wmForestTint = Color(0xFFEBF3EE);
+const Color _wmSunset = Color(0xFFE8784A);
 
 enum DayExecutionHeroState {
   active,
@@ -115,11 +126,13 @@ class _ActiveExecutionHero extends StatelessWidget {
     final title = activity.rawData['title'] as String? ?? 'Activity';
     final timeStr = _formatTime(activity.startTime);
 
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        color: const Color(0xFFA8C8DC),
+        color: _wmSky,
+        border: Border.all(color: _wmParchment, width: 0.5),
         boxShadow: const [],
       ),
       child: Column(
@@ -131,7 +144,7 @@ class _ActiveExecutionHero extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.25),
+                  color: Colors.white.withValues(alpha: 0.35),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -140,7 +153,7 @@ class _ActiveExecutionHero extends StatelessWidget {
                     Icon(
                       Icons.access_time_rounded,
                       size: 16,
-                      color: Colors.white,
+                      color: _wmCharcoal,
                     ),
                     const SizedBox(width: 6),
                     Text(
@@ -148,7 +161,7 @@ class _ActiveExecutionHero extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1E1C18),
+                        color: _wmCharcoal,
                       ),
                     ),
                   ],
@@ -157,7 +170,7 @@ class _ActiveExecutionHero extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.25),
+                  color: Colors.white.withValues(alpha: 0.35),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -166,7 +179,7 @@ class _ActiveExecutionHero extends StatelessWidget {
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.6,
-                    color: const Color(0xFF1E1C18),
+                    color: _wmCharcoal,
                   ),
                 ),
               ),
@@ -176,19 +189,20 @@ class _ActiveExecutionHero extends StatelessWidget {
           Text(
             title,
             style: GoogleFonts.poppins(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: _wmCharcoal,
               height: 1.2,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'You are in the middle of this activity right now.',
+            l10n.myDayHeroActiveSubtitle,
             style: GoogleFonts.poppins(
               fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF1E1C18),
+              fontWeight: FontWeight.w400,
+              color: _wmStone,
+              height: 1.4,
             ),
           ),
           const SizedBox(height: 20),
@@ -241,13 +255,8 @@ class _CompletedExecutionHero extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: hasReview
-              ? const [Color(0xFF2A6049), Color(0xFF2A6049)]
-              : const [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
-        ),
+        color: _wmForest,
+        border: Border.all(color: _wmParchment, width: 0.5),
         boxShadow: const [],
       ),
       child: Column(
@@ -359,6 +368,7 @@ class _CompletedExecutionHero extends StatelessWidget {
                   label: 'Directions',
                   icon: Icons.navigation_rounded,
                   filled: false,
+                  onColoredCard: true,
                   onTap: onDirections,
                 ),
               ),
@@ -368,6 +378,7 @@ class _CompletedExecutionHero extends StatelessWidget {
                   label: hasReview ? 'Reviewed' : 'Review',
                   icon: Icons.check_rounded,
                   filled: true,
+                  primaryOnForestCard: true,
                   onTap: hasReview ? () {} : (onReview ?? () {}),
                 ),
               ),
@@ -402,7 +413,8 @@ class _AwaitingCompletionHero extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        color: const Color(0xFFE8784A),
+        color: _wmSunset,
+        border: Border.all(color: _wmParchment, width: 0.5),
         boxShadow: const [],
       ),
       child: Column(
@@ -471,7 +483,7 @@ class _AwaitingCompletionHero extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF1E1C18),
+              color: _wmCharcoal,
             ),
           ),
           const SizedBox(height: 20),
@@ -482,6 +494,7 @@ class _AwaitingCompletionHero extends StatelessWidget {
                   label: 'Still Here',
                   icon: Icons.schedule_rounded,
                   filled: false,
+                  onColoredCard: true,
                   onTap: onStillHere,
                 ),
               ),
@@ -524,11 +537,8 @@ class _UpcomingExecutionHero extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
-        ),
+        color: _wmSkyTint,
+        border: Border.all(color: _wmParchment, width: 0.5),
         boxShadow: const [],
       ),
       child: Column(
@@ -540,20 +550,21 @@ class _UpcomingExecutionHero extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.25),
+                  color: Colors.white.withValues(alpha: 0.85),
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: _wmParchment, width: 0.5),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.access_time_rounded, size: 16, color: Colors.white),
+                    Icon(Icons.access_time_rounded, size: 16, color: _wmCharcoal),
                     const SizedBox(width: 6),
                     Text(
                       'Starts at $timeStr',
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: _wmCharcoal,
                       ),
                     ),
                   ],
@@ -562,8 +573,9 @@ class _UpcomingExecutionHero extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFBBF24),
+                  color: _wmForestTint,
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: _wmForest, width: 1),
                 ),
                 child: Text(
                   remainStr.isNotEmpty ? 'IN $remainStr' : 'UPCOMING',
@@ -571,7 +583,7 @@ class _UpcomingExecutionHero extends StatelessWidget {
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.6,
-                    color: Colors.white,
+                    color: _wmForest,
                   ),
                 ),
               ),
@@ -581,9 +593,9 @@ class _UpcomingExecutionHero extends StatelessWidget {
           Text(
             title,
             style: GoogleFonts.poppins(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFF1E1C18),
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: _wmCharcoal,
               height: 1.2,
             ),
           ),
@@ -620,21 +632,45 @@ class _HeroButton extends StatelessWidget {
   final IconData icon;
   final bool filled;
   final VoidCallback onTap;
+  /// Secondary style on wmForest / wmSunset cards: light outline + white label.
+  final bool onColoredCard;
+  /// Primary CTA on solid wmForest hero (white fill + forest label).
+  final bool primaryOnForestCard;
 
   const _HeroButton({
     required this.label,
     required this.icon,
     required this.filled,
     required this.onTap,
+    this.onColoredCard = false,
+    this.primaryOnForestCard = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final secondaryBorder = onColoredCard
+        ? const BorderSide(color: Colors.white, width: 1.5)
+        : const BorderSide(color: _wmForest, width: 1.5);
+    final secondaryFg = onColoredCard ? Colors.white : _wmForest;
+    final secondaryBg =
+        onColoredCard ? Colors.white.withValues(alpha: 0.12) : Colors.white;
+
+    final filledBg = primaryOnForestCard ? Colors.white : _wmForest;
+    final filledFg = primaryOnForestCard ? _wmForest : Colors.white;
+
     return Material(
-      color: filled ? const Color(0xFF2A6049) : Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      elevation: 4,
-      shadowColor: Colors.black.withOpacity(0.1),
+      color: filled ? filledBg : secondaryBg,
+      // Use `shape` only — Material forbids both `shape` and `borderRadius`.
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: filled && primaryOnForestCard
+            ? BorderSide(color: _wmParchment.withValues(alpha: 0.6), width: 0.5)
+            : filled
+                ? BorderSide.none
+                : secondaryBorder,
+      ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
@@ -643,14 +679,14 @@ class _HeroButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 18, color: filled ? Colors.white : const Color(0xFF2A6049)),
+              Icon(icon, size: 18, color: filled ? filledFg : secondaryFg),
               const SizedBox(width: 8),
               Text(
                 label,
                 style: GoogleFonts.poppins(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: filled ? Colors.white : const Color(0xFF2A6049),
+                  color: filled ? filledFg : secondaryFg,
                 ),
               ),
             ],

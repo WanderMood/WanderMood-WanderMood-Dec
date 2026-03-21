@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class PreferencesScreen extends ConsumerStatefulWidget {
@@ -99,15 +100,10 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
 
       if (mounted) {
         setState(() => _hasChanges = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Preferences saved successfully',
-              style: GoogleFonts.poppins(),
-            ),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 1),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Preferences saved successfully',
+          duration: const Duration(seconds: 1),
         );
         
         // Navigate back to profile after a short delay to show success message
@@ -120,15 +116,11 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
     } catch (e) {
       debugPrint('Error saving preferences: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Error saving preferences: $e',
-              style: GoogleFonts.poppins(),
-            ),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Error saving preferences: $e',
+          isError: true,
+          duration: const Duration(seconds: 2),
         );
       }
     }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/settings_screen_template.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class DeleteAccountScreen extends ConsumerStatefulWidget {
   const DeleteAccountScreen({super.key});
@@ -25,11 +26,10 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
 
   Future<void> _deleteAccount() async {
     if (_confirmController.text != 'DELETE') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please type DELETE to confirm'),
-          backgroundColor: Colors.orange,
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Please type DELETE to confirm',
+        backgroundColor: Colors.orange,
       );
       return;
     }
@@ -112,21 +112,18 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
       await supabase.auth.signOut();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account deleted successfully'),
-            backgroundColor: Colors.green,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Account deleted successfully',
         );
         context.go('/');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error deleting account: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Error deleting account: $e',
+          isError: true,
         );
         setState(() => _isDeleting = false);
       }

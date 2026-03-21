@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/social/domain/models/social_post.dart';
 import 'package:wandermood/features/social/domain/providers/social_providers.dart';
 import 'package:go_router/go_router.dart';
@@ -48,7 +49,7 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
                     style: GoogleFonts.museoModerno(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF12B347),
+                      color: const Color(0xFF2A6049),
                     ),
                   ),
                 ),
@@ -57,7 +58,7 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
                   IconButton(
                     icon: const Icon(
                       Icons.add_circle_outline,
-                      color: Color(0xFF12B347),
+                      color: Color(0xFF2A6049),
                       size: 28,
                     ),
                     onPressed: () {
@@ -69,7 +70,7 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
                   IconButton(
                     icon: const Icon(
                       Icons.chat_bubble_outline,
-                      color: Color(0xFF12B347),
+                      color: Color(0xFF2A6049),
                       size: 24,
                     ),
                     onPressed: () {
@@ -169,10 +170,10 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF12B347).withOpacity(0.1) : Colors.transparent,
+        color: isActive ? const Color(0xFF2A6049).withOpacity(0.1) : Colors.transparent,
         borderRadius: BorderRadius.circular(20),
         border: isActive 
-            ? Border.all(color: const Color(0xFF12B347), width: 1)
+            ? Border.all(color: const Color(0xFF2A6049), width: 1)
             : null,
       ),
       child: Text(
@@ -180,7 +181,7 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
         style: GoogleFonts.poppins(
           fontSize: 16,
           fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-          color: isActive ? const Color(0xFF12B347) : Colors.black54,
+          color: isActive ? const Color(0xFF2A6049) : Colors.black54,
         ),
       ),
     );
@@ -224,7 +225,7 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
                 shape: BoxShape.circle,
                 gradient: isNew 
                     ? const LinearGradient(
-                        colors: [Color(0xFF12B347), Color(0xFF4CAF50)],
+                        colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       )
@@ -249,7 +250,7 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
                 child: isAdd
                     ? const Icon(
                         Icons.add,
-                        color: Color(0xFF12B347),
+                        color: Color(0xFF2A6049),
                         size: 30,
                       )
                     : null,
@@ -402,11 +403,10 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
                     icon: const Icon(Icons.share_outlined),
                     onPressed: () {
                       // Share post
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Share feature coming soon!'),
-                          duration: Duration(seconds: 2),
-                        ),
+                      showWanderMoodToast(
+                        context,
+                        message: 'Share feature coming soon!',
+                        duration: const Duration(seconds: 2),
                       );
                     },
                   ),
@@ -441,7 +441,7 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
                       '#$tag',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -457,14 +457,14 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF12B347).withOpacity(0.1),
+                      color: const Color(0xFF2A6049).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       post.activity,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -490,11 +490,10 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
     // Show posts filtered by tag
     final filteredPosts = ref.read(postsByTagProvider(tag));
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Found ${filteredPosts.length} posts with #$tag'),
-        duration: const Duration(seconds: 2),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Found ${filteredPosts.length} posts with #$tag',
+      duration: const Duration(seconds: 2),
     );
     
     // In a real app, this would navigate to a filtered results screen
@@ -547,11 +546,10 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
               ),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Link copied to clipboard'),
-                    duration: Duration(seconds: 2),
-                  ),
+                showWanderMoodToast(
+                  context,
+                  message: 'Link copied to clipboard',
+                  duration: const Duration(seconds: 2),
                 );
               },
             ),
@@ -728,7 +726,7 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
                               // This would normally get the current user avatar
                               return const CircleAvatar(
                                 radius: 18,
-                                backgroundColor: Color(0xFF12B347),
+                                backgroundColor: Color(0xFF2A6049),
                                 child: Text(
                                   'U',
                                   style: TextStyle(
@@ -762,16 +760,15 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
                           IconButton(
                             icon: const Icon(
                               Icons.send,
-                              color: Color(0xFF12B347),
+                              color: Color(0xFF2A6049),
                             ),
                             onPressed: () {
                               // Handle send comment
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Comment feature coming soon!'),
-                                  duration: Duration(seconds: 2),
-                                ),
+                              showWanderMoodToast(
+                                context,
+                                message: 'Comment feature coming soon!',
+                                duration: const Duration(seconds: 2),
                               );
                             },
                           ),
@@ -880,18 +877,17 @@ class _BookmarkButtonState extends State<_BookmarkButton> {
     return IconButton(
       icon: Icon(
         _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-        color: _isBookmarked ? const Color(0xFF12B347) : null,
+        color: _isBookmarked ? const Color(0xFF2A6049) : null,
       ),
       onPressed: () {
         setState(() {
           _isBookmarked = !_isBookmarked;
         });
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_isBookmarked ? 'Post saved' : 'Post unsaved'),
-            duration: const Duration(seconds: 1),
-          ),
+        showWanderMoodToast(
+          context,
+          message: _isBookmarked ? 'Post saved' : 'Post unsaved',
+          duration: const Duration(seconds: 1),
         );
       },
     );

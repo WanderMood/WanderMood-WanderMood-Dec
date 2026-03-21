@@ -6,6 +6,7 @@ import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/providers/explore_places_provider.dart';
 import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/plans/widgets/activity_detail_screen.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
@@ -156,8 +157,9 @@ class _FreeTimeActivitiesScreenState extends ConsumerState<FreeTimeActivitiesScr
                               icon: const Icon(Icons.share, color: Colors.white),
                               onPressed: () {
                                 // Share functionality
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Sharing your discoveries! 📱')),
+                                showWanderMoodToast(
+                                  context,
+                                  message: 'Sharing your discoveries! 📱',
                                 );
                               },
                             ),
@@ -702,8 +704,10 @@ class _FreeTimeActivitiesScreenState extends ConsumerState<FreeTimeActivitiesScr
           
           ElevatedButton(
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Following ${friend['name'] as String}\'s activities! 👥')),
+              showWanderMoodToast(
+                context,
+                message:
+                    'Following ${friend['name'] as String}\'s activities! 👥',
               );
             },
             style: ElevatedButton.styleFrom(

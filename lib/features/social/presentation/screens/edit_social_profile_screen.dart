@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/social/domain/models/social_post.dart';
 import 'package:wandermood/features/social/domain/providers/social_providers.dart';
 import 'package:wandermood/features/social/presentation/screens/user_profile_screen.dart';
@@ -68,11 +69,11 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error selecting image: $e'),
-          duration: const Duration(seconds: 2),
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Error selecting image: $e',
+        isError: true,
+        duration: const Duration(seconds: 2),
       );
     }
   }
@@ -91,11 +92,11 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
     // Validate form
     if (_nameController.text.trim().isEmpty ||
         _usernameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Name and username are required'),
-          duration: Duration(seconds: 2),
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Name and username are required',
+        isError: true,
+        duration: const Duration(seconds: 2),
       );
       return;
     }
@@ -110,11 +111,10 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
         _isLoading = false;
       });
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile updated successfully'),
-          duration: Duration(seconds: 2),
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Profile updated successfully',
+        duration: const Duration(seconds: 2),
       );
       
       Navigator.of(context).pop();
@@ -139,18 +139,18 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
             style: GoogleFonts.museoModerno(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
             ),
           ),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF12B347)),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF2A6049)),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
         body: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFF12B347),
+                  color: Color(0xFF2A6049),
                 ),
               )
             : SingleChildScrollView(
@@ -198,7 +198,7 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
                                 padding: const EdgeInsets.all(8),
                                 decoration: const BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Color(0xFF12B347),
+                                  color: Color(0xFF2A6049),
                                 ),
                                 child: const Icon(
                                   Icons.camera_alt,
@@ -232,7 +232,7 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(
-                            color: Color(0xFF12B347),
+                            color: Color(0xFF2A6049),
                             width: 2,
                           ),
                         ),
@@ -259,7 +259,7 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(
-                            color: Color(0xFF12B347),
+                            color: Color(0xFF2A6049),
                             width: 2,
                           ),
                         ),
@@ -286,7 +286,7 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(
-                            color: Color(0xFF12B347),
+                            color: Color(0xFF2A6049),
                             width: 2,
                           ),
                         ),
@@ -316,15 +316,15 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
                             ),
                             decoration: BoxDecoration(
                               color: isSelected 
-                                  ? const Color(0xFF12B347) 
-                                  : const Color(0xFF12B347).withOpacity(0.1),
+                                  ? const Color(0xFF2A6049) 
+                                  : const Color(0xFF2A6049).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
                               interest,
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
-                                color: isSelected ? Colors.white : const Color(0xFF12B347),
+                                color: isSelected ? Colors.white : const Color(0xFF2A6049),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -339,7 +339,7 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
                       child: ElevatedButton(
                         onPressed: _saveProfile,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF12B347),
+                          backgroundColor: const Color(0xFF2A6049),
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(

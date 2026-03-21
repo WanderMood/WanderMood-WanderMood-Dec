@@ -266,7 +266,7 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
                       margin: const EdgeInsets.symmetric(horizontal: 1.5),
                       decoration: BoxDecoration(
                         color: index < 2 
-                          ? const Color(0xFF4CAF50)
+                          ? const Color(0xFF2A6049)
                           : Colors.grey.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
@@ -301,7 +301,7 @@ class _MoodPreferenceScreenState extends ConsumerState<MoodPreferenceScreen> wit
                     ),
                     child: const Icon(
                       Icons.arrow_back_ios_new,
-                      color: const Color(0xFF4CAF50),
+                      color: const Color(0xFF2A6049),
                       size: 20,
                     ),
                   ),

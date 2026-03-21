@@ -37,7 +37,7 @@ class TrendingDestinationsSection extends ConsumerWidget {
                 onPlay: (controller) => controller.repeat(reverse: true),
               ).shimmer(
                 duration: const Duration(seconds: 3),
-                color: const Color(0xFF12B347).withOpacity(0.3),
+                color: const Color(0xFF2A6049).withOpacity(0.3),
               ),
               const Spacer(),
               TextButton.icon(
@@ -53,13 +53,13 @@ class TrendingDestinationsSection extends ConsumerWidget {
                 },
                 icon: const Icon(
                   Icons.arrow_forward,
-                  color: Color(0xFF12B347),
+                  color: Color(0xFF2A6049),
                   size: 18,
                 ),
                 label: Text(
                   'See All',
                   style: GoogleFonts.poppins(
-                    color: const Color(0xFF12B347),
+                    color: const Color(0xFF2A6049),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -159,7 +159,7 @@ class TrendingDestinationsSection extends ConsumerWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF12B347),
+                    color: const Color(0xFF2A6049),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(

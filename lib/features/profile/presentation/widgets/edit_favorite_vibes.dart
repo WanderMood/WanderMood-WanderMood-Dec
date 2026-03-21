@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 /// Vibe data model
 class VibeData {
@@ -123,25 +124,19 @@ class FavoriteVibesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    const wmWhite = Color(0xFFFFFFFF);
+    const wmParchment = Color(0xFFE8E2D8);
+    const wmCharcoal = Color(0xFF1E1C18);
+    const wmForest = Color(0xFF2A6049);
+    const wmForestTint = Color(0xFFEBF3EE);
+    const wmStone = Color(0xFF8C8780);
+
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-            spreadRadius: -2,
-          ),
-        ],
+        color: wmWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: wmParchment, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,9 +147,9 @@ class FavoriteVibesCard extends StatelessWidget {
               Text(
                 l10n.profileFavoriteVibesTitle,
                 style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: wmCharcoal,
                 ),
               ),
               GestureDetector(
@@ -164,26 +159,27 @@ class FavoriteVibesCard extends StatelessWidget {
                     Text(
                       l10n.profileFavoriteVibesEdit,
                       style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF2A6049),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: wmForest,
+                        letterSpacing: 0.2,
                       ),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 2),
                     const Icon(
                       Icons.chevron_right,
-                      color: Color(0xFF2A6049),
-                      size: 20,
+                      color: wmForest,
+                      size: 18,
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Wrap(
-            spacing: 12,
-            runSpacing: 12,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               ...selectedVibes.map((vibeName) {
                 final vibeData = allVibes.firstWhere(
@@ -191,40 +187,32 @@ class FavoriteVibesCard extends StatelessWidget {
                   orElse: () => allVibes.first,
                 );
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: vibeData.gradient),
-                    borderRadius: BorderRadius.circular(50),
-                    boxShadow: const [],
+                    color: wmForestTint,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: wmParchment, width: 0.5),
                   ),
                   child: Text(
                     '${vibeData.emoji} ${vibeData.name}',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: wmForest,
                     ),
                   ),
                 );
               }),
               GestureDetector(
                 onTap: onEditTap,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.grey[300]!,
-                      width: 2,
-                      style: BorderStyle.solid,
-                    ),
-                    borderRadius: BorderRadius.circular(50),
-                  ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                   child: Text(
                     l10n.profileFavoriteVibesAdd,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[400],
+                      fontWeight: FontWeight.w500,
+                      color: wmStone,
                     ),
                   ),
                 ),
@@ -321,28 +309,16 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
       if (mounted) {
         Navigator.pop(context);
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              l10n.profileVibesUpdated,
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-            ),
-            backgroundColor: const Color(0xFFF97316),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            margin: const EdgeInsets.all(16),
-          ),
-        );
+        showWanderMoodToast(context, message: l10n.profileVibesUpdated);
       }
     } catch (e) {
       debugPrint('Error saving vibes: $e');
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.profileVibesSaveFailed(e.toString())),
-            backgroundColor: Colors.red,
-          ),
+        showWanderMoodToast(
+          context,
+          message: l10n.profileVibesSaveFailed(e.toString()),
+          isError: true,
         );
       }
     } finally {

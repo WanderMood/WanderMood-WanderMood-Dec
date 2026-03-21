@@ -4,6 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// Design tokens — My Day free-time section (v2 spec).
+const Color _wmWhite = Color(0xFFFFFFFF);
+const Color _wmCream = Color(0xFFF5F0E8);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmCharcoal = Color(0xFF1E1C18);
+const Color _wmStone = Color(0xFF8C8780);
+
 class MyDayFreeTimeCarousel extends StatelessWidget {
   final List<Map<String, dynamic>> activities;
   final void Function(Map<String, dynamic>) onActivityTap;
@@ -20,6 +28,10 @@ class MyDayFreeTimeCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (activities.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -27,21 +39,37 @@ class MyDayFreeTimeCarousel extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                '✨ Free Time Activities',
-                style: GoogleFonts.museoModerno(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF12B347),
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '✨ ',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: _wmForest,
+                      ),
+                    ),
+                    TextSpan(
+                      text: 'Free Time Activities',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: _wmCharcoal,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const Spacer(),
               Text(
                 'Near you',
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: Colors.grey[600],
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: _wmStone,
                 ),
               ),
             ],
@@ -53,14 +81,16 @@ class MyDayFreeTimeCarousel extends StatelessWidget {
           child: Text(
             'Discover what you can do right now',
             style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.grey[600],
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+              color: _wmStone,
             ),
           ),
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 200,
+          // Card: 100 image + text block (2-line title + 2-line desc) + button row; 248 was too tight → overflow
+          height: 308,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -100,264 +130,204 @@ class _FreeTimeCard extends StatelessWidget {
     required this.onDirectionsTap,
   });
 
+  static String _categoryLabel(String category) {
+    switch (category.toLowerCase()) {
+      case 'food':
+        return 'Food';
+      case 'exercise':
+        return 'Exercise';
+      case 'culture':
+        return 'Culture';
+      case 'entertainment':
+        return 'Entertainment';
+      case 'shopping':
+        return 'Shopping';
+      case 'social':
+        return 'Social';
+      case 'nature':
+        return 'Nature';
+      default:
+        return 'Place';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final title = activity['title'] as String? ?? 'Activity';
+    final description = activity['description'] as String? ?? '';
+    final distance = activity['distance'] as String? ?? '';
+    final category = (activity['category'] as String?) ?? '';
+
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
         onTap();
       },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: 280,
-        height: 220,
+      child: Container(
+        width: 260,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 25,
-              offset: const Offset(0, 12),
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 15,
-              offset: const Offset(0, 6),
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: const Color(0xFF12B347).withOpacity(0.2),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-              spreadRadius: -5,
-            ),
-          ],
+          color: _wmWhite,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _wmParchment, width: 0.5),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: ColorFiltered(
-                  colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.1),
-                    BlendMode.multiply,
-                  ),
-                  child: CachedNetworkImage(
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              height: 100,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  CachedNetworkImage(
                     imageUrl: activity['imageUrl'] ??
                         'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80',
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(
-                      color: Colors.grey[300],
+                      color: _wmCream,
                       child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: _wmForest,
+                        ),
                       ),
                     ),
                     errorWidget: (context, url, error) => Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFF12B347).withOpacity(0.8),
-                            const Color(0xFF4CAF50).withOpacity(0.6),
+                      color: _wmCream,
+                      child: Icon(Icons.image_outlined, color: _wmStone, size: 40),
+                    ),
+                  ),
+                  if (distance.isNotEmpty)
+                    Positioned(
+                      left: 10,
+                      top: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _wmWhite.withOpacity(0.92),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(color: _wmParchment, width: 0.5),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.place_outlined, color: _wmStone, size: 14),
+                            const SizedBox(width: 4),
+                            Text(
+                              distance,
+                              style: GoogleFonts.poppins(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: _wmCharcoal,
+                              ),
+                            ),
                           ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
                         ),
                       ),
-                      child: const Center(
-                        child: Icon(Icons.image, color: Colors.white, size: 40),
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (category.isNotEmpty)
+                    Text(
+                      _categoryLabel(category).toUpperCase(),
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: _wmStone,
+                        letterSpacing: 0.08,
                       ),
                     ),
-                  ),
-                ),
-              ),
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.black.withOpacity(0.3),
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.8),
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      stops: const [0.0, 0.2, 1.0],
+                  if (category.isNotEmpty) const SizedBox(height: 2),
+                  Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: _wmCharcoal,
+                      height: 1.2,
                     ),
                   ),
-                ),
-              ),
-              Positioned.fill(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  if (description.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: _wmStone,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  Row(
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
-                              borderRadius: BorderRadius.circular(16),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: onSaveTap,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: _wmForest,
+                            side: const BorderSide(color: _wmForest, width: 1.5),
+                            backgroundColor: _wmWhite,
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(999),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.place,
-                                  color: Colors.white,
-                                  size: 12,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  activity['distance'] ?? '0.5 km',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 11,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
+                            minimumSize: const Size(0, 34),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            'Save',
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF12B347),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              _categoryIcon(activity['category'] ?? ''),
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                      Text(
-                        activity['title'] ?? 'Activity',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withOpacity(0.8),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        activity['description'] ?? '',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: Colors.white.withOpacity(0.9),
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withOpacity(0.6),
-                              blurRadius: 4,
-                              offset: const Offset(0, 1),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: onDirectionsTap,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _wmForest,
+                            foregroundColor: _wmWhite,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(999),
                             ),
-                          ],
+                            minimumSize: const Size(0, 34),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            'Directions',
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.5),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(16),
-                                  onTap: onSaveTap,
-                                  child: Center(
-                                    child: Text(
-                                      'Save',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Container(
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF12B347),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(16),
-                                  onTap: onDirectionsTap,
-                                  child: Center(
-                                    child: Text(
-                                      'Directions',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
-  }
-
-  String _categoryIcon(String category) {
-    switch (category.toLowerCase()) {
-      case 'food':
-        return '🍽️';
-      case 'exercise':
-        return '🏃‍♂️';
-      case 'culture':
-        return '🎨';
-      case 'entertainment':
-        return '🎭';
-      case 'shopping':
-        return '🛍️';
-      case 'social':
-        return '👥';
-      case 'nature':
-        return '🌳';
-      default:
-        return '📍';
-    }
   }
 }

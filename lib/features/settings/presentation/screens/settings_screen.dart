@@ -6,6 +6,7 @@ import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/domain/models/user_preferences.dart';
 import 'package:wandermood/features/settings/presentation/providers/user_preferences_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -34,7 +35,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             style: GoogleFonts.museoModerno(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
             ),
           ),
           leading: IconButton(
@@ -116,7 +117,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           min: 1.0,
                           max: 50.0,
                           divisions: 49,
-                          activeColor: const Color(0xFF12B347),
+                          activeColor: const Color(0xFF2A6049),
           onChanged: (value) {
                             setState(() {
                               _distanceRadius = value;
@@ -132,7 +133,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   
                   // Clear Cache
         ListTile(
-                    leading: const Icon(Icons.cleaning_services_outlined, color: Color(0xFF12B347)),
+                    leading: const Icon(Icons.cleaning_services_outlined, color: Color(0xFF2A6049)),
                     title: Text(
                       l10n.settingsClearCacheTitle,
                       style: GoogleFonts.poppins(
@@ -152,7 +153,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   
                   // Privacy Policy
         ListTile(
-                    leading: const Icon(Icons.privacy_tip_outlined, color: Color(0xFF12B347)),
+                    leading: const Icon(Icons.privacy_tip_outlined, color: Color(0xFF2A6049)),
                     title: Text(
                       l10n.settingsPrivacyPolicyTitle,
                       style: GoogleFonts.poppins(
@@ -172,7 +173,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   
                   // Terms of Service
         ListTile(
-                    leading: const Icon(Icons.gavel_outlined, color: Color(0xFF12B347)),
+                    leading: const Icon(Icons.gavel_outlined, color: Color(0xFF2A6049)),
                     title: Text(
                       l10n.settingsTermsOfServiceTitle,
                       style: GoogleFonts.poppins(
@@ -198,7 +199,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: ElevatedButton(
                       onPressed: _saveSettings,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF12B347),
+                        backgroundColor: const Color(0xFF2A6049),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -235,7 +236,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
             ),
           ),
           const Divider(thickness: 1),
@@ -267,7 +268,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ),
       value: value,
-      activeColor: const Color(0xFF12B347),
+      activeColor: const Color(0xFF2A6049),
       onChanged: onChanged,
     );
   }
@@ -305,15 +306,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onPressed: () {
               // Clear cache logic here
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.settingsCacheCleared),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+              showWanderMoodToast(context, message: l10n.settingsCacheCleared);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF12B347),
+              backgroundColor: const Color(0xFF2A6049),
             ),
             child: Text(
               l10n.settingsDialogConfirmClear,
@@ -331,12 +327,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _saveSettings() {
     final l10n = AppLocalizations.of(context)!;
     // Save settings logic here
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.settingsSaved),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    showWanderMoodToast(context, message: l10n.settingsSaved);
   }
 
   /// Open Privacy Policy in external browser
@@ -348,21 +339,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.settingsOpenPrivacyNetworkError),
-              duration: const Duration(seconds: 3),
-            ),
+          showWanderMoodToast(
+            context,
+            message: l10n.settingsOpenPrivacyNetworkError,
+            isError: true,
+            duration: const Duration(seconds: 3),
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.settingsOpenPrivacyError(e.toString())),
-            duration: const Duration(seconds: 3),
-          ),
+        showWanderMoodToast(
+          context,
+          message: l10n.settingsOpenPrivacyError(e.toString()),
+          isError: true,
+          duration: const Duration(seconds: 3),
         );
       }
     }
@@ -377,21 +368,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.settingsOpenTermsNetworkError),
-              duration: const Duration(seconds: 3),
-            ),
+          showWanderMoodToast(
+            context,
+            message: l10n.settingsOpenTermsNetworkError,
+            isError: true,
+            duration: const Duration(seconds: 3),
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.settingsOpenTermsError(e.toString())),
-            duration: const Duration(seconds: 3),
-          ),
+        showWanderMoodToast(
+          context,
+          message: l10n.settingsOpenTermsError(e.toString()),
+          isError: true,
+          duration: const Duration(seconds: 3),
         );
       }
     }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class ViewReceiptScreen extends StatelessWidget {
   final Map<String, dynamic> activity;
@@ -49,7 +50,7 @@ class ViewReceiptScreen extends StatelessWidget {
                   ),
                   child: const Icon(
                     Icons.arrow_back,
-                    color: Color(0xFF12B347),
+                    color: Color(0xFF2A6049),
                     size: 20,
                   ),
                 ),
@@ -59,7 +60,7 @@ class ViewReceiptScreen extends StatelessWidget {
                 style: GoogleFonts.museoModerno(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF12B347),
+                  color: const Color(0xFF2A6049),
                   letterSpacing: 0.5,
                 ),
               ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2),
@@ -82,7 +83,7 @@ class ViewReceiptScreen extends StatelessWidget {
                     ),
                     child: const Icon(
                       Icons.copy,
-                      color: Color(0xFF12B347),
+                      color: Color(0xFF2A6049),
                       size: 20,
                     ),
                   ),
@@ -119,7 +120,7 @@ class ViewReceiptScreen extends StatelessWidget {
                             padding: const EdgeInsets.all(24),
                             decoration: const BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [Color(0xFF12B347), Color(0xFF4CAF50)],
+                                colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
@@ -185,10 +186,10 @@ class ViewReceiptScreen extends StatelessWidget {
                                             child: const Icon(Icons.image),
                                           ),
                                           errorWidget: (context, url, error) => Container(
-                                            color: const Color(0xFF12B347).withOpacity(0.2),
+                                            color: const Color(0xFF2A6049).withOpacity(0.2),
                                             child: const Icon(
                                               Icons.image,
-                                              color: Color(0xFF12B347),
+                                              color: Color(0xFF2A6049),
                                             ),
                                           ),
                                         ),
@@ -340,8 +341,8 @@ class ViewReceiptScreen extends StatelessWidget {
                             icon: const Icon(Icons.download),
                             label: const Text('Download PDF'),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF12B347),
-                              side: const BorderSide(color: Color(0xFF12B347)),
+                              foregroundColor: const Color(0xFF2A6049),
+                              side: const BorderSide(color: Color(0xFF2A6049)),
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -356,7 +357,7 @@ class ViewReceiptScreen extends StatelessWidget {
                             icon: const Icon(Icons.share),
                             label: const Text('Share Receipt'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF12B347),
+                              backgroundColor: const Color(0xFF2A6049),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
@@ -396,7 +397,7 @@ class ViewReceiptScreen extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: isTotal ? 16 : 14,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.w600,
-              color: isTotal ? const Color(0xFF12B347) : Colors.black87,
+              color: isTotal ? const Color(0xFF2A6049) : Colors.black87,
             ),
           ),
         ],
@@ -442,30 +443,18 @@ Payment: Confirmed
 ''';
     
     Clipboard.setData(ClipboardData(text: receiptText));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Receipt details copied to clipboard',
-          style: GoogleFonts.poppins(),
-        ),
-        backgroundColor: const Color(0xFF12B347),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Receipt details copied to clipboard',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
   
   void _downloadReceipt(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Receipt download started',
-          style: GoogleFonts.poppins(),
-        ),
-        backgroundColor: const Color(0xFF12B347),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
+    showWanderMoodToast(
+      context,
+      message: 'Receipt download started',
+      backgroundColor: const Color(0xFF2A6049),
     );
   }
   
@@ -494,7 +483,7 @@ Thank you for booking with WanderMood! 🌟
           children: [
             Icon(
               Icons.share,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
               size: 24,
             ),
             const SizedBox(width: 8),
@@ -502,7 +491,7 @@ Thank you for booking with WanderMood! 🌟
               'Share Receipt',
               style: GoogleFonts.museoModerno(
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF12B347),
+                color: const Color(0xFF2A6049),
               ),
             ),
           ],
@@ -560,20 +549,14 @@ Thank you for booking with WanderMood! 🌟
             onPressed: () {
               Navigator.of(context).pop();
               // Could integrate with share_plus package here
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Receipt ready to share! 📱',
-                    style: GoogleFonts.poppins(),
-                  ),
-                  backgroundColor: const Color(0xFF12B347),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
+              showWanderMoodToast(
+                context,
+                message: 'Receipt ready to share! 📱',
+                backgroundColor: const Color(0xFF2A6049),
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF12B347),
+              backgroundColor: const Color(0xFF2A6049),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),

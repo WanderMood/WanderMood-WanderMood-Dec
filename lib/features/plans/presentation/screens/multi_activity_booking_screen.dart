@@ -100,7 +100,7 @@ class _MultiActivityBookingScreenState extends ConsumerState<MultiActivityBookin
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
-        color: Color(0xFF4CAF50),
+        color: Color(0xFF2A6049),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
@@ -163,7 +163,7 @@ class _MultiActivityBookingScreenState extends ConsumerState<MultiActivityBookin
       case 'book_now':
         title = 'Immediate Booking';
         description = 'We\'ll process your bookings right away and send confirmation details to your email.';
-        color = const Color(0xFF4CAF50);
+        color = const Color(0xFF2A6049);
         icon = Icons.check_circle;
         break;
       case 'book_later':
@@ -181,7 +181,7 @@ class _MultiActivityBookingScreenState extends ConsumerState<MultiActivityBookin
       default:
         title = 'Activity Booking';
         description = 'Processing your selected activities';
-        color = const Color(0xFF4CAF50);
+        color = const Color(0xFF2A6049);
         icon = Icons.info;
     }
 
@@ -548,7 +548,7 @@ class _MultiActivityBookingScreenState extends ConsumerState<MultiActivityBookin
       child: ElevatedButton(
         onPressed: _processBooking,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF4CAF50),
+          backgroundColor: const Color(0xFF2A6049),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
@@ -615,7 +615,7 @@ class _MultiActivityBookingScreenState extends ConsumerState<MultiActivityBookin
             mainAxisSize: MainAxisSize.min,
             children: [
               const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
               ),
               const SizedBox(height: 16),
               Text(
@@ -718,7 +718,7 @@ class _MultiActivityBookingScreenState extends ConsumerState<MultiActivityBookin
           children: [
             const Icon(
               Icons.check_circle,
-              color: Color(0xFF4CAF50),
+              color: Color(0xFF2A6049),
               size: 48,
             ),
             const SizedBox(height: 16),
@@ -770,7 +770,7 @@ class _MultiActivityBookingScreenState extends ConsumerState<MultiActivityBookin
               'Great!',
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF4CAF50),
+                color: const Color(0xFF2A6049),
               ),
             ),
           ),

@@ -194,7 +194,7 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                       style: TextStyle(
                         fontSize: 48,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF4CAF50),
+                        color: const Color(0xFF2A6049),
                         letterSpacing: 3,
                         height: 1.2,
                       ),
@@ -229,7 +229,7 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                     child: ElevatedButton(
                       onPressed: _onContinue,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4CAF50),
+                        backgroundColor: const Color(0xFF2A6049),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -284,7 +284,7 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
       width: isActive ? 24 : 8,
       height: 8,
       decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF4CAF50) : Colors.grey[300],
+        color: isActive ? const Color(0xFF2A6049) : Colors.grey[300],
         borderRadius: BorderRadius.circular(4),
       ),
     );

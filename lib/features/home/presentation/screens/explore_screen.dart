@@ -30,6 +30,14 @@ import '../../application/intent_processor.dart';
 import '../../providers/smart_context_provider.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 
+/// WanderMood v2 — Advanced Filters modal (SCREEN 7)
+const Color _afWmWhite = Color(0xFFFFFFFF);
+const Color _afWmCream = Color(0xFFF5F0E8);
+const Color _afWmParchment = Color(0xFFE8E2D8);
+const Color _afWmForest = Color(0xFF2A6049);
+const Color _afWmForestTint = Color(0xFFEBF3EE);
+const Color _afWmCharcoal = Color(0xFF1E1C18);
+const Color _afWmStone = Color(0xFF8C8780);
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({Key? key}) : super(key: key);
@@ -826,7 +834,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             children: [
               // Header with title
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                // 16 horizontal aligns list cards with day plan screen insets
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
                 child: Row(
                   children: [
                     Text(
@@ -923,17 +932,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       debugPrint('⚠️ Filters reduced results to ${filteredPlaces.length} places (${allPlaces.length} unfiltered).');
                     }
 
-                    // Map view: GYG at top, then full map
+                    // Map view: full map first; GYG footer (v2 — not a top "ad")
                     if (_isMapView) {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          Expanded(
+                            child: _buildMapView(placesForMap, userLocationAsync.value),
+                          ),
                           BookWithGygSection(
                             cityName: currentCity,
                             links: ref.watch(gygLinksProvider(currentCity)).valueOrNull ?? [],
-                          ),
-                          Expanded(
-                            child: _buildMapView(placesForMap, userLocationAsync.value),
                           ),
                         ],
                       );
@@ -942,31 +951,35 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     if (filteredPlaces.isEmpty) {
                       return CustomScrollView(
                         slivers: [
-                          SliverToBoxAdapter(
-                            child: BookWithGygSection(
-                              cityName: currentCity,
-                              links: ref.watch(gygLinksProvider(currentCity)).valueOrNull ?? [],
-                            ),
-                          ),
-                          const SliverFillRemaining(
+                          SliverFillRemaining(
                             hasScrollBody: false,
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.search_off, size: 64, color: Colors.grey),
-                                  SizedBox(height: 16),
-                                  Text('No places found', style: TextStyle(fontSize: 18, color: Colors.grey)),
-                                ],
-                              ),
+                            child: Column(
+                              children: [
+                                const Expanded(
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.search_off, size: 64, color: Colors.grey),
+                                        SizedBox(height: 16),
+                                        Text('No places found', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                BookWithGygSection(
+                                  cityName: currentCity,
+                                  links: ref.watch(gygLinksProvider(currentCity)).valueOrNull ?? [],
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       );
                     }
 
-                    // List/Grid: one scroll so GYG scrolls away with places
-                    final gygSliver = SliverToBoxAdapter(
+                    // List/Grid: GYG after place cards (footer, not top banner)
+                    final gygFooterSliver = SliverToBoxAdapter(
                       child: BookWithGygSection(
                         cityName: currentCity,
                         links: ref.watch(gygLinksProvider(currentCity)).valueOrNull ?? [],
@@ -976,7 +989,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         ? SliverToBoxAdapter(
                             child: Container(
                             width: double.infinity,
-                            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -1021,7 +1034,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                         '${filteredPlaces.length} places found',
                                         style: GoogleFonts.poppins(
                                           fontSize: 14,
-                                          color: Colors.grey[600],
+                                          color: const Color(0xFF8C8780), // wmStone
                                         ),
                                       ),
                                     ],
@@ -1079,6 +1092,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                   place: place,
                                   userLocation: userLocation,
                                   cityName: currentCity,
+                                  cardMargin: const EdgeInsets.symmetric(vertical: 8),
                                   onTap: () => context.push('/place/${place.id}'),
                                 ).animate().fadeIn(duration: 300.ms, delay: Duration(milliseconds: index * 50));
                               },
@@ -1088,12 +1102,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
                     return CustomScrollView(
                       slivers: [
-                        gygSliver,
                         if (explanationSliver != null) explanationSliver,
+                        // Horizontal 16 matches day plan activity list (ListView.fromLTRB(16,...))
                         SliverPadding(
-                          padding: const EdgeInsets.only(left: 8, right: 8, bottom: 100),
+                          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
                           sliver: placesSliver,
                         ),
+                        gygFooterSliver,
+                        const SliverToBoxAdapter(child: SizedBox(height: 100)),
                       ],
                     );
                   },
@@ -1204,11 +1220,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               maxWidth: MediaQuery.of(context).size.width * 0.9,
             ),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _afWmWhite,
               borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: _afWmParchment, width: 0.5),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 20,
                   spreadRadius: 0,
                   offset: const Offset(0, 8),
@@ -1221,7 +1238,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 Container(
                   padding: const EdgeInsets.fromLTRB(24, 20, 20, 20),
                   decoration: const BoxDecoration(
-                    color: Colors.white,
+                    color: _afWmWhite,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20),
@@ -1232,7 +1249,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2A6049),
+                          color: _afWmForest,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
@@ -1251,7 +1268,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               style: GoogleFonts.poppins(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                                color: _afWmCharcoal,
                               ),
                             ),
                             if (_activeFiltersCount > 0)
@@ -1259,7 +1276,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                 '$_activeFiltersCount filters active',
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
-                                  color: const Color(0xFF2A6049),
+                                  color: _afWmForest,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -1273,13 +1290,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             setModalState(() {});
                           },
                           style: TextButton.styleFrom(
+                            foregroundColor: _afWmStone,
                             backgroundColor: Colors.transparent,
-                            shape: const RoundedRectangleBorder(),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            shape: const RoundedRectangleBorder(side: BorderSide.none),
                           ),
                           child: Text(
                             'Clear All',
                             style: GoogleFonts.poppins(
-                              color: const Color(0xFF8A847B),
+                              color: _afWmStone,
                               fontWeight: FontWeight.w600,
                               fontSize: 13,
                             ),
@@ -1359,7 +1380,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           'Dietary Preferences',
                           _dietaryExpanded,
                           () => updateFilter(() {
-                            print('🔄 Toggling Dietary Preferences: $_dietaryExpanded -> ${!_dietaryExpanded}');
                             _dietaryExpanded = !_dietaryExpanded;
                           }),
                           _buildDietaryFilters(updateFilter),
@@ -1414,7 +1434,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: _afWmWhite,
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(20),
                 bottomRight: Radius.circular(20),
@@ -1435,14 +1455,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       });
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2A6049),
+                      backgroundColor: _afWmForest,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
-                      elevation: 2,
-                      shadowColor: const Color(0xFF2A6049).withOpacity(0.3),
+                      elevation: 0,
+                      shadowColor: Colors.transparent,
                     ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -1482,10 +1502,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFFEAF5EE),
+              color: _afWmWhite,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFF2A6049).withOpacity(0.2),
+                color: _afWmParchment,
+                width: 0.5,
               ),
             ),
             child: Row(
@@ -1493,7 +1514,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2A6049),
+                    color: _afWmForest,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(icon, size: 18, color: Colors.white),
@@ -1504,7 +1525,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF2A6049),
+                    color: _afWmCharcoal,
                   ),
                 ),
               ],
@@ -1978,23 +1999,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _afWmWhite,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade100),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            spreadRadius: 0,
-            offset: const Offset(0, 4),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 6,
-            spreadRadius: 0,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: _afWmParchment, width: 0.5),
       ),
       child: Column(
         children: [
@@ -2002,16 +2009,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             color: Colors.transparent,
             child: InkWell(
               onTap: () {
-                print('🚨 TAP DETECTED on section: $title');
                 HapticFeedback.lightImpact();
                 onToggle();
-                print('🚨 AFTER onToggle called');
               },
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               child: Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: isExpanded ? const Color(0xFFEAF5EE) : Colors.transparent,
+                  color: isExpanded ? _afWmWhite : Colors.transparent,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                 ),
                 child: Row(
@@ -2027,7 +2032,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                          color: _afWmCharcoal,
                         ),
                       ),
                     ),
@@ -2036,7 +2041,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       duration: const Duration(milliseconds: 200),
                       child: Icon(
                         Icons.keyboard_arrow_down,
-                        color: isExpanded ? const Color(0xFF2A6049) : Colors.grey,
+                        color: isExpanded ? _afWmForest : _afWmStone,
                       ),
                     ),
                   ],
@@ -2067,7 +2072,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildFilterChip('🏠', 'Indoor Only', _indoorOnly, const Color(0xFFE3F2FD), (value) {
+              child: _buildFilterChip('🏠', 'Indoor Only', _indoorOnly, (value) {
                 updateFilter(() {
                   _indoorOnly = value;
                   if (value) _outdoorOnly = false; // Exclusive
@@ -2077,7 +2082,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: _buildFilterChip('☀️', 'Outdoor Only', _outdoorOnly, const Color(0xFFFFF3E0), (value) {
+              child: _buildFilterChip('☀️', 'Outdoor Only', _outdoorOnly, (value) {
                 updateFilter(() {
                   _outdoorOnly = value;
                   if (value) _indoorOnly = false; // Exclusive
@@ -2091,7 +2096,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildFilterChip('🌧️', 'Weather-Safe', _weatherSafe, const Color(0xFFE8F5E8), (value) {
+              child: _buildFilterChip('🌧️', 'Weather-Safe', _weatherSafe, (value) {
                 updateFilter(() {
                   _weatherSafe = value;
                   _updateActiveFiltersCount();
@@ -2100,7 +2105,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: _buildFilterChip('🌙', 'Open Now', _openNow, const Color(0xFFFFF8E1), (value) {
+              child: _buildFilterChip('🌙', 'Open Now', _openNow, (value) {
                 updateFilter(() {
                   _openNow = value;
                   _updateActiveFiltersCount();
@@ -2113,7 +2118,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildFilterChip('🤫', 'Quiet', _crowdQuiet, const Color(0xFFFFF9C4), (value) {
+              child: _buildFilterChip('🤫', 'Quiet', _crowdQuiet, (value) {
                 updateFilter(() {
                   _crowdQuiet = value;
                   if (value) _crowdLively = false; // Exclusive
@@ -2123,7 +2128,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: _buildFilterChip('💃', 'Lively', _crowdLively, const Color(0xFFFFE0B2), (value) {
+              child: _buildFilterChip('💃', 'Lively', _crowdLively, (value) {
                 updateFilter(() {
                   _crowdLively = value;
                   if (value) _crowdQuiet = false; // Exclusive
@@ -2137,7 +2142,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildFilterChip('💕', 'Romantic Vibe', _romanticVibe, const Color(0xFFFCE4EC), (value) {
+              child: _buildFilterChip('💕', 'Romantic Vibe', _romanticVibe, (value) {
                 updateFilter(() {
                   _romanticVibe = value;
                   _updateActiveFiltersCount();
@@ -2146,7 +2151,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: _buildFilterChip('🔀', 'Surprise Me', _surpriseMe, const Color(0xFFE1F5FE), (value) {
+              child: _buildFilterChip('🔀', 'Surprise Me', _surpriseMe, (value) {
                 updateFilter(() {
                   _surpriseMe = value;
                   _updateActiveFiltersCount();
@@ -2165,37 +2170,37 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       spacing: 8,
       runSpacing: 8,
       children: [
-        _buildFilterChip('🌱', 'Vegan', _vegan, const Color(0xFFE8F5E8), (value) {
+        _buildFilterChip('🌱', 'Vegan', _vegan, (value) {
           updateFilter(() {
             _vegan = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildFilterChip('🥬', 'Vegetarian', _vegetarian, const Color(0xFFF1F8E9), (value) {
+        _buildFilterChip('🥬', 'Vegetarian', _vegetarian, (value) {
           updateFilter(() {
             _vegetarian = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildFilterChip('🥗', 'Halal', _halal, const Color(0xFFE0F2F1), (value) {
+        _buildFilterChip('🥗', 'Halal', _halal, (value) {
           updateFilter(() {
             _halal = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildFilterChip('🌾', 'Gluten-Free', _glutenFree, const Color(0xFFFFF8E1), (value) {
+        _buildFilterChip('🌾', 'Gluten-Free', _glutenFree, (value) {
           updateFilter(() {
             _glutenFree = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildFilterChip('🐟', 'Pescatarian', _pescatarian, const Color(0xFFE1F5FE), (value) {
+        _buildFilterChip('🐟', 'Pescatarian', _pescatarian, (value) {
           updateFilter(() {
             _pescatarian = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildFilterChip('❌', 'No Alcohol', _noAlcohol, const Color(0xFFFFF3E0), (value) {
+        _buildFilterChip('❌', 'No Alcohol', _noAlcohol, (value) {
           updateFilter(() {
             _noAlcohol = value;
             _updateActiveFiltersCount();
@@ -2211,31 +2216,31 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       spacing: 8,
       runSpacing: 8,
       children: [
-        _buildFilterChip('♿', 'Wheelchair Accessible', _wheelchairAccessible, const Color(0xFFE3F2FD), (value) {
+        _buildFilterChip('♿', 'Wheelchair Accessible', _wheelchairAccessible, (value) {
           updateFilter(() {
             _wheelchairAccessible = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildFilterChip('🏳️‍🌈', 'LGBTQ+ Friendly', _lgbtqFriendly, const Color(0xFFF3E5F5), (value) {
+        _buildFilterChip('🏳️‍🌈', 'LGBTQ+ Friendly', _lgbtqFriendly, (value) {
           updateFilter(() {
             _lgbtqFriendly = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildFilterChip('🧓', 'Senior-Friendly', _seniorFriendly, const Color(0xFFFFF8E1), (value) {
+        _buildFilterChip('🧓', 'Senior-Friendly', _seniorFriendly, (value) {
           updateFilter(() {
             _seniorFriendly = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildFilterChip('🧑‍🍼', 'Baby-Friendly', _babyFriendly, const Color(0xFFFCE4EC), (value) {
+        _buildFilterChip('🧑‍🍼', 'Baby-Friendly', _babyFriendly, (value) {
           updateFilter(() {
             _babyFriendly = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildFilterChip('✊🏿', 'Black-owned', _blackOwned, const Color(0xFFEFEBE9), (value) {
+        _buildFilterChip('✊🏿', 'Black-owned', _blackOwned, (value) {
           updateFilter(() {
             _blackOwned = value;
             _updateActiveFiltersCount();
@@ -2255,7 +2260,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: _afWmCharcoal,
           ),
         ),
         const SizedBox(height: 8),
@@ -2274,8 +2279,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               _updateActiveFiltersCount();
             });
           },
-          activeColor: const Color(0xFF2A6049),
-          inactiveColor: const Color(0xFF2A6049).withOpacity(0.2),
+          activeColor: _afWmForest,
+          inactiveColor: _afWmForest.withOpacity(0.2),
         ),
         const SizedBox(height: 16),
         Text(
@@ -2283,7 +2288,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: _afWmCharcoal,
           ),
         ),
         const SizedBox(height: 8),
@@ -2299,8 +2304,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               _updateActiveFiltersCount();
             });
           },
-          activeColor: const Color(0xFF2A6049),
-          inactiveColor: const Color(0xFF2A6049).withOpacity(0.2),
+          activeColor: _afWmForest,
+          inactiveColor: _afWmForest.withOpacity(0.2),
         ),
         const SizedBox(height: 16),
         Text(
@@ -2308,7 +2313,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: _afWmCharcoal,
           ),
         ),
         const SizedBox(height: 8),
@@ -2316,31 +2321,31 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           spacing: 8,
           runSpacing: 8,
           children: [
-            _buildFilterChip('🚗', 'Parking', _parkingAvailable, const Color(0xFFE8EAF6), (value) {
+            _buildFilterChip('🚗', 'Parking', _parkingAvailable, (value) {
               updateFilter(() {
                 _parkingAvailable = value;
                 _updateActiveFiltersCount();
               });
             }),
-            _buildFilterChip('🚌', 'Transport', _transportIncluded, const Color(0xFFE0F2F1), (value) {
+            _buildFilterChip('🚌', 'Transport', _transportIncluded, (value) {
               updateFilter(() {
                 _transportIncluded = value;
                 _updateActiveFiltersCount();
               });
             }),
-            _buildFilterChip('💳', 'Credit Cards', _creditCards, const Color(0xFFFFF3E0), (value) {
+            _buildFilterChip('💳', 'Credit Cards', _creditCards, (value) {
               updateFilter(() {
                 _creditCards = value;
                 _updateActiveFiltersCount();
               });
             }),
-            _buildFilterChip('📶', 'Wi-Fi', _wifiAvailable, const Color(0xFFE1F5FE), (value) {
+            _buildFilterChip('📶', 'Wi-Fi', _wifiAvailable, (value) {
               updateFilter(() {
                 _wifiAvailable = value;
                 _updateActiveFiltersCount();
               });
             }),
-            _buildFilterChip('🔌', 'Charging', _chargingPoints, const Color(0xFFFFF8E1), (value) {
+            _buildFilterChip('🔌', 'Charging', _chargingPoints, (value) {
               updateFilter(() {
                 _chargingPoints = value;
                 _updateActiveFiltersCount();
@@ -2358,37 +2363,37 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       spacing: 8,
       runSpacing: 8,
       children: [
-        _buildFilterChip('📸', 'Instagrammable', _instagrammable, const Color(0xFFFCE4EC), (value) {
+        _buildFilterChip('📸', 'Instagrammable', _instagrammable, (value) {
           updateFilter(() {
             _instagrammable = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildFilterChip('🎨', 'Artistic Design', _artisticDesign, const Color(0xFFF3E5F5), (value) {
+        _buildFilterChip('🎨', 'Artistic Design', _artisticDesign, (value) {
           updateFilter(() {
             _artisticDesign = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildFilterChip('🧘‍♀️', 'Aesthetic Spaces', _aestheticSpaces, const Color(0xFFE8F5E8), (value) {
+        _buildFilterChip('🧘‍♀️', 'Aesthetic Spaces', _aestheticSpaces, (value) {
           updateFilter(() {
             _aestheticSpaces = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildFilterChip('🌆', 'Scenic Views', _scenicViews, const Color(0xFFE3F2FD), (value) {
+        _buildFilterChip('🌆', 'Scenic Views', _scenicViews, (value) {
           updateFilter(() {
             _scenicViews = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildFilterChip('🌙', 'Best at Night', _bestAtNight, const Color(0xFFE8EAF6), (value) {
+        _buildFilterChip('🌙', 'Best at Night', _bestAtNight, (value) {
           updateFilter(() {
             _bestAtNight = value;
             _updateActiveFiltersCount();
           });
         }),
-        _buildFilterChip('🌅', 'Best at Sunset', _bestAtSunset, const Color(0xFFFFE0B2), (value) {
+        _buildFilterChip('🌅', 'Best at Sunset', _bestAtSunset, (value) {
           updateFilter(() {
             _bestAtSunset = value;
             _updateActiveFiltersCount();
@@ -2398,8 +2403,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  // Helper to build filter chips with custom colors
-  Widget _buildFilterChip(String emoji, String label, bool isSelected, Color unselectedColor, Function(bool) onChanged) {
+  /// v2 filter pills (SCREEN 7): unselected cream + parchment + charcoal; selected forestTint + forest + forest text.
+  Widget _buildFilterChip(String emoji, String label, bool isSelected, Function(bool) onChanged) {
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -2409,13 +2414,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFEAF5EE) : const Color(0xFFF5F0E8),
+          color: isSelected ? _afWmForestTint : _afWmCream,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFF2A6049) : const Color(0xFFD8D0C4),
-            width: 1,
+            color: isSelected ? _afWmForest : _afWmParchment,
+            width: isSelected ? 1.5 : 0.5,
           ),
-          boxShadow: const [],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -2428,7 +2432,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.poppins(
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? const Color(0xFF2A6049) : const Color(0xFF1E1C18),
+                  color: isSelected ? _afWmForest : _afWmCharcoal,
                 ),
               ),
             ),
@@ -2451,11 +2455,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF2A6049) : Colors.grey[100],
+          color: isSelected ? const Color(0xFFEBF3EE) : const Color(0xFFF5F0E8),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFF2A6049) : Colors.grey[300]!,
-            width: isSelected ? 2 : 1,
+            color: isSelected ? const Color(0xFF2A6049) : const Color(0xFFE8E2D8),
+            width: isSelected ? 1.5 : 0.5,
           ),
         ),
         child: Text(
@@ -2463,7 +2467,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           style: GoogleFonts.poppins(
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            color: isSelected ? Colors.white : Colors.black87,
+            color: isSelected ? const Color(0xFF2A6049) : const Color(0xFF8C8780),
           ),
         ),
       ),

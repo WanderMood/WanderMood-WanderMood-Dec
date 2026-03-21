@@ -5,6 +5,7 @@ import 'package:wandermood/core/domain/providers/location_notifier_provider.dart
 import 'package:wandermood/features/location/services/location_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class LocationDropdown extends ConsumerStatefulWidget {
   const LocationDropdown({super.key});
@@ -134,21 +135,15 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
   Future<void> _getCurrentLocation() async {
     try {
       // Show loading state
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-              ),
-              const SizedBox(width: 12),
-              Text('Getting your location...', style: GoogleFonts.poppins()),
-            ],
-          ),
-          backgroundColor: const Color(0xFF12B347),
-          duration: const Duration(seconds: 1),
+      showWanderMoodToast(
+        context,
+        message: 'Getting your location...',
+        duration: const Duration(seconds: 1),
+        backgroundColor: const Color(0xFF2A6049),
+        leading: const SizedBox(
+          width: 16,
+          height: 16,
+          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
         ),
       );
 
@@ -156,28 +151,22 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
       final location = await ref.read(locationNotifierProvider.notifier).getCurrentLocation();
       
       // Show result message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Location: ${location ?? "Could not get location"}', 
-                      style: GoogleFonts.poppins()),
-          backgroundColor: const Color(0xFF12B347),
-          duration: const Duration(seconds: 2),
-        ),
+      showWanderMoodToast(
+        context,
+        message: 'Location: ${location ?? "Could not get location"}',
+        duration: const Duration(seconds: 2),
+        backgroundColor: const Color(0xFF2A6049),
       );
       
       // The country and cities will automatically update via the listener
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not get your location. Please enable location services.', 
-                      style: GoogleFonts.poppins()),
-          backgroundColor: Colors.red,
-          action: SnackBarAction(
-            label: 'Settings',
-            textColor: Colors.white,
-            onPressed: () => LocationService.openAppSettings(),
-          ),
-        ),
+      showWanderMoodToast(
+        context,
+        message:
+            'Could not get your location. Please enable location services.',
+        isError: true,
+        actionLabel: 'Settings',
+        onAction: () => LocationService.openAppSettings(),
       );
     }
   }
@@ -278,13 +267,13 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF12B347).withOpacity(0.1),
+                  color: const Color(0xFF2A6049).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(
                   Icons.my_location,
                   size: 18,
-                  color: Color(0xFF12B347),
+                  color: Color(0xFF2A6049),
                 ),
               ),
               const SizedBox(width: 12),
@@ -497,14 +486,14 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
                       decoration: InputDecoration(
                         hintText: 'Search cities in ${_getCountryName()}...',
                         hintStyle: GoogleFonts.poppins(color: Colors.grey[400]),
-                        prefixIcon: const Icon(Icons.search, color: Color(0xFF12B347)),
+                        prefixIcon: const Icon(Icons.search, color: Color(0xFF2A6049)),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: Colors.grey[300]!),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFF12B347)),
+                          borderSide: const BorderSide(color: Color(0xFF2A6049)),
                         ),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       ),
@@ -524,7 +513,7 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
                     Expanded(
                       child: isSearching
                           ? const Center(
-                              child: CircularProgressIndicator(color: Color(0xFF12B347)),
+                              child: CircularProgressIndicator(color: Color(0xFF2A6049)),
                             )
                           : SingleChildScrollView(
                               child: Column(
@@ -541,7 +530,7 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
                                     ),
                                     const SizedBox(height: 8),
                                     ...searchResults.map((city) => ListTile(
-                                      leading: const Icon(Icons.location_city, color: Color(0xFF12B347)),
+                                      leading: const Icon(Icons.location_city, color: Color(0xFF2A6049)),
                                       title: Text(city, style: GoogleFonts.poppins()),
                                       contentPadding: EdgeInsets.zero,
                                       onTap: () {

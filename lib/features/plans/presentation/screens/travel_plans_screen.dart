@@ -10,6 +10,7 @@ import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:intl/intl.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class TravelPlansScreen extends ConsumerStatefulWidget {
   const TravelPlansScreen({super.key});
@@ -33,7 +34,7 @@ class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> {
             style: GoogleFonts.museoModerno(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
             ),
           ),
           leading: IconButton(
@@ -59,7 +60,7 @@ class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> {
     return bookingsAsync.when(
       loading: () => const Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
         ),
       ),
       error: (error, stackTrace) => Center(
@@ -94,7 +95,7 @@ class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> {
                 ref.invalidate(bookingsProvider);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF12B347),
+                backgroundColor: const Color(0xFF2A6049),
                 foregroundColor: Colors.white,
               ),
               child: const Text('Try Again'),
@@ -150,7 +151,7 @@ class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> {
         
         // Upcoming Bookings
         if (upcomingBookings.isNotEmpty) ...[
-          _buildSectionHeader('Upcoming', upcomingBookings.length, const Color(0xFF12B347)),
+          _buildSectionHeader('Upcoming', upcomingBookings.length, const Color(0xFF2A6049)),
           const SizedBox(height: 12),
           ...upcomingBookings.map((booking) => _buildBookingCard(booking)),
           const SizedBox(height: 24),
@@ -218,7 +219,7 @@ class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> {
     
     switch (booking.status) {
       case BookingStatus.confirmed:
-        statusColor = const Color(0xFF12B347);
+        statusColor = const Color(0xFF2A6049);
         statusText = 'Confirmed';
         statusIcon = Icons.check_circle;
         break;
@@ -362,16 +363,14 @@ class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> {
                     child: OutlinedButton(
                       onPressed: () {
                         // Add to calendar
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Added to calendar'),
-                            behavior: SnackBarBehavior.floating,
-                          ),
+                        showWanderMoodToast(
+                          context,
+                          message: 'Added to calendar',
                         );
                       },
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF12B347),
-                        side: const BorderSide(color: Color(0xFF12B347)),
+                        foregroundColor: const Color(0xFF2A6049),
+                        side: const BorderSide(color: Color(0xFF2A6049)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -394,11 +393,9 @@ class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> {
                     child: OutlinedButton(
                       onPressed: () {
                         // View details
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Viewing booking details'),
-                            behavior: SnackBarBehavior.floating,
-                          ),
+                        showWanderMoodToast(
+                          context,
+                          message: 'Viewing booking details',
                         );
                       },
                       style: OutlinedButton.styleFrom(
@@ -436,7 +433,7 @@ class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> {
     return placesAsync.when(
       loading: () => const Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF12B347)),
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
         ),
       ),
       error: (error, stackTrace) => _buildBasicEmptyState(),
@@ -552,7 +549,7 @@ class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF12B347),
+                        backgroundColor: const Color(0xFF2A6049),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -653,12 +650,12 @@ class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFF12B347).withOpacity(0.1),
+              color: const Color(0xFF2A6049).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               _getPlaceIcon(place),
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
               size: 24,
             ),
           ),
@@ -799,7 +796,7 @@ class _TravelPlansScreenState extends ConsumerState<TravelPlansScreen> {
               context.goNamed('main', extra: {'tab': 1});
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF12B347),
+              backgroundColor: const Color(0xFF2A6049),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
               shape: RoundedRectangleBorder(

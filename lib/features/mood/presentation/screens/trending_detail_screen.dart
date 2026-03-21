@@ -479,7 +479,7 @@ class _TrendingDetailScreenState extends ConsumerState<TrendingDetailScreen>
       case 'rising':
         return const Color(0xFFD69E2E);
       case 'popular':
-        return const Color(0xFF12B347);
+        return const Color(0xFF2A6049);
       default:
         return const Color(0xFF4299E1);
     }

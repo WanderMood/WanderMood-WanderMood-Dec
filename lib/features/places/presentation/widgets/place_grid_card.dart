@@ -228,7 +228,7 @@ class PlaceGridCard extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: place.openingHours!.isOpen 
-                              ? const Color(0xFF12B347) 
+                              ? const Color(0xFF2A6049) 
                               : Colors.red.withOpacity(0.9),
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
@@ -280,7 +280,7 @@ class PlaceGridCard extends ConsumerWidget {
                             ),
                             child: const Icon(
                               Icons.directions,
-                              color: Color(0xFF12B347),
+                              color: Color(0xFF2A6049),
                               size: 14,
                             ),
                           ),
@@ -401,7 +401,7 @@ class PlaceGridCard extends ConsumerWidget {
                         _buildCategoryPill(
                           icon: Icons.directions_walk,
                           label: _calculateDistance()!,
-                          color: const Color(0xFF12B347),
+                          color: const Color(0xFF2A6049),
                         ),
                       // Price badge
                       if (_getPriceBadgeText().isNotEmpty)
@@ -614,13 +614,13 @@ class PlaceGridCard extends ConsumerWidget {
   /// Get price badge color
   Color _getPriceBadgeColor() {
     if (place.isFree || place.priceLevel == 0 || _isFreeByType()) {
-      return const Color(0xFF4CAF50); // Green for FREE
+      return const Color(0xFF2A6049); // Green for FREE
     }
     
     if (place.priceLevel != null) {
       switch (place.priceLevel!) {
-        case 0: return const Color(0xFF4CAF50);
-        case 1: return const Color(0xFF4CAF50);
+        case 0: return const Color(0xFF2A6049);
+        case 1: return const Color(0xFF2A6049);
         case 2: return const Color(0xFFFF9800);
         case 3: return const Color(0xFFE91E63);
         case 4: return const Color(0xFF9C27B0);

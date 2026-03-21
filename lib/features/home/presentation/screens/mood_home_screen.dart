@@ -31,6 +31,15 @@ import 'package:wandermood/core/providers/communication_style_provider.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
+// WanderMood v2 — Moody chat modal (Screen 9), aligned with moody_chat_sheet.dart
+const Color _mcSkyTint = Color(0xFFEDF5F9);
+const Color _mcCream = Color(0xFFF5F0E8);
+const Color _mcSky = Color(0xFFA8C8DC);
+const Color _mcForest = Color(0xFF2A6049);
+const Color _mcForestTint = Color(0xFFEBF3EE);
+const Color _mcParchment = Color(0xFFE8E2D8);
+const Color _mcCharcoal = Color(0xFF1E1C18);
+
 class MoodHomeScreen extends ConsumerStatefulWidget {
   const MoodHomeScreen({super.key});
 
@@ -704,30 +713,29 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
           builder: (context, scrollController) {
             return StatefulBuilder(
               builder: (context, setModalState) {
-                return Container(
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        Color(0xFFFAFCFA), // Very light mint white
-                        Color(0xFFF8FAF9), // Soft green-tinted white
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(24),
-                      topRight: Radius.circular(24),
-                    ),
+                return ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
                   ),
-                  child: Column(
+                  child: Stack(
+                    fit: StackFit.expand,
                     children: [
+                      Column(
+                        children: const [
+                          Expanded(flex: 5, child: ColoredBox(color: _mcSkyTint)),
+                          Expanded(flex: 5, child: ColoredBox(color: _mcCream)),
+                        ],
+                      ),
+                      Column(
+                        children: [
                       // Enhanced header with friendly aesthetics
                       Container(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              const Color(0xFF2A6049).withOpacity(0.03),
+                              _mcSkyTint.withOpacity(0.85),
                               Colors.transparent,
                             ],
                             begin: Alignment.topCenter,
@@ -756,20 +764,9 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                   Container(
                                     width: 56,
                                     height: 56,
-                                    decoration: BoxDecoration(
+                                    decoration: const BoxDecoration(
                                       shape: BoxShape.circle,
-                                      gradient: const LinearGradient(
-                                        colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(0xFF2A6049).withOpacity(0.25),
-                                          blurRadius: 16,
-                                          offset: const Offset(0, 6),
-                                        ),
-                                      ],
+                                      color: _mcSky,
                                     ),
                                     child: const Center(
                                       child: MoodyCharacter(size: 32),
@@ -797,7 +794,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                               width: 8,
                                               height: 8,
                                               decoration: const BoxDecoration(
-                                                color: Color(0xFF10B149),
+                                                color: _mcForest,
                                                 shape: BoxShape.circle,
                                               ),
                                             ),
@@ -865,25 +862,11 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                     height: 140,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          const Color(0xFF2A6049).withOpacity(0.08),
-                                          const Color(0xFF2A6049).withOpacity(0.03),
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
+                                      color: _mcSky.withOpacity(0.35),
                                       border: Border.all(
-                                        color: const Color(0xFF2A6049).withOpacity(0.15),
+                                        color: _mcSky.withOpacity(0.65),
                                         width: 2,
                                       ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(0xFF2A6049).withOpacity(0.1),
-                                          blurRadius: 24,
-                                          offset: const Offset(0, 8),
-                                        ),
-                                      ],
                                     ),
                                     child: const Center(
                                       child: MoodyCharacter(size: 70),
@@ -922,10 +905,10 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFF7FAFC),
+                                      color: Colors.white.withOpacity(0.92),
                                       borderRadius: BorderRadius.circular(16),
                                       border: Border.all(
-                                        color: const Color(0xFF2A6049).withOpacity(0.1),
+                                        color: _mcParchment.withOpacity(0.9),
                                       ),
                                     ),
                                     child: Text(
@@ -966,18 +949,9 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                         Container(
                                           width: 40,
                                           height: 40,
-                                          decoration: BoxDecoration(
+                                          decoration: const BoxDecoration(
                                             shape: BoxShape.circle,
-                                            gradient: const LinearGradient(
-                                              colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: const Color(0xFF2A6049).withOpacity(0.3),
-                                                blurRadius: 12,
-                                                offset: const Offset(0, 4),
-                                              ),
-                                            ],
+                                            color: _mcSky,
                                           ),
                                           child: const Center(
                                             child: MoodyCharacter(size: 22),
@@ -987,7 +961,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFFF0F9F0),
+                                            color: _mcSkyTint.withOpacity(0.95),
+                                            border: Border.all(color: _mcParchment.withOpacity(0.6)),
                                             borderRadius: const BorderRadius.only(
                                               topLeft: Radius.circular(20),
                                               topRight: Radius.circular(20),
@@ -996,7 +971,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                             ),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: const Color(0xFF2A6049).withOpacity(0.08),
+                                                color: _mcForest.withOpacity(0.06),
                                                 blurRadius: 12,
                                                 offset: const Offset(0, 4),
                                               ),
@@ -1011,7 +986,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                                 child: CircularProgressIndicator(
                                                   strokeWidth: 2.5,
                                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                                    const Color(0xFF2A6049).withOpacity(0.7),
+                                                    _mcForest.withOpacity(0.75),
                                                   ),
                                                 ),
                                               ),
@@ -1108,50 +1083,48 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                         child: Row(
                             children: [
                               Expanded(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF8FAFC),
-                                    borderRadius: BorderRadius.circular(28),
-                                    border: Border.all(
-                                      color: const Color(0xFF2A6049).withOpacity(0.15),
-                                      width: 1.5,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(0xFF2A6049).withOpacity(0.05),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: TextField(
-                                    controller: _chatController,
-                                    decoration: InputDecoration(
-                                      hintText: 'What\'s your mood today?',
-                                      hintStyle: GoogleFonts.poppins(
-                                        color: Colors.grey[500],
-                                        fontSize: 16,
-                                      ),
-                                      border: InputBorder.none,
-                                      contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 24,
-                                        vertical: 18,
-                                      ),
-                                      prefixIcon: Padding(
-                                        padding: const EdgeInsets.only(left: 4),
-                                        child: Icon(
-                                          Icons.psychology_outlined,
-                                          color: const Color(0xFF2A6049).withOpacity(0.6),
-                                          size: 22,
-                                        ),
-                                      ),
-                                    ),
-                                    style: GoogleFonts.poppins(
+                                child: TextField(
+                                  controller: _chatController,
+                                  decoration: InputDecoration(
+                                    hintText: 'What\'s your mood today?',
+                                    hintStyle: GoogleFonts.poppins(
+                                      color: Colors.grey[500],
                                       fontSize: 16,
-                                      color: const Color(0xFF1A202C),
                                     ),
-                                    onSubmitted: (text) => _sendChatMessageInModal(text, setModalState),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                      vertical: 18,
+                                    ),
+                                    filled: true,
+                                    fillColor: const Color(0xFFF8FAFC),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(28),
+                                      borderSide: BorderSide(
+                                        color: _mcParchment,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(28),
+                                      borderSide: const BorderSide(
+                                        color: _mcForest,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    prefixIcon: Padding(
+                                      padding: const EdgeInsets.only(left: 4),
+                                      child: Icon(
+                                        Icons.psychology_outlined,
+                                        color: _mcForest.withOpacity(0.75),
+                                        size: 22,
+                                      ),
+                                    ),
                                   ),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    color: _mcCharcoal,
+                                  ),
+                                  onSubmitted: (text) => _sendChatMessageInModal(text, setModalState),
                                 ),
                               ),
                               const SizedBox(width: 16),
@@ -1162,14 +1135,14 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                 height: 52,
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
+                                    colors: [_mcForest, _mcForest],
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                   ),
                                   borderRadius: BorderRadius.circular(26),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF2A6049).withOpacity(0.3),
+                                      color: _mcForest.withOpacity(0.3),
                                       blurRadius: 12,
                                       offset: const Offset(0, 4),
                                     ),
@@ -1206,8 +1179,10 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                         ),
                     ],
                   ),
-                );
-              },
+                ],
+              ),
+            );
+            },
             );
           },
         );
@@ -1230,20 +1205,9 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
             Container(
               width: 36,
               height: 36,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2A6049), Color(0xFF2A6049)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF2A6049).withOpacity(0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
+                color: _mcSky,
               ),
               child: const Center(
                 child: MoodyCharacter(size: 20),
@@ -1268,12 +1232,12 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                   decoration: BoxDecoration(
                     gradient: message.isUser
                       ? const LinearGradient(
-                          colors: [Color(0xFF007AFF), Color(0xFF0051D5)],
+                          colors: [_mcForest, Color(0xFF347558)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         )
                       : const LinearGradient(
-                          colors: [Color(0xFFE8F5E8), Color(0xFFF5FBF5)],
+                          colors: [_mcForestTint, _mcSkyTint],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -1289,9 +1253,9 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: message.isUser 
-                          ? Colors.blue.withOpacity(0.12)
-                          : const Color(0xFF2A6049).withOpacity(0.06),
+                        color: message.isUser
+                            ? _mcForest.withOpacity(0.2)
+                            : _mcForest.withOpacity(0.06),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -1303,9 +1267,9 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                       fontSize: 16,
                       height: 1.4,
                       fontWeight: FontWeight.w500,
-                      color: message.isUser 
-                        ? Colors.white 
-                        : const Color(0xFF1A202C),
+                      color: message.isUser
+                        ? Colors.white
+                        : _mcCharcoal,
                     ),
                   ),
                 ),
@@ -1335,7 +1299,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF007AFF), Color(0xFF0051D5)],
+                  colors: [_mcForest, Color(0xFF347558)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -1345,7 +1309,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.15),
+                    color: _mcForest.withOpacity(0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
@@ -1771,7 +1735,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                               fontSize: 28,
                               fontWeight: FontWeight.w700,
                               fontStyle: FontStyle.italic,
-                              color: const Color(0xFF5BB32A),
+                              color: const Color(0xFF2A6049), // wmForest — v2 design system
                               height: 1.25,
                             ),
                           ),
@@ -1961,7 +1925,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                           borderRadius: BorderRadius.circular(28),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF5BB32A).withOpacity(0.25),
+                              color: const Color(0xFF2A6049).withOpacity(0.25), // wmForest glow
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),
@@ -1972,7 +1936,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _selectedMoods.isEmpty || _isAILoading
                                 ? const Color(0xFFD0D0D0) // Light gray for inactive/loading state
-                                : const Color(0xFF5BB32A), // Same brand green as splash screen
+                                : const Color(0xFF2A6049), // wmForest — v2 design system
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(

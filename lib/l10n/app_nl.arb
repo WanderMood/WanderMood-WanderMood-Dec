@@ -22,6 +22,9 @@
   "myDayEmptyCreateButton": "Maak Mijn Dag",
   "myDayEmptyBrowseButton": "Browse Activiteiten",
   "myDayEmptyAskMoodyButton": "Vraag Moody",
+  "myDayQuickAddActivity": "Activiteit toevoegen",
+  "moodyFeedbackPromptBody": "Hoe gaat het? Tik en vertel hoe je dag voelt!",
+  "moodyFeedbackShareAction": "Feedback delen",
   "myDayEmptyInspiredTitle": "Doe inspiratie op",
   "myDayInspiredCafesTitle": "Ontdek cafés",
   "myDayInspiredCafesSubtitle": "Vind knusse plekken om te ontspannen",
@@ -328,6 +331,17 @@
   "profileEditVibesDone": "Klaar",
   "profileMoodJourneyTitle": "Jouw stemmingsreis",
   "profileMoodJourneySubtitle": "Bekijk je stemmingsgeschiedenis",
+  "moodHistoryIntro": "Een rustige tijdlijn van hoe je je voelde.",
+  "moodHistorySectionRecent": "Recent",
+  "moodHistorySectionTimeline": "Tijdlijn",
+  "moodHistoryEmptyTitle": "Je reis begint hier",
+  "moodHistoryEmptyBody": "Check in via Moody Hub of Mijn dag—je momenten verschijnen hieronder.",
+  "moodHistoryLoginRequired": "Log in om je stemmingsreis te zien.",
+  "moodHistoryErrorUser": "Je account kon niet worden geladen.",
+  "moodHistoryErrorMoods": "Stemmingen konden niet worden geladen.",
+  "moodHistoryTodayBadge": "Vandaag",
+  "moodHistoryDayToday": "Vandaag",
+  "moodHistoryDayYesterday": "Gisteren",
   "profileTravelGlobeTitle": "Jouw reisglobe",
   "profileTravelGlobeSubtitle": "Ontdek je reisverhaal",
   "profilePreferencesTitle": "Jouw voorkeuren",
@@ -801,6 +815,10 @@
   "noPlanFindMeCoffee": "☕ Vind koffie voor me",
   "noPlanGetMeMoving": "🏃 Zet me in beweging",
   "noPlanJustChat": "Gewoon chatten",
-  "noPlanPlanLater": "Misschien later"
+  "noPlanPlanLater": "Misschien later",
+
+  "myDayHeroActiveSubtitle": "Je bent er nu mee bezig.",
+
+  "drawerMyAgenda": "Mijn agenda"
 }
 

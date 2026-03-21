@@ -4,6 +4,7 @@ import 'dart:convert';
 import '../../application/realtime_service.dart';
 import '../../domain/models/realtime_event.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class RealtimeTestScreen extends ConsumerStatefulWidget {
   const RealtimeTestScreen({super.key});
@@ -250,8 +251,10 @@ class _RealtimeTestScreenState extends ConsumerState<RealtimeTestScreen>
   Future<void> _sendTestNotification() async {
     if (_titleController.text.trim().isEmpty ||
         _messageController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in title and message')),
+      showWanderMoodToast(
+        context,
+        message: 'Please fill in title and message',
+        isError: true,
       );
       return;
     }
@@ -278,9 +281,7 @@ class _RealtimeTestScreenState extends ConsumerState<RealtimeTestScreen>
       );
 
       if (notificationId != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Test notification sent!')),
-        );
+        showWanderMoodToast(context, message: 'Test notification sent!');
         
         // Clear form
         _titleController.clear();
@@ -289,8 +290,10 @@ class _RealtimeTestScreenState extends ConsumerState<RealtimeTestScreen>
         throw Exception('Failed to send notification');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+      showWanderMoodToast(
+        context,
+        message: 'Error: $e',
+        isError: true,
       );
     } finally {
       setState(() {
@@ -304,8 +307,10 @@ class _RealtimeTestScreenState extends ConsumerState<RealtimeTestScreen>
       final realtimeService = ref.read(realtimeServiceProvider.notifier);
       await realtimeService.markAsRead(eventIds);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error marking as read: $e')),
+      showWanderMoodToast(
+        context,
+        message: 'Error marking as read: $e',
+        isError: true,
       );
     }
   }

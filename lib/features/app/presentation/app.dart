@@ -31,7 +31,7 @@ class _WanderMoodAppState extends ConsumerState<WanderMoodApp> {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4CAF50),
+          seedColor: const Color(0xFF2A6049),
           brightness: Brightness.light,
         ),
         useMaterial3: true,

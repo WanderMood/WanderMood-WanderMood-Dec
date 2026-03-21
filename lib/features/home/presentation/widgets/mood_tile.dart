@@ -84,7 +84,7 @@ class MoodTile extends StatelessWidget {
                   width: 20,
                   height: 20,
                   decoration: const BoxDecoration(
-                    color: Color(0xFF12B347),
+                    color: Color(0xFF2A6049),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(

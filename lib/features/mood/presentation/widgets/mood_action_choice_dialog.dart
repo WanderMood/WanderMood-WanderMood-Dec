@@ -103,7 +103,7 @@ class _MoodActionChoiceDialogState extends State<MoodActionChoiceDialog> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF12B347),
+                      backgroundColor: const Color(0xFF2A6049),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -140,10 +140,10 @@ class _MoodActionChoiceDialogState extends State<MoodActionChoiceDialog> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF12B347).withOpacity(0.1) : Colors.grey[50],
+          color: isSelected ? const Color(0xFF2A6049).withOpacity(0.1) : Colors.grey[50],
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? const Color(0xFF12B347) : Colors.grey[200]!,
+            color: isSelected ? const Color(0xFF2A6049) : Colors.grey[200]!,
             width: 2,
           ),
         ),
@@ -156,10 +156,10 @@ class _MoodActionChoiceDialogState extends State<MoodActionChoiceDialog> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected ? const Color(0xFF12B347) : Colors.grey[400]!,
+                  color: isSelected ? const Color(0xFF2A6049) : Colors.grey[400]!,
                   width: 2,
                 ),
-                color: isSelected ? const Color(0xFF12B347) : Colors.transparent,
+                color: isSelected ? const Color(0xFF2A6049) : Colors.transparent,
               ),
               child: isSelected
                   ? const Center(

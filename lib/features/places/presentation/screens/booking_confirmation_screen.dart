@@ -17,6 +17,7 @@ import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class BookingConfirmationScreen extends ConsumerStatefulWidget {
@@ -97,37 +98,17 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
       
       // Show a quick success toast
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Booking saved! View in My Bookings',
-                    style: GoogleFonts.poppins(),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    context.go('/agenda');
-                  },
-                  child: Text(
-                    'View',
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: const Color(0xFF12B347),
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 4),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Booking saved! View in My Bookings',
+          duration: const Duration(seconds: 4),
+          backgroundColor: const Color(0xFF2A6049),
+          leading: const Icon(Icons.check_circle, color: Colors.white, size: 20),
+          actionLabel: 'View',
+          onAction: () {
+            dismissWanderMoodToast();
+            context.go('/agenda');
+          },
         );
       }
     } catch (e) {
@@ -139,16 +120,11 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
       
       // Show error to user
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Error saving booking: $e',
-              style: GoogleFonts.poppins(),
-            ),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 3),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Error saving booking: $e',
+          isError: true,
+          duration: const Duration(seconds: 3),
         );
       }
     }
@@ -248,16 +224,12 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
       print('❌ Stack trace: $stackTrace');
       // Show error to user so they know something went wrong
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
+        showWanderMoodToast(
+          context,
+          message:
               'Booking saved, but may not appear in Agenda. Error: ${e.toString()}',
-              style: GoogleFonts.poppins(),
-            ),
-            backgroundColor: Colors.orange,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 4),
-          ),
+          backgroundColor: Colors.orange,
+          duration: const Duration(seconds: 4),
         );
       }
     }
@@ -413,11 +385,11 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
         width: 120,
         height: 120,
         decoration: BoxDecoration(
-          color: const Color(0xFF12B347),
+          color: const Color(0xFF2A6049),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF12B347).withOpacity(0.3),
+              color: const Color(0xFF2A6049).withOpacity(0.3),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -460,10 +432,10 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFF12B347).withOpacity(0.1),
+            color: const Color(0xFF2A6049).withOpacity(0.1),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: const Color(0xFF12B347).withOpacity(0.3),
+              color: const Color(0xFF2A6049).withOpacity(0.3),
             ),
           ),
           child: Text(
@@ -471,7 +443,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
             ),
           ),
         ).animate().fadeIn(delay: 700.ms),
@@ -534,7 +506,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF12B347).withOpacity(0.1),
+              color: const Color(0xFF2A6049).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -553,7 +525,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
                   style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF12B347),
+                    color: const Color(0xFF2A6049),
                   ),
                 ),
               ],
@@ -575,13 +547,13 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFF12B347).withOpacity(0.1),
+            color: const Color(0xFF2A6049).withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             icon,
             size: 20,
-            color: const Color(0xFF12B347),
+            color: const Color(0xFF2A6049),
           ),
         ),
         const SizedBox(width: 16),
@@ -753,7 +725,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
             icon: const Icon(Icons.calendar_today),
             label: const Text('Add to Calendar'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF12B347),
+              backgroundColor: const Color(0xFF2A6049),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
@@ -772,8 +744,8 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
                 icon: const Icon(Icons.share),
                 label: const Text('Share'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF12B347),
-                  side: const BorderSide(color: Color(0xFF12B347)),
+                  foregroundColor: const Color(0xFF2A6049),
+                  side: const BorderSide(color: Color(0xFF2A6049)),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25), // Pill-shaped button
@@ -826,35 +798,17 @@ Booked with WanderMood! 🌟
 
   void _addToCalendar() {
                 // Show success message that booking has been saved to My Bookings
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.white),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Booking saved! View in My Bookings',
-                style: GoogleFonts.poppins(),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF12B347),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        duration: const Duration(seconds: 3),
-        action: SnackBarAction(
-          label: 'View',
-          textColor: Colors.white,
-          onPressed: () {
+    showWanderMoodToast(
+      context,
+      message: 'Booking saved! View in My Bookings',
+      duration: const Duration(seconds: 3),
+      backgroundColor: const Color(0xFF2A6049),
+      leading: const Icon(Icons.check_circle, color: Colors.white),
+      actionLabel: 'View',
+      onAction: () {
                           // Navigate to My Bookings screen
-            context.go('/plans');
-          },
-        ),
-      ),
+        context.go('/plans');
+      },
     );
   }
 } 

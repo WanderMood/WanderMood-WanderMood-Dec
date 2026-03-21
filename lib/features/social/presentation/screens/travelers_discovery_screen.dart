@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'traveler_profile_screen.dart';
 
 class TravelersDiscoveryScreen extends StatefulWidget {
@@ -63,7 +64,7 @@ class _TravelersDiscoveryScreenState extends State<TravelersDiscoveryScreen> {
           IconButton(
             icon: Icon(
               _showFilters ? Icons.filter_list : Icons.filter_list_outlined,
-              color: _showFilters ? const Color(0xFF12B347) : const Color(0xFF718096),
+              color: _showFilters ? const Color(0xFF2A6049) : const Color(0xFF718096),
             ),
             onPressed: () {
               setState(() {
@@ -139,7 +140,7 @@ class _TravelersDiscoveryScreenState extends State<TravelersDiscoveryScreen> {
                       'Clear filters',
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -189,12 +190,12 @@ class _TravelersDiscoveryScreenState extends State<TravelersDiscoveryScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: isSelected 
-                        ? const Color(0xFF12B347) 
+                        ? const Color(0xFF2A6049) 
                         : const Color(0xFFF7FAFC),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: isSelected 
-                          ? const Color(0xFF12B347) 
+                          ? const Color(0xFF2A6049) 
                           : const Color(0xFFE2E8F0),
                     ),
                   ),
@@ -366,7 +367,7 @@ class _TravelersDiscoveryScreenState extends State<TravelersDiscoveryScreen> {
                         width: 10,
                         height: 10,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF12B347),
+                          color: const Color(0xFF2A6049),
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2),
                         ),
@@ -439,7 +440,7 @@ class _TravelersDiscoveryScreenState extends State<TravelersDiscoveryScreen> {
                       traveler['travelStyle'],
                       style: GoogleFonts.poppins(
                         fontSize: 10,
-                        color: const Color(0xFF12B347),
+                        color: const Color(0xFF2A6049),
                         fontWeight: FontWeight.w600,
                       ),
                       maxLines: 1,
@@ -480,7 +481,7 @@ class _TravelersDiscoveryScreenState extends State<TravelersDiscoveryScreen> {
                       child: ElevatedButton(
                         onPressed: () => _connectWithTraveler(traveler),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF12B347),
+                          backgroundColor: const Color(0xFF2A6049),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(6),
@@ -509,7 +510,7 @@ class _TravelersDiscoveryScreenState extends State<TravelersDiscoveryScreen> {
 
   Color _getTravelerColor(String name) {
     final colors = [
-      const Color(0xFF12B347),
+      const Color(0xFF2A6049),
       const Color(0xFF667eea),
       const Color(0xFFFF6B6B),
       const Color(0xFF4ECDC4),
@@ -682,7 +683,7 @@ class _TravelersDiscoveryScreenState extends State<TravelersDiscoveryScreen> {
                 'You have ${traveler['mutualFriends']} mutual friend${traveler['mutualFriends'] > 1 ? 's' : ''}',
                 style: GoogleFonts.poppins(
                   fontSize: 12,
-                  color: const Color(0xFF12B347),
+                  color: const Color(0xFF2A6049),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -696,21 +697,18 @@ class _TravelersDiscoveryScreenState extends State<TravelersDiscoveryScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Connection request sent to ${traveler['name']}!'),
-                  backgroundColor: const Color(0xFF12B347),
-                  behavior: SnackBarBehavior.floating,
-                  action: SnackBarAction(
-                    label: 'View Profile',
-                    textColor: Colors.white,
-                    onPressed: () => _openTravelerProfile(traveler),
-                  ),
-                ),
+              showWanderMoodToast(
+                context,
+                message:
+                    'Connection request sent to ${traveler['name']}!',
+                backgroundColor: const Color(0xFF2A6049),
+                duration: const Duration(seconds: 4),
+                actionLabel: 'View Profile',
+                onAction: () => _openTravelerProfile(traveler),
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF12B347),
+              backgroundColor: const Color(0xFF2A6049),
             ),
             child: Text('Send Request'),
           ),

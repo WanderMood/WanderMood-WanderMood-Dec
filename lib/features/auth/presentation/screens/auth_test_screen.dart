@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import '../../application/auth_provider.dart';
 
 class AuthTestScreen extends ConsumerStatefulWidget {
@@ -229,7 +230,7 @@ class _AuthTestScreenState extends ConsumerState<AuthTestScreen> {
                         spacing: 8,
                         children: profile.travelVibes.map((vibe) => Chip(
                           label: Text(vibe),
-                          backgroundColor: const Color(0xFF4CAF50).withOpacity(0.1),
+                          backgroundColor: const Color(0xFF2A6049).withOpacity(0.1),
                         )).toList(),
                       ),
                   ],
@@ -305,11 +306,6 @@ class _AuthTestScreenState extends ConsumerState<AuthTestScreen> {
   }
   
   void _showSuccess(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
-    );
+    showWanderMoodToast(context, message: message);
   }
 } 

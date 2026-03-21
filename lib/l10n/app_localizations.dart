@@ -236,6 +236,24 @@ abstract class AppLocalizations {
   /// **'Ask Moody'**
   String get myDayEmptyAskMoodyButton;
 
+  /// No description provided for @myDayQuickAddActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Add activity'**
+  String get myDayQuickAddActivity;
+
+  /// No description provided for @moodyFeedbackPromptBody.
+  ///
+  /// In en, this message translates to:
+  /// **'How\'s it going? Tap to tell me about your experience!'**
+  String get moodyFeedbackPromptBody;
+
+  /// No description provided for @moodyFeedbackShareAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Share feedback'**
+  String get moodyFeedbackShareAction;
+
   /// No description provided for @myDayEmptyInspiredTitle.
   ///
   /// In en, this message translates to:
@@ -2078,6 +2096,48 @@ abstract class AppLocalizations {
   /// **'Top Mood'**
   String get profileStatsTopMoodTitle;
 
+  /// No description provided for @profileStatsStreakTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak'**
+  String get profileStatsStreakTitle;
+
+  /// No description provided for @profileTopMoodEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'None yet'**
+  String get profileTopMoodEmpty;
+
+  /// No description provided for @profileSavedPlacesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved places'**
+  String get profileSavedPlacesTitle;
+
+  /// No description provided for @profileSavedPlacesSeeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get profileSavedPlacesSeeAll;
+
+  /// No description provided for @profileSavedPlacesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved places yet'**
+  String get profileSavedPlacesEmpty;
+
+  /// No description provided for @profileEditProfileButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get profileEditProfileButton;
+
+  /// No description provided for @profileAppSettingsLink.
+  ///
+  /// In en, this message translates to:
+  /// **'App settings'**
+  String get profileAppSettingsLink;
+
   /// No description provided for @profileFavoriteVibesTitle.
   ///
   /// In en, this message translates to:
@@ -2107,6 +2167,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View your mood history'**
   String get profileMoodJourneySubtitle;
+
+  /// No description provided for @moodHistoryIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'A calm timeline of how you\'ve been feeling.'**
+  String get moodHistoryIntro;
+
+  /// No description provided for @moodHistorySectionRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get moodHistorySectionRecent;
+
+  /// No description provided for @moodHistorySectionTimeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline'**
+  String get moodHistorySectionTimeline;
+
+  /// No description provided for @moodHistoryEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your journey starts here'**
+  String get moodHistoryEmptyTitle;
+
+  /// No description provided for @moodHistoryEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check in from Moody Hub or My Day—your moments will line up below.'**
+  String get moodHistoryEmptyBody;
+
+  /// No description provided for @moodHistoryLoginRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to see your mood journey.'**
+  String get moodHistoryLoginRequired;
+
+  /// No description provided for @moodHistoryErrorUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong loading your account.'**
+  String get moodHistoryErrorUser;
+
+  /// No description provided for @moodHistoryErrorMoods.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong loading moods.'**
+  String get moodHistoryErrorMoods;
+
+  /// No description provided for @moodHistoryTodayBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get moodHistoryTodayBadge;
+
+  /// No description provided for @moodHistoryDayToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get moodHistoryDayToday;
+
+  /// No description provided for @moodHistoryDayYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get moodHistoryDayYesterday;
 
   /// No description provided for @profileTravelGlobeTitle.
   ///
@@ -2678,6 +2804,12 @@ abstract class AppLocalizations {
   /// **'Your Journey'**
   String get drawerYourJourney;
 
+  /// No description provided for @drawerNavigation.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation'**
+  String get drawerNavigation;
+
   /// No description provided for @drawerSettings.
   ///
   /// In en, this message translates to:
@@ -2701,6 +2833,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved Places'**
   String get drawerSavedPlaces;
+
+  /// No description provided for @drawerMyAgenda.
+  ///
+  /// In en, this message translates to:
+  /// **'My Agenda'**
+  String get drawerMyAgenda;
 
   /// No description provided for @drawerMyBookings.
   ///
@@ -5335,6 +5473,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Maybe later'**
   String get noPlanPlanLater;
+
+  /// No description provided for @myDayHeroActiveSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re in this activity right now.'**
+  String get myDayHeroActiveSubtitle;
 }
 
 class _AppLocalizationsDelegate

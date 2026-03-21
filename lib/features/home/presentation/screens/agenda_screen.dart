@@ -11,6 +11,20 @@ import 'dynamic_my_day_provider.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import '../../../plans/data/services/scheduled_activity_service.dart';
 
+// WanderMood v2 — Agenda / calendar (Screen 10)
+const Color _wmCharcoal = Color(0xFF1E1C18);
+const Color _wmStone = Color(0xFF8C8780);
+const Color _wmDusk = Color(0xFF4A4640);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmSunset = Color(0xFFE8784A);
+
+TextStyle _wmBodyAgendaTextStyle() => GoogleFonts.poppins(
+      fontSize: 15,
+      fontWeight: FontWeight.w400,
+      color: _wmDusk,
+      height: 1.5,
+    );
+
 class AgendaScreen extends ConsumerStatefulWidget {
   const AgendaScreen({super.key});
 
@@ -83,11 +97,11 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
               ),
               title: Text(
                 'My Agenda',
-                style: GoogleFonts.museoModerno(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF1E1C18),
-                  letterSpacing: 0.5,
+                style: GoogleFonts.poppins(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  color: _wmCharcoal,
+                  letterSpacing: -0.5,
                 ),
               ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2),
               actions: [
@@ -163,23 +177,31 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
             calendarStyle: CalendarStyle(
               outsideDaysVisible: false,
               defaultTextStyle: GoogleFonts.poppins(
-                color: const Color(0xFF1E1C18),
+                color: _wmCharcoal,
                 fontWeight: FontWeight.w600,
               ),
               weekendTextStyle: GoogleFonts.poppins(
-                color: const Color(0xFF8A847B),
+                color: _wmStone,
                 fontWeight: FontWeight.w600,
               ),
               holidayTextStyle: GoogleFonts.poppins(
-                color: const Color(0xFF8A847B),
+                color: _wmStone,
+                fontWeight: FontWeight.w600,
+              ),
+              selectedTextStyle: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+              todayTextStyle: GoogleFonts.poppins(
+                color: _wmCharcoal,
                 fontWeight: FontWeight.w600,
               ),
               selectedDecoration: const BoxDecoration(
-                color: Color(0xFF2A6049),
+                color: _wmForest,
                 shape: BoxShape.circle,
               ),
               todayDecoration: BoxDecoration(
-                color: const Color(0xFF2A6049).withOpacity(0.3),
+                color: _wmForest.withOpacity(0.22),
                 shape: BoxShape.circle,
               ),
               markersMaxCount: 3,
@@ -194,8 +216,8 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: visibleEvents.map((event) {
                       final color = _isMoodyGeneratedEvent(event)
-                          ? const Color(0xFFE8784A) // wmSunset
-                          : const Color(0xFF2A6049); // wmForest
+                          ? _wmSunset
+                          : _wmForest;
                       return Container(
                         width: 6,
                         height: 6,
@@ -213,28 +235,28 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
             headerStyle: HeaderStyle(
               formatButtonVisible: false,
               titleCentered: true,
-              titleTextStyle: GoogleFonts.museoModerno(
+              titleTextStyle: GoogleFonts.poppins(
                 fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF2A6049),
+                fontWeight: FontWeight.w600,
+                color: _wmCharcoal,
               ),
               leftChevronIcon: const Icon(
                 Icons.chevron_left,
-                color: Color(0xFF2A6049),
+                color: _wmForest,
               ),
               rightChevronIcon: const Icon(
                 Icons.chevron_right,
-                color: Color(0xFF2A6049),
+                color: _wmForest,
               ),
             ),
             daysOfWeekStyle: DaysOfWeekStyle(
               weekdayStyle: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF1E1C18),
+                color: _wmCharcoal,
               ),
               weekendStyle: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF8A847B),
+                color: _wmStone,
               ),
             ),
           ),
@@ -300,19 +322,13 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                     const SizedBox(height: 16),
                     Text(
                       'Geen activiteiten gepland',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[600],
-                      ),
+                      style: _wmBodyAgendaTextStyle(),
+                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Tik op een dag om activiteiten toe te voegen',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.grey[500],
-                      ),
+                      style: _wmBodyAgendaTextStyle(),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -436,27 +452,24 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 ),
                 child: Column(
                   children: [
-                    Icon(
-                      Icons.event_available,
-                      size: 48,
-                      color: Colors.grey[400],
+                    const SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: MoodyCharacter(
+                        size: 48,
+                        mood: 'happy',
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'No upcoming activities',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[600],
-                      ),
+                      'Geen activiteiten gepland',
+                      style: _wmBodyAgendaTextStyle(),
+                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Schedule some activities to see them here',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.grey[500],
-                      ),
+                      'Er staan nog geen geplande activiteiten in je agenda',
+                      style: _wmBodyAgendaTextStyle(),
                       textAlign: TextAlign.center,
                     ),
                   ],

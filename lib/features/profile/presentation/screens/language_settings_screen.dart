@@ -6,6 +6,15 @@ import 'package:wandermood/l10n/app_localizations.dart';
 import '../../domain/providers/profile_provider.dart';
 import '../../../../core/presentation/providers/language_provider.dart';
 import '../widgets/settings_screen_template.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+
+/// v2 design tokens
+const Color _wmWhite = Color(0xFFFFFFFF);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmForestTint = Color(0xFFEBF3EE);
+const Color _wmCharcoal = Color(0xFF1E1C18);
+const Color _wmStone = Color(0xFF8C8780);
 
 class LanguageSettingsScreen extends ConsumerStatefulWidget {
   const LanguageSettingsScreen({super.key});
@@ -43,11 +52,9 @@ class _LanguageSettingsScreenState extends ConsumerState<LanguageSettingsScreen>
         languagePreference: code,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.languageUpdated),
-            backgroundColor: Colors.green,
-          ),
+        showWanderMoodToast(
+          context,
+          message: l10n.languageUpdated,
         );
       }
     } catch (e) {
@@ -125,19 +132,20 @@ class _LanguageSettingsScreenState extends ConsumerState<LanguageSettingsScreen>
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _wmWhite,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: selected ? const Color(0xFFFB923C) : const Color(0xFFE5E7EB),
-          width: 2,
+          color: selected ? _wmForest : _wmParchment,
+          width: selected ? 1.5 : 0.5,
         ),
       ),
       child: Material(
-        color: selected ? const Color(0xFFFFF7ED) : Colors.transparent,
+        color: selected ? _wmForestTint : Colors.transparent,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
+          splashColor: _wmForest.withValues(alpha: 0.08),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -151,7 +159,7 @@ class _LanguageSettingsScreenState extends ConsumerState<LanguageSettingsScreen>
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
-                          color: const Color(0xFF1F2937),
+                          color: _wmCharcoal,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -159,7 +167,7 @@ class _LanguageSettingsScreenState extends ConsumerState<LanguageSettingsScreen>
                         native,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
-                          color: const Color(0xFF6B7280),
+                          color: _wmStone,
                         ),
                       ),
                     ],
@@ -167,9 +175,9 @@ class _LanguageSettingsScreenState extends ConsumerState<LanguageSettingsScreen>
                 ),
                 if (selected)
                   const Icon(
-                    Icons.check,
-                    color: Color(0xFFF97316),
-                    size: 20,
+                    Icons.check_rounded,
+                    color: _wmForest,
+                    size: 22,
                   ),
               ],
             ),

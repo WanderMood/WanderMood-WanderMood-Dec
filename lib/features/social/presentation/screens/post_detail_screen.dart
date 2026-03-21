@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/social/domain/models/social_post.dart';
 import 'package:wandermood/features/social/domain/providers/social_providers.dart';
 
@@ -54,38 +55,35 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   
   void _toggleLike(SocialPost post) {
     // WanderFeed coming soon - interactions disabled
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('WanderFeed is coming soon! Social interactions will be available then. 🧳✨'),
-        duration: Duration(seconds: 3),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message:
+          'WanderFeed is coming soon! Social interactions will be available then. 🧳✨',
+      duration: const Duration(seconds: 3),
     );
   }
-  
+
   void _toggleBookmark() {
     // WanderFeed coming soon - interactions disabled
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('WanderFeed is coming soon! Bookmarking will be available then. 🧳✨'),
-        duration: Duration(seconds: 3),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message:
+          'WanderFeed is coming soon! Bookmarking will be available then. 🧳✨',
+      duration: const Duration(seconds: 3),
     );
   }
-  
+
   void _addComment() {
     if (_commentController.text.trim().isEmpty) return;
     
     // WanderFeed coming soon - interactions disabled
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('WanderFeed is coming soon! Comments will be available then. 🧳✨'),
-        duration: Duration(seconds: 3),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showWanderMoodToast(
+      context,
+      message:
+          'WanderFeed is coming soon! Comments will be available then. 🧳✨',
+      duration: const Duration(seconds: 3),
     );
-    
+
     _commentController.clear();
     FocusScope.of(context).unfocus();
   }
@@ -102,11 +100,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       await Share.share(message);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to share post: $e'),
-            duration: const Duration(seconds: 2),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Failed to share post: $e',
+          isError: true,
+          duration: const Duration(seconds: 2),
         );
       }
     }
@@ -165,11 +163,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               ),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Link copied to clipboard'),
-                    duration: Duration(seconds: 2),
-                  ),
+                showWanderMoodToast(
+                  context,
+                  message: 'Link copied to clipboard',
+                  duration: const Duration(seconds: 2),
                 );
               },
             ),
@@ -206,16 +203,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             style: GoogleFonts.museoModerno(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
             ),
           ),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF12B347)),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF2A6049)),
             onPressed: () => Navigator.of(context).pop(),
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.more_vert, color: Color(0xFF12B347)),
+              icon: const Icon(Icons.more_vert, color: Color(0xFF2A6049)),
               onPressed: _showOptions,
             ),
           ],
@@ -356,7 +353,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           IconButton(
                             icon: Icon(
                               _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                              color: _isBookmarked ? const Color(0xFF12B347) : Colors.black87,
+                              color: _isBookmarked ? const Color(0xFF2A6049) : Colors.black87,
                             ),
                             onPressed: _toggleBookmark,
                           ),
@@ -389,18 +386,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           children: post.tags.map((tag) => InkWell(
                             onTap: () {
                               // Filter posts by tag
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Viewing posts tagged with #$tag'),
-                                  duration: const Duration(seconds: 1),
-                                ),
+                              showWanderMoodToast(
+                                context,
+                                message: 'Viewing posts tagged with #$tag',
+                                duration: const Duration(seconds: 1),
                               );
                             },
                             child: Text(
                               '#$tag',
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
-                                color: const Color(0xFF12B347),
+                                color: const Color(0xFF2A6049),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -414,14 +410,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF12B347).withOpacity(0.1),
+                          color: const Color(0xFF2A6049).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Text(
                           post.activity,
                           style: GoogleFonts.poppins(
                             fontSize: 12,
-                            color: const Color(0xFF12B347),
+                            color: const Color(0xFF2A6049),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -546,7 +542,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         // This would normally get the current user avatar
                         return const CircleAvatar(
                           radius: 18,
-                          backgroundColor: Color(0xFF12B347),
+                          backgroundColor: Color(0xFF2A6049),
                           child: Text(
                             'U',
                             style: TextStyle(
@@ -581,7 +577,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     IconButton(
                       icon: const Icon(
                         Icons.send,
-                        color: Color(0xFF12B347),
+                        color: Color(0xFF2A6049),
                       ),
                       onPressed: _addComment,
                     ),

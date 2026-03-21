@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
-import 'package:wandermood/features/home/presentation/screens/main_home_screen.dart';
-import 'package:wandermood/features/home/presentation/screens/mood_home_screen.dart';
 import 'package:wandermood/features/plans/presentation/widgets/plan_loading_overlay.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 class PlanConfirmationScreen extends ConsumerWidget {
   final List<Activity> activities;
@@ -115,20 +113,10 @@ class PlanConfirmationScreen extends ConsumerWidget {
       if (context.mounted) {
         Navigator.pop(context);
         
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Your activities have been saved successfully!',
-              style: GoogleFonts.poppins(),
-            ),
-            backgroundColor: const Color(0xFF12B347),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            duration: const Duration(seconds: 1), // Reduced from 2s to prevent conflicts
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Your activities have been saved successfully!',
+          duration: const Duration(seconds: 2),
         );
         
         if (destination != null) {
@@ -166,20 +154,11 @@ class PlanConfirmationScreen extends ConsumerWidget {
       if (context.mounted) {
         Navigator.pop(context);
         
-        // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Failed to save activities. Please try again.',
-              style: GoogleFonts.poppins(),
-            ),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            duration: const Duration(seconds: 3),
-          ),
+        showWanderMoodToast(
+          context,
+          message: 'Failed to save activities. Please try again.',
+          isError: true,
+          duration: const Duration(seconds: 3),
         );
       }
     }
@@ -283,7 +262,7 @@ class PlanConfirmationScreen extends ConsumerWidget {
                   ],
                   _buildTrustSection(context),
                   const SizedBox(height: 24),
-                  _buildActionButtons(context),
+                  _buildActionButtons(context, ref),
                 ],
               ),
             ),
@@ -387,14 +366,14 @@ class PlanConfirmationScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context) {
+  Widget _buildActionButtons(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ElevatedButton(
           onPressed: () => _navigateWithLoading(context, ref, 'Finalizing your bookings...'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF12B347),
+            backgroundColor: const Color(0xFF2A6049),
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
@@ -421,7 +400,7 @@ class PlanConfirmationScreen extends ConsumerWidget {
           ),
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
-            side: const BorderSide(color: Color(0xFF12B347), width: 2),
+            side: const BorderSide(color: Color(0xFF2A6049), width: 2),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -431,7 +410,7 @@ class PlanConfirmationScreen extends ConsumerWidget {
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF12B347),
+              color: const Color(0xFF2A6049),
               letterSpacing: 0.5,
             ),
           ),
@@ -445,7 +424,7 @@ class PlanConfirmationScreen extends ConsumerWidget {
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF12B347),
+                color: const Color(0xFF2A6049),
                 decoration: TextDecoration.underline,
               ),
             ),
@@ -543,7 +522,7 @@ class _ActivityTile extends StatelessWidget {
                           vertical: 4,
                         ),
                             decoration: BoxDecoration(
-                          color: const Color(0xFF12B347).withOpacity(0.1),
+                          color: const Color(0xFF2A6049).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -551,7 +530,7 @@ class _ActivityTile extends StatelessWidget {
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF12B347),
+                            color: const Color(0xFF2A6049),
                               ),
                             ),
                           ),

@@ -4,8 +4,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/mood/models/activity_rating.dart';
 import 'package:wandermood/features/mood/services/activity_rating_service.dart';
+
+// WanderMood v2 — Quick Review sheet (Screen 14)
+const Color _wmSunset = Color(0xFFE8784A);
+const Color _wmSunsetTint = Color(0xFFFDF0EE);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmStone = Color(0xFF8C8780);
+const Color _wmTileBlij = Color(0xFFF9D878);
+const Color _wmTileOntspannen = Color(0xFF78CCB8);
+const Color _wmMehTint = Color(0xFFFDF0EE);
 
 Future<void> showActivityReviewSheet(
   BuildContext context,
@@ -14,6 +25,7 @@ Future<void> showActivityReviewSheet(
   await showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    backgroundColor: Colors.white,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -78,7 +90,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: _wmParchment,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -113,9 +125,9 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFDF0EE), // wmSunsetTint
+                      color: _wmSunsetTint,
                       borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: const Color(0xFFE8784A)), // wmSunset
+                      border: Border.all(color: _wmSunset, width: 1.5),
                     ),
                     child: Row(
                       children: [
@@ -123,10 +135,9 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFB923C), Color(0xFFEC4899)],
-                            ),
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: _wmSunset, width: 1.5),
                           ),
                           child: const Center(
                             child: Text('🛍️', style: TextStyle(fontSize: 24)),
@@ -182,7 +193,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                           Icons.star_rounded,
                           color: isActive
                               ? const Color(0xFFFACC15)
-                              : const Color(0xFFD8D0C4), // wmParchment
+                              : _wmParchment,
                         ),
                       );
                     }),
@@ -244,16 +255,14 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: selected
-                                  ? const Color(0xFF2A6049)
-                                  : const Color(0xFFD8D0C4),
+                              color: selected ? _wmForest : _wmParchment,
                               width: 2,
                             ),
                             color: _vibeTileColor(option.label),
                             boxShadow: selected
                                 ? [
                                     BoxShadow(
-                                      color: const Color(0xFF2A6049).withOpacity(0.18),
+                                      color: _wmForest.withOpacity(0.18),
                                       blurRadius: 10,
                                       offset: const Offset(0, 4),
                                     ),
@@ -274,9 +283,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                                 style: GoogleFonts.poppins(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
-                                  color: selected
-                                      ? const Color(0xFF2A6049)
-                                      : const Color(0xFF4B5563),
+                                  color: selected ? _wmForest : _wmStone,
                                 ),
                               ),
                             ],
@@ -314,7 +321,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(18),
                         borderSide: const BorderSide(
-                          color: Color(0xFF8B5CF6),
+                          color: _wmForest,
                           width: 2,
                         ),
                       ),
@@ -346,10 +353,10 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(22),
                       ),
-                      backgroundColor: const Color(0xFF2A6049), // wmForest
+                      backgroundColor: _wmForest,
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor: const Color(0xFFD8D0C4), // wmParchment
-                      disabledForegroundColor: const Color(0xFF8A847B), // wmStone
+                      disabledBackgroundColor: _wmParchment,
+                      disabledForegroundColor: _wmStone,
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -427,14 +434,12 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
     ref.invalidate(activityRatingForActivityProvider(activityId));
 
     if (!mounted) return;
-    Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Thanks for your review! 🚀',
-          style: GoogleFonts.poppins(),
-        ),
-      ),
+    final nav = Navigator.of(context);
+    nav.pop();
+    showWanderMoodToast(
+      nav.context,
+      message: 'Thanks for your review! 🚀',
+      duration: const Duration(seconds: 3),
     );
   }
 
@@ -471,13 +476,14 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
   Color _vibeTileColor(String label) {
     switch (label) {
       case 'Amazing':
-        return const Color(0xFFF9D878); // wmTileBlij
+        return _wmTileBlij;
       case 'Good':
-        return const Color(0xFF78CCB8); // wmTileOntspannen
+        // Desaturated tint of wmTileOntspannen (Screen 14)
+        return Color.lerp(_wmTileOntspannen, Colors.white, 0.5)!;
       case 'Okay':
-        return const Color(0xFFD8D0C4); // wmParchment
+        return _wmParchment;
       case 'Meh':
-        return const Color(0xFFFDF0EE); // error tint
+        return _wmMehTint;
       default:
         return Colors.white;
     }

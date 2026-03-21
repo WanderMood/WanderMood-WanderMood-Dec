@@ -234,7 +234,7 @@ class _AdventureWheelScreenState extends State<AdventureWheelScreen> with Ticker
                             width: 40,
                             height: 40,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF12B347),
+                              color: const Color(0xFF2A6049),
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
@@ -276,7 +276,7 @@ class _AdventureWheelScreenState extends State<AdventureWheelScreen> with Ticker
                     child: ElevatedButton(
                       onPressed: _isSpinning ? null : _spinWheel,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF12B347),
+                        backgroundColor: const Color(0xFF2A6049),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 32,

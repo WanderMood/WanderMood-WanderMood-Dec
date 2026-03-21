@@ -84,6 +84,16 @@ class AppLocalizationsNl extends AppLocalizations {
   String get myDayEmptyAskMoodyButton => 'Vraag Moody';
 
   @override
+  String get myDayQuickAddActivity => 'Activiteit toevoegen';
+
+  @override
+  String get moodyFeedbackPromptBody =>
+      'Hoe gaat het? Tik en vertel hoe je dag voelt!';
+
+  @override
+  String get moodyFeedbackShareAction => 'Feedback delen';
+
+  @override
   String get myDayEmptyInspiredTitle => 'Doe inspiratie op';
 
   @override
@@ -1081,6 +1091,27 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileStatsTopMoodTitle => 'Top stemming';
 
   @override
+  String get profileStatsStreakTitle => 'Streak';
+
+  @override
+  String get profileTopMoodEmpty => 'None yet';
+
+  @override
+  String get profileSavedPlacesTitle => 'Saved places';
+
+  @override
+  String get profileSavedPlacesSeeAll => 'See all';
+
+  @override
+  String get profileSavedPlacesEmpty => 'No saved places yet';
+
+  @override
+  String get profileEditProfileButton => 'Edit profile';
+
+  @override
+  String get profileAppSettingsLink => 'App settings';
+
+  @override
   String get profileFavoriteVibesTitle => 'Jouw favoriete vibes';
 
   @override
@@ -1094,6 +1125,40 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get profileMoodJourneySubtitle => 'Bekijk je stemmingsgeschiedenis';
+
+  @override
+  String get moodHistoryIntro => 'Een rustige tijdlijn van hoe je je voelde.';
+
+  @override
+  String get moodHistorySectionRecent => 'Recent';
+
+  @override
+  String get moodHistorySectionTimeline => 'Tijdlijn';
+
+  @override
+  String get moodHistoryEmptyTitle => 'Je reis begint hier';
+
+  @override
+  String get moodHistoryEmptyBody =>
+      'Check in via Moody Hub of Mijn dag—je momenten verschijnen hieronder.';
+
+  @override
+  String get moodHistoryLoginRequired => 'Log in om je stemmingsreis te zien.';
+
+  @override
+  String get moodHistoryErrorUser => 'Je account kon niet worden geladen.';
+
+  @override
+  String get moodHistoryErrorMoods => 'Stemmingen konden niet worden geladen.';
+
+  @override
+  String get moodHistoryTodayBadge => 'Vandaag';
+
+  @override
+  String get moodHistoryDayToday => 'Vandaag';
+
+  @override
+  String get moodHistoryDayYesterday => 'Gisteren';
 
   @override
   String get profileTravelGlobeTitle => 'Jouw reisglobe';
@@ -1405,6 +1470,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get drawerYourJourney => 'Your Journey';
 
   @override
+  String get drawerNavigation => 'Navigation';
+
+  @override
   String get drawerSettings => 'Settings';
 
   @override
@@ -1415,6 +1483,9 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get drawerSavedPlaces => 'Saved Places';
+
+  @override
+  String get drawerMyAgenda => 'Mijn agenda';
 
   @override
   String get drawerMyBookings => 'My Bookings';
@@ -2863,4 +2934,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get noPlanPlanLater => 'Misschien later';
+
+  @override
+  String get myDayHeroActiveSubtitle => 'Je bent er nu mee bezig.';
 }
