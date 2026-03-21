@@ -475,6 +475,273 @@ class AppLocalizationsFr extends AppLocalizations {
       'Le désert du Sahara est plus grand que les États-Unis !';
 
   @override
+  String get weatherCurrentLocation => 'Position actuelle';
+
+  @override
+  String get loadingFactNl0 =>
+      'Les Pays-Bas ont plus de musées par kilomètre carré que tout autre pays !';
+
+  @override
+  String get loadingFactNl1 =>
+      'Rotterdam abrite le plus grand port d\'Europe, avec plus de 400 millions de tonnes de fret par an !';
+
+  @override
+  String get loadingFactNl2 =>
+      'Les Pays-Bas comptent plus de 35 000 km de pistes cyclables – assez pour faire le tour de la Terre !';
+
+  @override
+  String get loadingFactNl3 =>
+      'Amsterdam a plus de canaux que Venise et plus de ponts que Paris !';
+
+  @override
+  String get loadingFactNl4 =>
+      'Les Néerlandais consomment plus de 150 millions de stroopwafels par an !';
+
+  @override
+  String get loadingFactNl5 =>
+      'Les Pays-Bas sont le 2e exportateur mondial d\'aliments malgré leur petite taille !';
+
+  @override
+  String get loadingFactNl6 =>
+      'Keukenhof expose plus de 7 millions de bulbes sur 32 hectares !';
+
+  @override
+  String get loadingFactNl7 =>
+      'Les Néerlandais sont en moyenne les plus grands au monde !';
+
+  @override
+  String get loadingFactUs0 =>
+      'Les États-Unis comptent 63 parcs nationaux, de Yellowstone au Grand Canyon !';
+
+  @override
+  String get loadingFactUs1 =>
+      'L\'Alaska a plus de 3 millions de lacs et plus de 100 000 glaciers !';
+
+  @override
+  String get loadingFactUs2 =>
+      'Le réseau Interstate américain dépasse 75 000 km !';
+
+  @override
+  String get loadingFactUs3 =>
+      'Times Square à New York accueille plus de 50 millions de visiteurs par an !';
+
+  @override
+  String get loadingFactUs4 =>
+      'Les États-Unis ont la plus grande économie du monde et Silicon Valley !';
+
+  @override
+  String get loadingFactUs5 =>
+      'Hawaï est le seul État américain à produire du café commercialement !';
+
+  @override
+  String get loadingFactUs6 =>
+      'Le Golden Gate est peint en « International Orange » !';
+
+  @override
+  String get loadingFactUs7 =>
+      'Disney World en Floride est plus grand que la ville de San Francisco !';
+
+  @override
+  String get loadingFactJp0 =>
+      'Le Japon compte plus de 6 800 îles, mais seulement 430 sont habitées !';
+
+  @override
+  String get loadingFactJp1 => 'Le Shinkansen peut dépasser 300 km/h !';
+
+  @override
+  String get loadingFactJp2 =>
+      'Le mont Fuji est un volcan actif ; dernière éruption en 1707 !';
+
+  @override
+  String get loadingFactJp3 =>
+      'Le Japon a plus de 100 000 temples et sanctuaires !';
+
+  @override
+  String get loadingFactJp4 =>
+      'Tokyo est la plus grande aire urbaine au monde – plus de 37 millions d\'habitants !';
+
+  @override
+  String get loadingFactJp5 =>
+      'Le Japon consomme environ 80 % du thon rouge mondial !';
+
+  @override
+  String get loadingFactJp6 =>
+      'Au Japon, il y a environ un distributeur pour 23 habitants !';
+
+  @override
+  String get loadingFactJp7 =>
+      'La floraison des cerisiers attire des millions de visiteurs chaque printemps !';
+
+  @override
+  String get loadingFactUk0 =>
+      'Le Royaume-Uni compte plus de 1 500 châteaux, des forteresses aux résidences royales !';
+
+  @override
+  String get loadingFactUk1 =>
+      '« Big Ben » n\'est pas le nom de la tour – c\'est Elizabeth Tower !';
+
+  @override
+  String get loadingFactUk2 =>
+      'Le Royaume-Uni a produit plus de musiciens mondialement célèbres par habitant !';
+
+  @override
+  String get loadingFactUk3 =>
+      'Stonehenge a plus de 5 000 ans et reste mystérieux !';
+
+  @override
+  String get loadingFactUk4 =>
+      'Le métro de Londres est le plus ancien au monde (1863) !';
+
+  @override
+  String get loadingFactUk5 =>
+      'Le Royaume-Uni compte 15 sites UNESCO, dont Bath et Édimbourg !';
+
+  @override
+  String get loadingFactUk6 =>
+      'L\'Écosse a plus de 3 000 châteaux et environ 790 îles !';
+
+  @override
+  String get loadingFactUk7 =>
+      'Les Britanniques boivent environ 100 millions de tasses de thé par jour !';
+
+  @override
+  String get loadingFactDe0 =>
+      'L\'Allemagne compte plus de 25 000 châteaux et palais !';
+
+  @override
+  String get loadingFactDe1 =>
+      'Le mur de Berlin mesurait 155 km et a duré 28 ans !';
+
+  @override
+  String get loadingFactDe2 => 'L\'Oktoberfest commence souvent en septembre !';
+
+  @override
+  String get loadingFactDe3 =>
+      'La Forêt-Noire a inspiré de nombreux contes des frères Grimm !';
+
+  @override
+  String get loadingFactDe4 =>
+      'Environ 60 % des autoroutes allemandes n\'ont souvent pas de limite générale !';
+
+  @override
+  String get loadingFactDe5 =>
+      'Neuschwanstein a inspiré le château de la Belle au bois dormant !';
+
+  @override
+  String get loadingFactDe6 =>
+      'L\'Allemagne a la plus grande économie d\'Europe et est réputée en ingénierie !';
+
+  @override
+  String get loadingFactDe7 =>
+      'Le Rhin traverse l\'Allemagne et est bordé de châteaux médiévaux !';
+
+  @override
+  String get loadingFactFr0 =>
+      'La France est le pays le plus visité au monde – plus de 89 millions de touristes par an !';
+
+  @override
+  String get loadingFactFr1 =>
+      'La tour Eiffel fut d\'abord un ouvrage temporaire pour l\'Exposition de 1889 !';
+
+  @override
+  String get loadingFactFr2 =>
+      'La France produit plus de 400 fromages – un pour chaque jour de l\'année !';
+
+  @override
+  String get loadingFactFr3 =>
+      'Le château de Versailles compte 2 300 pièces et 67 escaliers !';
+
+  @override
+  String get loadingFactFr4 =>
+      'La France compte 44 sites UNESCO, dont le Mont-Saint-Michel !';
+
+  @override
+  String get loadingFactFr5 =>
+      'Le Louvre est le plus grand musée d\'art du monde !';
+
+  @override
+  String get loadingFactFr6 =>
+      'La Côte d\'Azur s\'étire sur des centaines de km en Méditerranée !';
+
+  @override
+  String get loadingFactFr7 =>
+      'La France accueille la course cycliste la plus célèbre : le Tour de France !';
+
+  @override
+  String guestPlaceDistanceKm(String km) {
+    return '$km km';
+  }
+
+  @override
+  String guestPlaceHoursRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String get prefSocialVibeTitleFallback => 'Quelle est ta vibe sociale ? 👥';
+
+  @override
+  String get prefSocialVibeSubtitleFallback =>
+      'Comment aimes-tu vivre les choses ?';
+
+  @override
+  String get prefPlanningPaceTitleFallback => 'Parle-moi de ton rythme ⏰';
+
+  @override
+  String get prefPlanningPaceSubtitleFallback => 'Ton style de planification';
+
+  @override
+  String get prefTravelStyleTitleFallback => 'Dernière étape ! ✨';
+
+  @override
+  String get prefTravelStyleSubtitleFallback =>
+      'Quel est ton style de voyage ?';
+
+  @override
+  String get prefStartMyJourney => 'Commencer mon voyage';
+
+  @override
+  String get onboardingPagerSlide1Title => 'Rencontre Moody 😄';
+
+  @override
+  String get onboardingPagerSlide1Subtitle => 'Ton BFF voyage 💬🌍';
+
+  @override
+  String get onboardingPagerSlide1Description =>
+      'Moody apprend ta vibe, ton énergie et comment se passe ta journée. J\'en fais des plans perso rien que pour toi. Comme un pote curieux toujours partant pour explorer 🌆🎈';
+
+  @override
+  String get onboardingPagerSlide2Title => 'Voyager selon ton mood 🌈';
+
+  @override
+  String get onboardingPagerSlide2Subtitle => 'Tes émotions, ton voyage 💭';
+
+  @override
+  String get onboardingPagerSlide2Description =>
+      'Que tu sois calme, romantique ou aventureux… dis-moi comment tu te sens et je crée des plans perso 🌸🏞️\nDes pépites aux balades au coucher du soleil – le mood d\'abord, toujours.';
+
+  @override
+  String get onboardingPagerSlide3Title => 'Ta journée, à ta façon 🫶🏾';
+
+  @override
+  String get onboardingPagerSlide3Subtitle => 'Du lever au soir ☀️🌙';
+
+  @override
+  String get onboardingPagerSlide3Description =>
+      'Ton plan est découpé en moments—matin, après-midi, soir et nuit. Choisis ta vibe, tes favoris, je gère la magie. 🧭🎯 Selon le lieu, l\'heure, la météo & ton mood.';
+
+  @override
+  String get onboardingPagerSlide4Title => 'Chaque jour a son mood 🎨';
+
+  @override
+  String get onboardingPagerSlide4Subtitle =>
+      'Découvre de nouveaux lieux – chaque jour🌍';
+
+  @override
+  String get onboardingPagerSlide4Description =>
+      'WanderMood rend chaque jour aventureux. Réveille-toi, check ton vibe, explore des activités triées sur le volet 💡📍 Laisse ton mood guider – encore et encore.';
+
+  @override
   String get appSettings => 'App Settings';
 
   @override

@@ -42,7 +42,8 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
   late Animation<double> _pulseAnimation;
   
   bool _isLoading = true;
-  String _currentStep = 'Preparing your personalized experience...';
+  /// Shown loading line; empty until first [_updateProgress] (then [loadingStep0] in UI).
+  String _currentStepDisplay = '';
   double _progress = 0.0;
   
   static const int _loadingStepsCount = 6;
@@ -65,213 +66,67 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
     {'emoji': '🏜️', 'factIndex': 7},
   ];
   
-  // Location-specific travel facts (English copy; default facts use l10n via factIndex)
-  Map<String, List<Map<String, dynamic>>> _locationFacts = {
-    'Netherlands': [
-      {
-        'fact': 'The Netherlands has more museums per square mile than any other country!',
-        'emoji': '🎨'
-      },
-      {
-        'fact': 'Rotterdam is home to Europe\'s largest port, handling over 400 million tons of cargo annually!',
-        'emoji': '🚢'
-      },
-      {
-        'fact': 'The Netherlands has over 35,000 kilometers of bike paths - enough to circle the Earth!',
-        'emoji': '🚲'
-      },
-      {
-        'fact': 'Amsterdam has more canals than Venice and more bridges than Paris!',
-        'emoji': '🌉'
-      },
-      {
-        'fact': 'The Dutch consume over 150 million stroopwafels every year!',
-        'emoji': '🧇'
-      },
-      {
-        'fact': 'The Netherlands is the world\'s second-largest exporter of food despite its small size!',
-        'emoji': '🌾'
-      },
-      {
-        'fact': 'Keukenhof Gardens displays over 7 million flower bulbs across 32 hectares!',
-        'emoji': '🌷'
-      },
-      {
-        'fact': 'The Dutch are the tallest people in the world with an average height of 6 feet!',
-        'emoji': '📏'
-      },
-    ],
-    'United States': [
-      {
-        'fact': 'The US has 63 national parks, from Yellowstone to the Grand Canyon!',
-        'emoji': '🏞️'
-      },
-      {
-        'fact': 'Alaska has more than 3 million lakes and over 100,000 glaciers!',
-        'emoji': '🏔️'
-      },
-      {
-        'fact': 'The US Interstate Highway System spans over 47,000 miles!',
-        'emoji': '🛣️'
-      },
-      {
-        'fact': 'Times Square in NYC is visited by over 50 million people annually!',
-        'emoji': '🗽'
-      },
-      {
-        'fact': 'The US has the world\'s largest economy and is home to Silicon Valley!',
-        'emoji': '💻'
-      },
-      {
-        'fact': 'Hawaii is the only US state that commercially grows coffee!',
-        'emoji': '☕'
-      },
-      {
-        'fact': 'The Golden Gate Bridge in San Francisco is painted International Orange!',
-        'emoji': '🌉'
-      },
-      {
-        'fact': 'Disney World in Florida is larger than the city of San Francisco!',
-        'emoji': '🏰'
-      },
-    ],
-    'Japan': [
-      {
-        'fact': 'Japan has over 6,800 islands, but only 430 are inhabited!',
-        'emoji': '🏝️'
-      },
-      {
-        'fact': 'The Japanese Shinkansen bullet trains can reach speeds of 200 mph!',
-        'emoji': '🚄'
-      },
-      {
-        'fact': 'Mount Fuji is actually an active volcano that last erupted in 1707!',
-        'emoji': '🗾'
-      },
-      {
-        'fact': 'Japan has more than 100,000 temples and shrines!',
-        'emoji': '⛩️'
-      },
-      {
-        'fact': 'Tokyo is the world\'s largest metropolitan area with over 37 million people!',
-        'emoji': '🏙️'
-      },
-      {
-        'fact': 'Japan consumes about 80% of the world\'s bluefin tuna!',
-        'emoji': '🍣'
-      },
-      {
-        'fact': 'The Japanese love vending machines - there\'s one for every 23 people!',
-        'emoji': '🥤'
-      },
-      {
-        'fact': 'Cherry blossom season in Japan attracts millions of visitors each spring!',
-        'emoji': '🌸'
-      },
-    ],
-    'United Kingdom': [
-      {
-        'fact': 'The UK has over 1,500 castles, from medieval fortresses to royal residences!',
-        'emoji': '🏰'
-      },
-      {
-        'fact': 'London\'s Big Ben is not actually the name of the clock tower - it\'s Elizabeth Tower!',
-        'emoji': '🕰️'
-      },
-      {
-        'fact': 'The UK has produced more world-famous musicians per capita than any other country!',
-        'emoji': '🎵'
-      },
-      {
-        'fact': 'Stonehenge is over 5,000 years old and still shrouded in mystery!',
-        'emoji': '🪨'
-      },
-      {
-        'fact': 'The London Underground is the world\'s oldest subway system, opened in 1863!',
-        'emoji': '🚇'
-      },
-      {
-        'fact': 'The UK has 15 UNESCO World Heritage Sites including Bath and Edinburgh!',
-        'emoji': '🏛️'
-      },
-      {
-        'fact': 'Scotland has over 3,000 castles and about 790 islands!',
-        'emoji': '🏴󠁧󠁢󠁳󠁣󠁴󠁿'
-      },
-      {
-        'fact': 'The British drink about 100 million cups of tea every day!',
-        'emoji': '☕'
-      },
-    ],
-    'Germany': [
-      {
-        'fact': 'Germany has over 25,000 castles and palaces scattered across the country!',
-        'emoji': '🏰'
-      },
-      {
-        'fact': 'The Berlin Wall was 96 miles long and stood for 28 years!',
-        'emoji': '🧱'
-      },
-      {
-        'fact': 'Germany is famous for Oktoberfest, which actually starts in September!',
-        'emoji': '🍺'
-      },
-      {
-        'fact': 'The Black Forest region inspired many Brothers Grimm fairy tales!',
-        'emoji': '🌲'
-      },
-      {
-        'fact': 'Germany has no general speed limit on about 60% of its Autobahn highways!',
-        'emoji': '🚗'
-      },
-      {
-        'fact': 'Neuschwanstein Castle was the inspiration for Disney\'s Sleeping Beauty castle!',
-        'emoji': '🏰'
-      },
-      {
-        'fact': 'Germany has the largest economy in Europe and is known for engineering!',
-        'emoji': '⚙️'
-      },
-      {
-        'fact': 'The Rhine River flows through Germany and is lined with medieval castles!',
-        'emoji': '🏰'
-      },
-    ],
-    'France': [
-      {
-        'fact': 'France is the world\'s most visited country with over 89 million tourists annually!',
-        'emoji': '🗼'
-      },
-      {
-        'fact': 'The Eiffel Tower was originally built as a temporary structure for the 1889 World\'s Fair!',
-        'emoji': '🗼'
-      },
-      {
-        'fact': 'France produces over 400 types of cheese - one for every day of the year!',
-        'emoji': '🧀'
-      },
-      {
-        'fact': 'The Palace of Versailles has 2,300 rooms and 67 staircases!',
-        'emoji': '🏰'
-      },
-      {
-        'fact': 'France has 44 UNESCO World Heritage Sites, including Mont-Saint-Michel!',
-        'emoji': '🏛️'
-      },
-      {
-        'fact': 'The Louvre Museum is the world\'s largest art museum!',
-        'emoji': '🎨'
-      },
-      {
-        'fact': 'The French Riviera stretches for 550 miles along the Mediterranean!',
-        'emoji': '🏖️'
-      },
-      {
-        'fact': 'France is home to the world\'s most famous bicycle race - the Tour de France!',
-        'emoji': '🚴'
-      },
-    ],
-  };
+  /// Per-country fact rows: emoji + stable id for [AppLocalizations] (loadingFactNl0…).
+  static const List<Map<String, dynamic>> _nlFacts = [
+    {'emoji': '🎨', 'country': 'nl', 'i': 0},
+    {'emoji': '🚢', 'country': 'nl', 'i': 1},
+    {'emoji': '🚲', 'country': 'nl', 'i': 2},
+    {'emoji': '🌉', 'country': 'nl', 'i': 3},
+    {'emoji': '🧇', 'country': 'nl', 'i': 4},
+    {'emoji': '🌾', 'country': 'nl', 'i': 5},
+    {'emoji': '🌷', 'country': 'nl', 'i': 6},
+    {'emoji': '📏', 'country': 'nl', 'i': 7},
+  ];
+  static const List<Map<String, dynamic>> _usFacts = [
+    {'emoji': '🏞️', 'country': 'us', 'i': 0},
+    {'emoji': '🏔️', 'country': 'us', 'i': 1},
+    {'emoji': '🛣️', 'country': 'us', 'i': 2},
+    {'emoji': '🗽', 'country': 'us', 'i': 3},
+    {'emoji': '💻', 'country': 'us', 'i': 4},
+    {'emoji': '☕', 'country': 'us', 'i': 5},
+    {'emoji': '🌉', 'country': 'us', 'i': 6},
+    {'emoji': '🏰', 'country': 'us', 'i': 7},
+  ];
+  static const List<Map<String, dynamic>> _jpFacts = [
+    {'emoji': '🏝️', 'country': 'jp', 'i': 0},
+    {'emoji': '🚄', 'country': 'jp', 'i': 1},
+    {'emoji': '🗾', 'country': 'jp', 'i': 2},
+    {'emoji': '⛩️', 'country': 'jp', 'i': 3},
+    {'emoji': '🏙️', 'country': 'jp', 'i': 4},
+    {'emoji': '🍣', 'country': 'jp', 'i': 5},
+    {'emoji': '🥤', 'country': 'jp', 'i': 6},
+    {'emoji': '🌸', 'country': 'jp', 'i': 7},
+  ];
+  static const List<Map<String, dynamic>> _ukFacts = [
+    {'emoji': '🏰', 'country': 'uk', 'i': 0},
+    {'emoji': '🕰️', 'country': 'uk', 'i': 1},
+    {'emoji': '🎵', 'country': 'uk', 'i': 2},
+    {'emoji': '🪨', 'country': 'uk', 'i': 3},
+    {'emoji': '🚇', 'country': 'uk', 'i': 4},
+    {'emoji': '🏛️', 'country': 'uk', 'i': 5},
+    {'emoji': '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'country': 'uk', 'i': 6},
+    {'emoji': '☕', 'country': 'uk', 'i': 7},
+  ];
+  static const List<Map<String, dynamic>> _deFacts = [
+    {'emoji': '🏰', 'country': 'de', 'i': 0},
+    {'emoji': '🧱', 'country': 'de', 'i': 1},
+    {'emoji': '🍺', 'country': 'de', 'i': 2},
+    {'emoji': '🌲', 'country': 'de', 'i': 3},
+    {'emoji': '🚗', 'country': 'de', 'i': 4},
+    {'emoji': '🏰', 'country': 'de', 'i': 5},
+    {'emoji': '⚙️', 'country': 'de', 'i': 6},
+    {'emoji': '🏰', 'country': 'de', 'i': 7},
+  ];
+  static const List<Map<String, dynamic>> _frFacts = [
+    {'emoji': '🗼', 'country': 'fr', 'i': 0},
+    {'emoji': '🗼', 'country': 'fr', 'i': 1},
+    {'emoji': '🧀', 'country': 'fr', 'i': 2},
+    {'emoji': '🏰', 'country': 'fr', 'i': 3},
+    {'emoji': '🏛️', 'country': 'fr', 'i': 4},
+    {'emoji': '🎨', 'country': 'fr', 'i': 5},
+    {'emoji': '🏖️', 'country': 'fr', 'i': 6},
+    {'emoji': '🚴', 'country': 'fr', 'i': 7},
+  ];
 
   // Floating elements for visual appeal
   final List<String> _floatingEmojis = ['✈️', '🗺️', '📸', '🎒', '🧭', '🌍', '🎯', '💫'];
@@ -437,7 +292,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
       try {
         final weatherLocation = WeatherLocation(
           id: 'current_location',
-          name: 'Current Location',
+          name: l10n.weatherCurrentLocation,
           latitude: position.latitude,
           longitude: position.longitude,
         );
@@ -449,7 +304,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
       await Future.delayed(const Duration(milliseconds: 600));
 
       // Step 6: Finalize and prepare dashboard (100%)
-      await _updateProgress(5, l10n.loadingStep4);
+      await _updateProgress(5, l10n.loadingStep6);
       
       // Mark preferences as completed in local storage
       await prefs.setBool('hasCompletedPreferences', true);
@@ -503,7 +358,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
     
     setState(() {
       _currentStepIndex = stepIndex;
-      _currentStep = stepText;
+      _currentStepDisplay = stepText;
       _progress = (stepIndex + 1) / _loadingStepsCount;
     });
     
@@ -536,7 +391,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
     
     if (mounted) {
       setState(() {
-        _currentStep = AppLocalizations.of(context)!.loadingStep6;
+        _currentStepDisplay = AppLocalizations.of(context)!.loadingStep6;
         _progress = 1.0;
       });
       
@@ -560,15 +415,115 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
     }
   }
 
+  static String _localizedLocationFact(AppLocalizations l10n, String country, int i) {
+    switch (country) {
+      case 'nl':
+        switch (i) {
+          case 0: return l10n.loadingFactNl0;
+          case 1: return l10n.loadingFactNl1;
+          case 2: return l10n.loadingFactNl2;
+          case 3: return l10n.loadingFactNl3;
+          case 4: return l10n.loadingFactNl4;
+          case 5: return l10n.loadingFactNl5;
+          case 6: return l10n.loadingFactNl6;
+          case 7: return l10n.loadingFactNl7;
+          default: return '';
+        }
+      case 'us':
+        switch (i) {
+          case 0: return l10n.loadingFactUs0;
+          case 1: return l10n.loadingFactUs1;
+          case 2: return l10n.loadingFactUs2;
+          case 3: return l10n.loadingFactUs3;
+          case 4: return l10n.loadingFactUs4;
+          case 5: return l10n.loadingFactUs5;
+          case 6: return l10n.loadingFactUs6;
+          case 7: return l10n.loadingFactUs7;
+          default: return '';
+        }
+      case 'jp':
+        switch (i) {
+          case 0: return l10n.loadingFactJp0;
+          case 1: return l10n.loadingFactJp1;
+          case 2: return l10n.loadingFactJp2;
+          case 3: return l10n.loadingFactJp3;
+          case 4: return l10n.loadingFactJp4;
+          case 5: return l10n.loadingFactJp5;
+          case 6: return l10n.loadingFactJp6;
+          case 7: return l10n.loadingFactJp7;
+          default: return '';
+        }
+      case 'uk':
+        switch (i) {
+          case 0: return l10n.loadingFactUk0;
+          case 1: return l10n.loadingFactUk1;
+          case 2: return l10n.loadingFactUk2;
+          case 3: return l10n.loadingFactUk3;
+          case 4: return l10n.loadingFactUk4;
+          case 5: return l10n.loadingFactUk5;
+          case 6: return l10n.loadingFactUk6;
+          case 7: return l10n.loadingFactUk7;
+          default: return '';
+        }
+      case 'de':
+        switch (i) {
+          case 0: return l10n.loadingFactDe0;
+          case 1: return l10n.loadingFactDe1;
+          case 2: return l10n.loadingFactDe2;
+          case 3: return l10n.loadingFactDe3;
+          case 4: return l10n.loadingFactDe4;
+          case 5: return l10n.loadingFactDe5;
+          case 6: return l10n.loadingFactDe6;
+          case 7: return l10n.loadingFactDe7;
+          default: return '';
+        }
+      case 'fr':
+        switch (i) {
+          case 0: return l10n.loadingFactFr0;
+          case 1: return l10n.loadingFactFr1;
+          case 2: return l10n.loadingFactFr2;
+          case 3: return l10n.loadingFactFr3;
+          case 4: return l10n.loadingFactFr4;
+          case 5: return l10n.loadingFactFr5;
+          case 6: return l10n.loadingFactFr6;
+          case 7: return l10n.loadingFactFr7;
+          default: return '';
+        }
+      default:
+        return '';
+    }
+  }
+
   void _loadLocationBasedFacts(double latitude, double longitude) {
-    String detectedCountry = _detectCountryFromCoordinates(latitude, longitude);
-    
-    if (_locationFacts.containsKey(detectedCountry)) {
-      _travelFacts = _locationFacts[detectedCountry]!;
-      debugPrint('🌍 Loading $detectedCountry travel facts');
-    } else {
-      _travelFacts = _defaultTravelFacts;
-      debugPrint('🌍 Loading default travel facts');
+    final detectedCountry = _detectCountryFromCoordinates(latitude, longitude);
+    switch (detectedCountry) {
+      case 'Netherlands':
+        _travelFacts = List<Map<String, dynamic>>.from(_nlFacts);
+        debugPrint('🌍 Loading Netherlands travel facts');
+        break;
+      case 'United States':
+        _travelFacts = List<Map<String, dynamic>>.from(_usFacts);
+        debugPrint('🌍 Loading United States travel facts');
+        break;
+      case 'Japan':
+        _travelFacts = List<Map<String, dynamic>>.from(_jpFacts);
+        debugPrint('🌍 Loading Japan travel facts');
+        break;
+      case 'United Kingdom':
+        _travelFacts = List<Map<String, dynamic>>.from(_ukFacts);
+        debugPrint('🌍 Loading United Kingdom travel facts');
+        break;
+      case 'Germany':
+        _travelFacts = List<Map<String, dynamic>>.from(_deFacts);
+        debugPrint('🌍 Loading Germany travel facts');
+        break;
+      case 'France':
+        _travelFacts = List<Map<String, dynamic>>.from(_frFacts);
+        debugPrint('🌍 Loading France travel facts');
+        break;
+      default:
+        _travelFacts = List<Map<String, dynamic>>.from(_defaultTravelFacts);
+        debugPrint('🌍 Loading default travel facts');
     }
   }
   
@@ -627,8 +582,18 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final currentFact = _travelFacts[_currentFactIndex];
-    
+    final String factBody = currentFact.containsKey('country')
+        ? _localizedLocationFact(
+            l10n,
+            currentFact['country'] as String,
+            currentFact['i'] as int,
+          )
+        : _getFactText(context, currentFact['factIndex'] as int);
+    final String stepLabel =
+        _currentStepDisplay.isEmpty ? l10n.loadingStep0 : _currentStepDisplay;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -861,7 +826,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
                           );
                         },
                         child: Container(
-                          key: ValueKey(_currentStep),
+                          key: ValueKey(stepLabel),
                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.8),
@@ -875,9 +840,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
                             ],
                           ),
                           child: Text(
-                            _currentStep == 'Preparing your personalized experience...'
-                                ? AppLocalizations.of(context)!.loadingStep0
-                                : _currentStep,
+                            stepLabel,
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               color: Colors.black87,
@@ -921,9 +884,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
                                    .rotate(duration: 3000.ms),
                                   const SizedBox(height: 12),
                                   Text(
-                                    currentFact.containsKey('factIndex')
-                                        ? _getFactText(context, currentFact['factIndex'] as int)
-                                        : currentFact['fact']! as String,
+                                    factBody,
                           style: GoogleFonts.poppins(
                                       fontSize: 13,
                                       color: Colors.black87,

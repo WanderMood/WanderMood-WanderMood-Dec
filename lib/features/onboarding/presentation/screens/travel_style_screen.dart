@@ -3,7 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import 'dart:math' as math;
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../../core/providers/preferences_provider.dart';
@@ -128,38 +128,18 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
   final Set<String> _selectedStyles = {};
   static const int maxStyleSelections = 3;
 
-  final List<Map<String, dynamic>> _travelStyles = [
-    {
-      'name': 'Spontaneous',
-      'emoji': '🎯',
-      'description': 'Go with the flow, embrace surprises',
-      'color': const Color(0xFFFFB74D), // Soft Orange
-    },
-    {
-      'name': 'Planned',
-      'emoji': '📅',
-      'description': 'Organized itineraries, scheduled visits',
-      'color': const Color(0xFF64B5F6), // Soft Blue
-    },
-    {
-      'name': 'Local Experience',
-      'emoji': '🏡',
-      'description': 'Live like a local, authentic spots',
-      'color': const Color(0xFF7CB342), // Soft Green
-    },
-    {
-      'name': 'Tourist Highlights',
-      'emoji': '🗺️',
-      'description': 'Must-see attractions, popular spots',
-      'color': const Color(0xFFEC407A), // Soft Pink
-    },
-    {
-      'name': 'Off the Beaten Path',
-      'emoji': '⭐',
-      'description': 'Hidden gems, unique experiences',
-      'color': const Color(0xFF9575CD), // Soft Purple
-    },
-  ];
+  List<Map<String, dynamic>> _travelStyles(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      {'key': 'Spontaneous', 'name': l10n.prefTravelStyleSpontaneous, 'emoji': '🎯', 'description': l10n.prefTravelStyleSpontaneousDesc, 'color': const Color(0xFFFFB74D)},
+      {'key': 'Planned', 'name': l10n.prefTravelStylePlanned, 'emoji': '📅', 'description': l10n.prefTravelStylePlannedDesc, 'color': const Color(0xFF64B5F6)},
+      {'key': 'Local Experience', 'name': l10n.prefTravelStyleLocal, 'emoji': '🏡', 'description': l10n.prefTravelStyleLocalDesc, 'color': const Color(0xFF7CB342)},
+      {'key': 'Luxury Seeker', 'name': l10n.prefTravelStyleLuxury, 'emoji': '✨', 'description': l10n.prefTravelStyleLuxuryDesc, 'color': const Color(0xFFEC407A)},
+      {'key': 'Budget Conscious', 'name': l10n.prefTravelStyleBudget, 'emoji': '💰', 'description': l10n.prefTravelStyleBudgetDesc, 'color': const Color(0xFF66BB6A)},
+      {'key': 'Tourist Highlights', 'name': l10n.prefTravelStyleTouristHighlights, 'emoji': '🗺️', 'description': l10n.prefTravelStyleTouristHighlightsDesc, 'color': const Color(0xFFEC407A)},
+      {'key': 'Off the Beaten Path', 'name': l10n.prefTravelStyleOffBeatenPath, 'emoji': '⭐', 'description': l10n.prefTravelStyleOffBeatenPathDesc, 'color': const Color(0xFF9575CD)},
+    ];
+  }
 
   @override
   void initState() {
@@ -210,13 +190,13 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
   }
 
   Widget _buildStyleCard(Map<String, dynamic> style) {
-    final bool isSelected = _selectedStyles.contains(style['name']);
+    final bool isSelected = _selectedStyles.contains(style['key']);
     final color = style['color'] as Color;
     
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: InkWell(
-        onTap: () => _toggleStyle(style['name']),
+        onTap: () => _toggleStyle(style['key'] as String),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
@@ -277,7 +257,7 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        style['name'],
+                        style['name'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -287,7 +267,7 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
                         ),
                       ),
                       Text(
-                        style['description'],
+                        style['description'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           color: isSelected
@@ -424,7 +404,7 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
                                     builder: (context, ref, child) {
                                       final communicationState = ref.watch(communicationStyleProvider);
                                       final styleKey = communicationState.style.toString().split('.').last;
-                                      final title = communicationState.texts['travel_style']?[styleKey] ?? 'Last but not least! ✨';
+                                      final title = communicationState.texts['travel_style']?[styleKey] ?? AppLocalizations.of(context)!.prefTravelStyleTitleFallback;
                                       return Text(
                                         title,
                                         style: GoogleFonts.museoModerno(
@@ -452,7 +432,7 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
                                     builder: (context, ref, child) {
                                       final communicationState = ref.watch(communicationStyleProvider);
                                       final styleKey = communicationState.style.toString().split('.').last;
-                                      final subtitle = communicationState.texts['travel_style_subtitle']?[styleKey] ?? 'What\'s your travel style?';
+                                      final subtitle = communicationState.texts['travel_style_subtitle']?[styleKey] ?? AppLocalizations.of(context)!.prefTravelStyleSubtitleFallback;
                                       return Text(
                                         subtitle,
                                         style: GoogleFonts.poppins(
@@ -471,7 +451,7 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
                             ListView(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              children: _travelStyles.map((style) => _buildStyleCard(style)).toList(),
+                              children: _travelStyles(context).map((style) => _buildStyleCard(style)).toList(),
                             ),
                             const SizedBox(height: 8),
                             // Continue button
@@ -508,7 +488,7 @@ class _TravelStyleScreenState extends ConsumerState<TravelStyleScreen> with Tick
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           Text(
-                                            'Start My Journey',
+                                            AppLocalizations.of(context)!.prefStartMyJourney,
                                             style: GoogleFonts.poppins(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,

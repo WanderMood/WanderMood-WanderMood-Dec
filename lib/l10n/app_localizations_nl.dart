@@ -12,7 +12,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get appTitle => 'WanderMood';
 
   @override
-  String get splashTagline => 'Je reisgezel op basis van je stemming';
+  String get splashTagline => 'Je reisgezel op basis van je mood';
 
   @override
   String get welcome => 'Welkom';
@@ -72,7 +72,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get myDayEmptyPlanSubtitle =>
-      'Maak een dagplanning en ontdek plekken die passen bij je stemming, timing en energie.';
+      'Maak een dagplanning en ontdek plekken die passen bij je mood, timing en energie.';
 
   @override
   String get myDayEmptyCreateButton => 'Maak Mijn Dag';
@@ -128,7 +128,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get moodyIntroSubtext =>
-      'Ik help je dagen te plannen die passen bij je stemming, energie en vibe.';
+      'Ik help je dagen te plannen die passen bij je mood, energie en vibe.';
 
   @override
   String get moodyIntroSuggestActivities => 'Ik stel activiteiten voor zoals:';
@@ -245,11 +245,11 @@ class AppLocalizationsNl extends AppLocalizations {
       'Herinneringen voor aankomende activiteiten en plannen';
 
   @override
-  String get moodTracking => 'Stemmingsvolgen';
+  String get moodTracking => 'Mood volgen';
 
   @override
   String get dailyPromptsToTrackYourMood =>
-      'Dagelijkse prompts om je stemming bij te houden';
+      'Dagelijkse prompts om je mood bij te houden';
 
   @override
   String get travelAndWeather => 'Reizen & Weer';
@@ -351,11 +351,11 @@ class AppLocalizationsNl extends AppLocalizations {
   String get darkTheme => 'Donker thema';
 
   @override
-  String get changeYourMood => 'Je stemming veranderen?';
+  String get changeYourMood => 'Je mood veranderen?';
 
   @override
   String get doYouWantToContinueToChangeMood =>
-      'Wil je doorgaan om je stemming te veranderen? Dit brengt je naar het stemmingsselectiescherm.';
+      'Wil je doorgaan om je mood te veranderen? Dit brengt je naar het mood selectiescherm.';
 
   @override
   String get enabled => 'ingeschakeld';
@@ -468,6 +468,274 @@ class AppLocalizationsNl extends AppLocalizations {
       'De Sahara is groter dan de hele Verenigde Staten!';
 
   @override
+  String get weatherCurrentLocation => 'Huidige locatie';
+
+  @override
+  String get loadingFactNl0 =>
+      'Nederland heeft meer musea per vierkante kilometer dan welk land ook!';
+
+  @override
+  String get loadingFactNl1 =>
+      'Rotterdam heeft de grootste haven van Europa, met jaarlijks meer dan 400 miljoen ton vracht!';
+
+  @override
+  String get loadingFactNl2 =>
+      'Nederland heeft meer dan 35.000 kilometer fietspaden – genoeg om de aarde te omcirkelen!';
+
+  @override
+  String get loadingFactNl3 =>
+      'Amsterdam heeft meer grachten dan Venetië en meer bruggen dan Parijs!';
+
+  @override
+  String get loadingFactNl4 =>
+      'Nederlanders eten jaarlijks meer dan 150 miljoen stroopwafels!';
+
+  @override
+  String get loadingFactNl5 =>
+      'Nederland is \'s werelds op één na grootste exporteur van voedsel, ondanks het kleine oppervlak!';
+
+  @override
+  String get loadingFactNl6 =>
+      'Keukenhof toont meer dan 7 miljoen bloembollen op 32 hectare!';
+
+  @override
+  String get loadingFactNl7 =>
+      'Nederlanders zijn gemiddeld het langst ter wereld – rond 1,80 m!';
+
+  @override
+  String get loadingFactUs0 =>
+      'De VS hebben 63 nationale parken, van Yellowstone tot de Grand Canyon!';
+
+  @override
+  String get loadingFactUs1 =>
+      'Alaska heeft meer dan 3 miljoen meren en meer dan 100.000 gletsjers!';
+
+  @override
+  String get loadingFactUs2 =>
+      'Het Interstate Highway System in de VS is meer dan 75.000 km lang!';
+
+  @override
+  String get loadingFactUs3 =>
+      'Times Square in New York trekt jaarlijks meer dan 50 miljoen bezoekers!';
+
+  @override
+  String get loadingFactUs4 =>
+      'De VS hebben \'s werelds grootste economie en Silicon Valley!';
+
+  @override
+  String get loadingFactUs5 =>
+      'Hawaï is de enige Amerikaanse staat met commerciële koffieteelt!';
+
+  @override
+  String get loadingFactUs6 =>
+      'De Golden Gate Bridge in San Francisco is geschilderd in International Orange!';
+
+  @override
+  String get loadingFactUs7 =>
+      'Disney World in Florida is groter dan de stad San Francisco!';
+
+  @override
+  String get loadingFactJp0 =>
+      'Japan telt meer dan 6.800 eilanden, maar slechts 430 zijn bewoond!';
+
+  @override
+  String get loadingFactJp1 =>
+      'De Japanse Shinkansen kan snelheden tot 320 km/u halen!';
+
+  @override
+  String get loadingFactJp2 =>
+      'De Fuji is een actieve vulkaan die voor het laatst uitbarstte in 1707!';
+
+  @override
+  String get loadingFactJp3 =>
+      'Japan heeft meer dan 100.000 tempels en schrijnen!';
+
+  @override
+  String get loadingFactJp4 =>
+      'Tokio is \'s werelds grootste metropool met meer dan 37 miljoen inwoners!';
+
+  @override
+  String get loadingFactJp5 =>
+      'Japan consumeert ongeveer 80% van \'s werelds blauwvintonijn!';
+
+  @override
+  String get loadingFactJp6 =>
+      'In Japan staat er gemiddeld elke 23 mensen een automaat!';
+
+  @override
+  String get loadingFactJp7 =>
+      'Het kersenbloesemseizoen trekt elk voorjaar miljoenen bezoekers!';
+
+  @override
+  String get loadingFactUk0 =>
+      'Het VK heeft meer dan 1.500 kastelen, van middeleeuwse forten tot koninklijke residenties!';
+
+  @override
+  String get loadingFactUk1 =>
+      'Big Ben is niet de naam van de klokkentoren – dat is Elizabeth Tower!';
+
+  @override
+  String get loadingFactUk2 =>
+      'Het VK leverde per hoofd meer wereldberoemde muzikanten dan welk land ook!';
+
+  @override
+  String get loadingFactUk3 =>
+      'Stonehenge is meer dan 5.000 jaar oud en blijft mysterieus!';
+
+  @override
+  String get loadingFactUk4 =>
+      'De London Underground is \'s werelds oudste metro, geopend in 1863!';
+
+  @override
+  String get loadingFactUk5 =>
+      'Het VK heeft 15 UNESCO-werelderfgoederen, waaronder Bath en Edinburgh!';
+
+  @override
+  String get loadingFactUk6 =>
+      'Schotland heeft meer dan 3.000 kastelen en zo\'n 790 eilanden!';
+
+  @override
+  String get loadingFactUk7 =>
+      'Britten drinken dagelijks zo\'n 100 miljoen koppen thee!';
+
+  @override
+  String get loadingFactDe0 =>
+      'Duitsland heeft meer dan 25.000 kastelen en paleizen!';
+
+  @override
+  String get loadingFactDe1 =>
+      'De Berlijnse Muur was 155 km lang en stond 28 jaar!';
+
+  @override
+  String get loadingFactDe2 => 'Oktoberfest begint vaak al in september!';
+
+  @override
+  String get loadingFactDe3 =>
+      'Het Zwarte Woud inspireerde veel sprookjes van de gebroeders Grimm!';
+
+  @override
+  String get loadingFactDe4 =>
+      'Op ruim 60% van de Autobahn geldt vaak geen algemene snelheidslimiet!';
+
+  @override
+  String get loadingFactDe5 =>
+      'Neuschwanstein was inspiratie voor het kasteel van Doornroosje bij Disney!';
+
+  @override
+  String get loadingFactDe6 =>
+      'Duitsland heeft de grootste economie van Europa en staat bekend om techniek!';
+
+  @override
+  String get loadingFactDe7 =>
+      'De Rijn stroomt door Duitsland en is bezaaid met middeleeuwse kastelen!';
+
+  @override
+  String get loadingFactFr0 =>
+      'Frankrijk is \'s werelds meest bezochte land met jaarlijks meer dan 89 miljoen toeristen!';
+
+  @override
+  String get loadingFactFr1 =>
+      'De Eiffeltoren werd oorspronkelijk als tijdelijk bouwwerk voor de Wereldtentoonstelling van 1889 gebouwd!';
+
+  @override
+  String get loadingFactFr2 =>
+      'Frankrijk produceert meer dan 400 kazen – voor elke dag één!';
+
+  @override
+  String get loadingFactFr3 =>
+      'Paleis Versailles heeft 2.300 kamers en 67 trappenhuizen!';
+
+  @override
+  String get loadingFactFr4 =>
+      'Frankrijk heeft 44 UNESCO-werelderfgoederen, waaronder Mont-Saint-Michel!';
+
+  @override
+  String get loadingFactFr5 =>
+      'Het Louvre is \'s werelds grootste kunstmuseum!';
+
+  @override
+  String get loadingFactFr6 =>
+      'De Côte d\'Azur strekt zich honderden kilometers langs de Middellandse Zee uit!';
+
+  @override
+  String get loadingFactFr7 =>
+      'Frankrijk is het thuis van de beroemdste wielerkoers: de Tour de France!';
+
+  @override
+  String guestPlaceDistanceKm(String km) {
+    return '$km km';
+  }
+
+  @override
+  String guestPlaceHoursRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String get prefSocialVibeTitleFallback => 'Wat is je sociale vibe? 👥';
+
+  @override
+  String get prefSocialVibeSubtitleFallback =>
+      'Hoe ontdek je de wereld het liefst?';
+
+  @override
+  String get prefPlanningPaceTitleFallback => 'Vertel over je tempo ⏰';
+
+  @override
+  String get prefPlanningPaceSubtitleFallback => 'Jouw planningsstijl';
+
+  @override
+  String get prefTravelStyleTitleFallback => 'Tot slot! ✨';
+
+  @override
+  String get prefTravelStyleSubtitleFallback => 'Wat is je travel style?';
+
+  @override
+  String get prefStartMyJourney => 'Start mijn reis';
+
+  @override
+  String get onboardingPagerSlide1Title => 'Maak kennis met Moody 😄';
+
+  @override
+  String get onboardingPagerSlide1Subtitle => 'Je travel BFF 💬🌍';
+
+  @override
+  String get onboardingPagerSlide1Description =>
+      'Moody leert je vibe, energie en hoe je dag voelt kennen. Daarmee maak ik persoonlijke plannen – speciaal voor jou. Zie me als je nieuwsgierige maatje die altijd wil ontdekken 🌆🎈';
+
+  @override
+  String get onboardingPagerSlide2Title => 'Reizen met mood 🌈';
+
+  @override
+  String get onboardingPagerSlide2Subtitle => 'Je gevoel, jouw reis 💭';
+
+  @override
+  String get onboardingPagerSlide2Description =>
+      'Of je nu rustig, romantisch of avontuurlijk bent... vertel hoe je je voelt, dan maak ik persoonlijke plannen 🌸🏞️\nVan verborgen parels tot zonsondergangwandelingen – eerst jouw mood, altijd.';
+
+  @override
+  String get onboardingPagerSlide3Title => 'Jouw dag, jouw manier 🫶🏾';
+
+  @override
+  String get onboardingPagerSlide3Subtitle =>
+      'Van zonsopgang tot laat op de avond ☀️🌙';
+
+  @override
+  String get onboardingPagerSlide3Description =>
+      'Je plan bestaat uit momenten—ochtend, middag, avond en nacht. Kies je vibe, je favorieten, ik regel de magie. 🧭🎯 Alles op basis van locatie, tijd, weer & mood.';
+
+  @override
+  String get onboardingPagerSlide4Title => 'Elke dag een mood 🎨';
+
+  @override
+  String get onboardingPagerSlide4Subtitle =>
+      'Ontdek nieuwe plekken – elke dag🌍';
+
+  @override
+  String get onboardingPagerSlide4Description =>
+      'WanderMood maakt elke dag een nieuw avontuur. Word wakker, check je vibe, ontdek handgepickte activiteiten 💡📍 Laat je mood de weg wijzen – keer op keer.';
+
+  @override
   String get appSettings => 'App Settings';
 
   @override
@@ -534,13 +802,13 @@ class AppLocalizationsNl extends AppLocalizations {
   String get logOutOfYourAccount => 'Log out of your account';
 
   @override
-  String get introTagline => 'Je stemming. Je dag. Je avontuur.';
+  String get introTagline => 'Jouw mood. Jouw dag. Jouw avontuur.';
 
   @override
-  String get introTitleLine1 => 'Je stemming,';
+  String get introTitleLine1 => 'Jouw mood,';
 
   @override
-  String get introTitleLine2 => 'Je avontuur';
+  String get introTitleLine2 => 'jouw avontuur';
 
   @override
   String get introSkip => 'Overslaan';
@@ -553,7 +821,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get demoMoodyAskVibe =>
-      'Ik help je geweldige plekken ontdekken op basis van hoe je je voelt. Wat is je stemming vandaag?';
+      'Ik help je geweldige plekken ontdekken op basis van hoe je je voelt. Wat is je mood vandaag?';
 
   @override
   String demoUserFeeling(String mood) {
@@ -586,7 +854,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get demoMoodyResponseDefault =>
-      'Mooie keuze! 🌟 Hier zijn perfecte plekken voor je stemming...';
+      'Mooie keuze! 🌟 Hier zijn perfecte plekken voor je mood...';
 
   @override
   String get demoMoodAdventurous => 'Avontuurlijk';
@@ -616,7 +884,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get demoMoodyName => 'Moody';
 
   @override
-  String get demoTapToSelectMood => 'Tik om je stemming te kiezen:';
+  String get demoTapToSelectMood => 'Tik om je mood te kiezen:';
 
   @override
   String get demoReadyToSignUp => 'Klaar om je aan te melden? Start nu →';
@@ -658,7 +926,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get guestMoodySays => 'Moody zegt...';
 
   @override
-  String get guestGreatChoice => 'Goede keuze voor je stemming vandaag!';
+  String get guestGreatChoice => 'Goede keuze voor je mood vandaag!';
 
   @override
   String get guestSignUpToUnlock => 'Meld je aan om te ontgrendelen';
@@ -977,7 +1245,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get signupBenefitDayPlans => 'Maak dagplannen';
 
   @override
-  String get signupBenefitMoodMatching => 'Stemming-gebaseerde activiteiten';
+  String get signupBenefitMoodMatching => 'Mood-gebaseerde activiteiten';
 
   @override
   String get signupTerms =>
@@ -1038,7 +1306,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get signupUnlockDayPlans => 'Maak dagplannen';
 
   @override
-  String get signupUnlockMoodMatching => 'Stemming-gebaseerde activiteiten';
+  String get signupUnlockMoodMatching => 'Mood-gebaseerde activiteiten';
 
   @override
   String get signupRating => '4,9/5 beoordeling';
@@ -1088,7 +1356,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileStatsPlacesSubtitle => 'Tik om te ontdekken';
 
   @override
-  String get profileStatsTopMoodTitle => 'Top stemming';
+  String get profileStatsTopMoodTitle => 'Top mood';
 
   @override
   String get profileStatsStreakTitle => 'Streak';
@@ -1121,10 +1389,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileFavoriteVibesAdd => '+ Vibe toevoegen';
 
   @override
-  String get profileMoodJourneyTitle => 'Jouw stemmingsreis';
+  String get profileMoodJourneyTitle => 'Jouw mood journey';
 
   @override
-  String get profileMoodJourneySubtitle => 'Bekijk je stemmingsgeschiedenis';
+  String get profileMoodJourneySubtitle => 'Bekijk je mood history';
 
   @override
   String get moodHistoryIntro => 'Een rustige tijdlijn van hoe je je voelde.';
@@ -1143,13 +1411,13 @@ class AppLocalizationsNl extends AppLocalizations {
       'Check in via Moody Hub of Mijn dag—je momenten verschijnen hieronder.';
 
   @override
-  String get moodHistoryLoginRequired => 'Log in om je stemmingsreis te zien.';
+  String get moodHistoryLoginRequired => 'Log in om je mood journey te zien.';
 
   @override
   String get moodHistoryErrorUser => 'Je account kon niet worden geladen.';
 
   @override
-  String get moodHistoryErrorMoods => 'Stemmingen konden niet worden geladen.';
+  String get moodHistoryErrorMoods => 'Moods konden niet worden geladen.';
 
   @override
   String get moodHistoryTodayBadge => 'Vandaag';
@@ -2164,15 +2432,14 @@ class AppLocalizationsNl extends AppLocalizations {
   String get prefMoodTitleProfessional => 'Voorkeuren reisgevoel';
 
   @override
-  String get prefMoodTitleDirect => 'Kies je stemmingen';
+  String get prefMoodTitleDirect => 'Kies je moods';
 
   @override
   String get prefMoodSubtitleFriendly =>
       'Wat inspireert je om eropuit te gaan?';
 
   @override
-  String get prefMoodSubtitleEnergetic =>
-      'Welke stemmingen zetten je in beweging?';
+  String get prefMoodSubtitleEnergetic => 'Welke moods zetten je in beweging?';
 
   @override
   String get prefMoodSubtitleProfessional =>
@@ -2312,7 +2579,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get prefSocialButterflyDesc => 'Hou van nieuwe mensen ontmoeten';
 
   @override
-  String get prefSocialMoodDependent => 'Afhankelijk van stemming';
+  String get prefSocialMoodDependent => 'Afhankelijk van mood';
 
   @override
   String get prefSocialMoodDependentDesc => 'Soms solo, soms sociaal';
@@ -2396,7 +2663,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get dayPlanBasedOn => 'Je dagplan gebaseerd op:';
 
   @override
-  String get dayPlanEditMoods => 'Stemmingen bewerken →';
+  String get dayPlanEditMoods => 'Moods bewerken →';
 
   @override
   String get dayPlanAddToMyDay => 'Toevoegen aan Mijn Dag';
@@ -2419,7 +2686,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get dayPlanNoOptionsFound =>
-      'Geen andere opties voor dit tijdvak. Probeer een andere stemming!';
+      'Geen andere opties voor dit tijdvak. Probeer een andere mood!';
 
   @override
   String get dayPlanFindOptionsFailed =>
@@ -2583,7 +2850,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get moodHubGreetingHi => 'Hoi';
 
   @override
-  String get moodHubWhatIsYourMood => 'Wat is je stemming';
+  String get moodHubWhatIsYourMood => 'Wat is je mood';
 
   @override
   String get moodHubThisMorning => 'vanmorgen?';
@@ -2618,14 +2885,14 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String moodHubSelectUpTo(String max) {
-    return 'Je kunt maximaal $max stemmingen kiezen';
+    return 'Je kunt maximaal $max moods kiezen';
   }
 
   @override
-  String get moodHubSelectedMoods => 'Gekozen stemmingen: ';
+  String get moodHubSelectedMoods => 'Gekozen moods: ';
 
   @override
-  String get moodHubNoMoodOptions => 'Geen stemmingsopties beschikbaar';
+  String get moodHubNoMoodOptions => 'Geen mood opties beschikbaar';
 
   @override
   String get moodHubMoodyThinking => 'Moody is aan het nadenken...';
@@ -2674,7 +2941,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get planLoadingErrorGeneric =>
-      'Kon geen activiteiten genereren. Probeer opnieuw of kies andere stemmingen.';
+      'Kon geen activiteiten genereren. Probeer opnieuw of kies andere moods.';
 
   @override
   String get planLoadingErrorNetwork =>
@@ -2698,7 +2965,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get planLoadingErrorNoActivities =>
-      'Geen activiteiten gevonden. Probeer andere stemmingen of controleer je locatie.';
+      'Geen activiteiten gevonden. Probeer andere moods of controleer je locatie.';
 
   @override
   String get planLoadingMessage => 'Je plan wordt gemaakt…';
@@ -2893,7 +3160,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String getReadyGetInMood(String mood) {
-    return 'Kom in de $mood-stemming!';
+    return 'Kom in je $mood mood!';
   }
 
   @override

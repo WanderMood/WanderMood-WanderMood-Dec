@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import 'dart:math' as math;
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../../core/providers/preferences_provider.dart';
@@ -126,32 +127,15 @@ class _SocialVibeScreenState extends ConsumerState<SocialVibeScreen> with Ticker
   late final AnimationController _messageController;
   final Set<String> _selectedVibes = {};
 
-  final List<Map<String, dynamic>> _socialVibes = [
-    {
-      'name': 'Solo Adventures',
-      'emoji': '🧘‍♀️',
-      'description': 'Me time is the best time',
-      'color': const Color(0xFFFFB74D), // Orange
-    },
-    {
-      'name': 'Small Groups',
-      'emoji': '👥',
-      'description': 'Close friends, intimate vibes',
-      'color': const Color(0xFF66BB6A), // Green
-    },
-    {
-      'name': 'Social Butterfly',
-      'emoji': '🦋',
-      'description': 'Love meeting new people',
-      'color': const Color(0xFF42A5F5), // Blue
-    },
-    {
-      'name': 'Mood Dependent',
-      'emoji': '🎭',
-      'description': 'Sometimes solo, sometimes social',
-      'color': const Color(0xFFAB47BC), // Purple
-    },
-  ];
+  List<Map<String, dynamic>> _socialVibes(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      {'key': 'Solo Adventures', 'name': l10n.prefSocialSolo, 'emoji': '🧘‍♀️', 'description': l10n.prefSocialSoloDesc, 'color': const Color(0xFFFFB74D)},
+      {'key': 'Small Groups', 'name': l10n.prefSocialSmallGroups, 'emoji': '👥', 'description': l10n.prefSocialSmallGroupsDesc, 'color': const Color(0xFF66BB6A)},
+      {'key': 'Social Butterfly', 'name': l10n.prefSocialButterfly, 'emoji': '🦋', 'description': l10n.prefSocialButterflyDesc, 'color': const Color(0xFF42A5F5)},
+      {'key': 'Mood Dependent', 'name': l10n.prefSocialMoodDependent, 'emoji': '🎭', 'description': l10n.prefSocialMoodDependentDesc, 'color': const Color(0xFFAB47BC)},
+    ];
+  }
 
   @override
   void initState() {
@@ -174,21 +158,20 @@ class _SocialVibeScreenState extends ConsumerState<SocialVibeScreen> with Ticker
     _messageController.forward();
   }
 
-  void _toggleSocialVibe(String vibe) {
-    if (_selectedVibes.contains(vibe)) {
+  void _toggleSocialVibe(String vibeKey) {
+    if (_selectedVibes.contains(vibeKey)) {
       setState(() {
-        _selectedVibes.remove(vibe);
+        _selectedVibes.remove(vibeKey);
       });
     } else {
       setState(() {
-        _selectedVibes.add(vibe);
+        _selectedVibes.add(vibeKey);
       });
     }
     
-    // Update the preferences provider
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        ref.read(preferencesProvider.notifier).updateTravelStyles(_selectedVibes.toList());
+        ref.read(preferencesProvider.notifier).updateSocialVibe(_selectedVibes.toList());
       }
     });
   }
@@ -201,13 +184,13 @@ class _SocialVibeScreenState extends ConsumerState<SocialVibeScreen> with Ticker
   }
 
   Widget _buildSocialVibeCard(Map<String, dynamic> vibe) {
-    final bool isSelected = _selectedVibes.contains(vibe['name']);
+    final bool isSelected = _selectedVibes.contains(vibe['key']);
     final color = vibe['color'] as Color;
     
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: GestureDetector(
-        onTap: () => _toggleSocialVibe(vibe['name']),
+        onTap: () => _toggleSocialVibe(vibe['key'] as String),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           height: 100,
@@ -270,7 +253,7 @@ class _SocialVibeScreenState extends ConsumerState<SocialVibeScreen> with Ticker
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        vibe['name'],
+                        vibe['name'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -280,7 +263,7 @@ class _SocialVibeScreenState extends ConsumerState<SocialVibeScreen> with Ticker
                         ),
                       ),
                       Text(
-                        vibe['description'],
+                        vibe['description'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: isSelected
@@ -412,7 +395,7 @@ class _SocialVibeScreenState extends ConsumerState<SocialVibeScreen> with Ticker
                              builder: (context, ref, child) {
                                final communicationState = ref.watch(communicationStyleProvider);
                                final styleKey = communicationState.style.toString().split('.').last;
-                               final title = communicationState.texts['social_vibe']?[styleKey] ?? 'What\'s your social vibe? 👥';
+                               final title = communicationState.texts['social_vibe']?[styleKey] ?? AppLocalizations.of(context)!.prefSocialVibeTitleFallback;
                                return Text(
                                  title,
                                  style: GoogleFonts.museoModerno(
@@ -440,7 +423,7 @@ class _SocialVibeScreenState extends ConsumerState<SocialVibeScreen> with Ticker
                              builder: (context, ref, child) {
                                final communicationState = ref.watch(communicationStyleProvider);
                                final styleKey = communicationState.style.toString().split('.').last;
-                               final subtitle = communicationState.texts['social_vibe_subtitle']?[styleKey] ?? 'How do you like to experience things?';
+                               final subtitle = communicationState.texts['social_vibe_subtitle']?[styleKey] ?? AppLocalizations.of(context)!.prefSocialVibeSubtitleFallback;
                                return Text(
                                  subtitle,
                                  style: GoogleFonts.poppins(
@@ -457,9 +440,9 @@ class _SocialVibeScreenState extends ConsumerState<SocialVibeScreen> with Ticker
                     const SizedBox(height: 40),
                     Expanded(
                       child: ListView.builder(
-                        itemCount: _socialVibes.length,
+                        itemCount: _socialVibes(context).length,
                         itemBuilder: (context, index) {
-                          return _buildSocialVibeCard(_socialVibes[index]);
+                          return _buildSocialVibeCard(_socialVibes(context)[index]);
                         },
                       ),
                     ),
@@ -484,7 +467,7 @@ class _SocialVibeScreenState extends ConsumerState<SocialVibeScreen> with Ticker
                           ),
                         ),
                         child: Text(
-                          'Continue',
+                          AppLocalizations.of(context)!.continueButton,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -495,7 +478,7 @@ class _SocialVibeScreenState extends ConsumerState<SocialVibeScreen> with Ticker
                     const SizedBox(height: 8),
                     Center(
                       child: Text(
-                        'You can select multiple options ✨',
+                        AppLocalizations.of(context)!.prefMultipleHintFriendly,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: Colors.grey[600],

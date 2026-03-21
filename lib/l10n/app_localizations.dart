@@ -938,6 +938,426 @@ abstract class AppLocalizations {
   /// **'The Sahara Desert is larger than the entire United States!'**
   String get loadingFact7;
 
+  /// No description provided for @weatherCurrentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Current location'**
+  String get weatherCurrentLocation;
+
+  /// No description provided for @loadingFactNl0.
+  ///
+  /// In en, this message translates to:
+  /// **'The Netherlands has more museums per square mile than any other country!'**
+  String get loadingFactNl0;
+
+  /// No description provided for @loadingFactNl1.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotterdam is home to Europe\'s largest port, handling over 400 million tons of cargo annually!'**
+  String get loadingFactNl1;
+
+  /// No description provided for @loadingFactNl2.
+  ///
+  /// In en, this message translates to:
+  /// **'The Netherlands has over 35,000 kilometers of bike paths - enough to circle the Earth!'**
+  String get loadingFactNl2;
+
+  /// No description provided for @loadingFactNl3.
+  ///
+  /// In en, this message translates to:
+  /// **'Amsterdam has more canals than Venice and more bridges than Paris!'**
+  String get loadingFactNl3;
+
+  /// No description provided for @loadingFactNl4.
+  ///
+  /// In en, this message translates to:
+  /// **'The Dutch consume over 150 million stroopwafels every year!'**
+  String get loadingFactNl4;
+
+  /// No description provided for @loadingFactNl5.
+  ///
+  /// In en, this message translates to:
+  /// **'The Netherlands is the world\'s second-largest exporter of food despite its small size!'**
+  String get loadingFactNl5;
+
+  /// No description provided for @loadingFactNl6.
+  ///
+  /// In en, this message translates to:
+  /// **'Keukenhof Gardens displays over 7 million flower bulbs across 32 hectares!'**
+  String get loadingFactNl6;
+
+  /// No description provided for @loadingFactNl7.
+  ///
+  /// In en, this message translates to:
+  /// **'The Dutch are the tallest people in the world with an average height of 6 feet!'**
+  String get loadingFactNl7;
+
+  /// No description provided for @loadingFactUs0.
+  ///
+  /// In en, this message translates to:
+  /// **'The US has 63 national parks, from Yellowstone to the Grand Canyon!'**
+  String get loadingFactUs0;
+
+  /// No description provided for @loadingFactUs1.
+  ///
+  /// In en, this message translates to:
+  /// **'Alaska has more than 3 million lakes and over 100,000 glaciers!'**
+  String get loadingFactUs1;
+
+  /// No description provided for @loadingFactUs2.
+  ///
+  /// In en, this message translates to:
+  /// **'The US Interstate Highway System spans over 47,000 miles!'**
+  String get loadingFactUs2;
+
+  /// No description provided for @loadingFactUs3.
+  ///
+  /// In en, this message translates to:
+  /// **'Times Square in NYC is visited by over 50 million people annually!'**
+  String get loadingFactUs3;
+
+  /// No description provided for @loadingFactUs4.
+  ///
+  /// In en, this message translates to:
+  /// **'The US has the world\'s largest economy and is home to Silicon Valley!'**
+  String get loadingFactUs4;
+
+  /// No description provided for @loadingFactUs5.
+  ///
+  /// In en, this message translates to:
+  /// **'Hawaii is the only US state that commercially grows coffee!'**
+  String get loadingFactUs5;
+
+  /// No description provided for @loadingFactUs6.
+  ///
+  /// In en, this message translates to:
+  /// **'The Golden Gate Bridge in San Francisco is painted International Orange!'**
+  String get loadingFactUs6;
+
+  /// No description provided for @loadingFactUs7.
+  ///
+  /// In en, this message translates to:
+  /// **'Disney World in Florida is larger than the city of San Francisco!'**
+  String get loadingFactUs7;
+
+  /// No description provided for @loadingFactJp0.
+  ///
+  /// In en, this message translates to:
+  /// **'Japan has over 6,800 islands, but only 430 are inhabited!'**
+  String get loadingFactJp0;
+
+  /// No description provided for @loadingFactJp1.
+  ///
+  /// In en, this message translates to:
+  /// **'The Japanese Shinkansen bullet trains can reach speeds of 200 mph!'**
+  String get loadingFactJp1;
+
+  /// No description provided for @loadingFactJp2.
+  ///
+  /// In en, this message translates to:
+  /// **'Mount Fuji is actually an active volcano that last erupted in 1707!'**
+  String get loadingFactJp2;
+
+  /// No description provided for @loadingFactJp3.
+  ///
+  /// In en, this message translates to:
+  /// **'Japan has more than 100,000 temples and shrines!'**
+  String get loadingFactJp3;
+
+  /// No description provided for @loadingFactJp4.
+  ///
+  /// In en, this message translates to:
+  /// **'Tokyo is the world\'s largest metropolitan area with over 37 million people!'**
+  String get loadingFactJp4;
+
+  /// No description provided for @loadingFactJp5.
+  ///
+  /// In en, this message translates to:
+  /// **'Japan consumes about 80% of the world\'s bluefin tuna!'**
+  String get loadingFactJp5;
+
+  /// No description provided for @loadingFactJp6.
+  ///
+  /// In en, this message translates to:
+  /// **'The Japanese love vending machines - there\'s one for every 23 people!'**
+  String get loadingFactJp6;
+
+  /// No description provided for @loadingFactJp7.
+  ///
+  /// In en, this message translates to:
+  /// **'Cherry blossom season in Japan attracts millions of visitors each spring!'**
+  String get loadingFactJp7;
+
+  /// No description provided for @loadingFactUk0.
+  ///
+  /// In en, this message translates to:
+  /// **'The UK has over 1,500 castles, from medieval fortresses to royal residences!'**
+  String get loadingFactUk0;
+
+  /// No description provided for @loadingFactUk1.
+  ///
+  /// In en, this message translates to:
+  /// **'London\'s Big Ben is not actually the name of the clock tower - it\'s Elizabeth Tower!'**
+  String get loadingFactUk1;
+
+  /// No description provided for @loadingFactUk2.
+  ///
+  /// In en, this message translates to:
+  /// **'The UK has produced more world-famous musicians per capita than any other country!'**
+  String get loadingFactUk2;
+
+  /// No description provided for @loadingFactUk3.
+  ///
+  /// In en, this message translates to:
+  /// **'Stonehenge is over 5,000 years old and still shrouded in mystery!'**
+  String get loadingFactUk3;
+
+  /// No description provided for @loadingFactUk4.
+  ///
+  /// In en, this message translates to:
+  /// **'The London Underground is the world\'s oldest subway system, opened in 1863!'**
+  String get loadingFactUk4;
+
+  /// No description provided for @loadingFactUk5.
+  ///
+  /// In en, this message translates to:
+  /// **'The UK has 15 UNESCO World Heritage Sites including Bath and Edinburgh!'**
+  String get loadingFactUk5;
+
+  /// No description provided for @loadingFactUk6.
+  ///
+  /// In en, this message translates to:
+  /// **'Scotland has over 3,000 castles and about 790 islands!'**
+  String get loadingFactUk6;
+
+  /// No description provided for @loadingFactUk7.
+  ///
+  /// In en, this message translates to:
+  /// **'The British drink about 100 million cups of tea every day!'**
+  String get loadingFactUk7;
+
+  /// No description provided for @loadingFactDe0.
+  ///
+  /// In en, this message translates to:
+  /// **'Germany has over 25,000 castles and palaces scattered across the country!'**
+  String get loadingFactDe0;
+
+  /// No description provided for @loadingFactDe1.
+  ///
+  /// In en, this message translates to:
+  /// **'The Berlin Wall was 96 miles long and stood for 28 years!'**
+  String get loadingFactDe1;
+
+  /// No description provided for @loadingFactDe2.
+  ///
+  /// In en, this message translates to:
+  /// **'Germany is famous for Oktoberfest, which actually starts in September!'**
+  String get loadingFactDe2;
+
+  /// No description provided for @loadingFactDe3.
+  ///
+  /// In en, this message translates to:
+  /// **'The Black Forest region inspired many Brothers Grimm fairy tales!'**
+  String get loadingFactDe3;
+
+  /// No description provided for @loadingFactDe4.
+  ///
+  /// In en, this message translates to:
+  /// **'Germany has no general speed limit on about 60% of its Autobahn highways!'**
+  String get loadingFactDe4;
+
+  /// No description provided for @loadingFactDe5.
+  ///
+  /// In en, this message translates to:
+  /// **'Neuschwanstein Castle was the inspiration for Disney\'s Sleeping Beauty castle!'**
+  String get loadingFactDe5;
+
+  /// No description provided for @loadingFactDe6.
+  ///
+  /// In en, this message translates to:
+  /// **'Germany has the largest economy in Europe and is known for engineering!'**
+  String get loadingFactDe6;
+
+  /// No description provided for @loadingFactDe7.
+  ///
+  /// In en, this message translates to:
+  /// **'The Rhine River flows through Germany and is lined with medieval castles!'**
+  String get loadingFactDe7;
+
+  /// No description provided for @loadingFactFr0.
+  ///
+  /// In en, this message translates to:
+  /// **'France is the world\'s most visited country with over 89 million tourists annually!'**
+  String get loadingFactFr0;
+
+  /// No description provided for @loadingFactFr1.
+  ///
+  /// In en, this message translates to:
+  /// **'The Eiffel Tower was originally built as a temporary structure for the 1889 World\'s Fair!'**
+  String get loadingFactFr1;
+
+  /// No description provided for @loadingFactFr2.
+  ///
+  /// In en, this message translates to:
+  /// **'France produces over 400 types of cheese - one for every day of the year!'**
+  String get loadingFactFr2;
+
+  /// No description provided for @loadingFactFr3.
+  ///
+  /// In en, this message translates to:
+  /// **'The Palace of Versailles has 2,300 rooms and 67 staircases!'**
+  String get loadingFactFr3;
+
+  /// No description provided for @loadingFactFr4.
+  ///
+  /// In en, this message translates to:
+  /// **'France has 44 UNESCO World Heritage Sites, including Mont-Saint-Michel!'**
+  String get loadingFactFr4;
+
+  /// No description provided for @loadingFactFr5.
+  ///
+  /// In en, this message translates to:
+  /// **'The Louvre Museum is the world\'s largest art museum!'**
+  String get loadingFactFr5;
+
+  /// No description provided for @loadingFactFr6.
+  ///
+  /// In en, this message translates to:
+  /// **'The French Riviera stretches for 550 miles along the Mediterranean!'**
+  String get loadingFactFr6;
+
+  /// No description provided for @loadingFactFr7.
+  ///
+  /// In en, this message translates to:
+  /// **'France is home to the world\'s most famous bicycle race - the Tour de France!'**
+  String get loadingFactFr7;
+
+  /// No description provided for @guestPlaceDistanceKm.
+  ///
+  /// In en, this message translates to:
+  /// **'{km} km'**
+  String guestPlaceDistanceKm(String km);
+
+  /// No description provided for @guestPlaceHoursRange.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String guestPlaceHoursRange(String start, String end);
+
+  /// No description provided for @prefSocialVibeTitleFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s your social vibe? 👥'**
+  String get prefSocialVibeTitleFallback;
+
+  /// No description provided for @prefSocialVibeSubtitleFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'How do you like to experience things?'**
+  String get prefSocialVibeSubtitleFallback;
+
+  /// No description provided for @prefPlanningPaceTitleFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell me your pace ⏰'**
+  String get prefPlanningPaceTitleFallback;
+
+  /// No description provided for @prefPlanningPaceSubtitleFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Your planning style'**
+  String get prefPlanningPaceSubtitleFallback;
+
+  /// No description provided for @prefTravelStyleTitleFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Last but not least! ✨'**
+  String get prefTravelStyleTitleFallback;
+
+  /// No description provided for @prefTravelStyleSubtitleFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s your travel style?'**
+  String get prefTravelStyleSubtitleFallback;
+
+  /// No description provided for @prefStartMyJourney.
+  ///
+  /// In en, this message translates to:
+  /// **'Start My Journey'**
+  String get prefStartMyJourney;
+
+  /// No description provided for @onboardingPagerSlide1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Meet Moody 😄'**
+  String get onboardingPagerSlide1Title;
+
+  /// No description provided for @onboardingPagerSlide1Subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your travel BFF 💬🌍'**
+  String get onboardingPagerSlide1Subtitle;
+
+  /// No description provided for @onboardingPagerSlide1Description.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody gets to know your vibe, your energy, and the kind of day you\'re having. With all that, I create personalized plans — made just for you. Think of me as your fun, curious bestie who\'s always down to explore 🌆🎈'**
+  String get onboardingPagerSlide1Description;
+
+  /// No description provided for @onboardingPagerSlide2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel by Mood 🌈'**
+  String get onboardingPagerSlide2Title;
+
+  /// No description provided for @onboardingPagerSlide2Subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Feelings, Your Journey 💭'**
+  String get onboardingPagerSlide2Subtitle;
+
+  /// No description provided for @onboardingPagerSlide2Description.
+  ///
+  /// In en, this message translates to:
+  /// **'Whether you\'re in a peaceful, romantic, or adventurous mood... just tell me how you feel, and I\'ll create personalized plans 🌸🏞️\nFrom hidden gems to sunset strolls—mood first, always.'**
+  String get onboardingPagerSlide2Description;
+
+  /// No description provided for @onboardingPagerSlide3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Day, Your Way 🫶🏾'**
+  String get onboardingPagerSlide3Title;
+
+  /// No description provided for @onboardingPagerSlide3Subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunrise to sunset, I\'ve got you ☀️🌙'**
+  String get onboardingPagerSlide3Subtitle;
+
+  /// No description provided for @onboardingPagerSlide3Description.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan is broken into moments—morning, afternoon, evening, and night. Choose your vibe, pick your favorites, and I\'ll handle the magic. 🧭🎯 All based on location, time, weather & mood.'**
+  String get onboardingPagerSlide3Description;
+
+  /// No description provided for @onboardingPagerSlide4Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Every Day\'s a Mood 🎨'**
+  String get onboardingPagerSlide4Title;
+
+  /// No description provided for @onboardingPagerSlide4Subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover new places - every day🌍'**
+  String get onboardingPagerSlide4Subtitle;
+
+  /// No description provided for @onboardingPagerSlide4Description.
+  ///
+  /// In en, this message translates to:
+  /// **'WanderMood makes every day feel like a new adventure. Wake up, check your vibe, explore hand-picked activities 💡📍 Let your mood lead the way—again and again.'**
+  String get onboardingPagerSlide4Description;
+
   /// No description provided for @appSettings.
   ///
   /// In en, this message translates to:

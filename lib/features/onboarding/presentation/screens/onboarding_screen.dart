@@ -2,21 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wandermood/features/auth/presentation/screens/login_screen.dart';
-import 'package:wandermood/features/splash/application/splash_service.dart';
 import 'package:go_router/go_router.dart';
-import '../../../home/presentation/widgets/moody_character.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/providers/preferences_provider.dart';
 import 'package:flutter/foundation.dart';
 
 class OnboardingPage {
+  final int pageIndex;
   final String title;
   final String subtitle;
   final String description;
   final Color backgroundColor;
 
   OnboardingPage({
+    required this.pageIndex,
     required this.title,
     required this.subtitle,
     required this.description,
@@ -36,34 +35,39 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _currentPage = 0;
   bool _isLoading = false;
 
-  final List<OnboardingPage> pages = [
+  List<OnboardingPage> _pages(AppLocalizations l10n) => [
     OnboardingPage(
-      title: 'Meet Moody 😄',
-      subtitle: 'Your travel BFF 💬🌍',
-      description: 'Moody gets to know your vibe, your energy, and the kind of day you\'re having. With all that, I create personalized plans — made just for you. Think of me as your fun, curious bestie who\'s always down to explore 🌆🎈',
-      backgroundColor: const Color(0xFFFFF4E0), // Cream color from image
+      pageIndex: 0,
+      title: l10n.onboardingPagerSlide1Title,
+      subtitle: l10n.onboardingPagerSlide1Subtitle,
+      description: l10n.onboardingPagerSlide1Description,
+      backgroundColor: const Color(0xFFFFF4E0),
     ),
     OnboardingPage(
-      title: 'Travel by Mood 🌈',
-      subtitle: 'Your Feelings, Your Journey 💭',
-      description: 'Whether you\'re in a peaceful, romantic, or adventurous mood... just tell me how you feel, and I\'ll create personalized plans 🌸🏞️\nFrom hidden gems to sunset strolls—mood first, always.',
-      backgroundColor: const Color(0xFFFDE5F0), // Light pink from image
+      pageIndex: 1,
+      title: l10n.onboardingPagerSlide2Title,
+      subtitle: l10n.onboardingPagerSlide2Subtitle,
+      description: l10n.onboardingPagerSlide2Description,
+      backgroundColor: const Color(0xFFFDE5F0),
     ),
     OnboardingPage(
-      title: 'Your Day, Your Way 🫶🏾',
-      subtitle: 'Sunrise to sunset, I\'ve got you ☀️🌙',
-      description: 'Your plan is broken into moments—morning, afternoon, evening, and night. Choose your vibe, pick your favorites, and I\'ll handle the magic. 🧭🎯 All based on location, time, weather & mood.',
-      backgroundColor: const Color(0xFFE7F0FF), // Light blue from image
+      pageIndex: 2,
+      title: l10n.onboardingPagerSlide3Title,
+      subtitle: l10n.onboardingPagerSlide3Subtitle,
+      description: l10n.onboardingPagerSlide3Description,
+      backgroundColor: const Color(0xFFE7F0FF),
     ),
     OnboardingPage(
-      title: 'Every Day\'s a Mood 🎨',
-      subtitle: 'Discover new places - every day🌍',
-      description: 'WanderMood makes every day feel like a new adventure. Wake up, check your vibe, explore hand-picked activities 💡📍 Let your mood lead the way—again and again.',
-      backgroundColor: const Color(0xFFFFF4E0), // Cream color from image
+      pageIndex: 3,
+      title: l10n.onboardingPagerSlide4Title,
+      subtitle: l10n.onboardingPagerSlide4Subtitle,
+      description: l10n.onboardingPagerSlide4Description,
+      backgroundColor: const Color(0xFFFFF4E0),
     ),
   ];
 
   void _nextPage() async {
+    final pages = _pages(AppLocalizations.of(context)!);
     if (_currentPage < pages.length - 1) {
       await _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -86,6 +90,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final pages = _pages(AppLocalizations.of(context)!);
     return Scaffold(
       body: Stack(
         children: [
@@ -98,7 +103,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               });
             },
             itemBuilder: (context, index) {
-              return _buildOnboardingPage(pages[index]);
+              return _buildOnboardingPage(pages[index], pages.length);
             },
           ),
           Positioned(
@@ -117,7 +122,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 }
               },
               child: Text(
-                'Skip',
+                AppLocalizations.of(context)!.introSkip,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   color: Colors.black54,
@@ -130,7 +135,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buildOnboardingPage(OnboardingPage page) {
+  Widget _buildOnboardingPage(OnboardingPage page, int pageCount) {
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -142,7 +147,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         child: Column(
           children: [
             // Add image for the first onboarding page
-            if (page.title == 'Meet Moody 😄') ...[
+            if (page.pageIndex == 0) ...[
               const Spacer(flex: 1),
               Center(
                 child: Image.asset(
@@ -153,7 +158,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
               const Spacer(flex: 1),
-            ] else if (page.title == 'Travel by Mood 🌈') ...[
+            ] else if (page.pageIndex == 1) ...[
               const Spacer(flex: 1),
               Center(
                 child: Image.asset(
@@ -164,7 +169,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
               const Spacer(flex: 1),
-            ] else if (page.title == 'Your Day, Your Way 🫶🏾') ...[
+            ] else if (page.pageIndex == 2) ...[
               const Spacer(flex: 1),
               Center(
                 child: Image.asset(
@@ -175,7 +180,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
               const Spacer(flex: 1),
-            ] else if (page.title == 'Every Day\'s a Mood 🎨') ...[
+            ] else if (page.pageIndex == 3) ...[
               const Spacer(flex: 1),
               Center(
                 child: Image.asset(
@@ -244,7 +249,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         children: [
                           Row(
                             children: List.generate(
-                              pages.length,
+                              pageCount,
                               (index) => Container(
                                 width: 8,
                                 height: 8,

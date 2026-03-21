@@ -539,7 +539,7 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
                         ),
                         const Spacer(),
                         Text(
-                          place.distance,
+                          _guestDistanceLine(context, place.distanceKm),
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey[500],
@@ -695,7 +695,7 @@ class _PlacePreviewSheet extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        AppLocalizations.of(context)!.guestDistanceAway(place.distance),
+                        _guestDistanceLine(context, place.distanceKm),
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[600],
@@ -703,7 +703,10 @@ class _PlacePreviewSheet extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (place.hoursSummary != null && place.hoursSummary!.isNotEmpty) ...[
+                  if (place.hoursStart != null &&
+                      place.hoursEnd != null &&
+                      place.hoursStart!.isNotEmpty &&
+                      place.hoursEnd!.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Row(
                       children: [
@@ -716,7 +719,10 @@ class _PlacePreviewSheet extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          place.hoursSummary!,
+                          AppLocalizations.of(context)!.guestPlaceHoursRange(
+                            place.hoursStart!,
+                            place.hoursEnd!,
+                          ),
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey[700],
@@ -1016,7 +1022,7 @@ class _SamplePlace {
   final String categoryKey;
   final String descriptionKey;
   final double rating;
-  final String distance;
+  final double distanceKm;
   final String emoji;
   final Color color;
   final String imageUrl;
@@ -1024,8 +1030,9 @@ class _SamplePlace {
   final List<String> tags;
   /// Mock: whether the place is currently open
   final bool isOpenNow;
-  /// Mock: hours summary e.g. "10:00 – 23:00"
-  final String? hoursSummary;
+  /// Mock: opening hours (24h strings); both null if not shown
+  final String? hoursStart;
+  final String? hoursEnd;
   /// Mock: true for free entry (e.g. parks, some museums)
   final bool isFree;
 
@@ -1034,13 +1041,14 @@ class _SamplePlace {
     required this.categoryKey,
     required this.descriptionKey,
     required this.rating,
-    required this.distance,
+    required this.distanceKm,
     required this.emoji,
     required this.color,
     required this.imageUrl,
     this.tags = const [],
     this.isOpenNow = true,
-    this.hoursSummary,
+    this.hoursStart,
+    this.hoursEnd,
     this.isFree = false,
   });
 }
@@ -1075,6 +1083,15 @@ String _guestPlaceCategory(BuildContext context, String key) {
   }
 }
 
+/// Localized distance line for sample cards (km + "away" phrasing).
+String _guestDistanceLine(BuildContext context, double distanceKm) {
+  final l10n = AppLocalizations.of(context)!;
+  final kmStr = (distanceKm == distanceKm.roundToDouble())
+      ? distanceKm.toStringAsFixed(0)
+      : distanceKm.toStringAsFixed(1);
+  return l10n.guestDistanceAway(l10n.guestPlaceDistanceKm(kmStr));
+}
+
 String _guestPlaceDesc(BuildContext context, String key) {
   final l10n = AppLocalizations.of(context)!;
   switch (key) {
@@ -1095,17 +1112,17 @@ String _guestPlaceDesc(BuildContext context, String key) {
 
 List<_SamplePlace> _getSamplePlaces() {
   return [
-    _SamplePlace(nameKey: 'cozyCorner', categoryKey: 'Cafés', descriptionKey: 'cozyCorner', rating: 4.8, distance: '0.5 km', emoji: '☕', color: Colors.brown, imageUrl: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400', tags: ['aesthetic_spaces', 'vegetarian'], isOpenNow: true, hoursSummary: '08:00 – 18:00', isFree: false),
-    _SamplePlace(nameKey: 'sunsetTerrace', categoryKey: 'Restaurants', descriptionKey: 'sunsetTerrace', rating: 4.6, distance: '1.2 km', emoji: '🍽️', color: Colors.orange, imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400', tags: ['halal', 'aesthetic_spaces'], isOpenNow: true, hoursSummary: '12:00 – 23:00', isFree: false),
-    _SamplePlace(nameKey: 'cityArtMuseum', categoryKey: 'Museums', descriptionKey: 'cityArtMuseum', rating: 4.9, distance: '2.1 km', emoji: '🎨', color: Colors.purple, imageUrl: 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?w=400', tags: ['aesthetic_spaces', 'wheelchair_accessible'], isOpenNow: true, hoursSummary: '10:00 – 17:00', isFree: false),
-    _SamplePlace(nameKey: 'greenPark', categoryKey: 'Parks', descriptionKey: 'greenPark', rating: 4.7, distance: '0.8 km', emoji: '🌳', color: Colors.green, imageUrl: 'https://images.unsplash.com/photo-1511497584788-876760111969?w=400', tags: ['wheelchair_accessible'], isOpenNow: true, hoursSummary: null, isFree: true),
-    _SamplePlace(nameKey: 'jazzLounge', categoryKey: 'Nightlife', descriptionKey: 'jazzLounge', rating: 4.5, distance: '1.5 km', emoji: '🎷', color: Colors.indigo, imageUrl: 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=400', tags: ['black_owned', 'aesthetic_spaces', 'lgbtq_friendly'], isOpenNow: false, hoursSummary: '18:00 – 02:00', isFree: false),
-    _SamplePlace(nameKey: 'rooftopBar', categoryKey: 'Nightlife', descriptionKey: 'rooftopBar', rating: 4.4, distance: '1.8 km', emoji: '🍸', color: Colors.pink, imageUrl: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400', tags: ['aesthetic_spaces', 'lgbtq_friendly'], isOpenNow: true, hoursSummary: '17:00 – 01:00', isFree: false),
-    _SamplePlace(nameKey: 'freshKitchen', categoryKey: 'Restaurants', descriptionKey: 'freshKitchen', rating: 4.7, distance: '0.9 km', emoji: '🥗', color: Colors.lightGreen, imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400', tags: ['halal', 'vegan'], isOpenNow: true, hoursSummary: '11:00 – 21:00', isFree: false),
-    _SamplePlace(nameKey: 'historyMuseum', categoryKey: 'Museums', descriptionKey: 'historyMuseum', rating: 4.8, distance: '2.5 km', emoji: '🏛️', color: Colors.amber, imageUrl: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?w=400', tags: ['wheelchair_accessible'], isOpenNow: false, hoursSummary: '09:00 – 17:00', isFree: true),
-    _SamplePlace(nameKey: 'spiceRoute', categoryKey: 'Restaurants', descriptionKey: 'spiceRoute', rating: 4.6, distance: '1.0 km', emoji: '🍛', color: Colors.deepOrange, imageUrl: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=400', tags: ['halal', 'vegetarian'], isOpenNow: true, hoursSummary: '12:00 – 22:00', isFree: false),
-    _SamplePlace(nameKey: 'soulKitchen', categoryKey: 'Restaurants', descriptionKey: 'soulKitchen', rating: 4.7, distance: '1.4 km', emoji: '🍖', color: Colors.brown, imageUrl: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400', tags: ['black_owned', 'aesthetic_spaces', 'lgbtq_friendly'], isOpenNow: true, hoursSummary: '18:00 – 00:00', isFree: false),
-    _SamplePlace(nameKey: 'studioCafe', categoryKey: 'Cafés', descriptionKey: 'studioCafe', rating: 4.5, distance: '0.7 km', emoji: '📷', color: Colors.blueGrey, imageUrl: 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=400', tags: ['aesthetic_spaces', 'vegan'], isOpenNow: true, hoursSummary: '07:00 – 19:00', isFree: false),
+    _SamplePlace(nameKey: 'cozyCorner', categoryKey: 'Cafés', descriptionKey: 'cozyCorner', rating: 4.8, distanceKm: 0.5, emoji: '☕', color: Colors.brown, imageUrl: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400', tags: ['aesthetic_spaces', 'vegetarian'], isOpenNow: true, hoursStart: '08:00', hoursEnd: '18:00', isFree: false),
+    _SamplePlace(nameKey: 'sunsetTerrace', categoryKey: 'Restaurants', descriptionKey: 'sunsetTerrace', rating: 4.6, distanceKm: 1.2, emoji: '🍽️', color: Colors.orange, imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400', tags: ['halal', 'aesthetic_spaces'], isOpenNow: true, hoursStart: '12:00', hoursEnd: '23:00', isFree: false),
+    _SamplePlace(nameKey: 'cityArtMuseum', categoryKey: 'Museums', descriptionKey: 'cityArtMuseum', rating: 4.9, distanceKm: 2.1, emoji: '🎨', color: Colors.purple, imageUrl: 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?w=400', tags: ['aesthetic_spaces', 'wheelchair_accessible'], isOpenNow: true, hoursStart: '10:00', hoursEnd: '17:00', isFree: false),
+    _SamplePlace(nameKey: 'greenPark', categoryKey: 'Parks', descriptionKey: 'greenPark', rating: 4.7, distanceKm: 0.8, emoji: '🌳', color: Colors.green, imageUrl: 'https://images.unsplash.com/photo-1511497584788-876760111969?w=400', tags: ['wheelchair_accessible'], isOpenNow: true, isFree: true),
+    _SamplePlace(nameKey: 'jazzLounge', categoryKey: 'Nightlife', descriptionKey: 'jazzLounge', rating: 4.5, distanceKm: 1.5, emoji: '🎷', color: Colors.indigo, imageUrl: 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=400', tags: ['black_owned', 'aesthetic_spaces', 'lgbtq_friendly'], isOpenNow: false, hoursStart: '18:00', hoursEnd: '02:00', isFree: false),
+    _SamplePlace(nameKey: 'rooftopBar', categoryKey: 'Nightlife', descriptionKey: 'rooftopBar', rating: 4.4, distanceKm: 1.8, emoji: '🍸', color: Colors.pink, imageUrl: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400', tags: ['aesthetic_spaces', 'lgbtq_friendly'], isOpenNow: true, hoursStart: '17:00', hoursEnd: '01:00', isFree: false),
+    _SamplePlace(nameKey: 'freshKitchen', categoryKey: 'Restaurants', descriptionKey: 'freshKitchen', rating: 4.7, distanceKm: 0.9, emoji: '🥗', color: Colors.lightGreen, imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400', tags: ['halal', 'vegan'], isOpenNow: true, hoursStart: '11:00', hoursEnd: '21:00', isFree: false),
+    _SamplePlace(nameKey: 'historyMuseum', categoryKey: 'Museums', descriptionKey: 'historyMuseum', rating: 4.8, distanceKm: 2.5, emoji: '🏛️', color: Colors.amber, imageUrl: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?w=400', tags: ['wheelchair_accessible'], isOpenNow: false, hoursStart: '09:00', hoursEnd: '17:00', isFree: true),
+    _SamplePlace(nameKey: 'spiceRoute', categoryKey: 'Restaurants', descriptionKey: 'spiceRoute', rating: 4.6, distanceKm: 1.0, emoji: '🍛', color: Colors.deepOrange, imageUrl: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=400', tags: ['halal', 'vegetarian'], isOpenNow: true, hoursStart: '12:00', hoursEnd: '22:00', isFree: false),
+    _SamplePlace(nameKey: 'soulKitchen', categoryKey: 'Restaurants', descriptionKey: 'soulKitchen', rating: 4.7, distanceKm: 1.4, emoji: '🍖', color: Colors.brown, imageUrl: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400', tags: ['black_owned', 'aesthetic_spaces', 'lgbtq_friendly'], isOpenNow: true, hoursStart: '18:00', hoursEnd: '00:00', isFree: false),
+    _SamplePlace(nameKey: 'studioCafe', categoryKey: 'Cafés', descriptionKey: 'studioCafe', rating: 4.5, distanceKm: 0.7, emoji: '📷', color: Colors.blueGrey, imageUrl: 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=400', tags: ['aesthetic_spaces', 'vegan'], isOpenNow: true, hoursStart: '07:00', hoursEnd: '19:00', isFree: false),
   ];
 }
 

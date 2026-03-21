@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import 'dart:math' as math;
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../../core/providers/preferences_provider.dart';
@@ -126,32 +127,15 @@ class _PlanningPaceScreenState extends ConsumerState<PlanningPaceScreen> with Ti
   late final AnimationController _messageController;
   String? _selectedPace;
 
-  final List<Map<String, dynamic>> _planningPaces = [
-    {
-      'name': 'Right Now Vibes',
-      'emoji': '⚡',
-      'description': 'What should I do right now?',
-      'color': const Color(0xFFFFB74D), // Orange
-    },
-    {
-      'name': 'Same Day Planner',
-      'emoji': '🌅',
-      'description': 'Plan in the morning for the day',
-      'color': const Color(0xFF66BB6A), // Green
-    },
-    {
-      'name': 'Weekend Prepper',
-      'emoji': '📅',
-      'description': 'Plan a few days ahead',
-      'color': const Color(0xFF8D6E63), // Brown
-    },
-    {
-      'name': 'Master Planner',
-      'emoji': '📋',
-      'description': 'Love planning weeks ahead',
-      'color': const Color(0xFF78909C), // Blue Grey
-    },
-  ];
+  List<Map<String, dynamic>> _planningPaces(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      {'key': 'Right Now Vibes', 'name': l10n.prefPaceRightNow, 'emoji': '⚡', 'description': l10n.prefPaceRightNowDesc, 'color': const Color(0xFFFFB74D)},
+      {'key': 'Same Day Planner', 'name': l10n.prefPaceSameDay, 'emoji': '🌅', 'description': l10n.prefPaceSameDayDesc, 'color': const Color(0xFF66BB6A)},
+      {'key': 'Weekend Prepper', 'name': l10n.prefPaceWeekend, 'emoji': '📅', 'description': l10n.prefPaceWeekendDesc, 'color': const Color(0xFF8D6E63)},
+      {'key': 'Master Planner', 'name': l10n.prefPaceMaster, 'emoji': '📋', 'description': l10n.prefPaceMasterDesc, 'color': const Color(0xFF78909C)},
+    ];
+  }
 
   @override
   void initState() {
@@ -196,13 +180,13 @@ class _PlanningPaceScreenState extends ConsumerState<PlanningPaceScreen> with Ti
   }
 
   Widget _buildPlanningPaceCard(Map<String, dynamic> pace) {
-    final bool isSelected = _selectedPace == pace['name'];
+    final bool isSelected = _selectedPace == pace['key'];
     final color = pace['color'] as Color;
     
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: GestureDetector(
-        onTap: () => _selectPlanningPace(pace['name']),
+        onTap: () => _selectPlanningPace(pace['key'] as String),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           height: 100,
@@ -265,7 +249,7 @@ class _PlanningPaceScreenState extends ConsumerState<PlanningPaceScreen> with Ti
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        pace['name'],
+                        pace['name'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -275,7 +259,7 @@ class _PlanningPaceScreenState extends ConsumerState<PlanningPaceScreen> with Ti
                         ),
                       ),
                       Text(
-                        pace['description'],
+                        pace['description'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: isSelected
@@ -407,7 +391,7 @@ class _PlanningPaceScreenState extends ConsumerState<PlanningPaceScreen> with Ti
                              builder: (context, ref, child) {
                                final communicationState = ref.watch(communicationStyleProvider);
                                final styleKey = communicationState.style.toString().split('.').last;
-                               final title = communicationState.texts['planning_pace']?[styleKey] ?? 'Tell me your pace ⏰';
+                               final title = communicationState.texts['planning_pace']?[styleKey] ?? AppLocalizations.of(context)!.prefPlanningPaceTitleFallback;
                                return Text(
                                  title,
                                  style: GoogleFonts.museoModerno(
@@ -435,7 +419,7 @@ class _PlanningPaceScreenState extends ConsumerState<PlanningPaceScreen> with Ti
                              builder: (context, ref, child) {
                                final communicationState = ref.watch(communicationStyleProvider);
                                final styleKey = communicationState.style.toString().split('.').last;
-                               final subtitle = communicationState.texts['planning_pace_subtitle']?[styleKey] ?? 'Your planning style';
+                               final subtitle = communicationState.texts['planning_pace_subtitle']?[styleKey] ?? AppLocalizations.of(context)!.prefPlanningPaceSubtitleFallback;
                                return Text(
                                  subtitle,
                                  style: GoogleFonts.poppins(
@@ -452,9 +436,9 @@ class _PlanningPaceScreenState extends ConsumerState<PlanningPaceScreen> with Ti
                     const SizedBox(height: 40),
                     Expanded(
                       child: ListView.builder(
-                        itemCount: _planningPaces.length,
+                        itemCount: _planningPaces(context).length,
                         itemBuilder: (context, index) {
-                          return _buildPlanningPaceCard(_planningPaces[index]);
+                          return _buildPlanningPaceCard(_planningPaces(context)[index]);
                         },
                       ),
                     ),
@@ -479,7 +463,7 @@ class _PlanningPaceScreenState extends ConsumerState<PlanningPaceScreen> with Ti
                           ),
                         ),
                         child: Text(
-                          'Continue',
+                          AppLocalizations.of(context)!.continueButton,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,

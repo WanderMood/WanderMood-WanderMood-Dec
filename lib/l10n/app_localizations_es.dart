@@ -471,6 +471,273 @@ class AppLocalizationsEs extends AppLocalizations {
       '¡El desierto del Sáhara es más grande que todo Estados Unidos!';
 
   @override
+  String get weatherCurrentLocation => 'Ubicación actual';
+
+  @override
+  String get loadingFactNl0 =>
+      '¡Países Bajos tiene más museos por kilómetro cuadrado que ningún otro país!';
+
+  @override
+  String get loadingFactNl1 =>
+      '¡Róterdam alberga el puerto más grande de Europa, con más de 400 millones de toneladas al año!';
+
+  @override
+  String get loadingFactNl2 =>
+      '¡Hay más de 35.000 km de carriles bici – suficiente para rodear la Tierra!';
+
+  @override
+  String get loadingFactNl3 =>
+      '¡Ámsterdam tiene más canales que Venecia y más puentes que París!';
+
+  @override
+  String get loadingFactNl4 =>
+      '¡Los neerlandeses comen más de 150 millones de stroopwafels al año!';
+
+  @override
+  String get loadingFactNl5 =>
+      '¡Países Bajos es el segundo mayor exportador de alimentos del mundo a pesar de su tamaño!';
+
+  @override
+  String get loadingFactNl6 =>
+      '¡Keukenhof muestra más de 7 millones de bulbos en 32 hectáreas!';
+
+  @override
+  String get loadingFactNl7 =>
+      '¡Los neerlandeses son de media los más altos del mundo!';
+
+  @override
+  String get loadingFactUs0 =>
+      '¡EE. UU. tiene 63 parques nacionales, de Yellowstone al Gran Cañón!';
+
+  @override
+  String get loadingFactUs1 =>
+      '¡Alaska tiene más de 3 millones de lagos y más de 100.000 glaciares!';
+
+  @override
+  String get loadingFactUs2 => '¡La red interestatal supera los 75.000 km!';
+
+  @override
+  String get loadingFactUs3 =>
+      '¡Times Square recibe más de 50 millones de visitas al año!';
+
+  @override
+  String get loadingFactUs4 =>
+      '¡EE. UU. tiene la mayor economía del mundo y Silicon Valley!';
+
+  @override
+  String get loadingFactUs5 =>
+      '¡Hawái es el único estado que cultiva café comercialmente!';
+
+  @override
+  String get loadingFactUs6 =>
+      '¡El Golden Gate está pintado en «International Orange»!';
+
+  @override
+  String get loadingFactUs7 =>
+      '¡Disney World en Florida es más grande que la ciudad de San Francisco!';
+
+  @override
+  String get loadingFactJp0 =>
+      '¡Japón tiene más de 6.800 islas, pero solo 430 están habitadas!';
+
+  @override
+  String get loadingFactJp1 => '¡El Shinkansen puede superar los 300 km/h!';
+
+  @override
+  String get loadingFactJp2 =>
+      '¡El Fuji es un volcán activo; última erupción en 1707!';
+
+  @override
+  String get loadingFactJp3 =>
+      '¡Japón tiene más de 100.000 templos y santuarios!';
+
+  @override
+  String get loadingFactJp4 =>
+      '¡Tokio es el área metropolitana más grande del mundo, con más de 37 millones de personas!';
+
+  @override
+  String get loadingFactJp5 =>
+      '¡Japón consume cerca del 80 % del atún rojo mundial!';
+
+  @override
+  String get loadingFactJp6 =>
+      '¡En Japón hay una máquina expendedora por cada 23 personas!';
+
+  @override
+  String get loadingFactJp7 =>
+      '¡La floración del cerezo atrae millones de visitantes cada primavera!';
+
+  @override
+  String get loadingFactUk0 =>
+      '¡El Reino Unido tiene más de 1.500 castillos, de fortalezas a residencias reales!';
+
+  @override
+  String get loadingFactUk1 =>
+      '¡«Big Ben» no es el nombre de la torre – es Elizabeth Tower!';
+
+  @override
+  String get loadingFactUk2 =>
+      '¡El Reino Unido ha dado más músicos famosos por habitante!';
+
+  @override
+  String get loadingFactUk3 =>
+      '¡Stonehenge tiene más de 5.000 años y sigue siendo un misterio!';
+
+  @override
+  String get loadingFactUk4 =>
+      '¡El metro de Londres es el más antiguo del mundo (1863)!';
+
+  @override
+  String get loadingFactUk5 =>
+      '¡El Reino Unido tiene 15 sitios UNESCO, incluidos Bath y Edimburgo!';
+
+  @override
+  String get loadingFactUk6 =>
+      '¡Escocia tiene más de 3.000 castillos y unas 790 islas!';
+
+  @override
+  String get loadingFactUk7 =>
+      '¡Los británicos beben unos 100 millones de tazas de té al día!';
+
+  @override
+  String get loadingFactDe0 =>
+      '¡Alemania tiene más de 25.000 castillos y palacios!';
+
+  @override
+  String get loadingFactDe1 =>
+      '¡El muro de Berlín medía 155 km y duró 28 años!';
+
+  @override
+  String get loadingFactDe2 =>
+      '¡El Oktoberfest a menudo empieza en septiembre!';
+
+  @override
+  String get loadingFactDe3 =>
+      '¡La Selva Negra inspiró muchos cuentos de los hermanos Grimm!';
+
+  @override
+  String get loadingFactDe4 =>
+      '¡En un ~60 % de autopistas alemanas a menudo no hay límite general!';
+
+  @override
+  String get loadingFactDe5 =>
+      '¡Neuschwanstein inspiró el castillo de la Bella Durmiente de Disney!';
+
+  @override
+  String get loadingFactDe6 =>
+      '¡Alemania tiene la mayor economía de Europa y fama de ingeniería!';
+
+  @override
+  String get loadingFactDe7 =>
+      '¡El Rin atraviesa Alemania y está lleno de castillos medievales!';
+
+  @override
+  String get loadingFactFr0 =>
+      '¡Francia es el país más visitado del mundo – más de 89 millones de turistas al año!';
+
+  @override
+  String get loadingFactFr1 =>
+      '¡La Torre Eiffel fue al principio una estructura temporal para la Expo de 1889!';
+
+  @override
+  String get loadingFactFr2 =>
+      '¡Francia produce más de 400 quesos – ¡uno para cada día!';
+
+  @override
+  String get loadingFactFr3 =>
+      '¡Versalles tiene 2.300 habitaciones y 67 escaleras!';
+
+  @override
+  String get loadingFactFr4 =>
+      '¡Francia tiene 44 sitios UNESCO, incluido Mont-Saint-Michel!';
+
+  @override
+  String get loadingFactFr5 =>
+      '¡El Louvre es el museo de arte más grande del mundo!';
+
+  @override
+  String get loadingFactFr6 =>
+      '¡La Costa Azul se extiende cientos de km por el Mediterráneo!';
+
+  @override
+  String get loadingFactFr7 =>
+      '¡Francia acoge la carrera ciclista más famosa: el Tour de Francia!';
+
+  @override
+  String guestPlaceDistanceKm(String km) {
+    return '$km km';
+  }
+
+  @override
+  String guestPlaceHoursRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String get prefSocialVibeTitleFallback => '¿Cuál es tu vibe social? 👥';
+
+  @override
+  String get prefSocialVibeSubtitleFallback =>
+      '¿Cómo te gusta vivir las cosas?';
+
+  @override
+  String get prefPlanningPaceTitleFallback => 'Cuéntame tu ritmo ⏰';
+
+  @override
+  String get prefPlanningPaceSubtitleFallback => 'Tu estilo de planificación';
+
+  @override
+  String get prefTravelStyleTitleFallback => '¡Por último! ✨';
+
+  @override
+  String get prefTravelStyleSubtitleFallback => '¿Cuál es tu estilo de viaje?';
+
+  @override
+  String get prefStartMyJourney => 'Empezar mi viaje';
+
+  @override
+  String get onboardingPagerSlide1Title => 'Conoce a Moody 😄';
+
+  @override
+  String get onboardingPagerSlide1Subtitle => 'Tu BFF de viaje 💬🌍';
+
+  @override
+  String get onboardingPagerSlide1Description =>
+      'Moody aprende tu vibe, tu energía y cómo va tu día. Con eso creo planes personalizados solo para ti. Piensa en mí como tu colega curioso que siempre quiere explorar 🌆🎈';
+
+  @override
+  String get onboardingPagerSlide2Title => 'Viaja con tu mood 🌈';
+
+  @override
+  String get onboardingPagerSlide2Subtitle => 'Tus emociones, tu viaje 💭';
+
+  @override
+  String get onboardingPagerSlide2Description =>
+      'Ya sea tranquilo, romántico o aventurero… dime cómo te sientes y haré planes personalizados 🌸🏞️\nDesde joyas ocultas hasta paseos al atardecer: primero tu mood, siempre.';
+
+  @override
+  String get onboardingPagerSlide3Title => 'Tu día, a tu manera 🫶🏾';
+
+  @override
+  String get onboardingPagerSlide3Subtitle =>
+      'Del amanecer hasta la noche ☀️🌙';
+
+  @override
+  String get onboardingPagerSlide3Description =>
+      'Tu plan se divide en momentos—mañana, tarde, noche. Elige tu vibe, tus favoritos, yo me encargo de la magia. 🧭🎯 Según lugar, hora, clima y mood.';
+
+  @override
+  String get onboardingPagerSlide4Title => 'Cada día es un mood 🎨';
+
+  @override
+  String get onboardingPagerSlide4Subtitle =>
+      'Descubre sitios nuevos cada día🌍';
+
+  @override
+  String get onboardingPagerSlide4Description =>
+      'WanderMood hace que cada día sea una aventura. Despierta, revisa tu vibe, explora actividades escogidas a mano 💡📍 Deja que tu mood marque el camino una y otra vez.';
+
+  @override
   String get appSettings => 'App Settings';
 
   @override
