@@ -83,6 +83,18 @@ class MoodyAIService {
     }
   }
 
+  /// User-visible / model-facing name for tips (never raw error placeholders).
+  String _placeLabelForTips(Place place) {
+    const bad = {
+      'error loading place',
+      'place details unavailable',
+      'unknown place',
+    };
+    final n = place.name.trim().toLowerCase();
+    if (bad.contains(n)) return 'this spot';
+    return place.name;
+  }
+
   /// Build context-aware prompt for Moody AI
   String _buildPrompt({
     required Place place,
@@ -92,9 +104,10 @@ class MoodyAIService {
     List<String>? userPreferences,
   }) {
     final context = <String>[];
-    
+    final placeLabel = _placeLabelForTips(place);
+
     // Add place context
-    context.add('Place: ${place.name}');
+    context.add('Place: $placeLabel');
     context.add('Location: ${place.address}');
     context.add('Type: ${place.activities.join(", ")}');
     if (place.rating > 0) context.add('Rating: ${place.rating}/5.0');
@@ -192,7 +205,8 @@ Generate tips that are:
     final now = MoodyClock.now();
     final hour = now.hour;
     final timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
-    
+    final label = _placeLabelForTips(place);
+
     // Generate dynamic activity-specific tips based on place name and type
     final placeName = place.name.toLowerCase();
     final activities = place.activities.map((a) => a.toLowerCase()).toList();
@@ -202,110 +216,110 @@ Generate tips that are:
       if (timeOfDay == 'morning') {
         tips.add('🌅 Perfect timing! Museums are less crowded in the morning for a peaceful experience');
       } else if (timeOfDay == 'afternoon') {
-        tips.add('⏰ Great afternoon choice! Allow 2-3 hours to fully appreciate ${place.name}');
+        tips.add('⏰ Great afternoon choice! Allow 2-3 hours to fully appreciate $label');
       } else {
-        tips.add('🌙 Evening visit to ${place.name}? Check if they have special late hours or events');
+        tips.add('🌙 Evening visit to $label? Check if they have special late hours or events');
       }
-      tips.add('🎨 Ask staff about hidden gems or recently added exhibits at ${place.name}');
+      tips.add('🎨 Ask staff about hidden gems or recently added exhibits at $label');
     }
     
     // Nature/Outdoor specific tips
     else if (activities.contains('nature') || activities.contains('outdoor') || !place.isIndoor) {
       if (timeOfDay == 'morning') {
-        tips.add('🌅 Perfect morning choice! ${place.name} offers beautiful lighting and fewer crowds');
+        tips.add('🌅 Perfect morning choice! $label offers beautiful lighting and fewer crowds');
       } else if (timeOfDay == 'afternoon') {
-        tips.add('☀️ Afternoon at ${place.name}? Bring sun protection and stay hydrated');
+        tips.add('☀️ Afternoon at $label? Bring sun protection and stay hydrated');
       } else {
-        tips.add('🌅 Evening visit to ${place.name} might offer stunning sunset views!');
+        tips.add('🌅 Evening visit to $label might offer stunning sunset views!');
       }
-      tips.add('👟 Comfortable shoes recommended for exploring ${place.name} to the fullest');
+      tips.add('👟 Comfortable shoes recommended for exploring $label to the fullest');
     }
     
     // Sightseeing specific tips
     else if (activities.contains('sightseeing')) {
       if (placeName.contains('tower') || placeName.contains('viewpoint')) {
-        tips.add('📸 ${place.name} offers incredible photo opportunities - charge your camera!');
-        tips.add('🌤️ Clear day? Perfect for spectacular views from ${place.name}');
+        tips.add('📸 $label offers incredible photo opportunities - charge your camera!');
+        tips.add('🌤️ Clear day? Perfect for spectacular views from $label');
       } else {
-        tips.add('🚶‍♀️ Take your time exploring ${place.name} - there\'s always more to discover');
-        tips.add('📱 Consider downloading a guide app for ${place.name} for insider details');
+        tips.add('🚶‍♀️ Take your time exploring $label - there\'s always more to discover');
+        tips.add('📱 Consider downloading a guide app for $label for insider details');
       }
     }
     
     // Food & Drink specific tips
     else if (activities.contains('food & drink') || placeName.contains('restaurant') || placeName.contains('café')) {
       if (timeOfDay == 'morning') {
-        tips.add('☕ Morning at ${place.name}? Perfect time to try their breakfast specialties');
+        tips.add('☕ Morning at $label? Perfect time to try their breakfast specialties');
       } else if (timeOfDay == 'afternoon') {
-        tips.add('🍽️ Great lunch spot! Ask ${place.name} staff for their signature dishes');
+        tips.add('🍽️ Great lunch spot! Ask $label staff for their signature dishes');
       } else {
-        tips.add('🌙 Evening dining at ${place.name}? Consider making a reservation');
+        tips.add('🌙 Evening dining at $label? Consider making a reservation');
       }
-      tips.add('🗣️ Chat with locals at ${place.name} - they know the best menu secrets');
+      tips.add('🗣️ Chat with locals at $label - they know the best menu secrets');
     }
     
     // Shopping specific tips
     else if (activities.contains('shopping') || placeName.contains('market') || placeName.contains('shop')) {
-      tips.add('💰 Bring cash to ${place.name} - some vendors prefer it over cards');
-      tips.add('🛍️ ${place.name} is perfect for finding unique local treasures and souvenirs');
+      tips.add('💰 Bring cash to $label - some vendors prefer it over cards');
+      tips.add('🛍️ $label is perfect for finding unique local treasures and souvenirs');
     }
     
     // Entertainment specific tips
     else if (activities.contains('entertainment')) {
-      tips.add('🎭 Check ${place.name}\'s schedule - they might have special shows today');
-      tips.add('📅 Arrive early at ${place.name} to get the best seats or spots');
+      tips.add('🎭 Check $label\'s schedule - they might have special shows today');
+      tips.add('📅 Arrive early at $label to get the best seats or spots');
     }
     
     // Energy level specific tips with place context
     switch (place.energyLevel.toLowerCase()) {
       case 'low':
-        tips.add('😌 ${place.name} is perfect for unwinding - take your time and soak in the peaceful atmosphere');
+        tips.add('😌 $label is perfect for unwinding - take your time and soak in the peaceful atmosphere');
         break;
       case 'medium':
-        tips.add('⚖️ ${place.name} offers a nice balance - suitable for any energy level today');
+        tips.add('⚖️ $label offers a nice balance - suitable for any energy level today');
         break;
       case 'high':
-        tips.add('💪 Ready for adventure? ${place.name} will give you an energizing experience!');
+        tips.add('💪 Ready for adventure? $label will give you an energizing experience!');
         break;
     }
     
     // Rating-based tips with place context
     if (place.rating >= 4.5) {
-      tips.add('⭐ ${place.name} is highly rated for good reason - prepare to be impressed!');
+      tips.add('⭐ $label is highly rated for good reason - prepare to be impressed!');
     } else if (place.rating >= 4.0) {
-      tips.add('👍 ${place.name} has great reviews - perfect choice for your visit');
+      tips.add('👍 $label has great reviews - perfect choice for your visit');
     }
     
     // Location-specific tips based on place name
     if (placeName.contains('rotterdam')) {
-      tips.add('🚲 Consider biking to ${place.name} - Rotterdam is very bike-friendly!');
+      tips.add('🚲 Consider biking to $label - Rotterdam is very bike-friendly!');
     }
     
     // Weather-based tips with place context
     if (place.isIndoor) {
-      tips.add('🏠 ${place.name} is perfect for any weather - excellent choice regardless of conditions!');
+      tips.add('🏠 $label is perfect for any weather - excellent choice regardless of conditions!');
     } else {
-      tips.add('🌤️ Check the weather for your visit to ${place.name} to make the most of the experience');
+      tips.add('🌤️ Check the weather for your visit to $label to make the most of the experience');
     }
     
     // Add unique tips based on specific keywords in place name
     if (placeName.contains('historic') || placeName.contains('old') || placeName.contains('heritage')) {
-      tips.add('📚 ${place.name} has rich history - consider getting a guide or audio tour');
+      tips.add('📚 $label has rich history - consider getting a guide or audio tour');
     }
     
     if (placeName.contains('art') || placeName.contains('gallery')) {
-      tips.add('🎨 Take time to appreciate the details at ${place.name} - art is meant to be savored');
+      tips.add('🎨 Take time to appreciate the details at $label - art is meant to be savored');
     }
     
     if (placeName.contains('park') || placeName.contains('garden')) {
-      tips.add('🌳 ${place.name} is perfect for a leisurely stroll and connecting with nature');
+      tips.add('🌳 $label is perfect for a leisurely stroll and connecting with nature');
     }
     
     // Ensure we always have at least 3 tips, add generic but place-specific ones if needed
     if (tips.length < 3) {
-      tips.add('💡 Ask locals about hidden features of ${place.name} - they know the best spots');
-      tips.add('📸 ${place.name} has great photo opportunities - don\'t forget your camera!');
-      tips.add('🎯 Visit ${place.name} with an open mind and prepare to discover something new');
+      tips.add('💡 Ask locals about hidden features of $label - they know the best spots');
+      tips.add('📸 $label has great photo opportunities - don\'t forget your camera!');
+      tips.add('🎯 Visit $label with an open mind and prepare to discover something new');
     }
     
     // Limit to 4 tips max and ensure uniqueness

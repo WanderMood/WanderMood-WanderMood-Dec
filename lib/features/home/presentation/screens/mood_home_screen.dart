@@ -2,7 +2,7 @@ import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'dart:ui';  // Add this import for ImageFilter
+import 'dart:ui'; // Add this import for ImageFilter
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/auth/providers/user_provider.dart';
@@ -21,13 +21,12 @@ import 'package:wandermood/features/mood/providers/mood_options_provider.dart';
 import 'package:wandermood/features/mood/models/mood_option.dart';
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
 import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.dart';
-import 'package:wandermood/features/home/presentation/screens/main_screen.dart';  // Import mainTabProvider from here
+import 'package:wandermood/features/home/presentation/screens/main_screen.dart'; // Import mainTabProvider from here
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/mood/presentation/screens/moody_hub_screen.dart';
 import 'package:wandermood/features/mood/presentation/widgets/mood_action_choice_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
-import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/providers/communication_style_provider.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
@@ -60,11 +59,11 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   String _moodQuestion = "How are you feeling today?";
   String _characterEmoji = "😊";
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  
+
   // Add personalization state
   String _personalizedGreeting = '';
   String _contextualSubtext = '';
-  
+
   @override
   void initState() {
     super.initState();
@@ -77,7 +76,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     _chatController.dispose();
     super.dispose();
   }
-  
+
   void _updateGreeting() {
     final hour = MoodyClock.now().hour;
     setState(() {
@@ -95,7 +94,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         _timeEmoji = '🌙'; // Moon
       }
     });
-    
+
     // Also update AI-powered elements
     _updateAIGreeting();
   }
@@ -103,26 +102,26 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   // Generate contextual message based on time, user history, and context
   void _updateAIGreeting() {
     final hour = MoodyClock.now().hour;
-    
+
     // Get contextual message
     final contextualMessage = _getContextualMoodMessage();
-    
+
     setState(() {
       // Smart character expressions based on context
       if (hour >= 5 && hour < 12) {
         _characterEmoji = "😊"; // Happy morning
       } else if (hour >= 12 && hour < 17) {
-        _characterEmoji = "☀️"; // Sunny afternoon  
+        _characterEmoji = "☀️"; // Sunny afternoon
       } else if (hour >= 17 && hour < 21) {
         _characterEmoji = "✨"; // Evening sparkle
       } else {
         _characterEmoji = "🌙"; // Night owl
       }
-      
+
       _moodQuestion = contextualMessage;
     });
   }
-  
+
   /// Time-of-day phrase for the hero line (replaces "today?")
   String _getTimeOfDayPhrase(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -134,27 +133,37 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   }
 
   /// Greeting text based on onboarding communication style (less formal options)
-  String _getStyleBasedGreeting(BuildContext context, CommunicationStyle style, String? firstName) {
+  String _getStyleBasedGreeting(
+      BuildContext context, CommunicationStyle style, String? firstName) {
     final l10n = AppLocalizations.of(context)!;
     final name = (firstName != null && firstName.isNotEmpty) ? firstName : null;
     switch (style) {
       case CommunicationStyle.energetic:
-        return name != null ? l10n.moodHubGreetingBestie(name) : l10n.moodHubGreetingBestie(l10n.moodyIntroNameFallback);
+        return name != null
+            ? l10n.moodHubGreetingBestie(name)
+            : l10n.moodHubGreetingBestie(l10n.moodyIntroNameFallback);
       case CommunicationStyle.friendly:
-        return name != null ? l10n.moodHubGreetingFriendly(name) : l10n.moodHubGreetingHeyThere;
-      case CommunicationStyle.professional: {
-        final hour = MoodyClock.now().hour;
-        final greeting = hour >= 5 && hour < 12
-            ? l10n.goodMorning
-            : hour >= 12 && hour < 17
-                ? l10n.goodAfternoon
-                : hour >= 17 && hour < 21
-                    ? l10n.goodEvening
-                    : l10n.heyNightOwl;
-        return name != null ? l10n.moodHubGreetingProfessional(greeting, name) : greeting;
-      }
+        return name != null
+            ? l10n.moodHubGreetingFriendly(name)
+            : l10n.moodHubGreetingHeyThere;
+      case CommunicationStyle.professional:
+        {
+          final hour = MoodyClock.now().hour;
+          final greeting = hour >= 5 && hour < 12
+              ? l10n.goodMorning
+              : hour >= 12 && hour < 17
+                  ? l10n.goodAfternoon
+                  : hour >= 17 && hour < 21
+                      ? l10n.goodEvening
+                      : l10n.heyNightOwl;
+          return name != null
+              ? l10n.moodHubGreetingProfessional(greeting, name)
+              : greeting;
+        }
       case CommunicationStyle.direct:
-        return name != null ? l10n.moodHubGreetingDirect(name) : l10n.moodHubGreetingHi;
+        return name != null
+            ? l10n.moodHubGreetingDirect(name)
+            : l10n.moodHubGreetingHi;
     }
   }
 
@@ -164,11 +173,12 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     try {
       final hour = MoodyClock.now().hour;
       final isWeekend = MoodyClock.now().weekday >= 6;
-      
+
       // Check if user is new (no previous mood selections)
       final dailyState = ref.read(dailyMoodStateNotifierProvider);
-      final isNewUser = !dailyState.hasSelectedMoodToday && dailyState.currentMood == null;
-      
+      final isNewUser =
+          !dailyState.hasSelectedMoodToday && dailyState.currentMood == null;
+
       // Generate contextual message based on available data
       if (isNewUser) {
         // First-time user messages
@@ -182,10 +192,10 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
           return "Late night energy — let's find something that fits.";
         }
       }
-      
+
       // Time-based messages for returning users
       if (hour >= 5 && hour < 12) {
-        return isWeekend 
+        return isWeekend
             ? "Weekend morning vibes — let's set the tone."
             : "Fresh start to the day — what feels right?";
       } else if (hour >= 12 && hour < 17) {
@@ -203,14 +213,16 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       return "Let's find the right vibe for today.";
     }
   }
-  
+
   /// Get enhanced contextual Moody message - feels like Moody is speaking.
   /// Varies by time of day, new vs returning user, last mood, and user's communication style from onboarding.
-  Future<String> _getContextualMoodyMessage(DailyMoodState dailyMoodState) async {
+  Future<String> _getContextualMoodyMessage(
+      DailyMoodState dailyMoodState) async {
     try {
       final hour = MoodyClock.now().hour;
       final isWeekend = MoodyClock.now().weekday >= 6;
-      final isNewUser = !dailyMoodState.hasSelectedMoodToday && dailyMoodState.currentMood == null;
+      final isNewUser = !dailyMoodState.hasSelectedMoodToday &&
+          dailyMoodState.currentMood == null;
       final lastMood = dailyMoodState.currentMood;
       final style = ref.read(communicationStyleProvider).style;
 
@@ -341,14 +353,16 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
 
       return message;
     } catch (e) {
-      if (kDebugMode) debugPrint('⚠️ Error generating contextual Moody message: $e');
+      if (kDebugMode)
+        debugPrint('⚠️ Error generating contextual Moody message: $e');
       return _getContextualMoodMessage();
     }
   }
 
   /// Pick message variant by communication style: [energetic, friendly, professional, direct]
   String _pickStyle(CommunicationStyle style, List<String> variants) {
-    assert(variants.length == 4, 'Need 4 variants for energetic, friendly, professional, direct');
+    assert(variants.length == 4,
+        'Need 4 variants for energetic, friendly, professional, direct');
     final index = style == CommunicationStyle.energetic
         ? 0
         : style == CommunicationStyle.friendly
@@ -374,7 +388,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     try {
       final loc = await _getUserLocation();
       final response = await WanderMoodAIService.chat(
-        message: "Generate a short personalized greeting question for the user based on current time and weather",
+        message:
+            "Generate a short personalized greeting question for the user based on current time and weather",
         conversationId: null,
         moods: [],
         latitude: loc.lat,
@@ -382,7 +397,9 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         city: loc.city,
       );
 
-      if (mounted && response.message.isNotEmpty && response.message.length < 50) {
+      if (mounted &&
+          response.message.isNotEmpty &&
+          response.message.length < 50) {
         setState(() {
           _moodQuestion = response.message;
         });
@@ -391,8 +408,6 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       debugPrint('🤖 Could not get AI greeting: $e');
     }
   }
-
-
 
   void _toggleMood(MoodOption mood) {
     setState(() {
@@ -413,14 +428,14 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   void _generatePlan() {
     if (_selectedMoods.isNotEmpty) {
       print('🎯 Generating plan for moods: $_selectedMoods');
-      
+
       // 🎯 Save mood selection state for hub
       ref.read(dailyMoodStateNotifierProvider.notifier).setMoodSelection(
-        mood: _selectedMoods.first,
-        selectedMoods: _selectedMoods.toList(),
-        conversationId: _conversationId,
-      );
-      
+            mood: _selectedMoods.first,
+            selectedMoods: _selectedMoods.toList(),
+            conversationId: _conversationId,
+          );
+
       if (context.mounted) {
         Navigator.push(
           context,
@@ -440,17 +455,19 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     });
 
     try {
-      print('🤖 Getting AI recommendations for moods: ${_selectedMoods.toList()}');
-      
+      print(
+          '🤖 Getting AI recommendations for moods: ${_selectedMoods.toList()}');
+
       // Extract conversation context from chat messages
       List<String> conversationContext = [];
       if (_chatMessages.isNotEmpty) {
         conversationContext = _chatMessages
             .map((msg) => '${msg.isUser ? "User" : "Moody"}: ${msg.message}')
             .toList();
-        print('📝 Including ${conversationContext.length} conversation messages');
+        print(
+            '📝 Including ${conversationContext.length} conversation messages');
       }
-      
+
       final loc = await _getUserLocation();
       final response = await WanderMoodAIService.getRecommendations(
         moods: _selectedMoods.toList(),
@@ -465,7 +482,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         conversationContext: conversationContext,
       );
 
-      print('✅ Got ${response.recommendations.length} AI recommendations (${conversationContext.isNotEmpty ? "with conversation context" : "without context"})');
+      print(
+          '✅ Got ${response.recommendations.length} AI recommendations (${conversationContext.isNotEmpty ? "with conversation context" : "without context"})');
 
       // Navigate to PlanLoadingScreen first
       if (mounted) {
@@ -515,23 +533,29 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
 
     // Enhanced keyword-based mood detection
     final suggestedMoods = <String>[];
-    
-    if (chatText.contains(RegExp(r'\b(food|eat|hungry|restaurant|dinner|lunch|asian|cuisine|tasty|sushi)\b'))) {
+
+    if (chatText.contains(RegExp(
+        r'\b(food|eat|hungry|restaurant|dinner|lunch|asian|cuisine|tasty|sushi)\b'))) {
       suggestedMoods.add('Foody');
     }
-    if (chatText.contains(RegExp(r'\b(romantic|date|love|couple|intimate)\b'))) {
+    if (chatText
+        .contains(RegExp(r'\b(romantic|date|love|couple|intimate)\b'))) {
       suggestedMoods.add('Romantic');
     }
-    if (chatText.contains(RegExp(r'\b(adventure|explore|active|exciting|outdoor)\b'))) {
+    if (chatText
+        .contains(RegExp(r'\b(adventure|explore|active|exciting|outdoor)\b'))) {
       suggestedMoods.add('Adventure');
     }
-    if (chatText.contains(RegExp(r'\b(chill|relax|calm|peaceful|tired|nothing much)\b'))) {
+    if (chatText.contains(
+        RegExp(r'\b(chill|relax|calm|peaceful|tired|nothing much)\b'))) {
       suggestedMoods.add('Relaxed');
     }
-    if (chatText.contains(RegExp(r'\b(energy|energetic|party|parties|dance|active|lively|bar|club|going out)\b'))) {
+    if (chatText.contains(RegExp(
+        r'\b(energy|energetic|party|parties|dance|active|lively|bar|club|going out)\b'))) {
       suggestedMoods.add('Energetic');
     }
-    if (chatText.contains(RegExp(r'\b(surprise|different|new|unique|creative)\b'))) {
+    if (chatText
+        .contains(RegExp(r'\b(surprise|different|new|unique|creative)\b'))) {
       suggestedMoods.add('Surprise');
     }
 
@@ -557,7 +581,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         builder: (context) => Dialog(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
@@ -593,7 +618,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       ),
       backgroundColor: const Color(0xFFFAFCFA),
       builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.25, // Reduced height to fix overflow
+        height: MediaQuery.of(context).size.height *
+            0.25, // Reduced height to fix overflow
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -610,7 +636,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Title
             Text(
               'Select Location',
@@ -621,7 +647,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Current location button
             ListTile(
               leading: Container(
@@ -659,7 +685,9 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                   duration: const Duration(seconds: 1),
                 );
                 // Trigger location update
-                final location = await ref.read(locationNotifierProvider.notifier).getCurrentLocation();
+                final location = await ref
+                    .read(locationNotifierProvider.notifier)
+                    .getCurrentLocation();
                 // Show result message
                 showWanderMoodToast(
                   context,
@@ -674,7 +702,6 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     );
   }
 
-
   // Show dialog for talking to Moody
   void _showMoodActionChoiceDialog(BuildContext context) {
     showDialog(
@@ -683,12 +710,16 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         onUpdatePlan: () {
           // Reset mood selection to show mood selection screen
           // After mood selection, it will navigate to plan loading
-          ref.read(dailyMoodStateNotifierProvider.notifier).resetMoodSelection();
+          ref
+              .read(dailyMoodStateNotifierProvider.notifier)
+              .resetMoodSelection();
         },
         onJustChangeMood: () {
           // Just reset mood selection without navigating to plan loading
           // User can pick new moods but won't regenerate activities
-          ref.read(dailyMoodStateNotifierProvider.notifier).resetMoodSelection();
+          ref
+              .read(dailyMoodStateNotifierProvider.notifier)
+              .resetMoodSelection();
           // TODO: Add flag to skip plan generation after mood selection
         },
       ),
@@ -700,7 +731,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     if (_conversationId == null) {
       _conversationId = 'conv_${MoodyClock.now().millisecondsSinceEpoch}';
     }
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -724,466 +755,516 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                     children: [
                       Column(
                         children: const [
-                          Expanded(flex: 5, child: ColoredBox(color: _mcSkyTint)),
+                          Expanded(
+                              flex: 5, child: ColoredBox(color: _mcSkyTint)),
                           Expanded(flex: 5, child: ColoredBox(color: _mcCream)),
                         ],
                       ),
                       Column(
                         children: [
-                      // Enhanced header with friendly aesthetics
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              _mcSkyTint.withOpacity(0.85),
-                              Colors.transparent,
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            // Handle bar
-                            Container(
-                              width: 40,
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            
-                            // Header content - Modernized
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 24),
-                              child: Row(
-                                children: [
-                                  // Enhanced Moody avatar with modern styling
-                                  Container(
-                                    width: 56,
-                                    height: 56,
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: _mcSky,
-                                    ),
-                                    child: const Center(
-                                      child: MoodyCharacter(size: 32),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  
-                                  // Title and personalized status
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Moody',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold,
-                                            color: const Color(0xFF1A202C),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Row(
-                                          children: [
-                                            Container(
-                                              width: 8,
-                                              height: 8,
-                                              decoration: const BoxDecoration(
-                                                color: _mcForest,
-                                                shape: BoxShape.circle,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Flexible(
-                                              child: Text(
-                                                'Your Rotterdam travel companion',
-                                                style: GoogleFonts.poppins(
-                                                  fontSize: 14,
-                                                  color: const Color(0xFF4A5568),
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  
-                                  // Enhanced close button
-                                  Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[100],
-                                      shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.05),
-                                          blurRadius: 4,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: IconButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      icon: const Icon(
-                                        Icons.close_rounded,
-                                        color: Colors.grey,
-                                        size: 20,
-                                      ),
-                                      padding: EdgeInsets.zero,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      // Chat messages area
-                      Expanded(
-                        child: _chatMessages.isEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.all(32),
-                              child: Column(
-                                children: [
-                                  const Spacer(),
-                                  
-                                  // Large enhanced Moody character with modern styling
-                                  Container(
-                                    width: 140,
-                                    height: 140,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: _mcSky.withOpacity(0.35),
-                                      border: Border.all(
-                                        color: _mcSky.withOpacity(0.65),
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: const Center(
-                                      child: MoodyCharacter(size: 70),
-                                    ),
-                                  ),
-                                  
-                                  const SizedBox(height: 32),
-                                  
-                                  // Personalized greeting
-                                  Text(
-                                    _personalizedGreeting,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF1A202C),
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  
-                                  const SizedBox(height: 12),
-                                  
-                                  // Contextual subtext
-                                  Text(
-                                    _contextualSubtext,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                      color: const Color(0xFF4A5568),
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  
-                                  const SizedBox(height: 24),
-                                  
-                                  // Modern description
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.92),
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(
-                                        color: _mcParchment.withOpacity(0.9),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      'I know Rotterdam like the back of my hand! Tell me your mood, and I\'ll craft the perfect day just for you. Whether you\'re feeling adventurous, romantic, or need some chill vibes - I\'ve got you covered! 🎯',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 16,
-                                        color: const Color(0xFF2D3748),
-                                        height: 1.5,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  
-                                  const Spacer(),
-                                ],
-                              ),
-                            )
-                          : Column(
-                              children: [
-                                Expanded(
-                                  child: ListView.builder(
-                                    controller: scrollController,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    itemCount: _chatMessages.length,
-                                    itemBuilder: (context, index) {
-                                      final message = _chatMessages[index];
-                                      return _buildMessageBubble(message);
-                                    },
-                                  ),
-                                ),
-                                
-                                // Enhanced typing indicator with personality
-                                if (_isAILoading) 
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 40,
-                                          height: 40,
-                                          decoration: const BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: _mcSky,
-                                          ),
-                                          child: const Center(
-                                            child: MoodyCharacter(size: 22),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                                          decoration: BoxDecoration(
-                                            color: _mcSkyTint.withOpacity(0.95),
-                                            border: Border.all(color: _mcParchment.withOpacity(0.6)),
-                                            borderRadius: const BorderRadius.only(
-                                              topLeft: Radius.circular(20),
-                                              topRight: Radius.circular(20),
-                                              bottomRight: Radius.circular(20),
-                                              bottomLeft: Radius.circular(4),
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: _mcForest.withOpacity(0.06),
-                                                blurRadius: 12,
-                                                offset: const Offset(0, 4),
-                                              ),
-                                            ],
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              SizedBox(
-                                                width: 18,
-                                                height: 18,
-                                                child: CircularProgressIndicator(
-                                                  strokeWidth: 2.5,
-                                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                                    _mcForest.withOpacity(0.75),
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 12),
-                                              Text(
-                                                'Moody is crafting something special...',
-                                                style: GoogleFonts.poppins(
-                                                  fontSize: 15,
-                                                  color: const Color(0xFF2D3748),
-                                                  fontWeight: FontWeight.w500,
-                                                  fontStyle: FontStyle.italic,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                              ],
-                            ),
-                      ),
-                      
-                      // Quick action button if conversation has started - Enhanced
-                      if (_chatMessages.isNotEmpty) 
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          child: Container(
-                            width: double.infinity,
+                          // Enhanced header with friendly aesthetics
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  const Color(0xFF2A6049).withOpacity(0.05),
-                                  const Color(0xFF2A6049).withOpacity(0.02),
+                                  _mcSkyTint.withOpacity(0.85),
+                                  Colors.transparent,
                                 ],
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: const Color(0xFF2A6049).withOpacity(0.2),
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
                               ),
                             ),
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                Navigator.pop(context); // Close chat
-                                _suggestMoodsFromChat(); // Auto-suggest moods from conversation
-                                
-                                // Small delay to let mood selection UI update, then generate plan
-                                Future.delayed(const Duration(milliseconds: 300), () {
-                                  _generatePlan(); // Automatically start plan generation
-                                });
-                              },
-                              icon: const Icon(Icons.auto_awesome, size: 20),
-                              label: Text(
-                                '✨ Create My Perfect Plan',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                            child: Column(
+                              children: [
+                                // Handle bar
+                                Container(
+                                  width: 40,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[300],
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
                                 ),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFF2A6049),
-                                backgroundColor: Colors.transparent,
-                                side: BorderSide.none,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                                const SizedBox(height: 20),
 
-                      // Enhanced input area with modern styling
-                      Container(
-                        padding: EdgeInsets.only(
-                          left: 24,
-                          right: 24,
-                          top: 24,
-                          bottom: 24 + MediaQuery.of(context).viewInsets.bottom,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border(
-                            top: BorderSide(color: Colors.grey[100]!),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.03),
-                              blurRadius: 20,
-                              offset: const Offset(0, -4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _chatController,
-                                  decoration: InputDecoration(
-                                    hintText: 'What\'s your mood today?',
-                                    hintStyle: GoogleFonts.poppins(
-                                      color: Colors.grey[500],
-                                      fontSize: 16,
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 18,
-                                    ),
-                                    filled: true,
-                                    fillColor: const Color(0xFFF8FAFC),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(28),
-                                      borderSide: BorderSide(
-                                        color: _mcParchment,
-                                        width: 1.5,
+                                // Header content - Modernized
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 24),
+                                  child: Row(
+                                    children: [
+                                      // Enhanced Moody avatar with modern styling
+                                      Container(
+                                        width: 56,
+                                        height: 56,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: _mcSky,
+                                        ),
+                                        child: const Center(
+                                          child: MoodyCharacter(size: 32),
+                                        ),
                                       ),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(28),
-                                      borderSide: const BorderSide(
-                                        color: _mcForest,
-                                        width: 2,
-                                      ),
-                                    ),
-                                    prefixIcon: Padding(
-                                      padding: const EdgeInsets.only(left: 4),
-                                      child: Icon(
-                                        Icons.psychology_outlined,
-                                        color: _mcForest.withOpacity(0.75),
-                                        size: 22,
-                                      ),
-                                    ),
-                                  ),
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 16,
-                                    color: _mcCharcoal,
-                                  ),
-                                  onSubmitted: (text) => _sendChatMessageInModal(text, setModalState),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              
-                              // Enhanced send button with modern styling
-                              Container(
-                                width: 52,
-                                height: 52,
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [_mcForest, _mcForest],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(26),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: _mcForest.withOpacity(0.3),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(26),
-                                    onTap: _isAILoading 
-                                      ? null 
-                                      : () => _sendChatMessageInModal(_chatController.text, setModalState),
-                                    child: Center(
-                                      child: _isAILoading
-                                        ? const SizedBox(
-                                            width: 22,
-                                            height: 22,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2.5,
-                                              color: Colors.white,
+                                      const SizedBox(width: 16),
+
+                                      // Title and personalized status
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Moody',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                                color: const Color(0xFF1A202C),
+                                              ),
                                             ),
-                                          )
-                                        : const Icon(
-                                            Icons.send_rounded,
-                                            color: Colors.white,
-                                            size: 22,
+                                            const SizedBox(height: 2),
+                                            Row(
+                                              children: [
+                                                Container(
+                                                  width: 8,
+                                                  height: 8,
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                    color: _mcForest,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Flexible(
+                                                  child: Text(
+                                                    'Your Rotterdam travel companion',
+                                                    style: GoogleFonts.poppins(
+                                                      fontSize: 14,
+                                                      color: const Color(
+                                                          0xFF4A5568),
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      // Enhanced close button
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[100],
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black
+                                                  .withOpacity(0.05),
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: IconButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          icon: const Icon(
+                                            Icons.close_rounded,
+                                            color: Colors.grey,
+                                            size: 20,
                                           ),
+                                          padding: EdgeInsets.zero,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Chat messages area
+                          Expanded(
+                            child: _chatMessages.isEmpty
+                                ? Padding(
+                                    padding: const EdgeInsets.all(32),
+                                    child: Column(
+                                      children: [
+                                        const Spacer(),
+
+                                        // Large enhanced Moody character with modern styling
+                                        Container(
+                                          width: 140,
+                                          height: 140,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: _mcSky.withOpacity(0.35),
+                                            border: Border.all(
+                                              color: _mcSky.withOpacity(0.65),
+                                              width: 2,
+                                            ),
+                                          ),
+                                          child: const Center(
+                                            child: MoodyCharacter(size: 70),
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 32),
+
+                                        // Personalized greeting
+                                        Text(
+                                          _personalizedGreeting,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 32,
+                                            fontWeight: FontWeight.bold,
+                                            color: const Color(0xFF1A202C),
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+
+                                        const SizedBox(height: 12),
+
+                                        // Contextual subtext
+                                        Text(
+                                          _contextualSubtext,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w500,
+                                            color: const Color(0xFF4A5568),
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+
+                                        const SizedBox(height: 24),
+
+                                        // Modern description
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 24, vertical: 20),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                Colors.white.withOpacity(0.92),
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                            border: Border.all(
+                                              color:
+                                                  _mcParchment.withOpacity(0.9),
+                                            ),
+                                          ),
+                                          child: Text(
+                                            'I know Rotterdam like the back of my hand! Tell me your mood, and I\'ll craft the perfect day just for you. Whether you\'re feeling adventurous, romantic, or need some chill vibes - I\'ve got you covered! 🎯',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 16,
+                                              color: const Color(0xFF2D3748),
+                                              height: 1.5,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+
+                                        const Spacer(),
+                                      ],
+                                    ),
+                                  )
+                                : Column(
+                                    children: [
+                                      Expanded(
+                                        child: ListView.builder(
+                                          controller: scrollController,
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 12),
+                                          itemCount: _chatMessages.length,
+                                          itemBuilder: (context, index) {
+                                            final message =
+                                                _chatMessages[index];
+                                            return _buildMessageBubble(message);
+                                          },
+                                        ),
+                                      ),
+
+                                      // Enhanced typing indicator with personality
+                                      if (_isAILoading)
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 12, horizontal: 20),
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                width: 40,
+                                                height: 40,
+                                                decoration: const BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: _mcSky,
+                                                ),
+                                                child: const Center(
+                                                  child:
+                                                      MoodyCharacter(size: 22),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 20,
+                                                        vertical: 14),
+                                                decoration: BoxDecoration(
+                                                  color: _mcSkyTint
+                                                      .withOpacity(0.95),
+                                                  border: Border.all(
+                                                      color: _mcParchment
+                                                          .withOpacity(0.6)),
+                                                  borderRadius:
+                                                      const BorderRadius.only(
+                                                    topLeft:
+                                                        Radius.circular(20),
+                                                    topRight:
+                                                        Radius.circular(20),
+                                                    bottomRight:
+                                                        Radius.circular(20),
+                                                    bottomLeft:
+                                                        Radius.circular(4),
+                                                  ),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: _mcForest
+                                                          .withOpacity(0.06),
+                                                      blurRadius: 12,
+                                                      offset:
+                                                          const Offset(0, 4),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    SizedBox(
+                                                      width: 18,
+                                                      height: 18,
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                        strokeWidth: 2.5,
+                                                        valueColor:
+                                                            AlwaysStoppedAnimation<
+                                                                Color>(
+                                                          _mcForest.withOpacity(
+                                                              0.75),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 12),
+                                                    Text(
+                                                      'Moody is crafting something special...',
+                                                      style:
+                                                          GoogleFonts.poppins(
+                                                        fontSize: 15,
+                                                        color: const Color(
+                                                            0xFF2D3748),
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontStyle:
+                                                            FontStyle.italic,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                          ),
+
+                          // Quick action button if conversation has started - Enhanced
+                          if (_chatMessages.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 24, vertical: 12),
+                              child: Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      const Color(0xFF2A6049).withOpacity(0.05),
+                                      const Color(0xFF2A6049).withOpacity(0.02),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: const Color(0xFF2A6049)
+                                        .withOpacity(0.2),
+                                  ),
+                                ),
+                                child: OutlinedButton.icon(
+                                  onPressed: () {
+                                    Navigator.pop(context); // Close chat
+                                    _suggestMoodsFromChat(); // Auto-suggest moods from conversation
+
+                                    // Small delay to let mood selection UI update, then generate plan
+                                    Future.delayed(
+                                        const Duration(milliseconds: 300), () {
+                                      _generatePlan(); // Automatically start plan generation
+                                    });
+                                  },
+                                  icon:
+                                      const Icon(Icons.auto_awesome, size: 20),
+                                  label: Text(
+                                    '✨ Create My Perfect Plan',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: const Color(0xFF2A6049),
+                                    backgroundColor: Colors.transparent,
+                                    side: BorderSide.none,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
                                     ),
                                   ),
                                 ),
                               ),
-                            ],
+                            ),
+
+                          // Enhanced input area with modern styling
+                          Container(
+                            padding: EdgeInsets.only(
+                              left: 24,
+                              right: 24,
+                              top: 24,
+                              bottom:
+                                  24 + MediaQuery.of(context).viewInsets.bottom,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border(
+                                top: BorderSide(color: Colors.grey[100]!),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.03),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, -4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: _chatController,
+                                    decoration: InputDecoration(
+                                      hintText: 'What\'s your mood today?',
+                                      hintStyle: GoogleFonts.poppins(
+                                        color: Colors.grey[500],
+                                        fontSize: 16,
+                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                        vertical: 18,
+                                      ),
+                                      filled: true,
+                                      fillColor: const Color(0xFFF8FAFC),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(28),
+                                        borderSide: BorderSide(
+                                          color: _mcParchment,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(28),
+                                        borderSide: const BorderSide(
+                                          color: _mcForest,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      prefixIcon: Padding(
+                                        padding: const EdgeInsets.only(left: 4),
+                                        child: Icon(
+                                          Icons.psychology_outlined,
+                                          color: _mcForest.withOpacity(0.75),
+                                          size: 22,
+                                        ),
+                                      ),
+                                    ),
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      color: _mcCharcoal,
+                                    ),
+                                    onSubmitted: (text) =>
+                                        _sendChatMessageInModal(
+                                            text, setModalState),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+
+                                // Enhanced send button with modern styling
+                                Container(
+                                  width: 52,
+                                  height: 52,
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [_mcForest, _mcForest],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(26),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: _mcForest.withOpacity(0.3),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(26),
+                                      onTap: _isAILoading
+                                          ? null
+                                          : () => _sendChatMessageInModal(
+                                              _chatController.text,
+                                              setModalState),
+                                      child: Center(
+                                        child: _isAILoading
+                                            ? const SizedBox(
+                                                width: 22,
+                                                height: 22,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2.5,
+                                                  color: Colors.white,
+                                                ),
+                                              )
+                                            : const Icon(
+                                                Icons.send_rounded,
+                                                color: Colors.white,
+                                                size: 22,
+                                              ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
-            );
-            },
+                );
+              },
             );
           },
         );
@@ -1196,9 +1277,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
       child: Row(
-        mainAxisAlignment: message.isUser 
-          ? MainAxisAlignment.end 
-          : MainAxisAlignment.start,
+        mainAxisAlignment:
+            message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!message.isUser) ...[
@@ -1216,41 +1296,42 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
             ),
             const SizedBox(width: 10),
           ],
-          
+
           // Message bubble with modern styling
           Flexible(
             child: Column(
-              crossAxisAlignment: message.isUser 
-                ? CrossAxisAlignment.end 
-                : CrossAxisAlignment.start,
+              crossAxisAlignment: message.isUser
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 Container(
                   constraints: BoxConstraints(
                     maxWidth: MediaQuery.of(context).size.width * 0.72,
                     minWidth: 80,
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                   decoration: BoxDecoration(
                     gradient: message.isUser
-                      ? const LinearGradient(
-                          colors: [_mcForest, Color(0xFF347558)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        )
-                      : const LinearGradient(
-                          colors: [_mcForestTint, _mcSkyTint],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                        ? const LinearGradient(
+                            colors: [_mcForest, Color(0xFF347558)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          )
+                        : const LinearGradient(
+                            colors: [_mcForestTint, _mcSkyTint],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(20),
                       topRight: const Radius.circular(20),
-                      bottomLeft: message.isUser 
-                        ? const Radius.circular(20) 
-                        : const Radius.circular(4),
-                      bottomRight: message.isUser 
-                        ? const Radius.circular(4) 
-                        : const Radius.circular(20),
+                      bottomLeft: message.isUser
+                          ? const Radius.circular(20)
+                          : const Radius.circular(4),
+                      bottomRight: message.isUser
+                          ? const Radius.circular(4)
+                          : const Radius.circular(20),
                     ),
                     boxShadow: [
                       BoxShadow(
@@ -1268,13 +1349,11 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                       fontSize: 16,
                       height: 1.4,
                       fontWeight: FontWeight.w500,
-                      color: message.isUser
-                        ? Colors.white
-                        : _mcCharcoal,
+                      color: message.isUser ? Colors.white : _mcCharcoal,
                     ),
                   ),
                 ),
-                
+
                 // Timestamp with modern styling
                 Padding(
                   padding: const EdgeInsets.only(top: 6, left: 6, right: 6),
@@ -1290,7 +1369,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
               ],
             ),
           ),
-          
+
           if (message.isUser) ...[
             const SizedBox(width: 10),
             // User's Profile Picture with modern styling
@@ -1337,7 +1416,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   String _formatMessageTime(DateTime timestamp) {
     final now = MoodyClock.now();
     final difference = now.difference(timestamp);
-    
+
     if (difference.inMinutes < 1) {
       return 'now';
     } else if (difference.inMinutes < 60) {
@@ -1350,7 +1429,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   }
 
   // Send chat message to Moody AI (for modal)
-  Future<void> _sendChatMessageInModal(String message, StateSetter setModalState) async {
+  Future<void> _sendChatMessageInModal(
+      String message, StateSetter setModalState) async {
     if (message.trim().isEmpty || _isAILoading) return;
 
     print('🚀 Starting chat message process: "${message.trim()}"');
@@ -1374,7 +1454,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       print('💬 Sending message to Moody AI: $message');
       print('🔧 Conversation ID: $_conversationId');
       print('🎭 Selected moods: ${_selectedMoods.toList()}');
-      
+
       final loc = await _getUserLocation();
       final response = await WanderMoodAIService.chat(
         message: message.trim(),
@@ -1404,15 +1484,15 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
 
       print('✅ AI response added to chat successfully');
       print('📊 Total messages in chat: ${_chatMessages.length}');
-
     } catch (e, stackTrace) {
       print('❌ Chat error occurred: $e');
       print('📋 Stack trace: $stackTrace');
-      
+
       // Add error message to chat
       setModalState(() {
         _chatMessages.add(ChatMessage(
-          message: 'Oops! I\'m having trouble connecting right now. Can you try again? 🤔',
+          message:
+              'Oops! I\'m having trouble connecting right now. Can you try again? 🤔',
           isUser: false,
           timestamp: MoodyClock.now(),
         ));
@@ -1467,7 +1547,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       }
     } catch (e) {
       print('❌ Chat error: $e');
-      
+
       // Add error message to chat
       if (mounted) {
         setState(() {
@@ -1486,7 +1566,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       }
     }
   }
-  
+
   // Add method to hide the conversation
   void _hideMoodyConversation() {
     setState(() {
@@ -1499,14 +1579,14 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     final hour = MoodyClock.now().hour;
     final isWeekend = MoodyClock.now().weekday >= 6;
     final dayOfWeek = MoodyClock.now().weekday;
-    
+
     setState(() {
       // Contextual greetings based on time and day
       if (hour >= 5 && hour < 10) {
         _personalizedGreeting = "Rise and shine! ☀️";
-        _contextualSubtext = isWeekend 
-          ? "Perfect weekend morning for adventures"
-          : "Ready to make today amazing?";
+        _contextualSubtext = isWeekend
+            ? "Perfect weekend morning for adventures"
+            : "Ready to make today amazing?";
       } else if (hour >= 10 && hour < 14) {
         _personalizedGreeting = "Hey there! 👋";
         _contextualSubtext = "I've been thinking about your perfect day";
@@ -1515,9 +1595,9 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         _contextualSubtext = "What's on your mind for today?";
       } else if (hour >= 18 && hour < 22) {
         _personalizedGreeting = "Evening explorer! 🌆";
-        _contextualSubtext = isWeekend 
-          ? "Weekend nights are the best for discoveries"
-          : "How did your day treat you?";
+        _contextualSubtext = isWeekend
+            ? "Weekend nights are the best for discoveries"
+            : "How did your day treat you?";
       } else {
         _personalizedGreeting = "Night owl! 🌙";
         _contextualSubtext = "Late night adventures calling?";
@@ -1544,7 +1624,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       dailyMoodState,
     );
   }
-  
+
   /// Check if user has seen the Moody intro overlay
   Future<bool> _hasSeenIntroOverlay() async {
     try {
@@ -1557,7 +1637,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       return false; // Default to showing intro if check fails
     }
   }
-  
+
   /// Build the mood selection screen (moved from build method)
   Widget _buildMoodSelectionScreen(
     BuildContext context,
@@ -1567,431 +1647,469 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     AsyncValue<WeatherData?> weatherAsync,
     DailyMoodState dailyMoodState,
   ) {
-    
     return Stack(
       children: [
         Scaffold(
           key: _scaffoldKey,
           drawer: const ProfileDrawer(),
-      body: SwirlBackground(
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Row 1: location + weather (no pills, plain text + icons)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: InkWell(
-                        onTap: () => _showLocationDialog(context, ref),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 6),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.location_on,
-                                color: Color(0xFF2A6049),
-                                size: 18,
-                              ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Consumer(
-                                  builder: (context, ref, child) {
-                                    final locationAsync = ref.watch(locationNotifierProvider);
-                                    return locationAsync.when(
-                                      data: (location) => Text(
-                                        location ?? '...',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14,
-                                          color: Colors.black87,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      loading: () => Text(
-                                        '...',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14,
-                                          color: Colors.black87,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                      error: (_, __) => Text(
-                                        'Location',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14,
-                                          color: Colors.black87,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              const Icon(
-                                Icons.keyboard_arrow_down,
-                                color: Colors.black54,
-                                size: 18,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () => _showWeatherDetails(context),
-                      borderRadius: BorderRadius.circular(8),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-                        child: Consumer(
-                          builder: (context, ref, child) {
-                            final weatherAsync = ref.watch(weatherProvider);
-                            return weatherAsync.when(
-                              data: (weather) {
-                                if (weather == null) return _buildDefaultWeather();
-                                return Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Image.network(
-                                      weather.iconUrl,
-                                      width: 20,
-                                      height: 20,
-                                      errorBuilder: (_, __, ___) => Icon(
-                                        _getWeatherIcon(weather.condition),
-                                        color: const Color(0xFFFFB300),
-                                        size: 18,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${weather.temperature.round()}°',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 14,
-                                        color: Colors.black87,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                              loading: () => _buildDefaultWeather(),
-                              error: (_, __) => _buildDefaultWeather(),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Greeting: based on onboarding communication style (e.g. "Hey bestie!" / "Hey, Name!" / "Good evening")
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                child: Consumer(
-                  builder: (context, ref, _) {
-                    final styleState = ref.watch(communicationStyleProvider);
-                    final profileData = ref.watch(profileProvider);
-                    final firstName = profileData.valueOrNull?.fullName?.split(' ').first;
-                    final text = _getStyleBasedGreeting(context, styleState.style, firstName);
-                    return Text(
-                      text,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.3,
-                        color: const Color(0xFF1A202C),
-                        height: 1.25,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 4),
-              // Hero: "What's your mood" + time-based "this morning/afternoon/evening/tonight?" (green, italic)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)!.moodHubWhatIsYourMood,
-                            style: GoogleFonts.poppins(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF1A202C),
-                              height: 1.25,
-                            ),
-                          ),
-                          Text(
-                            _getTimeOfDayPhrase(context),
-                            style: GoogleFonts.poppins(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w700,
-                              fontStyle: FontStyle.italic,
-                              color: const Color(0xFF2A6049), // wmForest — v2 design system
-                              height: 1.25,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: MoodyCharacter(
-                        size: 96,
-                        mood: _selectedMoods.isEmpty ? 'default' : 'happy',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Contextual banner - time-based localized message
-              Builder(
-                builder: (context) {
-                  final l10n = AppLocalizations.of(context)!;
-                  final hour = MoodyClock.now().hour;
-                  final message = hour >= 5 && hour < 12
-                      ? l10n.moodHubBannerMorning
-                      : hour >= 12 && hour < 17
-                          ? l10n.moodHubBannerAfternoon
-                          : hour >= 17 && hour < 21
-                              ? l10n.moodHubBannerEvening
-                              : l10n.moodHubBannerNight;
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 24),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF26273A).withOpacity(0.9), // dark neutral, not green
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.12),
-                          blurRadius: 14,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Text(
-                          '😊',
-                          style: TextStyle(fontSize: 18),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            message,
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white, // white letters on dark card
-                              height: 1.3,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Put mood tiles and button in a single scrollable container
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          backgroundColor:
+              _mcCream, // wmCream — match Explore / My Day (solid, no swirl)
+          body: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Row 1: location + weather (no pills, plain text + icons)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                  child: Row(
                     children: [
-                      // Selected moods indicator
-                      if (_selectedMoods.isNotEmpty) ...[
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context)!.moodHubSelectedMoods,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 18,
-                                  color: Colors.black54,
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => _showLocationDialog(context, ref),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.location_on,
+                                  color: Color(0xFF2A6049),
+                                  size: 18,
                                 ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  _selectedMoods.join(', '),
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 18,
-                                    color: const Color(0xFF4CAF50),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 2,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-
-                      // Grid of mood tiles - Dynamic from database with fallback
-                      Consumer(
-                        builder: (context, ref, _) {
-                          final moodOptionsAsync = ref.watch(moodOptionsProvider);
-                          
-                          return moodOptionsAsync.when(
-                            data: (moodOptions) {
-                              // Use database mood options if available, otherwise use fallback
-                              final finalMoodOptions = moodOptions.isNotEmpty ? moodOptions : _getFallbackMoodOptions();
-                              
-                              if (finalMoodOptions.isEmpty) {
-                                return Container(
-                                  height: 200,
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.mood,
-                                          size: 48,
-                                          color: Colors.grey[400],
-                                        ),
-                                        const SizedBox(height: 16),
-                                        Text(
-                                          AppLocalizations.of(context)!.moodHubNoMoodOptions,
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Consumer(
+                                    builder: (context, ref, child) {
+                                      final locationAsync =
+                                          ref.watch(locationNotifierProvider);
+                                      return locationAsync.when(
+                                        data: (location) => Text(
+                                          location ?? '...',
                                           style: GoogleFonts.poppins(
-                                            fontSize: 16,
-                                            color: Colors.grey[600],
+                                            fontSize: 14,
+                                            color: Colors.black87,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        loading: () => Text(
+                                          '...',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 14,
+                                            color: Colors.black87,
+                                            fontWeight: FontWeight.w500,
                                           ),
                                         ),
-                                      ],
-                                    ),
+                                        error: (_, __) => Text(
+                                          'Location',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 14,
+                                            color: Colors.black87,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
-                                );
-                              }
-                              
-                              return GridView.count(
-                                crossAxisCount: 4, // Back to 4 columns for balanced proportions
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                                mainAxisSpacing: 14, // Slightly increased from original 12
-                                crossAxisSpacing: 14, // Slightly increased from original 16
-                                childAspectRatio: 0.95, // Slightly taller cards (was 1.0)
-                                children: finalMoodOptions.map((mood) {
-                                  final isSelected = _selectedMoods.contains(mood.label);
-                                  return GestureDetector(
-                                    onTap: () => _toggleMood(mood),
-                                    child: _buildMoodTile(context, mood, isSelected),
+                                ),
+                                const Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: Colors.black54,
+                                  size: 18,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () => _showWeatherDetails(context),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6, horizontal: 4),
+                          child: Consumer(
+                            builder: (context, ref, child) {
+                              final weatherAsync = ref.watch(weatherProvider);
+                              return weatherAsync.when(
+                                data: (weather) {
+                                  if (weather == null)
+                                    return _buildDefaultWeather();
+                                  return Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Image.network(
+                                        weather.iconUrl,
+                                        width: 20,
+                                        height: 20,
+                                        errorBuilder: (_, __, ___) => Icon(
+                                          _getWeatherIcon(weather.condition),
+                                          color: const Color(0xFFFFB300),
+                                          size: 18,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${weather.temperature.round()}°',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 14,
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
                                   );
-                                }).toList(),
+                                },
+                                loading: () => _buildDefaultWeather(),
+                                error: (_, __) => _buildDefaultWeather(),
                               );
                             },
-                            loading: () => _buildFallbackMoodGrid(), // Show fallback while loading
-                            error: (error, stack) => _buildFallbackMoodGrid(), // Show fallback on error
-                          );
-                        },
+                          ),
+                        ),
                       ),
-                      
-                      // CTA Button directly below grid in the same scroll view
+                    ],
+                  ),
+                ),
+                // Greeting: based on onboarding communication style (e.g. "Hey bestie!" / "Hey, Name!" / "Good evening")
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  child: Consumer(
+                    builder: (context, ref, _) {
+                      final styleState = ref.watch(communicationStyleProvider);
+                      final profileData = ref.watch(profileProvider);
+                      final firstName =
+                          profileData.valueOrNull?.fullName?.split(' ').first;
+                      final text = _getStyleBasedGreeting(
+                          context, styleState.style, firstName);
+                      return Text(
+                        text,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
+                          color: const Color(0xFF1A202C),
+                          height: 1.25,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // Hero: "What's your mood" + time-based "this morning/afternoon/evening/tonight?" (green, italic)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              AppLocalizations.of(context)!
+                                  .moodHubWhatIsYourMood,
+                              style: GoogleFonts.poppins(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF1A202C),
+                                height: 1.25,
+                              ),
+                            ),
+                            Text(
+                              _getTimeOfDayPhrase(context),
+                              style: GoogleFonts.poppins(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                                fontStyle: FontStyle.italic,
+                                color: const Color(
+                                    0xFF2A6049), // wmForest — v2 design system
+                                height: 1.25,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
                       Container(
-                        width: double.infinity,
-                        height: 56,
-                        margin: const EdgeInsets.only(left: 16, right: 16, bottom: 12, top: 8),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(28),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF2A6049).withOpacity(0.25), // wmForest glow
-                              blurRadius: 8,
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 16,
                               offset: const Offset(0, 4),
                             ),
                           ],
                         ),
-                        child: ElevatedButton(
-                          onPressed: _selectedMoods.isEmpty || _isAILoading ? null : _generatePlan,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _selectedMoods.isEmpty || _isAILoading
-                                ? const Color(0xFFD0D0D0) // Light gray for inactive/loading state
-                                : const Color(0xFF2A6049), // wmForest — v2 design system
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50),
-                            ),
-                            elevation: 0,
+                        child: MoodyCharacter(
+                          size: 96,
+                          mood: _selectedMoods.isEmpty ? 'default' : 'happy',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Contextual banner - time-based localized message
+                Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context)!;
+                    final hour = MoodyClock.now().hour;
+                    final message = hour >= 5 && hour < 12
+                        ? l10n.moodHubBannerMorning
+                        : hour >= 12 && hour < 17
+                            ? l10n.moodHubBannerAfternoon
+                            : hour >= 17 && hour < 21
+                                ? l10n.moodHubBannerEvening
+                                : l10n.moodHubBannerNight;
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 24),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF26273A)
+                            .withOpacity(0.9), // dark neutral, not green
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.12),
+                            blurRadius: 14,
+                            offset: const Offset(0, 4),
                           ),
-                          child: _isAILoading
-                            ? Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
+                        ],
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text(
+                            '😊',
+                            style: TextStyle(fontSize: 18),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              message,
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color:
+                                    Colors.white, // white letters on dark card
+                                height: 1.3,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Put mood tiles and button in a single scrollable container
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Selected moods indicator
+                        if (_selectedMoods.isNotEmpty) ...[
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  AppLocalizations.of(context)!
+                                      .moodHubSelectedMoods,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 18,
+                                    color: Colors.black54,
                                   ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    AppLocalizations.of(context)!.moodHubMoodyThinking,
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    _selectedMoods.join(', '),
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 18,
+                                      color: const Color(0xFF4CAF50),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+
+                        // Grid of mood tiles - Dynamic from database with fallback
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final moodOptionsAsync =
+                                ref.watch(moodOptionsProvider);
+
+                            return moodOptionsAsync.when(
+                              data: (moodOptions) {
+                                // Use database mood options if available, otherwise use fallback
+                                final finalMoodOptions = moodOptions.isNotEmpty
+                                    ? moodOptions
+                                    : _getFallbackMoodOptions();
+
+                                if (finalMoodOptions.isEmpty) {
+                                  return Container(
+                                    height: 200,
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.mood,
+                                            size: 48,
+                                            color: Colors.grey[400],
+                                          ),
+                                          const SizedBox(height: 16),
+                                          Text(
+                                            AppLocalizations.of(context)!
+                                                .moodHubNoMoodOptions,
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 16,
+                                              color: Colors.grey[600],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }
+
+                                return GridView.count(
+                                  crossAxisCount:
+                                      4, // Back to 4 columns for balanced proportions
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 16),
+                                  mainAxisSpacing:
+                                      14, // Slightly increased from original 12
+                                  crossAxisSpacing:
+                                      14, // Slightly increased from original 16
+                                  childAspectRatio:
+                                      0.95, // Slightly taller cards (was 1.0)
+                                  children: finalMoodOptions.map((mood) {
+                                    final isSelected =
+                                        _selectedMoods.contains(mood.label);
+                                    return GestureDetector(
+                                      onTap: () => _toggleMood(mood),
+                                      child: _buildMoodTile(
+                                          context, mood, isSelected),
+                                    );
+                                  }).toList(),
+                                );
+                              },
+                              loading: () =>
+                                  _buildFallbackMoodGrid(), // Show fallback while loading
+                              error: (error, stack) =>
+                                  _buildFallbackMoodGrid(), // Show fallback on error
+                            );
+                          },
+                        ),
+
+                        // CTA Button directly below grid in the same scroll view
+                        Container(
+                          width: double.infinity,
+                          height: 56,
+                          margin: const EdgeInsets.only(
+                              left: 16, right: 16, bottom: 12, top: 8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(28),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF2A6049)
+                                    .withOpacity(0.25), // wmForest glow
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton(
+                            onPressed: _selectedMoods.isEmpty || _isAILoading
+                                ? null
+                                : _generatePlan,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _selectedMoods.isEmpty ||
+                                      _isAILoading
+                                  ? const Color(
+                                      0xFFD0D0D0) // Light gray for inactive/loading state
+                                  : const Color(
+                                      0xFF2A6049), // wmForest — v2 design system
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: _isAILoading
+                                ? Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        AppLocalizations.of(context)!
+                                            .moodHubMoodyThinking,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : Text(
+                                    AppLocalizations.of(context)!
+                                        .moodHubCreatePlan,
                                     style: GoogleFonts.poppins(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                ],
-                              )
-                            : Text(
-                            AppLocalizations.of(context)!.moodHubCreatePlan,
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
                           ),
                         ),
-                      ),
-                      
-                      // Back to Hub button - always show when on mood selection screen
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 30),
-                        child: TextButton(
-                          onPressed: () async {
-                            // MoodHomeScreen always shows this full-screen mood picker; updating
-                            // provider alone does not switch UI. Navigate to main Moody hub tab.
-                            if (dailyMoodState.isInMoodChangeMode) {
-                              await ref
-                                  .read(dailyMoodStateNotifierProvider.notifier)
-                                  .returnToHub();
-                            }
-                            if (!context.mounted) return;
-                            context.go('/main?tab=2');
-                          },
+
+                        // Back to Hub button - always show when on mood selection screen
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 16, right: 16, bottom: 30),
+                          child: TextButton(
+                            onPressed: () async {
+                              // MoodHomeScreen always shows this full-screen mood picker; updating
+                              // provider alone does not switch UI. Navigate to main Moody hub tab.
+                              if (dailyMoodState.isInMoodChangeMode) {
+                                await ref
+                                    .read(
+                                        dailyMoodStateNotifierProvider.notifier)
+                                    .returnToHub();
+                              }
+                              if (!context.mounted) return;
+                              context.go('/main?tab=2');
+                            },
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.black54,
                               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -2007,7 +2125,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  AppLocalizations.of(context)!.moodHubBackToHub,
+                                  AppLocalizations.of(context)!
+                                      .moodHubBackToHub,
                                   style: GoogleFonts.poppins(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,
@@ -2018,16 +2137,15 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                             ),
                           ),
                         ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
-        ),
-        
+
         // Add the MoodyConversationScreen overlay when active
         if (_showMoodyConversation)
           MoodyConversationScreen(
@@ -2041,24 +2159,38 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   String _localizedMoodLabel(BuildContext context, String label) {
     final l10n = AppLocalizations.of(context)!;
     switch (label.toLowerCase()) {
-      case 'happy': return l10n.moodHubMoodHappy;
-      case 'adventurous': return l10n.moodHubMoodAdventurous;
-      case 'relaxed': return l10n.moodHubMoodRelaxed;
-      case 'energetic': return l10n.moodHubMoodEnergetic;
-      case 'romantic': return l10n.moodHubMoodRomantic;
-      case 'social': return l10n.moodHubMoodSocial;
-      case 'cultural': return l10n.moodHubMoodCultural;
-      case 'curious': return l10n.moodHubMoodCurious;
-      case 'cozy': return l10n.moodHubMoodCozy;
-      case 'excited': return l10n.moodHubMoodExcited;
-      case 'foody': return l10n.moodHubMoodFoody;
-      case 'surprise': return l10n.moodHubMoodSurprise;
-      default: return label;
+      case 'happy':
+        return l10n.moodHubMoodHappy;
+      case 'adventurous':
+        return l10n.moodHubMoodAdventurous;
+      case 'relaxed':
+        return l10n.moodHubMoodRelaxed;
+      case 'energetic':
+        return l10n.moodHubMoodEnergetic;
+      case 'romantic':
+        return l10n.moodHubMoodRomantic;
+      case 'social':
+        return l10n.moodHubMoodSocial;
+      case 'cultural':
+        return l10n.moodHubMoodCultural;
+      case 'curious':
+        return l10n.moodHubMoodCurious;
+      case 'cozy':
+        return l10n.moodHubMoodCozy;
+      case 'excited':
+        return l10n.moodHubMoodExcited;
+      case 'foody':
+        return l10n.moodHubMoodFoody;
+      case 'surprise':
+        return l10n.moodHubMoodSurprise;
+      default:
+        return label;
     }
   }
 
   /// Builds a single mood tile with pastel base, frosted-glass overlay, and soft floating shadow.
-  Widget _buildMoodTile(BuildContext context, MoodOption mood, bool isSelected) {
+  Widget _buildMoodTile(
+      BuildContext context, MoodOption mood, bool isSelected) {
     const double tileRadius = 20;
     // Use mood color as-is (pastel palette); glass overlay adds the sheen
     final Color pastelBase = mood.color;
@@ -2297,7 +2429,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   // Build fallback mood grid widget
   Widget _buildFallbackMoodGrid() {
     final fallbackMoodOptions = _getFallbackMoodOptions();
-    
+
     return GridView.count(
       crossAxisCount: 4, // Back to 4 columns for balanced proportions
       shrinkWrap: true,
@@ -2337,27 +2469,28 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       ],
     );
   }
-  
+
   // Helper method to determine weather icon based on condition
   IconData _getWeatherIcon(String condition) {
     final lowercaseCondition = condition.toLowerCase();
     if (lowercaseCondition.contains('cloud')) {
       return Icons.cloud;
-    } else if (lowercaseCondition.contains('rain') || lowercaseCondition.contains('drizzle')) {
+    } else if (lowercaseCondition.contains('rain') ||
+        lowercaseCondition.contains('drizzle')) {
       return Icons.water_drop;
     } else if (lowercaseCondition.contains('snow')) {
       return Icons.ac_unit;
-    } else if (lowercaseCondition.contains('storm') || lowercaseCondition.contains('thunder')) {
+    } else if (lowercaseCondition.contains('storm') ||
+        lowercaseCondition.contains('thunder')) {
       return Icons.thunderstorm;
-    } else if (lowercaseCondition.contains('mist') || lowercaseCondition.contains('fog')) {
+    } else if (lowercaseCondition.contains('mist') ||
+        lowercaseCondition.contains('fog')) {
       return Icons.water;
     } else {
       return Icons.wb_sunny;
     }
   }
 }
-
-
 
 class ChatMessage {
   final String message;
@@ -2369,4 +2502,4 @@ class ChatMessage {
     required this.isUser,
     required this.timestamp,
   });
-} 
+}

@@ -21,6 +21,10 @@ import 'package:wandermood/core/widgets/data_source_badge.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:wandermood/core/services/distance_service.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/utils/places_cache_utils.dart';
+import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
+import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// WanderMood v2 — Place detail (SCREEN 8)
 const Color _pdWmWhite = Color(0xFFFFFFFF);
@@ -82,7 +86,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     // Prevent rebuild loops: If we have a cached place and it matches, use it immediately
     // Don't do any provider reads/watches that could trigger rebuilds
     if (_cachedPlace != null && _cachedPlace!.id == widget.placeId && _isInitialized) {
-      return _buildWithPlace(_cachedPlace!);
+      _syncResolvedPlace(_cachedPlace!);
+      return Scaffold(
+        backgroundColor: const Color(0xFFF5F0E8),
+        body: _buildPlaceDetail(_cachedPlace!),
+        bottomNavigationBar: _buildBottomActionBar(_cachedPlace!),
+      );
     }
     
     // Resolve from Supabase places_cache aggregate only (same as Moody Hub / My Day free time).
@@ -97,10 +106,10 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               final place = places.firstWhere(
                 (p) => p.id == widget.placeId,
               );
-              // Cache the place
               _cachedPlace = place;
+              _syncResolvedPlace(place);
               if (kDebugMode) debugPrint('✅ Place found in Edge Function cache');
-              return _buildWithPlace(place);
+              return _buildPlaceDetail(place);
             } catch (e) {
               // Place not found in Edge Function cache - try to fetch it directly if it's a Google Place ID
               if (widget.placeId.startsWith('google_')) {
@@ -117,9 +126,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     }
                     if (snapshot.hasData && snapshot.data != null) {
                       final place = snapshot.data!;
-                      // Cache the place
                       _cachedPlace = place;
-                      return _buildWithPlace(place);
+                      _syncResolvedPlace(place);
+                      return _buildPlaceDetail(place);
                     }
                     return _buildErrorState(Exception('Place not found and could not be fetched'));
                   },
@@ -141,21 +150,14 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       );
   }
   
-  /// Helper method to build with a place (avoids duplicate code)
-  Widget _buildWithPlace(Place place) {
-    // Update current place for booking button (only if changed)
+  /// Side effects when the resolved [Place] is known (reviews, booking state).
+  void _syncResolvedPlace(Place place) {
     if (_currentPlace?.id != place.id) {
       _currentPlace = place;
-      _cachedPlace = place; // Ensure cached place is set for booking button
+      _cachedPlace = place;
       _hasAttemptedReviewFetch = false;
       _realReviews = [];
     }
-    // Return the full Scaffold structure with booking button
-    return Scaffold(
-        backgroundColor: const Color(0xFFF5F0E8),
-        body: _buildPlaceDetail(place),
-        bottomNavigationBar: _buildBottomActionBar(place),
-      );
   }
 
   /// Book when bookable; otherwise primary directions CTA (v2 SCREEN 8).
@@ -875,6 +877,13 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
 
   String _distanceLineForPlace(Place place) {
+    final lat = place.location.lat;
+    final lng = place.location.lng;
+    final placeHasCoords =
+        lat.abs() > 1e-6 || lng.abs() > 1e-6;
+    if (!placeHasCoords) {
+      return '—';
+    }
     return ref.watch(userLocationProvider).when(
       data: (pos) {
         if (pos == null) {
@@ -883,9 +892,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         final km = DistanceService.calculateDistance(
           pos.latitude,
           pos.longitude,
-          place.location.lat,
-          place.location.lng,
+          lat,
+          lng,
         );
+        if (km > 2500) {
+          return '—';
+        }
         return DistanceService.formatDistance(km);
       },
       loading: () => '…',
@@ -2636,45 +2648,55 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
 
   Widget _buildErrorState(Object error) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      backgroundColor: Colors.transparent,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red[300],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Place not found',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+    return SafeArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () => context.pop(),
+            alignment: Alignment.centerLeft,
+          ),
+          Expanded(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Colors.red[300],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Place not found',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      error.toString(),
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () => context.pop(),
+                      child: const Text('Go Back'),
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              error.toString(),
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => context.pop(),
-              child: const Text('Go Back'),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -2870,12 +2892,44 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return isFreeType;
   }
 
-  /// Fetch place directly from Google Places API if not found in cache
+  /// Per-place `places_cache` row (if moody wrote one), then Google Places API.
   Future<Place> _fetchPlaceDirectly(String placeId) async {
     try {
+      final dailyState = ref.read(dailyMoodStateNotifierProvider);
+      final mood = dailyState.currentMood ?? 'adventurous';
+      final location = ref.read(locationNotifierProvider).valueOrNull;
+      if (location != null && location.trim().isNotEmpty) {
+        final raw = await PlacesCacheUtils.tryLoadExplorePlaceData(
+          Supabase.instance.client,
+          mood,
+          location,
+          placeId,
+        );
+        if (raw != null) {
+          var fromCache = PlacesCacheUtils.placeFromMoodyExploreCard(raw);
+          if (fromCache.id.isEmpty) {
+            fromCache = fromCache.copyWith(id: placeId);
+          }
+          final hasName = fromCache.name.trim().isNotEmpty &&
+              fromCache.name.trim().toLowerCase() != 'unknown place';
+          final hasCoords = fromCache.location.lat.abs() > 1e-6 ||
+              fromCache.location.lng.abs() > 1e-6;
+          if (hasName && hasCoords) {
+            if (kDebugMode) {
+              debugPrint(
+                '✅ Place detail from per-place places_cache: ${fromCache.name}',
+              );
+            }
+            return fromCache;
+          }
+        }
+      }
+
       final placesService = ref.read(placesServiceProvider.notifier);
       final place = await placesService.getPlaceById(placeId);
-      if (kDebugMode) debugPrint('✅ Successfully fetched place directly: ${place.name}');
+      if (kDebugMode) {
+        debugPrint('✅ Successfully fetched place directly: ${place.name}');
+      }
       return place;
     } catch (e) {
       if (kDebugMode) debugPrint('❌ Error fetching place directly: $e');

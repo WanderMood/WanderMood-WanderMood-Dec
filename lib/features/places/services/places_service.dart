@@ -339,11 +339,11 @@ class PlacesService extends _$PlacesService {
       }
     } catch (e) {
       debugPrint('❌ Error getting place by ID: $e');
-      // Return a fallback place
+      // Keep the requested id so navigation, share, and cache keys stay consistent.
       return Place(
-        id: 'error',
-        name: 'Error Loading Place',
-        address: 'Please try again later',
+        id: placeId,
+        name: 'Place details unavailable',
+        address: 'We could not load full details. Enable Maps billing or open this spot from Explore after it is cached.',
         location: const PlaceLocation(lat: 0, lng: 0),
       );
     }

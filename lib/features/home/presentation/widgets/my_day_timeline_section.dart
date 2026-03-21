@@ -52,12 +52,14 @@ class MyDayTimelineSection extends StatelessWidget {
     );
 
     return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: isFirstSection ? 0 : 24),
+      child: Transform.translate(
+        offset: Offset(0, isFirstSection ? -10 : 0),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: isFirstSection ? 0 : 24),
             GestureDetector(
               onTap: allCompleted ? onToggleCollapse : null,
               child: Row(
@@ -150,7 +152,8 @@ class MyDayTimelineSection extends StatelessWidget {
                       .scale(begin: const Offset(0.9, 0.9), duration: 400.ms),
                 );
               }),
-          ],
+            ],
+          ),
         ),
       ),
     );

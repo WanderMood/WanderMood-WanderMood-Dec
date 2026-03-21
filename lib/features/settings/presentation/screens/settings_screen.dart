@@ -7,6 +7,7 @@ import 'package:wandermood/core/domain/models/user_preferences.dart';
 import 'package:wandermood/features/settings/presentation/providers/user_preferences_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/core/constants/legal_urls.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -334,7 +335,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _openPrivacyPolicy() async {
     final l10n = AppLocalizations.of(context)!;
     try {
-      final url = Uri.parse('https://wandermood.com/privacy-policy');
+      final url = LegalUrls.privacyPolicy;
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
@@ -363,7 +364,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _openTermsOfService() async {
     final l10n = AppLocalizations.of(context)!;
     try {
-      final url = Uri.parse('https://wandermood.com/terms-of-service');
+      final url = LegalUrls.termsOfService;
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {

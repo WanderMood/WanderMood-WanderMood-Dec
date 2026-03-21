@@ -1,6 +1,3 @@
-import 'dart:ui' show ImageFilter;
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,7 +13,6 @@ import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_pro
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:wandermood/features/home/presentation/widgets/hoe_was_je_dag_sheet.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -149,97 +145,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     _idleGateCompleted = true;
   }
 
-  /// Debug-only: open any [MoodyIdleState] for UI review (stripped from release).
-  Future<void> _showMoodyIdleStatePreviewPicker(BuildContext context) async {
-    final prefs = ref.read(preferencesProvider);
-    final prefsMap = <String, dynamic>{
-      'communication_style': prefs.communicationStyle,
-      'selected_moods': prefs.selectedMoods,
-      'travel_interests': prefs.travelInterests,
-      'planning_pace': prefs.planningPace,
-      'budget_level': prefs.budgetLevel,
-      'home_base': prefs.homeBase,
-      'travel_styles': prefs.travelStyles,
-    };
-
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetCtx) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                child: Text(
-                  'Preview Moody idle (debug)',
-                  style: Theme.of(sheetCtx).textTheme.titleMedium,
-                ),
-              ),
-              for (final s in MoodyIdleState.values)
-                ListTile(
-                  title: Text(s.name),
-                  onTap: () {
-                    Navigator.of(sheetCtx).pop();
-                    Navigator.of(context).push<void>(
-                      PageRouteBuilder<void>(
-                        opaque: true,
-                        fullscreenDialog: true,
-                        pageBuilder: (ctx, _, __) => MoodyIdleScreen(
-                          idleState: s,
-                          userPreferences: prefsMap,
-                          topInterest: null,
-                          afternoonInterestCategory:
-                              s == MoodyIdleState.afternoon ? 'food' : null,
-                          onComplete: () => Navigator.of(ctx).pop(),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  /// Debug-only: open [HoeWasJeDagSheet] without 20:00 / DB gates (stripped from release).
-  Future<void> _showHoeWasJeDagDebugPreview(BuildContext context) async {
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) {
-      debugPrint('HoeWasJeDag debug: no signed-in user');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sign in to preview Hoe was je dag')),
-        );
-      }
-      return;
-    }
-
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.72),
-      useSafeArea: true,
-      builder: (sheetContext) {
-        return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: HoeWasJeDagSheet(
-            completedActivities: const [
-              'Debug: museum bezoek',
-              'Debug: avondwandeling',
-            ],
-            userId: user.id,
-          ),
-        );
-      },
-    );
-  }
-
   @override
   void didUpdateWidget(MainScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -336,72 +241,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   ),
                 ),
         ),
-        if (kDebugMode)
-          Positioned(
-            right: 8,
-            bottom: shouldHideBottomNav ? 16 : 88,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Material(
-                  elevation: 4,
-                  borderRadius: BorderRadius.circular(20),
-                  color: const Color(0xFF2A6049).withValues(alpha: 0.92),
-                  child: InkWell(
-                    onTap: () => _showMoodyIdleStatePreviewPicker(context),
-                    borderRadius: BorderRadius.circular(20),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.bedtime_outlined, size: 18, color: Colors.white),
-                          SizedBox(width: 6),
-                          Text(
-                            'Idle',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Material(
-                  elevation: 4,
-                  borderRadius: BorderRadius.circular(20),
-                  color: const Color(0xFF4A4640).withValues(alpha: 0.92),
-                  child: InkWell(
-                    onTap: () => _showHoeWasJeDagDebugPreview(context),
-                    borderRadius: BorderRadius.circular(20),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.nightlight_round, size: 18, color: Colors.white),
-                          SizedBox(width: 6),
-                          Text(
-                            'EOD',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
       ],
     );
   }

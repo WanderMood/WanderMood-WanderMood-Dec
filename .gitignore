@@ -191,3 +191,6 @@ push.log
 *.g.dart
 *.freezed.dart
 .env
+
+# Local MCP / deploy scratch (do not commit)
+.mcp_moody_deploy_*.json

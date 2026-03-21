@@ -13,7 +13,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'dynamic_my_day_provider.dart';
 import 'package:wandermood/features/home/presentation/providers/my_day_free_time_cache_provider.dart';
-import '../../../../core/presentation/widgets/swirl_background.dart';
 import '../../../profile/presentation/widgets/profile_drawer.dart';
 import '../../../profile/domain/providers/profile_provider.dart';
 import '../../../weather/providers/weather_provider.dart';
@@ -22,7 +21,6 @@ import '../widgets/my_day_free_time_carousel.dart';
 import '../widgets/my_day_get_ready_sheet.dart';
 import '../widgets/my_day_timeline_section.dart';
 import '../widgets/my_day_weather_dialog.dart';
-import '../widgets/moody_feedback_prompt_card.dart';
 import 'package:wandermood/core/theme/time_based_theme.dart';
 import '../../providers/time_suggestion_provider.dart';
 import 'package:wandermood/core/presentation/painters/circle_pattern_painter.dart';
@@ -161,11 +159,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     return Scaffold(
       key: _scaffoldKey,
       drawer: const ProfileDrawer(),
-      backgroundColor: Colors.transparent,
+      backgroundColor: const Color(0xFFF5F0E8), // wmCream — match Explore / main shell
       body: currentStatusValue?['type'] == 'no_plan'
           ? _buildImmersiveNoPlanState(l10n)
-          : SwirlBackground(
-        child: CustomScrollView(
+          : CustomScrollView(
           slivers: [
             // Header Section
             SliverToBoxAdapter(
@@ -206,16 +203,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                       const SizedBox(height: 16),
                       if (_timelineHasActivities(timelineActivities)) ...[
                         _buildMyDayQuickActionsRow(l10n),
-                        const SizedBox(height: 16),
                       ],
-                      const MoodyFeedbackPromptCard(),
                     ],
                   ),
                 ),
               ),
             ),
-
-            const SliverToBoxAdapter(child: SizedBox(height: 0)),
 
             // Timeline or List View
             if (_selectedView == 'timeline')
@@ -239,7 +232,6 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ),
-      ),
     );
   }
 

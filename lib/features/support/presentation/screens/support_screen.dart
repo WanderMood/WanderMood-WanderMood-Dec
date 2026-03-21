@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/core/constants/legal_urls.dart';
 
 class SupportScreen extends ConsumerStatefulWidget {
   const SupportScreen({Key? key}) : super(key: key);
@@ -388,7 +389,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
   /// Open Privacy Policy in external browser
   Future<void> _openPrivacyPolicy() async {
     try {
-      final url = Uri.parse('https://wandermood.com/privacy-policy');
+      final url = LegalUrls.privacyPolicy;
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
@@ -417,7 +418,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
   /// Open Terms of Service in external browser
   Future<void> _openTermsOfService() async {
     try {
-      final url = Uri.parse('https://wandermood.com/terms-of-service');
+      final url = LegalUrls.termsOfService;
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
