@@ -7,7 +7,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../../l10n/app_localizations.dart';
 import '../../../../core/presentation/widgets/wm_toast.dart';
 
 import '../../../home/domain/enums/moody_feature.dart';
@@ -20,6 +19,7 @@ const Color _wmForest = Color(0xFF2A6049);
 const Color _wmCharcoal = Color(0xFF1E1C18);
 const Color _wmStone = Color(0xFF8C8780);
 const Color _wmDusk = Color(0xFF4A4640);
+const Color _wmSky = Color(0xFFA8C8DC);
 
 class EmailVerificationScreen extends StatefulWidget {
   final String email;
@@ -44,18 +44,12 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen>
   late final Animation<double> _moodySlideY;
   late final Animation<double> _moodyFade;
 
-  late final AnimationController _envelopePulseController;
-  late final Animation<double> _envelopeScale;
+  /// Horizontale sway −3px … +3px, elke 3s, ease-in-out.
+  late final AnimationController _swayController;
+  late final Animation<Offset> _swayOffset;
 
-  late final AnimationController _lookController;
-  late final Animation<double> _lookTurn;
-
+  /// Gestaggerde puls (2000ms cyclus); per dot 600ms golf 0.3→1.0→0.3.
   late final AnimationController _dotPulseController;
-
-  bool _titleVisible = false;
-  bool _subtitleVisible = false;
-  bool _buttonVisible = false;
-  bool _linksVisible = false;
 
   @override
   void initState() {
@@ -65,50 +59,29 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen>
       duration: const Duration(milliseconds: 400),
     );
     _moodySlideY = Tween<double>(begin: 40, end: 0).animate(
-      CurvedAnimation(parent: _moodyEntryController, curve: Curves.easeOut),
+      CurvedAnimation(parent: _moodyEntryController, curve: Curves.elasticOut),
     );
     _moodyFade = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _moodyEntryController, curve: Curves.easeOut),
     );
 
-    _envelopePulseController = AnimationController(
+    _swayController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1800),
+      duration: const Duration(seconds: 3),
     )..repeat(reverse: true);
-    _envelopeScale = Tween<double>(begin: 1.0, end: 1.1).animate(
-      CurvedAnimation(
-        parent: _envelopePulseController,
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    _lookController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 4),
-    )..repeat(reverse: true);
-    _lookTurn = Tween<double>(begin: -3 * math.pi / 180, end: 3 * math.pi / 180)
-        .animate(
-      CurvedAnimation(parent: _lookController, curve: Curves.easeInOut),
+    _swayOffset = Tween<Offset>(
+      begin: const Offset(-3, 0),
+      end: const Offset(3, 0),
+    ).animate(
+      CurvedAnimation(parent: _swayController, curve: Curves.easeInOut),
     );
 
     _dotPulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 2000),
     )..repeat();
 
     _moodyEntryController.forward();
-    Future<void>.delayed(const Duration(milliseconds: 200), () {
-      if (mounted) setState(() => _titleVisible = true);
-    });
-    Future<void>.delayed(const Duration(milliseconds: 400), () {
-      if (mounted) setState(() => _subtitleVisible = true);
-    });
-    Future<void>.delayed(const Duration(milliseconds: 600), () {
-      if (mounted) setState(() => _buttonVisible = true);
-    });
-    Future<void>.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) setState(() => _linksVisible = true);
-    });
 
     _checkVerificationStatus();
     _listenForVerification();
@@ -118,8 +91,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen>
   void dispose() {
     _authSubscription?.cancel();
     _moodyEntryController.dispose();
-    _envelopePulseController.dispose();
-    _lookController.dispose();
+    _swayController.dispose();
     _dotPulseController.dispose();
     super.dispose();
   }
@@ -255,52 +227,58 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen>
     }
   }
 
-  String? _emailProviderName(String email) {
+  /// Outlook: live.nl, hotmail, outlook, msn (and *.live.* e.g. live.nl)
+  /// Gmail: gmail in domain
+  /// Apple: icloud, me.com, mac.com
+  /// Else: generic mail app (mailto)
+  String? _emailLaunchKind(String email) {
     final parts = email.split('@');
     if (parts.length < 2) return null;
     final domain = parts.last.toLowerCase();
-    if (domain.contains('gmail')) return 'Gmail';
+
+    if (domain.contains('gmail')) return 'gmail';
     if (domain.contains('outlook') ||
         domain.contains('hotmail') ||
         domain.contains('live') ||
         domain.contains('msn')) {
-      return 'Outlook';
+      return 'outlook';
     }
-    if (domain.contains('yahoo')) return 'Yahoo Mail';
     if (domain.contains('icloud') || domain.contains('me.com') || domain.contains('mac.com')) {
-      return 'Apple Mail';
+      return 'apple';
     }
     return null;
   }
 
-  String _openEmailButtonLabel(AppLocalizations l10n) {
-    final p = _emailProviderName(widget.email);
-    if (p == 'Gmail') return 'Open Gmail';
-    if (p == 'Outlook') return 'Open Outlook';
-    if (p == 'Yahoo Mail') return 'Open Yahoo Mail';
-    if (p == 'Apple Mail') return 'Open Apple Mail';
-    return 'Open email app';
+  String _openEmailButtonLabel() {
+    switch (_emailLaunchKind(widget.email)) {
+      case 'gmail':
+        return 'Open Gmail';
+      case 'outlook':
+        return 'Open Outlook';
+      case 'apple':
+        return 'Open Apple Mail';
+      default:
+        return 'Open e-mail app';
+    }
   }
 
   Future<void> _openEmailApp() async {
-    final p = _emailProviderName(widget.email);
+    final kind = _emailLaunchKind(widget.email);
     final mailto = Uri.parse('mailto:${widget.email}');
-    Uri uri;
-    switch (p) {
-      case 'Gmail':
+    final Uri uri;
+    switch (kind) {
+      case 'gmail':
         uri = Uri.parse('googlegmail://');
         break;
-      case 'Outlook':
+      case 'outlook':
         uri = Uri.parse('ms-outlook://');
         break;
-      case 'Apple Mail':
+      case 'apple':
         uri = Uri.parse('message://');
         break;
-      case 'Yahoo Mail':
-        uri = Uri.parse('ymail://');
-        break;
       default:
-        uri = mailto;
+        await launchUrl(mailto, mode: LaunchMode.externalApplication);
+        return;
     }
     try {
       if (await canLaunchUrl(uri)) {
@@ -315,46 +293,36 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen>
     }
   }
 
-  String _wrongEmailLabel(BuildContext context) {
-    final lc = Localizations.localeOf(context).languageCode;
-    switch (lc) {
-      case 'nl':
-        return 'Verkeerd e-mailadres?';
-      case 'de':
-        return '← Falsche E-Mail?';
-      case 'fr':
-        return '← Mauvaise adresse e-mail ?';
-      case 'es':
-        return '← ¿Correo incorrecto?';
-      default:
-        return '← Wrong email address?';
-    }
+  /// Gestaggerde puls: elke 600ms één golf 0.3→1.0→0.3, 200ms verschil tussen dots.
+  double _pulsingDotOpacity(int index, double controllerValue) {
+    const cycleMs = 2000.0;
+    const staggerMs = 200.0;
+    const pulseMs = 600.0;
+    var t = (controllerValue * cycleMs - index * staggerMs) % cycleMs;
+    if (t < 0) t += cycleMs;
+    if (t >= pulseMs) return 0.3;
+    final x = t / pulseMs;
+    return 0.3 + 0.7 * (0.5 - 0.5 * math.cos(x * 2 * math.pi));
   }
 
-  String _noEmailReceivedLabel(BuildContext context) {
-    final lc = Localizations.localeOf(context).languageCode;
-    if (lc == 'nl') return 'Geen e-mail ontvangen?';
-    return 'Didn\'t get an email?';
-  }
-
-  Widget _typingDots() {
+  Widget _pulsingDots() {
     return AnimatedBuilder(
       animation: _dotPulseController,
       builder: (context, child) {
+        final v = _dotPulseController.value;
         return Row(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(3, (i) {
-            final t = _dotPulseController.value * 2 * math.pi + (i * 2 * math.pi / 3);
-            final s = 0.6 + 0.4 * (0.5 + 0.5 * math.sin(t));
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 3),
-              child: Transform.scale(
-                scale: s,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Opacity(
+                opacity: _pulsingDotOpacity(i, v),
                 child: Container(
                   width: 8,
                   height: 8,
                   decoration: const BoxDecoration(
-                    color: _wmStone,
+                    color: _wmSky,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -368,8 +336,6 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen>
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
     return Scaffold(
       backgroundColor: _wmCream,
       body: SafeArea(
@@ -385,7 +351,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 16),
                     if (_isVerified)
                       Container(
                         padding: const EdgeInsets.all(16),
@@ -410,162 +376,139 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen>
                         ),
                       )
                     else ...[
+                      Center(
+                        child: AnimatedBuilder(
+                          animation: Listenable.merge([
+                            _moodyEntryController,
+                            _swayController,
+                          ]),
+                          builder: (context, child) {
+                            final entryDone = _moodyEntryController.value >= 1.0;
+                            return Opacity(
+                              opacity: _moodyFade.value,
+                              child: Transform.translate(
+                                offset: Offset(
+                                  entryDone ? _swayOffset.value.dx : 0,
+                                  _moodySlideY.value,
+                                ),
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: const MoodyCharacter(
+                            size: 120,
+                            mood: 'idle',
+                            currentFeature: MoodyFeature.none,
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 16),
-                      AnimatedBuilder(
-                        animation: _moodyEntryController,
-                        builder: (context, child) {
-                          return Opacity(
-                            opacity: _moodyFade.value,
-                            child: Transform.translate(
-                              offset: Offset(0, _moodySlideY.value),
-                              child: AnimatedBuilder(
-                                animation: _lookController,
-                                builder: (context, child) {
-                                  return Transform.rotate(
-                                    angle: _lookTurn.value,
-                                    child: Column(
-                                      children: [
-                                        const MoodyCharacter(
-                                          size: 110,
-                                          mood: 'idle',
-                                          currentFeature: MoodyFeature.none,
-                                        ),
-                                        const SizedBox(height: 8),
-                                        _typingDots(),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      ScaleTransition(
-                        scale: _envelopeScale,
-                        child: const Center(
-                          child: Icon(
-                            Icons.mark_email_unread_outlined,
-                            size: 52,
-                            color: _wmForest,
-                          ),
+                      Center(child: _pulsingDots()),
+                      const SizedBox(height: 28),
+                      Text(
+                        'Check je inbox! 📬',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: _wmCharcoal,
+                          height: 1.2,
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      AnimatedOpacity(
-                        opacity: _titleVisible ? 1 : 0,
-                        duration: const Duration(milliseconds: 200),
-                        child: Text(
-                          '${l10n.signupCheckEmail} 📬',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                            color: _wmCharcoal,
-                          ),
+                      const SizedBox(height: 14),
+                      Text(
+                        'We stuurden een link naar',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          height: 1.45,
+                          color: _wmDusk,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      AnimatedOpacity(
-                        opacity: _subtitleVisible ? 1 : 0,
-                        duration: const Duration(milliseconds: 200),
-                        child: Column(
-                          children: [
-                            Text(
-                              l10n.signupWeSentLinkTo,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontSize: 15,
-                                height: 1.5,
-                                color: _wmDusk,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              widget.email,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                height: 1.45,
-                                fontWeight: FontWeight.bold,
-                                color: _wmForest,
-                              ),
-                            ),
-                          ],
+                      const SizedBox(height: 8),
+                      Text(
+                        widget.email,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          height: 1.4,
+                          fontWeight: FontWeight.bold,
+                          color: _wmForest,
                         ),
                       ),
                       const SizedBox(height: 28),
-                      AnimatedOpacity(
-                        opacity: _buttonVisible ? 1 : 0,
-                        duration: const Duration(milliseconds: 200),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 54,
-                          child: ElevatedButton(
-                            onPressed: _openEmailApp,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _wmForest,
-                              foregroundColor: _wmWhite,
-                              elevation: 0,
-                              shadowColor: Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: ElevatedButton(
+                          onPressed: _openEmailApp,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _wmForest,
+                            foregroundColor: _wmWhite,
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(27),
                             ),
-                            child: Text(
-                              _openEmailButtonLabel(l10n),
-                              style: GoogleFonts.poppins(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          ),
+                          child: Text(
+                            _openEmailButtonLabel(),
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: _wmWhite,
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
-                      AnimatedOpacity(
-                        opacity: _linksVisible ? 1 : 0,
-                        duration: const Duration(milliseconds: 200),
-                        child: Column(
-                          children: [
-                            TextButton(
-                              onPressed:
-                                  _isResending ? null : _resendVerificationEmail,
-                              child: _isResending
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: _wmForest,
-                                      ),
-                                    )
-                                  : Text(
-                                      _noEmailReceivedLabel(context),
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: _wmForest,
-                                      ),
-                                    ),
-                            ),
-                            TextButton(
-                              onPressed: () =>
-                                  context.go('/auth/magic-link'),
-                              child: Text(
-                                _wrongEmailLabel(context),
-                                style: GoogleFonts.poppins(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
+                      const SizedBox(height: 16),
+                      TextButton(
+                        onPressed: _isResending ? null : _resendVerificationEmail,
+                        style: TextButton.styleFrom(
+                          foregroundColor: _wmStone,
+                          minimumSize: const Size.fromHeight(40),
+                        ),
+                        child: _isResending
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
                                   color: _wmForest,
                                 ),
+                              )
+                            : Text(
+                                'Geen e-mail ontvangen?',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: _wmStone,
+                                ),
                               ),
-                            ),
-                          ],
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          if (context.canPop()) {
+                            context.pop();
+                          } else {
+                            context.go('/auth/magic-link');
+                          }
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: _wmStone,
+                          minimumSize: const Size.fromHeight(40),
+                        ),
+                        child: Text(
+                          'Verkeerd e-mailadres?',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: _wmStone,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 24),
                     ],
                   ],
                 ),

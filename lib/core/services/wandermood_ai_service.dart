@@ -7,6 +7,11 @@ import 'package:wandermood/core/models/ai_chat_message.dart';
 import 'package:wandermood/core/constants/api_keys.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 
+/// AI calls to the `wandermood-ai` Edge Function.
+///
+/// All [_supabase.functions.invoke] calls use the shared [SupabaseClient]. The
+/// supabase_flutter client automatically attaches `Authorization: Bearer <access_token>`
+/// when [auth.currentSession] is non-null — no manual headers or `jwt` parameter needed.
 class WanderMoodAIService {
   static final SupabaseClient _supabase = Supabase.instance.client;
   static const String _functionName = 'wandermood-ai';

@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wandermood/l10n/app_localizations.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 
@@ -29,6 +28,13 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
   @override
   void initState() {
     super.initState();
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle.dark.copyWith(
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: _wmForest,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
     _breathController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2400),
@@ -57,13 +63,9 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
+      value: SystemUiOverlayStyle.dark.copyWith(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
         systemNavigationBarColor: _wmForest,
         systemNavigationBarIconBrightness: Brightness.light,
       ),
@@ -78,17 +80,17 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                 child: TextButton(
                   onPressed: _onSkip,
                   style: TextButton.styleFrom(
-                    foregroundColor: Colors.white,
+                    foregroundColor: Colors.white.withValues(alpha: 0.80),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   child: Text(
-                    l10n.introSkip,
+                    'Overslaan',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: Colors.white,
+                      color: Colors.white.withValues(alpha: 0.80),
                     ),
                   ),
                 ),
@@ -109,32 +111,38 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Text(
-                      l10n.introTitleLine1,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.white,
-                      ),
+                    Column(
+                      children: [
+                        Text(
+                          'Jouw mood,',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'jouw avontuur',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 36,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 16),
                     Text(
-                      l10n.introTitleLine2,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      l10n.introTagline,
+                      'Jouw mood. Jouw dag. Jouw avontuur.',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
+                        fontWeight: FontWeight.w400,
                         height: 1.5,
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: Colors.white.withValues(alpha: 0.70),
                       ),
                     ),
                   ],
@@ -147,7 +155,7 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                   children: [
                     SizedBox(
                       width: double.infinity,
-                      height: 54,
+                      height: 56,
                       child: ElevatedButton(
                         onPressed: _onContinue,
                         style: ElevatedButton.styleFrom(
@@ -156,24 +164,16 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                           elevation: 0,
                           shadowColor: Colors.transparent,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(27),
+                            borderRadius: BorderRadius.circular(28),
                           ),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              l10n.introSeeHowItWorks,
-                              style: GoogleFonts.poppins(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w600,
-                                color: _wmForest,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Icon(Icons.arrow_forward_rounded, size: 22, color: _wmForest),
-                          ],
+                        child: Text(
+                          'Bekijk hoe het werkt →',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: _wmForest,
+                          ),
                         ),
                       ),
                     ),
@@ -204,7 +204,7 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
       height: 8,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.3),
+        color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.30),
       ),
     );
   }

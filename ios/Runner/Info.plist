@@ -70,5 +70,12 @@
 			</array>
 		</dict>
 	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>googlegmail</string>
+		<string>ms-outlook</string>
+		<string>message</string>
+		<string>mailto</string>
+	</array>
 </dict>
 </plist>

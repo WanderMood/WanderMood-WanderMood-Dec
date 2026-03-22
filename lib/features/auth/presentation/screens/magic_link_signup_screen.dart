@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -12,28 +13,15 @@ import '../../../../core/providers/feature_flags_provider.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../home/domain/enums/moody_feature.dart';
-import '../../../location/providers/location_provider.dart';
 
 /// WanderMood design tokens — magic link signup
 const Color _wmCream = Color(0xFFF5F0E8);
 const Color _wmWhite = Color(0xFFFFFFFF);
 const Color _wmParchment = Color(0xFFE8E2D8);
 const Color _wmForest = Color(0xFF2A6049);
-const Color _wmSky = Color(0xFFA8C8DC);
-const Color _wmSunset = Color(0xFFE8784A);
-const Color _wmSunsetTint = Color(0xFFFDF0E8);
 const Color _wmCharcoal = Color(0xFF1E1C18);
 const Color _wmStone = Color(0xFF8C8780);
-const Color _wmDusk = Color(0xFF4A4640);
 const Color _wmError = Color(0xFFE05C5C);
-
-const List<String> _privacyPhrasePatterns = [
-  'politique de confidentialité',
-  'política de privacidad',
-  'privacy policy',
-  'privacybeleid',
-  'datenschutz',
-];
 
 /// Magic Link Signup Screen
 /// 
@@ -180,6 +168,66 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
     }
   }
 
+  String _getEmailButtonLabel() {
+    final domain = _emailController.text.trim().split('@').last.toLowerCase();
+    if (domain.contains('gmail')) return 'Open Gmail';
+    if (domain.contains('outlook') ||
+        domain.contains('hotmail') ||
+        domain.contains('live') ||
+        domain.contains('msn')) {
+      return 'Open Outlook';
+    }
+    if (domain.contains('icloud') ||
+        domain.contains('me.com') ||
+        domain.contains('mac.com')) {
+      return 'Open Apple Mail';
+    }
+    return 'Open e-mail app';
+  }
+
+  Future<void> _openEmailApp() async {
+    final email = _emailController.text.trim();
+    final domain = email.contains('@')
+        ? email.split('@').last.toLowerCase()
+        : '';
+    Uri uri;
+    if (domain.contains('gmail')) {
+      uri = Uri.parse('googlegmail://');
+    } else if (domain.contains('outlook') ||
+        domain.contains('hotmail') ||
+        domain.contains('live') ||
+        domain.contains('msn')) {
+      uri = Uri.parse('ms-outlook://');
+    } else if (domain.contains('icloud') ||
+        domain.contains('me.com') ||
+        domain.contains('mac.com')) {
+      uri = Uri.parse('message://');
+    } else {
+      uri = Uri.parse('mailto:');
+    }
+
+    // iOS: canLaunchUrl is false for third-party schemes unless listed in
+    // Info.plist; always try launchUrl, then fall back to system Mail.
+    Future<bool> tryOpen(Uri u) async {
+      try {
+        return await launchUrl(u, mode: LaunchMode.externalApplication);
+      } catch (_) {
+        return false;
+      }
+    }
+
+    if (!await tryOpen(uri)) {
+      final fallback = email.isNotEmpty
+          ? Uri.parse('mailto:$email')
+          : Uri.parse('mailto:');
+      await tryOpen(fallback);
+    }
+  }
+
+  Future<void> _resendMagicLink() async {
+    await _sendMagicLink();
+  }
+
   void _goBack() {
     final useNewFlow = ref.read(useNewOnboardingFlowProvider);
     if (useNewFlow) {
@@ -199,11 +247,309 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
     );
   }
 
-  bool get _hasEmail => _emailController.text.trim().isNotEmpty;
+  Widget _buildFormState() {
+    final l10n = AppLocalizations.of(context)!;
 
-  Widget _buildTermsFooter(AppLocalizations l10n) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  onPressed: _goBack,
+                  icon: const Icon(Icons.arrow_back_rounded),
+                  color: _wmCharcoal,
+                  padding: EdgeInsets.zero,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: Center(
+                          child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _wmCharcoal.withValues(alpha: 0.12),
+                            blurRadius: 36,
+                            offset: const Offset(0, 16),
+                            spreadRadius: -6,
+                          ),
+                          BoxShadow(
+                            color: _wmCharcoal.withValues(alpha: 0.06),
+                            blurRadius: 14,
+                            offset: const Offset(0, 6),
+                          ),
+                          BoxShadow(
+                            color: _wmForest.withValues(alpha: 0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                          child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.3),
+                              width: 1,
+                            ),
+                          ),
+                          padding: const EdgeInsets.fromLTRB(22, 28, 22, 24),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                            Center(
+                              child: ScaleTransition(
+                                alignment: Alignment.center,
+                                scale: _breathScale,
+                                child: const MoodyCharacter(
+                                  size: 100,
+                                  mood: 'happy',
+                                  currentFeature: MoodyFeature.none,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              'Word lid van WanderMood',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w700,
+                                color: _wmCharcoal,
+                                height: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Geen wachtwoord nodig ✨',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 15,
+                                height: 1.4,
+                                fontWeight: FontWeight.w600,
+                                color: _wmForest,
+                              ),
+                            ),
+                            const SizedBox(height: 22),
+                            SizedBox(
+                              height: 54,
+                              child: TextFormField(
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                textCapitalization: TextCapitalization.none,
+                                textInputAction: TextInputAction.done,
+                                autofillHints: const [AutofillHints.email],
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  color: _wmCharcoal,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: 'jouw@email.nl',
+                                  hintStyle: GoogleFonts.poppins(color: _wmStone),
+                                  prefixIcon: const Icon(
+                                    Icons.mail_outline,
+                                    color: _wmStone,
+                                    size: 22,
+                                  ),
+                                  filled: true,
+                                  fillColor: _wmWhite,
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 0,
+                                  ),
+                                  floatingLabelBehavior: FloatingLabelBehavior.never,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: _wmParchment,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: _wmParchment,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: _wmForest,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  errorBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: _wmError,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  focusedErrorBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: _wmError,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return l10n.signupEmailRequired;
+                                  }
+                                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                                      .hasMatch(value)) {
+                                    return l10n.signupEmailInvalid;
+                                  }
+                                  return null;
+                                },
+                                onFieldSubmitted: (_) {
+                                  if (!_isLoading) _sendMagicLink();
+                                },
+                              ),
+                            ),
+                            if (_errorMessage != null) ...[
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: _wmError.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: _wmError.withValues(alpha: 0.25),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.error_outline,
+                                      color: _wmError,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        _errorMessage!,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 14,
+                                          color: _wmError,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 18),
+                            ScaleTransition(
+                              alignment: Alignment.center,
+                              scale: _ctaScale,
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 54,
+                                child: ElevatedButton(
+                                  onPressed: _isLoading
+                                      ? null
+                                      : () async {
+                                          await _ctaPressController.forward();
+                                          if (mounted) {
+                                            await _ctaPressController.reverse();
+                                          }
+                                          _sendMagicLink();
+                                        },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: _wmForest,
+                                    foregroundColor: _wmWhite,
+                                    disabledBackgroundColor: _wmForest,
+                                    disabledForegroundColor: _wmWhite,
+                                    elevation: 0,
+                                    shadowColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(27),
+                                    ),
+                                  ),
+                                  child: _isLoading
+                                      ? const SizedBox(
+                                          width: 22,
+                                          height: 22,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.5,
+                                            color: _wmWhite,
+                                          ),
+                                        )
+                                      : Text(
+                                          '✨ ${l10n.signupSendMagicLink}',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                            color: _wmWhite,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            Text(
+                              '⭐ 4,9/5 • Gratis • Geen wachtwoord',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                height: 1.4,
+                                color: _wmStone,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                    ),
+                  ),
+                    ),
+                  ),
+                );
+                  },
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+              child: _buildNlPrivacyFooter(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildNlPrivacyFooter() {
     final base = GoogleFonts.poppins(
-      fontSize: 13,
+      fontSize: 12,
       height: 1.45,
       color: _wmStone,
     );
@@ -213,489 +559,102 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
       decoration: TextDecoration.underline,
       decorationColor: _wmForest,
     );
-    final full = l10n.signupTerms;
-    final lower = full.toLowerCase();
-    int? idx;
-    int len = 0;
-    for (final p in _privacyPhrasePatterns) {
-      final i = lower.indexOf(p);
-      if (i >= 0) {
-        idx = i;
-        len = p.length;
-        break;
-      }
-    }
-    if (idx != null) {
-      final start = idx;
-      return Text.rich(
-        TextSpan(
-          style: base,
-          children: [
-            TextSpan(text: full.substring(0, start)),
-            TextSpan(
-              text: full.substring(start, start + len),
-              style: linkStyle,
-              recognizer: _privacyTapRecognizer,
-            ),
-            if (start + len < full.length) TextSpan(text: full.substring(start + len)),
-          ],
-        ),
-        textAlign: TextAlign.center,
-      );
-    }
-    return Text(
-      full,
-      textAlign: TextAlign.center,
-      style: base,
-    );
-  }
-
-  String _signupMetaLine(BuildContext context) {
-    final lc = Localizations.localeOf(context).languageCode;
-    if (lc == 'nl') return 'Gratis • Geen wachtwoord nodig';
-    return 'Free • No password needed';
-  }
-
-  Widget _buildFormState() {
-    final l10n = AppLocalizations.of(context)!;
-    final canSubmit = _hasEmail && !_isLoading;
-    final h = MediaQuery.sizeOf(context).height;
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    onPressed: _goBack,
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    color: _wmCharcoal,
-                    padding: EdgeInsets.zero,
-                  ),
-                ),
-                SizedBox(
-                  height: h * 0.35,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ScaleTransition(
-                        alignment: Alignment.center,
-                        scale: _breathScale,
-                        child: const MoodyCharacter(
-                          size: 100,
-                          mood: 'happy',
-                          currentFeature: MoodyFeature.none,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        l10n.signupJoinWanderMood,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: _wmCharcoal,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        l10n.signupSubtitle,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          height: 1.45,
-                          color: _wmStone,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SizedBox(
-                        height: 54,
-                        child: TextFormField(
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          textCapitalization: TextCapitalization.none,
-                          textInputAction: TextInputAction.done,
-                          autofillHints: const [AutofillHints.email],
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            color: _wmCharcoal,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: l10n.signupEmailHint,
-                            hintStyle: GoogleFonts.poppins(color: _wmStone),
-                            prefixIcon: const Icon(
-                              Icons.mail_outline,
-                              color: _wmStone,
-                              size: 22,
-                            ),
-                            filled: true,
-                            fillColor: _wmWhite,
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 0,
-                            ),
-                            floatingLabelBehavior: FloatingLabelBehavior.never,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: _wmParchment,
-                                width: 1,
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: _wmParchment,
-                                width: 1,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: _wmForest,
-                                width: 1.5,
-                              ),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: _wmError,
-                                width: 1,
-                              ),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: _wmError,
-                                width: 1.5,
-                              ),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return l10n.signupEmailRequired;
-                            }
-                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                .hasMatch(value)) {
-                              return l10n.signupEmailInvalid;
-                            }
-                            return null;
-                          },
-                          onFieldSubmitted: (_) {
-                            if (canSubmit) _sendMagicLink();
-                          },
-                        ),
-                      ),
-                      if (_errorMessage != null) ...[
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: _wmError.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: _wmError.withValues(alpha: 0.25),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.error_outline,
-                                color: _wmError,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  _errorMessage!,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 14,
-                                    color: _wmError,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 16),
-                      ScaleTransition(
-                        alignment: Alignment.center,
-                        scale: _ctaScale,
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 54,
-                          child: ElevatedButton(
-                            onPressed: (_isLoading || !canSubmit)
-                                ? null
-                                : () async {
-                                    await _ctaPressController.forward();
-                                    if (mounted) {
-                                      await _ctaPressController.reverse();
-                                    }
-                                    _sendMagicLink();
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _wmForest,
-                              foregroundColor: _wmWhite,
-                              disabledBackgroundColor: _wmParchment,
-                              disabledForegroundColor: _wmStone,
-                              elevation: 0,
-                              shadowColor: Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                            ),
-                            child: _isLoading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: _wmWhite,
-                                    ),
-                                  )
-                                : Text(
-                                    '✨ ${l10n.signupSendMagicLink}',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  _signupMetaLine(context),
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: _wmStone,
-                  ),
-                ),
-                const SizedBox(height: 40),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: _buildTermsFooter(l10n),
-                ),
-              ],
-            ),
+    return Text.rich(
+      TextSpan(
+        style: base,
+        children: [
+          const TextSpan(
+            text: 'Door verder te gaan ga je akkoord met ons ',
           ),
-        );
-      },
+          TextSpan(
+            text: 'privacybeleid',
+            style: linkStyle,
+            recognizer: _privacyTapRecognizer,
+          ),
+        ],
+      ),
+      textAlign: TextAlign.center,
     );
   }
 
   Widget _buildSuccessState() {
-    final l10n = AppLocalizations.of(context)!;
-    final city = ref.watch(locationNotifierProvider).valueOrNull ?? l10n.signupDefaultCity;
-    final minHeight = MediaQuery.of(context).size.height -
-        MediaQuery.of(context).padding.top -
-        MediaQuery.of(context).padding.bottom -
-        48;
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(minHeight: minHeight),
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-          // Moody character (replaces envelope)
-          const Center(
-            child: MoodyCharacter(
-              size: 100,
-              mood: 'happy',
-              currentFeature: MoodyFeature.none,
-            ),
-          ),
-          const SizedBox(height: 20),
-          // Title
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                l10n.signupCheckEmail,
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.grey[800],
-                ),
-                textAlign: TextAlign.center,
+            const Center(
+              child: MoodyCharacter(
+                size: 120,
+                mood: 'happy',
+                currentFeature: MoodyFeature.none,
               ),
-              const SizedBox(width: 8),
-              Text('📬', style: TextStyle(fontSize: 26, color: Colors.grey[700])),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            l10n.signupWeSentLinkTo,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: Text(
-              _emailController.text,
+            const SizedBox(height: 24),
+            const Text(
+              'Check je inbox! 📬',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E1C18),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'We stuurden een link naar',
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF4A4640),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _emailController.text.trim(),
               style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
                 color: Color(0xFF2A6049),
               ),
               textAlign: TextAlign.center,
             ),
-          ),
-          const SizedBox(height: 24),
-          // Instruction cards (three separate cards with colored left border, real emojis)
-          _buildSuccessInstructionCard(
-            context,
-            emoji: '✅',
-            borderColor: _wmForest,
-            text: l10n.signupClickLinkInEmail,
-          ),
-          const SizedBox(height: 10),
-          _buildSuccessInstructionCard(
-            context,
-            emoji: '⏰',
-            borderColor: _wmSunset,
-            text: l10n.signupLinkExpires,
-          ),
-          const SizedBox(height: 10),
-          _buildSuccessInstructionCard(
-            context,
-            emoji: '📋',
-            borderColor: _wmSky,
-            text: l10n.signupCheckSpam,
-          ),
-          const SizedBox(height: 20),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: _wmSunsetTint,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: _wmSunset.withValues(alpha: 0.2), width: 1),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Text('⭐', style: TextStyle(fontSize: 20)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        l10n.signupAlmostThereTitle,
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: _wmCharcoal,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.signupAlmostThereBody(city),
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    height: 1.5,
-                    color: _wmDusk,
-                    fontWeight: FontWeight.w400,
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton(
+                onPressed: _openEmailApp,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2A6049),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(27),
                   ),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          // Try again
-          TextButton.icon(
-            onPressed: () {
-              setState(() {
-                _emailSent = false;
-              });
-            },
-            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF2A6049), size: 20),
-            label: Text(
-              l10n.signupTryAgain,
-              style: const TextStyle(
-                fontSize: 15,
-                color: Color(0xFF2A6049),
-                fontWeight: FontWeight.w700,
+                child: Text(
+                  _getEmailButtonLabel(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-    ),
-    );
-  }
-
-  Widget _buildSuccessInstructionCard(
-    BuildContext context, {
-    required String emoji,
-    required Color borderColor,
-    required String text,
-  }) {
-    return Container(
-      width: double.infinity,
-      constraints: const BoxConstraints(minHeight: 56),
-      decoration: BoxDecoration(
-        color: _wmWhite,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _wmParchment, width: 1),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(width: 4, color: borderColor),
-            Expanded(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(emoji, style: const TextStyle(fontSize: 20)),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        text,
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          height: 1.5,
-                          color: _wmCharcoal,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: _resendMagicLink,
+              child: const Text(
+                'Geen e-mail ontvangen?',
+                style: TextStyle(color: Color(0xFF8C8780)),
+              ),
+            ),
+            TextButton(
+              onPressed: () => setState(() => _emailSent = false),
+              child: const Text(
+                'Verkeerd e-mailadres?',
+                style: TextStyle(color: Color(0xFF8C8780)),
               ),
             ),
           ],

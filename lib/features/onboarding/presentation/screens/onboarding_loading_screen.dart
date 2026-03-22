@@ -10,14 +10,22 @@ import '../../../location/services/location_service.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../../weather/application/weather_service.dart';
 import '../../../weather/domain/models/weather_location.dart';
+import 'dart:async';
 import 'dart:convert';
 import '../../../auth/providers/auth_state_provider.dart';
 import '../../../../core/providers/supabase_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Post–magic-link loading (wmForest)
+/// Onboarding afronden — voorkeuren verwerken (wmForest)
 const Color _wmForest = Color(0xFF2A6049);
 const Color _wmWhite = Color(0xFFFFFFFF);
+
+const List<String> _kRotatingSubtitles = [
+  'Jouw interesses opslaan...',
+  'Jouw stijl verwerken...',
+  'Plekken zoeken die bij je passen...',
+  'Jouw Moody klaarzetten...',
+];
 
 class OnboardingLoadingScreen extends ConsumerStatefulWidget {
   const OnboardingLoadingScreen({super.key});
@@ -28,20 +36,36 @@ class OnboardingLoadingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScreen>
     with TickerProviderStateMixin {
+  late final AnimationController _entryController;
+  late final Animation<double> _entryScale;
+  late final Animation<double> _entryOpacity;
+
   late final AnimationController _breathController;
   late final Animation<double> _breathScale;
+
+  late final AnimationController _barController;
+  late final Animation<double> _barProgress;
+
   late final AnimationController _fadeOutController;
   late final Animation<double> _fadeOpacity;
 
-  /// Shown loading line; empty until first [_updateProgress] (then [loadingStep0] in UI).
-  String _currentStepDisplay = '';
-  double _progress = 0.0;
-  
-  static const int _loadingStepsCount = 6;
+  Timer? _subtitleTimer;
+  int _subtitleIndex = 0;
 
   @override
   void initState() {
     super.initState();
+
+    _entryController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _entryScale = Tween<double>(begin: 0.7, end: 1.0).animate(
+      CurvedAnimation(parent: _entryController, curve: Curves.elasticOut),
+    );
+    _entryOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _entryController, curve: Curves.easeOut),
+    );
 
     _breathController = AnimationController(
       vsync: this,
@@ -50,6 +74,15 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
 
     _breathScale = Tween<double>(begin: 1.0, end: 1.06).animate(
       CurvedAnimation(parent: _breathController, curve: Curves.easeInOut),
+    );
+
+    _barController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3500),
+    );
+    _barProgress = CurvedAnimation(
+      parent: _barController,
+      curve: Curves.easeInOut,
     );
 
     _fadeOutController = AnimationController(
@@ -62,6 +95,15 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _entryController.forward();
+      _barController.forward();
+      _subtitleTimer = Timer.periodic(const Duration(milliseconds: 1200), (_) {
+        if (!mounted) return;
+        setState(() {
+          _subtitleIndex = (_subtitleIndex + 1) % _kRotatingSubtitles.length;
+        });
+      });
       Future.microtask(() {
         if (mounted) {
           _startPrefetching(context);
@@ -72,7 +114,10 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
 
   @override
   void dispose() {
+    _subtitleTimer?.cancel();
+    _entryController.dispose();
     _breathController.dispose();
+    _barController.dispose();
     _fadeOutController.dispose();
     super.dispose();
   }
@@ -220,22 +265,12 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
   }
 
   Future<void> _updateProgress(int stepIndex, String stepText) async {
-    if (!mounted) return;
-
-    setState(() {
-      _currentStepDisplay = stepText;
-      _progress = (stepIndex + 1) / _loadingStepsCount;
-    });
-
+    debugPrint('Onboarding prefetch stap $stepIndex: $stepText');
     await Future.delayed(const Duration(milliseconds: 200));
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final String stepLabel =
-        _currentStepDisplay.isEmpty ? l10n.loadingStep0 : _currentStepDisplay;
-
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -255,58 +290,103 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Spacer(),
-                  Center(
-                    child: ScaleTransition(
-                      alignment: Alignment.center,
-                      scale: _breathScale,
-                      child: const MoodyCharacter(
-                        size: 120,
-                        mood: 'excited',
-                      ),
-                    ),
+                  AnimatedBuilder(
+                    animation: Listenable.merge([
+                      _entryController,
+                      _breathController,
+                    ]),
+                    builder: (context, child) {
+                      final breath = _breathScale.value;
+                      final entryS = _entryScale.value;
+                      final combined = entryS * breath;
+                      return FadeTransition(
+                        opacity: _entryOpacity,
+                        child: Center(
+                          child: Transform.scale(
+                            scale: combined,
+                            child: const MoodyCharacter(
+                              size: 110,
+                              mood: 'idle',
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Text(
-                    l10n.loadingTitle,
+                    'Moody leert je kennen! 🧠',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
                       color: _wmWhite,
                       height: 1.2,
                     ),
                   ),
                   const SizedBox(height: 12),
                   AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 400),
                     switchInCurve: Curves.easeOut,
                     switchOutCurve: Curves.easeIn,
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: child,
+                      );
+                    },
                     child: Text(
-                      stepLabel,
-                      key: ValueKey<String>(stepLabel),
+                      _kRotatingSubtitles[_subtitleIndex],
+                      key: ValueKey<int>(_subtitleIndex),
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        height: 1.45,
-                        color: _wmWhite.withValues(alpha: 0.7),
+                        fontSize: 15,
+                        height: 1.4,
+                        fontWeight: FontWeight.w400,
+                        color: _wmWhite.withValues(alpha: 0.75),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  Center(
-                    child: SizedBox(
-                      width: 200,
-                      height: 4,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(2),
-                        child: LinearProgressIndicator(
-                          value: _progress.clamp(0.0, 1.0),
-                          backgroundColor: _wmWhite.withValues(alpha: 0.2),
-                          valueColor:
-                              const AlwaysStoppedAnimation<Color>(_wmWhite),
-                          minHeight: 4,
+                  const SizedBox(height: 20),
+                  AnimatedBuilder(
+                    animation: _barProgress,
+                    builder: (context, child) {
+                      return Center(
+                        child: SizedBox(
+                          width: 200,
+                          height: 4,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(2),
+                            child: Stack(
+                              children: [
+                                Container(
+                                  color: _wmWhite.withValues(alpha: 0.25),
+                                ),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: FractionallySizedBox(
+                                    widthFactor:
+                                        _barProgress.value.clamp(0.0, 1.0),
+                                    child: Container(
+                                      color: _wmWhite,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Dit duurt maar een moment ✨',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      color: _wmWhite.withValues(alpha: 0.55),
                     ),
                   ),
                   const Spacer(),

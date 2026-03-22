@@ -13,7 +13,6 @@ import '../../features/places/presentation/screens/place_detail_screen.dart';
 import '../../features/places/presentation/screens/saved_places_screen.dart';
 import '../../features/mood/presentation/screens/mood_history_screen.dart';
 import '../../features/plans/presentation/screens/travel_plans_screen.dart';
-import '../../features/onboarding/presentation/screens/mood_preference_screen.dart';
 import '../../features/onboarding/presentation/screens/travel_interests_screen.dart';
 import '../../features/onboarding/presentation/screens/social_vibe_screen.dart';
 import '../../features/onboarding/presentation/screens/planning_pace_screen.dart';
@@ -70,6 +69,7 @@ import '../../features/social/presentation/screens/wanderfeed_coming_soon_screen
 import '../../features/social/presentation/screens/travel_diary_profile_screen.dart';
 import '../../features/auth/providers/auth_state_provider.dart';
 import '../../features/auth/presentation/screens/magic_link_signup_screen.dart';
+import '../../features/auth/presentation/screens/auth_welcome_screen.dart';
 import '../providers/preferences_provider.dart';
 import '../providers/feature_flags_provider.dart';
 import '../../features/onboarding/presentation/screens/app_intro_screen.dart';
@@ -198,28 +198,34 @@ Future<void> _handleEmailVerification(Uri uri) async {
       throw Exception('Email verification incomplete. Please check your email and click the verification link.');
     }
     
-    // Store user state in SharedPreferences
+    // Store user state in SharedPreferences — align with DB (returning users skip onboarding)
     final prefs = await SharedPreferences.getInstance();
-    
-    // CRITICAL: After magic link verification, always send user through onboarding preferences.
-    // Do not trust DB here: existing rows (e.g. from a previous test) may have
-    // has_completed_preferences true; we want magic-link signups to always see the flow.
-    const bool hasCompletedPrefsInDb = false;
-    debugPrint('🆕 Magic link verification: forcing preferences flow (user must complete onboarding)');
-    
-    await prefs.setBool('hasCompletedPreferences', hasCompletedPrefsInDb);
-    
-    // Keep DB in sync so router/splash don't override: set has_completed_preferences to false
+
+    var hasCompletedPreferences = false;
     try {
-      await Supabase.instance.client
+      final row = await Supabase.instance.client
           .from('user_preferences')
-          .update({'has_completed_preferences': false, 'updated_at': DateTime.now().toIso8601String()})
-          .eq('user_id', user.id);
-      debugPrint('✅ Reset has_completed_preferences to false in database for preferences flow');
+          .select('has_completed_preferences')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+      if (row != null && row['has_completed_preferences'] == true) {
+        hasCompletedPreferences = true;
+        debugPrint(
+          '✅ Magic link: returning user — has_completed_preferences=true (synced to prefs)',
+        );
+      } else {
+        debugPrint(
+          '🆕 Magic link: new or incomplete onboarding — preferences flow needed',
+        );
+      }
     } catch (e) {
-      // Row may not exist yet (settings provider creates it later) - ignore
-      debugPrint('⚠️ Could not update preferences in database (row may not exist yet): $e');
+      debugPrint('⚠️ Could not read has_completed_preferences: $e');
     }
+
+    await prefs.setBool('hasCompletedPreferences', hasCompletedPreferences);
+    // Do not overwrite has_completed_preferences in the DB here — respect server truth.
+
     await prefs.setBool('has_seen_onboarding', true); // CRITICAL: Mark onboarding as seen so router doesn't redirect back
     await prefs.setInt('last_auth_timestamp', DateTime.now().millisecondsSinceEpoch);
     
@@ -228,7 +234,7 @@ Future<void> _handleEmailVerification(Uri uri) async {
     debugPrint('   ✅ currentSession != null');
     debugPrint('   ✅ accessToken != null');
     debugPrint('   ✅ Email confirmed');
-    debugPrint('   ✅ hasCompletedPreferences set to false (magic link → preferences flow)');
+    debugPrint('   ✅ hasCompletedPreferences (local) = $hasCompletedPreferences');
   } catch (e) {
     debugPrint('❌ Email verification error: $e');
     rethrow;
@@ -303,12 +309,10 @@ GoRouter router(RouterRef ref) {
           return const CommunicationPreferenceScreen();
         },
       ),
+      // Mood-voorkeurscherm uit onboarding gehaald; oude links → interesses.
       GoRoute(
         path: '/preferences/mood',
-        name: 'mood-preferences',
-        builder: (context, state) {
-          return const MoodPreferenceScreen();
-        },
+        redirect: (context, state) => '/preferences/interests',
       ),
       GoRoute(
         path: '/preferences/interests',
@@ -450,27 +454,10 @@ GoRouter router(RouterRef ref) {
                 );
               }
               
-              // Success - navigate to preferences
-              // CRITICAL: Use a small delay to ensure SharedPreferences is written
-              Future.delayed(const Duration(milliseconds: 100), () {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  debugPrint('✅ Navigating to preferences after magic link authentication');
-                  context.go('/preferences/communication');
-                });
-              });
-              
-              return const Scaffold(
-                body: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.green, size: 48),
-                      SizedBox(height: 16),
-                      Text('Email confirmed! Starting your personalized journey...'),
-                    ],
-                  ),
-                ),
+              debugPrint(
+                '✅ Magic link verified — showing auth welcome, then preferences or main',
               );
+              return const AuthWelcomeScreen();
             },
           );
         },

@@ -1,675 +1,709 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:math' as math;
-import '../../../home/presentation/widgets/moody_character.dart';
-import '../../../../core/presentation/widgets/swirl_background.dart';
+
 import '../../../../core/providers/preferences_provider.dart';
-import '../../../../core/providers/communication_style_provider.dart';
-import 'package:wandermood/l10n/app_localizations.dart';
+import '../../../home/presentation/widgets/moody_character.dart';
+
+/// WanderMood — gecombineerde reisvoorkeuren (stap 3/4)
+const Color _wmCream = Color(0xFFF5F0E8);
+const Color _wmWhite = Color(0xFFFFFFFF);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmForestTint = Color(0xFFEBF3EE);
+const Color _wmSky = Color(0xFFA8C8DC);
+const Color _wmSkyTint = Color(0xFFEDF5F9);
+const Color _wmCharcoal = Color(0xFF1E1C18);
+const Color _wmDusk = Color(0xFF4A4640);
+const Color _wmStone = Color(0xFF8C8780);
+
+/// Zelfde opslag-keys als voorheen (Supabase / preferences_provider).
+const _allowedPaceKeys = <String>{
+  'Right Now Vibes',
+  'Same Day Planner',
+  'Master Planner',
+};
+
+const _allowedTravelStyleKeys = <String>{
+  'Local Experience',
+  'Luxury Seeker',
+  'Budget Conscious',
+  'Off the Beaten Path',
+  'Tourist Highlights',
+};
 
 class CombinedTravelPreferencesScreen extends ConsumerStatefulWidget {
   const CombinedTravelPreferencesScreen({super.key});
 
   @override
-  ConsumerState<CombinedTravelPreferencesScreen> createState() => _CombinedTravelPreferencesScreenState();
+  ConsumerState<CombinedTravelPreferencesScreen> createState() =>
+      _CombinedTravelPreferencesScreenState();
 }
 
-class _CombinedTravelPreferencesScreenState extends ConsumerState<CombinedTravelPreferencesScreen> 
+class _CombinedTravelPreferencesScreenState
+    extends ConsumerState<CombinedTravelPreferencesScreen>
     with TickerProviderStateMixin {
-  late final AnimationController _moodyController;
-  late final AnimationController _messageController;
-  
-  // Social Vibe state
   final Set<String> _selectedVibes = {};
-  
-  // Planning Pace state
   String? _selectedPace;
-  
-  // Travel Style state
   final Set<String> _selectedStyles = {};
-  static const int maxStyleSelections = 3;
+  static const int _maxStyleSelections = 3;
 
-  List<Map<String, dynamic>> _socialVibes(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return [
-      {'key': 'Solo Adventures', 'name': l10n.prefSocialSolo, 'emoji': '🧘‍♀️', 'description': l10n.prefSocialSoloDesc, 'color': const Color(0xFFFFB74D)},
-      {'key': 'Small Groups', 'name': l10n.prefSocialSmallGroups, 'emoji': '👥', 'description': l10n.prefSocialSmallGroupsDesc, 'color': const Color(0xFF66BB6A)},
-      {'key': 'Social Butterfly', 'name': l10n.prefSocialButterfly, 'emoji': '🦋', 'description': l10n.prefSocialButterflyDesc, 'color': const Color(0xFF42A5F5)},
-      {'key': 'Mood Dependent', 'name': l10n.prefSocialMoodDependent, 'emoji': '🎭', 'description': l10n.prefSocialMoodDependentDesc, 'color': const Color(0xFFAB47BC)},
-    ];
-  }
+  late final AnimationController _breathController;
+  late final Animation<double> _breathScale;
 
-  List<Map<String, dynamic>> _planningPaces(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return [
-      {'key': 'Right Now Vibes', 'name': l10n.prefPaceRightNow, 'emoji': '⚡', 'description': l10n.prefPaceRightNowDesc, 'color': const Color(0xFFFFB74D)},
-      {'key': 'Same Day Planner', 'name': l10n.prefPaceSameDay, 'emoji': '🌅', 'description': l10n.prefPaceSameDayDesc, 'color': const Color(0xFF66BB6A)},
-      {'key': 'Weekend Prepper', 'name': l10n.prefPaceWeekend, 'emoji': '📅', 'description': l10n.prefPaceWeekendDesc, 'color': const Color(0xFF8D6E63)},
-      {'key': 'Master Planner', 'name': l10n.prefPaceMaster, 'emoji': '📋', 'description': l10n.prefPaceMasterDesc, 'color': const Color(0xFF78909C)},
-    ];
-  }
+  static const List<({String key, String emoji, String title, String hint})>
+      _socialOptions = [
+    (
+      key: 'Solo Adventures',
+      emoji: '🧘',
+      title: 'Solo-avonturen',
+      hint: 'Tijd voor mezelf',
+    ),
+    (
+      key: 'Small Groups',
+      emoji: '👫',
+      title: 'Kleine groepen',
+      hint: 'Intieme sfeer',
+    ),
+    (
+      key: 'Social Butterfly',
+      emoji: '🦋',
+      title: 'Sociale vlinder',
+      hint: 'Nieuwe mensen',
+    ),
+    (
+      key: 'Mood Dependent',
+      emoji: '🎭',
+      title: 'Wisselend',
+      hint: 'Soms solo, soms sociaal',
+    ),
+  ];
 
-  List<Map<String, dynamic>> _travelStyles(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return [
-      {'key': 'Spontaneous', 'name': l10n.prefTravelStyleSpontaneous, 'emoji': '🎯', 'description': l10n.prefTravelStyleSpontaneousDesc, 'color': const Color(0xFFFFB74D)},
-      {'key': 'Planned', 'name': l10n.prefTravelStylePlanned, 'emoji': '📅', 'description': l10n.prefTravelStylePlannedDesc, 'color': const Color(0xFF64B5F6)},
-      {'key': 'Local Experience', 'name': l10n.prefTravelStyleLocal, 'emoji': '🏡', 'description': l10n.prefTravelStyleLocalDesc, 'color': const Color(0xFF7CB342)},
-      {'key': 'Luxury Seeker', 'name': l10n.prefTravelStyleLuxury, 'emoji': '✨', 'description': l10n.prefTravelStyleLuxuryDesc, 'color': const Color(0xFFEC407A)},
-      {'key': 'Budget Conscious', 'name': l10n.prefTravelStyleBudget, 'emoji': '💰', 'description': l10n.prefTravelStyleBudgetDesc, 'color': const Color(0xFF66BB6A)},
-      {'key': 'Tourist Highlights', 'name': l10n.prefTravelStyleTouristHighlights, 'emoji': '🗺️', 'description': l10n.prefTravelStyleTouristHighlightsDesc, 'color': const Color(0xFFEC407A)},
-      {'key': 'Off the Beaten Path', 'name': l10n.prefTravelStyleOffBeatenPath, 'emoji': '⭐', 'description': l10n.prefTravelStyleOffBeatenPathDesc, 'color': const Color(0xFF9575CD)},
-    ];
-  }
+  static const List<({String key, String label})> _paceOptions = [
+    (key: 'Right Now Vibes', label: 'Nu direct ⚡'),
+    (key: 'Same Day Planner', label: 'Vandaag 📅'),
+    (key: 'Master Planner', label: 'Gepland 🗓'),
+  ];
 
-  String _travelTitle(AppLocalizations l10n, String styleKey) {
-    switch (styleKey) {
-      case 'energetic': return l10n.prefTravelTitleEnergetic;
-      case 'professional': return l10n.prefTravelTitleProfessional;
-      case 'direct': return l10n.prefTravelTitleDirect;
-      default: return l10n.prefTravelTitleFriendly;
-    }
-  }
-
-  String _travelSubtitle(AppLocalizations l10n, String styleKey) {
-    switch (styleKey) {
-      case 'energetic': return l10n.prefTravelSubtitleEnergetic;
-      case 'professional': return l10n.prefTravelSubtitleProfessional;
-      case 'direct': return l10n.prefTravelSubtitleDirect;
-      default: return l10n.prefTravelSubtitleFriendly;
-    }
-  }
+  static const List<
+          ({
+            String key,
+            String emoji,
+            String title,
+            String subtitle,
+            Color emojiBg,
+          })>
+      _travelOptions = [
+    (
+      key: 'Local Experience',
+      emoji: '🏡',
+      title: 'Lokale ervaring',
+      subtitle: 'Authentiek en buiten de standaardroutes.',
+      emojiBg: Color(0xFFEBF3EE),
+    ),
+    (
+      key: 'Luxury Seeker',
+      emoji: '✨',
+      title: 'Luxezoeker',
+      subtitle: 'Comfort en bijzondere ervaringen.',
+      emojiBg: Color(0xFFFDF0E8),
+    ),
+    (
+      key: 'Budget Conscious',
+      emoji: '💰',
+      title: 'Budgetbewust',
+      subtitle: 'Maximaal plezier, slim uitgeven.',
+      emojiBg: Color(0xFFEDF5F9),
+    ),
+    (
+      key: 'Off the Beaten Path',
+      emoji: '⭐',
+      title: 'Van de gebaande paden',
+      subtitle: 'Verborgen parels en lokale favorieten.',
+      emojiBg: Color(0xFFF5F0E8),
+    ),
+    (
+      key: 'Tourist Highlights',
+      emoji: '🗺️',
+      title: 'Toeristische hoogtepunten',
+      subtitle: 'Iconische plekken die je gezien wilt hebben.',
+      emojiBg: Color(0xFFEBF3EE),
+    ),
+  ];
 
   @override
   void initState() {
     super.initState();
-    _moodyController = AnimationController(
+    _breathController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 2400),
+    )..repeat(reverse: true);
+    _breathScale = Tween<double>(begin: 1.0, end: 1.06).animate(
+      CurvedAnimation(parent: _breathController, curve: Curves.easeInOut),
     );
-    _messageController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-    _startAnimation();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _hydrateFromProvider());
   }
 
-  Future<void> _startAnimation() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    _moodyController.forward();
-    await Future.delayed(const Duration(milliseconds: 500));
-    _messageController.forward();
-  }
+  void _hydrateFromProvider() {
+    if (!mounted) return;
+    final prefs = ref.read(preferencesProvider);
 
-  void _toggleSocialVibe(String vibe) {
-    setState(() {
-      if (_selectedVibes.contains(vibe)) {
-        _selectedVibes.remove(vibe);
+    final social = <String>{};
+    for (final k in prefs.socialVibe) {
+      if (_socialOptions.any((e) => e.key == k)) social.add(k);
+    }
+
+    String? pace = prefs.planningPace;
+    if (!_allowedPaceKeys.contains(pace)) {
+      if (pace == 'Weekend Prepper') {
+        pace = 'Master Planner';
       } else {
-        _selectedVibes.add(vibe);
+        pace = null;
       }
-    });
-    
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        ref.read(preferencesProvider.notifier).updateSocialVibe(_selectedVibes.toList());
-      }
-    });
-  }
+    }
 
-  void _selectPlanningPace(String pace) {
+    final styles = prefs.travelStyles
+        .where(_allowedTravelStyleKeys.contains)
+        .toSet();
+
     setState(() {
+      _selectedVibes
+        ..clear()
+        ..addAll(social);
       _selectedPace = pace;
-    });
-    
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        ref.read(preferencesProvider.notifier).updatePlanningPace(pace);
-      }
+      _selectedStyles
+        ..clear()
+        ..addAll(styles);
     });
   }
 
-  void _toggleStyle(String style) {
+  bool get _canContinue =>
+      _selectedVibes.isNotEmpty &&
+      _selectedPace != null &&
+      _selectedStyles.isNotEmpty;
+
+  void _toggleSocialVibe(String key) {
+    HapticFeedback.selectionClick();
     setState(() {
-      if (_selectedStyles.contains(style)) {
-        _selectedStyles.remove(style);
-      } else if (_selectedStyles.length < maxStyleSelections) {
-        _selectedStyles.add(style);
-      }
-    });
-    
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        ref.read(preferencesProvider.notifier).updateTravelStyles(_selectedStyles.toList());
+      if (_selectedVibes.contains(key)) {
+        _selectedVibes.remove(key);
+      } else {
+        _selectedVibes.add(key);
       }
     });
   }
 
-  bool get _canContinue {
-    return _selectedVibes.isNotEmpty && _selectedPace != null && _selectedStyles.isNotEmpty;
+  void _selectPace(String key) {
+    HapticFeedback.selectionClick();
+    setState(() => _selectedPace = key);
+  }
+
+  void _toggleStyle(String key) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      if (_selectedStyles.contains(key)) {
+        _selectedStyles.remove(key);
+      } else if (_selectedStyles.length < _maxStyleSelections) {
+        _selectedStyles.add(key);
+      }
+    });
+  }
+
+  void _onContinue() {
+    if (!_canContinue) return;
+    final n = ref.read(preferencesProvider.notifier);
+    n.updateSocialVibe(_selectedVibes.toList());
+    n.updatePlanningPace(_selectedPace!);
+    n.updateTravelStyles(_selectedStyles.toList());
+    context.go('/preferences/loading');
+  }
+
+  void _onBack() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/preferences/interests');
+    }
   }
 
   @override
   void dispose() {
-    _moodyController.dispose();
-    _messageController.dispose();
+    _breathController.dispose();
     super.dispose();
-  }
-
-  Widget _buildSocialVibeCard(Map<String, dynamic> vibe) {
-    final String key = vibe['key'] as String;
-    final bool isSelected = _selectedVibes.contains(key);
-    final color = vibe['color'] as Color;
-    
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: GestureDetector(
-        onTap: () => _toggleSocialVibe(key),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          height: 80,
-          decoration: BoxDecoration(
-            color: isSelected ? color : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isSelected ? color : Colors.grey.withOpacity(0.3),
-              width: isSelected ? 2 : 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: isSelected
-                  ? color.withOpacity(0.12)
-                  : const Color(0xFFE8E8E8).withOpacity(0.4),
-                blurRadius: isSelected ? 8 : 6,
-                spreadRadius: 0,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: isSelected
-                      ? Colors.white.withOpacity(0.2)
-                      : color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Text(
-                      vibe['emoji'],
-                      style: const TextStyle(fontSize: 20),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        vibe['name'] as String,
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: isSelected ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                      Text(
-                        vibe['description'] as String,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: isSelected
-                            ? Colors.white.withOpacity(0.9)
-                            : Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (isSelected)
-                  Container(
-                    width: 20,
-                    height: 20,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.check,
-                      color: color,
-                      size: 14,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlanningPaceCard(Map<String, dynamic> pace) {
-    final String key = pace['key'] as String;
-    final bool isSelected = _selectedPace == key;
-    final color = pace['color'] as Color;
-    
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: GestureDetector(
-        onTap: () => _selectPlanningPace(key),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          height: 80,
-          decoration: BoxDecoration(
-            color: isSelected ? color : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isSelected ? color : Colors.grey.withOpacity(0.3),
-              width: isSelected ? 2 : 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: isSelected
-                  ? color.withOpacity(0.12)
-                  : const Color(0xFFE8E8E8).withOpacity(0.4),
-                blurRadius: isSelected ? 8 : 6,
-                spreadRadius: 0,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: isSelected
-                      ? Colors.white.withOpacity(0.2)
-                      : color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Text(
-                      pace['emoji'],
-                      style: const TextStyle(fontSize: 20),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        pace['name'] as String,
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: isSelected ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                      Text(
-                        pace['description'] as String,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: isSelected
-                            ? Colors.white.withOpacity(0.9)
-                            : Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (isSelected)
-                  Container(
-                    width: 20,
-                    height: 20,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.check,
-                      color: color,
-                      size: 14,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStyleCard(Map<String, dynamic> style) {
-    final String key = style['key'] as String;
-    final bool isSelected = _selectedStyles.contains(key);
-    final color = style['color'] as Color;
-    
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () => _toggleStyle(key),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          height: 80,
-          decoration: BoxDecoration(
-            color: isSelected ? color : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isSelected ? color : Colors.grey.withOpacity(0.3),
-              width: isSelected ? 2 : 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: isSelected
-                  ? color.withOpacity(0.12)
-                  : const Color(0xFFE8E8E8).withOpacity(0.4),
-                blurRadius: isSelected ? 8 : 6,
-                spreadRadius: 0,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: isSelected
-                      ? Colors.white.withOpacity(0.2)
-                      : color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Text(
-                      style['emoji'],
-                      style: const TextStyle(fontSize: 20),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        style['name'] as String,
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: isSelected ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                      Text(
-                        style['description'] as String,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: isSelected
-                            ? Colors.white.withOpacity(0.9)
-                            : Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (isSelected)
-                  Container(
-                    width: 20,
-                    height: 20,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.check,
-                      color: color,
-                      size: 14,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SwirlBackground(
-        child: SafeArea(
-          child: Stack(
-            children: [
-              // Progress indicator (4 of 4)
-              Positioned(
-                top: 20,
-                left: 0,
-                right: 0,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: _wmCream,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 4, right: 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  onPressed: _onBack,
+                  icon: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: _wmStone,
+                    size: 20,
+                  ),
+                  tooltip: 'Terug',
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                height: 3,
+                child: Stack(
                   children: [
-                    ...List.generate(4, (index) => Container(
-                      width: 35,
-                      height: 4,
-                      margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                    Container(
                       decoration: BoxDecoration(
-                        color: index < 4 
-                          ? const Color(0xFF2A6049)
-                          : Colors.grey.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(2),
+                        color: _wmParchment,
+                        borderRadius: BorderRadius.circular(1.5),
                       ),
-                    )),
+                    ),
+                    FractionallySizedBox(
+                      widthFactor: 0.75,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: _wmForest,
+                          borderRadius: BorderRadius.circular(1.5),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-
-              // Back button
-              Positioned(
-                top: 20,
-                left: 20,
-                child: GestureDetector(
-                  onTap: () => context.go('/preferences/interests'),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ScaleTransition(
+                    alignment: Alignment.center,
+                    scale: _breathScale,
+                    child: const MoodyCharacter(
+                      size: 64,
+                      mood: 'idle',
                     ),
-                    child: const Icon(
-                      Icons.arrow_back_ios_new,
-                      color: Color(0xFF2A6049),
-                      size: 20,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(child: _MoodySpeechBubble()),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Jouw reisprofiel',
+                    style: GoogleFonts.poppins(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: _wmCharcoal,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _sectionLabel('Sociale vibe 👥'),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Meerdere keuzes mogelijk',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: _wmStone,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        childAspectRatio: 0.98,
+                      ),
+                      itemCount: _socialOptions.length,
+                      itemBuilder: (context, i) {
+                        final o = _socialOptions[i];
+                        final sel = _selectedVibes.contains(o.key);
+                        return _SocialCard(
+                          emoji: o.emoji,
+                          title: o.title,
+                          hint: o.hint,
+                          selected: sel,
+                          onTap: () => _toggleSocialVibe(o.key),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    _sectionLabel('Planningsritme ⚡'),
+                    const SizedBox(height: 12),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: _paceOptions.map((o) {
+                          final sel = _selectedPace == o.key;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _PaceChip(
+                              label: o.label,
+                              selected: sel,
+                              onTap: () => _selectPace(o.key),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _sectionLabel('Jouw stijl 🌟'),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Kies tot $_maxStyleSelections stijlen die bij je passen.',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: _wmStone,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ..._travelOptions.map((o) {
+                      final sel = _selectedStyles.contains(o.key);
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _TravelStyleRow(
+                          emoji: o.emoji,
+                          title: o.title,
+                          subtitle: o.subtitle,
+                          emojiBg: o.emojiBg,
+                          selected: sel,
+                          onTap: () => _toggleStyle(o.key),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+              child: SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: FilledButton(
+                  onPressed: _canContinue ? _onContinue : null,
+                  style: FilledButton.styleFrom(
+                    backgroundColor:
+                        _canContinue ? _wmForest : _wmParchment,
+                    foregroundColor:
+                        _canContinue ? Colors.white : _wmStone,
+                    disabledBackgroundColor: _wmParchment,
+                    disabledForegroundColor: _wmStone,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                    ),
+                  ),
+                  child: Text(
+                    'Doorgaan →',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-              // Main content
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+  Widget _sectionLabel(String text) {
+    return Text(
+      text,
+      style: GoogleFonts.poppins(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        color: _wmCharcoal,
+      ),
+    );
+  }
+}
+
+class _MoodySpeechBubble extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CustomPaint(
+          size: const Size(10, 14),
+          painter: _BubbleLeftTailPainter(),
+        ),
+        Expanded(
+          child: Transform.translate(
+            offset: const Offset(-0.5, 0),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: _wmSkyTint,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _wmSky, width: 0.5),
+              ),
+              child: Text(
+                'Nog een paar vragen en ik ken je helemaal! ✈️',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: _wmCharcoal,
+                  height: 1.3,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BubbleLeftTailPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(size.width, 3)
+      ..lineTo(0, size.height / 2)
+      ..lineTo(size.width, size.height - 3)
+      ..close();
+    canvas.drawPath(path, Paint()..color = _wmSkyTint);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = _wmSky
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.5,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _SocialCard extends StatelessWidget {
+  const _SocialCard({
+    required this.emoji,
+    required this.title,
+    required this.hint,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String emoji;
+  final String title;
+  final String hint;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: AnimatedScale(
+          scale: selected ? 1.02 : 1.0,
+          duration: const Duration(milliseconds: 280),
+          curve: Curves.elasticOut,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: selected ? _wmForestTint : _wmWhite,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: selected ? _wmForest : _wmParchment,
+                width: selected ? 2 : 1,
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(emoji, style: const TextStyle(fontSize: 36)),
+                const SizedBox(height: 8),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: selected ? _wmForest : _wmCharcoal,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  hint,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: _wmStone,
+                    height: 1.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PaceChip extends StatelessWidget {
+  const _PaceChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(24),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          constraints: const BoxConstraints(minHeight: 44),
+          decoration: BoxDecoration(
+            color: selected ? _wmForest : _wmWhite,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: selected ? _wmForest : _wmParchment,
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                color: selected ? Colors.white : _wmDusk,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TravelStyleRow extends StatelessWidget {
+  const _TravelStyleRow({
+    required this.emoji,
+    required this.title,
+    required this.subtitle,
+    required this.emojiBg,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String emoji;
+  final String title;
+  final String subtitle;
+  final Color emojiBg;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: selected ? _wmForestTint : _wmWhite,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: selected ? _wmForest : _wmParchment,
+              width: selected ? 1.5 : 0.5,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: emojiBg,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(emoji, style: const TextStyle(fontSize: 20)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 60),
-                    
-                    // Title
-                    SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, -0.2),
-                        end: Offset.zero,
-                      ).animate(_messageController),
-                      child: FadeTransition(
-                        opacity: _messageController,
-                        child: Center(
-                          child: Consumer(
-                            builder: (context, ref, child) {
-                              final communicationState = ref.watch(communicationStyleProvider);
-                              final styleKey = communicationState.style.toString().split('.').last;
-                              final l10n = AppLocalizations.of(context)!;
-                              final title = _travelTitle(l10n, styleKey);
-                              return Text(
-                                title,
-                                style: GoogleFonts.museoModerno(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF2A6049),
-                                ),
-                                textAlign: TextAlign.center,
-                              );
-                            },
-                          ),
-                        ),
+                    Text(
+                      title,
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: _wmCharcoal,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, -0.2),
-                        end: Offset.zero,
-                      ).animate(_messageController),
-                      child: FadeTransition(
-                        opacity: _messageController,
-                        child: Center(
-                          child: Consumer(
-                            builder: (context, ref, child) {
-                              final communicationState = ref.watch(communicationStyleProvider);
-                              final styleKey = communicationState.style.toString().split('.').last;
-                              final l10n = AppLocalizations.of(context)!;
-                              final subtitle = _travelSubtitle(l10n, styleKey);
-                              return Text(
-                                subtitle,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  color: Colors.black87,
-                                ),
-                                textAlign: TextAlign.center,
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    
-                    // Scrollable content
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Section 1: Social Vibe
-                            Text(
-                              AppLocalizations.of(context)!.prefSectionSocialVibe,
-                              style: GoogleFonts.poppins(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            ..._socialVibes(context).map((vibe) => _buildSocialVibeCard(vibe)),
-                            
-                            const SizedBox(height: 32),
-                            
-                            // Section 2: Planning Pace
-                            Text(
-                              AppLocalizations.of(context)!.prefSectionPlanningPace,
-                              style: GoogleFonts.poppins(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            ..._planningPaces(context).map((pace) => _buildPlanningPaceCard(pace)),
-                            
-                            const SizedBox(height: 32),
-                            
-                            // Section 3: Travel Style
-                            Text(
-                              AppLocalizations.of(context)!.prefSectionTravelStyle,
-                              style: GoogleFonts.poppins(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              AppLocalizations.of(context)!.prefSelectUpToStyles(maxStyleSelections),
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                color: Colors.black54,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            ..._travelStyles(context).map((style) => _buildStyleCard(style)),
-                            
-                            const SizedBox(height: 24),
-                          ],
-                        ),
-                      ),
-                    ),
-                    
-                    // Continue button
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 24),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _canContinue
-                            ? () => context.go('/preferences/loading')
-                            : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _canContinue
-                              ? const Color(0xFF2A6049)
-                              : Colors.grey.withOpacity(0.3),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 32,
-                              vertical: 16,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: Text(
-                            AppLocalizations.of(context)!.continueButton,
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: _wmDusk,
+                        height: 1.35,
                       ),
                     ),
                   ],

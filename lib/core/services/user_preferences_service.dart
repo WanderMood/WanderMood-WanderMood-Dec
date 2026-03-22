@@ -28,7 +28,7 @@ class UserPreferencesService {
   bool placeMatchesInterests(Place place) {
     if (travelInterests.isEmpty) return true; // No preferences = show all
 
-    // Map onboarding interests to place types/categories
+    // Map onboarding interests to place types/categories (incl. legacy short keys).
     final interestToTypes = {
       'Food & Dining': ['restaurant', 'cafe', 'bar', 'food', 'meal_takeaway'],
       'Arts & Culture': ['museum', 'art_gallery', 'library', 'tourist_attraction'],
@@ -37,6 +37,25 @@ class UserPreferencesService {
       'Nightlife': ['bar', 'night_club', 'lounge'],
       'Wellness & Relaxation': ['spa', 'gym', 'yoga_studio', 'beauty_salon'],
       'Stays & Getaways': ['lodging', 'hotel', 'apartment_rental'],
+      'Coffee & Cafés': ['cafe', 'coffee_shop', 'bakery', 'meal_takeaway'],
+      'Photography & Spots': [
+        'tourist_attraction',
+        'point_of_interest',
+        'landmark',
+        'art_gallery',
+      ],
+      'Sports': [
+        'gym',
+        'stadium',
+        'sports_complex',
+        'bowling_alley',
+        'golf_course',
+        'fitness_center',
+      ],
+      'Food': ['restaurant', 'cafe', 'bar', 'food', 'meal_takeaway'],
+      'Arts': ['museum', 'art_gallery', 'library', 'tourist_attraction'],
+      'Shopping': ['shopping_mall', 'store', 'market', 'clothing_store'],
+      'Stays': ['lodging', 'hotel', 'apartment_rental'],
     };
 
     // Check if place types match any of user's interests
@@ -90,6 +109,13 @@ class UserPreferencesService {
       'Nightlife': 'nightlife',
       'Wellness & Relaxation': 'wellness',
       'Stays & Getaways': 'accommodations',
+      'Coffee & Cafés': 'restaurants',
+      'Photography & Spots': 'culture',
+      'Sports': 'wellness',
+      'Food': 'restaurants',
+      'Arts': 'culture',
+      'Shopping': 'shopping',
+      'Stays': 'accommodations',
     };
 
     return travelInterests

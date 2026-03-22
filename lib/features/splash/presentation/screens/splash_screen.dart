@@ -8,8 +8,6 @@ import '../../../auth/providers/auth_state_provider.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:wandermood/l10n/app_localizations.dart';
-
 /// Design system — splash (wmForest background)
 const Color _wmForest = Color(0xFF2A6049);
 
@@ -30,6 +28,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   void initState() {
     super.initState();
+    // Light status/nav icons on dark Forest background (use .dark — not .light)
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle.dark.copyWith(
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: _wmForest,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
     _breathController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2400),
@@ -199,13 +205,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
+      value: SystemUiOverlayStyle.dark.copyWith(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
         systemNavigationBarColor: _wmForest,
         systemNavigationBarIconBrightness: Brightness.light,
       ),
@@ -230,26 +232,27 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   Text(
-                    l10n.appTitle,
+                    'WanderMood',
                     textAlign: TextAlign.center,
-                    maxLines: 2,
+                    maxLines: 1,
                     style: GoogleFonts.poppins(
                       fontSize: 32,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w800,
                       color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    l10n.splashTagline,
+                    'Plan je dag op je gevoel',
                     textAlign: TextAlign.center,
-                    maxLines: 3,
+                    maxLines: 2,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
-                      height: 1.5,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      fontWeight: FontWeight.w400,
+                      height: 1.4,
+                      color: Colors.white.withValues(alpha: 0.70),
                     ),
                   ),
                   const Spacer(),

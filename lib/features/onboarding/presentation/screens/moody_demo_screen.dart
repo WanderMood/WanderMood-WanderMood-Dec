@@ -1,10 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wandermood/l10n/app_localizations.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../home/domain/enums/moody_feature.dart';
@@ -12,12 +13,13 @@ import '../../../home/domain/enums/moody_feature.dart';
 /// WanderMood design tokens — demo screen
 const Color _wmCream = Color(0xFFF5F0E8);
 const Color _wmWhite = Color(0xFFFFFFFF);
-const Color _wmParchment = Color(0xFFE8E2D8);
 const Color _wmForest = Color(0xFF2A6049);
 const Color _wmSunset = Color(0xFFE8784A);
 const Color _wmSunsetTint = Color(0xFFFDF0E8);
 const Color _wmSky = Color(0xFFA8C8DC);
+const Color _wmSkyTint = Color(0xFFEDF5F9);
 const Color _wmCharcoal = Color(0xFF1E1C18);
+const Color _wmDusk = Color(0xFF4A4640);
 const Color _wmStone = Color(0xFF8C8780);
 
 /// Interactive Demo Screen
@@ -32,25 +34,26 @@ class MoodyDemoScreen extends ConsumerStatefulWidget {
 
 class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
     with TickerProviderStateMixin {
-  bool _isTyping = false;
   bool _showMoodOptions = false;
   String? _selectedMood;
   String? _bouncingKey;
   bool _showContinueCta = false;
+  bool _showPostTapTyping = false;
 
   late final AnimationController _breathController;
   late final Animation<double> _breathScale;
   late final AnimationController _bounceController;
   late final Animation<double> _bounceScale;
+  late final AnimationController _pulseController;
 
   /// Demo mood cards — keep existing hex colors (no gradient).
   static const List<Map<String, dynamic>> _demoMoodConfig = [
-    {'key': 'adventurous', 'emoji': '🏃', 'colorHex': '#4CAF50'},
-    {'key': 'relaxed', 'emoji': '😌', 'colorHex': '#80CBC4'},
-    {'key': 'romantic', 'emoji': '💕', 'colorHex': '#F8BBD9'},
-    {'key': 'cultural', 'emoji': '🎨', 'colorHex': '#B39DDB'},
-    {'key': 'foodie', 'emoji': '🍕', 'colorHex': '#FFAB91'},
-    {'key': 'social', 'emoji': '🎉', 'colorHex': '#FFF59D'},
+    {'key': 'adventurous', 'emoji': '🏃', 'colorHex': '#4CAF50', 'label': 'Avontuurlijk'},
+    {'key': 'relaxed', 'emoji': '😌', 'colorHex': '#80CBC4', 'label': 'Ontspannen'},
+    {'key': 'romantic', 'emoji': '💕', 'colorHex': '#F8BBD9', 'label': 'Romantisch'},
+    {'key': 'cultural', 'emoji': '🎨', 'colorHex': '#B39DDB', 'label': 'Cultureel'},
+    {'key': 'foodie', 'emoji': '🍕', 'colorHex': '#FFAB91', 'label': 'Foodie'},
+    {'key': 'social', 'emoji': '🎉', 'colorHex': '#FFF59D', 'label': 'Sociaal'},
   ];
 
   final List<_DemoMessage> _messages = [];
@@ -75,14 +78,21 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
 
     _bounceScale = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.12),
+        tween: Tween<double>(begin: 1.0, end: 1.12)
+            .chain(CurveTween(curve: Curves.elasticOut)),
         weight: 50,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.12, end: 1.0),
+        tween: Tween<double>(begin: 1.12, end: 1.0)
+            .chain(CurveTween(curve: Curves.elasticIn)),
         weight: 50,
       ),
-    ]).animate(CurvedAnimation(parent: _bounceController, curve: Curves.easeInOut));
+    ]).animate(_bounceController);
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    )..repeat(reverse: true);
   }
 
   @override
@@ -98,28 +108,31 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
   void dispose() {
     _breathController.dispose();
     _bounceController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
   Future<void> _startDemo() async {
-    final l10n = AppLocalizations.of(context)!;
-    await Future.delayed(const Duration(milliseconds: 500));
-    if (!mounted) return;
-    setState(() => _isTyping = true);
-    await Future.delayed(const Duration(milliseconds: 1200));
+    await Future.delayed(const Duration(milliseconds: 550));
     if (!mounted) return;
     setState(() {
-      _isTyping = false;
-      _messages.add(_DemoMessage(text: l10n.demoMoodyGreeting, isFromMoody: true));
+      _messages.add(
+        _DemoMessage(
+          text: 'Hé! 👋 Ik ben Moody, je reismaatje.',
+          isFromMoody: true,
+        ),
+      );
     });
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (!mounted) return;
-    setState(() => _isTyping = true);
-    await Future.delayed(const Duration(milliseconds: 1000));
+    await Future.delayed(const Duration(milliseconds: 1100));
     if (!mounted) return;
     setState(() {
-      _isTyping = false;
-      _messages.add(_DemoMessage(text: l10n.demoMoodyAskVibe, isFromMoody: true));
+      _messages.add(
+        _DemoMessage(
+          text:
+              'Ik help je geweldige plekken ontdekken op basis van hoe je je voelt. Wat is je mood vandaag?',
+          isFromMoody: true,
+        ),
+      );
       _showMoodOptions = true;
     });
   }
@@ -127,35 +140,34 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
   Future<void> _selectMood(String mood) async {
     if (_selectedMood != null) return;
     if (!mounted) return;
-    final l10n = AppLocalizations.of(context)!;
 
     HapticFeedback.mediumImpact();
     setState(() => _bouncingKey = mood);
-    _bounceController.forward(from: 0);
-    await Future.delayed(const Duration(milliseconds: 300));
+    await _bounceController.forward(from: 0);
     if (!mounted) return;
     setState(() => _bouncingKey = null);
     _bounceController.reset();
 
-    final moodLabel = _moodLabel(l10n, mood);
     setState(() {
       _selectedMood = mood;
       _showMoodOptions = false;
       _messages.add(
         _DemoMessage(
-          text: l10n.demoUserFeeling(moodLabel),
+          text: _userReplyDutch(mood),
           isFromMoody: false,
         ),
       );
+      _showPostTapTyping = true;
     });
 
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 700));
     if (!mounted) return;
     HapticFeedback.lightImpact();
     setState(() {
+      _showPostTapTyping = false;
       _messages.add(
         _DemoMessage(
-          text: _getMoodyResponse(l10n, mood),
+          text: _moodyResponseDutch(mood),
           isFromMoody: true,
         ),
       );
@@ -163,22 +175,41 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
     });
   }
 
-  String _getMoodyResponse(AppLocalizations l10n, String mood) {
+  String _userReplyDutch(String mood) {
     switch (mood.toLowerCase()) {
-      case 'adventurous':
-        return l10n.demoMoodyResponseAdventurous;
       case 'relaxed':
-        return l10n.demoMoodyResponseRelaxed;
+        return 'Ik voel me ontspannen';
+      case 'adventurous':
+        return 'Ik voel me avontuurlijk';
       case 'romantic':
-        return l10n.demoMoodyResponseRomantic;
+        return 'Ik voel me romantisch';
       case 'cultural':
-        return l10n.demoMoodyResponseCultural;
+        return 'Ik voel me cultureel';
       case 'foodie':
-        return l10n.demoMoodyResponseFoodie;
+        return 'Ik voel me als een foodie';
       case 'social':
-        return l10n.demoMoodyResponseSocial;
+        return 'Ik voel me sociaal';
       default:
-        return l10n.demoMoodyResponseDefault;
+        return 'Dit is mijn mood!';
+    }
+  }
+
+  String _moodyResponseDutch(String mood) {
+    switch (mood.toLowerCase()) {
+      case 'relaxed':
+        return 'Lekker rustig aan doen vandaag? Goed plan! 🌿';
+      case 'adventurous':
+        return 'Tijd voor avontuur! Ik weet precies wat je nodig hebt 🔥';
+      case 'foodie':
+        return 'Ik ken de lekkerste plekken in de stad 🍽';
+      case 'social':
+        return 'Gezelligheid zoeken? Ik regel het! 👥';
+      case 'cultural':
+        return 'Rotterdam\'s cultuurscene wacht op je 🎭';
+      case 'romantic':
+        return 'Een romantische dag? Moody heeft je 💕';
+      default:
+        return 'Mooi! Laten we gaan ontdekken ✨';
     }
   }
 
@@ -204,9 +235,33 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
           children: [
             _buildHeader(),
             Expanded(
-              child: _buildChatArea(width),
+              child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildMoodySection(),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          ..._messages.map((m) => _buildMessage(m, width)),
+                          if (_showPostTapTyping) _buildPostTapTypingBubble(),
+                        ],
+                      ),
+                    ),
+                    if (_showMoodOptions) ...[
+                      const SizedBox(height: 16),
+                      _buildMoodTilesBlock(),
+                    ],
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
             ),
-            _buildBottomSection(),
+            if (_showContinueCta) _buildContinueButtonFooter(),
           ],
         ),
       ),
@@ -214,8 +269,6 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
   }
 
   Widget _buildHeader() {
-    final l10n = AppLocalizations.of(context)!;
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
       child: Row(
@@ -236,21 +289,15 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
                 decoration: BoxDecoration(
                   color: _wmSunsetTint,
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: _wmSunset, width: 0.5),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.play_arrow_rounded, size: 18, color: _wmSunset),
-                    const SizedBox(width: 4),
-                    Text(
-                      l10n.demoMode,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: _wmSunset,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  '▶ Demomodus',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: _wmSunset,
+                  ),
                 ),
               ),
             ),
@@ -262,7 +309,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
               padding: const EdgeInsets.symmetric(horizontal: 8),
             ),
             child: Text(
-              l10n.introSkip,
+              'Overslaan',
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -275,84 +322,96 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
     );
   }
 
-  Widget _buildChatArea(double screenWidth) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 0),
-      children: [
-        const SizedBox(height: 8),
-        Column(
-          children: [
-            Center(
-              child: ScaleTransition(
+  Widget _buildMoodySection() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 4, 0, 0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 128,
+                height: 128,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: _wmSky.withValues(alpha: 0.18),
+                      blurRadius: 36,
+                      spreadRadius: 0,
+                    ),
+                  ],
+                ),
+              ),
+              ScaleTransition(
                 alignment: Alignment.center,
                 scale: _breathScale,
                 child: MoodyCharacter(
-                  size: 90,
-                  mood: _isTyping ? 'thinking' : 'happy',
+                  size: 96,
+                  mood: _showPostTapTyping ? 'thinking' : 'happy',
                   currentFeature: MoodyFeature.none,
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.demoMoodyName,
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
-                color: _wmStone,
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ..._messages.map((m) => _buildMessage(m, screenWidth)),
-              if (_isTyping) _buildTypingIndicator(),
             ],
           ),
-        ),
-        const SizedBox(height: 24),
-      ],
+          const SizedBox(height: 6),
+          Text(
+            'Moody',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: _wmDusk,
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildMessage(_DemoMessage message, double screenWidth) {
-    final maxMoody = screenWidth * 0.8;
-    final maxUser = screenWidth * 0.7;
-
-    final bubble = message.isFromMoody
-        ? Container(
-            constraints: BoxConstraints(maxWidth: maxMoody),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            decoration: BoxDecoration(
-              color: _wmWhite,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(4),
-                topRight: Radius.circular(16),
-                bottomLeft: Radius.circular(16),
-                bottomRight: Radius.circular(16),
-              ),
-              border: Border(
-                left: BorderSide(color: _wmSky, width: 3),
-              ),
-            ),
+  Widget _buildMoodyBubbleContent(String text, double maxW) {
+    return Container(
+      constraints: BoxConstraints(maxWidth: maxW),
+      decoration: BoxDecoration(
+        color: _wmSkyTint,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _wmSky, width: 0.5),
+      ),
+      padding: const EdgeInsets.only(left: 8, right: 12, top: 10, bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const MoodyCharacter(
+            size: 32,
+            mood: 'idle',
+            currentFeature: MoodyFeature.none,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
             child: Text(
-              message.text,
+              text,
               style: GoogleFonts.poppins(
-                fontSize: 16,
-                height: 1.5,
+                fontSize: 15,
+                height: 1.45,
                 fontWeight: FontWeight.w400,
                 color: _wmCharcoal,
               ),
             ),
-          )
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessage(_DemoMessage message, double screenWidth) {
+    final maxMoody = screenWidth * 0.82;
+    final maxUser = screenWidth * 0.72;
+
+    final bubble = message.isFromMoody
+        ? _buildMoodyBubbleContent(message.text, maxMoody)
         : Container(
             constraints: BoxConstraints(maxWidth: maxUser),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -368,15 +427,15 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
             child: Text(
               message.text,
               style: GoogleFonts.poppins(
-                fontSize: 16,
-                height: 1.5,
+                fontSize: 15,
+                height: 1.45,
                 fontWeight: FontWeight.w500,
                 color: _wmWhite,
               ),
             ),
           );
 
-    final animated = Padding(
+    final row = Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         mainAxisAlignment:
@@ -387,143 +446,166 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
           if (message.isFromMoody) const Spacer(),
         ],
       ),
-    )
-        .animate()
-        .fadeIn(duration: 300.ms)
-        .slideY(
-          begin: 20,
-          end: 0,
-          duration: 300.ms,
-          curve: Curves.easeOutCubic,
-        );
+    );
+
+    final animated = message.isFromMoody
+        ? row
+            .animate()
+            .fadeIn(duration: 520.ms, curve: Curves.easeOut)
+            .slideY(
+              begin: 18,
+              end: 0,
+              duration: 520.ms,
+              curve: Curves.easeOutCubic,
+            )
+        : row
+            .animate()
+            .fadeIn(duration: 520.ms, curve: Curves.easeOut)
+            .slideY(
+              begin: 18,
+              end: 0,
+              duration: 520.ms,
+              curve: Curves.easeOutCubic,
+            )
+            .slideX(
+              begin: 0.1,
+              end: 0,
+              duration: 450.ms,
+              curve: Curves.easeOutCubic,
+            );
 
     if (message.isFromMoody) {
       return Padding(
-        padding: const EdgeInsets.only(left: 16),
+        padding: const EdgeInsets.only(left: 4),
         child: animated,
       );
     }
     return Padding(
-      padding: const EdgeInsets.only(right: 16),
+      padding: const EdgeInsets.only(right: 4),
       child: animated,
     );
   }
 
-  Widget _buildTypingIndicator() {
+  Widget _buildPostTapTypingBubble() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12, left: 16),
+      padding: const EdgeInsets.only(bottom: 12, left: 4),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: _wmWhite,
+            color: _wmSkyTint,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _wmParchment, width: 1),
+            border: Border.all(color: _wmSky, width: 0.5),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildTypingDot(0),
+              _buildPulseDot(0),
               const SizedBox(width: 6),
-              _buildTypingDot(1),
+              _buildPulseDot(1),
               const SizedBox(width: 6),
-              _buildTypingDot(2),
+              _buildPulseDot(2),
             ],
           ),
         ),
       ),
-    );
+    )
+        .animate()
+        .fadeIn(duration: 320.ms, curve: Curves.easeOut);
   }
 
-  Widget _buildTypingDot(int index) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: Duration(milliseconds: 600 + (index * 200)),
-      builder: (context, value, child) {
-        return Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: _wmForest.withValues(alpha: 0.35 + (value * 0.45)),
+  Widget _buildPulseDot(int index) {
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, child) {
+        final t = _pulseController.value * 2 * math.pi + index * (math.pi * 0.45);
+        final opacity = 0.35 + 0.55 * (0.5 + 0.5 * math.sin(t));
+        return Opacity(
+          opacity: opacity.clamp(0.35, 1.0),
+          child: Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _wmSky,
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildBottomSection() {
-    final l10n = AppLocalizations.of(context)!;
+  Widget _buildMoodTilesBlock() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Tik om je mood te kiezen:',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              height: 1.5,
+              color: _wmStone,
+            ),
+          ),
+          const SizedBox(height: 12),
+          GridView.count(
+            crossAxisCount: 3,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 1.0,
+            children: _demoMoodConfig
+                .map(
+                  (config) => AspectRatio(
+                    aspectRatio: 1.0,
+                    child: _buildMoodCard(config),
+                  ),
+                )
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
 
+  Widget _buildContinueButtonFooter() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       child: SafeArea(
         top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (_showMoodOptions) ...[
-              Text(
-                l10n.demoTapToSelectMood,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  height: 1.5,
-                  color: _wmStone,
-                ),
+        child: SizedBox(
+          width: double.infinity,
+          height: 54,
+          child: ElevatedButton(
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              _onContinue();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _wmForest,
+              foregroundColor: _wmWhite,
+              elevation: 0,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(27),
               ),
-              const SizedBox(height: 12),
-              GridView.count(
-                crossAxisCount: 2,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                childAspectRatio: 1.85,
-                children: _demoMoodConfig
-                    .map((config) => _buildMoodCard(config))
-                    .toList(),
+            ),
+            child: Text(
+              'Ontdek meer →',
+              style: GoogleFonts.poppins(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: _wmWhite,
               ),
-            ] else if (_showContinueCta) ...[
-              SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: ElevatedButton(
-                  onPressed: () {
-                    HapticFeedback.mediumImpact();
-                    _onContinue();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _wmForest,
-                    foregroundColor: _wmWhite,
-                    elevation: 0,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(27),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        l10n.demoExploreMore,
-                        style: GoogleFonts.poppins(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          color: _wmWhite,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.arrow_forward_rounded, color: _wmWhite, size: 22),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
+            ),
+          ),
+        ).animate().fadeIn(duration: 250.ms).slideY(begin: 12, end: 0, duration: 280.ms),
       ),
     );
   }
@@ -534,63 +616,80 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
     return Color(int.parse(h, radix: 16));
   }
 
-  String _moodLabel(AppLocalizations l10n, String key) {
-    switch (key) {
-      case 'adventurous':
-        return l10n.demoMoodAdventurous;
-      case 'relaxed':
-        return l10n.demoMoodRelaxed;
-      case 'romantic':
-        return l10n.demoMoodRomantic;
-      case 'cultural':
-        return l10n.demoMoodCultural;
-      case 'foodie':
-        return l10n.demoMoodFoodie;
-      case 'social':
-        return l10n.demoMoodSocial;
-      default:
-        return key;
-    }
-  }
-
   Widget _buildMoodCard(Map<String, dynamic> config) {
     final String key = config['key'] as String;
     final String emoji = config['emoji'] as String;
-    final Color moodColor = _colorFromHex(config['colorHex'] as String);
-    final l10n = AppLocalizations.of(context)!;
-    final String label = _moodLabel(l10n, key);
-    Widget card = Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: _selectedMood != null ? null : () => _selectMood(key),
-        borderRadius: BorderRadius.circular(16),
-        splashColor: moodColor.withValues(alpha: 0.2),
-        highlightColor: moodColor.withValues(alpha: 0.1),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-          decoration: BoxDecoration(
-            color: moodColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _wmParchment, width: 1),
+    final Color pastelBase = _colorFromHex(config['colorHex'] as String);
+    final String label = config['label'] as String;
+    const double tileRadius = 20;
+    final bool isPressed = _bouncingKey == key;
+
+    Widget card = GestureDetector(
+      onTap: _selectedMood != null ? null : () => _selectMood(key),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(tileRadius),
+          color: pastelBase,
+          border: Border.all(
+            color: isPressed ? _wmForest : Colors.white.withValues(alpha: 0.6),
+            width: isPressed ? 2 : 1.2,
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.12),
+              blurRadius: 18,
+              offset: const Offset(3, 4),
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 8,
+              offset: const Offset(1, 2),
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(tileRadius),
+          child: Stack(
             children: [
-              Text(emoji, style: const TextStyle(fontSize: 26)),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: _wmCharcoal,
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.white.withValues(alpha: 0.35),
+                        Colors.white.withValues(alpha: 0.08),
+                      ],
+                    ),
+                  ),
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+              ),
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(emoji, style: const TextStyle(fontSize: 28)),
+                    const SizedBox(height: 4),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      child: Text(
+                        label,
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

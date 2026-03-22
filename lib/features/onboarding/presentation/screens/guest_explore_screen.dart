@@ -15,7 +15,6 @@ const Color _wmParchment = Color(0xFFE8E2D8);
 const Color _wmForest = Color(0xFF2A6049);
 const Color _wmForestTint = Color(0xFFEBF3EE);
 const Color _wmSunset = Color(0xFFE8784A);
-const Color _wmSunsetTint = Color(0xFFFDF0E8);
 const Color _wmCharcoal = Color(0xFF1E1C18);
 const Color _wmStone = Color(0xFF8C8780);
 
@@ -50,7 +49,8 @@ const List<String> _uspFilterIds = [
 class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
   final List<_SamplePlace> _places = _getSamplePlaces();
   bool _showSignupBanner = false;
-  final Set<String> _selectedUspFilters = {};
+  /// At most one USP filter selected; `null` means no filter.
+  String? _selectedUspFilter;
 
   @override
   void initState() {
@@ -134,11 +134,9 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
   }
 
   bool _placeMatchesFilters(_SamplePlace p) {
-    if (_selectedUspFilters.isEmpty) return true;
-    for (final id in _selectedUspFilters) {
-      if (_uspMatchesPlace(p, id)) return true;
-    }
-    return false;
+    final id = _selectedUspFilter;
+    if (id == null) return true;
+    return _uspMatchesPlace(p, id);
   }
 
   bool _uspMatchesPlace(_SamplePlace p, String id) {
@@ -300,21 +298,22 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: _wmForestTint,
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: _wmForest, width: 1),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.person_outline_rounded, size: 18, color: _wmForest),
+                  const Icon(Icons.person_outline_rounded, size: 16, color: _wmForest),
                   const SizedBox(width: 6),
                   Text(
                     l10n.guestGuest,
                     style: GoogleFonts.poppins(
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                       color: _wmForest,
                     ),
                   ),
@@ -333,9 +332,9 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: _wmSunsetTint,
+        color: _wmWhite,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _wmSunset.withValues(alpha: 0.2)),
+        border: Border.all(color: _wmParchment),
       ),
       child: Row(
         children: [
@@ -406,7 +405,7 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
         itemCount: _uspFilterIds.length,
         itemBuilder: (context, index) {
           final id = _uspFilterIds[index];
-          final selected = _selectedUspFilters.contains(id);
+          final selected = _selectedUspFilter == id;
           return Padding(
             padding: EdgeInsets.only(right: index == _uspFilterIds.length - 1 ? 0 : 8),
             child: Material(
@@ -416,9 +415,9 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
                   HapticFeedback.selectionClick();
                   setState(() {
                     if (selected) {
-                      _selectedUspFilters.remove(id);
+                      _selectedUspFilter = null;
                     } else {
-                      _selectedUspFilters.add(id);
+                      _selectedUspFilter = id;
                     }
                   });
                 },
@@ -427,7 +426,7 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   decoration: BoxDecoration(
-                    color: selected ? _wmForestTint : _wmWhite,
+                    color: selected ? _wmForestTint : _wmCream,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: selected ? _wmForest : _wmParchment,
@@ -439,7 +438,7 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
                       _uspChipLabel(context, id),
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                        fontWeight: selected ? FontWeight.bold : FontWeight.w400,
                         color: selected ? _wmForest : _wmStone,
                       ),
                     ),
@@ -590,8 +589,9 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
                         color: _wmCharcoal,
+                        height: 1.25,
                       ),
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
@@ -1052,7 +1052,7 @@ List<Widget> _placeFilterBadges(BuildContext context, List<String> tags, {bool c
   final Map<String, String> labels = {
     'halal': l10n.guestFilterHalal,
     'black_owned': l10n.guestFilterBlackOwned,
-    'aesthetic_spaces': l10n.guestFilterAesthetic,
+    'aesthetic_spaces': 'Sfeervol',
     'lgbtq_friendly': l10n.guestFilterLgbtq,
     'vegan': l10n.guestFilterVegan,
     'vegetarian': l10n.guestFilterVegetarian,

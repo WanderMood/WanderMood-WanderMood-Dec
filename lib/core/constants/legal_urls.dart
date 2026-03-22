@@ -3,7 +3,7 @@ class LegalUrls {
   LegalUrls._();
 
   static final Uri privacyPolicy = Uri.parse(
-    'https://panoramic-onyx-5a4.notion.site/Privacy-Policy-32a668e77402809ba283f268c526a7a6',
+    'https://wandermood.com/nl/privacy',
   );
 
   static final Uri termsOfService =
