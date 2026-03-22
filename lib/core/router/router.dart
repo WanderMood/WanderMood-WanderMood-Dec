@@ -66,7 +66,6 @@ import '../../features/social/presentation/screens/user_profile_screen.dart';
 import '../../features/social/presentation/screens/edit_social_profile_screen.dart';
 import '../../features/social/presentation/screens/create_diary_entry_screen.dart';
 import '../../features/social/presentation/screens/diary_detail_screen.dart';
-import '../../features/social/presentation/screens/diaries_platform_screen.dart';
 import '../../features/social/presentation/screens/wanderfeed_coming_soon_screen.dart';
 import '../../features/social/presentation/screens/travel_diary_profile_screen.dart';
 import '../../features/auth/providers/auth_state_provider.dart';
