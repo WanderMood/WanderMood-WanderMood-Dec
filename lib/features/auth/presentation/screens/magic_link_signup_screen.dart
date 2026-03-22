@@ -1,16 +1,39 @@
 import 'dart:convert';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/constants/legal_urls.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
-import '../../../../core/providers/traveler_count_provider.dart';
-import '../../../../core/presentation/widgets/swirl_background.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../home/domain/enums/moody_feature.dart';
 import '../../../location/providers/location_provider.dart';
+
+/// WanderMood design tokens — magic link signup
+const Color _wmCream = Color(0xFFF5F0E8);
+const Color _wmWhite = Color(0xFFFFFFFF);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmSky = Color(0xFFA8C8DC);
+const Color _wmSunset = Color(0xFFE8784A);
+const Color _wmSunsetTint = Color(0xFFFDF0E8);
+const Color _wmCharcoal = Color(0xFF1E1C18);
+const Color _wmStone = Color(0xFF8C8780);
+const Color _wmDusk = Color(0xFF4A4640);
+const Color _wmError = Color(0xFFE05C5C);
+
+const List<String> _privacyPhrasePatterns = [
+  'politique de confidentialité',
+  'política de privacidad',
+  'privacy policy',
+  'privacybeleid',
+  'datenschutz',
+];
 
 /// Magic Link Signup Screen
 /// 
@@ -26,38 +49,63 @@ class MagicLinkSignupScreen extends ConsumerStatefulWidget {
 }
 
 class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  
+
   bool _isLoading = false;
   bool _emailSent = false;
   String? _errorMessage;
-  
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
+
+  late final AnimationController _breathController;
+  late final Animation<double> _breathScale;
+  late final AnimationController _ctaPressController;
+  late final Animation<double> _ctaScale;
+  late final TapGestureRecognizer _privacyTapRecognizer;
 
   @override
   void initState() {
     super.initState();
-    
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+
+    _breathController = AnimationController(
       vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    )..repeat(reverse: true);
+
+    _breathScale = Tween<double>(begin: 1.0, end: 1.06).animate(
+      CurvedAnimation(parent: _breathController, curve: Curves.easeInOut),
     );
-    
-    _fadeAnimation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
+
+    _ctaPressController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
     );
-    
-    _animationController.forward();
+    _ctaScale = Tween<double>(begin: 1.0, end: 0.97).animate(
+      CurvedAnimation(parent: _ctaPressController, curve: Curves.easeInOut),
+    );
+
+    _privacyTapRecognizer = TapGestureRecognizer()
+      ..onTap = () {
+        _openPrivacyPolicyExternal();
+      };
+
+    _emailController.addListener(() => setState(() {}));
+  }
+
+  Future<void> _openPrivacyPolicyExternal() async {
+    try {
+      if (await canLaunchUrl(LegalUrls.privacyPolicy)) {
+        await launchUrl(LegalUrls.privacyPolicy, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {}
   }
 
   @override
   void dispose() {
+    _privacyTapRecognizer.dispose();
     _emailController.dispose();
-    _animationController.dispose();
+    _breathController.dispose();
+    _ctaPressController.dispose();
     super.dispose();
   }
 
@@ -94,25 +142,28 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
       // Parse it and show a friendly, localized error instead of raw JSON.
       String friendlyMessage;
       try {
-        final dynamic decoded = e.message != null ? jsonDecode(e.message!) : null;
-        if (decoded is Map<String, dynamic>) {
-          final code = decoded['code'] as String?;
-          final serverMessage = decoded['message'] as String?;
+        final raw = e.message;
+        if (raw.isEmpty) {
+          friendlyMessage = AppLocalizations.of(context)!.signupErrorGeneric;
+        } else {
+          final dynamic decoded = jsonDecode(raw);
+          if (decoded is Map<String, dynamic>) {
+            final code = decoded['code'] as String?;
+            final serverMessage = decoded['message'] as String?;
 
-          if (code == 'unexpected_failure') {
-            // Generic "we couldn't send the email" message
-            friendlyMessage = AppLocalizations.of(context)!.signupErrorGeneric;
-          } else if (serverMessage != null && serverMessage.isNotEmpty) {
-            friendlyMessage = serverMessage;
+            if (code == 'unexpected_failure') {
+              friendlyMessage = AppLocalizations.of(context)!.signupErrorGeneric;
+            } else if (serverMessage != null && serverMessage.isNotEmpty) {
+              friendlyMessage = serverMessage;
+            } else {
+              friendlyMessage = AppLocalizations.of(context)!.signupErrorGeneric;
+            }
           } else {
             friendlyMessage = AppLocalizations.of(context)!.signupErrorGeneric;
           }
-        } else {
-          friendlyMessage = AppLocalizations.of(context)!.signupErrorGeneric;
         }
       } catch (_) {
-        // Fallback if message is not JSON
-        friendlyMessage = e.message ?? AppLocalizations.of(context)!.signupErrorGeneric;
+        friendlyMessage = AppLocalizations.of(context)!.signupErrorGeneric;
       }
 
       setState(() {
@@ -141,249 +192,315 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SwirlBackground(
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: _emailSent ? _buildSuccessState() : _buildFormState(),
-          ),
-        ),
+      backgroundColor: _wmCream,
+      body: SafeArea(
+        child: _emailSent ? _buildSuccessState() : _buildFormState(),
       ),
     );
   }
 
+  bool get _hasEmail => _emailController.text.trim().isNotEmpty;
+
+  Widget _buildTermsFooter(AppLocalizations l10n) {
+    final base = GoogleFonts.poppins(
+      fontSize: 13,
+      height: 1.45,
+      color: _wmStone,
+    );
+    final linkStyle = base.copyWith(
+      color: _wmForest,
+      fontWeight: FontWeight.w600,
+      decoration: TextDecoration.underline,
+      decorationColor: _wmForest,
+    );
+    final full = l10n.signupTerms;
+    final lower = full.toLowerCase();
+    int? idx;
+    int len = 0;
+    for (final p in _privacyPhrasePatterns) {
+      final i = lower.indexOf(p);
+      if (i >= 0) {
+        idx = i;
+        len = p.length;
+        break;
+      }
+    }
+    if (idx != null) {
+      final start = idx;
+      return Text.rich(
+        TextSpan(
+          style: base,
+          children: [
+            TextSpan(text: full.substring(0, start)),
+            TextSpan(
+              text: full.substring(start, start + len),
+              style: linkStyle,
+              recognizer: _privacyTapRecognizer,
+            ),
+            if (start + len < full.length) TextSpan(text: full.substring(start + len)),
+          ],
+        ),
+        textAlign: TextAlign.center,
+      );
+    }
+    return Text(
+      full,
+      textAlign: TextAlign.center,
+      style: base,
+    );
+  }
+
+  String _signupMetaLine(BuildContext context) {
+    final lc = Localizations.localeOf(context).languageCode;
+    if (lc == 'nl') return 'Gratis • Geen wachtwoord nodig';
+    return 'Free • No password needed';
+  }
+
   Widget _buildFormState() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Back button
-          IconButton(
-            onPressed: _goBack,
-            icon: const Icon(Icons.arrow_back_rounded),
-            color: Colors.grey[700],
-            padding: EdgeInsets.zero,
-          ),
-          
-          const SizedBox(height: 32),
-          
-          // Moody character
-          Center(
-            child: const MoodyCharacter(
-              size: 120,
-              mood: 'happy',
-              currentFeature: MoodyFeature.none,
-            ),
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // Title
-          Center(
-            child: Text(
-              AppLocalizations.of(context)!.signupJoinWanderMood,
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-                color: Colors.grey[800],
-              ),
-            ),
-          ),
-          
-          const SizedBox(height: 8),
-          
-          // Subtitle
-          Center(
-            child: Text(
-              AppLocalizations.of(context)!.signupSubtitle,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-                height: 1.4,
-              ),
-            ),
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // Form
-          Form(
-            key: _formKey,
+    final l10n = AppLocalizations.of(context)!;
+    final canSubmit = _hasEmail && !_isLoading;
+    final h = MediaQuery.sizeOf(context).height;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Email input
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.done,
-                  autofillHints: const [AutofillHints.email],
-                  decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context)!.signupEmailLabel,
-                    hintText: AppLocalizations.of(context)!.signupEmailHint,
-                    prefixIcon: Icon(Icons.email_outlined, color: Colors.grey[600]),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: Color(0xFF2A6049), width: 2),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: Colors.red),
-                    ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    onPressed: _goBack,
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    color: _wmCharcoal,
+                    padding: EdgeInsets.zero,
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return AppLocalizations.of(context)!.signupEmailRequired;
-                    }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                      return AppLocalizations.of(context)!.signupEmailInvalid;
-                    }
-                    return null;
-                  },
-                  onFieldSubmitted: (_) => _sendMagicLink(),
                 ),
-                
-                // Error message
-                if (_errorMessage != null) ...[
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.red[50],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.error_outline, color: Colors.red[700], size: 20),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _errorMessage!,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.red[700],
+                SizedBox(
+                  height: h * 0.35,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ScaleTransition(
+                        alignment: Alignment.center,
+                        scale: _breathScale,
+                        child: const MoodyCharacter(
+                          size: 100,
+                          mood: 'happy',
+                          currentFeature: MoodyFeature.none,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        l10n.signupJoinWanderMood,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: _wmCharcoal,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.signupSubtitle,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          height: 1.45,
+                          color: _wmStone,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedBox(
+                        height: 54,
+                        child: TextFormField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          textCapitalization: TextCapitalization.none,
+                          textInputAction: TextInputAction.done,
+                          autofillHints: const [AutofillHints.email],
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            color: _wmCharcoal,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: l10n.signupEmailHint,
+                            hintStyle: GoogleFonts.poppins(color: _wmStone),
+                            prefixIcon: const Icon(
+                              Icons.mail_outline,
+                              color: _wmStone,
+                              size: 22,
+                            ),
+                            filled: true,
+                            fillColor: _wmWhite,
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 0,
+                            ),
+                            floatingLabelBehavior: FloatingLabelBehavior.never,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: _wmParchment,
+                                width: 1,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: _wmParchment,
+                                width: 1,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: _wmForest,
+                                width: 1.5,
+                              ),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: _wmError,
+                                width: 1,
+                              ),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: _wmError,
+                                width: 1.5,
+                              ),
                             ),
                           ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return l10n.signupEmailRequired;
+                            }
+                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                                .hasMatch(value)) {
+                              return l10n.signupEmailInvalid;
+                            }
+                            return null;
+                          },
+                          onFieldSubmitted: (_) {
+                            if (canSubmit) _sendMagicLink();
+                          },
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-                
-                const SizedBox(height: 24),
-                
-                // Send magic link button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _sendMagicLink,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2A6049),
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: const Color(0xFF2A6049).withOpacity(0.5),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
                       ),
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      if (_errorMessage != null) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: _wmError.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _wmError.withValues(alpha: 0.25),
                             ),
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          ),
+                          child: Row(
                             children: [
-                              const Icon(Icons.auto_awesome, size: 22),
+                              const Icon(
+                                Icons.error_outline,
+                                color: _wmError,
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
-                              Text(
-                                AppLocalizations.of(context)!.signupSendMagicLink,
-                                style: const TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w600,
+                              Expanded(
+                                child: Text(
+                                  _errorMessage!,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: _wmError,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
+                        ),
+                      ],
+                      const SizedBox(height: 16),
+                      ScaleTransition(
+                        alignment: Alignment.center,
+                        scale: _ctaScale,
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 54,
+                          child: ElevatedButton(
+                            onPressed: (_isLoading || !canSubmit)
+                                ? null
+                                : () async {
+                                    await _ctaPressController.forward();
+                                    if (mounted) {
+                                      await _ctaPressController.reverse();
+                                    }
+                                    _sendMagicLink();
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _wmForest,
+                              foregroundColor: _wmWhite,
+                              disabledBackgroundColor: _wmParchment,
+                              disabledForegroundColor: _wmStone,
+                              elevation: 0,
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: _wmWhite,
+                                    ),
+                                  )
+                                : Text(
+                                    '✨ ${l10n.signupSendMagicLink}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _signupMetaLine(context),
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: _wmStone,
+                  ),
+                ),
+                const SizedBox(height: 40),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: _buildTermsFooter(l10n),
                 ),
               ],
             ),
           ),
-          
-          const SizedBox(height: 32),
-          
-          // What you'll unlock + rating & testimonial
-          _buildWhatYouUnlock(context),
-          
-          const SizedBox(height: 24),
-          
-          // Terms
-          Center(
-            child: Text(
-              AppLocalizations.of(context)!.signupTerms,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[500],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildJoinTravelersBanner(BuildContext context) {
-    final locationAsync = ref.watch(locationNotifierProvider);
-    final countAsync = ref.watch(travelerCountProvider);
-    final l10n = AppLocalizations.of(context)!;
-    final countStr = countAsync.when(
-      data: (count) => formatTravelerCount(count),
-      loading: () => kFallbackTravelerCountFormatted,
-      error: (_, __) => kFallbackTravelerCountFormatted,
-    );
-    final String bannerText = locationAsync.when(
-      data: (city) => city != null && city.isNotEmpty
-          ? l10n.signupJoinTravelersInCity(countStr, city)
-          : l10n.signupJoinTravelers(countStr),
-      loading: () => l10n.signupJoinTravelers(countStr),
-      error: (_, __) => l10n.signupJoinTravelers(countStr),
-    );
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: RichText(
-          textAlign: TextAlign.center,
-          text: TextSpan(
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
-            children: [
-              const TextSpan(text: '🧑 ✈️ '),
-              TextSpan(text: bannerText),
-            ],
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -456,73 +573,59 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
           _buildSuccessInstructionCard(
             context,
             emoji: '✅',
-            iconColor: const Color(0xFF2A6049),
-            borderColor: const Color(0xFF2A6049),
+            borderColor: _wmForest,
             text: l10n.signupClickLinkInEmail,
           ),
           const SizedBox(height: 10),
           _buildSuccessInstructionCard(
             context,
             emoji: '⏰',
-            iconColor: Colors.amber[700]!,
-            borderColor: Colors.amber[700]!,
+            borderColor: _wmSunset,
             text: l10n.signupLinkExpires,
           ),
           const SizedBox(height: 10),
           _buildSuccessInstructionCard(
             context,
-            emoji: '📁',
-            iconColor: Colors.blue[600]!,
-            borderColor: Colors.blue[600]!,
+            emoji: '📋',
+            borderColor: _wmSky,
             text: l10n.signupCheckSpam,
           ),
           const SizedBox(height: 20),
-          // "You're almost there!" card – gradient, title + body, pink star
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFFFFF0F5), // light pink
-                  Color(0xFFFFF8E7), // light peach / warm yellow
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFFFB6C1), width: 1),
+              color: _wmSunsetTint,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: _wmSunset.withValues(alpha: 0.2), width: 1),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Icon(Icons.star_outline, color: Colors.pink[400], size: 26),
-                    const SizedBox(width: 10),
+                    const Text('⭐', style: TextStyle(fontSize: 20)),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         l10n.signupAlmostThereTitle,
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.grey[800],
+                          fontWeight: FontWeight.w600,
+                          color: _wmCharcoal,
                         ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.only(left: 36),
-                  child: Text(
-                    l10n.signupAlmostThereBody(city),
-                    style: TextStyle(
-                      fontSize: 14,
-                      height: 1.4,
-                      color: Colors.grey[800],
-                      fontWeight: FontWeight.w400,
-                    ),
+                Text(
+                  l10n.signupAlmostThereBody(city),
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    height: 1.5,
+                    color: _wmDusk,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
@@ -555,226 +658,48 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
   Widget _buildSuccessInstructionCard(
     BuildContext context, {
     required String emoji,
-    required Color iconColor,
     required Color borderColor,
     required String text,
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      constraints: const BoxConstraints(minHeight: 56),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _wmWhite,
         borderRadius: BorderRadius.circular(12),
-        border: Border(
-          left: BorderSide(color: borderColor, width: 4),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: _wmParchment, width: 1),
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-            child: Text(emoji, style: const TextStyle(fontSize: 20)),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.grey[700],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWhatYouUnlock(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final locationAsync = ref.watch(locationNotifierProvider);
-    final defaultCity = l10n.signupDefaultCity;
-    final testimonialCity = locationAsync.when(
-      data: (c) => c ?? defaultCity,
-      loading: () => defaultCity,
-      error: (_, __) => defaultCity,
-    );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Text(
-              l10n.signupWhatYouUnlock,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Colors.grey[800],
-              ),
-            ),
-          ),
-        ),
-        _buildUnlockCard(context, '🎯', const Color(0xFFFF9800), l10n.signupUnlockPersonalized),
-        const SizedBox(height: 10),
-        _buildUnlockCard(context, '📍', const Color(0xFFFFC107), l10n.signupUnlockFavorites),
-        const SizedBox(height: 10),
-        _buildUnlockCard(context, '📅', const Color(0xFF2A6049), l10n.signupUnlockDayPlans),
-        const SizedBox(height: 10),
-        _buildUnlockCard(context, '✨', const Color(0xFF673AB7), l10n.signupUnlockMoodMatching),
-        const SizedBox(height: 12),
-        _buildRatingTestimonialCard(context, l10n, testimonialCity),
-      ],
-    );
-  }
-
-  Widget _buildUnlockCard(BuildContext context, String emoji, Color color, String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [color, color.withOpacity(0.7)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: color.withOpacity(0.6),
-                width: 1.5,
-              ),
-            ),
-            child: Text(emoji, style: const TextStyle(fontSize: 22)),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[700],
-              ),
-            ),
-          ),
-          const Icon(Icons.check_circle, color: Color(0xFF2A6049), size: 22),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRatingTestimonialCard(BuildContext context, AppLocalizations l10n, String testimonialCity) {
-    const green = Color(0xFF2A6049);
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: green.withOpacity(0.5), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: green.withOpacity(0.15),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.star_rounded, color: Colors.amber[700], size: 22),
-                  const SizedBox(width: 6),
-                  Text(
-                    l10n.signupRating,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.grey[800],
+      clipBehavior: Clip.antiAlias,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(width: 4, color: borderColor),
+            Expanded(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(emoji, style: const TextStyle(fontSize: 20)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        text,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          height: 1.5,
+                          color: _wmCharcoal,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              Row(
-                children: [
-                  Icon(Icons.favorite_rounded, color: Colors.red[400], size: 22),
-                  const SizedBox(width: 6),
-                  Text(
-                    l10n.signupLoveIt,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '"${l10n.signupTestimonial}"',
-            style: TextStyle(
-              fontSize: 14,
-              height: 1.4,
-              color: Colors.grey[700],
-              fontStyle: FontStyle.italic,
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            l10n.signupTestimonialBy(testimonialCity),
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey[600],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

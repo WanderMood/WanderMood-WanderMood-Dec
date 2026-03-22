@@ -7,7 +7,6 @@ import 'package:wandermood/features/home/presentation/screens/redesigned_moody_h
 import 'package:wandermood/features/home/presentation/screens/moody_idle_screen.dart';
 import 'package:wandermood/core/utils/moody_idle_checker.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
-import 'package:wandermood/features/social/presentation/screens/wanderfeed_coming_soon_screen.dart';
 import 'package:wandermood/features/profile/presentation/screens/user_profile_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
@@ -22,6 +21,15 @@ const Color _navWmForestTint = Color(0xFFEBF3EE);
 
 // Create a Provider for the tab controller
 final mainTabProvider = StateProvider<int>((ref) => 0);
+
+/// Bottom tabs: 0 My Day, 1 Explore, 2 Moody, 3 Profile (WanderFeed removed from bar).
+/// Legacy: old Profile was index 4 → 3.
+int normalizeMainTabIndex(int tab) {
+  if (tab < 0) return 0;
+  if (tab == 4) return 3;
+  if (tab > 3) return 3;
+  return tab;
+}
 
 // Provider to check if user has seen Moody intro overlay
 // Made public so it can be invalidated from MoodyHubScreen when intro is dismissed
@@ -64,9 +72,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         if (!mounted) return;
         // Check if we have a tab index from route parameters
         final tabFromExtra = widget.extra?['tab'] as int?;
-        final finalTab = tabFromExtra ?? widget.initialTabIndex;
+        final rawTab = tabFromExtra ?? widget.initialTabIndex;
+        final finalTab = normalizeMainTabIndex(rawTab);
         debugPrint(
-            '🎯 MainScreen: Setting tab to $finalTab (extra: $tabFromExtra, initial: ${widget.initialTabIndex})');
+            '🎯 MainScreen: Setting tab to $finalTab (raw: $rawTab, extra: $tabFromExtra, initial: ${widget.initialTabIndex})');
         ref.read(mainTabProvider.notifier).state = finalTab;
         debugPrint('✅ MainScreen: Tab provider set to ${ref.read(mainTabProvider)}');
 
@@ -155,7 +164,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         final shouldRefresh = widget.extra?['refresh'] as bool? ?? false;
         
         if (oldWidget.initialTabIndex != widget.initialTabIndex || tabFromExtra != null) {
-          ref.read(mainTabProvider.notifier).state = tabFromExtra ?? widget.initialTabIndex;
+          final raw = tabFromExtra ?? widget.initialTabIndex;
+          ref.read(mainTabProvider.notifier).state = normalizeMainTabIndex(raw);
         }
         
         // If refresh flag is set, invalidate providers to force refresh
@@ -168,18 +178,18 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     });
   }
   
-  // Screens in the bottom navigation
+  // Screens in the bottom navigation (WanderFeed removed from bar; route /diaries unchanged)
   final List<Widget> screens = [
     const DynamicMyDayScreen(),
     const ExploreScreen(),
     const RedesignedMoodyHub(),
-    const WanderFeedComingSoonScreen(),
     const UserProfileScreen(),
   ];
   
   @override
   Widget build(BuildContext context) {
-    final selectedIndex = ref.watch(mainTabProvider);
+    final rawTabIndex = ref.watch(mainTabProvider);
+    final selectedIndex = normalizeMainTabIndex(rawTabIndex);
     final dailyMoodState = ref.watch(dailyMoodStateNotifierProvider);
     final hasSeenIntroAsync = ref.watch(hasSeenIntroProvider);
     
@@ -233,8 +243,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           _buildRegularNavItem(context, ref, selectedIndex, 0, 'My Day', Icons.calendar_today_outlined, Icons.calendar_today, _navWmForest, _navWmForestTint),
                           _buildRegularNavItem(context, ref, selectedIndex, 1, 'Explore', Icons.explore_outlined, Icons.explore, _navWmForest, _navWmForestTint),
                           _buildCenterMoodyButton(context, ref, selectedIndex),
-                          _buildRegularNavItem(context, ref, selectedIndex, 3, 'WanderFeed', Icons.people_outline, Icons.people, _navWmForest, _navWmForestTint),
-                          _buildRegularNavItem(context, ref, selectedIndex, 4, 'Profile', Icons.person_outline, Icons.person, _navWmForest, _navWmForestTint),
+                          _buildRegularNavItem(context, ref, selectedIndex, 3, 'Profile', Icons.person_outline, Icons.person, _navWmForest, _navWmForestTint),
                         ],
                       ),
                     ),

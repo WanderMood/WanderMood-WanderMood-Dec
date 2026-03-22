@@ -1,12 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
-import '../../../../core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+
+/// WanderMood design tokens — guest explore
+const Color _wmCream = Color(0xFFF5F0E8);
+const Color _wmWhite = Color(0xFFFFFFFF);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmForestTint = Color(0xFFEBF3EE);
+const Color _wmSunset = Color(0xFFE8784A);
+const Color _wmSunsetTint = Color(0xFFFDF0E8);
+const Color _wmCharcoal = Color(0xFF1E1C18);
+const Color _wmStone = Color(0xFF8C8780);
 
 /// Guest Explore Screen
 /// 
@@ -25,10 +36,21 @@ class GuestExploreScreen extends ConsumerStatefulWidget {
   ConsumerState<GuestExploreScreen> createState() => _GuestExploreScreenState();
 }
 
+/// USP filter ids (maps to tags / place fields without changing mock data).
+const List<String> _uspFilterIds = [
+  'halal',
+  'vegan',
+  'black_owned',
+  'wheelchair',
+  'lgbtq',
+  'pets',
+  'budget',
+];
+
 class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
   final List<_SamplePlace> _places = _getSamplePlaces();
   bool _showSignupBanner = false;
-  String? _selectedCategory;
+  final Set<String> _selectedUspFilters = {};
 
   @override
   void initState() {
@@ -111,111 +133,193 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
     context.go('/auth/magic-link');
   }
 
+  bool _placeMatchesFilters(_SamplePlace p) {
+    if (_selectedUspFilters.isEmpty) return true;
+    for (final id in _selectedUspFilters) {
+      if (_uspMatchesPlace(p, id)) return true;
+    }
+    return false;
+  }
+
+  bool _uspMatchesPlace(_SamplePlace p, String id) {
+    switch (id) {
+      case 'halal':
+        return p.tags.contains('halal');
+      case 'vegan':
+        return p.tags.contains('vegan');
+      case 'black_owned':
+        return p.tags.contains('black_owned');
+      case 'wheelchair':
+        return p.tags.contains('wheelchair_accessible');
+      case 'lgbtq':
+        return p.tags.contains('lgbtq_friendly');
+      case 'pets':
+        return p.tags.contains('pet_friendly');
+      case 'budget':
+        return p.isFree;
+      default:
+        return false;
+    }
+  }
+
+  String _uspChipLabel(BuildContext context, String id) {
+    final l10n = AppLocalizations.of(context)!;
+    final lc = Localizations.localeOf(context).languageCode;
+    switch (id) {
+      case 'halal':
+        return '${l10n.guestFilterHalal} 🕌';
+      case 'vegan':
+        return '${l10n.guestFilterVegan} 🌱';
+      case 'black_owned':
+        return '${l10n.guestFilterBlackOwned} 🖤';
+      case 'wheelchair':
+        return '${l10n.guestFilterWheelchair} ♿';
+      case 'lgbtq':
+        return '${l10n.guestFilterLgbtq} 🏳️‍🌈';
+      case 'pets':
+        if (lc == 'nl') return 'Huisdieren welkom 🐾';
+        if (lc == 'de') return 'Haustiere willkommen 🐾';
+        if (lc == 'fr') return 'Animaux bienvenus 🐾';
+        if (lc == 'es') return 'Mascotas bienvenidas 🐾';
+        return 'Pet-friendly 🐾';
+      case 'budget':
+        if (lc == 'nl') return 'Budgetvriendelijk 💰';
+        if (lc == 'de') return 'Budgetfreundlich 💰';
+        if (lc == 'fr') return 'Économique 💰';
+        if (lc == 'es') return 'Económico 💰';
+        return 'Budget-friendly 💰';
+      default:
+        return id;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SwirlBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header
-              _buildHeader(),
-              
-              // Guest banner
-              if (_showSignupBanner) _buildSignupBanner(),
-              
-              // Category filter
-              _buildCategoryFilter(),
-              
-              // Places grid
-              Expanded(
-                child: _buildPlacesGrid(),
-              ),
-            ],
-          ),
+      backgroundColor: _wmCream,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildHeader(),
+            if (_showSignupBanner) _buildSignupBanner(),
+            _buildUspFilterRow(),
+            Expanded(
+              child: _buildPlacesGrid(),
+            ),
+            _buildBottomSignupCta(context),
+          ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _navigateToSignup,
-        backgroundColor: const Color(0xFF2A6049),
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.star_rounded, color: Colors.white),
-        label: Text(
-          AppLocalizations.of(context)!.guestSignUpFree,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
+    );
+  }
+
+  Widget _buildBottomSignupCta(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
+        child: SizedBox(
+          width: double.infinity,
+          height: 54,
+          child: ElevatedButton(
+            onPressed: _navigateToSignup,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _wmForest,
+              foregroundColor: _wmWhite,
+              elevation: 0,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(27),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.star_rounded, color: _wmWhite, size: 22),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.guestSignUpFree,
+                  style: GoogleFonts.poppins(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    color: _wmWhite,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        elevation: 4,
       ),
     );
   }
 
   Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 4, 12, 8),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Back button
           IconButton(
             onPressed: () => context.go('/demo'),
             icon: const Icon(Icons.arrow_back_rounded),
-            color: Colors.grey[700],
+            color: _wmCharcoal,
           ),
-          
-          const SizedBox(width: 8),
-          
-          // Title
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.guestExplorePlaces,
-                  style: GoogleFonts.museoModerno(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF2A6049),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.guestExplorePlaces,
+                    style: GoogleFonts.poppins(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      color: _wmCharcoal,
+                      letterSpacing: -0.3,
+                    ),
                   ),
-                ),
-                Text(
-                  AppLocalizations.of(context)!.guestPreviewMode,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
+                  const SizedBox(height: 2),
+                  Text(
+                    l10n.guestPreviewMode,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      color: _wmStone,
+                      height: 1.4,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          
-          // Guest badge – modern pill with brand accent
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2A6049).withOpacity(0.12),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: const Color(0xFF2A6049).withOpacity(0.35),
-                width: 1,
+                ],
               ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.person_outline_rounded, size: 18, color: const Color(0xFF2A6049)),
-                const SizedBox(width: 6),
-                Text(
-                  AppLocalizations.of(context)!.guestGuest,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2E7D32),
-                    letterSpacing: 0.2,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: _wmForestTint,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.person_outline_rounded, size: 18, color: _wmForest),
+                  const SizedBox(width: 6),
+                  Text(
+                    l10n.guestGuest,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: _wmForest,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -224,14 +328,14 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
   }
 
   Widget _buildSignupBanner() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.orange[400]!, Colors.orange[600]!],
-        ),
+        color: _wmSunsetTint,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _wmSunset.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -242,18 +346,18 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  AppLocalizations.of(context)!.guestLovingWhatYouSee,
-                  style: const TextStyle(
+                  l10n.guestLovingWhatYouSee,
+                  style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: _wmCharcoal,
                   ),
                 ),
                 Text(
-                  AppLocalizations.of(context)!.guestSignUpSaveFavorites,
-                  style: TextStyle(
+                  l10n.guestSignUpSaveFavorites,
+                  style: GoogleFonts.poppins(
                     fontSize: 12,
-                    color: Colors.white.withOpacity(0.9),
+                    color: _wmStone,
                   ),
                 ),
               ],
@@ -262,18 +366,19 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
           TextButton(
             onPressed: _navigateToSignup,
             style: TextButton.styleFrom(
-              backgroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              backgroundColor: _wmWhite,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
+                side: const BorderSide(color: _wmParchment),
               ),
             ),
             child: Text(
-              AppLocalizations.of(context)!.guestSignUp,
-              style: TextStyle(
+              l10n.guestSignUp,
+              style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Colors.orange[700],
+                color: _wmForest,
               ),
             ),
           ),
@@ -283,7 +388,7 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
                 _showSignupBanner = false;
               });
             },
-            icon: Icon(Icons.close, size: 20, color: Colors.white.withOpacity(0.8)),
+            icon: Icon(Icons.close, size: 20, color: _wmStone.withValues(alpha: 0.9)),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
@@ -292,52 +397,53 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
     );
   }
 
-  Widget _buildCategoryFilter() {
-    final l10n = AppLocalizations.of(context)!;
-    const categoryKeys = ['All', 'Restaurants', 'Cafés', 'Parks', 'Museums', 'Nightlife'];
-    final categoryLabels = [
-      l10n.guestCategoryAll,
-      l10n.guestCategoryRestaurants,
-      l10n.guestCategoryCafes,
-      l10n.guestCategoryParks,
-      l10n.guestCategoryMuseums,
-      l10n.guestCategoryNightlife,
-    ];
-    
-    return Container(
+  Widget _buildUspFilterRow() {
+    return SizedBox(
       height: 44,
-      margin: const EdgeInsets.only(top: 8),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: categoryKeys.length,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        itemCount: _uspFilterIds.length,
         itemBuilder: (context, index) {
-          final key = categoryKeys[index];
-          final label = categoryLabels[index];
-          final isSelected = (_selectedCategory ?? 'All') == key;
-          
+          final id = _uspFilterIds[index];
+          final selected = _selectedUspFilters.contains(id);
           return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(label),
-              selected: isSelected,
-              onSelected: (selected) {
-                setState(() {
-                  _selectedCategory = selected ? key : 'All';
-                });
-              },
-              backgroundColor: Colors.white,
-              selectedColor: Colors.orange[100],
-              checkmarkColor: Colors.orange[700],
-              labelStyle: TextStyle(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: isSelected ? Colors.orange[700] : Colors.grey[700],
-              ),
-              shape: RoundedRectangleBorder(
+            padding: EdgeInsets.only(right: index == _uspFilterIds.length - 1 ? 0 : 8),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setState(() {
+                    if (selected) {
+                      _selectedUspFilters.remove(id);
+                    } else {
+                      _selectedUspFilters.add(id);
+                    }
+                  });
+                },
                 borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color: isSelected ? Colors.orange[300]! : Colors.grey[300]!,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: selected ? _wmForestTint : _wmWhite,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: selected ? _wmForest : _wmParchment,
+                      width: selected ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      _uspChipLabel(context, id),
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                        color: selected ? _wmForest : _wmStone,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -348,9 +454,7 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
   }
 
   List<_SamplePlace> _getFilteredPlaces() {
-    final category = _selectedCategory ?? 'All';
-    if (category == 'All') return _places;
-    return _places.where((p) => p.categoryKey == category).toList();
+    return _places.where(_placeMatchesFilters).toList();
   }
 
   Widget _buildPlacesGrid() {
@@ -385,10 +489,10 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
       );
     }
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.72,
+        childAspectRatio: 0.66,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
@@ -405,26 +509,20 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
       onTap: () => _onPlaceTap(place),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: _wmWhite,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          border: Border.all(color: _wmParchment, width: 1),
         ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Cached image with bookmark overlay
             Stack(
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                   child: SizedBox(
-                    height: 100,
+                    height: 120,
                     width: double.infinity,
                     child: CachedNetworkImage(
                       imageUrl: (place.imageUrl.trim().isEmpty
@@ -463,34 +561,35 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
                   child: GestureDetector(
                     onTap: () => _onSaveTap(place),
                     child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
+                      width: 28,
+                      height: 28,
+                      alignment: Alignment.center,
+                      decoration: const BoxDecoration(
+                        color: _wmWhite,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.bookmark_border,
-                        size: 18,
-                        color: Colors.grey[400],
+                        size: 16,
+                        color: _wmStone,
                       ),
                     ),
                   ),
                 ),
               ],
             ),
-            // Content (name, category, filter badges, description, rating)
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       _guestPlaceName(context, place.nameKey),
-                      style: TextStyle(
-                        fontSize: 14,
+                      style: GoogleFonts.poppins(
+                        fontSize: 17,
                         fontWeight: FontWeight.w600,
-                        color: Colors.grey[800],
+                        color: _wmCharcoal,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -498,51 +597,40 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
                     const SizedBox(height: 2),
                     Text(
                       _guestPlaceCategory(context, place.categoryKey),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: _wmStone,
+                        height: 1.4,
                       ),
                     ),
                     if (place.tags.isNotEmpty) ...[
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Wrap(
-                        spacing: 3,
-                        runSpacing: 3,
+                        spacing: 4,
+                        runSpacing: 4,
                         children: _placeFilterBadges(context, place.tags, compact: true, maxCount: 2),
-                      ),
-                    ],
-                    if (_guestPlaceDesc(context, place.descriptionKey).isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        _guestPlaceDesc(context, place.descriptionKey),
-                        style: TextStyle(
-                          fontSize: 11,
-                          height: 1.25,
-                          color: Colors.grey[600],
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                     const Spacer(),
                     Row(
                       children: [
-                        Icon(Icons.star, size: 14, color: Colors.amber[600]),
+                        const Icon(Icons.star_rounded, size: 16, color: _wmSunset),
                         const SizedBox(width: 4),
                         Text(
                           place.rating.toString(),
-                          style: TextStyle(
-                            fontSize: 12,
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey[700],
+                            color: _wmCharcoal,
                           ),
                         ),
                         const Spacer(),
                         Text(
                           _guestDistanceLine(context, place.distanceKm),
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey[500],
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: _wmStone,
                           ),
                         ),
                       ],
@@ -972,7 +1060,7 @@ List<Widget> _placeFilterBadges(BuildContext context, List<String> tags, {bool c
   };
   const Map<String, String> emojis = {
     'halal': '🥗',
-    'black_owned': '✊🏿',
+    'black_owned': '🖤',
     'aesthetic_spaces': '🧘‍♀️',
     'lgbtq_friendly': '🏳️‍🌈',
     'vegan': '🌱',
@@ -994,23 +1082,25 @@ List<Widget> _placeFilterBadges(BuildContext context, List<String> tags, {bool c
   return toShow
       .map((k) => Container(
             padding: EdgeInsets.symmetric(
-              horizontal: compact ? 4 : 8,
-              vertical: compact ? 2 : 4,
+              horizontal: compact ? 6 : 8,
+              vertical: compact ? 3 : 4,
             ),
             decoration: BoxDecoration(
-              color: (colors[k] ?? Colors.grey[200]!).withOpacity(0.95),
-              borderRadius: BorderRadius.circular(compact ? 6 : 12),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.8),
-                width: 0.5,
-              ),
+              color: compact ? _wmForestTint : (colors[k] ?? Colors.grey[200]!).withValues(alpha: 0.95),
+              borderRadius: BorderRadius.circular(compact ? 8 : 12),
+              border: compact
+                  ? null
+                  : Border.all(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      width: 0.5,
+                    ),
             ),
             child: Text(
               '${emojis[k]} ${labels[k]}',
-              style: TextStyle(
-                fontSize: compact ? 8 : 12,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[800],
+              style: GoogleFonts.poppins(
+                fontSize: compact ? 11 : 12,
+                fontWeight: FontWeight.w500,
+                color: compact ? _wmForest : Colors.grey[800],
               ),
             ),
           ))

@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
-import '../../../../core/presentation/widgets/swirl_background.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
-import '../../../home/domain/enums/moody_feature.dart';
+
+/// Design system — intro (wmForest background)
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmWhite = Color(0xFFFFFFFF);
 
 /// Three-Word Intro Screen
-/// 
-/// This is the first screen in the new onboarding flow.
-/// It displays a quick value proposition in three words with beautiful animation.
-/// 
+///
 /// Flow: Splash → **Intro** → Demo → Guest Explore → Signup → Main
 class AppIntroScreen extends ConsumerStatefulWidget {
   const AppIntroScreen({super.key});
@@ -22,256 +22,176 @@ class AppIntroScreen extends ConsumerStatefulWidget {
 }
 
 class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _fadeController;
-  late AnimationController _slideController;
-  late AnimationController _pulseController;
-  
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation1;
-  late Animation<Offset> _slideAnimation2;
-  late Animation<Offset> _slideAnimation3;
-  late Animation<double> _pulseAnimation;
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _breathController;
+  late final Animation<double> _breathScale;
 
   @override
   void initState() {
     super.initState();
-    
-    // Fade in animation
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+    _breathController = AnimationController(
       vsync: this,
-    );
-    
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeOut,
-    );
-    
-    // Slide animations for each word (staggered)
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    );
-    
-    _slideAnimation1 = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: const Interval(0.0, 0.4, curve: Curves.easeOutCubic),
-    ));
-    
-    _slideAnimation2 = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: const Interval(0.2, 0.6, curve: Curves.easeOutCubic),
-    ));
-    
-    _slideAnimation3 = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: const Interval(0.4, 0.8, curve: Curves.easeOutCubic),
-    ));
-    
-    // Subtle pulse for the Moody character
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
-      vsync: this,
+      duration: const Duration(milliseconds: 2400),
     )..repeat(reverse: true);
-    
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
-    
-    // Start animations
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) {
-        _fadeController.forward();
-        _slideController.forward();
-      }
-    });
+
+    _breathScale = Tween<double>(begin: 1.0, end: 1.06).animate(
+      CurvedAnimation(parent: _breathController, curve: Curves.easeInOut),
+    );
   }
 
   @override
   void dispose() {
-    _fadeController.dispose();
-    _slideController.dispose();
-    _pulseController.dispose();
+    _breathController.dispose();
     super.dispose();
   }
 
   void _onContinue() {
-    // Mark intro as seen
     ref.read(onboardingProgressProvider.notifier).markIntroSeen();
     ref.read(currentOnboardingStepProvider.notifier).state = OnboardingStep.demo;
-    
-    // Navigate to demo screen
     context.go('/demo');
   }
 
   void _onSkip() {
-    // Skip to signup directly
     context.go('/auth/magic-link');
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SwirlBackground(
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Column(
-              children: [
-                // Skip button at top right
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: TextButton(
-                      onPressed: _onSkip,
-                      child: Text(
-                        AppLocalizations.of(context)!.introSkip,
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
+    final l10n = AppLocalizations.of(context)!;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+        systemNavigationBarColor: _wmForest,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: _wmForest,
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Align(
+                alignment: Alignment.topRight,
+                child: TextButton(
+                  onPressed: _onSkip,
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                ),
-                
-                const Spacer(flex: 2),
-                
-                // Moody character with pulse animation
-                ScaleTransition(
-                  scale: _pulseAnimation,
-                  child: const MoodyCharacter(
-                    size: 140,
-                    mood: 'happy',
-                    currentFeature: MoodyFeature.none,
-                  ),
-                ),
-                
-                const SizedBox(height: 48),
-                
-                // Two-line title (localized) - same colours as before: line 1 dark gray, line 2 green
-                SlideTransition(
-                  position: _slideAnimation1,
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Text(
-                      AppLocalizations.of(context)!.introTitleLine1,
-                      style: TextStyle(
-                        fontSize: 42,
-                        fontWeight: FontWeight.w300,
-                        color: Colors.grey[800],
-                        letterSpacing: 2,
-                        height: 1.2,
-                      ),
-                    ),
-                  ),
-                ),
-                
-                const SizedBox(height: 8),
-                
-                SlideTransition(
-                  position: _slideAnimation2,
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Text(
-                      AppLocalizations.of(context)!.introTitleLine2,
-                      style: TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF2A6049),
-                        letterSpacing: 3,
-                        height: 1.2,
-                      ),
-                    ),
-                  ),
-                ),
-                
-                const SizedBox(height: 24),
-                
-                // Subtle tagline (localized)
-                FadeTransition(
-                  opacity: _fadeAnimation,
                   child: Text(
-                    AppLocalizations.of(context)!.introTagline,
-                    style: TextStyle(
+                    l10n.introSkip,
+                    style: GoogleFonts.poppins(
                       fontSize: 16,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 0.5,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
                     ),
                   ),
                 ),
-                
-                const Spacer(flex: 3),
-                
-                // Continue button
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: _onContinue,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2A6049),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: ScaleTransition(
+                        alignment: Alignment.center,
+                        scale: _breathScale,
+                        child: const MoodyCharacter(
+                          size: 120,
+                          mood: 'idle',
                         ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)!.introSeeHowItWorks,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward_rounded, size: 22),
-                        ],
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      l10n.introTitleLine1,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white,
                       ),
                     ),
-                  ),
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Page indicator dots (showing we're on step 1 of 3)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildDot(isActive: true),
-                    const SizedBox(width: 8),
-                    _buildDot(isActive: false),
-                    const SizedBox(width: 8),
-                    _buildDot(isActive: false),
+                    Text(
+                      l10n.introTitleLine2,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      l10n.introTagline,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        height: 1.5,
+                        color: Colors.white.withValues(alpha: 0.7),
+                      ),
+                    ),
                   ],
                 ),
-                
-                const SizedBox(height: 48),
-              ],
-            ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: ElevatedButton(
+                        onPressed: _onContinue,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _wmWhite,
+                          foregroundColor: _wmForest,
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(27),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              l10n.introSeeHowItWorks,
+                              style: GoogleFonts.poppins(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                color: _wmForest,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.arrow_forward_rounded, size: 22, color: _wmForest),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildDot(isActive: true),
+                        const SizedBox(width: 8),
+                        _buildDot(isActive: false),
+                        const SizedBox(width: 8),
+                        _buildDot(isActive: false),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -279,15 +199,13 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
   }
 
   Widget _buildDot({required bool isActive}) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      width: isActive ? 24 : 8,
+    return Container(
+      width: 8,
       height: 8,
       decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF2A6049) : Colors.grey[300],
-        borderRadius: BorderRadius.circular(4),
+        shape: BoxShape.circle,
+        color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.3),
       ),
     );
   }
 }
-

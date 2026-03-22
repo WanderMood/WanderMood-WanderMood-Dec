@@ -952,10 +952,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get guestFilterHalal => 'Halal';
 
   @override
-  String get guestFilterBlackOwned => 'Zwart eigendom';
+  String get guestFilterBlackOwned => 'Black-owned';
 
   @override
-  String get guestFilterAesthetic => 'Esthetisch';
+  String get guestFilterAesthetic => 'Aesthetic';
 
   @override
   String get guestFilterLgbtq => 'LGBTQ+';
