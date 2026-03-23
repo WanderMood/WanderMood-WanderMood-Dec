@@ -68,6 +68,7 @@ class _LanguageSettingsScreenState extends ConsumerState<LanguageSettingsScreen>
     return SettingsScreenTemplate(
       title: l10n.languageSettings,
       onBack: () => context.pop(),
+      wanderMoodV2Chrome: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

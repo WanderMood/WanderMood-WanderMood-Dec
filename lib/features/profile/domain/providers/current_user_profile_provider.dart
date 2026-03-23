@@ -8,6 +8,20 @@ final currentUserProfileProvider =
 });
 
 class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
+  List<String> _dedupeVibes(List<String> vibes) {
+    final seen = <String>{};
+    final result = <String>[];
+    for (final vibe in vibes) {
+      final cleaned = vibe.trim();
+      final key = cleaned.toLowerCase();
+      if (cleaned.isEmpty || seen.contains(key)) continue;
+      seen.add(key);
+      result.add(cleaned);
+      if (result.length == 5) break;
+    }
+    return result;
+  }
+
   @override
   Future<CurrentUserProfile?> build() async {
     return _fetch();
@@ -39,8 +53,9 @@ class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
 
       List<String> selectedMoods = [];
       if (prefsRes?['selected_moods'] != null) {
-        selectedMoods =
-            List<String>.from(prefsRes!['selected_moods'] as List);
+        selectedMoods = _dedupeVibes(
+          List<String>.from(prefsRes!['selected_moods'] as List),
+        );
       }
 
       List<String> dietaryRestrictions = [];
@@ -104,7 +119,11 @@ class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
 
   void updateVibes(List<String> vibes) {
     state.whenData((p) {
-      if (p != null) state = AsyncValue.data(p.copyWith(selectedMoods: vibes));
+      if (p != null) {
+        state = AsyncValue.data(
+          p.copyWith(selectedMoods: _dedupeVibes(vibes)),
+        );
+      }
     });
   }
 }

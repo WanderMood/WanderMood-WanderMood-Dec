@@ -8,6 +8,9 @@ import '../../../../core/presentation/providers/local_theme_provider.dart';
 import '../widgets/settings_screen_template.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
+const Color _themeWmForest = Color(0xFF2A6049);
+const Color _themeWmForestTint = Color(0xFFEBF3EE);
+
 class ThemeSettingsScreen extends ConsumerStatefulWidget {
   const ThemeSettingsScreen({super.key});
 
@@ -66,6 +69,7 @@ class _ThemeSettingsScreenState extends ConsumerState<ThemeSettingsScreen> {
     return SettingsScreenTemplate(
       title: l10n.themeSettings,
       onBack: () => context.pop(),
+      wanderMoodV2Chrome: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -111,12 +115,12 @@ class _ThemeSettingsScreenState extends ConsumerState<ThemeSettingsScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: selected ? const Color(0xFFFB923C) : const Color(0xFFE5E7EB),
+          color: selected ? _themeWmForest : const Color(0xFFE5E7EB),
           width: 2,
         ),
       ),
       child: Material(
-        color: selected ? const Color(0xFFFFF7ED) : Colors.transparent,
+        color: selected ? _themeWmForestTint : Colors.transparent,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onTap,
@@ -176,7 +180,7 @@ class _ThemeSettingsScreenState extends ConsumerState<ThemeSettingsScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: selected ? const Color(0xFFF97316) : const Color(0xFFD1D5DB),
+                      color: selected ? _themeWmForest : const Color(0xFFD1D5DB),
                       width: 2,
                     ),
                   ),
@@ -186,7 +190,7 @@ class _ThemeSettingsScreenState extends ConsumerState<ThemeSettingsScreen> {
                             width: 12,
                             height: 12,
                             decoration: const BoxDecoration(
-                              color: Color(0xFFF97316),
+                              color: _themeWmForest,
                               shape: BoxShape.circle,
                             ),
                           ),

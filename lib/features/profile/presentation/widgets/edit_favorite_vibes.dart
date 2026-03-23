@@ -5,6 +5,19 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
+const Color _fvWmForest = Color(0xFF2A6049);
+const Color _fvWmForestDeep = Color(0xFF1E4A3A);
+const Color _fvWmSunset = Color(0xFFE8784A);
+const Color _fvWmSunsetDeep = Color(0xFFC45A3A);
+const Color _fvWmCream = Color(0xFFF5F0E8);
+const Color _fvWmParchment = Color(0xFFE8E2D8);
+const Color _fvWmWhite = Color(0xFFFFFFFF);
+const Color _fvWmCharcoal = Color(0xFF1E1C18);
+const Color _fvWmDusk = Color(0xFF4A4640);
+const Color _fvWmStone = Color(0xFF8C8780);
+const Color _fvWmForestTint = Color(0xFFEBF3EE);
+const Color _fvWmSunsetTint = Color(0xFFFDF0E8);
+
 /// Vibe data model
 class VibeData {
   final String id;
@@ -91,7 +104,7 @@ const List<VibeData> allVibes = [
     id: 'shopping',
     name: 'Shopping',
     emoji: '🛍️',
-    gradient: [Color(0xFFFBBF24), Color(0xFFF97316)],
+    gradient: [_fvWmSunset, _fvWmSunsetDeep],
     description: 'Markets, boutiques & malls',
   ),
   VibeData(
@@ -109,6 +122,24 @@ const List<VibeData> allVibes = [
     description: 'Sports & fitness activities',
   ),
 ];
+
+String _normalizeVibeToken(String input) {
+  return input.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), ' ').trim();
+}
+
+VibeData? _resolveVibe(String raw) {
+  final key = _normalizeVibeToken(raw);
+  if (key.isEmpty) return null;
+
+  for (final vibe in allVibes) {
+    final byName = _normalizeVibeToken(vibe.name);
+    final byId = _normalizeVibeToken(vibe.id);
+    if (key == byName || key == byId || key.contains(byName) || key.contains(byId)) {
+      return vibe;
+    }
+  }
+  return null;
+}
 
 /// Favorite Vibes Card for Profile Screen
 class FavoriteVibesCard extends StatelessWidget {
@@ -181,11 +212,14 @@ class FavoriteVibesCard extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              ...selectedVibes.map((vibeName) {
-                final vibeData = allVibes.firstWhere(
-                  (v) => v.name.toLowerCase() == vibeName.toLowerCase(),
-                  orElse: () => allVibes.first,
-                );
+              ...selectedVibes
+                  .map(_resolveVibe)
+                  .whereType<VibeData>()
+                  .fold<List<VibeData>>([], (acc, vibe) {
+                    if (!acc.any((v) => v.id == vibe.id)) acc.add(vibe);
+                    return acc;
+                  })
+                  .map((vibeData) {
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
@@ -249,19 +283,38 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedVibes = List.from(widget.initialVibes);
-    _originalVibes = List.from(widget.initialVibes);
+    _selectedVibes = _normalizeVibes(widget.initialVibes);
+    _originalVibes = List.from(_selectedVibes);
+  }
+
+  List<String> _normalizeVibes(List<String> vibes) {
+    final unique = <String>{};
+    final normalized = <String>[];
+    for (final raw in vibes) {
+      final resolved = _resolveVibe(raw);
+      if (resolved == null) continue;
+      final canonical = resolved.name;
+      final key = canonical.toLowerCase();
+      if (unique.contains(key)) continue;
+      unique.add(key);
+      normalized.add(canonical);
+      if (normalized.length == 5) break;
+    }
+    return normalized;
   }
 
   void _toggleVibe(String vibeName) {
     setState(() {
       if (_selectedVibes.contains(vibeName)) {
-        _selectedVibes.remove(vibeName);
+        _selectedVibes.removeWhere(
+          (v) => v.trim().toLowerCase() == vibeName.trim().toLowerCase(),
+        );
       } else {
         if (_selectedVibes.length < 5) {
           _selectedVibes.add(vibeName);
         }
       }
+      _selectedVibes = _normalizeVibes(_selectedVibes);
       _hasChanges = !_listEquals(_selectedVibes, _originalVibes);
     });
   }
@@ -278,6 +331,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
     if (!_hasChanges || _selectedVibes.isEmpty) return;
 
     setState(() => _isSaving = true);
+    final cleanedVibes = _normalizeVibes(_selectedVibes);
 
     try {
       final user = Supabase.instance.client.auth.currentUser;
@@ -286,7 +340,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
         await Supabase.instance.client
             .from('profiles')
             .update({
-              'travel_vibes': _selectedVibes,
+              'travel_vibes': cleanedVibes,
               'updated_at': DateTime.now().toIso8601String(),
             })
             .eq('id', user.id);
@@ -296,12 +350,12 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
             .from('user_preferences')
             .upsert({
               'user_id': user.id,
-              'selected_moods': _selectedVibes,
+              'selected_moods': cleanedVibes,
               'updated_at': DateTime.now().toIso8601String(),
             }, onConflict: 'user_id');
       }
 
-      widget.onSave(_selectedVibes);
+      widget.onSave(cleanedVibes);
       
       // Wait a moment for the database to update
       await Future.delayed(const Duration(milliseconds: 100));
@@ -336,12 +390,12 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF7ED),
+      backgroundColor: _fvWmCream,
       body: Column(
         children: [
           // Header
           Container(
-            color: Colors.white,
+            color: _fvWmCream,
             padding: EdgeInsets.only(
               top: MediaQuery.of(context).padding.top,
               bottom: 16,
@@ -351,7 +405,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.close, color: Color(0xFF374151)),
+                    icon: const Icon(Icons.close, color: _fvWmDusk),
                     onPressed: _cancelChanges,
                   ),
                   Expanded(
@@ -361,7 +415,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1F2937),
+                        color: _fvWmCharcoal,
                       ),
                     ),
                   ),
@@ -379,12 +433,12 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                         decoration: _hasChanges && _selectedVibes.isNotEmpty
                             ? BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFFF97316), Color(0xFFEC4899)],
+                                  colors: [_fvWmForest, _fvWmForestDeep],
                                 ),
                                 borderRadius: BorderRadius.circular(20),
                               )
                             : BoxDecoration(
-                                color: Colors.grey[100],
+                              color: _fvWmParchment,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -393,7 +447,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                           style: GoogleFonts.poppins(
                             color: _hasChanges && _selectedVibes.isNotEmpty
                                 ? Colors.white
-                                : Colors.grey[400],
+                              : _fvWmStone,
                             fontWeight: FontWeight.w600,
                             fontSize: 16,
                           ),
@@ -405,7 +459,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
               ),
             ),
           ),
-          Container(height: 1, color: const Color(0xFFE5E7EB)),
+          const Divider(height: 1, color: _fvWmParchment),
           
           // Content
           Expanded(
@@ -427,7 +481,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.grey[800],
+                          color: _fvWmCharcoal,
                         ),
                       ),
                       if (_selectedVibes.length == 5)
@@ -436,7 +490,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFFF97316),
+                            color: _fvWmSunset,
                           ),
                         ),
                     ],
@@ -455,7 +509,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey[600],
+                      color: _fvWmStone,
                       letterSpacing: 1,
                     ),
                   ),
@@ -481,10 +535,10 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFDBEAFE), Color(0xFFE9D5FF)],
+          colors: [_fvWmForestTint, _fvWmSunsetTint],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF93C5FD), width: 2),
+        border: Border.all(color: _fvWmParchment, width: 0.5),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -493,10 +547,10 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
             width: 40,
             height: 40,
             decoration: const BoxDecoration(
-              color: Color(0xFF3B82F6),
+              color: _fvWmSunsetTint,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.info_outline, color: Colors.white, size: 20),
+            child: const Icon(Icons.info_outline, color: _fvWmSunset, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -507,7 +561,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                   l10n.profileVibesChooseTitle,
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
+                    color: _fvWmCharcoal,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -515,7 +569,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                   l10n.profileVibesSubtitle,
                   style: GoogleFonts.poppins(
                     fontSize: 13,
-                    color: Colors.grey[700],
+                    color: _fvWmStone,
                     height: 1.5,
                   ),
                 ),
@@ -531,8 +585,9 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _fvWmWhite,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: _fvWmParchment, width: 0.5),
         boxShadow: const [],
       ),
       child: Column(
@@ -543,7 +598,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
             style: GoogleFonts.poppins(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
+              color: _fvWmStone,
               letterSpacing: 1,
             ),
           ),
@@ -552,17 +607,16 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
             spacing: 12,
             runSpacing: 12,
             children: _selectedVibes.map((vibeName) {
-              final vibe = allVibes.firstWhere(
-                (v) => v.name.toLowerCase() == vibeName.toLowerCase(),
-                orElse: () => allVibes.first,
-              );
+              final vibe = _resolveVibe(vibeName);
+              if (vibe == null) return const SizedBox.shrink();
               return GestureDetector(
                 onTap: () => _toggleVibe(vibe.name),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: vibe.gradient),
+                    color: _fvWmForestTint,
                     borderRadius: BorderRadius.circular(50),
+                    border: Border.all(color: _fvWmParchment, width: 0.5),
                     boxShadow: const [],
                   ),
                   child: Row(
@@ -574,11 +628,11 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                         vibe.name,
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: _fvWmForest,
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Icon(Icons.delete_outline, color: Colors.white, size: 18),
+                      const Icon(Icons.delete_outline, color: _fvWmSunset, size: 18),
                     ],
                   ),
                 ),
@@ -614,32 +668,25 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: isSelected
-                  ? LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: vibe.gradient,
-                    )
-                  : null,
-              color: isSelected ? null : (isMaxed ? Colors.grey[100] : Colors.white),
+              color: isSelected
+                  ? _fvWmForestTint
+                  : (isMaxed ? _fvWmCream : _fvWmWhite),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isSelected
-                    ? const Color(0xFFF97316)
-                    : (isMaxed ? Colors.grey[200]! : Colors.grey[200]!),
+                color: isSelected ? _fvWmForest : _fvWmParchment,
                 width: isSelected ? 2 : 1,
               ),
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: vibe.gradient[0].withOpacity(0.4),
-                        blurRadius: 12,
+                        color: _fvWmForest.withValues(alpha: 0.18),
+                        blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
                     ]
                   : [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -671,7 +718,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: isSelected ? Colors.white : Colors.grey[800],
+                        color: isSelected ? _fvWmForest : _fvWmCharcoal,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -680,7 +727,9 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                         vibe.description,
                         style: GoogleFonts.poppins(
                           fontSize: 11,
-                          color: isSelected ? Colors.white.withOpacity(0.9) : Colors.grey[600],
+                          color: isSelected
+                              ? _fvWmDusk
+                              : _fvWmStone,
                           height: 1.3,
                         ),
                         maxLines: 2,
@@ -698,13 +747,13 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: _fvWmWhite,
                         shape: BoxShape.circle,
                         boxShadow: const [],
                       ),
                       child: const Icon(
                         Icons.check,
-                        color: Color(0xFF10B981),
+                        color: _fvWmForest,
                         size: 20,
                       ),
                     ),
@@ -720,12 +769,12 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFF7ED),
+                        color: _fvWmCream,
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.add,
-                          color: Color(0xFFF97316),
+                          color: _fvWmSunset,
                           size: 20,
                         ),
                       ),
@@ -744,10 +793,10 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFFFF7ED), Color(0xFFFCE7F3)],
+          colors: [_fvWmCream, _fvWmForestTint],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFED7AA), width: 2),
+        border: Border.all(color: _fvWmParchment, width: 0.5),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -756,7 +805,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
             width: 32,
             height: 32,
             decoration: const BoxDecoration(
-              color: Color(0xFFF97316),
+              color: _fvWmSunset,
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
@@ -770,7 +819,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                   '💡 Pro Tips',
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
+                    color: _fvWmCharcoal,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -780,7 +829,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                   '• Mix different vibes for varied suggestions',
                   style: GoogleFonts.poppins(
                     fontSize: 13,
-                    color: Colors.grey[700],
+                    color: _fvWmStone,
                     height: 1.5,
                   ),
                 ),

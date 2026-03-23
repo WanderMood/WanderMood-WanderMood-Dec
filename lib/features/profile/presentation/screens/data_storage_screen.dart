@@ -12,6 +12,10 @@ import '../providers/settings_providers.dart';
 import '../widgets/settings_screen_template.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
+const Color _dsWmForest = Color(0xFF2A6049);
+const Color _dsWmForestTint = Color(0xFFEBF3EE);
+const Color _dsWmParchment = Color(0xFFE8E2D8);
+
 class DataStorageScreen extends ConsumerStatefulWidget {
   const DataStorageScreen({super.key});
 
@@ -95,7 +99,6 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
         showWanderMoodToast(
           context,
           message: l10n.dataStorageExportSuccess,
-          backgroundColor: Colors.green,
         );
       }
     } catch (e) {
@@ -125,7 +128,6 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
         showWanderMoodToast(
           context,
           message: AppLocalizations.of(context)!.dataStorageCacheCleared,
-          backgroundColor: Colors.green,
         );
       }
     } catch (e) {
@@ -150,17 +152,18 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
     return SettingsScreenTemplate(
       title: l10n.dataStorageTitle,
       onBack: () => context.pop(),
+      wanderMoodV2Chrome: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFECFDFF),
+              color: _dsWmForestTint,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: const Color(0xFFCFFAFE),
-                width: 2,
+                color: _dsWmParchment,
+                width: 0.5,
               ),
             ),
             child: Row(
@@ -192,7 +195,7 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
                 const Icon(
                   Icons.download,
                   size: 40,
-                  color: Color(0xFF06B6D4),
+                  color: _dsWmForest,
                 ),
               ],
             ),
@@ -228,23 +231,9 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFFF3F4F6),
-          width: 2,
+          color: _dsWmParchment,
+          width: 0.5,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-            spreadRadius: 0,
-          ),
-        ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -255,7 +244,7 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                Icon(icon, color: const Color(0xFF374151), size: 20),
+                Icon(icon, color: _dsWmForest, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -277,7 +266,7 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFD1FAE5),
+                                color: _dsWmForestTint,
                                 borderRadius: BorderRadius.circular(9999),
                               ),
                               child: Text(
@@ -285,7 +274,7 @@ class _DataStorageScreenState extends ConsumerState<DataStorageScreen> {
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF2A6049),
+                                  color: _dsWmForest,
                                 ),
                               ),
                             ),

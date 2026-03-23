@@ -6,6 +6,10 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import '../widgets/settings_screen_template.dart';
 
+const Color _hsWmForest = Color(0xFF2A6049);
+const Color _hsWmForestTint = Color(0xFFEBF3EE);
+const Color _hsWmParchment = Color(0xFFE8E2D8);
+
 class HelpSupportScreen extends ConsumerWidget {
   const HelpSupportScreen({super.key});
 
@@ -15,6 +19,7 @@ class HelpSupportScreen extends ConsumerWidget {
     return SettingsScreenTemplate(
       title: l10n.helpSupportScreenTitle,
       onBack: () => context.pop(),
+      wanderMoodV2Chrome: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -23,8 +28,8 @@ class HelpSupportScreen extends ConsumerWidget {
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: const Color(0xFFE5E7EB),
-                width: 2,
+                color: _hsWmParchment,
+                width: 0.5,
               ),
             ),
             child: TextField(
@@ -35,7 +40,7 @@ class HelpSupportScreen extends ConsumerWidget {
                 ),
                 prefixIcon: const Icon(
                   Icons.search,
-                  color: Color(0xFF9CA3AF),
+                  color: _hsWmForest,
                 ),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -120,23 +125,9 @@ class HelpSupportScreen extends ConsumerWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFFF3F4F6),
-          width: 2,
+          color: _hsWmParchment,
+          width: 0.5,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-            spreadRadius: 0,
-          ),
-        ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -147,7 +138,7 @@ class HelpSupportScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                Icon(icon, color: const Color(0xFF374151), size: 20),
+                Icon(icon, color: _hsWmForest, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -169,7 +160,7 @@ class HelpSupportScreen extends ConsumerWidget {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFD1FAE5),
+                                color: _hsWmForestTint,
                                 borderRadius: BorderRadius.circular(9999),
                               ),
                               child: Text(
@@ -177,7 +168,7 @@ class HelpSupportScreen extends ConsumerWidget {
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF2A6049),
+                                  color: _hsWmForest,
                                 ),
                               ),
                             ),

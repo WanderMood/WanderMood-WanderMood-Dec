@@ -7,6 +7,10 @@ import 'package:wandermood/l10n/app_localizations.dart';
 import '../widgets/settings_screen_template.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
+const Color _locWmForest = Color(0xFF2A6049);
+const Color _locWmForestTint = Color(0xFFEBF3EE);
+const Color _locWmParchment = Color(0xFFE8E2D8);
+
 class LocationSettingsScreen extends ConsumerStatefulWidget {
   const LocationSettingsScreen({super.key});
 
@@ -83,16 +87,17 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
     return SettingsScreenTemplate(
       title: l10n.settingsLocationLabel,
       onBack: () => context.pop(),
+      wanderMoodV2Chrome: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF3E8FF), // purple-50
+              color: _locWmForestTint,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: const Color(0xFFE9D5FF), // purple-200
+                color: _locWmParchment,
                 width: 2,
               ),
             ),
@@ -100,7 +105,7 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
               children: [
                 const Icon(
                   Icons.location_on,
-                  color: Color(0xFF9333EA), // purple-600
+                  color: _locWmForest,
                   size: 20,
                 ),
                 const SizedBox(width: 12),
@@ -200,7 +205,7 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
                     child: Text(
                       'Change',
                       style: GoogleFonts.poppins(
-                        color: const Color(0xFFF97316),
+                        color: _locWmForest,
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),
@@ -325,12 +330,7 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
                 height: 28,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(9999),
-                  gradient: checked
-                      ? const LinearGradient(
-                          colors: [Color(0xFFFB923C), Color(0xFFEC4899)],
-                        )
-                      : null,
-                  color: checked ? null : const Color(0xFFD1D5DB),
+                  color: checked ? _locWmForest : const Color(0xFFD1D5DB),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(2),

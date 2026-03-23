@@ -4,7 +4,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/adventure/presentation/screens/adventure_plan_screen.dart';
-// import '../../features/auth/presentation/screens/login_screen.dart'; // Removed - using magic link instead
 import '../../features/auth/presentation/screens/email_verification_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/onboarding/presentation/screens/communication_preference_screen.dart';
@@ -12,7 +11,6 @@ import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/places/presentation/screens/place_detail_screen.dart';
 import '../../features/places/presentation/screens/saved_places_screen.dart';
 import '../../features/mood/presentation/screens/mood_history_screen.dart';
-import '../../features/plans/presentation/screens/travel_plans_screen.dart';
 import '../../features/onboarding/presentation/screens/travel_interests_screen.dart';
 import '../../features/onboarding/presentation/screens/social_vibe_screen.dart';
 import '../../features/onboarding/presentation/screens/planning_pace_screen.dart';
@@ -32,16 +30,17 @@ import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/share_profile_screen.dart';
 import '../../features/profile/presentation/screens/globe_screen.dart';
 import '../../features/profile/presentation/screens/notifications_screen.dart';
-import '../../features/profile/presentation/screens/language_screen.dart';
 import '../../features/profile/presentation/screens/comprehensive_settings_screen.dart';
 import '../../features/profile/presentation/screens/preferences_screen.dart';
 import '../../features/profile/presentation/screens/account_security_screen.dart';
 import '../../features/profile/presentation/screens/privacy_settings_screen.dart';
 import '../../features/profile/presentation/screens/location_settings_screen.dart';
+import '../../features/profile/presentation/screens/location_picker_screen.dart';
 import '../../features/profile/presentation/screens/language_settings_screen.dart';
 import '../../features/profile/presentation/screens/theme_settings_screen.dart';
 import '../../features/profile/presentation/screens/achievements_settings_screen.dart';
 import '../../features/profile/presentation/screens/subscription_screen.dart';
+import '../../features/profile/presentation/screens/premium_upgrade_screen.dart';
 import '../../features/profile/presentation/screens/data_storage_screen.dart';
 import '../../features/profile/presentation/screens/help_support_screen.dart';
 import '../../features/profile/presentation/screens/delete_account_screen.dart';
@@ -80,6 +79,13 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 // import '../../admin/admin_screen.dart'; // Removed - debug only
 
 part 'router.g.dart';
+
+/// Inline scaffold tokens (auth callback + preference redirect loaders only)
+const Color _routerWmCream = Color(0xFFF5F0E8);
+const Color _routerWmForest = Color(0xFF2A6049);
+const Color _routerWmWhite = Color(0xFFFFFFFF);
+const Color _routerWmCharcoal = Color(0xFF1E1C18);
+const Color _routerWmError = Color(0xFFE05C5C);
 
 // Helper function to handle email verification
 // CRITICAL FIX: With PKCE flow, Supabase Flutter processes deep links automatically
@@ -321,7 +327,12 @@ GoRouter router(RouterRef ref) {
           final isAuthenticated = SupabaseConfig.auth.currentUser != null;
           if (!isAuthenticated) {
             WidgetsBinding.instance.addPostFrameCallback((_) => context.go('/auth/signup'));
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+            return const Scaffold(
+              backgroundColor: _routerWmCream,
+              body: Center(
+                child: CircularProgressIndicator(color: _routerWmForest),
+              ),
+            );
           }
           return const TravelInterestsScreen();
         },
@@ -333,7 +344,12 @@ GoRouter router(RouterRef ref) {
           final isAuthenticated = SupabaseConfig.auth.currentUser != null;
           if (!isAuthenticated) {
             WidgetsBinding.instance.addPostFrameCallback((_) => context.go('/auth/signup'));
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+            return const Scaffold(
+              backgroundColor: _routerWmCream,
+              body: Center(
+                child: CircularProgressIndicator(color: _routerWmForest),
+              ),
+            );
           }
           return const CombinedTravelPreferencesScreen();
         },
@@ -345,7 +361,12 @@ GoRouter router(RouterRef ref) {
           final isAuthenticated = SupabaseConfig.auth.currentUser != null;
           if (!isAuthenticated) {
             WidgetsBinding.instance.addPostFrameCallback((_) => context.go('/auth/signup'));
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+            return const Scaffold(
+              backgroundColor: _routerWmCream,
+              body: Center(
+                child: CircularProgressIndicator(color: _routerWmForest),
+              ),
+            );
           }
           return const SocialVibeScreen();
         },
@@ -357,7 +378,12 @@ GoRouter router(RouterRef ref) {
           final isAuthenticated = SupabaseConfig.auth.currentUser != null;
           if (!isAuthenticated) {
             WidgetsBinding.instance.addPostFrameCallback((_) => context.go('/auth/signup'));
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+            return const Scaffold(
+              backgroundColor: _routerWmCream,
+              body: Center(
+                child: CircularProgressIndicator(color: _routerWmForest),
+              ),
+            );
           }
           return const PlanningPaceScreen();
         },
@@ -369,7 +395,12 @@ GoRouter router(RouterRef ref) {
           final isAuthenticated = SupabaseConfig.auth.currentUser != null;
           if (!isAuthenticated) {
             WidgetsBinding.instance.addPostFrameCallback((_) => context.go('/auth/signup'));
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+            return const Scaffold(
+              backgroundColor: _routerWmCream,
+              body: Center(
+                child: CircularProgressIndicator(color: _routerWmForest),
+              ),
+            );
           }
           return const TravelStyleScreen();
         },
@@ -381,19 +412,18 @@ GoRouter router(RouterRef ref) {
           final isAuthenticated = SupabaseConfig.auth.currentUser != null;
           if (!isAuthenticated) {
             WidgetsBinding.instance.addPostFrameCallback((_) => context.go('/auth/signup'));
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+            return const Scaffold(
+              backgroundColor: _routerWmCream,
+              body: Center(
+                child: CircularProgressIndicator(color: _routerWmForest),
+              ),
+            );
           }
           return const OnboardingLoadingScreen();
         },
       ),
       
-      // Authentication
-      // NOTE: Login screen removed - using magic link authentication instead
-      // GoRoute(
-      //   path: '/login',
-      //   name: 'login',
-      //   builder: (context, state) => const LoginScreen(),
-      // ),
+      // Authentication (magic link only — no password / email-password routes)
       GoRoute(
         path: '/register',
         name: 'register',
@@ -422,13 +452,21 @@ GoRouter router(RouterRef ref) {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Scaffold(
+                  backgroundColor: _routerWmForest,
                   body: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(),
+                        CircularProgressIndicator(color: _routerWmWhite),
                         SizedBox(height: 16),
-                        Text('Confirming your email...'),
+                        Text(
+                          'Confirming your email...',
+                          style: TextStyle(
+                            color: _routerWmWhite,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -441,13 +479,24 @@ GoRouter router(RouterRef ref) {
                   context.go('/auth/signup');
                 });
                 return const Scaffold(
+                  backgroundColor: _routerWmCream,
                   body: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.error, color: Colors.red, size: 48),
+                        Icon(Icons.error_outline, color: _routerWmError, size: 48),
                         SizedBox(height: 16),
-                        Text('Email verification failed. Please try again.'),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 32),
+                          child: Text(
+                            'Email verification failed. Please try again.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: _routerWmCharcoal,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -757,6 +806,11 @@ GoRouter router(RouterRef ref) {
         builder: (context, state) => const LocationSettingsScreen(),
       ),
       GoRoute(
+        path: '/settings/location/picker',
+        name: 'location-picker',
+        builder: (context, state) => const LocationPickerScreen(),
+      ),
+      GoRoute(
         path: '/settings/language',
         name: 'language-settings',
         builder: (context, state) => const LanguageSettingsScreen(),
@@ -777,6 +831,11 @@ GoRouter router(RouterRef ref) {
         path: '/settings/subscription',
         name: 'subscription',
         builder: (context, state) => const SubscriptionScreen(),
+      ),
+      GoRoute(
+        path: '/settings/premium-upgrade',
+        name: 'premium-upgrade',
+        builder: (context, state) => const PremiumUpgradeScreen(),
       ),
       GoRoute(
         path: '/settings/data',
@@ -827,11 +886,6 @@ GoRouter router(RouterRef ref) {
         name: 'saved-places',
         builder: (context, state) => const SavedPlacesScreen(),
       ),
-      GoRoute(
-        path: '/plans',
-        name: 'travel-plans',
-        builder: (context, state) => const TravelPlansScreen(),
-      ),
     ],
     redirect: (context, state) async {
       final authState = ref.read(authStateProvider);
@@ -865,7 +919,6 @@ GoRouter router(RouterRef ref) {
                            currentLocation.startsWith('/profile') ||
                            currentLocation.startsWith('/settings') ||
                            currentLocation.startsWith('/place') ||
-                           currentLocation.startsWith('/plans') ||
                            currentLocation.startsWith('/social');
       
       // Always allow splash screen
@@ -1046,7 +1099,7 @@ GoRouter router(RouterRef ref) {
 
           debugPrint('🔍 Authenticated user - hasCompletedPreferences: $hasCompletedPreferences, currentLocation: $currentLocation');
 
-          // Check for bypass flag from booking flow
+          // Check for bypass flag (e.g. onboarding shortcuts)
           final extra = state.extra as Map<String, dynamic>?;
           final bypassPreferences = extra?['bypass_preferences'] == true;
           

@@ -6,6 +6,9 @@ import '../../domain/providers/profile_provider.dart';
 import '../widgets/settings_screen_template.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
+const Color _privacyWmForest = Color(0xFF2A6049);
+const Color _privacyWmForestTint = Color(0xFFEBF3EE);
+
 class PrivacySettingsScreen extends ConsumerStatefulWidget {
   const PrivacySettingsScreen({super.key});
 
@@ -47,7 +50,6 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
         showWanderMoodToast(
           context,
           message: 'Profile visibility updated',
-          backgroundColor: Colors.green,
         );
       }
     } catch (e) {
@@ -69,7 +71,6 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
         showWanderMoodToast(
           context,
           message: value ? 'Email will be visible to others' : 'Email is now hidden',
-          backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
         );
       }
@@ -93,7 +94,6 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
         showWanderMoodToast(
           context,
           message: value ? 'Age will be visible to others' : 'Age is now hidden',
-          backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
         );
       }
@@ -114,6 +114,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
     return SettingsScreenTemplate(
       title: 'Privacy',
       onBack: () => context.pop(),
+      wanderMoodV2Chrome: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -188,12 +189,12 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: selected ? const Color(0xFFFB923C) : const Color(0xFFE5E7EB),
+          color: selected ? _privacyWmForest : const Color(0xFFE5E7EB),
           width: 2,
         ),
       ),
       child: Material(
-        color: selected ? const Color(0xFFFFF7ED) : Colors.transparent,
+        color: selected ? _privacyWmForestTint : Colors.transparent,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onTap,
@@ -253,7 +254,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: selected ? const Color(0xFFF97316) : const Color(0xFFD1D5DB),
+                      color: selected ? _privacyWmForest : const Color(0xFFD1D5DB),
                       width: 2,
                     ),
                   ),
@@ -263,7 +264,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                             width: 12,
                             height: 12,
                             decoration: const BoxDecoration(
-                              color: Color(0xFFF97316),
+                              color: _privacyWmForest,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -329,12 +330,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                 height: 28,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(9999),
-                  gradient: checked
-                      ? const LinearGradient(
-                          colors: [Color(0xFFFB923C), Color(0xFFEC4899)],
-                        )
-                      : null,
-                  color: checked ? null : const Color(0xFFD1D5DB),
+                  color: checked ? _privacyWmForest : const Color(0xFFD1D5DB),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(2),

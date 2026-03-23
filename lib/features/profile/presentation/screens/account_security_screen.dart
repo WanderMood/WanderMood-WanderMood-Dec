@@ -6,6 +6,10 @@ import '../../../../l10n/app_localizations.dart';
 import '../providers/settings_providers.dart';
 import '../widgets/settings_screen_template.dart';
 
+const Color _secWmForest = Color(0xFF2A6049);
+const Color _secWmForestTint = Color(0xFFEBF3EE);
+const Color _secWmParchment = Color(0xFFE8E2D8);
+
 class AccountSecurityScreen extends ConsumerWidget {
   const AccountSecurityScreen({super.key});
 
@@ -17,6 +21,7 @@ class AccountSecurityScreen extends ConsumerWidget {
     return SettingsScreenTemplate(
       title: l10n.settingsAccountSecurityTitle,
       onBack: () => context.pop(),
+      wanderMoodV2Chrome: true,
       child: accountSecurityAsync.when(
         data: (security) => _buildContent(context, security),
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -65,8 +70,8 @@ class AccountSecurityScreen extends ConsumerWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16), // rounded-xl
         border: Border.all(
-          color: const Color(0xFFF3F4F6), // gray-100
-          width: 2,
+          color: _secWmParchment,
+          width: 0.5,
         ),
         boxShadow: [
           BoxShadow(
@@ -92,7 +97,7 @@ class AccountSecurityScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                Icon(icon, color: const Color(0xFF374151), size: 20), // gray-600
+                Icon(icon, color: _secWmForest, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -114,7 +119,7 @@ class AccountSecurityScreen extends ConsumerWidget {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFD1FAE5), // green-100
+                                color: _secWmForestTint,
                                 borderRadius: BorderRadius.circular(9999),
                               ),
                               child: Text(
@@ -122,7 +127,7 @@ class AccountSecurityScreen extends ConsumerWidget {
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF2A6049), // wmForest
+                                  color: _secWmForest,
                                 ),
                               ),
                             ),

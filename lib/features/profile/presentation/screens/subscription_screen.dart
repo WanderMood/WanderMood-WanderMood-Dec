@@ -6,6 +6,11 @@ import 'package:wandermood/l10n/app_localizations.dart';
 import '../providers/settings_providers.dart';
 import '../widgets/settings_screen_template.dart';
 
+const Color _subWmForest = Color(0xFF2A6049);
+const Color _subWmForestDeep = Color(0xFF1E4A3A);
+const Color _subWmForestTint = Color(0xFFEBF3EE);
+const Color _subWmForestTint2 = Color(0xFFD4E8DD);
+
 class SubscriptionScreen extends ConsumerWidget {
   const SubscriptionScreen({super.key});
 
@@ -17,6 +22,7 @@ class SubscriptionScreen extends ConsumerWidget {
     return SettingsScreenTemplate(
       title: l10n.subscriptionScreenTitle,
       onBack: () => context.pop(),
+      wanderMoodV2Chrome: true,
       child: subscriptionAsync.when(
         data: (subscription) => _buildContent(context, subscription, l10n),
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -35,15 +41,13 @@ class SubscriptionScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: isPremium
-                  ? [const Color(0xFF86EFAC), const Color(0xFF5EEAD4)]
-                  : [const Color(0xFFD1FAE5), const Color(0xFFCCFBF1)],
+              colors: [_subWmForestTint, _subWmForestTint2],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isPremium ? const Color(0xFF6EE7B7) : const Color(0xFF6EE7B7),
+              color: _subWmForest.withValues(alpha: 0.35),
               width: 2,
             ),
             boxShadow: [
@@ -72,7 +76,7 @@ class SubscriptionScreen extends ConsumerWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF047857),
+                        color: _subWmForest,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -90,7 +94,7 @@ class SubscriptionScreen extends ConsumerWidget {
               Icon(
                 Icons.star,
                 size: 48,
-                color: isPremium ? const Color(0xFF047857) : const Color(0xFF10B981),
+                color: _subWmForest,
               ),
             ],
           ),
@@ -101,7 +105,7 @@ class SubscriptionScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFFFB923C), Color(0xFFEC4899)],
+                colors: [_subWmForest, _subWmForestDeep],
               ),
               borderRadius: BorderRadius.circular(16),
             ),
@@ -148,7 +152,7 @@ class SubscriptionScreen extends ConsumerWidget {
                     onPressed: () => context.push('/settings/premium-upgrade'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFFF97316),
+                      foregroundColor: _subWmForest,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),

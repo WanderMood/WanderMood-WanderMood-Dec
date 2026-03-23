@@ -6,6 +6,10 @@ import '../../../gamification/providers/gamification_provider.dart';
 import '../../../gamification/domain/models/achievement.dart';
 import '../widgets/settings_screen_template.dart';
 
+const Color _achWmForest = Color(0xFF2A6049);
+const Color _achWmForestTint = Color(0xFFEBF3EE);
+const Color _achWmParchment = Color(0xFFE8E2D8);
+
 class AchievementsSettingsScreen extends ConsumerWidget {
   const AchievementsSettingsScreen({super.key});
 
@@ -21,6 +25,7 @@ class AchievementsSettingsScreen extends ConsumerWidget {
     return SettingsScreenTemplate(
       title: 'Achievements',
       onBack: () => context.pop(),
+      wanderMoodV2Chrome: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -28,36 +33,22 @@ class AchievementsSettingsScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFFFEF3C7), Color(0xFFFED7AA)],
+                colors: [_achWmForestTint, Color(0xFFD4E8DD)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: const Color(0xFFFDE047),
-                width: 2,
+                color: _achWmParchment,
+                width: 0.5,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                  spreadRadius: 0,
-                ),
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                  spreadRadius: 0,
-                ),
-              ],
             ),
             child: Column(
               children: [
                 const Icon(
                   Icons.emoji_events,
                   size: 64,
-                  color: Color(0xFFCA8A04),
+                  color: _achWmForest,
                 ),
                 const SizedBox(height: 12),
                 Text(
@@ -138,23 +129,9 @@ class AchievementsSettingsScreen extends ConsumerWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: unlocked ? const Color(0xFFFDE047) : const Color(0xFFE5E7EB),
-          width: 2,
+          color: unlocked ? _achWmForest : _achWmParchment,
+          width: unlocked ? 1.0 : 0.5,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-            spreadRadius: 0,
-          ),
-        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -163,13 +140,13 @@ class AchievementsSettingsScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: unlocked ? const Color(0xFFFEF3C7) : const Color(0xFFF3F4F6),
+                color: unlocked ? _achWmForestTint : const Color(0xFFF3F4F6),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 _getIconForAchievement(achievement),
                 size: 24,
-                color: unlocked ? const Color(0xFFCA8A04) : const Color(0xFF9CA3AF),
+                color: unlocked ? _achWmForest : const Color(0xFF9CA3AF),
               ),
             ),
             const SizedBox(width: 16),
@@ -199,7 +176,7 @@ class AchievementsSettingsScreen extends ConsumerWidget {
             if (unlocked)
               const Icon(
                 Icons.check,
-                color: Color(0xFFCA8A04),
+                color: _achWmForest,
                 size: 20,
               ),
           ],

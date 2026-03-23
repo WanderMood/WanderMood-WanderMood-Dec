@@ -4,8 +4,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../providers/settings_providers.dart';
-import '../../../../core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+
+const Color _puWmCream = Color(0xFFF5F0E8);
+const Color _puWmParchment = Color(0xFFE8E2D8);
+const Color _puWmCharcoal = Color(0xFF1E1C18);
+const Color _puWmForest = Color(0xFF2A6049);
+const Color _puWmForestDeep = Color(0xFF1E4A3A);
+const Color _puWmForestTint = Color(0xFFEBF3EE);
 
 class PremiumUpgradeScreen extends ConsumerStatefulWidget {
   const PremiumUpgradeScreen({super.key});
@@ -93,34 +99,31 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      extendBodyBehindAppBar: true,
+      backgroundColor: _puWmCream,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: _puWmCream,
         elevation: 0,
+        foregroundColor: _puWmCharcoal,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: theme.iconTheme.color),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
         title: Text(
           'Upgrade to Premium',
           style: GoogleFonts.poppins(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: theme.textTheme.titleLarge?.color,
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            color: _puWmCharcoal,
           ),
         ),
         centerTitle: true,
       ),
-      body: SwirlBackground(
-        child: Form(
+      body: Form(
           key: _formKey,
           child: ListView(
             padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + kToolbarHeight + 24,
+              top: 24,
               left: 24,
               right: 24,
               bottom: 24,
@@ -131,11 +134,12 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFFF6B35), Color(0xFFEC4899)],
+                  colors: [_puWmForest, _puWmForestDeep],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: _puWmParchment, width: 0.5),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,7 +205,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.green[100],
+                      color: _puWmForestTint,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -209,7 +213,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Colors.green[700],
+                        color: _puWmForest,
                       ),
                     ),
                   ),
@@ -245,7 +249,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
             ElevatedButton(
               onPressed: _isProcessing ? null : _processPayment,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF6B35),
+                backgroundColor: _puWmForest,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
@@ -282,20 +286,20 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.blue[50],
+                color: _puWmForestTint,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue[200]!),
+                border: Border.all(color: _puWmForest.withValues(alpha: 0.28)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.security, color: Colors.blue[600], size: 20),
+                  Icon(Icons.security, color: _puWmForest, size: 20),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Your payment information is encrypted and secure',
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: Colors.blue[800],
+                        color: _puWmForest,
                       ),
                     ),
                   ),
@@ -303,7 +307,6 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
               ),
             ),
           ],
-        ),
         ),
       ),
     );
@@ -334,15 +337,15 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
     final isSelected = _selectedPaymentMethod == value;
     return Container(
       decoration: BoxDecoration(
-        color: isSelected ? Colors.orange[50] : Colors.white,
+        color: isSelected ? _puWmForestTint : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isSelected ? Colors.orange[400]! : Colors.grey[200]!,
+          color: isSelected ? _puWmForest : Colors.grey[200]!,
           width: isSelected ? 2 : 1,
         ),
       ),
       child: ListTile(
-        leading: Icon(icon, color: isSelected ? Colors.orange[600] : Colors.grey[600]),
+        leading: Icon(icon, color: isSelected ? _puWmForest : Colors.grey[600]),
         title: Text(
           title,
           style: GoogleFonts.poppins(
@@ -352,7 +355,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
           ),
         ),
         trailing: isSelected
-            ? Icon(Icons.check_circle, color: Colors.orange[600])
+            ? Icon(Icons.check_circle, color: _puWmForest)
             : const Icon(Icons.radio_button_unchecked, color: Colors.grey),
         onTap: () => setState(() => _selectedPaymentMethod = value),
       ),
@@ -389,7 +392,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFFF6B35), width: 2),
+                borderSide: const BorderSide(color: _puWmForest, width: 2),
               ),
             ),
             keyboardType: TextInputType.number,
@@ -417,7 +420,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFFF6B35), width: 2),
+                      borderSide: const BorderSide(color: _puWmForest, width: 2),
                     ),
                   ),
                   keyboardType: TextInputType.number,
@@ -441,7 +444,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFFF6B35), width: 2),
+                      borderSide: const BorderSide(color: _puWmForest, width: 2),
                     ),
                   ),
                   keyboardType: TextInputType.number,
@@ -470,7 +473,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFFF6B35), width: 2),
+                borderSide: const BorderSide(color: _puWmForest, width: 2),
               ),
             ),
             validator: (value) {
