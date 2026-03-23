@@ -8,11 +8,20 @@ import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/core/services/distance_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
+
+const Color _wmWhite = Color(0xFFFFFFFF);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmSunset = Color(0xFFE8784A);
+const Color _wmError = Color(0xFFE05C5C);
+const Color _wmDusk = Color(0xFF4A4640);
 
 /// A compact grid card for displaying places in a grid layout
 class PlaceGridCard extends ConsumerWidget {
   final Place place;
   final VoidCallback onTap;
+  final VoidCallback? onAddToMyDayTap;
   final Position? userLocation;
   final String? cityName; // City name for fallback distance calculation
 
@@ -20,6 +29,7 @@ class PlaceGridCard extends ConsumerWidget {
     Key? key,
     required this.place,
     required this.onTap,
+    this.onAddToMyDayTap,
     this.userLocation,
     this.cityName,
   }) : super(key: key);
@@ -191,6 +201,7 @@ class PlaceGridCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final savedPlacesAsync = ref.watch(savedPlacesProvider);
     final isFavorite = savedPlacesAsync.value?.any((sp) => sp.placeId == place.id) ?? false;
     
@@ -198,8 +209,9 @@ class PlaceGridCard extends ConsumerWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: _wmWhite,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _wmParchment, width: 0.5),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
@@ -211,9 +223,14 @@ class PlaceGridCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Container(
+              height: 3,
+              width: double.infinity,
+              color: _wmForest,
+            ),
             // Image section
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(9)),
               child: Stack(
                 children: [
                   // Main image
@@ -228,8 +245,8 @@ class PlaceGridCard extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: place.openingHours!.isOpen 
-                              ? const Color(0xFF2A6049) 
-                              : Colors.red.withOpacity(0.9),
+                              ? _wmForest
+                              : _wmError.withValues(alpha: 0.92),
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
@@ -240,7 +257,9 @@ class PlaceGridCard extends ConsumerWidget {
                           ],
                         ),
                         child: Text(
-                          place.openingHours!.isOpen ? 'Open' : 'Closed',
+                          place.openingHours!.isOpen
+                              ? l10n.dayPlanCardOpenNow
+                              : l10n.dayPlanCardClosed,
                           style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 10,
@@ -280,7 +299,7 @@ class PlaceGridCard extends ConsumerWidget {
                             ),
                             child: const Icon(
                               Icons.directions,
-                              color: Color(0xFF2A6049),
+                              color: _wmForest,
                               size: 14,
                             ),
                           ),
@@ -317,7 +336,7 @@ class PlaceGridCard extends ConsumerWidget {
                             ),
                             child: Icon(
                               isFavorite ? Icons.favorite : Icons.favorite_border,
-                              color: isFavorite ? Colors.red : Colors.grey,
+                              color: isFavorite ? _wmSunset : Colors.grey,
                               size: 14,
                             ),
                           ),
@@ -357,7 +376,7 @@ class PlaceGridCard extends ConsumerWidget {
                           children: [
                             const Icon(
                               Icons.star,
-                              color: Color(0xFFFFD700),
+                              color: _wmSunset,
                               size: 12,
                             ),
                             const SizedBox(width: 2),
@@ -382,7 +401,7 @@ class PlaceGridCard extends ConsumerWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 11,
                         height: 1.3,
-                        color: Colors.grey[700],
+                        color: _wmDusk,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -401,7 +420,7 @@ class PlaceGridCard extends ConsumerWidget {
                         _buildCategoryPill(
                           icon: Icons.directions_walk,
                           label: _calculateDistance()!,
-                          color: const Color(0xFF2A6049),
+                          color: _wmForest,
                         ),
                       // Price badge
                       if (_getPriceBadgeText().isNotEmpty)
@@ -412,6 +431,42 @@ class PlaceGridCard extends ConsumerWidget {
                         ),
                     ],
                   ),
+                  if (onAddToMyDayTap != null) ...[
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: onAddToMyDayTap,
+                          child: Container(
+                            height: 32,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: _wmForest,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.add, color: Colors.white, size: 14),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Mijn Dag',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

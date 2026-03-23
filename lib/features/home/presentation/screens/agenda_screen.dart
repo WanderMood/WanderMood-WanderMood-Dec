@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
+import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'dynamic_my_day_provider.dart';
 // WanderMood v2 — Agenda / calendar (Screen 10)
 const Color _wmCharcoal = Color(0xFF1E1C18);
@@ -14,6 +15,8 @@ const Color _wmStone = Color(0xFF8C8780);
 const Color _wmDusk = Color(0xFF4A4640);
 const Color _wmForest = Color(0xFF2A6049);
 const Color _wmSunset = Color(0xFFE8784A);
+const Color _wmWhite = Color(0xFFFFFFFF);
+const Color _wmParchment = Color(0xFFE8E2D8);
 
 TextStyle _wmBodyAgendaTextStyle() => GoogleFonts.poppins(
       fontSize: 15,
@@ -291,40 +294,123 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
         print('📅 Agenda: Found ${events.length} events for selected day');
         
         if (events.isEmpty) {
+          final now = DateTime.now();
+          final today = DateTime(now.year, now.month, now.day);
+          final selected = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+          final diff = selected.difference(today).inDays;
+
+          String emoji;
+          String title;
+          String subtitle;
+
+          if (diff == 0) {
+            emoji = '🌅';
+            title = 'Vandaag is nog leeg';
+            subtitle = 'Laat Moody je dag plannen op basis van je stemming';
+          } else if (diff == 1) {
+            emoji = '🌙';
+            title = 'Morgen is nog vrij';
+            subtitle = 'Plan alvast wat je morgen wilt doen';
+          } else if (diff <= 7) {
+            final dayName = _getDayName(selectedDate);
+            emoji = '📅';
+            title = '$dayName is nog leeg';
+            subtitle = 'Wil je alvast plannen voor $dayName?';
+          } else {
+            emoji = '✈️';
+            title = 'Nog niets gepland';
+            subtitle = 'Plan alvast activiteiten voor deze dag';
+          }
+
           return SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Container(
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.7),
+                  color: _wmWhite,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: const Color(0xFF2A6049).withOpacity(0.2),
+                    color: _wmParchment,
                     width: 1,
                   ),
                 ),
                 child: Column(
                   children: [
-                    const SizedBox(
-                      width: 48,
-                      height: 48,
-                      child: MoodyCharacter(
-                        size: 48,
-                        mood: 'happy',
-                      ),
+                    Text(
+                      emoji,
+                      style: const TextStyle(fontSize: 48),
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Geen activiteiten gepland',
-                      style: _wmBodyAgendaTextStyle(),
+                      title,
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: _wmCharcoal,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Tik op een dag om activiteiten toe te voegen',
+                      subtitle,
                       style: _wmBodyAgendaTextStyle(),
                       textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    GestureDetector(
+                      onTap: () => _openMoodyPlannerForDate(selectedDate),
+                      child: Container(
+                        height: 54,
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        decoration: BoxDecoration(
+                          color: _wmForest,
+                          borderRadius: BorderRadius.circular(27),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('✨', style: TextStyle(fontSize: 16)),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Plan met Moody',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    GestureDetector(
+                      onTap: () => _openManualAddForDate(selectedDate),
+                      child: Container(
+                        height: 44,
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        decoration: BoxDecoration(
+                          color: _wmWhite,
+                          border: Border.all(color: _wmParchment),
+                          borderRadius: BorderRadius.circular(22),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.add, color: _wmForest, size: 18),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Activiteit toevoegen',
+                              style: GoogleFonts.poppins(
+                                color: _wmForest,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -423,6 +509,37 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
         ),
       ),
     );
+  }
+
+  void _openMoodyPlannerForDate(DateTime targetDate) {
+    context.push(
+      '/moody',
+      extra: {'targetDate': targetDate.toIso8601String()},
+    );
+  }
+
+  void _openManualAddForDate(DateTime selectedDate) {
+    context.push('/main?tab=1', extra: {
+      'targetDate': selectedDate.toIso8601String(),
+      'source': 'agenda_manual_add',
+    });
+    showWanderMoodToast(
+      context,
+      message: 'Kies een activiteit om toe te voegen voor ${_getDayName(selectedDate).toLowerCase()}.',
+    );
+  }
+
+  String _getDayName(DateTime date) {
+    const days = [
+      'Maandag',
+      'Dinsdag',
+      'Woensdag',
+      'Donderdag',
+      'Vrijdag',
+      'Zaterdag',
+      'Zondag',
+    ];
+    return days[date.weekday - 1];
   }
   
   Widget _buildListView(AsyncValue<List<Map<String, dynamic>>> activitiesAsyncValue) {
@@ -611,7 +728,8 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
         break;
       case 'cancelled':
         statusColor = Colors.red;
-        statusText = 'CANCELLED';
+        // Bookings / paid flows only (unbooked items are removed from the server instead).
+        statusText = 'BOEKING GEANNULEERD';
         break;
       case 'active':
         statusColor = Colors.red;
@@ -960,7 +1078,10 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     final managerStatus = activityManager.statusUpdates[activityId];
     
     if (managerStatus == ActivityStatus.cancelled) {
-      return 'cancelled';
+      // Unbooked items were incorrectly "cancelled" in memory only; keep showing real time state.
+      if (_getPaymentStatus(activity) != 'free') {
+        return 'cancelled';
+      }
     }
     
     final startTimeStr = activity['startTime'] as String?;
@@ -1172,27 +1293,120 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     );
   }
   
-  void _cancelActivity(Map<String, dynamic> activity) {
-    showDialog(
+  bool _isUnbookedActivity(Map<String, dynamic> activity) {
+    final ps = activity['paymentStatus'] as String? ?? 'free';
+    return ps == 'free';
+  }
+
+  /// Unbooked / manual plans: remove row from Supabase (not a "cancellation").
+  Future<void> _deleteScheduledActivity(Map<String, dynamic> activity) async {
+    final title = activity['title'] as String? ?? 'Activiteit';
+    showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Cancel Activity',
+          'Activiteit verwijderen?',
+          style: GoogleFonts.museoModerno(
+            fontWeight: FontWeight.bold,
+            color: _wmCharcoal,
+          ),
+        ),
+        content: Text(
+          '“$title” wordt uit je agenda gehaald. Dit is geen boeking, dus er is niets om te annuleren bij een aanbieder.',
+          style: GoogleFonts.poppins(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(
+              'Terug',
+              style: GoogleFonts.poppins(color: Colors.grey[600]),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              final activityId =
+                  activity['id'] as String? ?? activity['title'] as String? ?? '';
+              if (activityId.isEmpty) {
+                if (mounted) {
+                  showWanderMoodToast(
+                    context,
+                    message: 'Kon activiteit niet verwijderen (ontbrekend id).',
+                    isError: true,
+                  );
+                }
+                return;
+              }
+              try {
+                await ref
+                    .read(scheduledActivityServiceProvider)
+                    .deleteScheduledActivity(activityId);
+                ref
+                    .read(activityManagerProvider.notifier)
+                    .clearLocalStatusForActivity(activityId);
+                ref.invalidate(scheduledActivityServiceProvider);
+                ref.invalidate(cachedActivitySuggestionsProvider);
+                ref.invalidate(scheduledActivitiesForTodayProvider);
+                ref.invalidate(todayActivitiesProvider);
+                if (mounted) {
+                  showWanderMoodToast(
+                    context,
+                    message: '$title verwijderd uit je agenda.',
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  showWanderMoodToast(
+                    context,
+                    message: 'Verwijderen mislukt. Probeer opnieuw.',
+                    isError: true,
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Verwijderen',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Paid / reserved / pending: keep local “cancelled” state (no backend booking API here).
+  void _cancelBookedActivity(Map<String, dynamic> activity) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Boeking annuleren',
           style: GoogleFonts.museoModerno(
             fontWeight: FontWeight.bold,
             color: Colors.red,
           ),
         ),
         content: Text(
-          'Are you sure you want to cancel "${activity['title']}"? This action cannot be undone.',
+          'Weet je zeker dat je "${activity['title']}" wilt annuleren? Dit markeert de boeking in de app.',
           style: GoogleFonts.poppins(),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(
-              'Keep Activity',
+              'Behouden',
               style: GoogleFonts.poppins(
                 color: Colors.grey[600],
               ),
@@ -1200,18 +1414,17 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              
-              // Cancel the activity using the activity manager
-              final activityId = activity['id'] as String? ?? activity['title'] as String? ?? '';
+              Navigator.of(dialogContext).pop();
+
+              final activityId =
+                  activity['id'] as String? ?? activity['title'] as String? ?? '';
               if (activityId.isNotEmpty) {
                 ref.read(activityManagerProvider.notifier).cancelActivity(activityId);
               }
-              
+
               showWanderMoodToast(
                 context,
-                message: 'Activity cancelled successfully',
-                isError: true,
+                message: 'Boeking geannuleerd in de app.',
               );
             },
             style: ElevatedButton.styleFrom(
@@ -1221,7 +1434,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
               ),
             ),
             child: Text(
-              'Cancel Activity',
+              'Annuleren',
               style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
@@ -1308,46 +1521,68 @@ ${activity['description']}
                                   case 'edit':
                                     _editActivity(activity);
                                     break;
-                                  case 'cancel':
-                                    _cancelActivity(activity);
+                                  case 'delete':
+                                    _deleteScheduledActivity(activity);
+                                    break;
+                                  case 'cancel_booking':
+                                    _cancelBookedActivity(activity);
                                     break;
                                   case 'share':
                                     _shareActivity(activity);
                                     break;
                                 }
                               },
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(
-                                  value: 'edit',
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.edit, size: 18),
-                                      SizedBox(width: 8),
-                                      Text('Edit'),
-                                    ],
+                              itemBuilder: (context) {
+                                final unbooked = _isUnbookedActivity(activity);
+                                return [
+                                  const PopupMenuItem(
+                                    value: 'edit',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.edit, size: 18),
+                                        SizedBox(width: 8),
+                                        Text('Edit'),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'cancel',
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.cancel, size: 18, color: Colors.red),
-                                      SizedBox(width: 8),
-                                      Text('Cancel', style: TextStyle(color: Colors.red)),
-                                    ],
+                                  if (unbooked)
+                                    const PopupMenuItem(
+                                      value: 'delete',
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.delete_outline,
+                                              size: 18, color: Colors.red),
+                                          SizedBox(width: 8),
+                                          Text('Verwijderen',
+                                              style: TextStyle(color: Colors.red)),
+                                        ],
+                                      ),
+                                    )
+                                  else
+                                    const PopupMenuItem(
+                                      value: 'cancel_booking',
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.cancel_outlined,
+                                              size: 18, color: Colors.red),
+                                          SizedBox(width: 8),
+                                          Text('Boeking annuleren',
+                                              style: TextStyle(color: Colors.red)),
+                                        ],
+                                      ),
+                                    ),
+                                  const PopupMenuItem(
+                                    value: 'share',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.share, size: 18),
+                                        SizedBox(width: 8),
+                                        Text('Share'),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'share',
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.share, size: 18),
-                                      SizedBox(width: 8),
-                                      Text('Share'),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                                ];
+                              },
                             ),
                           ],
                         ),

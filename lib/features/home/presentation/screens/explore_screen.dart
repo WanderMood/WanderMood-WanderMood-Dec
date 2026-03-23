@@ -1056,46 +1056,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               (context, index) {
                                 final place = filteredPlaces[index];
                                 final userLocation = userLocationAsync.value;
-                                return Stack(
-                                  clipBehavior: Clip.hardEdge,
-                                  children: [
-                                    PlaceGridCard(
-                                      place: place,
-                                      userLocation: userLocation,
-                                      cityName: currentCity,
-                                      onTap: () => context.push('/place/${place.id}'),
-                                    ),
-                                    Positioned(
-                                      top: 92,
-                                      left: 8,
-                                      child: GestureDetector(
-                                        onTap: () => _showAddToMyDaySheet(place),
-                                        child: Container(
-                                          height: 28,
-                                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF2A6049),
-                                            borderRadius: BorderRadius.circular(14),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(Icons.add, color: Colors.white, size: 12),
-                                              const SizedBox(width: 3),
-                                              Text(
-                                                'Mijn Dag',
-                                                style: GoogleFonts.poppins(
-                                                  color: Colors.white,
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                return PlaceGridCard(
+                                  place: place,
+                                  userLocation: userLocation,
+                                  cityName: currentCity,
+                                  onTap: () => context.push('/place/${place.id}'),
+                                  onAddToMyDayTap: () => _showAddToMyDaySheet(place),
                                 ).animate().fadeIn(duration: 300.ms, delay: Duration(milliseconds: index * 30));
                               },
                               childCount: filteredPlaces.length,
@@ -1106,42 +1072,50 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               (context, index) {
                                 final place = filteredPlaces[index];
                                 final userLocation = userLocationAsync.value;
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  mainAxisSize: MainAxisSize.min,
+                                return Stack(
+                                  clipBehavior: Clip.none,
                                   children: [
                                     PlaceCard(
                                       place: place,
                                       userLocation: userLocation,
                                       cityName: currentCity,
-                                      cardMargin: const EdgeInsets.only(top: 8, bottom: 4),
+                                      cardMargin: const EdgeInsets.only(top: 8, bottom: 16),
                                       showAddToMyDayButton: false,
                                       onTap: () => context.push('/place/${place.id}'),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: 4),
-                                      child: Align(
-                                        alignment: Alignment.centerRight,
-                                        child: GestureDetector(
+                                    Positioned(
+                                      right: 14,
+                                      bottom: 30,
+                                      child: Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          borderRadius: BorderRadius.circular(22),
                                           onTap: () => _showAddToMyDaySheet(place),
                                           child: Container(
-                                            height: 32,
-                                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                                            height: 44,
+                                            padding: const EdgeInsets.symmetric(horizontal: 18),
                                             decoration: BoxDecoration(
                                               color: const Color(0xFF2A6049),
-                                              borderRadius: BorderRadius.circular(16),
+                                              borderRadius: BorderRadius.circular(22),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: const Color(0xFF2A6049).withValues(alpha: 0.25),
+                                                  blurRadius: 10,
+                                                  offset: const Offset(0, 4),
+                                                ),
+                                              ],
                                             ),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                const Icon(Icons.add, color: Colors.white, size: 14),
-                                                const SizedBox(width: 4),
+                                                const Icon(Icons.add, color: Colors.white, size: 17),
+                                                const SizedBox(width: 7),
                                                 Text(
                                                   'Mijn Dag',
                                                   style: GoogleFonts.poppins(
                                                     color: Colors.white,
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w700,
                                                   ),
                                                 ),
                                               ],
@@ -2800,6 +2774,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   // --- Add to My Day ---
 
   void _showAddToMyDaySheet(Place place) {
+    final selectedDate = ref.read(selectedMyDayDateProvider);
+    final planningDate = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+    );
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -2809,6 +2789,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       ),
       builder: (_) => _ExploreAddToMyDaySheet(
         place: place,
+        planningDate: planningDate,
         onTimeSelected: (DateTime startTime) => _addActivityToMyDay(place, startTime),
       ),
     );
@@ -2884,6 +2865,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       ref.invalidate(scheduledActivityServiceProvider);
       ref.invalidate(scheduledActivitiesForTodayProvider);
       ref.invalidate(todayActivitiesProvider);
+      ref.invalidate(cachedActivitySuggestionsProvider);
 
       if (mounted) {
         showWanderMoodToast(
@@ -2942,10 +2924,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 /// Bottom sheet for selecting a time slot when adding a place to My Day.
 class _ExploreAddToMyDaySheet extends StatefulWidget {
   final Place place;
+  final DateTime planningDate;
   final void Function(DateTime) onTimeSelected;
 
   const _ExploreAddToMyDaySheet({
     required this.place,
+    required this.planningDate,
     required this.onTimeSelected,
   });
 
@@ -2960,39 +2944,58 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
   @override
   void initState() {
     super.initState();
-    final today = DateTime.now();
+    final planningDay = DateTime(
+      widget.planningDate.year,
+      widget.planningDate.month,
+      widget.planningDate.day,
+    );
     _timeSlots = [
       {
         'label': '🌅 Ochtend',
         'subtitle': '08:00 - 12:00',
-        'time': DateTime(today.year, today.month, today.day, 9, 0),
+        'time': DateTime(planningDay.year, planningDay.month, planningDay.day, 9, 0),
       },
       {
         'label': '☀️ Middag',
         'subtitle': '12:00 - 17:00',
-        'time': DateTime(today.year, today.month, today.day, 13, 0),
+        'time': DateTime(planningDay.year, planningDay.month, planningDay.day, 13, 0),
       },
       {
         'label': '🌙 Avond',
         'subtitle': '17:00 - 22:00',
-        'time': DateTime(today.year, today.month, today.day, 19, 0),
+        'time': DateTime(planningDay.year, planningDay.month, planningDay.day, 19, 0),
       },
     ];
 
-    // Default to the first slot whose time hasn't passed yet.
+    // Default to first upcoming slot only for "today"; otherwise default to morning.
     final now = DateTime.now();
-    _selectedSlotIndex = _timeSlots.length - 1; // fallback: last slot
-    for (int i = 0; i < _timeSlots.length; i++) {
-      if ((_timeSlots[i]['time'] as DateTime).isAfter(now)) {
-        _selectedSlotIndex = i;
-        break;
+    final isPlanningToday = planningDay.year == now.year &&
+        planningDay.month == now.month &&
+        planningDay.day == now.day;
+    if (isPlanningToday) {
+      _selectedSlotIndex = _timeSlots.length - 1; // fallback: last slot
+      for (int i = 0; i < _timeSlots.length; i++) {
+        if ((_timeSlots[i]['time'] as DateTime).isAfter(now)) {
+          _selectedSlotIndex = i;
+          break;
+        }
       }
+    } else {
+      _selectedSlotIndex = 0;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
+    final planningDay = DateTime(
+      widget.planningDate.year,
+      widget.planningDate.month,
+      widget.planningDate.day,
+    );
+    final isPlanningToday = planningDay.year == now.year &&
+        planningDay.month == now.month &&
+        planningDay.day == now.day;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -3041,7 +3044,7 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
           ...List.generate(_timeSlots.length, (index) {
             final slot = _timeSlots[index];
             final slotTime = slot['time'] as DateTime;
-            final isPast = slotTime.isBefore(now);
+            final isPast = isPlanningToday && slotTime.isBefore(now);
             final isSelected = _selectedSlotIndex == index;
 
             return GestureDetector(

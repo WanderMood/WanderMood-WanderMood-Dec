@@ -37,12 +37,19 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   String _selectedView = 'timeline'; // 'timeline' or 'list'
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final Map<String, bool> _collapsedSections = {}; // Track which sections are collapsed
+  late DateTime _selectedDate;
   
   bool _hasInitialized = false; // Prevent invalidate on hot reload
   
   @override
   void initState() {
     super.initState();
+    final now = MoodyClock.now();
+    _selectedDate = DateTime(now.year, now.month, now.day);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(selectedMyDayDateProvider.notifier).state = _selectedDate;
+    });
     // CRITICAL: Only invalidate once (not on hot reload)
     // Refresh data when the screen loads - delay properly to avoid build cycle conflicts
     if (!_hasInitialized) {
@@ -176,6 +183,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                       _buildHeaderRow(isImmersive: false),
                       
                       const SizedBox(height: 12),
+                      _buildDateNavigation(),
+                      const SizedBox(height: 12),
                       
                       // Dynamic greeting message
                       Text(
@@ -233,6 +242,108 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           ],
         ),
     );
+  }
+
+  Widget _buildDateNavigation() {
+    final todayNow = MoodyClock.now();
+    final today = DateTime(todayNow.year, todayNow.month, todayNow.day);
+    final isToday = _isSameDate(_selectedDate, today);
+    final canGoBack = !isToday;
+
+    return SizedBox(
+      height: 40,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints.tightFor(width: 40, height: 40),
+            icon: const Icon(Icons.chevron_left, color: Color(0xFF8C8780)),
+            onPressed: canGoBack
+                ? () => _setSelectedDate(_selectedDate.subtract(const Duration(days: 1)))
+                : null,
+          ),
+          GestureDetector(
+            onTap: () => _setSelectedDate(today),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: isToday ? const Color(0xFFEBF3EE) : Colors.white,
+                border: Border.all(
+                  color: isToday ? const Color(0xFF2A6049) : const Color(0xFFE8E2D8),
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                isToday ? 'Vandaag' : _formatDisplayDate(_selectedDate),
+                style: GoogleFonts.poppins(
+                  color: isToday ? const Color(0xFF2A6049) : const Color(0xFF1E1C18),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints.tightFor(width: 40, height: 40),
+            icon: const Icon(Icons.chevron_right, color: Color(0xFF8C8780)),
+            onPressed: () => _setSelectedDate(_selectedDate.add(const Duration(days: 1))),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _setSelectedDate(DateTime date) {
+    final normalized = DateTime(date.year, date.month, date.day);
+    setState(() {
+      _selectedDate = normalized;
+    });
+    ref.read(selectedMyDayDateProvider.notifier).state = normalized;
+    ref.invalidate(scheduledActivitiesForTodayProvider);
+    ref.invalidate(todayActivitiesProvider);
+    ref.invalidate(timelineCategorizedActivitiesProvider);
+    ref.invalidate(currentActivityStatusProvider);
+  }
+
+  bool _isSameDate(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  String _formatDisplayDate(DateTime date) {
+    final dayName = _getDayName(date);
+    return '$dayName ${date.day} ${_getShortMonth(date)}';
+  }
+
+  String _getDayName(DateTime date) {
+    const days = [
+      'Maandag',
+      'Dinsdag',
+      'Woensdag',
+      'Donderdag',
+      'Vrijdag',
+      'Zaterdag',
+      'Zondag',
+    ];
+    return days[date.weekday - 1];
+  }
+
+  String _getShortMonth(DateTime date) {
+    const months = [
+      'jan',
+      'feb',
+      'mrt',
+      'apr',
+      'mei',
+      'jun',
+      'jul',
+      'aug',
+      'sep',
+      'okt',
+      'nov',
+      'dec',
+    ];
+    return months[date.month - 1];
   }
 
   Widget _buildImmersiveNoPlanState(AppLocalizations l10n) {
@@ -952,8 +1063,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     
     switch (status['type']) {
       case 'upcoming':
-        primaryColor = const Color(0xFF2196F3); // Blue for icon and top border
-        backgroundColor = Colors.white; // White background
+        // v2 sky accent so this card stands out from cream background + quick-action tiles
+        primaryColor = const Color(0xFF2F6F8F);
+        backgroundColor = const Color(0xFFDDECF5);
         statusIcon = Icons.schedule;
         isUpcoming = true;
         break;
@@ -974,7 +1086,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(20),
         border: isUpcoming 
-            ? Border(top: BorderSide(color: primaryColor, width: 4)) 
+            ? Border.all(color: primaryColor.withValues(alpha: 0.35), width: 1.5)
             : Border.all(color: primaryColor.withOpacity(0.2), width: 1),
         boxShadow: const [],
       ),

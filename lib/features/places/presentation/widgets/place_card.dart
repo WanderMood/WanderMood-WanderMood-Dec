@@ -18,6 +18,17 @@ import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
+
+// WM v2 tokens (aligned with My Day cards)
+const Color _wmWhite = Color(0xFFFFFFFF);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmForest = Color(0xFF2A6049);
+const Color _wmForestTint = Color(0xFFEBF3EE);
+const Color _wmSunset = Color(0xFFE8784A);
+const Color _wmSunsetTint = Color(0xFFFFE8DF);
+const Color _wmDusk = Color(0xFF4A4640);
+const Color _wmError = Color(0xFFE05C5C);
 
 class PlaceCard extends ConsumerWidget {
   final Place place;
@@ -306,46 +317,6 @@ class PlaceCard extends ConsumerWidget {
     return '🇳🇱';
   }
 
-  /// Explore list: show a local address fragment (neighbourhood / street area), not country or redundant city.
-  String? _exploreLocationLeftLabel() {
-    final city = (cityName ?? _extractCityName()).trim();
-    final cityLc = city.toLowerCase();
-    if (place.address.isEmpty) return null;
-
-    var raw = place.address;
-    raw = raw.replaceAll(
-      RegExp(r',\s*(Netherlands|Nederland|The Netherlands)\s*$', caseSensitive: false),
-      '',
-    );
-    final parts = raw
-        .split(',')
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
-    if (parts.isEmpty) return null;
-
-    bool isCitySegment(String s) {
-      if (cityLc.isEmpty) return false;
-      final sl = s.toLowerCase();
-      if (sl == cityLc) return true;
-      return RegExp(r'\b' + RegExp.escape(cityLc) + r'\b', caseSensitive: false).hasMatch(s);
-    }
-
-    for (final s in parts) {
-      final sl = s.toLowerCase();
-      if (sl == 'netherlands' || sl == 'nederland' || sl == 'the netherlands') {
-        continue;
-      }
-      if (isCitySegment(s)) continue;
-      // Dutch postcode-only segment
-      if (RegExp(r'^\d{4}\s*[A-Za-z]{2}\s*$').hasMatch(s)) continue;
-      if (s.length >= 2 && s.length <= 52) {
-        return s.length > 40 ? '${s.substring(0, 37)}…' : s;
-      }
-    }
-    return null;
-  }
-
   /// Get emoji for activity tags based on activity type
   String _getActivityEmoji(String activity) {
     final activityLower = activity.toLowerCase();
@@ -457,13 +428,13 @@ class PlaceCard extends ConsumerWidget {
   Color _getEnergyColor(String energyLevel) {
     switch (energyLevel.toLowerCase()) {
       case 'low':
-        return const Color(0xFF66BB6A); // Calm green
+        return _wmForest;
       case 'medium':
-        return const Color(0xFFFFB74D); // Medium orange
+        return _wmSunset;
       case 'high':
-        return const Color(0xFFFF6B6B); // High energy red
+        return _wmSunset;
       default:
-        return const Color(0xFFFFB74D);
+        return _wmSunset;
     }
   }
 
@@ -475,51 +446,51 @@ class PlaceCard extends ConsumerWidget {
     if (activityLower.contains('food') || activityLower.contains('dining') || 
         activityLower.contains('restaurant') || activityLower.contains('cafe') ||
         activityLower.contains('cooking') || activityLower.contains('culinary')) {
-      return const Color(0xFFFF6B6B); // Red
+      return _wmSunset;
     }
     
     // Shopping related
     if (activityLower.contains('shop') || activityLower.contains('market') || 
         activityLower.contains('mall') || activityLower.contains('store')) {
-      return const Color(0xFF4ECDC4); // Teal
+      return _wmForest;
     }
     
     // Culture/Art related
     if (activityLower.contains('art') || activityLower.contains('culture') || 
         activityLower.contains('museum') || activityLower.contains('gallery') ||
         activityLower.contains('history') || activityLower.contains('heritage')) {
-      return const Color(0xFF45B7D1); // Blue
+      return _wmForest;
     }
     
     // Architecture related
     if (activityLower.contains('architect') || activityLower.contains('building') || 
         activityLower.contains('design') || activityLower.contains('landmark')) {
-      return const Color(0xFF96CEB4); // Green
+      return _wmForest;
     }
     
     // Nature/Outdoor related
     if (activityLower.contains('park') || activityLower.contains('nature') || 
         activityLower.contains('outdoor') || activityLower.contains('garden') ||
         activityLower.contains('walking') || activityLower.contains('cycling')) {
-      return const Color(0xFF66BB6A); // Nature green
+      return _wmForest;
     }
     
     // Entertainment/Fun related
     if (activityLower.contains('entertainment') || activityLower.contains('fun') || 
         activityLower.contains('game') || activityLower.contains('amusement') ||
         activityLower.contains('music') || activityLower.contains('show')) {
-      return const Color(0xFFBA68C8); // Purple
+      return _wmSunset;
     }
     
     // Sightseeing/Tours related
     if (activityLower.contains('sightseeing') || activityLower.contains('tour') || 
         activityLower.contains('view') || activityLower.contains('observation') ||
         activityLower.contains('photo')) {
-      return const Color(0xFFFFB74D); // Orange
+      return _wmSunset;
     }
     
     // Default color for other activities
-    return const Color(0xFF2A6049); // App primary green
+    return _wmForest;
   }
 
   Widget _buildPlaceImage() {
@@ -722,6 +693,7 @@ class PlaceCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     // Check if place is saved using the new Supabase service
     final savedPlacesAsync = ref.watch(savedPlacesProvider);
     final isFavorite = savedPlacesAsync.value?.any((sp) => sp.place.id == place.id) ?? false;
@@ -731,8 +703,9 @@ class PlaceCard extends ConsumerWidget {
         width: double.infinity,
         margin: cardMargin,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: _wmWhite,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _wmParchment, width: 0.5),
           boxShadow: [
             // Primary shadow for depth
             BoxShadow(
@@ -760,9 +733,14 @@ class PlaceCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Container(
+              height: 4,
+              width: double.infinity,
+              color: _wmForest,
+            ),
             // Image section
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
               child: Stack(
                 children: [
                   // Main image
@@ -776,9 +754,9 @@ class PlaceCard extends ConsumerWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: place.openingHours!.isOpen 
-                              ? const Color(0xFF2A6049) 
-                              : Colors.red.withOpacity(0.9),
+                          color: place.openingHours!.isOpen
+                              ? _wmForest
+                              : _wmError.withValues(alpha: 0.92),
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
@@ -805,7 +783,9 @@ class PlaceCard extends ConsumerWidget {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              place.openingHours!.isOpen ? 'Open' : 'Closed',
+                              place.openingHours!.isOpen
+                                  ? l10n.dayPlanCardOpenNow
+                                  : l10n.dayPlanCardClosed,
                               style: GoogleFonts.poppins(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -849,7 +829,7 @@ class PlaceCard extends ConsumerWidget {
                             ),
                             child: Icon(
                               Icons.directions,
-                              color: const Color(0xFF2A6049),
+                              color: _wmForest,
                               size: 20,
                             ),
                           ),
@@ -890,7 +870,7 @@ class PlaceCard extends ConsumerWidget {
                             ),
                             child: Icon(
                               Icons.share,
-                              color: const Color(0xFF2A6049),
+                              color: _wmForest,
                               size: 20,
                             ),
                           ),
@@ -922,7 +902,7 @@ class PlaceCard extends ConsumerWidget {
                               ),
                               child: Icon(
                                 Icons.calendar_today,
-                                color: const Color(0xFF2A6049),
+                                color: _wmForest,
                                 size: 20,
                               ),
                             ),
@@ -991,7 +971,7 @@ class PlaceCard extends ConsumerWidget {
                             ),
                             child: Icon(
                               isFavorite ? Icons.favorite : Icons.favorite_border,
-                              color: isFavorite ? Colors.red : Colors.grey,
+                              color: isFavorite ? _wmSunset : Colors.grey,
                               size: 20,
                             ),
                           ),
@@ -1027,7 +1007,7 @@ class PlaceCard extends ConsumerWidget {
                       if (place.rating > 0) ...[
                         Row(
                           children: [
-                            Icon(Icons.star, color: Colors.amber, size: 20),
+                            const Icon(Icons.star, color: _wmSunset, size: 20),
                             const SizedBox(width: 4),
                             Text(
                               place.rating.toStringAsFixed(1),
@@ -1105,16 +1085,14 @@ class PlaceCard extends ConsumerWidget {
                   ],
                   
                   // Description with indoor/outdoor indicator
-                  if (place.description != null) ...[
+                  if (place.description != null && place.description!.trim().isNotEmpty) ...[
                     const SizedBox(height: 12),
                     Row(
                       children: [
                         // Indoor/Outdoor icon
                         Icon(
                           place.isIndoor ? Icons.home : Icons.nature,
-                          color: place.isIndoor 
-                            ? const Color(0xFF66BB6A) 
-                            : const Color(0xFF4ECDC4),
+                          color: _wmForest,
                           size: 16,
                         ),
                         const SizedBox(width: 6),
@@ -1124,7 +1102,7 @@ class PlaceCard extends ConsumerWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         height: 1.4,
-                        color: Colors.grey[800],
+                        color: _wmDusk,
                       ),
                             maxLines: 3,
                       overflow: TextOverflow.ellipsis,
@@ -1168,73 +1146,31 @@ class PlaceCard extends ConsumerWidget {
                     ),
                   ],
 
-                  // Local area + distance (v2: no country flag; avoid redundant city name)
+                  // Distance only (address removed to reduce redundancy)
                   Builder(
                     builder: (context) {
-                      final areaLabel = _exploreLocationLeftLabel();
                       final distance = _calculateDistance();
 
-                      if (areaLabel == null && distance == null) {
+                      if (distance == null) {
                         return const SizedBox.shrink();
                       }
                       return Padding(
                         padding: const EdgeInsets.only(top: 12),
                         child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (areaLabel != null)
-                              Expanded(
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.location_on,
-                                      color: Colors.grey[500],
-                                      size: 16,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: Text(
-                                        areaLabel,
-                                        style: GoogleFonts.poppins(
-                                          color: Colors.grey[600],
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            else
-                              const Spacer(),
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                if (distance != null) ...[
-                                  const Icon(Icons.directions_walk, color: Color(0xFF2A6049), size: 16),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    distance,
-                                    style: GoogleFonts.poppins(
-                                      color: const Color(0xFF2A6049),
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                const Icon(Icons.directions_walk, color: _wmForest, size: 16),
+                                const SizedBox(width: 4),
+                                Text(
+                                  distance,
+                                  style: GoogleFonts.poppins(
+                                    color: _wmForest,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                ] else ...[
-                                  Icon(Icons.location_off, color: Colors.grey[400]!, size: 16),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Distance unavailable',
-                                    style: GoogleFonts.poppins(
-                                      color: Colors.grey[500],
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ],
                             ),
                           ],
@@ -1248,14 +1184,14 @@ class PlaceCard extends ConsumerWidget {
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Icon(Icons.visibility_outlined, size: 18, color: const Color(0xFF2A6049)),
+                        const Icon(Icons.visibility_outlined, size: 18, color: _wmForest),
                         const SizedBox(width: 6),
                         Text(
                           'See activity',
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF2A6049),
+                            color: _wmForest,
                           ),
                         ),
                       ],
@@ -1378,20 +1314,20 @@ class PlaceCard extends ConsumerWidget {
 
   // Pricing helper methods
   bool _shouldShowPriceBadge() {
-    // Always show price badge - we'll show "Free", price range, or "Price varies"
-    return true;
+    final hasPriceRange = (place.priceRange?.trim().isNotEmpty ?? false);
+    return place.isFree || place.priceLevel != null || hasPriceRange;
   }
   
   String _getPriceBadgeText() {
     final currency = _getCurrencySymbol();
     
-    // Check if truly free (price level 0 OR free flag OR free type)
-    if (place.isFree || place.priceLevel == 0 || _isFreeByType()) {
-      return 'Free 🎉';
+    // Show only explicit backend-derived free state
+    if (place.isFree || place.priceLevel == 0) {
+      return 'Free';
     }
     
     // If we have explicit price range, use it (but replace currency if needed)
-    if (place.priceRange != null) {
+    if (place.priceRange != null && place.priceRange!.trim().isNotEmpty) {
       // Replace any existing currency symbols with the detected one
       return place.priceRange!.replaceAll(RegExp(r'[€£\$]'), currency);
     }
@@ -1401,85 +1337,42 @@ class PlaceCard extends ConsumerWidget {
       return _getPriceLevelText(place.priceLevel!, currency: currency);
     }
     
-    // If no explicit price data, infer from place types
-    final inferredPrice = _inferPriceFromTypes(currency: currency);
-    if (inferredPrice != null) {
-      return inferredPrice;
-    }
-    
-    // Last resort: show "Price varies"
-    return 'Price varies';
+    return '';
   }
   
   Color _getPriceBadgeColor() {
-    // Check if truly free
-    if (place.isFree || place.priceLevel == 0 || _isFreeByType()) {
-      return const Color(0xFF4CAF50); // Green for FREE
+    // Explicit free states
+    if (place.isFree || place.priceLevel == 0) {
+      return _wmForest;
     }
     
     if (place.priceLevel != null) {
       switch (place.priceLevel!) {
-        case 0: return const Color(0xFF4CAF50); // Green for FREE (price level 0)
-        case 1: return const Color(0xFF4CAF50); // Green for low cost
-        case 2: return const Color(0xFFFF9800); // Orange for moderate
-        case 3: return const Color(0xFFE91E63); // Pink for expensive
-        case 4: return const Color(0xFF9C27B0); // Purple for very expensive
-        default: return Colors.black.withOpacity(0.7);
+        case 0:
+        case 1:
+          return _wmForest;
+        case 2:
+        case 3:
+        case 4:
+          return _wmSunset;
+        default:
+          return _wmDusk.withValues(alpha: 0.8);
       }
     }
     
     // Default color for price range
-    return Colors.black.withOpacity(0.7);
+    return _wmDusk.withValues(alpha: 0.8);
   }
   
   String _getPriceLevelText(int priceLevel, {String currency = '€'}) {
     switch (priceLevel) {
-      case 0: return 'Free 🎉';
+      case 0: return 'Free';
       case 1: return '$currency 5-15';
       case 2: return '$currency 15-30';
       case 3: return '$currency 30-50';
       case 4: return '$currency 50+';
       default: return '';
     }
-  }
-  
-  /// Infer price from place types when no explicit price data
-  String? _inferPriceFromTypes({String currency = '€'}) {
-    // Check if free by type first
-    if (_isFreeByType()) {
-      return 'Free 🎉';
-    }
-    
-    // Infer price range based on place types
-    for (final type in place.types) {
-      final typeLower = type.toLowerCase();
-      if (['museum', 'tourist_attraction', 'amusement_park'].contains(typeLower)) {
-        return '$currency 10-25';
-      } else if (['restaurant', 'bar'].contains(typeLower)) {
-        return '$currency 15-40';
-      } else if (['cafe', 'store'].contains(typeLower)) {
-        return '$currency 5-15';
-      } else if (['hotel', 'spa'].contains(typeLower)) {
-        return '$currency 50+';
-      }
-    }
-    
-    // If it's a paid type but we can't infer specific range, return null (will show "Price varies")
-    final paidTypes = [
-      'restaurant', 'cafe', 'bar', 'museum', 'amusement_park', 
-      'movie_theater', 'spa', 'lodging', 'hotel', 'tourist_attraction',
-      'shopping_mall', 'store', 'gym', 'beauty_salon'
-    ];
-    
-    final hasPaidType = place.types.any((type) => 
-      paidTypes.any((paid) => type.toLowerCase().contains(paid.toLowerCase()))
-    );
-    
-    if (hasPaidType) {
-      return null; // Will show "Price varies"
-    }
-    
-    return null;
   }
   
   // Helper to check if place is free based on type
@@ -1574,21 +1467,19 @@ class PlaceCard extends ConsumerWidget {
         paymentType = PaymentType.reservation;
       }
 
-      final imageUrl = place.photos.isNotEmpty
-          ? place.photos.first
-          : 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80';
+      final imageUrl = place.photos.isNotEmpty ? place.photos.first : '';
 
       final activity = Activity(
         id: 'place_${place.id}_${DateTime.now().millisecondsSinceEpoch}',
         name: place.name,
-        description: place.description ?? 'Explore ${place.name}',
+        description: place.description ?? '',
         imageUrl: imageUrl,
-        rating: place.rating > 0 ? place.rating : 4.5,
+        rating: place.rating,
         startTime: startTime,
         duration: duration,
         timeSlot: timeOfDay,
         timeSlotEnum: timeSlotEnum,
-        tags: place.types.isNotEmpty ? place.types : ['explore'],
+        tags: place.types,
         location: LatLng(place.location.lat, place.location.lng),
         paymentType: paymentType,
         priceLevel: place.priceRange,
@@ -1600,6 +1491,7 @@ class PlaceCard extends ConsumerWidget {
       ref.invalidate(scheduledActivityServiceProvider);
       ref.invalidate(scheduledActivitiesForTodayProvider);
       ref.invalidate(todayActivitiesProvider);
+      ref.invalidate(cachedActivitySuggestionsProvider);
 
       if (context.mounted) {
         _showSuccessSnackBar(context, 'Added ${place.name} to My Day!');

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wandermood/features/home/presentation/screens/explore_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_screen.dart';
@@ -8,7 +9,7 @@ import 'package:wandermood/features/home/presentation/screens/moody_idle_screen.
 import 'package:wandermood/core/utils/moody_idle_checker.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/features/profile/presentation/screens/user_profile_screen.dart';
-import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart' show scheduledActivitiesForTodayProvider, todayActivitiesProvider, cachedActivitySuggestionsProvider;
+import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart' show scheduledActivitiesForTodayProvider, todayActivitiesProvider, cachedActivitySuggestionsProvider, selectedMyDayDateProvider;
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -18,6 +19,12 @@ import 'package:google_fonts/google_fonts.dart';
 // v2 bottom nav — Screen 11 (active = wmForest, pill bg = wmForestTint)
 const Color _navWmForest = Color(0xFF2A6049);
 const Color _navWmForestTint = Color(0xFFEBF3EE);
+const Color _wmSkyTint = Color(0xFFEDF5F9);
+const Color _wmSky = Color(0xFFA8C8DC);
+const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmCharcoal = Color(0xFF1E1C18);
+const Color _wmDusk = Color(0xFF4A4640);
+const Color _wmStone = Color(0xFF8C8780);
 
 // Create a Provider for the tab controller
 final mainTabProvider = StateProvider<int>((ref) => 0);
@@ -62,6 +69,10 @@ class MainScreen extends ConsumerStatefulWidget {
 
 class _MainScreenState extends ConsumerState<MainScreen> {
   bool _idleGateCompleted = false;
+  bool _showWeekendBanner = false;
+  DateTime? _weekendSaturday;
+  DateTime? _weekendSunday;
+  bool _weekendBannerDismissed = false;
 
   @override
   void initState() {
@@ -79,9 +90,23 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         ref.read(mainTabProvider.notifier).state = finalTab;
         debugPrint('✅ MainScreen: Tab provider set to ${ref.read(mainTabProvider)}');
 
+        final targetDateString = widget.extra?['targetDate'] as String?;
+        final parsedTargetDate = targetDateString != null
+            ? DateTime.tryParse(targetDateString)
+            : null;
+        if (parsedTargetDate != null) {
+          final dateOnly = DateTime(
+            parsedTargetDate.year,
+            parsedTargetDate.month,
+            parsedTargetDate.day,
+          );
+          ref.read(selectedMyDayDateProvider.notifier).state = dateOnly;
+        }
+
         // Places / Explore: no prefetch on launch — cache-first; Explore loads on open (Google Places prompt).
 
         await _showMoodyIdleGateIfNeeded();
+        await _checkForWeekendSuggestion();
       });
     });
   }
@@ -154,6 +179,52 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     _idleGateCompleted = true;
   }
 
+  Future<void> _checkForWeekendSuggestion() async {
+    if (!mounted || _weekendBannerDismissed) return;
+
+    final prefs = ref.read(preferencesProvider);
+    final planningPace = (prefs.planningPace).toLowerCase();
+    final isPlannedUser =
+        planningPace.contains('gepland') || planningPace.contains('planned');
+    if (!isPlannedUser) return;
+
+    final now = DateTime.now();
+    final dayOfWeek = now.weekday; // 1=Mon, 7=Sun
+    if (dayOfWeek < DateTime.thursday || dayOfWeek > DateTime.friday) return;
+
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    final saturday = now.add(Duration(days: DateTime.saturday - dayOfWeek));
+    final sunday = saturday.add(const Duration(days: 1));
+
+    final satDateOnly = DateTime(saturday.year, saturday.month, saturday.day);
+    final sunDateOnly = DateTime(sunday.year, sunday.month, sunday.day);
+    final satStr =
+        '${satDateOnly.year}-${satDateOnly.month.toString().padLeft(2, '0')}-${satDateOnly.day.toString().padLeft(2, '0')}';
+    final sunStr =
+        '${sunDateOnly.year}-${sunDateOnly.month.toString().padLeft(2, '0')}-${sunDateOnly.day.toString().padLeft(2, '0')}';
+
+    try {
+      final existing = await Supabase.instance.client
+          .from('scheduled_activities')
+          .select('id')
+          .eq('user_id', userId)
+          .inFilter('scheduled_date', [satStr, sunStr]);
+
+      if (!mounted) return;
+      if ((existing as List).isEmpty) {
+        setState(() {
+          _weekendSaturday = satDateOnly;
+          _weekendSunday = sunDateOnly;
+          _showWeekendBanner = true;
+        });
+      }
+    } catch (_) {
+      // Keep silent if suggestion check fails.
+    }
+  }
+
   @override
   void didUpdateWidget(MainScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -166,6 +237,18 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         if (oldWidget.initialTabIndex != widget.initialTabIndex || tabFromExtra != null) {
           final raw = tabFromExtra ?? widget.initialTabIndex;
           ref.read(mainTabProvider.notifier).state = normalizeMainTabIndex(raw);
+        }
+
+        final targetDateString = widget.extra?['targetDate'] as String?;
+        final parsedTargetDate =
+            targetDateString != null ? DateTime.tryParse(targetDateString) : null;
+        if (parsedTargetDate != null) {
+          final dateOnly = DateTime(
+            parsedTargetDate.year,
+            parsedTargetDate.month,
+            parsedTargetDate.day,
+          );
+          ref.read(selectedMyDayDateProvider.notifier).state = dateOnly;
         }
         
         // If refresh flag is set, invalidate providers to force refresh
@@ -250,7 +333,100 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   ),
                 ),
         ),
+        if (_showWeekendBanner &&
+            selectedIndex == 0 &&
+            _weekendSaturday != null &&
+            _weekendSunday != null)
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 98,
+            child: _buildWeekendBanner(_weekendSaturday!, _weekendSunday!),
+          ),
       ],
+    );
+  }
+
+  Widget _buildWeekendBanner(DateTime saturday, DateTime sunday) {
+    Widget weekendPlanButton(String label, DateTime date) {
+      return GestureDetector(
+        onTap: () {
+          context.push('/moody', extra: {
+            'targetDate': DateTime(date.year, date.month, date.day).toIso8601String(),
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: _navWmForest,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Text(
+            label,
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _wmSkyTint,
+        border: Border.all(color: _wmSky),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          const Text('🗓️', style: TextStyle(fontSize: 28)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Je weekend is nog leeg!',
+                  style: GoogleFonts.poppins(
+                    color: _wmCharcoal,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Wil je zaterdag of zondag alvast plannen?',
+                  style: GoogleFonts.poppins(
+                    color: _wmDusk,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    weekendPlanButton('Za ${saturday.day}', saturday),
+                    const SizedBox(width: 8),
+                    weekendPlanButton('Zo ${sunday.day}', sunday),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, color: _wmStone, size: 18),
+            onPressed: () {
+              setState(() {
+                _showWeekendBanner = false;
+                _weekendBannerDismissed = true;
+              });
+            },
+          ),
+        ],
+      ),
     );
   }
 

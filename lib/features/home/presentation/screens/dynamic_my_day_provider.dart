@@ -6,6 +6,12 @@ import 'package:flutter/foundation.dart';
 import '../../../plans/data/services/scheduled_activity_service.dart';
 import '../../../plans/domain/models/activity.dart';
 
+/// Selected My Day date (defaults to today).
+final selectedMyDayDateProvider = StateProvider<DateTime>((ref) {
+  final now = MoodyClock.now();
+  return DateTime(now.year, now.month, now.day);
+});
+
 // Enum for activity status
 enum ActivityStatus {
   upcoming,    // Scheduled for later today
@@ -130,6 +136,19 @@ class ActivityManagerNotifier extends StateNotifier<ActivityManagerState> {
     updateActivityStatus(activityId, ActivityStatus.cancelled);
   }
 
+  /// After removing an activity from the backend, drop any local status/snooze for that id.
+  void clearLocalStatusForActivity(String activityId) {
+    if (activityId.isEmpty) return;
+    final newStatus =
+        Map<String, ActivityStatus>.from(state.statusUpdates)..remove(activityId);
+    final newSnoozes =
+        Map<String, DateTime>.from(state.completionPromptSnoozes)..remove(activityId);
+    state = state.copyWith(
+      statusUpdates: newStatus,
+      completionPromptSnoozes: newSnoozes,
+    );
+  }
+
   void updateActivity(String activityId, Map<String, dynamic> updatedData) {
     final newActivities = state.activities.map((activity) {
       if (activity['id'] == activityId) {
@@ -174,39 +193,74 @@ Map<String, dynamic> _activityToRawData(Activity activity) {
 /// When invalidated (e.g. after plan save), My Day refreshes from the database.
 final scheduledActivitiesForTodayProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final service = ref.watch(scheduledActivityServiceProvider);
-  final activities = await service.getScheduledActivities();
-  final now = MoodyClock.now();
-  final today = DateTime(now.year, now.month, now.day);
+  final selectedDate = ref.watch(selectedMyDayDateProvider);
+  final activities = await service.getScheduledActivitiesForDate(selectedDate);
+  final dateOnly = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
 
-  final todayMaps = <Map<String, dynamic>>[];
+  final selectedDateMaps = <Map<String, dynamic>>[];
   for (final activity in activities) {
     final start = activity.startTime;
-    if (start.year != today.year || start.month != today.month || start.day != today.day) {
+    if (start.year != dateOnly.year || start.month != dateOnly.month || start.day != dateOnly.day) {
       continue;
     }
-    todayMaps.add(_activityToRawData(activity));
+    selectedDateMaps.add(_activityToRawData(activity));
   }
-  return todayMaps;
+  return selectedDateMaps;
 });
 
-/// Provider for cached activity suggestions from the prefetch loading screen
+/// Agenda + onboarding cache: Supabase scheduled activities (source of truth) merged with
+/// SharedPreferences suggestions (onboarding / booking fallback) so manual Explore adds appear on Agenda.
 /// CRITICAL: NOT autoDispose to prevent API calls on hot reload
 final cachedActivitySuggestionsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final service = ref.watch(scheduledActivityServiceProvider);
+
+  List<Map<String, dynamic>> fromDb = [];
+  try {
+    final dbActivities = await service.getAllScheduledActivitiesForUser();
+    fromDb = dbActivities.map(_activityToRawData).toList();
+  } catch (e) {
+    debugPrint('cachedActivitySuggestionsProvider: DB load failed: $e');
+  }
+
   final prefs = await SharedPreferences.getInstance();
   final activitiesJson = prefs.getStringList('cached_activity_suggestions') ?? [];
-  
-  final cachedActivities = activitiesJson.map((json) {
+
+  final fromPrefs = activitiesJson.map((json) {
     try {
       return jsonDecode(json) as Map<String, dynamic>;
     } catch (e) {
       return <String, dynamic>{};
     }
   }).where((activity) => activity.isNotEmpty).toList();
-  
-  // Return only cached activities (scheduled activities loading disabled to avoid rebuild loops).
-  final allActivities = cachedActivities;
-  if (allActivities.isEmpty) return [];
-  return allActivities;
+
+  final seenIds = <String>{};
+  for (final m in fromDb) {
+    final id = m['id'] as String?;
+    if (id != null && id.isNotEmpty) {
+      seenIds.add(id);
+    }
+  }
+
+  final merged = <Map<String, dynamic>>[...fromDb];
+  for (final p in fromPrefs) {
+    final id = p['id'] as String?;
+    if (id != null && id.isNotEmpty) {
+      if (seenIds.contains(id)) continue;
+      seenIds.add(id);
+    }
+    merged.add(p);
+  }
+
+  merged.sort((a, b) {
+    final sa = a['startTime'] as String?;
+    final sb = b['startTime'] as String?;
+    if (sa == null && sb == null) return 0;
+    if (sa == null) return 1;
+    if (sb == null) return -1;
+    return sa.compareTo(sb);
+  });
+
+  return merged;
 });
 
 /// Provider for today's enhanced activities with status detection.
@@ -215,8 +269,9 @@ final cachedActivitySuggestionsProvider = FutureProvider<List<Map<String, dynami
 final todayActivitiesProvider = FutureProvider<List<EnhancedActivityData>>((ref) async {
   final activities = await ref.watch(scheduledActivitiesForTodayProvider.future);
   final activityManagerState = ref.watch(activityManagerProvider);
+  final selectedDate = ref.watch(selectedMyDayDateProvider);
+  final dateOnly = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
   final now = MoodyClock.now();
-  final today = DateTime(now.year, now.month, now.day);
 
   final enhancedActivities = <EnhancedActivityData>[];
 
@@ -230,9 +285,9 @@ final todayActivitiesProvider = FutureProvider<List<EnhancedActivityData>>((ref)
       final endTime = startTime.add(Duration(minutes: duration));
 
       // Only process activities for today
-      if (startTime.year != today.year ||
-          startTime.month != today.month ||
-          startTime.day != today.day) {
+      if (startTime.year != dateOnly.year ||
+          startTime.month != dateOnly.month ||
+          startTime.day != dateOnly.day) {
         continue;
       }
 

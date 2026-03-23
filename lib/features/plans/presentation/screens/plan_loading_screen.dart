@@ -22,10 +22,12 @@ import 'dart:async';
 
 class PlanLoadingScreen extends ConsumerStatefulWidget {
   final List<String> selectedMoods;
+  final DateTime? targetDate;
 
   const PlanLoadingScreen({
     super.key,
     required this.selectedMoods,
+    this.targetDate,
   });
 
   @override
@@ -188,6 +190,12 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
             'lat': position.latitude,
             'lng': position.longitude,
           },
+          if (widget.targetDate != null)
+            'target_date': DateTime(
+              widget.targetDate!.year,
+              widget.targetDate!.month,
+              widget.targetDate!.day,
+            ).toIso8601String(),
         },
         options: Options(
           headers: {
@@ -242,18 +250,22 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
       activities = activitiesData.map((activityJson) {
         final activity = activityJson as Map<String, dynamic>;
         
-        // 🔧 CRITICAL FIX: Override Edge Function dates to use TODAY instead of July 14, 2025
+        // Override Edge Function dates to use selected target date (or today by default)
         final originalStartTime = DateTime.parse(activity['startTime'] as String);
-        final today = DateTime.now();
-        final todayStartTime = DateTime(
-          today.year, 
-          today.month, 
-          today.day, 
+        final target = widget.targetDate ?? DateTime.now();
+        final plannedStartTime = DateTime(
+          target.year,
+          target.month,
+          target.day,
           originalStartTime.hour, 
           originalStartTime.minute
         );
         
-        debugPrint('📅 Edge Function Fix: ${activity['name']} changed from ${originalStartTime.day}/${originalStartTime.month}/${originalStartTime.year} to ${todayStartTime.day}/${todayStartTime.month}/${todayStartTime.year}');
+        debugPrint(
+          '📅 Edge Function Fix: ${activity['name']} changed from '
+          '${originalStartTime.day}/${originalStartTime.month}/${originalStartTime.year} '
+          'to ${plannedStartTime.day}/${plannedStartTime.month}/${plannedStartTime.year}',
+        );
         
         return Activity(
           id: activity['id'] as String,
@@ -270,7 +282,7 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
           imageUrl: activity['imageUrl'] as String? ?? '', // Handle null imageUrl
           rating: (activity['rating'] as num).toDouble(),
           tags: List<String>.from(activity['tags'] as List),
-          startTime: todayStartTime, // 🔧 Use today's date instead of Edge Function date
+          startTime: plannedStartTime,
           priceLevel: activity['priceLevel'] as String? ?? 'Free', // Handle null priceLevel
           placeId: activity['placeId'] as String?,
           refreshCount: 0,

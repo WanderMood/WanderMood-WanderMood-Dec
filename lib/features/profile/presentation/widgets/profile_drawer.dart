@@ -113,6 +113,14 @@ class ProfileDrawer extends ConsumerWidget {
                       context.push('/places/saved');
                     },
                   ),
+                  _DrawerMenuItem(
+                    icon: Icons.calendar_month_outlined,
+                    label: l10n.drawerMyAgenda,
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push('/agenda');
+                    },
+                  ),
                   _sectionHeader(l10n.drawerSettings),
                   _DrawerMenuItem(
                     icon: Icons.settings_outlined,

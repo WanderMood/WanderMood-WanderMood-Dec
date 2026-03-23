@@ -63,12 +63,25 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   // Add personalization state
   String _personalizedGreeting = '';
   String _contextualSubtext = '';
+  DateTime? _targetDateFromRoute;
+  DateTime _selectedPlanningDate = DateTime.now();
+  bool _forceShowMoodSelector = false;
+  bool _hasResolvedRouteDate = false;
 
   @override
   void initState() {
     super.initState();
     _updateGreeting();
     // Removed _updatePersonalizedGreeting() - no auto API calls on init
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_hasResolvedRouteDate) return;
+    _hasResolvedRouteDate = true;
+    _targetDateFromRoute = _resolveTargetDateFromRoute();
+    _selectedPlanningDate = _targetDateFromRoute ?? DateTime.now();
   }
 
   @override
@@ -442,6 +455,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
           MaterialPageRoute(
             builder: (context) => PlanLoadingScreen(
               selectedMoods: _selectedMoods.toList(),
+              targetDate: _selectedPlanningDate,
             ),
           ),
         );
@@ -493,6 +507,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
           MaterialPageRoute(
             builder: (context) => PlanLoadingScreen(
               selectedMoods: _selectedMoods.toList(),
+              targetDate: _selectedPlanningDate,
             ),
           ),
         );
@@ -513,6 +528,20 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         });
       }
     }
+  }
+
+  DateTime? _resolveTargetDateFromRoute() {
+    try {
+      final extra = GoRouterState.of(context).extra;
+      if (extra is Map && extra['targetDate'] is String) {
+        final parsed = DateTime.tryParse(extra['targetDate'] as String);
+        if (parsed == null) return null;
+        return DateTime(parsed.year, parsed.month, parsed.day);
+      }
+    } catch (_) {
+      // Keep null when route state is unavailable.
+    }
+    return null;
   }
 
   // Helper to get current time slot
@@ -1907,16 +1936,34 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
+                if (!_hasPlanForSelectedDate(dailyMoodState))
+                  _buildDateSelector(),
+                if (!_hasPlanForSelectedDate(dailyMoodState))
+                  const SizedBox(height: 10),
+                if (_hasPlanForSelectedDate(dailyMoodState) &&
+                    !_forceShowMoodSelector)
+                  const SizedBox(height: 8),
+                if (_hasPlanForSelectedDate(dailyMoodState) &&
+                    !_forceShowMoodSelector)
+                  _buildAlreadyPlannedState(
+                    _selectedPlanningDate,
+                    _activityCountForSelectedDate(dailyMoodState),
+                  ),
+                if (_hasPlanForSelectedDate(dailyMoodState) &&
+                    !_forceShowMoodSelector)
+                  const SizedBox(height: 12),
 
                 // Put mood tiles and button in a single scrollable container
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.only(bottom: 20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                if (!_hasPlanForSelectedDate(dailyMoodState) ||
+                    _forceShowMoodSelector) ...[
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                         // Selected moods indicator
                         if (_selectedMoods.isNotEmpty) ...[
                           Padding(
@@ -2137,10 +2184,11 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                             ),
                           ),
                         ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -2153,6 +2201,223 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
           ),
       ],
     );
+  }
+
+  Widget _buildDateSelector() {
+    final today = DateTime.now();
+    final days = List.generate(7, (i) => today.add(Duration(days: i)));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Text(
+            'Voor wanneer plan je?',
+            style: GoogleFonts.poppins(
+              color: _mcParchment,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 56,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            itemCount: days.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final day = days[index];
+              final isSelected = _isSameDay(day, _selectedPlanningDate);
+              final isToday = index == 0;
+              return GestureDetector(
+                onTap: () => setState(() {
+                  _selectedPlanningDate = day;
+                  _forceShowMoodSelector = false;
+                }),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? _mcForest : Colors.white,
+                    border: Border.all(
+                      color: isSelected ? _mcForest : _mcParchment,
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        isToday ? 'Vandaag' : _getShortDayName(day),
+                        style: GoogleFonts.poppins(
+                          color: isSelected ? Colors.white : _mcCharcoal,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (!isToday)
+                        Text(
+                          '${day.day} ${_getShortMonth(day)}',
+                          style: GoogleFonts.poppins(
+                            color: isSelected ? Colors.white.withValues(alpha: 0.85) : _mcParchment,
+                            fontSize: 11,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  String _getShortDayName(DateTime date) {
+    const days = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
+    return days[date.weekday - 1];
+  }
+
+  String _getShortMonth(DateTime date) {
+    const months = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+    return months[date.month - 1];
+  }
+
+  bool _hasPlanForSelectedDate(DailyMoodState state) {
+    if (state.plannedActivities.isEmpty) return false;
+    return state.plannedActivities.any((activity) {
+      final start = activity.startTime;
+      return _isSameDay(start, _selectedPlanningDate);
+    });
+  }
+
+  int _activityCountForSelectedDate(DailyMoodState state) {
+    if (state.plannedActivities.isEmpty) return 0;
+    return state.plannedActivities
+        .where((activity) => _isSameDay(activity.startTime, _selectedPlanningDate))
+        .length;
+  }
+
+  Widget _buildAlreadyPlannedState(DateTime date, int activityCount) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _mcForestTint,
+        border: Border.all(color: _mcForest.withValues(alpha: 0.30)),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.check_circle_outline, color: _mcForest, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '${_getLongDayName(date)} is al gepland!',
+                  style: GoogleFonts.poppins(
+                    color: _mcForest,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              '$activityCount activiteiten staan klaar voor je.',
+              style: GoogleFonts.poppins(
+                color: _mcCharcoal.withValues(alpha: 0.78),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => _navigateToMyDayForDate(date),
+                  child: Container(
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: _mcForest,
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Bekijk plan',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _forceShowMoodSelector = true),
+                  child: Container(
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: _mcForest),
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Opnieuw plannen',
+                        style: GoogleFonts.poppins(
+                          color: _mcForest,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToMyDayForDate(DateTime date) {
+    context.go('/main?tab=0', extra: {
+      'targetDate': DateTime(date.year, date.month, date.day).toIso8601String(),
+    });
+  }
+
+  String _getLongDayName(DateTime date) {
+    const days = [
+      'Maandag',
+      'Dinsdag',
+      'Woensdag',
+      'Donderdag',
+      'Vrijdag',
+      'Zaterdag',
+      'Zondag',
+    ];
+    return days[date.weekday - 1];
   }
 
   /// Returns localized label for a mood (by English label key).

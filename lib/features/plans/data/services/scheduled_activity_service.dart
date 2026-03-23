@@ -191,9 +191,67 @@ class ScheduledActivityService {
       }
     }
   }
+
+  Activity _rowToActivity(Map<String, dynamic> json) {
+    debugPrint('ScheduledActivityService: Processing activity: ${json['name']}');
+
+    final tagsRaw = json['tags'];
+    final tags = tagsRaw is String && tagsRaw.isNotEmpty
+        ? tagsRaw.split(',').where((s) => s.isNotEmpty).toList()
+        : <String>['activity'];
+
+    final lat = (json['latitude'] as num?)?.toDouble() ?? 0.0;
+    final lng = (json['longitude'] as num?)?.toDouble() ?? 0.0;
+    final location = LatLng(lat, lng);
+
+    final paymentTypeStr = json['payment_type'] as String? ?? 'free';
+    final paymentType = PaymentType.values.firstWhere(
+      (e) => e.toString().split('.').last == paymentTypeStr,
+      orElse: () => PaymentType.free,
+    );
+
+    final startTime = DateTime.parse(json['start_time'] as String);
+    final hour = startTime.hour;
+    TimeSlot timeSlotEnum;
+    String timeSlot;
+
+    if (hour >= 5 && hour < 12) {
+      timeSlotEnum = TimeSlot.morning;
+      timeSlot = 'morning';
+    } else if (hour >= 12 && hour < 17) {
+      timeSlotEnum = TimeSlot.afternoon;
+      timeSlot = 'afternoon';
+    } else {
+      timeSlotEnum = TimeSlot.evening;
+      timeSlot = 'evening';
+    }
+
+    return Activity(
+      id: (json['activity_id'] as String?) ??
+          'row_${json['start_time']}_${json['name']}',
+      name: json['name'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      imageUrl: json['image_url'] as String? ?? '',
+      startTime: startTime,
+      duration: json['duration'] as int? ?? 60,
+      timeSlot: timeSlot,
+      timeSlotEnum: timeSlotEnum,
+      tags: tags,
+      location: location,
+      paymentType: paymentType,
+      rating: (json['rating'] as num?)?.toDouble() ?? 4.5,
+      isPaid: paymentType != PaymentType.free,
+      placeId: json['place_id'] as String?,
+    );
+  }
   
   /// Get all scheduled activities for the current user (today only, filtered by scheduled_date)
   Future<List<Activity>> getScheduledActivities() async {
+    return getScheduledActivitiesForDate(DateTime.now());
+  }
+
+  /// Get scheduled activities for a specific date (filtered by scheduled_date).
+  Future<List<Activity>> getScheduledActivitiesForDate(DateTime date) async {
     try {
       // Require authentication
       final userId = _client.auth.currentUser?.id;
@@ -201,12 +259,12 @@ class ScheduledActivityService {
         throw Exception('User must be authenticated to view scheduled activities');
       }
       
-      final now = DateTime.now();
-      final todayStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final targetDate = DateTime(date.year, date.month, date.day);
+      final targetDateStr = '${targetDate.year}-${targetDate.month.toString().padLeft(2, '0')}-${targetDate.day.toString().padLeft(2, '0')}';
       
-      debugPrint('ScheduledActivityService: Getting activities for user $userId (scheduled_date=$todayStr)');
+      debugPrint('ScheduledActivityService: Getting activities for user $userId (scheduled_date=$targetDateStr)');
       
-      // Query only today's activities (scheduled_date = today)
+      // Query only selected date activities (scheduled_date = selected date)
       // Fallback: if column doesn't exist yet, fetch all and filter by startTime in Dart
       List<dynamic> response;
       try {
@@ -214,7 +272,7 @@ class ScheduledActivityService {
             .from('scheduled_activities')
             .select()
             .eq('user_id', userId)
-            .eq('scheduled_date', todayStr)
+            .eq('scheduled_date', targetDateStr)
             .order('start_time', ascending: true);
       } catch (columnError) {
         if (columnError.toString().contains('scheduled_date') || columnError.toString().contains('column')) {
@@ -228,7 +286,9 @@ class ScheduledActivityService {
             final st = r['start_time'] as String?;
             if (st == null) return false;
             final dt = DateTime.parse(st);
-            return dt.year == now.year && dt.month == now.month && dt.day == now.day;
+            return dt.year == targetDate.year &&
+                dt.month == targetDate.month &&
+                dt.day == targetDate.day;
           }).toList();
         } else {
           rethrow;
@@ -237,60 +297,9 @@ class ScheduledActivityService {
       
       debugPrint('ScheduledActivityService: Raw response length: ${response.length}');
       
-      // Convert response to Activity objects
-      final activities = response.map((json) {
-        debugPrint('ScheduledActivityService: Processing activity: ${json['name']}');
-        
-        // Parse tags and create a LatLng object
-        final tags = (json['tags'] as String).split(',');
-        final location = LatLng(
-          json['latitude'] as double, 
-          json['longitude'] as double
-        );
-        
-        // Parse payment type
-        final paymentTypeStr = json['payment_type'] as String;
-        final paymentType = PaymentType.values.firstWhere(
-          (e) => e.toString().split('.').last == paymentTypeStr,
-          orElse: () => PaymentType.free,
-        );
-        
-        // Determine time slot based on the start time
-        final startTime = DateTime.parse(json['start_time']);
-        final hour = startTime.hour;
-        TimeSlot timeSlotEnum;
-        String timeSlot;
-        
-        if (hour >= 5 && hour < 12) {
-          timeSlotEnum = TimeSlot.morning;
-          timeSlot = 'morning';
-        } else if (hour >= 12 && hour < 17) {
-          timeSlotEnum = TimeSlot.afternoon;
-          timeSlot = 'afternoon';
-        } else {
-          // Both evening and night hours are assigned to 'evening' time slot
-          timeSlotEnum = TimeSlot.evening;
-          timeSlot = 'evening';
-        }
-        
-        // Create and return Activity object
-        return Activity(
-          id: json['activity_id'],
-          name: json['name'],
-          description: json['description'],
-          imageUrl: json['image_url'],
-          startTime: startTime,
-          duration: json['duration'],
-          timeSlot: timeSlot,
-          timeSlotEnum: timeSlotEnum,
-          tags: tags,
-          location: location,
-          paymentType: paymentType,
-          rating: (json['rating'] as num?)?.toDouble() ?? 4.5,
-          isPaid: paymentType != PaymentType.free,
-          placeId: json['place_id'] as String?,
-        );
-      }).toList();
+      final activities = response
+          .map((row) => _rowToActivity(Map<String, dynamic>.from(row as Map)))
+          .toList();
       
       debugPrint('ScheduledActivityService: Returning ${activities.length} activities');
       return activities;
@@ -300,16 +309,39 @@ class ScheduledActivityService {
       
       // Return in-memory activities as fallback
       final activities = _inMemoryActivities.where((activity) {
-        // Filter activities for today
-        final now = DateTime.now();
+        // Filter activities for selected date
+        final targetDate = DateTime(date.year, date.month, date.day);
         final activityDate = activity.startTime;
-        return activityDate.year == now.year &&
-               activityDate.month == now.month &&
-               activityDate.day == now.day;
+        return activityDate.year == targetDate.year &&
+               activityDate.month == targetDate.month &&
+               activityDate.day == targetDate.day;
       }).toList();
       
       debugPrint('ScheduledActivityService: Returning ${activities.length} activities from memory');
       return activities;
+    }
+  }
+
+  /// All rows in [scheduled_activities] for the user (for Agenda and merged activity feeds).
+  Future<List<Activity>> getAllScheduledActivitiesForUser() async {
+    try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('User must be authenticated to view scheduled activities');
+      }
+
+      final response = await _client
+          .from('scheduled_activities')
+          .select()
+          .eq('user_id', userId)
+          .order('start_time', ascending: true);
+
+      return response
+          .map((row) => _rowToActivity(Map<String, dynamic>.from(row as Map)))
+          .toList();
+    } catch (e) {
+      debugPrint('ScheduledActivityService: getAllScheduledActivitiesForUser failed: $e');
+      return List<Activity>.from(_inMemoryActivities);
     }
   }
   
