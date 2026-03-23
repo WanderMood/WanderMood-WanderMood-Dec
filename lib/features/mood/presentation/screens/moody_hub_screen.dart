@@ -258,9 +258,23 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       isDismissible: true,
-      builder: (context) => _buildChatBottomSheet(context),
+      builder: (context) {
+        final keyboardInset = MediaQuery.of(context).viewInsets.bottom;
+
+        // Keep the sheet height stable while typing; we manually offset content
+        // with the keyboard inset instead of letting route-level insets shrink it.
+        return MediaQuery.removeViewInsets(
+          context: context,
+          removeBottom: true,
+          child: _buildChatBottomSheet(
+            context,
+            keyboardInset: keyboardInset,
+          ),
+        );
+      },
     );
   }
 
@@ -301,11 +315,16 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     ];
   }
 
-  Widget _buildChatBottomSheet(BuildContext context) {
+  Widget _buildChatBottomSheet(
+    BuildContext context, {
+    required double keyboardInset,
+  }) {
+    final isKeyboardVisible = keyboardInset > 0;
+
     return DraggableScrollableSheet(
-      initialChildSize: 0.85, // Increased from 0.7 for better visibility
-      minChildSize: 0.5,
-      maxChildSize: 0.98, // Increased from 0.95 to handle keyboard better
+      initialChildSize: isKeyboardVisible ? 0.98 : 0.85,
+      minChildSize: isKeyboardVisible ? 0.8 : 0.5,
+      maxChildSize: 0.98,
       builder: (context, scrollController) => StatefulBuilder(
         builder: (context, setModalState) => Container(
           decoration: BoxDecoration(
@@ -329,10 +348,10 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               ),
             ],
           ),
-          child: Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom, // Handle keyboard
-            ),
+          child: AnimatedPadding(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            padding: EdgeInsets.only(bottom: keyboardInset),
             child: Column(
               children: [
                 // Handle bar
