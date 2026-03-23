@@ -28,6 +28,13 @@ import '../widgets/conversational_explore_header.dart';
 import '../../application/intent_processor.dart';
 import '../../providers/smart_context_provider.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
+import 'package:wandermood/features/plans/domain/models/activity.dart';
+import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
+import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
+import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 /// WanderMood v2 — Advanced Filters modal (SCREEN 7)
 const Color _afWmWhite = Color(0xFFFFFFFF);
@@ -1049,11 +1056,46 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               (context, index) {
                                 final place = filteredPlaces[index];
                                 final userLocation = userLocationAsync.value;
-                                return PlaceGridCard(
-                                  place: place,
-                                  userLocation: userLocation,
-                                  cityName: currentCity,
-                                  onTap: () => context.push('/place/${place.id}'),
+                                return Stack(
+                                  clipBehavior: Clip.hardEdge,
+                                  children: [
+                                    PlaceGridCard(
+                                      place: place,
+                                      userLocation: userLocation,
+                                      cityName: currentCity,
+                                      onTap: () => context.push('/place/${place.id}'),
+                                    ),
+                                    Positioned(
+                                      top: 92,
+                                      left: 8,
+                                      child: GestureDetector(
+                                        onTap: () => _showAddToMyDaySheet(place),
+                                        child: Container(
+                                          height: 28,
+                                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF2A6049),
+                                            borderRadius: BorderRadius.circular(14),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(Icons.add, color: Colors.white, size: 12),
+                                              const SizedBox(width: 3),
+                                              Text(
+                                                'Mijn Dag',
+                                                style: GoogleFonts.poppins(
+                                                  color: Colors.white,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ).animate().fadeIn(duration: 300.ms, delay: Duration(milliseconds: index * 30));
                               },
                               childCount: filteredPlaces.length,
@@ -1064,12 +1106,51 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               (context, index) {
                                 final place = filteredPlaces[index];
                                 final userLocation = userLocationAsync.value;
-                                return PlaceCard(
-                                  place: place,
-                                  userLocation: userLocation,
-                                  cityName: currentCity,
-                                  cardMargin: const EdgeInsets.symmetric(vertical: 8),
-                                  onTap: () => context.push('/place/${place.id}'),
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    PlaceCard(
+                                      place: place,
+                                      userLocation: userLocation,
+                                      cityName: currentCity,
+                                      cardMargin: const EdgeInsets.only(top: 8, bottom: 4),
+                                      showAddToMyDayButton: false,
+                                      onTap: () => context.push('/place/${place.id}'),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 4),
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: GestureDetector(
+                                          onTap: () => _showAddToMyDaySheet(place),
+                                          child: Container(
+                                            height: 32,
+                                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF2A6049),
+                                              borderRadius: BorderRadius.circular(16),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(Icons.add, color: Colors.white, size: 14),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  'Mijn Dag',
+                                                  style: GoogleFonts.poppins(
+                                                    color: Colors.white,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ).animate().fadeIn(duration: 300.ms, delay: Duration(milliseconds: index * 50));
                               },
                               childCount: filteredPlaces.length,
@@ -2716,6 +2797,117 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
+  // --- Add to My Day ---
+
+  void _showAddToMyDaySheet(Place place) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => _ExploreAddToMyDaySheet(
+        place: place,
+        onTimeSelected: (DateTime startTime) => _addActivityToMyDay(place, startTime),
+      ),
+    );
+  }
+
+  Future<void> _addActivityToMyDay(Place place, DateTime startTime) async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) {
+        if (mounted) {
+          showWanderMoodToast(
+            context,
+            message: 'Meld je aan om activiteiten toe te voegen.',
+            isError: true,
+          );
+        }
+        return;
+      }
+
+      final hour = startTime.hour;
+      final timeOfDay = (hour >= 6 && hour < 12)
+          ? 'morning'
+          : (hour >= 12 && hour < 17)
+              ? 'afternoon'
+              : 'evening';
+      final timeSlotEnum = timeOfDay == 'morning'
+          ? TimeSlot.morning
+          : timeOfDay == 'afternoon'
+              ? TimeSlot.afternoon
+              : TimeSlot.evening;
+
+      PaymentType paymentType = PaymentType.free;
+      if (place.types.any((t) =>
+          ['restaurant', 'spa', 'museum', 'tourist_attraction'].contains(t))) {
+        paymentType = PaymentType.reservation;
+      }
+
+      int duration = 60;
+      for (final type in place.types) {
+        final t = type.toLowerCase();
+        if (['museum', 'tourist_attraction', 'amusement_park'].contains(t)) {
+          duration = 120;
+          break;
+        } else if (['store', 'shopping_mall'].contains(t)) {
+          duration = 90;
+          break;
+        }
+      }
+
+      final imageUrl = place.photos.isNotEmpty
+          ? place.photos.first
+          : 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80';
+
+      final activity = Activity(
+        id: 'place_${place.id}_${DateTime.now().millisecondsSinceEpoch}',
+        name: place.name,
+        description: place.description ?? 'Verken ${place.name}',
+        imageUrl: imageUrl,
+        rating: place.rating > 0 ? place.rating : 4.5,
+        startTime: startTime,
+        duration: duration,
+        timeSlot: timeOfDay,
+        timeSlotEnum: timeSlotEnum,
+        tags: place.types.isNotEmpty ? place.types : ['explore'],
+        location: LatLng(place.location.lat, place.location.lng),
+        paymentType: paymentType,
+        priceLevel: place.priceRange,
+      );
+
+      final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
+      await scheduledActivityService.saveScheduledActivities([activity], isConfirmed: false);
+
+      ref.invalidate(scheduledActivityServiceProvider);
+      ref.invalidate(scheduledActivitiesForTodayProvider);
+      ref.invalidate(todayActivitiesProvider);
+
+      if (mounted) {
+        showWanderMoodToast(
+          context,
+          message: '${place.name} toegevoegd aan Mijn Dag!',
+          duration: const Duration(seconds: 3),
+          actionLabel: 'Bekijk',
+          onAction: () {
+            if (mounted) context.go('/main', extra: {'tab': 0, 'refresh': true});
+          },
+        );
+      }
+    } catch (e) {
+      debugPrint('Error adding to My Day: $e');
+      if (mounted) {
+        showWanderMoodToast(
+          context,
+          message: 'Kon niet toevoegen. Probeer opnieuw.',
+          isError: true,
+        );
+      }
+    }
+  }
+
   // Build quick filter chip for map view
   Widget _buildQuickFilterChip(
     String label, {
@@ -2742,6 +2934,193 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             color: isActive ? const Color(0xFF2A6049) : Colors.grey[800],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Bottom sheet for selecting a time slot when adding a place to My Day.
+class _ExploreAddToMyDaySheet extends StatefulWidget {
+  final Place place;
+  final void Function(DateTime) onTimeSelected;
+
+  const _ExploreAddToMyDaySheet({
+    required this.place,
+    required this.onTimeSelected,
+  });
+
+  @override
+  State<_ExploreAddToMyDaySheet> createState() => _ExploreAddToMyDaySheetState();
+}
+
+class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
+  int _selectedSlotIndex = 0;
+  late final List<Map<String, dynamic>> _timeSlots;
+
+  @override
+  void initState() {
+    super.initState();
+    final today = DateTime.now();
+    _timeSlots = [
+      {
+        'label': '🌅 Ochtend',
+        'subtitle': '08:00 - 12:00',
+        'time': DateTime(today.year, today.month, today.day, 9, 0),
+      },
+      {
+        'label': '☀️ Middag',
+        'subtitle': '12:00 - 17:00',
+        'time': DateTime(today.year, today.month, today.day, 13, 0),
+      },
+      {
+        'label': '🌙 Avond',
+        'subtitle': '17:00 - 22:00',
+        'time': DateTime(today.year, today.month, today.day, 19, 0),
+      },
+    ];
+
+    // Default to the first slot whose time hasn't passed yet.
+    final now = DateTime.now();
+    _selectedSlotIndex = _timeSlots.length - 1; // fallback: last slot
+    for (int i = 0; i < _timeSlots.length; i++) {
+      if ((_timeSlots[i]['time'] as DateTime).isAfter(now)) {
+        _selectedSlotIndex = i;
+        break;
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        20,
+        20,
+        20 + MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Handle bar
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8E2D8),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Wanneer wil je dit doen?',
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF1E1C18),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            widget.place.name,
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF8C8780),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 20),
+          // Time slot options
+          ...List.generate(_timeSlots.length, (index) {
+            final slot = _timeSlots[index];
+            final slotTime = slot['time'] as DateTime;
+            final isPast = slotTime.isBefore(now);
+            final isSelected = _selectedSlotIndex == index;
+
+            return GestureDetector(
+              onTap: isPast ? null : () => setState(() => _selectedSlotIndex = index),
+              child: Container(
+                height: 56,
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? const Color(0xFFEBF3EE) // wmForestTint
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isSelected
+                        ? const Color(0xFF2A6049) // wmForest
+                        : const Color(0xFFE8E2D8), // wmParchment
+                    width: isSelected ? 1.5 : 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      slot['label'] as String,
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: isPast
+                            ? const Color(0xFFBBB7B0)
+                            : isSelected
+                                ? const Color(0xFF2A6049)
+                                : const Color(0xFF1E1C18),
+                      ),
+                    ),
+                    Text(
+                      slot['subtitle'] as String,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: isPast
+                            ? const Color(0xFFBBB7B0)
+                            : const Color(0xFF8C8780),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+          const SizedBox(height: 16),
+          // Confirm button
+          SizedBox(
+            height: 52,
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                final selected = _timeSlots[_selectedSlotIndex]['time'] as DateTime;
+                widget.onTimeSelected(selected);
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2A6049),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                elevation: 0,
+              ),
+              child: Text(
+                'Toevoegen aan Mijn Dag',
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
       ),
     );
   }

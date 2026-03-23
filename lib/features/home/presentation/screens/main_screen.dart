@@ -8,7 +8,7 @@ import 'package:wandermood/features/home/presentation/screens/moody_idle_screen.
 import 'package:wandermood/core/utils/moody_idle_checker.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/features/profile/presentation/screens/user_profile_screen.dart';
-import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
+import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart' show scheduledActivitiesForTodayProvider, todayActivitiesProvider, cachedActivitySuggestionsProvider;
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -271,6 +271,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     
     final onTap = () {
       ref.read(mainTabProvider.notifier).state = index;
+      // Refresh My Day data whenever the user navigates to it so newly added
+      // activities (e.g. from Explore) always reflect the correct status.
+      if (index == 0) {
+        ref.invalidate(scheduledActivitiesForTodayProvider);
+        ref.invalidate(todayActivitiesProvider);
+      }
     };
 
     return Expanded(
