@@ -35,12 +35,13 @@ class PlaceCard extends ConsumerWidget {
   final VoidCallback onTap;
   final Position? userLocation;
   final String? cityName; // City name for fallback distance calculation
-  /// When false, hides the "Add to My Day" overlay button (e.g. when used on Day Plan).
+  /// When false, hides the "Add to My Day" button.
   final bool showAddToMyDayButton;
+  /// Optional override for the "Add to My Day" tap — e.g. to show a time-picker sheet.
+  final VoidCallback? onAddToMyDayTap;
   /// When true, shows a "See activity" label (e.g. on Day Plan where we don't book yet).
   final bool showSeeActivityLabel;
-  /// Outer margin around the card. Use vertical-only when the parent already applies
-  /// horizontal padding (e.g. Explore list uses 16 like [DayPlanActivityCard] list).
+  /// Outer margin around the card.
   final EdgeInsetsGeometry cardMargin;
 
   const PlaceCard({
@@ -50,6 +51,7 @@ class PlaceCard extends ConsumerWidget {
     this.userLocation,
     this.cityName,
     this.showAddToMyDayButton = true,
+    this.onAddToMyDayTap,
     this.showSeeActivityLabel = false,
     this.cardMargin = const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
   }) : super(key: key);
@@ -424,17 +426,17 @@ class PlaceCard extends ConsumerWidget {
     }
   }
 
-  /// Get energy level color
+  /// Get energy level color — all variants use forest to stay on-palette.
   Color _getEnergyColor(String energyLevel) {
     switch (energyLevel.toLowerCase()) {
       case 'low':
         return _wmForest;
       case 'medium':
-        return _wmSunset;
+        return _wmForest;
       case 'high':
-        return _wmSunset;
+        return const Color(0xFF8F7355); // warm bronze for "active"
       default:
-        return _wmSunset;
+        return _wmForest;
     }
   }
 
@@ -707,25 +709,16 @@ class PlaceCard extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: _wmParchment, width: 0.5),
           boxShadow: [
-            // Primary shadow for depth
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 18,
+              offset: const Offset(0, 7),
               spreadRadius: 0,
             ),
-            // Secondary shadow for ambient light
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-              spreadRadius: -2,
-            ),
-            // Subtle close shadow for definition
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
               spreadRadius: -1,
             ),
           ],
@@ -797,184 +790,56 @@ class PlaceCard extends ConsumerWidget {
                       ),
                     ),
                       
-                  // Action buttons (directions, favorite, and share)
+                  // Action icon column — unified frosted-glass circles
                   Positioned(
                     top: 12,
                     right: 12,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Get Directions button
-                        GestureDetector(
+                        _CardIconButton(
+                          icon: Icons.near_me_rounded,
                           onTap: () => _openDirections(context),
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.15),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                  spreadRadius: 0,
-                                ),
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.08),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                  spreadRadius: -1,
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              Icons.directions,
-                              color: _wmForest,
-                              size: 20,
-                            ),
-                          ),
                         ),
                         const SizedBox(height: 8),
-                        // Share button
-                        GestureDetector(
+                        _CardIconButton(
+                          icon: Icons.ios_share_rounded,
                           onTap: () async {
                             try {
                               await SharingService.sharePlace(place);
                             } catch (e) {
-                              showWanderMoodToast(
-                                context,
-                                message: 'Failed to share place: $e',
-                                isError: true,
-                              );
+                              showWanderMoodToast(context, message: 'Failed to share: $e', isError: true);
                             }
                           },
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.15),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                  spreadRadius: 0,
-                                ),
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.08),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                  spreadRadius: -1,
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              Icons.share,
-                              color: _wmForest,
-                              size: 20,
-                            ),
-                          ),
                         ),
-                        const SizedBox(height: 8),
-                        // Add to My Day button (hidden when card is used on Day Plan)
                         if (showAddToMyDayButton) ...[
-                          GestureDetector(
-                            onTap: () => _addToMyDay(context, ref),
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.9),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.15),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 4),
-                                    spreadRadius: 0,
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.08),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                    spreadRadius: -1,
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                Icons.calendar_today,
-                                color: _wmForest,
-                                size: 20,
-                              ),
-                            ),
-                          ),
                           const SizedBox(height: 8),
+                          _CardIconButton(
+                            icon: Icons.add_circle_outline_rounded,
+                            onTap: () => _addToMyDay(context, ref),
+                          ),
                         ],
-                        // Favorite button
-                        GestureDetector(
+                        const SizedBox(height: 8),
+                        _CardIconButton(
+                          icon: isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                          iconColor: isFavorite ? _wmSunset : null,
                           onTap: () async {
                             final savedPlacesService = ref.read(savedPlacesServiceProvider);
-                            
                             try {
                               if (isFavorite) {
-                                // Unsave
                                 await savedPlacesService.unsavePlace(place.id);
-                                // Invalidate stream to refresh Saved Places screen
                                 ref.invalidate(savedPlacesProvider);
-                                
-                                showWanderMoodToast(
-                                  context,
-                                  message:
-                                      '${place.name} removed from saved places',
-                                  isWarning: true,
-                                );
+                                showWanderMoodToast(context, message: '${place.name} removed from saved places', isWarning: true);
                               } else {
-                                // Save
                                 await savedPlacesService.savePlace(place);
-                                // Invalidate stream to refresh Saved Places screen
                                 ref.invalidate(savedPlacesProvider);
-                                
-                                showWanderMoodToast(
-                                  context,
-                                  message:
-                                      '${place.name} saved to favorites!',
-                                );
+                                showWanderMoodToast(context, message: '${place.name} saved!');
                               }
                             } catch (e) {
                               if (kDebugMode) debugPrint('❌ Error toggling favorite: $e');
-                              showWanderMoodToast(
-                                context,
-                                message:
-                                    'Failed to ${isFavorite ? 'remove' : 'save'} ${place.name}',
-                                isError: true,
-                              );
+                              showWanderMoodToast(context, message: 'Failed to ${isFavorite ? 'remove' : 'save'} ${place.name}', isError: true);
                             }
                           },
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.15),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                  spreadRadius: 0,
-                                ),
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.08),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                  spreadRadius: -1,
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              isFavorite ? Icons.favorite : Icons.favorite_border,
-                              color: isFavorite ? _wmSunset : Colors.grey,
-                              size: 20,
-                            ),
-                          ),
                         ),
                       ],
                     ),
@@ -997,10 +862,11 @@ class PlaceCard extends ConsumerWidget {
                         child: Text(
                           place.name,
                           style: GoogleFonts.poppins(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            height: 1.3,
                           ),
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -1084,102 +950,137 @@ class PlaceCard extends ConsumerWidget {
                     ),
                   ],
                   
-                  // Description with indoor/outdoor indicator
+                  // Description
                   if (place.description != null && place.description!.trim().isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        // Indoor/Outdoor icon
-                        Icon(
-                          place.isIndoor ? Icons.home : Icons.nature,
-                          color: _wmForest,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
+                    const SizedBox(height: 10),
+                    Text(
                       place.description!,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        height: 1.4,
+                        height: 1.5,
                         color: _wmDusk,
                       ),
-                            maxLines: 3,
+                      maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                     ),
-                        ),
-                  ],
-                    ),
                   ],
 
-                  // Pricing information - always show (Free, price range, or "Price varies")
-                  if (_shouldShowPriceBadge()) ...[
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Icon(
-                          _getCurrencyIcon(),
-                          color: _getPriceBadgeColor(),
-                          size: 16,
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: _getPriceBadgeColor().withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: _getPriceBadgeColor().withOpacity(0.4),
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            _getPriceBadgeText(),
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: _getPriceBadgeColor(),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-
-                  // Distance only (address removed to reduce redundancy)
+                  // Bottom metadata row: price pill + distance pill + Mijn Dag CTA
                   Builder(
                     builder: (context) {
                       final distance = _calculateDistance();
-
-                      if (distance == null) {
-                        return const SizedBox.shrink();
+                      final hasPricePill = _shouldShowPriceBadge();
+                      final hasDistancePill = distance != null;
+                      if (!hasPricePill && !hasDistancePill && !showAddToMyDayButton) {
+                        return const SizedBox(height: 4);
                       }
                       return Padding(
-                        padding: const EdgeInsets.only(top: 12),
+                        padding: const EdgeInsets.only(top: 14),
                         child: Row(
                           children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.directions_walk, color: _wmForest, size: 16),
-                                const SizedBox(width: 4),
-                                Text(
-                                  distance,
-                                  style: GoogleFonts.poppins(
-                                    color: _wmForest,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
+                            // Price pill
+                            if (hasPricePill) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: _getPriceBadgeColor().withValues(alpha: 0.10),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: _getPriceBadgeColor().withValues(alpha: 0.55),
+                                    width: 1.25,
                                   ),
                                 ),
-                              ],
-                            ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(_getCurrencyIcon(), color: _getPriceBadgeColor(), size: 13),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      _getPriceBadgeText(),
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        color: _getPriceBadgeColor(),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                            ],
+                            // Distance pill
+                            if (hasDistancePill) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: _wmForestTint,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: _wmParchment, width: 1),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.directions_walk_rounded, color: _wmForest, size: 13),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      distance,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        color: _wmForest,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            const Spacer(),
+                            // Mijn Dag CTA
+                            if (showAddToMyDayButton)
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(20),
+                                  onTap: onAddToMyDayTap ?? () => _addToMyDay(context, ref),
+                                  child: Container(
+                                    height: 40,
+                                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                                    decoration: BoxDecoration(
+                                      color: _wmForest,
+                                      borderRadius: BorderRadius.circular(20),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: _wmForest.withValues(alpha: 0.22),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.add_rounded, color: Colors.white, size: 16),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'Mijn Dag',
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.white,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       );
                     },
                   ),
 
-                  // "See activity" label when used on Day Plan (we don't book yet)
+                  // "See activity" label when used on Day Plan
                   if (showSeeActivityLabel) ...[
                     const SizedBox(height: 12),
                     Row(
@@ -1198,7 +1099,6 @@ class PlaceCard extends ConsumerWidget {
                     ),
                   ],
 
-                  // Add bottom padding to prevent overflow
                   const SizedBox(height: 4),
                 ],
               ),
@@ -1618,4 +1518,44 @@ class PlaceCard extends ConsumerWidget {
       duration: const Duration(seconds: 3),
     );
   }
-} 
+}
+
+/// Unified frosted-glass icon button used on place card image overlay.
+class _CardIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final Color? iconColor;
+
+  const _CardIconButton({required this.icon, required this.onTap, this.iconColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.92),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: const Color(0xFFE8E2D8).withValues(alpha: 0.6),
+            width: 0.75,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.10),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Icon(
+          icon,
+          color: iconColor ?? const Color(0xFF2A6049),
+          size: 18,
+        ),
+      ),
+    );
+  }
+}

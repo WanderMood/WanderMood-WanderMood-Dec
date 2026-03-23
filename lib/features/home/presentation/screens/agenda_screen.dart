@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
+import 'package:map_launcher/map_launcher.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
+import 'package:wandermood/features/home/presentation/widgets/planner_activity_detail_sheet.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'dynamic_my_day_provider.dart';
 // WanderMood v2 — Agenda / calendar (Screen 10)
@@ -17,6 +21,29 @@ const Color _wmForest = Color(0xFF2A6049);
 const Color _wmSunset = Color(0xFFE8784A);
 const Color _wmWhite = Color(0xFFFFFFFF);
 const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmForestTint = Color(0xFFEBF3EE);
+/// Timeline / agenda status chip (UPCOMING) — matches My Day timeline.
+const Color _wmSkyDeep = Color(0xFF5B7F92);
+
+class _AgendaCardStatus {
+  final Color color;
+  final String label;
+  final IconData icon;
+  const _AgendaCardStatus(this.color, this.label, this.icon);
+}
+
+_AgendaCardStatus _agendaCardStatusFor(String? status) {
+  switch (status) {
+    case 'completed':
+      return const _AgendaCardStatus(_wmForest, 'DONE', Icons.check_circle_rounded);
+    case 'cancelled':
+      return const _AgendaCardStatus(Color(0xFFC62828), 'CANCELLED', Icons.cancel_outlined);
+    case 'active':
+      return const _AgendaCardStatus(_wmSunset, 'NOW', Icons.play_circle_filled_rounded);
+    default:
+      return const _AgendaCardStatus(_wmSkyDeep, 'UPCOMING', Icons.schedule_rounded);
+  }
+}
 
 TextStyle _wmBodyAgendaTextStyle() => GoogleFonts.poppins(
       fontSize: 15,
@@ -713,281 +740,433 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     );
   }
   
-  Widget _buildAgendaActivityCard(Map<String, dynamic> activity) {
-    final status = activity['status'] ?? 'upcoming';
-    final paymentStatus = activity['paymentStatus'] ?? 'free';
-    final price = activity['price'] ?? 0.0;
-    
-    Color statusColor;
-    String statusText;
-    
-    switch (status) {
-      case 'completed':
-        statusColor = Colors.green;
-        statusText = 'COMPLETED';
-        break;
-      case 'cancelled':
-        statusColor = Colors.red;
-        // Bookings / paid flows only (unbooked items are removed from the server instead).
-        statusText = 'BOEKING GEANNULEERD';
-        break;
-      case 'active':
-        statusColor = Colors.red;
-        statusText = 'RIGHT NOW';
-        break;
-      default:
-        statusColor = Colors.orange;
-        statusText = 'UPCOMING';
-    }
-    
-    // Payment status styling
-    Color paymentColor;
-    String paymentText;
-    IconData paymentIcon;
-    
+  String _agendaCategoryLabel(Map<String, dynamic> activity) {
+    final raw = (activity['category'] ?? 'Activity').toString().trim();
+    if (raw.isEmpty) return 'Activity';
+    return '${raw[0].toUpperCase()}${raw.length > 1 ? raw.substring(1) : ''}';
+  }
+
+  Widget _buildAgendaPaymentBadge(String paymentStatus) {
     switch (paymentStatus) {
       case 'free':
-        paymentColor = Colors.green;
-        paymentText = 'FREE';
-        paymentIcon = Icons.park;
-        break;
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.92),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: _wmForest.withValues(alpha: 0.35)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.eco_rounded, size: 12, color: _wmForest),
+              const SizedBox(width: 4),
+              Text(
+                'FREE',
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: _wmForest,
+                ),
+              ),
+            ],
+          ),
+        );
       case 'paid':
-        paymentColor = Colors.blue;
-        paymentText = 'PAID';
-        paymentIcon = Icons.check_circle;
-        break;
+        const paidColor = Color(0xFF1976D2);
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: paidColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: paidColor.withValues(alpha: 0.55)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.check_circle_rounded, size: 12, color: paidColor),
+              const SizedBox(width: 4),
+              Text(
+                'PAID',
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: paidColor,
+                ),
+              ),
+            ],
+          ),
+        );
       case 'reserved':
-        paymentColor = Colors.orange;
-        paymentText = 'RESERVED';
-        paymentIcon = Icons.schedule;
-        break;
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: _wmSunset.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: _wmSunset.withValues(alpha: 0.45)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.schedule_rounded, size: 12, color: _wmSunset),
+              const SizedBox(width: 4),
+              Text(
+                'RESERVED',
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: _wmSunset,
+                ),
+              ),
+            ],
+          ),
+        );
       case 'pending':
-        paymentColor = Colors.purple;
-        paymentText = 'PENDING';
-        paymentIcon = Icons.hourglass_empty;
-        break;
+        const pendColor = Color(0xFF7E57C2);
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: pendColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: pendColor.withValues(alpha: 0.45)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.hourglass_empty_rounded, size: 12, color: pendColor),
+              const SizedBox(width: 4),
+              Text(
+                'PENDING',
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: pendColor,
+                ),
+              ),
+            ],
+          ),
+        );
       default:
-        paymentColor = Colors.grey;
-        paymentText = 'TBD';
-        paymentIcon = Icons.help_outline;
+        return const SizedBox.shrink();
     }
-    
+  }
+
+  Widget _buildAgendaActivityCard(Map<String, dynamic> activity) {
+    final statusStr = (activity['status'] ?? 'upcoming').toString();
+    final paymentStatus = activity['paymentStatus'] ?? 'free';
+    final price = (activity['price'] as num?)?.toDouble() ?? 0.0;
+    final cardStatus = _agendaCardStatusFor(statusStr);
+    final durationM = activity['duration'] as int? ?? 60;
+    final timeLabel = activity['time'] ?? '10:00 AM';
+
+    final footerBits = <String>['$durationM min'];
+    if (paymentStatus != 'free' && price > 0) {
+      footerBits.add('€${price.toStringAsFixed(2)}');
+    } else if (paymentStatus != 'free') {
+      footerBits.add(paymentStatus.toUpperCase());
+    }
+    final footerSubtitle = footerBits.join(' · ');
+
     return GestureDetector(
-      onTap: () => _showActivityDetails(activity),
+      onTap: () {
+        HapticFeedback.lightImpact();
+        _showActivityDetails(activity);
+      },
       child: Container(
+        height: 160,
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: _wmParchment, width: 0.5),
           boxShadow: const [],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Column(
             children: [
-              // Time and image
-              Column(
-                children: [
-                  Text(
-                    activity['time'] ?? '10:00 AM',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF2A6049),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: const [],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
+              Expanded(
+                flex: 3,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
                       child: CachedNetworkImage(
                         imageUrl: activity['imageUrl'] ?? _getDefaultImageUrl(activity),
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
                           color: Colors.grey[300],
-                          child: const Icon(Icons.image, color: Colors.grey),
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
                         ),
                         errorWidget: (context, url, error) => Container(
-                          color: const Color(0xFF2A6049).withOpacity(0.2),
-                          child: const Icon(
-                            Icons.image,
-                            color: Color(0xFF2A6049),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                cardStatus.color.withValues(alpha: 0.85),
+                                cardStatus.color.withValues(alpha: 0.55),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(Icons.image, color: Colors.white, size: 40),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              
-              const SizedBox(width: 16),
-              
-              // Activity details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            activity['title'] ?? 'Activity',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.black.withValues(alpha: 0.1),
+                              Colors.black.withValues(alpha: 0.62),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
                           ),
                         ),
-                        Row(
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Payment status badge
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: paymentColor.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: paymentColor, width: 1),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    paymentIcon,
-                                    size: 10,
-                                    color: paymentColor,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.55),
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
-                                  const SizedBox(width: 2),
-                                  Text(
-                                    paymentText,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 8,
-                                      fontWeight: FontWeight.w600,
-                                      color: paymentColor,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.schedule, color: Colors.white, size: 14),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '$timeLabel • ${durationM}m',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 11,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (paymentStatus == 'free' ||
+                                        paymentStatus == 'paid' ||
+                                        paymentStatus == 'reserved' ||
+                                        paymentStatus == 'pending') ...[
+                                      _buildAgendaPaymentBadge(paymentStatus),
+                                      const SizedBox(width: 6),
+                                    ],
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: cardStatus.color,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(cardStatus.icon, color: Colors.white, size: 12),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            cardStatus.label,
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const Spacer(),
+                            Text(
+                              activity['title'] ?? 'Activity',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                shadows: const [
+                                  Shadow(
+                                    color: Colors.black87,
+                                    blurRadius: 8,
+                                    offset: Offset(0, 2),
                                   ),
                                 ],
                               ),
-                            ),
-                            const SizedBox(width: 6),
-                            // Activity status badge
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: statusColor,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                statusText,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      activity['description'] ?? 'No description available',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.grey[600],
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.access_time,
-                          size: 14,
-                          color: Colors.grey[500],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${activity['duration'] ?? 60} minutes',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Colors.grey[500],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Icon(
-                          Icons.location_on,
-                          size: 14,
-                          color: Colors.grey[500],
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            activity['location'] ?? 'Location TBD',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: Colors.grey[500],
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (price > 0 || paymentStatus != 'free') ...[
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            paymentStatus == 'free' ? Icons.money_off : Icons.euro,
-                            size: 14,
-                            color: paymentColor,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            paymentStatus == 'free' 
-                              ? 'Free Activity' 
-                              : price > 0 
-                                ? '€${price.toStringAsFixed(2)}'
-                                : 'Price TBD',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: paymentColor,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          if (paymentStatus == 'paid') ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                              decoration: BoxDecoration(
-                                color: Colors.green.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(4),
+                  ],
+                ),
+              ),
+              ColoredBox(
+                color: _wmWhite,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _agendaCategoryLabel(activity),
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: _wmCharcoal,
                               ),
-                              child: Text(
-                                'CONFIRMED',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.green,
+                            ),
+                            Text(
+                              footerSubtitle,
+                              style: GoogleFonts.poppins(
+                                fontSize: 11,
+                                color: _wmStone,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            height: 32,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: _wmForest,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  _openAgendaDirections(activity);
+                                },
+                                child: Center(
+                                  child: Text(
+                                    'Directions',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ],
+                          ),
+                          const SizedBox(width: 8),
+                          PopupMenuButton<String>(
+                            offset: const Offset(0, 36),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: _wmForestTint,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: _wmParchment, width: 0.5),
+                              ),
+                              alignment: Alignment.center,
+                              child: Icon(Icons.more_vert, size: 16, color: _wmStone),
+                            ),
+                            onSelected: (value) {
+                              switch (value) {
+                                case 'details':
+                                  _showActivityDetails(activity);
+                                  break;
+                                case 'directions':
+                                  _openAgendaDirections(activity);
+                                  break;
+                                case 'delete':
+                                  _deleteScheduledActivity(activity);
+                                  break;
+                                case 'share':
+                                  _shareActivity(activity);
+                                  break;
+                              }
+                            },
+                            itemBuilder: (context) {
+                              return [
+                                PopupMenuItem(
+                                  value: 'details',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.info_outline, size: 18, color: _wmForest),
+                                      const SizedBox(width: 8),
+                                      Text('View details', style: GoogleFonts.poppins()),
+                                    ],
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: 'directions',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.directions_rounded, size: 18, color: _wmForest),
+                                      const SizedBox(width: 8),
+                                      Text('Get directions', style: GoogleFonts.poppins()),
+                                    ],
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Delete',
+                                        style: GoogleFonts.poppins(color: Colors.red),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: 'share',
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.share, size: 18),
+                                      const SizedBox(width: 8),
+                                      Text('Share', style: GoogleFonts.poppins()),
+                                    ],
+                                  ),
+                                ),
+                              ];
+                            },
+                          ),
                         ],
                       ),
                     ],
-                  ],
+                  ),
                 ),
               ),
             ],
@@ -1060,6 +1239,10 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       'price': activity['price'] ?? 0.0,
       'category': activity['category'] ?? 'general',
       'mood': activity['mood'] ?? 'neutral',
+      'placeId': activity['placeId'],
+      'rating': activity['rating'] ?? 0.0,
+      'timeOfDay': activity['timeOfDay'] ?? 'any',
+      'startTime': activity['startTime'],
     };
     
     return transformed;
@@ -1169,136 +1352,50 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     return true;
   }
   
-  IconData _getEditButtonIcon(String? paymentStatus) {
-    switch (paymentStatus) {
-      case 'free':
-        return Icons.edit;
-      case 'paid':
-        return Icons.receipt;
-      case 'reserved':
-        return Icons.payment;
-      case 'pending':
-        return Icons.hourglass_empty;
-      default:
-        return Icons.edit;
+  Future<void> _openAgendaDirections(Map<String, dynamic> activity) async {
+    try {
+      final availableMaps = await MapLauncher.installedMaps;
+      var lat = (activity['lat'] as num?)?.toDouble();
+      var lng = (activity['lng'] as num?)?.toDouble();
+      if (lat == null || lng == null || lat == 0 || lng == 0) {
+        final loc = activity['location']?.toString() ?? '';
+        final parts = loc.split(',');
+        if (parts.length == 2) {
+          lat = double.tryParse(parts[0].trim());
+          lng = double.tryParse(parts[1].trim());
+        }
+      }
+      final hasCoords = lat != null && lng != null && lat != 0 && lng != 0;
+
+      if (availableMaps.isNotEmpty && hasCoords) {
+        await availableMaps.first.showMarker(
+          coords: Coords(lat, lng),
+          title: activity['title']?.toString() ?? 'Activity',
+          description: activity['description']?.toString() ?? '',
+        );
+        return;
+      }
+
+      final query = hasCoords ? '$lat,$lng' : (activity['title'] ?? 'Activity').toString();
+      final url = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(query)}',
+      );
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        throw Exception('Could not open maps');
+      }
+    } catch (_) {
+      if (!mounted) return;
+      showWanderMoodToast(
+        context,
+        message: 'Unable to open directions',
+        isError: true,
+      );
     }
-  }
-  
-  String _getEditButtonText(String? paymentStatus) {
-    switch (paymentStatus) {
-      case 'free':
-        return 'Edit Activity';
-      case 'paid':
-        return 'View Receipt';
-      case 'reserved':
-        return 'Complete Payment';
-      case 'pending':
-        return 'Check Status';
-      default:
-        return 'Edit Activity';
-    }
-  }
-  
-  Color _getEditButtonColor(String? paymentStatus) {
-    switch (paymentStatus) {
-      case 'free':
-        return const Color(0xFF2A6049);
-      case 'paid':
-        return Colors.blue;
-      case 'reserved':
-        return Colors.orange;
-      case 'pending':
-        return Colors.purple;
-      default:
-        return const Color(0xFF2A6049);
-    }
-  }
-  
-  String _getFormattedPrice(Map<String, dynamic> activity) {
-    final paymentStatus = activity['paymentStatus'] ?? 'free';
-    final price = activity['price'] ?? 0.0;
-    
-    if (paymentStatus == 'free') {
-      return 'Free Activity';
-    } else if (price > 0) {
-      return '€${price.toStringAsFixed(2)}';
-    } else {
-      return 'Price TBD';
-    }
-  }
-  
-  String _getPaymentStatusText(String? paymentStatus) {
-    switch (paymentStatus) {
-      case 'free':
-        return 'No payment required';
-      case 'paid':
-        return 'Payment confirmed';
-      case 'reserved':
-        return 'Reserved - Payment due';
-      case 'pending':
-        return 'Payment processing';
-      default:
-        return 'Status unknown';
-    }
-  }
-  
-  void _handleMainAction(Map<String, dynamic> activity) {
-    final paymentStatus = activity['paymentStatus'] ?? 'free';
-    
-    switch (paymentStatus) {
-      case 'free':
-        _editActivity(activity);
-        break;
-      case 'paid':
-        _viewReceipt(activity);
-        break;
-      case 'reserved':
-        _completePayment(activity);
-        break;
-      case 'pending':
-        _checkPaymentStatus(activity);
-        break;
-      default:
-        _editActivity(activity);
-    }
-  }
-  
-  void _viewReceipt(Map<String, dynamic> activity) {
-    context.go('/view-receipt', extra: activity);
-  }
-  
-  void _editActivity(Map<String, dynamic> activity) {
-    context.go('/edit-activity', extra: activity);
-  }
-  
-  void _getDirections(Map<String, dynamic> activity) {
-    // In a real app, this would open maps with directions
-    showWanderMoodToast(
-      context,
-      message: 'Opening directions to ${activity['location']}',
-    );
-  }
-  
-  void _completePayment(Map<String, dynamic> activity) {
-    showWanderMoodToast(
-      context,
-      message: 'Redirecting to payment for ${activity['title']}',
-    );
-  }
-  
-  void _checkPaymentStatus(Map<String, dynamic> activity) {
-    showWanderMoodToast(
-      context,
-      message: 'Checking payment status for ${activity['title']}',
-    );
-  }
-  
-  bool _isUnbookedActivity(Map<String, dynamic> activity) {
-    final ps = activity['paymentStatus'] as String? ?? 'free';
-    return ps == 'free';
   }
 
-  /// Unbooked / manual plans: remove row from Supabase (not a "cancellation").
+  /// Remove a planner activity from Supabase and refresh agenda state.
   Future<void> _deleteScheduledActivity(Map<String, dynamic> activity) async {
     final title = activity['title'] as String? ?? 'Activiteit';
     showDialog<void>(
@@ -1313,7 +1410,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
           ),
         ),
         content: Text(
-          '“$title” wordt uit je agenda gehaald. Dit is geen boeking, dus er is niets om te annuleren bij een aanbieder.',
+          '“$title” wordt uit je planner gehaald.',
           style: GoogleFonts.poppins(),
         ),
         actions: [
@@ -1353,7 +1450,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 if (mounted) {
                   showWanderMoodToast(
                     context,
-                    message: '$title verwijderd uit je agenda.',
+                    message: '$title verwijderd uit je planner.',
                   );
                 }
               } catch (e) {
@@ -1385,79 +1482,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     );
   }
 
-  /// Paid / reserved / pending: keep local “cancelled” state (no backend booking API here).
-  void _cancelBookedActivity(Map<String, dynamic> activity) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          'Boeking annuleren',
-          style: GoogleFonts.museoModerno(
-            fontWeight: FontWeight.bold,
-            color: Colors.red,
-          ),
-        ),
-        content: Text(
-          'Weet je zeker dat je "${activity['title']}" wilt annuleren? Dit markeert de boeking in de app.',
-          style: GoogleFonts.poppins(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(
-              'Behouden',
-              style: GoogleFonts.poppins(
-                color: Colors.grey[600],
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-
-              final activityId =
-                  activity['id'] as String? ?? activity['title'] as String? ?? '';
-              if (activityId.isNotEmpty) {
-                ref.read(activityManagerProvider.notifier).cancelActivity(activityId);
-              }
-
-              showWanderMoodToast(
-                context,
-                message: 'Boeking geannuleerd in de app.',
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Text(
-              'Annuleren',
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
   void _shareActivity(Map<String, dynamic> activity) {
-    final shareText = '''
-Check out this activity I have planned!
-
-${activity['title']}
-📅 ${_formatDateHeader(DateTime.parse(activity['date']))} at ${activity['time']}
-📍 ${activity['location']}
-⏱️ ${activity['duration']} minutes
-
-${activity['description']}
-''';
-
     // In a real app, this would use the share_plus package
     showWanderMoodToast(
       context,
@@ -1466,419 +1491,59 @@ ${activity['description']}
   }
   
   void _showActivityDetails(Map<String, dynamic> activity) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            children: [
-              // Handle bar
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(top: 12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Title and actions
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                activity['title'] ?? 'Activity',
-                                style: GoogleFonts.museoModerno(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                            ),
-                            PopupMenuButton<String>(
-                              icon: const Icon(Icons.more_vert),
-                              onSelected: (value) {
-                                Navigator.pop(context);
-                                switch (value) {
-                                  case 'edit':
-                                    _editActivity(activity);
-                                    break;
-                                  case 'delete':
-                                    _deleteScheduledActivity(activity);
-                                    break;
-                                  case 'cancel_booking':
-                                    _cancelBookedActivity(activity);
-                                    break;
-                                  case 'share':
-                                    _shareActivity(activity);
-                                    break;
-                                }
-                              },
-                              itemBuilder: (context) {
-                                final unbooked = _isUnbookedActivity(activity);
-                                return [
-                                  const PopupMenuItem(
-                                    value: 'edit',
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.edit, size: 18),
-                                        SizedBox(width: 8),
-                                        Text('Edit'),
-                                      ],
-                                    ),
-                                  ),
-                                  if (unbooked)
-                                    const PopupMenuItem(
-                                      value: 'delete',
-                                      child: Row(
-                                        children: [
-                                          Icon(Icons.delete_outline,
-                                              size: 18, color: Colors.red),
-                                          SizedBox(width: 8),
-                                          Text('Verwijderen',
-                                              style: TextStyle(color: Colors.red)),
-                                        ],
-                                      ),
-                                    )
-                                  else
-                                    const PopupMenuItem(
-                                      value: 'cancel_booking',
-                                      child: Row(
-                                        children: [
-                                          Icon(Icons.cancel_outlined,
-                                              size: 18, color: Colors.red),
-                                          SizedBox(width: 8),
-                                          Text('Boeking annuleren',
-                                              style: TextStyle(color: Colors.red)),
-                                        ],
-                                      ),
-                                    ),
-                                  const PopupMenuItem(
-                                    value: 'share',
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.share, size: 18),
-                                        SizedBox(width: 8),
-                                        Text('Share'),
-                                      ],
-                                    ),
-                                  ),
-                                ];
-                              },
-                            ),
-                          ],
-                        ),
-                        
-                        const SizedBox(height: 16),
-                        
-                        // Activity image
-                        Container(
-                          height: 200,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: const [],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: CachedNetworkImage(
-                              imageUrl: activity['imageUrl'] ?? _getDefaultImageUrl(activity),
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(
-                                color: Colors.grey[300],
-                                child: const Center(
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) => Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      const Color(0xFF2A6049).withOpacity(0.8),
-                                      const Color(0xFF4CAF50).withOpacity(0.6),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                ),
-                                child: const Center(
-                                  child: Icon(Icons.image, color: Colors.white, size: 60),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 24),
-                        
-                        // Activity details
-                        _buildDetailRow('📅 Date', _formatDateHeader(DateTime.parse(activity['date']))),
-                        _buildDetailRow('⏰ Time', activity['time'] ?? 'TBD'),
-                        _buildDetailRow('⏱️ Duration', '${activity['duration'] ?? 60} minutes'),
-                        _buildDetailRow('📍 Location', activity['location'] ?? 'TBD'),
-                        _buildDetailRow('💰 Price', _getFormattedPrice(activity)),
-                        _buildDetailRow('💳 Payment', _getPaymentStatusText(activity['paymentStatus'])),
-                        
-                        const SizedBox(height: 24),
-                        
-                        // Description
-                        Text(
-                          'Description',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          activity['description'] ?? 'No description available',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                            height: 1.5,
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 24),
-                        
-                        // Moody Advice Section
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                const Color(0xFF2A6049).withOpacity(0.1),
-                                const Color(0xFF2A6049).withOpacity(0.05),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF2A6049).withOpacity(0.3)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    width: 32,
-                                    height: 32,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF2A6049),
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: const Icon(
-                                      Icons.lightbulb,
-                                      color: Colors.white,
-                                      size: 18,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    'Moody advises to:',
-                                    style: GoogleFonts.museoModerno(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF2A6049),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                _getMoodyAdvice(activity),
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  color: const Color(0xFF2A6049),
-                                  height: 1.4,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 32),
-                        
-                        // Action buttons
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () => _getDirections(activity),
-                                icon: const Icon(Icons.directions),
-                                label: const Text('Get Directions'),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: const Color(0xFF2A6049),
-                                  side: const BorderSide(color: Color(0xFF2A6049)),
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => _handleMainAction(activity),
-                                icon: Icon(_getEditButtonIcon(activity['paymentStatus'])),
-                                label: Text(_getEditButtonText(activity['paymentStatus'])),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: _getEditButtonColor(activity['paymentStatus']),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        
-                        const SizedBox(height: 16),
-                      ],
-                    ),
+    final routePlaceId = resolvePlannerPlaceDetailRouteId(activity);
+    if (routePlaceId != null) {
+      context.pushNamed('place-detail', pathParameters: {'id': routePlaceId});
+      return;
+    }
+
+    showPlannerActivityDetailSheet(
+      context,
+      activity: activity,
+      scheduledTimeLabel: activity['time']?.toString(),
+      footerBuilder: (pop) {
+        return Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  pop();
+                  _openAgendaDirections(activity);
+                },
+                icon: const Icon(Icons.directions),
+                label: const Text('Get Directions'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF2A6049),
+                  side: const BorderSide(color: Color(0xFF2A6049)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-  
-  String _getMoodyAdvice(Map<String, dynamic> activity) {
-    final title = activity['title']?.toString().toLowerCase() ?? '';
-    final category = activity['category']?.toString().toLowerCase() ?? '';
-    final duration = activity['duration'] ?? 60;
-    final paymentStatus = activity['paymentStatus'] ?? 'free';
-    final startTime = DateTime.parse(activity['date'] ?? DateTime.now().toIso8601String());
-    
-    List<String> advice = [];
-    
-    // Time-based advice
-    if (startTime.hour < 12) {
-      advice.add('🌅 Perfect morning timing - enjoy the fresh start');
-    } else if (startTime.hour >= 18) {
-      advice.add('🌆 Great evening activity - perfect for unwinding');
-    }
-    
-    // Duration-based advice
-    if (duration >= 120) {
-      advice.add('⏰ Longer experience - bring water and snacks');
-    } else if (duration <= 45) {
-      advice.add('⚡ Quick and energizing - perfect mood boost');
-    }
-    
-    // Category-based advice
-    switch (category) {
-      case 'outdoor':
-        advice.addAll([
-          '🌿 Check the weather before heading out',
-          '👟 Comfortable walking shoes recommended',
-          '📱 Download offline maps for the area'
-        ]);
-        break;
-      case 'cultural':
-        advice.addAll([
-          '🎨 Take your time to appreciate the experience',
-          '📖 Look for guided tours or information',
-          '🔇 Be respectful of others enjoying the space'
-        ]);
-        break;
-      case 'food':
-        advice.addAll([
-          '🍽️ Come with an appetite for new flavors',
-          '💰 Bring cash - some vendors prefer it',
-          '📸 Great photo opportunities for food memories'
-        ]);
-        break;
-      case 'nature':
-        advice.addAll([
-          '🌳 Perfect for connecting with nature',
-          '📸 Bring a camera for beautiful moments',
-          '🧴 Sunscreen and water are essentials'
-        ]);
-        break;
-      default:
-        advice.addAll([
-          '💚 Be present and enjoy every moment',
-          '📍 Arrive a few minutes early to settle in',
-          '🌟 Open mind leads to the best experiences'
-        ]);
-    }
-    
-    // Payment-based advice
-    switch (paymentStatus) {
-      case 'paid':
-        advice.add('🎫 All set - your experience is confirmed');
-        break;
-      case 'reserved':
-        advice.add('⏱️ Complete payment to secure your spot');
-        break;
-      case 'free':
-        advice.add('🆓 Free doesn\'t mean less valuable - enjoy fully');
-        break;
-    }
-    
-    // Always include a motivational closing
-    advice.add('✨ This activity was chosen to match your mood perfectly');
-    
-    // Limit to 4-5 pieces of advice to keep it readable
-    return advice.take(5).map((tip) => '• $tip').join('\n');
-  }
-  
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              label,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[600],
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  pop();
+                  _deleteScheduledActivity(activity);
+                },
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('Delete Activity'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-          ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
-} 
+}

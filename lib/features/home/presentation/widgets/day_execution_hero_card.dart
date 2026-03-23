@@ -5,22 +5,43 @@ import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_pro
 import 'package:wandermood/features/mood/models/activity_rating.dart';
 import 'package:wandermood/features/mood/services/activity_rating_service.dart';
 import 'package:wandermood/features/home/presentation/widgets/activity_review_sheet.dart';
-import 'package:wandermood/l10n/app_localizations.dart';
-
 // WanderMood v2 tokens (Screen 3 — My Day execution hero)
 const Color _wmSky = Color(0xFFA8C8DC);
-const Color _wmSkyTint = Color(0xFFEDF5F9);
 const Color _wmForest = Color(0xFF2A6049);
 const Color _wmParchment = Color(0xFFE8E2D8);
 const Color _wmCharcoal = Color(0xFF1E1C18);
 const Color _wmStone = Color(0xFF8C8780);
-const Color _wmForestTint = Color(0xFFEBF3EE);
-const Color _wmSunset = Color(0xFFE8784A);
+
+/// Lifted hero cards — tinted glow + neutral depth (read against cream screen bg).
+List<BoxShadow> _forestHeroShadows() => [
+      BoxShadow(
+        color: _wmForest.withValues(alpha: 0.34),
+        blurRadius: 28,
+        offset: const Offset(0, 14),
+      ),
+      BoxShadow(
+        color: _wmCharcoal.withValues(alpha: 0.14),
+        blurRadius: 24,
+        offset: const Offset(0, 8),
+      ),
+    ];
+
+List<BoxShadow> _skyHeroShadows() => [
+      BoxShadow(
+        color: const Color(0xFF6B90A8).withValues(alpha: 0.38),
+        blurRadius: 26,
+        offset: const Offset(0, 12),
+      ),
+      BoxShadow(
+        color: _wmCharcoal.withValues(alpha: 0.12),
+        blurRadius: 22,
+        offset: const Offset(0, 7),
+      ),
+    ];
 
 enum DayExecutionHeroState {
   active,
   upcoming,
-  awaitingCompletion,
   completed,
 }
 
@@ -28,18 +49,16 @@ class DayExecutionHeroCard extends ConsumerWidget {
   final EnhancedActivityData activity;
   final DayExecutionHeroState state;
   final VoidCallback onDirections;
-  final VoidCallback? onGetReady;
+  final VoidCallback? onCheckIn;
   final VoidCallback? onMarkDone;
-  final VoidCallback? onStillHere;
 
   const DayExecutionHeroCard({
     super.key,
     required this.activity,
     required this.state,
     required this.onDirections,
-    this.onGetReady,
+    this.onCheckIn,
     this.onMarkDone,
-    this.onStillHere,
   });
 
   @override
@@ -48,15 +67,7 @@ class DayExecutionHeroCard extends ConsumerWidget {
       return _UpcomingExecutionHero(
         activity: activity,
         onDirections: onDirections,
-        onGetReady: onGetReady ?? () {},
-      );
-    }
-
-    if (state == DayExecutionHeroState.awaitingCompletion) {
-      return _AwaitingCompletionHero(
-        activity: activity,
-        onMarkDone: onMarkDone ?? () {},
-        onStillHere: onStillHere ?? () {},
+        onCheckIn: onCheckIn ?? () {},
       );
     }
 
@@ -64,6 +75,7 @@ class DayExecutionHeroCard extends ConsumerWidget {
       return _ActiveExecutionHero(
         activity: activity,
         onDirections: onDirections,
+        onMarkDone: onMarkDone ?? () {},
       );
     }
 
@@ -85,6 +97,7 @@ class DayExecutionHeroCard extends ConsumerWidget {
           : _ActiveExecutionHero(
               activity: activity,
               onDirections: onDirections,
+              onMarkDone: onMarkDone ?? () {},
             ),
       loading: () => state == DayExecutionHeroState.completed
           ? _CompletedExecutionHero(
@@ -96,6 +109,7 @@ class DayExecutionHeroCard extends ConsumerWidget {
           : _ActiveExecutionHero(
               activity: activity,
               onDirections: onDirections,
+              onMarkDone: onMarkDone ?? () {},
             ),
       error: (_, __) => state == DayExecutionHeroState.completed
           ? _CompletedExecutionHero(
@@ -107,6 +121,7 @@ class DayExecutionHeroCard extends ConsumerWidget {
           : _ActiveExecutionHero(
               activity: activity,
               onDirections: onDirections,
+              onMarkDone: onMarkDone ?? () {},
             ),
     );
   }
@@ -115,25 +130,26 @@ class DayExecutionHeroCard extends ConsumerWidget {
 class _ActiveExecutionHero extends StatelessWidget {
   final EnhancedActivityData activity;
   final VoidCallback onDirections;
+  final VoidCallback onMarkDone;
 
   const _ActiveExecutionHero({
     required this.activity,
     required this.onDirections,
+    required this.onMarkDone,
   });
 
   @override
   Widget build(BuildContext context) {
     final title = activity.rawData['title'] as String? ?? 'Activity';
-    final timeStr = _formatTime(activity.startTime);
+    final slot = _slotEmoji(activity.startTime.hour);
 
-    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         color: _wmSky,
         border: Border.all(color: _wmParchment, width: 0.5),
-        boxShadow: const [],
+        boxShadow: _skyHeroShadows(),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,14 +166,10 @@ class _ActiveExecutionHero extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.access_time_rounded,
-                      size: 16,
-                      color: _wmCharcoal,
-                    ),
+                    Text(slot, style: const TextStyle(fontSize: 14)),
                     const SizedBox(width: 6),
                     Text(
-                      'Now - $timeStr',
+                      'You\'re here!',
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -174,7 +186,7 @@ class _ActiveExecutionHero extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'In Progress',
+                  'IN PROGRESS',
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
@@ -189,15 +201,15 @@ class _ActiveExecutionHero extends StatelessWidget {
           Text(
             title,
             style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
               color: _wmCharcoal,
               height: 1.2,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            l10n.myDayHeroActiveSubtitle,
+            'Enjoying it? Tap Done when you\'re ready to move on.',
             style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w400,
@@ -219,10 +231,10 @@ class _ActiveExecutionHero extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _HeroButton(
-                  label: 'In Progress',
-                  icon: Icons.play_arrow_rounded,
+                  label: 'Done',
+                  icon: Icons.check_rounded,
                   filled: true,
-                  onTap: () {},
+                  onTap: onMarkDone,
                 ),
               ),
             ],
@@ -257,7 +269,7 @@ class _CompletedExecutionHero extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         color: _wmForest,
         border: Border.all(color: _wmParchment, width: 0.5),
-        boxShadow: const [],
+        boxShadow: _forestHeroShadows(),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,7 +299,7 @@ class _CompletedExecutionHero extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: Colors.white.withValues(alpha: 0.95),
                       ),
                     ),
                   ],
@@ -356,8 +368,9 @@ class _CompletedExecutionHero extends StatelessWidget {
               'Capture how it felt while the experience is still fresh.',
               style: GoogleFonts.poppins(
                 fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: Colors.white.withOpacity(0.92),
+                fontWeight: FontWeight.w400,
+                color: Colors.white.withValues(alpha: 0.82),
+                height: 1.45,
               ),
             ),
           const SizedBox(height: 20),
@@ -374,13 +387,15 @@ class _CompletedExecutionHero extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: _HeroButton(
-                  label: hasReview ? 'Reviewed' : 'Review',
-                  icon: Icons.check_rounded,
-                  filled: true,
-                  primaryOnForestCard: true,
-                  onTap: hasReview ? () {} : (onReview ?? () {}),
-                ),
+                child: hasReview
+                    ? _DimmedButton(label: 'Reviewed', icon: Icons.check_rounded)
+                    : _HeroButton(
+                        label: 'Review',
+                        icon: Icons.star_outline_rounded,
+                        filled: true,
+                        primaryOnForestCard: true,
+                        onTap: onReview ?? () {},
+                      ),
               ),
             ],
           ),
@@ -390,32 +405,33 @@ class _CompletedExecutionHero extends StatelessWidget {
   }
 }
 
-class _AwaitingCompletionHero extends StatelessWidget {
+class _UpcomingExecutionHero extends StatelessWidget {
   final EnhancedActivityData activity;
-  final VoidCallback onMarkDone;
-  final VoidCallback onStillHere;
+  final VoidCallback onDirections;
+  final VoidCallback onCheckIn;
 
-  const _AwaitingCompletionHero({
+  const _UpcomingExecutionHero({
     required this.activity,
-    required this.onMarkDone,
-    required this.onStillHere,
+    required this.onDirections,
+    required this.onCheckIn,
   });
 
   @override
   Widget build(BuildContext context) {
     final title = activity.rawData['title'] as String? ?? 'Activity';
-    final finishedAgo = activity.timeSinceStart;
-    final finishedAgoText = finishedAgo != null
-        ? _formatDuration(finishedAgo)
-        : 'a little while';
+    final slotEmoji = _slotEmoji(activity.startTime.hour);
+    final slotName = _slotName(activity.startTime.hour);
 
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        color: _wmSunset,
-        border: Border.all(color: _wmParchment, width: 0.5),
-        boxShadow: const [],
+        color: _wmForest,
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.22),
+          width: 0.5,
+        ),
+        boxShadow: _forestHeroShadows(),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,22 +442,22 @@ class _AwaitingCompletionHero extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.25),
+                  color: Colors.white.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.45),
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
-                      Icons.access_time_filled_rounded,
-                      size: 16,
-                      color: Colors.white,
-                    ),
+                    Text(slotEmoji, style: const TextStyle(fontSize: 14)),
                     const SizedBox(width: 6),
                     Text(
-                      'Planned to end $finishedAgoText ago',
+                      slotName,
                       style: GoogleFonts.poppins(
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
@@ -452,11 +468,15 @@ class _AwaitingCompletionHero extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.25),
+                  color: Colors.white.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.45),
+                    width: 1,
+                  ),
                 ),
                 child: Text(
-                  'CHECK IN',
+                  'UP NEXT',
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
@@ -479,124 +499,12 @@ class _AwaitingCompletionHero extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Still enjoying it? Keep it active a bit longer, or mark it done and review it later.',
+            'Tap "I\'m Here" when you arrive.',
             style: GoogleFonts.poppins(
               fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: _wmCharcoal,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: _HeroButton(
-                  label: 'Still Here',
-                  icon: Icons.schedule_rounded,
-                  filled: false,
-                  onColoredCard: true,
-                  onTap: onStillHere,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _HeroButton(
-                  label: 'Done',
-                  icon: Icons.check_rounded,
-                  filled: true,
-                  onTap: onMarkDone,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _UpcomingExecutionHero extends StatelessWidget {
-  final EnhancedActivityData activity;
-  final VoidCallback onDirections;
-  final VoidCallback onGetReady;
-
-  const _UpcomingExecutionHero({
-    required this.activity,
-    required this.onDirections,
-    required this.onGetReady,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final title = activity.rawData['title'] as String? ?? 'Activity';
-    final timeStr = _formatTime(activity.startTime);
-    final remaining = activity.timeRemaining;
-    final remainStr = remaining != null ? _formatDuration(remaining) : '';
-
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        color: _wmSkyTint,
-        border: Border.all(color: _wmParchment, width: 0.5),
-        boxShadow: const [],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.85),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: _wmParchment, width: 0.5),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.access_time_rounded, size: 16, color: _wmCharcoal),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Starts at $timeStr',
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: _wmCharcoal,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: _wmForestTint,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: _wmForest, width: 1),
-                ),
-                child: Text(
-                  remainStr.isNotEmpty ? 'IN $remainStr' : 'UPCOMING',
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.6,
-                    color: _wmForest,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: _wmCharcoal,
-              height: 1.2,
+              fontWeight: FontWeight.w400,
+              color: Colors.white.withValues(alpha: 0.8),
+              height: 1.4,
             ),
           ),
           const SizedBox(height: 20),
@@ -607,16 +515,18 @@ class _UpcomingExecutionHero extends StatelessWidget {
                   label: 'Directions',
                   icon: Icons.navigation_rounded,
                   filled: false,
+                  onColoredCard: true,
                   onTap: onDirections,
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: _HeroButton(
-                  label: 'Get Ready',
-                  icon: Icons.rocket_launch_rounded,
+                  label: 'I\'m Here',
+                  icon: Icons.place_rounded,
                   filled: true,
-                  onTap: onGetReady,
+                  primaryOnForestCard: true,
+                  onTap: onCheckIn,
                 ),
               ),
             ],
@@ -649,8 +559,8 @@ class _HeroButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final secondaryBorder = onColoredCard
-        ? const BorderSide(color: Colors.white, width: 1.5)
-        : const BorderSide(color: _wmForest, width: 1.5);
+        ? BorderSide(color: Colors.white.withValues(alpha: 0.55), width: 1)
+        : BorderSide(color: _wmForest.withValues(alpha: 0.45), width: 1);
     final secondaryFg = onColoredCard ? Colors.white : _wmForest;
     final secondaryBg =
         onColoredCard ? Colors.white.withValues(alpha: 0.12) : Colors.white;
@@ -666,9 +576,9 @@ class _HeroButton extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: filled && primaryOnForestCard
-            ? BorderSide(color: _wmParchment.withValues(alpha: 0.6), width: 0.5)
+            ? BorderSide(color: Colors.white.withValues(alpha: 0.5), width: 0.75)
             : filled
-                ? BorderSide.none
+                ? BorderSide(color: Colors.white.withValues(alpha: 0.5), width: 0.75)
                 : secondaryBorder,
       ),
       child: InkWell(
@@ -697,16 +607,59 @@ class _HeroButton extends StatelessWidget {
   }
 }
 
+/// A non-interactive, visually muted button for completed/locked states.
+class _DimmedButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+
+  const _DimmedButton({required this.label, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.28),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 16, color: Colors.white.withValues(alpha: 0.55)),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withValues(alpha: 0.55),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _slotEmoji(int hour) {
+  if (hour >= 6 && hour < 12) return '🌅';
+  if (hour >= 12 && hour < 18) return '☀️';
+  return '🌙';
+}
+
+String _slotName(int hour) {
+  if (hour >= 6 && hour < 12) return 'Morning';
+  if (hour >= 12 && hour < 18) return 'Afternoon';
+  return 'Evening';
+}
+
 String _formatTime(DateTime time) {
   final hour = time.hour == 0 ? 12 : (time.hour > 12 ? time.hour - 12 : time.hour);
   final minute = time.minute.toString().padLeft(2, '0');
   final period = time.hour >= 12 ? 'PM' : 'AM';
   return '$hour:$minute $period';
-}
-
-String _formatDuration(Duration duration) {
-  if (duration.inHours > 0) {
-    return '${duration.inHours}h ${duration.inMinutes % 60}m';
-  }
-  return '${duration.inMinutes}m';
 }

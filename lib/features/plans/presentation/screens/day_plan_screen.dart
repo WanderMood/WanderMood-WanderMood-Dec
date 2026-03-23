@@ -48,7 +48,9 @@ class DayPlanScreen extends ConsumerStatefulWidget {
 class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
   /// Mutable list of exactly 3 activities (morning, afternoon, evening) for swap support.
   late List<Activity> _activities;
-  int _addedCount = 0;
+  /// IDs of activities already individually added via each card's button.
+  final Set<String> _addedActivityIds = {};
+  int get _addedCount => _addedActivityIds.length;
 
   @override
   void initState() {
@@ -62,14 +64,18 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
     return formatter.format(now);
   }
 
-  /// Saves the current plan (3 activities) to Supabase and navigates to My Day.
-  /// Replaces today's plan so the user has exactly these 3 activities (no accumulation).
+  /// Adds only the activities the user has NOT already added individually.
+  /// Does NOT clear existing scheduled activities — preserves what was already added.
   Future<void> _addPlanToMyDay(WidgetRef ref) async {
     if (_activities.isEmpty) return;
     try {
-      final service = ref.read(scheduledActivityServiceProvider);
-      await service.clearAllScheduledActivities();
-      await service.saveScheduledActivities(_activities, isConfirmed: false);
+      final remaining = _activities
+          .where((a) => !_addedActivityIds.contains(a.id))
+          .toList();
+      if (remaining.isNotEmpty) {
+        final service = ref.read(scheduledActivityServiceProvider);
+        await service.saveScheduledActivities(remaining, isConfirmed: false);
+      }
       ref.invalidate(scheduledActivityServiceProvider);
       ref.invalidate(scheduledActivitiesForTodayProvider);
       ref.invalidate(todayActivitiesProvider);
@@ -618,41 +624,25 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: _activities.isEmpty ? null : () => _addPlanToMyDay(ref),
-                    icon: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        const Text('🗓️', style: TextStyle(fontSize: 22)),
-                        if (_addedCount > 0)
-                          Positioned(
-                            right: -6,
-                            top: -6,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(
-                                color: Colors.orange,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Text(
-                                '+$_addedCount',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    label: Text(
-                      _addedCount > 0 
-                          ? AppLocalizations.of(context)!.dayPlanCardAddRemainingToMyDay
-                          : AppLocalizations.of(context)!.dayPlanAddToMyDay,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    icon: const Text('🗓️', style: TextStyle(fontSize: 22)),
+                    label: Builder(builder: (context) {
+                      final remaining = _activities.length - _addedCount;
+                      final String label;
+                      if (_addedCount == 0) {
+                        label = AppLocalizations.of(context)!.dayPlanAddToMyDay;
+                      } else if (remaining > 0) {
+                        label = 'Add $remaining more to My Day';
+                      } else {
+                        label = 'View My Day';
+                      }
+                      return Text(
+                        label,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      );
+                    }),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: wmForest,
                       foregroundColor: Colors.white,
@@ -809,7 +799,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
             onAdded: () {
               if (mounted) {
                 setState(() {
-                  _addedCount++;
+                  _addedActivityIds.add(activity.id);
                 });
               }
             },

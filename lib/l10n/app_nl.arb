@@ -350,6 +350,32 @@
   "profilePreferencesSocialVibe": "Sociale vibe",
   "profilePreferencesFoodPreferences": "Voedselvoorkeuren",
   "profilePreferencesEmptyHint": "Tik op \"Alles bewerken\" om je voorkeuren in te stellen",
+  "profilePreferencesFilledHint": "Deze voorkeuren sturen subtiel mee welke plekken en plannen beter bij je passen.",
+  "profilePreferencesEmptyDescription": "Vul je voorkeuren aan zodat WanderMood slimmer kan afstemmen op jouw stijl.",
+
+  "profileSectionWorldTitle": "Jouw wereld",
+  "profileSectionWorldSubtitle": "Plekken die je bewaart, moods die je volgt en het verhaal van je reizen.",
+  "profileSectionPreferencesSubtitle": "De details die WanderMood persoonlijker en slimmer maken.",
+
+  "profileSavedPlacesSubtitle": "Plekken die je later makkelijk wilt terugvinden.",
+  "profileSavedPlacesEmptyHint": "Je hebt nog geen opgeslagen plekken. Bewaar een paar favorieten zodat je profiel meer als jouw reiskaart voelt.",
+  "profileSavedPlacesCarouselEmpty": "Nog geen saves — tik op ♥ bij een plek om te bewaren.",
+  "profileBioEmptyHint": "Voeg een korte bio toe via Profiel bewerken.",
+
+  "profileStatsTopMoodEmpty": "Nog aan het ontdekken",
+  "profileStatsSavePlacesHint": "Sla plekken op die bij je mood passen.",
+  "profileStatsSavedPlacesReady": "Je opgeslagen plekken staan klaar wanneer je inspiratie nodig hebt.",
+
+  "profileFavoriteVibesEmptyDescription": "Kies een paar vibes zodat Moody sneller begrijpt wat jij echt zoekt.",
+  "profileFavoriteVibesFilledDescription": "Deze vibes helpen WanderMood bepalen welke plekken en plannen het beste bij je passen.",
+  "profileFavoriteVibesEmptyHint": "Voeg je eerste vibe toe en geef je profiel meteen meer persoonlijkheid.",
+
+  "profileVibesProTipsTitle": "\uD83D\uDCA1 Pro Tips",
+  "profileVibesProTipsBody": "\u2022 Wees eerlijk over wat je leuk vindt \u2014 betere aanbevelingen!\n\u2022 Je kunt dit altijd aanpassen\n\u2022 Mix verschillende vibes voor gevarieerde suggesties",
+
+  "profileModeLocalCardDescription": "WanderMood houdt je suggesties dichter bij huis en afgestemd op je vaste ritme.",
+  "profileModeTravelCardDescription": "WanderMood denkt meer als reisgenoot en stuurt je naar nieuwe plekken om te ontdekken.",
+
   "profileActionEdit": "Bewerken",
   "profileActionShare": "Delen",
   "profileAgeGroup20s": "20er avonturier",

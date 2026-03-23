@@ -74,37 +74,53 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   DateTime? _weekendSunday;
   bool _weekendBannerDismissed = false;
 
+  /// Align [mainTabProvider] with [widget.initialTabIndex] / [widget.extra]
+  /// without clobbering an in-session tab (e.g. Profile) when GoRouter
+  /// rebuilds [MainScreen] with default `initialTabIndex: 0`.
+  void _applyMainTabFromRoute() {
+    final tabFromExtra = widget.extra?['tab'] as int?;
+    final rawTab = tabFromExtra ?? widget.initialTabIndex;
+    final finalTab = normalizeMainTabIndex(rawTab);
+    final currentTab = ref.read(mainTabProvider);
+    final hasExplicitOverride =
+        tabFromExtra != null || widget.initialTabIndex != 0;
+    if (hasExplicitOverride || currentTab == 0) {
+      ref.read(mainTabProvider.notifier).state = finalTab;
+    }
+  }
+
+  void _applyTargetDateFromExtra() {
+    final targetDateString = widget.extra?['targetDate'] as String?;
+    final parsedTargetDate =
+        targetDateString != null ? DateTime.tryParse(targetDateString) : null;
+    if (parsedTargetDate != null) {
+      final dateOnly = DateTime(
+        parsedTargetDate.year,
+        parsedTargetDate.month,
+        parsedTargetDate.day,
+      );
+      ref.read(selectedMyDayDateProvider.notifier).state = dateOnly;
+    }
+  }
+
+  static bool _tabExtraChanged(
+    Map<String, dynamic>? oldExtra,
+    Map<String, dynamic>? newExtra,
+  ) {
+    return oldExtra?['tab'] != newExtra?['tab'];
+  }
+
   @override
   void initState() {
     super.initState();
-    // Set the initial tab index in the provider - delayed to avoid lifecycle conflicts
+    // Apply route tab before the first frame so we never paint My Day (0)
+    // while [mainTabProvider] is already on another tab (e.g. after pop).
+    _applyMainTabFromRoute();
+    _applyTargetDateFromExtra();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future(() async {
         if (!mounted) return;
-        // Check if we have a tab index from route parameters
-        final tabFromExtra = widget.extra?['tab'] as int?;
-        final rawTab = tabFromExtra ?? widget.initialTabIndex;
-        final finalTab = normalizeMainTabIndex(rawTab);
-        debugPrint(
-            '🎯 MainScreen: Setting tab to $finalTab (raw: $rawTab, extra: $tabFromExtra, initial: ${widget.initialTabIndex})');
-        ref.read(mainTabProvider.notifier).state = finalTab;
-        debugPrint('✅ MainScreen: Tab provider set to ${ref.read(mainTabProvider)}');
-
-        final targetDateString = widget.extra?['targetDate'] as String?;
-        final parsedTargetDate = targetDateString != null
-            ? DateTime.tryParse(targetDateString)
-            : null;
-        if (parsedTargetDate != null) {
-          final dateOnly = DateTime(
-            parsedTargetDate.year,
-            parsedTargetDate.month,
-            parsedTargetDate.day,
-          );
-          ref.read(selectedMyDayDateProvider.notifier).state = dateOnly;
-        }
-
-        // Places / Explore: no prefetch on launch — cache-first; Explore loads on open (Google Places prompt).
-
         await _showMoodyIdleGateIfNeeded();
         await _checkForWeekendSuggestion();
       });
@@ -228,35 +244,33 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   void didUpdateWidget(MainScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Update the tab provider if initialTabIndex changes or if we have new extra data
-    Future.microtask(() {
-      if (mounted) {
-        final tabFromExtra = widget.extra?['tab'] as int?;
-        final shouldRefresh = widget.extra?['refresh'] as bool? ?? false;
-        
-        if (oldWidget.initialTabIndex != widget.initialTabIndex || tabFromExtra != null) {
-          final raw = tabFromExtra ?? widget.initialTabIndex;
-          ref.read(mainTabProvider.notifier).state = normalizeMainTabIndex(raw);
-        }
+    final tabRouteChanged = oldWidget.initialTabIndex != widget.initialTabIndex ||
+        _tabExtraChanged(oldWidget.extra, widget.extra);
 
-        final targetDateString = widget.extra?['targetDate'] as String?;
-        final parsedTargetDate =
-            targetDateString != null ? DateTime.tryParse(targetDateString) : null;
-        if (parsedTargetDate != null) {
-          final dateOnly = DateTime(
-            parsedTargetDate.year,
-            parsedTargetDate.month,
-            parsedTargetDate.day,
-          );
-          ref.read(selectedMyDayDateProvider.notifier).state = dateOnly;
-        }
-        
-        // If refresh flag is set, invalidate providers to force refresh
-        if (shouldRefresh) {
-          ref.invalidate(scheduledActivitiesForTodayProvider);
-          ref.invalidate(cachedActivitySuggestionsProvider);
-          ref.invalidate(todayActivitiesProvider);
-        }
+    Future.microtask(() {
+      if (!mounted) return;
+
+      if (tabRouteChanged) {
+        _applyMainTabFromRoute();
+      }
+
+      final targetDateString = widget.extra?['targetDate'] as String?;
+      final parsedTargetDate =
+          targetDateString != null ? DateTime.tryParse(targetDateString) : null;
+      if (parsedTargetDate != null) {
+        final dateOnly = DateTime(
+          parsedTargetDate.year,
+          parsedTargetDate.month,
+          parsedTargetDate.day,
+        );
+        ref.read(selectedMyDayDateProvider.notifier).state = dateOnly;
+      }
+
+      final shouldRefresh = widget.extra?['refresh'] as bool? ?? false;
+      if (shouldRefresh) {
+        ref.invalidate(scheduledActivitiesForTodayProvider);
+        ref.invalidate(cachedActivitySuggestionsProvider);
+        ref.invalidate(todayActivitiesProvider);
       }
     });
   }
@@ -291,12 +305,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final shouldHideBottomNav = selectedIndex == 2 && 
                                  !dailyMoodState.hasSelectedMoodToday && 
                                  !hasSeenIntro;
-    
-    debugPrint('📱 MainScreen build: selectedIndex = $selectedIndex');
-    debugPrint('📱 MainScreen build: showing screen ${screens[selectedIndex].runtimeType}');
-    debugPrint('📱 MainScreen build: hasSeenIntro = $hasSeenIntro');
-    debugPrint('📱 MainScreen build: shouldHideBottomNav = $shouldHideBottomNav');
-    
+
     return Stack(
       clipBehavior: Clip.none,
       children: [

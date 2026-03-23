@@ -25,6 +25,9 @@ import 'package:wandermood/core/theme/time_based_theme.dart';
 import '../../providers/time_suggestion_provider.dart';
 import 'package:wandermood/core/presentation/painters/circle_pattern_painter.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
+import 'package:wandermood/features/home/presentation/widgets/planner_activity_detail_sheet.dart';
+import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
+import '../widgets/travel_time_connector.dart';
 
 class DynamicMyDayScreen extends ConsumerStatefulWidget {
   const DynamicMyDayScreen({super.key});
@@ -74,19 +77,14 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     );
   }
 
-  /// v2 quick actions — 80px row: Ask Moody (sky) + Add activity (forest tint).
+  /// Quick actions — white cards, forest border, soft lift shadow (premium floating).
   Widget _buildMyDayQuickActionsRow(AppLocalizations l10n) {
-    const wmSkyTint = Color(0xFFEDF5F9);
-    const wmSky = Color(0xFFA8C8DC);
-    const wmForestTint = Color(0xFFEBF3EE);
-    const wmParchment = Color(0xFFE8E2D8);
+    const wmCard = Color(0xFFFFFFFF);
     const wmForest = Color(0xFF2A6049);
     const wmCharcoal = Color(0xFF1E1C18);
 
     Widget tile({
       required VoidCallback onTap,
-      required Color fill,
-      required Color borderColor,
       required IconData icon,
       required String label,
     }) {
@@ -100,9 +98,21 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               height: 80,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               decoration: BoxDecoration(
-                color: fill,
+                color: wmCard,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: borderColor, width: 0.5),
+                border: Border.all(color: wmForest.withValues(alpha: 0.35), width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: wmForest.withValues(alpha: 0.16),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                  BoxShadow(
+                    color: const Color(0xFF1E1C18).withValues(alpha: 0.07),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -134,16 +144,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       children: [
         tile(
           onTap: () => _navigateToTab(2),
-          fill: wmSkyTint,
-          borderColor: wmSky,
           icon: Icons.chat_bubble_outline_rounded,
           label: l10n.myDayEmptyAskMoodyButton,
         ),
         const SizedBox(width: 12),
         tile(
           onTap: () => _navigateToTab(1),
-          fill: wmForestTint,
-          borderColor: wmParchment,
           icon: Icons.add_rounded,
           label: l10n.myDayQuickAddActivity,
         ),
@@ -209,10 +215,18 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         loading: () => _buildLoadingStatusCard(),
                         error: (error, stack) => _buildErrorStatusCard(),
                       ),
-                      const SizedBox(height: 16),
                       if (_timelineHasActivities(timelineActivities)) ...[
+                        const SizedBox(height: 16),
                         _buildMyDayQuickActionsRow(l10n),
-                      ],
+                        const SizedBox(height: 10),
+                        const Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: Color(0xFFE8E2D8),
+                        ),
+                        const SizedBox(height: 8),
+                      ] else
+                        const SizedBox(height: 16),
                     ],
                   ),
                 ),
@@ -268,9 +282,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
-                color: isToday ? const Color(0xFFEBF3EE) : Colors.white,
+                color: isToday ? const Color(0xFFFFF6E8) : Colors.white,
                 border: Border.all(
-                  color: isToday ? const Color(0xFF2A6049) : const Color(0xFFE8E2D8),
+                  color: isToday ? const Color(0xFFE8E2D8) : const Color(0xFFE8E2D8),
                 ),
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -356,6 +370,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             children: [
               const SizedBox(height: 16),
               _buildHeaderRow(isImmersive: false),
+              const SizedBox(height: 12),
+              _buildDateNavigation(),
               const Spacer(),
               MoodyCharacter(
                 size: 80,
@@ -787,16 +803,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         activity: enhancedActivity,
         state: DayExecutionHeroState.active,
         onDirections: () => _showDirectionsOptions(status['activity']),
-      );
-    }
-
-    if (status['type'] == 'awaiting_completion' && enhancedActivity != null) {
-      return DayExecutionHeroCard(
-        activity: enhancedActivity,
-        state: DayExecutionHeroState.awaitingCompletion,
-        onDirections: () => _showDirectionsOptions(status['activity']),
         onMarkDone: () => _markActivityDone(enhancedActivity),
-        onStillHere: () => _keepActivityActive(enhancedActivity),
       );
     }
 
@@ -805,7 +812,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         activity: enhancedActivity,
         state: DayExecutionHeroState.upcoming,
         onDirections: () => _showDirectionsOptions(status['activity']),
-        onGetReady: () => _showRichGetReadySheet(enhancedActivity),
+        onCheckIn: () => _checkInActivity(enhancedActivity),
       );
     }
 
@@ -852,7 +859,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             height: 86,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              color: Color(0xFFEBF3EE),
+              color: Color(0xFFFFF4E0),
             ),
             child: Icon(
               config.icon,
@@ -1061,22 +1068,23 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     IconData statusIcon;
     bool isUpcoming = false;
     
+    const wmForest = Color(0xFF2A6049);
+    const wmParchment = Color(0xFFE8E2D8);
     switch (status['type']) {
       case 'upcoming':
-        // v2 sky accent so this card stands out from cream background + quick-action tiles
-        primaryColor = const Color(0xFF2F6F8F);
-        backgroundColor = const Color(0xFFDDECF5);
+        primaryColor = wmForest;
+        backgroundColor = Colors.white;
         statusIcon = Icons.schedule;
         isUpcoming = true;
         break;
       case 'completed':
-        primaryColor = const Color(0xFF4CAF50);
-        backgroundColor = const Color(0xFFE8F5E8);
+        primaryColor = wmForest;
+        backgroundColor = Colors.white;
         statusIcon = Icons.check_circle;
         break;
       default:
-        primaryColor = const Color(0xFF2A6049);
-        backgroundColor = const Color(0xFFE8F5E8);
+        primaryColor = wmForest;
+        backgroundColor = Colors.white;
         statusIcon = Icons.explore;
     }
     
@@ -1085,9 +1093,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(20),
-        border: isUpcoming 
-            ? Border.all(color: primaryColor.withValues(alpha: 0.35), width: 1.5)
-            : Border.all(color: primaryColor.withOpacity(0.2), width: 1),
+        border: Border.all(
+          color: wmParchment,
+          width: isUpcoming ? 1.25 : 1,
+        ),
         boxShadow: const [],
       ),
       child: Padding(
@@ -1101,8 +1110,11 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.15),
+                    color: const Color(0xFFFFF6E8),
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFFE8E2D8).withValues(alpha: 0.8),
+                    ),
                   ),
                   child: Icon(
                     statusIcon,
@@ -1564,38 +1576,69 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 ? 'evening'
                 : null;
 
-    return [
-      // Morning Section
-      if (hasMorning)
-        _buildTimelineSection(
-          '🌅 Morning',
-          'Start your day right',
-          activities['morning']!,
-          isFirstSection: firstVisibleSection == 'morning',
-        ),
-      
-      // Afternoon Section  
-      if (hasAfternoon)
-        _buildTimelineSection(
-          '🌞 Afternoon',
-          'Peak adventure time',
-          activities['afternoon']!,
-          isFirstSection: firstVisibleSection == 'afternoon',
-        ),
-      
-      // Evening Section
-      if (hasEvening)
-        _buildTimelineSection(
-          '🌆 Evening',
-          'Wind down and enjoy',
-          activities['evening']!,
-          isFirstSection: firstVisibleSection == 'evening',
-        ),
-      
-      // Empty state if no activities
-      if (activities.values.every((list) => list.isEmpty))
-        _buildEmptyTimelineSliver(),
+    // Build ordered list of populated sections for cross-section connectors.
+    final sections = [
+      if (hasMorning) activities['morning']!,
+      if (hasAfternoon) activities['afternoon']!,
+      if (hasEvening) activities['evening']!,
     ];
+
+    Widget? _crossSectionConnector(List<EnhancedActivityData> from, List<EnhancedActivityData> to) {
+      final fromLoc = parseTravelLocation(from.last.rawData);
+      final toLoc = parseTravelLocation(to.first.rawData);
+      if (fromLoc == null || toLoc == null) return null;
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: TravelTimeConnector(
+            fromLat: fromLoc.lat,
+            fromLng: fromLoc.lng,
+            toLat: toLoc.lat,
+            toLng: toLoc.lng,
+          ),
+        ),
+      );
+    }
+
+    final widgets = <Widget>[];
+
+    if (hasMorning) {
+      widgets.add(_buildTimelineSection(
+        '🌅 Morning', 'Start your day right', activities['morning']!,
+        isFirstSection: firstVisibleSection == 'morning',
+      ));
+      if (hasAfternoon) {
+        final c = _crossSectionConnector(activities['morning']!, activities['afternoon']!);
+        if (c != null) widgets.add(c);
+      } else if (hasEvening) {
+        final c = _crossSectionConnector(activities['morning']!, activities['evening']!);
+        if (c != null) widgets.add(c);
+      }
+    }
+
+    if (hasAfternoon) {
+      widgets.add(_buildTimelineSection(
+        '🌞 Afternoon', 'Peak adventure time', activities['afternoon']!,
+        isFirstSection: firstVisibleSection == 'afternoon',
+      ));
+      if (hasEvening) {
+        final c = _crossSectionConnector(activities['afternoon']!, activities['evening']!);
+        if (c != null) widgets.add(c);
+      }
+    }
+
+    if (hasEvening) {
+      widgets.add(_buildTimelineSection(
+        '🌆 Evening', 'Wind down and enjoy', activities['evening']!,
+        isFirstSection: firstVisibleSection == 'evening',
+      ));
+    }
+
+    if (!hasMorning && !hasAfternoon && !hasEvening) {
+      widgets.add(_buildEmptyTimelineSliver());
+    }
+
+    return widgets;
   }
 
   List<Widget> _buildListView(Map<String, List<EnhancedActivityData>> activities) {
@@ -1610,28 +1653,54 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       return [_buildEmptyTimelineSliver()];
     }
 
+    final List<Widget> cardWidgets = [];
+    for (int i = 0; i < allActivities.length; i++) {
+      final activity = allActivities[i];
+      cardWidgets.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 0),
+          child: MyDayTimelineActivityCard(
+            activity: activity,
+            onTap: () => _showActivityDetails(activity.rawData),
+            onDirectionsTap: () => _handleTimelinePrimaryAction(activity),
+            onMoreTap: () => _showActivityOptions(activity),
+            onCheckIn: () => _checkInActivity(activity),
+            onMarkDone: () => _markActivityDone(activity),
+            onGetReady: () => _showRichGetReadySheet(activity),
+            formatTime: _formatTime,
+          ).animate(delay: (i * 100).ms)
+            .slideX(begin: 0.3, duration: 600.ms)
+            .fadeIn(duration: 600.ms)
+            .scale(begin: const Offset(0.9, 0.9), duration: 400.ms),
+        ),
+      );
+
+      if (i < allActivities.length - 1) {
+        final fromLoc = parseTravelLocation(activity.rawData);
+        final toLoc = parseTravelLocation(allActivities[i + 1].rawData);
+        if (fromLoc != null && toLoc != null) {
+          cardWidgets.add(
+            TravelTimeConnector(
+              fromLat: fromLoc.lat,
+              fromLng: fromLoc.lng,
+              toLat: toLoc.lat,
+              toLng: toLoc.lng,
+            ),
+          );
+        } else {
+          cardWidgets.add(const SizedBox(height: 12));
+        }
+      } else {
+        cardWidgets.add(const SizedBox(height: 16));
+      }
+    }
+
     return [
       SliverToBoxAdapter(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
-            children: allActivities.asMap().entries.map((entry) {
-              final index = entry.key;
-              final activity = entry.value;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: MyDayTimelineActivityCard(
-                  activity: activity,
-                  onTap: () => _showActivityDetails(activity.rawData),
-                  onDirectionsTap: () => _handleTimelinePrimaryAction(activity),
-                  onMoreTap: () => _showActivityOptions(activity),
-                  formatTime: _formatTime,
-                ).animate(delay: (index * 100).ms)
-                  .slideX(begin: 0.3, duration: 600.ms)
-                  .fadeIn(duration: 600.ms)
-                  .scale(begin: const Offset(0.9, 0.9), duration: 400.ms),
-              );
-            }).toList(),
+            children: cardWidgets,
           ),
         ),
       ),
@@ -1666,6 +1735,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       onActivityTap: (activity) => _showActivityDetails(activity.rawData),
       onDirectionsTap: _handleTimelinePrimaryAction,
       onMoreTap: _showActivityOptions,
+      onCheckIn: _checkInActivity,
+      onMarkDone: _markActivityDone,
+      onGetReady: _showRichGetReadySheet,
       formatTime: _formatTime,
     );
   }
@@ -2115,12 +2187,25 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   void _handleTimelinePrimaryAction(EnhancedActivityData activity) {
-    if (activity.status == ActivityStatus.awaitingCompletion) {
-      _markActivityDone(activity);
-      return;
-    }
-
     _openDirections(activity.rawData);
+  }
+
+  void _checkInActivity(EnhancedActivityData activity) {
+    final activityId =
+        activity.rawData['id'] as String? ??
+        activity.rawData['title'] as String? ??
+        '';
+    if (activityId.isEmpty) return;
+
+    HapticFeedback.mediumImpact();
+    ref.read(activityManagerProvider.notifier).checkInActivity(activityId);
+    ref.invalidate(currentActivityStatusProvider);
+    ref.invalidate(todayActivitiesProvider);
+
+    showWanderMoodToast(
+      context,
+      message: 'You\'re here! Tap Done when you\'re finished.',
+    );
   }
 
   void _markActivityDone(EnhancedActivityData activity) {
@@ -2130,35 +2215,14 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         '';
     if (activityId.isEmpty) return;
 
-    ref.read(activityManagerProvider.notifier).clearCompletionPromptSnooze(
-          activityId,
-        );
-    ref.read(activityManagerProvider.notifier).updateActivityStatus(
-          activityId,
-          ActivityStatus.completed,
-        );
+    HapticFeedback.mediumImpact();
+    ref.read(activityManagerProvider.notifier).markActivityDone(activityId);
+    ref.invalidate(currentActivityStatusProvider);
+    ref.invalidate(todayActivitiesProvider);
 
     showWanderMoodToast(
       context,
-      message: 'Marked as done. You can review it now.',
-    );
-  }
-
-  void _keepActivityActive(EnhancedActivityData activity) {
-    final activityId =
-        activity.rawData['id'] as String? ??
-        activity.rawData['title'] as String? ??
-        '';
-    if (activityId.isEmpty) return;
-
-    ref.read(activityManagerProvider.notifier).snoozeCompletionPrompt(
-          activityId,
-          duration: const Duration(minutes: 45),
-        );
-
-    showWanderMoodToast(
-      context,
-      message: 'Okay, we will check back in about 45 minutes.',
+      message: 'Nice one! You can leave a review now.',
     );
   }
 
@@ -2417,172 +2481,63 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   void _showActivityDetails(Map<String, dynamic> activity) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.75,
-        minChildSize: 0.5,
-        maxChildSize: 0.9,
-        builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            children: [
-              // Handle bar
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(top: 12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              
-              // Scrollable content
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  child: Column(
-                    children: [
-                      // Activity image
-                      Container(
-                        height: 200,
-                        width: double.infinity,
-                        margin: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: const [],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: CachedNetworkImage(
-                            imageUrl: activity['imageUrl'] ?? 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80',
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              color: Colors.grey[300],
-                              child: const Center(
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    const Color(0xFF2A6049).withOpacity(0.8),
-                                    const Color(0xFF4CAF50).withOpacity(0.6),
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                              ),
-                              child: const Center(
-                                child: Icon(Icons.image, color: Colors.white, size: 60),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      
-                      // Activity details
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Title
-                            Text(
-                              activity['title'] ?? 'Activity',
-                              style: GoogleFonts.museoModerno(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            
-                            const SizedBox(height: 12),
-                            
-                            // Description
-                            Text(
-                              activity['description'] ?? 'A wonderful activity to enjoy',
-                              style: GoogleFonts.poppins(
-                                fontSize: 15,
-                                color: Colors.grey[600],
-                                height: 1.4,
-                              ),
-                            ),
-                            
-                            const SizedBox(height: 20),
-                            
-                            // Activity info
-                            _buildInfoRow('Duration', '${activity['duration'] ?? 60} minutes'),
-                            _buildInfoRow('Category', _capitalizeFirst(activity['category'] ?? 'General')),
-                            _buildInfoRow('Best Time', _capitalizeFirst(activity['timeOfDay'] ?? 'Anytime')),
-                            if (activity['startTime'] != null)
-                              _buildInfoRow('Scheduled', _formatTime(DateTime.parse(activity['startTime']))),
-                            
-                            const SizedBox(height: 24),
+    final routePlaceId = resolvePlannerPlaceDetailRouteId(activity);
+    if (routePlaceId != null) {
+      context.pushNamed('place-detail', pathParameters: {'id': routePlaceId});
+      return;
+    }
 
-                            // Action buttons
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: ElevatedButton.icon(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      _openDirections(activity);
-                                    },
-                                    icon: const Icon(Icons.directions),
-                                    label: const Text('Get Directions'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF2A6049),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(vertical: 14),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(24),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: OutlinedButton.icon(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      _saveActivity(activity);
-                                    },
-                                    icon: const Icon(Icons.bookmark_outline),
-                                    label: const Text('Save for Later'),
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: const Color(0xFF2A6049),
-                                      side: const BorderSide(color: Color(0xFF2A6049)),
-                                      padding: const EdgeInsets.symmetric(vertical: 14),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(24),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            
-                            // Extra bottom padding for safe area
-                            SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
-                          ],
-                        ),
-                      ),
-                    ],
+    final scheduledLabel = activity['startTime'] != null
+        ? _formatTime(DateTime.parse(activity['startTime'] as String))
+        : null;
+
+    showPlannerActivityDetailSheet(
+      context,
+      activity: activity,
+      scheduledTimeLabel: scheduledLabel,
+      footerBuilder: (pop) {
+        return Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  pop();
+                  _openDirections(activity);
+                },
+                icon: const Icon(Icons.directions),
+                label: const Text('Get Directions'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2A6049),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  pop();
+                  _saveActivity(activity);
+                },
+                icon: const Icon(Icons.bookmark_outline),
+                label: const Text('Save for Later'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF2A6049),
+                  side: const BorderSide(color: Color(0xFF2A6049)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -2649,194 +2604,204 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     );
   }
 
+  /// Premium sheet row — white card, parchment border, forest icon well (matches Get Ready / Explore).
+  Widget _activityOptionSheetTile({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required VoidCallback onTap,
+    bool destructive = false,
+  }) {
+    const wmForest = Color(0xFF2A6049);
+    const wmForestTint = Color(0xFFEBF3EE);
+    const wmParchment = Color(0xFFE8E2D8);
+    const wmCharcoal = Color(0xFF1E1C18);
+    const wmStone = Color(0xFF8C8780);
+
+    final iconBg = destructive ? const Color(0xFFFFEBEE) : wmForestTint;
+    final iconFg = destructive ? const Color(0xFFC62828) : wmForest;
+    final titleColor = destructive ? const Color(0xFFC62828) : wmCharcoal;
+    final subtitleColor = destructive ? const Color(0xFFCE8989) : wmStone;
+    final cardColor = destructive ? const Color(0xFFFFF8F8) : Colors.white;
+    final borderColor = destructive ? const Color(0xFFFFCDD2) : wmParchment;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: cardColor,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: borderColor),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: iconBg,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: iconFg, size: 22),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: titleColor,
+                        ),
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: subtitleColor,
+                            height: 1.35,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showActivityOptions(EnhancedActivityData activity) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
+      builder: (sheetContext) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(sheetContext).size.height * 0.88,
+        ),
         decoration: const BoxDecoration(
-          color: Color(0xFFFFFFFF),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          color: Color(0xFFF5F0E8),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
         padding: EdgeInsets.fromLTRB(
-          24,
+          20,
           12,
-          24,
-          24 + MediaQuery.of(context).padding.bottom,
+          20,
+          20 + MediaQuery.of(sheetContext).padding.bottom,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE8E2D8),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Activity Options',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF1E1C18),
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            // View Details option
-            ListTile(
-              leading: const Icon(Icons.info_outline, color: Color(0xFF2A6049)),
-              title: Text(
-                'View Details',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _showActivityDetails(activity.rawData);
-              },
-            ),
-            const Divider(height: 1, thickness: 1, color: Color(0xFFE8E2D8)), // wmParchment
-            
-            // Save for Later option
-            ListTile(
-              leading: const Icon(Icons.bookmark_outline, color: Color(0xFF2A6049)),
-              title: Text(
-                'Save for Later',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _saveActivity(activity.rawData);
-              },
-            ),
-            const Divider(height: 1, thickness: 1, color: Color(0xFFE8E2D8)),
-            
-            if (activity.status == ActivityStatus.awaitingCompletion)
-              ListTile(
-                leading: const Icon(
-                  Icons.schedule_rounded,
-                  color: Color(0xFF2A6049),
-                ),
-                title: Text(
-                  'Still Here',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                ),
-                subtitle: Text(
-                  'Keep this activity active a bit longer',
-                  style: GoogleFonts.poppins(fontSize: 12),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _keepActivityActive(activity);
-                },
-              ),
-            if (activity.status == ActivityStatus.awaitingCompletion)
-              const Divider(height: 1, thickness: 1, color: Color(0xFFE8E2D8)),
-            if (activity.status == ActivityStatus.awaitingCompletion)
-              ListTile(
-                leading: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF2A6049),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: 16,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8E2D8),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                title: Text(
-                  'Mark as Done',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                'Activity options',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1E1C18),
+                  letterSpacing: -0.3,
                 ),
-                subtitle: Text(
-                  'Unlock review for this activity',
-                  style: GoogleFonts.poppins(fontSize: 12),
-                ),
+              ),
+              const SizedBox(height: 20),
+              _activityOptionSheetTile(
+                icon: Icons.info_outline_rounded,
+                title: 'View details',
                 onTap: () {
-                  Navigator.pop(context);
-                  _markActivityDone(activity);
+                  Navigator.pop(sheetContext);
+                  _showActivityDetails(activity.rawData);
                 },
               ),
-            if (activity.status == ActivityStatus.awaitingCompletion)
-              const Divider(height: 1, thickness: 1, color: Color(0xFFE8E2D8)),
-
-            // Share option
-            ListTile(
-              leading: const Icon(Icons.share, color: Color(0xFF2A6049)),
-              title: Text(
-                'Share Activity',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+              _activityOptionSheetTile(
+                icon: Icons.bookmark_outline_rounded,
+                title: 'Save for later',
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _saveActivity(activity.rawData);
+                },
               ),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Implement share functionality
-                showWanderMoodToast(
-                  context,
-                  message: 'Share functionality coming soon!',
-                );
-              },
-            ),
-            const Divider(height: 1, thickness: 1, color: Color(0xFFE8E2D8)),
-            ListTile(
-              leading: const Icon(Icons.directions, color: Color(0xFF2A6049)),
-              title: Text(
-                'Get Directions',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+              if (activity.status == ActivityStatus.upcoming)
+                _activityOptionSheetTile(
+                  icon: Icons.place_rounded,
+                  title: 'I\'m here',
+                  subtitle: 'Check in when you arrive at this spot',
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _checkInActivity(activity);
+                  },
+                ),
+              if (activity.status == ActivityStatus.activeNow)
+                _activityOptionSheetTile(
+                  icon: Icons.check_circle_outline_rounded,
+                  title: 'Done',
+                  subtitle: 'Mark complete and leave a review',
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _markActivityDone(activity);
+                  },
+                ),
+              _activityOptionSheetTile(
+                icon: Icons.ios_share_rounded,
+                title: 'Share activity',
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  showWanderMoodToast(
+                    context,
+                    message: 'Share functionality coming soon!',
+                  );
+                },
               ),
-              onTap: () {
-                Navigator.pop(context);
-                _openDirections(activity.rawData);
-              },
-            ),
-            
-            const SizedBox(height: 16),
-          ],
+              _activityOptionSheetTile(
+                icon: Icons.directions_rounded,
+                title: 'Get directions',
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _openDirections(activity.rawData);
+                },
+              ),
+              _activityOptionSheetTile(
+                icon: Icons.delete_outline_rounded,
+                title: 'Delete activity',
+                subtitle: 'Remove this activity from My Day',
+                destructive: true,
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _confirmDeleteActivity(activity);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 90,
-            child: Text(
-              label,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: Colors.black87,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _capitalizeFirst(String text) {
-    if (text.isEmpty) return text;
-    return text[0].toUpperCase() + text.substring(1);
   }
 
   Widget _buildFreeTimeCarousel() {
@@ -2867,6 +2832,94 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       context,
       message: '${activity['title']} saved for later!',
     );
+  }
+
+  void _confirmDeleteActivity(EnhancedActivityData activity) {
+    final title = activity.rawData['title'] as String? ?? 'this activity';
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Delete activity?',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF1E1C18),
+          ),
+        ),
+        content: Text(
+          '"$title" will be removed from your My Day plan.',
+          style: GoogleFonts.poppins(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.poppins(color: Colors.grey[700]),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              await _deleteActivity(activity);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: Text(
+              'Delete',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteActivity(EnhancedActivityData activity) async {
+    final activityId =
+        activity.rawData['id'] as String? ?? activity.rawData['title'] as String? ?? '';
+    final title = activity.rawData['title'] as String? ?? 'Activity';
+
+    if (activityId.isEmpty) {
+      showWanderMoodToast(
+        context,
+        message: 'Could not delete activity (missing id).',
+        isError: true,
+      );
+      return;
+    }
+
+    try {
+      await ref.read(scheduledActivityServiceProvider).deleteScheduledActivity(activityId);
+      ref.read(activityManagerProvider.notifier).clearLocalStatusForActivity(activityId);
+      ref.invalidate(scheduledActivityServiceProvider);
+      ref.invalidate(cachedActivitySuggestionsProvider);
+      ref.invalidate(scheduledActivitiesForTodayProvider);
+      ref.invalidate(todayActivitiesProvider);
+      ref.invalidate(currentActivityStatusProvider);
+      ref.invalidate(timelineCategorizedActivitiesProvider);
+
+      if (!mounted) return;
+      showWanderMoodToast(
+        context,
+        message: '$title deleted from My Day.',
+      );
+    } catch (_) {
+      if (!mounted) return;
+      showWanderMoodToast(
+        context,
+        message: 'Delete failed. Please try again.',
+        isError: true,
+      );
+    }
   }
 
   void _openDirections(Map<String, dynamic> activity) async {

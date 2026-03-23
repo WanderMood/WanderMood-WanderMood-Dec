@@ -8,15 +8,17 @@ import 'package:wandermood/features/home/presentation/widgets/activity_review_sh
 import 'package:wandermood/features/mood/services/activity_rating_service.dart';
 
 import '../screens/dynamic_my_day_provider.dart';
+import 'travel_time_connector.dart';
 
 // Screen 3 — section headers wmForest, metadata wmStone; status chips v2 palette
 const Color _kWmForest = Color(0xFF2A6049);
-const Color _kWmForestTint = Color(0xFFEBF3EE);
+/// Warm ivory surfaces (quick actions, chips) — aligns with Blij / cream system.
+const Color _kWmIvory = Color(0xFFFFFBF7);
 const Color _kWmStone = Color(0xFF8C8780);
 const Color _kWmParchment = Color(0xFFE8E2D8);
 const Color _kWmSunset = Color(0xFFE8784A);
-/// Darker than wmSky so white badge text passes contrast on timeline chips.
-const Color _kWmSkyDeep = Color(0xFF5B7F92);
+/// Planned / upcoming status chip — warm bronze (readable white label).
+const Color _kWmWarmBronze = Color(0xFF8F7355);
 const Color _kWmCharcoal = Color(0xFF1E1C18);
 
 class MyDayTimelineSection extends StatelessWidget {
@@ -29,6 +31,9 @@ class MyDayTimelineSection extends StatelessWidget {
   final void Function(EnhancedActivityData activity) onActivityTap;
   final void Function(EnhancedActivityData activity) onDirectionsTap;
   final void Function(EnhancedActivityData activity) onMoreTap;
+  final void Function(EnhancedActivityData activity) onCheckIn;
+  final void Function(EnhancedActivityData activity) onMarkDone;
+  final void Function(EnhancedActivityData activity) onGetReady;
   final String Function(DateTime time) formatTime;
 
   const MyDayTimelineSection({
@@ -41,6 +46,9 @@ class MyDayTimelineSection extends StatelessWidget {
     required this.onActivityTap,
     required this.onDirectionsTap,
     required this.onMoreTap,
+    required this.onCheckIn,
+    required this.onMarkDone,
+    required this.onGetReady,
     required this.formatTime,
     this.onToggleCollapse,
   });
@@ -59,10 +67,8 @@ class MyDayTimelineSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: isFirstSection ? 0 : 24),
-            GestureDetector(
-              onTap: allCompleted ? onToggleCollapse : null,
-              child: Row(
+              SizedBox(height: isFirstSection ? 8 : 24),
+            Row(
                 children: [
                   Text(
                     title,
@@ -72,57 +78,53 @@ class MyDayTimelineSection extends StatelessWidget {
                       color: _kWmForest,
                     ),
                   ),
-                  if (allCompleted) ...[
-                    const SizedBox(width: 8),
-                    Icon(
-                      isCollapsed ? Icons.expand_more : Icons.expand_less,
-                      color: _kWmForest,
-                      size: 18,
-                    ),
-                  ],
                   const Spacer(),
-                  if (allCompleted) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: _kWmForestTint,
-                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                          color: _kWmForest.withValues(alpha: 0.35),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.check_circle,
-                            color: _kWmForest,
-                            size: 12,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'All Done',
-                            style: GoogleFonts.poppins(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: _kWmForest,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
+                  // Activity count — always on the right
                   Text(
                     '${activities.length} ${activities.length == 1 ? 'activity' : 'activities'}',
                     style: GoogleFonts.poppins(
                       fontSize: 12,
-                      color: allCompleted ? _kWmForest : _kWmStone,
-                      fontWeight: allCompleted ? FontWeight.w500 : FontWeight.normal,
+                      color: _kWmStone,
+                      fontWeight: FontWeight.normal,
                     ),
                   ),
+                  // "All Done" collapse pill — only when complete
+                  if (allCompleted) ...[
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: onToggleCollapse,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: _kWmIvory,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: _kWmParchment),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.check_circle, color: _kWmForest, size: 12),
+                            const SizedBox(width: 4),
+                            Text(
+                              'All Done',
+                              style: GoogleFonts.poppins(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: _kWmForest,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(
+                              isCollapsed ? Icons.expand_more : Icons.expand_less,
+                              color: _kWmForest,
+                              size: 14,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
-              ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -135,23 +137,43 @@ class MyDayTimelineSection extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             if (!allCompleted || !isCollapsed)
-              ...activities.asMap().entries.map((entry) {
-                final index = entry.key;
-                final activity = entry.value;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: MyDayTimelineActivityCard(
-                    activity: activity,
-                    onTap: () => onActivityTap(activity),
-                    onDirectionsTap: () => onDirectionsTap(activity),
-                    onMoreTap: () => onMoreTap(activity),
-                    formatTime: formatTime,
-                  ).animate(delay: (index * 100).ms)
-                      .slideX(begin: 0.3, duration: 600.ms)
-                      .fadeIn(duration: 600.ms)
-                      .scale(begin: const Offset(0.9, 0.9), duration: 400.ms),
-                );
-              }),
+              ...() {
+                final widgets = <Widget>[];
+                for (int i = 0; i < activities.length; i++) {
+                  final activity = activities[i];
+                  widgets.add(
+                    MyDayTimelineActivityCard(
+                      activity: activity,
+                      onTap: () => onActivityTap(activity),
+                      onDirectionsTap: () => onDirectionsTap(activity),
+                      onMoreTap: () => onMoreTap(activity),
+                      onCheckIn: () => onCheckIn(activity),
+                      onMarkDone: () => onMarkDone(activity),
+                      onGetReady: () => onGetReady(activity),
+                      formatTime: formatTime,
+                    ).animate(delay: (i * 100).ms)
+                        .slideX(begin: 0.3, duration: 600.ms)
+                        .fadeIn(duration: 600.ms)
+                        .scale(begin: const Offset(0.9, 0.9), duration: 400.ms),
+                  );
+                  if (i < activities.length - 1) {
+                    final fromLoc = parseTravelLocation(activity.rawData);
+                    final toLoc = parseTravelLocation(activities[i + 1].rawData);
+                    if (fromLoc != null && toLoc != null) {
+                      widgets.add(TravelTimeConnector(
+                        fromLat: fromLoc.lat,
+                        fromLng: fromLoc.lng,
+                        toLat: toLoc.lat,
+                        toLng: toLoc.lng,
+                      ));
+                    }
+                    widgets.add(const SizedBox(height: 12));
+                  } else {
+                    widgets.add(const SizedBox(height: 16));
+                  }
+                }
+                return widgets;
+              }(),
             ],
           ),
         ),
@@ -165,6 +187,9 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
   final VoidCallback onTap;
   final VoidCallback onDirectionsTap;
   final VoidCallback onMoreTap;
+  final VoidCallback onCheckIn;
+  final VoidCallback onMarkDone;
+  final VoidCallback onGetReady;
   final String Function(DateTime time) formatTime;
 
   const MyDayTimelineActivityCard({
@@ -173,6 +198,9 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
     required this.onTap,
     required this.onDirectionsTap,
     required this.onMoreTap,
+    required this.onCheckIn,
+    required this.onMarkDone,
+    required this.onGetReady,
     required this.formatTime,
   });
 
@@ -190,22 +218,26 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
           orElse: () => false,
         ) ??
         false;
-    final isAwaitingCompletion =
-        activity.status == ActivityStatus.awaitingCompletion;
-    final primaryLabel = activity.status == ActivityStatus.completed
-        ? (hasReview ? 'Reviewed' : 'Review')
-        : isAwaitingCompletion
-            ? 'Done'
-            : 'Directions';
-    const primaryColor = _kWmForest;
-    final activityType =
-        (activity.rawData['category'] ?? activity.rawData['type'] ?? 'Activity')
-            .toString();
-    final durationMinutes =
-        int.tryParse('${activity.rawData['duration'] ?? 0}') ?? 0;
-    final subtitleText = isAwaitingCompletion
-        ? '$activityType · $durationMinutes min'
-        : 'Tap for details';
+
+    // Primary CTA depends on user-initiated status
+    final String primaryLabel;
+    final VoidCallback primaryAction;
+    if (activity.status == ActivityStatus.completed) {
+      primaryLabel = hasReview ? 'Reviewed' : 'Review';
+      primaryAction = hasReview ? () {} : () => showActivityReviewSheet(context, activity);
+    } else if (activity.status == ActivityStatus.activeNow) {
+      primaryLabel = 'Done';
+      primaryAction = () { HapticFeedback.mediumImpact(); onMarkDone(); };
+    } else {
+      primaryLabel = 'I\'m Here';
+      primaryAction = () { HapticFeedback.mediumImpact(); onCheckIn(); };
+    }
+
+    const subtitleText = 'Tap for details';
+
+    // Time-of-day badge (replaces "1:15 PM • 120m" which implied a booking)
+    final slotEmoji = _slotEmoji(activity.startTime.hour);
+    final slotLabel = _slotName(activity.startTime.hour);
 
     return GestureDetector(
       onTap: () {
@@ -218,7 +250,18 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: _kWmParchment, width: 0.5),
-          boxShadow: const [],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 14,
+              offset: const Offset(0, 5),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
@@ -279,29 +322,18 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                   decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.6),
+                                    color: Colors.black.withOpacity(0.55),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(
-                                        Icons.schedule,
-                                        color: Colors.white,
-                                        size: 14,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '${formatTime(activity.startTime)} • ${activity.rawData['duration']}m',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 11,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
+                                  child: Text(
+                                    '$slotEmoji $slotLabel',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                                 Container(
@@ -309,6 +341,10 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                                   decoration: BoxDecoration(
                                     color: cardStatus.color,
                                     borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.55),
+                                      width: 0.75,
+                                    ),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -369,7 +405,7 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            activity.rawData['category'] ?? 'Activity',
+                            _activityLabel(activity.rawData),
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -389,27 +425,36 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        // For upcoming activities show "Get Ready" outline before "I'm Here"
+                        if (activity.status == ActivityStatus.upcoming) ...[
+                          _OutlineActionButton(
+                            label: 'Get Ready',
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              onGetReady();
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        // Primary filled button (I'm Here / Done / Review)
                         Container(
                           height: 32,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
                           decoration: BoxDecoration(
-                            color: primaryColor,
+                            color: activity.status == ActivityStatus.activeNow
+                                ? _kWmSunset
+                                : _kWmForest,
                             borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.55),
+                              width: 0.75,
+                            ),
                           ),
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(16),
-                              onTap: () {
-                                HapticFeedback.lightImpact();
-                                if (activity.status == ActivityStatus.completed) {
-                                  if (!hasReview) {
-                                    showActivityReviewSheet(context, activity);
-                                  }
-                                  return;
-                                }
-                                onDirectionsTap();
-                              },
+                              onTap: primaryAction,
                               child: Center(
                                 child: Text(
                                   primaryLabel,
@@ -423,27 +468,30 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            onMoreTap();
-                          },
-                          child: Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: _kWmForestTint,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: _kWmParchment, width: 0.5),
-                            ),
-                            child: Icon(
-                              Icons.more_vert,
-                              size: 16,
-                              color: _kWmStone,
+                        // ⋮ only shown when there's no Get Ready button
+                        if (activity.status != ActivityStatus.upcoming) ...[
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              onMoreTap();
+                            },
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: _kWmParchment, width: 1),
+                              ),
+                              child: Icon(
+                                Icons.more_vert,
+                                size: 16,
+                                color: _kWmStone,
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ],
@@ -462,20 +510,14 @@ _ActivityCardStatus _buildCardStatus(EnhancedActivityData activity) {
     case ActivityStatus.activeNow:
       return const _ActivityCardStatus(
         color: _kWmSunset,
-        label: 'NOW',
-        icon: Icons.play_circle_filled,
-      );
-    case ActivityStatus.awaitingCompletion:
-      return const _ActivityCardStatus(
-        color: _kWmSunset,
-        label: 'CHECK IN',
-        icon: Icons.hourglass_bottom_rounded,
+        label: "I'M HERE",
+        icon: Icons.place_rounded,
       );
     case ActivityStatus.upcoming:
       return const _ActivityCardStatus(
-        color: _kWmSkyDeep,
-        label: 'UPCOMING',
-        icon: Icons.schedule,
+        color: _kWmWarmBronze,
+        label: 'PLANNED',
+        icon: Icons.bookmark_rounded,
       );
     case ActivityStatus.completed:
       return const _ActivityCardStatus(
@@ -486,10 +528,76 @@ _ActivityCardStatus _buildCardStatus(EnhancedActivityData activity) {
     default:
       return const _ActivityCardStatus(
         color: _kWmStone,
-        label: 'SCHEDULED',
-        icon: Icons.event,
+        label: 'PLANNED',
+        icon: Icons.bookmark_rounded,
       );
   }
+}
+
+/// Small outline button used alongside the primary action on activity cards.
+class _OutlineActionButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _OutlineActionButton({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 32,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _kWmForest, width: 1.5),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Center(
+            child: Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: _kWmForest,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Returns a meaningful activity label: category first, then type, then a mood-tag fallback.
+String _activityLabel(Map<String, dynamic> data) {
+  final category = data['category'] as String?;
+  if (category != null && category.trim().isNotEmpty && category.toLowerCase() != 'activity') {
+    return _capitalize(category);
+  }
+  final type = data['type'] as String?;
+  if (type != null && type.trim().isNotEmpty) return _capitalize(type);
+  final mood = data['mood'] as String?;
+  if (mood != null && mood.trim().isNotEmpty) return _capitalize(mood);
+  return 'Activity';
+}
+
+String _capitalize(String s) =>
+    s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1).toLowerCase()}';
+
+String _slotEmoji(int hour) {
+  if (hour >= 6 && hour < 12) return '🌅';
+  if (hour >= 12 && hour < 18) return '☀️';
+  return '🌙';
+}
+
+String _slotName(int hour) {
+  if (hour >= 6 && hour < 12) return 'Morning';
+  if (hour >= 12 && hour < 18) return 'Afternoon';
+  return 'Evening';
 }
 
 class _ActivityCardStatus {

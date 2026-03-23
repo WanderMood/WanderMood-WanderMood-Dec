@@ -40,18 +40,28 @@ class BookWithGygSection extends StatelessWidget {
     super.key,
     required this.cityName,
     required this.links,
+    this.compactForMap = false,
   });
 
   final String cityName;
   final List<GygLink> links;
 
+  /// On Explore map: slim CTA above the floating nav; full card opens in a sheet.
+  final bool compactForMap;
+
   @override
   Widget build(BuildContext context) {
     final displayCity = _capitalizeCity(cityName);
     final allLink = links.where((l) => l.type == 'all').firstOrNull;
-    final categoryLinks = links
-        .where((l) => _allowedCategoryTypes.contains(l.type))
-        .toList();
+    final categoryLinks =
+        links.where((l) => _allowedCategoryTypes.contains(l.type)).toList();
+
+    if (compactForMap) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+        child: _buildMapCompactBar(context, displayCity),
+      );
+    }
 
     return Padding(
       // 16 matches Explore list / day plan horizontal insets
@@ -62,7 +72,8 @@ class BookWithGygSection extends StatelessWidget {
           if (links.isEmpty) ...[
             _buildComingSoonCard(context, displayCity),
           ] else ...[
-            if (allLink != null) _buildPrimaryCard(context, displayCity, allLink),
+            if (allLink != null)
+              _buildPrimaryCard(context, displayCity, allLink),
             if (categoryLinks.isNotEmpty) ...[
               const SizedBox(height: 12),
               _buildCategoryChips(context, categoryLinks),
@@ -71,6 +82,157 @@ class BookWithGygSection extends StatelessWidget {
           const SizedBox(height: 8),
           _buildPoweredByLabel(context),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMapCompactBar(BuildContext context, String displayCity) {
+    void openSheet() {
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (ctx) {
+          return DraggableScrollableSheet(
+            initialChildSize: 0.58,
+            minChildSize: 0.35,
+            maxChildSize: 0.92,
+            expand: false,
+            builder: (context, scrollController) {
+              return DecoratedBox(
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF5F0E8),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 10),
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[400],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView(
+                        controller: scrollController,
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                        children: [
+                          BookWithGygSection(
+                            cityName: cityName,
+                            links: links,
+                            compactForMap: false,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      );
+    }
+
+    if (links.isEmpty) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: openSheet,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.95),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.grey[300]!),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.explore_outlined, color: Colors.grey[700], size: 22),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Edvienne\'s Picks — $displayCity',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                ),
+                Icon(Icons.keyboard_arrow_up, color: Colors.grey[600]),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: openSheet,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF1E1C18),
+                const Color(0xFF2A6049).withOpacity(0.92),
+              ],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.12),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.local_activity_outlined,
+                  color: Colors.white, size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Edvienne\'s Picks in $displayCity',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      'Tik om GYG & korting te openen',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.85),
+                        height: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.unfold_more,
+                  color: Colors.white.withOpacity(0.9), size: 22),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -289,14 +451,16 @@ class BookWithGygSection extends StatelessWidget {
                         ),
                         GestureDetector(
                           onTap: () {
-                            Clipboard.setData(const ClipboardData(text: _promoCode));
+                            Clipboard.setData(
+                                const ClipboardData(text: _promoCode));
                             showWanderMoodToast(
                               context,
                               message: 'Code gekopieerd 💚',
                             );
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
                               color: const Color(0xFF2A6049).withOpacity(0.9),
                               borderRadius: BorderRadius.circular(8),
@@ -314,9 +478,9 @@ class BookWithGygSection extends StatelessWidget {
                       ],
                     ),
                   ),
-                  ],
-                ),
+                ],
               ),
+            ),
           ],
         ),
       ),
@@ -336,7 +500,8 @@ class BookWithGygSection extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFF2A6049).withOpacity(0.25)),
+              border:
+                  Border.all(color: const Color(0xFF2A6049).withOpacity(0.25)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.03),

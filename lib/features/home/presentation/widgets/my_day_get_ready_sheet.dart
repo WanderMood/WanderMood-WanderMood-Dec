@@ -272,19 +272,30 @@ class _ExcitingGetReadySheetContentState
     } catch (_) {}
   }
 
+  // ── Design tokens ──────────────────────────────────────────────────────────
+  static const Color _forest = Color(0xFF2A6049);
+  static const Color _forestTint = Color(0xFFEBF3EE);
+  static const Color _cream = Color(0xFFF5F0E8);
+  static const Color _parchment = Color(0xFFE8E2D8);
+  static const Color _charcoal = Color(0xFF1E1C18);
+  static const Color _stone = Color(0xFF8C8780);
+  static const Color _skyTint = Color(0xFFEDF5F9);
+  static const Color _sky = Color(0xFFA8C8DC);
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final total = widget.checklist.length;
     final checked = _checkedIndices.length;
     final energyPercent = total > 0 ? (checked / total).clamp(0.0, 1.0) : 0.0;
-    final hours = _countdown?.inHours ?? 0;
-    final mins = _countdown != null ? (_countdown!.inMinutes % 60) : 0;
     final rawMood = widget.activity.rawData['mood'] as String?;
     final moodTag =
         (rawMood != null && rawMood.trim().isNotEmpty) ? rawMood : 'adventure';
     final themeLabel = _playlistThemeFromActivity(widget.activity.rawData);
     final reminderTime = widget.leaveByTime.subtract(const Duration(minutes: 10));
+
+    final hours = _countdown?.inHours ?? 0;
+    final mins = _countdown != null ? (_countdown!.inMinutes % 60) : 0;
 
     return WillPopScope(
       onWillPop: () async {
@@ -293,42 +304,43 @@ class _ExcitingGetReadySheetContentState
       },
       child: Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.9,
+          maxHeight: MediaQuery.of(context).size.height * 0.92,
         ),
         decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          color: _cream,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Drag handle
               Center(
                 child: Container(
                   width: 40,
                   height: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
+                  margin: const EdgeInsets.symmetric(vertical: 14),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: _parchment,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
               _buildHero(l10n, hours, mins),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               _buildEnergyMeter(l10n, energyPercent),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _buildWeatherCard(l10n),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _buildChecklist(l10n),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _buildVibePlaylist(l10n, moodTag, themeLabel),
-              const SizedBox(height: 16),
-              _buildReminder(l10n, reminderTime),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _buildQuickActions(l10n),
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
+              _buildReminder(l10n, reminderTime),
+              const SizedBox(height: 20),
               _buildPrimaryCta(l10n),
             ],
           ),
@@ -344,7 +356,7 @@ class _ExcitingGetReadySheetContentState
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFFEA580C), Color(0xFFEC4899), Color(0xFF9333EA)],
+          colors: [Color(0xFFF9D878), Color(0xFFFFBC3B), Color(0xFFFFAA00)],
         ),
         borderRadius: BorderRadius.circular(20),
       ),
@@ -356,14 +368,14 @@ class _ExcitingGetReadySheetContentState
             children: [
               Row(
                 children: [
-                  const Icon(Icons.bolt_rounded, color: Colors.white, size: 28),
+                  const Icon(Icons.bolt_rounded, color: Color(0xFF1E1C18), size: 28),
                   const SizedBox(width: 8),
                   Text(
                     l10n.getReadyLetsGo,
                     style: GoogleFonts.poppins(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
-                      color: Colors.white,
+                      color: const Color(0xFF1E1C18),
                     ),
                   ),
                 ],
@@ -373,7 +385,7 @@ class _ExcitingGetReadySheetContentState
                 l10n.getReadyAdventureStartsIn,
                 style: GoogleFonts.poppins(
                   fontSize: 13,
-                  color: Colors.white70,
+                  color: const Color(0xFF4A4640),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -386,7 +398,7 @@ class _ExcitingGetReadySheetContentState
                     child: Text(
                       ':',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Color(0xFF1E1C18),
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
@@ -409,7 +421,7 @@ class _ExcitingGetReadySheetContentState
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: const Color(0xFF1E1C18),
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -420,7 +432,7 @@ class _ExcitingGetReadySheetContentState
                         ),
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          color: Colors.white70,
+                          color: const Color(0xFF4A4640),
                         ),
                       ),
                     ],
@@ -430,14 +442,14 @@ class _ExcitingGetReadySheetContentState
                     icon: const Icon(
                       Icons.route_rounded,
                       size: 18,
-                      color: Colors.white,
+                      color: Color(0xFF1E1C18),
                     ),
                     label: Text(
                       '${l10n.getReadyRoute} →',
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: const Color(0xFF1E1C18),
                       ),
                     ),
                     style: TextButton.styleFrom(
@@ -445,8 +457,8 @@ class _ExcitingGetReadySheetContentState
                         horizontal: 12,
                         vertical: 8,
                       ),
-                      backgroundColor: Colors.white24,
-                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.black12,
+                      foregroundColor: const Color(0xFF1E1C18),
                     ),
                   ),
                 ],
@@ -475,7 +487,7 @@ class _ExcitingGetReadySheetContentState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white24,
+        color: Colors.black12,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -485,7 +497,7 @@ class _ExcitingGetReadySheetContentState
             style: GoogleFonts.poppins(
               fontSize: 28,
               fontWeight: FontWeight.w800,
-              color: Colors.white,
+              color: const Color(0xFF1E1C18),
             ),
           ),
           const SizedBox(height: 2),
@@ -493,7 +505,7 @@ class _ExcitingGetReadySheetContentState
             label,
             style: GoogleFonts.poppins(
               fontSize: 10,
-              color: Colors.white70,
+              color: const Color(0xFF4A4640),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -504,75 +516,87 @@ class _ExcitingGetReadySheetContentState
 
   Widget _buildEnergyMeter(AppLocalizations l10n, double percent) {
     final percentageLabel = '${(percent * 100).round()}%';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Text('⚡', style: TextStyle(fontSize: 22)),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                l10n.getReadyYourAdventureEnergy,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF111827),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _parchment, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('⚡', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  l10n.getReadyYourAdventureEnergy,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: _charcoal,
+                  ),
                 ),
               ),
-            ),
-            Text(
-              percentageLabel,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFFEA580C),
+              Text(
+                percentageLabel,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: _forest,
+                ),
               ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: percent,
+              minHeight: 8,
+              backgroundColor: _parchment,
+              valueColor: const AlwaysStoppedAnimation<Color>(_forest),
             ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: LinearProgressIndicator(
-            value: percent,
-            minHeight: 10,
-            backgroundColor: const Color(0xFFE5E7EB),
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFEA580C)),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          l10n.getReadyBoostEnergyHint,
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            color: const Color(0xFF6B7280),
+          const SizedBox(height: 8),
+          Text(
+            l10n.getReadyBoostEnergyHint,
+            style: GoogleFonts.poppins(fontSize: 12, color: _stone),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildWeatherCard(AppLocalizations l10n) {
     final tempStr = widget.weatherTemp != null
-        ? '${widget.weatherTemp!.toStringAsFixed(0)}°C, ${widget.weatherCondition}'
+        ? '${widget.weatherTemp!.toStringAsFixed(0)}°C · ${widget.weatherCondition}'
         : '—';
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFECFEFF),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF06B6D4).withOpacity(0.22),
-          width: 1.5,
-        ),
+        border: Border.all(color: _parchment, width: 1),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('🌤️', style: TextStyle(fontSize: 24)),
-          const SizedBox(width: 12),
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: _skyTint,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: _sky.withValues(alpha: 0.4), width: 1),
+            ),
+            child: const Center(
+              child: Text('🌤️', style: TextStyle(fontSize: 22)),
+            ),
+          ),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -582,26 +606,20 @@ class _ExcitingGetReadySheetContentState
                     widget.formatTime(widget.activity.startTime),
                   ),
                   style: GoogleFonts.poppins(
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0F172A),
+                    color: _charcoal,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
                   tempStr,
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: const Color(0xFF0F172A),
-                  ),
+                  style: GoogleFonts.poppins(fontSize: 13, color: _charcoal),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
                   widget.weatherTip,
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: Colors.grey.shade700,
-                  ),
+                  style: GoogleFonts.poppins(fontSize: 12, color: _stone),
                 ),
               ],
             ),
@@ -615,12 +633,9 @@ class _ExcitingGetReadySheetContentState
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFCBD5E1),
-          width: 1.25,
-        ),
+        border: Border.all(color: _parchment, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -634,72 +649,73 @@ class _ExcitingGetReadySheetContentState
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF111827),
+                  color: _charcoal,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
           ...List.generate(widget.checklist.length, (i) {
-            final checked = _checkedIndices.contains(i);
+            final isChecked = _checkedIndices.contains(i);
             final emoji = i < _checklistEmojis.length ? _checklistEmojis[i] : '✓';
-            return InkWell(
-              onTap: () {
-                setState(() {
-                  if (checked) {
-                    _checkedIndices.remove(i);
-                  } else {
-                    _checkedIndices.add(i);
-                  }
-                });
-              },
-              borderRadius: BorderRadius.circular(10),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  children: [
-                    Text(emoji, style: const TextStyle(fontSize: 20)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.checklist[i],
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: checked ? Colors.grey : const Color(0xFF111827),
-                              decoration:
-                                  checked ? TextDecoration.lineThrough : null,
-                            ),
-                          ),
-                          if (checked)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 2),
-                              child: Text(
-                                'Ready to go!',
+            return Column(
+              children: [
+                if (i > 0)
+                  Divider(height: 1, thickness: 1, color: _parchment.withValues(alpha: 0.6)),
+                InkWell(
+                  onTap: () => setState(() {
+                    if (isChecked) {
+                      _checkedIndices.remove(i);
+                    } else {
+                      _checkedIndices.add(i);
+                    }
+                  }),
+                  borderRadius: BorderRadius.circular(10),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Row(
+                      children: [
+                        Text(emoji, style: const TextStyle(fontSize: 20)),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.checklist[i],
                                 style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  color: const Color(0xFF2A6049),
-                                  fontStyle: FontStyle.italic,
+                                  fontSize: 14,
+                                  color: isChecked ? _stone : _charcoal,
+                                  decoration: isChecked
+                                      ? TextDecoration.lineThrough
+                                      : null,
+                                  decorationColor: _stone,
                                 ),
                               ),
-                            ),
-                        ],
-                      ),
+                              if (isChecked)
+                                Text(
+                                  'Ready to go!',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    color: _forest,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          isChecked
+                              ? Icons.check_circle_rounded
+                              : Icons.circle_outlined,
+                          size: 22,
+                          color: isChecked ? _forest : _parchment,
+                        ),
+                      ],
                     ),
-                    Icon(
-                      checked
-                          ? Icons.check_circle_rounded
-                          : Icons.circle_outlined,
-                      size: 24,
-                      color: checked
-                          ? const Color(0xFF2A6049)
-                          : Colors.grey.shade400,
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             );
           }),
         ],
@@ -712,48 +728,31 @@ class _ExcitingGetReadySheetContentState
     final cat = (raw['category'] as String? ?? '').toLowerCase();
     if (cat.contains('food') ||
         title.contains('restaurant') ||
-        title.contains('dinner')) {
-      return 'Foodie';
-    }
+        title.contains('dinner')) return 'Foodie';
     if (cat.contains('culture') || title.contains('museum')) return 'Cultural';
     if (cat.contains('shop') || title.contains('shopping')) return 'Shopping';
     if (cat.contains('outdoor') || title.contains('park')) return 'Outdoor';
     return 'Adventure';
   }
 
-  Widget _buildVibePlaylist(
-    AppLocalizations l10n,
-    String mood,
-    String themeLabel,
-  ) {
+  Widget _buildVibePlaylist(AppLocalizations l10n, String mood, String themeLabel) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.purple.shade100, Colors.pink.shade100],
-        ),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFDB2777).withOpacity(0.18),
-          width: 1.5,
-        ),
+        border: Border.all(color: _parchment, width: 1),
       ),
       child: Row(
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              color: Colors.white70,
+              color: _forestTint,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
-              Icons.music_note_rounded,
-              color: Color(0xFF9333EA),
-              size: 28,
-            ),
+            child: const Icon(Icons.music_note_rounded, color: _forest, size: 24),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -763,39 +762,35 @@ class _ExcitingGetReadySheetContentState
                 Text(
                   l10n.getReadyVibePlaylist,
                   style: GoogleFonts.poppins(
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF6B21A8),
+                    color: _stone,
+                  ),
+                ),
+                Text(
+                  l10n.getReadyPlaylistLabel(themeLabel),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: _charcoal,
                   ),
                 ),
                 Text(
                   l10n.getReadyGetInMood(mood),
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    color: const Color(0xFF7C3AED),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  l10n.getReadyPlaylistLabel(themeLabel),
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF4C1D95),
-                  ),
+                  style: GoogleFonts.poppins(fontSize: 11, color: _stone),
                 ),
               ],
             ),
           ),
+          const SizedBox(width: 10),
           Material(
-            color: const Color(0xFF9333EA),
+            color: _forest,
             borderRadius: BorderRadius.circular(12),
             child: InkWell(
               onTap: () => _onPlaylistTap(themeLabel),
               borderRadius: BorderRadius.circular(12),
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
                 child: Text(
                   l10n.getReadyPlay,
                   style: GoogleFonts.poppins(
@@ -814,7 +809,12 @@ class _ExcitingGetReadySheetContentState
 
   Widget _buildReminder(AppLocalizations l10n, DateTime reminderTime) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _parchment, width: 1),
+      ),
       child: SwitchListTile.adaptive(
         contentPadding: EdgeInsets.zero,
         title: Text(
@@ -822,19 +822,17 @@ class _ExcitingGetReadySheetContentState
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF111827),
+            color: _charcoal,
           ),
         ),
         subtitle: _reminderOn
             ? Text(
                 l10n.getReadyReminderAt(widget.formatTime(reminderTime)),
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: const Color(0xFF2A6049),
-                ),
+                style: GoogleFonts.poppins(fontSize: 12, color: _forest),
               )
             : null,
         value: _reminderOn,
+        activeColor: _forest,
         onChanged: (value) {
           setState(() => _reminderOn = value);
           if (value) {
@@ -855,37 +853,34 @@ class _ExcitingGetReadySheetContentState
         Text(
           l10n.getReadyQuickActions,
           style: GoogleFonts.poppins(
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF111827),
+            color: _stone,
           ),
         ),
         const SizedBox(height: 10),
         Row(
           children: [
             Expanded(
-              child: _GradientActionChip(
+              child: _QuickActionTile(
                 label: l10n.getReadyQuickShare,
                 icon: Icons.ios_share_rounded,
-                gradient: const [Color(0xFFEA580C), Color(0xFFF59E0B)],
                 onTap: _onShareTap,
               ),
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: _GradientActionChip(
+              child: _QuickActionTile(
                 label: l10n.getReadyQuickCalendar,
                 icon: Icons.event_rounded,
-                gradient: const [Color(0xFFEC4899), Color(0xFFDB2777)],
                 onTap: _onCalendarTap,
               ),
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: _GradientActionChip(
+              child: _QuickActionTile(
                 label: l10n.getReadyQuickParking,
                 icon: Icons.local_parking_rounded,
-                gradient: const [Color(0xFF9333EA), Color(0xFF7C3AED)],
                 onTap: _onParkingTap,
               ),
             ),
@@ -1001,14 +996,22 @@ class _ExcitingGetReadySheetContentState
   Widget _buildPrimaryCta(AppLocalizations l10n) {
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton(
+      child: ElevatedButton.icon(
         onPressed: () async {
           await _saveState();
           if (!mounted) return;
           Navigator.pop(context);
         },
+        icon: const Icon(Icons.check_rounded, size: 20),
+        label: Text(
+          l10n.getReadyPrimaryCta,
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF2A6049), // wmForest
+          backgroundColor: _forest,
           foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -1016,89 +1019,61 @@ class _ExcitingGetReadySheetContentState
           ),
           padding: const EdgeInsets.symmetric(vertical: 16),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.bolt_rounded, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  l10n.getReadyPrimaryCta,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 2),
-            Text(
-              l10n.getReadyCantWait,
-              style: GoogleFonts.poppins(fontSize: 12, color: Colors.white70),
-            ),
-          ],
-        ),
       ),
     );
   }
 }
 
-class _GradientActionChip extends StatelessWidget {
+class _QuickActionTile extends StatelessWidget {
   final String label;
   final IconData icon;
-  final List<Color> gradient;
   final VoidCallback? onTap;
 
-  const _GradientActionChip({
+  const _QuickActionTile({
     required this.label,
     required this.icon,
-    required this.gradient,
     this.onTap,
   });
+
+  static const Color _forest = Color(0xFF2A6049);
+  static const Color _forestTint = Color(0xFFEBF3EE);
+  static const Color _parchment = Color(0xFFE8E2D8);
+  static const Color _charcoal = Color(0xFF1E1C18);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: gradient,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: gradient.last.withOpacity(0.22),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-            spreadRadius: -2,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _parchment, width: 1),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.symmetric(vertical: 14),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: Colors.white, size: 22),
-                const SizedBox(height: 4),
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: _forestTint,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: _forest, size: 18),
+                ),
+                const SizedBox(height: 6),
                 Text(
                   label,
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: _charcoal,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 1,

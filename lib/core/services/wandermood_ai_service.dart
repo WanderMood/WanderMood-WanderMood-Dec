@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dio/dio.dart';
@@ -7,16 +6,113 @@ import 'package:wandermood/core/models/ai_chat_message.dart';
 import 'package:wandermood/core/constants/api_keys.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 
-/// AI calls to the `wandermood-ai` Edge Function.
+/// @deprecated - All methods now route through the moody
+/// edge function. This class will be removed in a future
+/// cleanup pass.
 ///
-/// All [_supabase.functions.invoke] calls use the shared [SupabaseClient]. The
-/// supabase_flutter client automatically attaches `Authorization: Bearer <access_token>`
-/// when [auth.currentSession] is non-null — no manual headers or `jwt` parameter needed.
+/// TODO: Remove this class once createDayPlan, optimizeItinerary,
+/// and isAIServiceAvailable are confirmed unused or migrated.
+///
+/// The supabase_flutter client attaches `Authorization: Bearer <access_token>` when
+/// [auth.currentSession] is non-null.
+@Deprecated(
+  'Prefer direct moody edge integration; WanderMoodAIService will be removed.',
+)
 class WanderMoodAIService {
   static final SupabaseClient _supabase = Supabase.instance.client;
   static const String _functionName = 'wandermood-ai';
+  static const String _moodyFunctionName = 'moody';
 
-  /// Get AI-powered activity recommendations based on mood and preferences
+  /// Maps [preferences] into `moody` `get_explore` filter keys (`rating`, `priceLevel`).
+  static Map<String, dynamic> _preferencesToExploreFilters(
+    Map<String, dynamic>? preferences,
+  ) {
+    if (preferences == null || preferences.isEmpty) return {};
+    final filters = <String, dynamic>{};
+    final budget = preferences['budget'];
+    if (budget is num) {
+      final b = budget.toDouble();
+      if (b <= 30) {
+        filters['priceLevel'] = 1;
+      } else if (b <= 70) {
+        filters['priceLevel'] = 2;
+      } else {
+        filters['priceLevel'] = 4;
+      }
+    }
+    final minRating = preferences['minRating'] ?? preferences['rating'];
+    if (minRating is num) {
+      filters['rating'] = minRating.toDouble();
+    }
+    return filters;
+  }
+
+  static AIRecommendation _exploreCardToAiRecommendation(
+    Map<String, dynamic> card,
+    List<String> moods,
+    Map<String, dynamic>? preferences,
+  ) {
+    final types = (card['types'] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList() ??
+        <String>[];
+    final type = types.isNotEmpty ? types.first : 'place';
+
+    Map<String, dynamic>? location;
+    final loc = card['location'];
+    if (loc is Map) {
+      final m = Map<String, dynamic>.from(loc);
+      final lat = (m['lat'] as num?)?.toDouble();
+      final lng = (m['lng'] as num?)?.toDouble();
+      if (lat != null && lng != null) {
+        location = {'latitude': lat, 'longitude': lng};
+      }
+    }
+
+    final moodMatch = moods.isNotEmpty ? moods.join(', ') : 'exploring';
+    final ts = preferences?['timeSlot'];
+    final timeSlot = ts is String ? ts : 'flexible';
+
+    return AIRecommendation(
+      name: card['name']?.toString() ?? 'Place',
+      type: type,
+      rating: (card['rating'] as num?)?.toDouble() ?? 0.0,
+      description: card['description']?.toString() ??
+          card['vicinity']?.toString() ??
+          card['address']?.toString() ??
+          '',
+      duration: '60 min',
+      cost: _priceLevelToCostLabel(card['price_level']),
+      moodMatch: moodMatch,
+      timeSlot: timeSlot,
+      imageUrl: card['photo_url']?.toString(),
+      location: location,
+    );
+  }
+
+  static String _priceLevelToCostLabel(dynamic priceLevel) {
+    if (priceLevel == null) return '€€';
+    final n = priceLevel is num
+        ? priceLevel.toInt()
+        : int.tryParse(priceLevel.toString()) ?? 2;
+    switch (n.clamp(0, 4)) {
+      case 0:
+        return 'Free';
+      case 1:
+        return '€';
+      case 2:
+        return '€€';
+      case 3:
+        return '€€€';
+      default:
+        return '€€€€';
+    }
+  }
+
+  /// Place recommendations from the **`moody`** Edge Function (`get_explore`).
+  ///
+  /// [conversationId] / [conversationContext] are accepted for API compatibility;
+  /// `get_explore` does not use them.
   static Future<AIRecommendationResponse> getRecommendations({
     required List<String> moods,
     required double latitude,
@@ -26,44 +122,79 @@ class WanderMoodAIService {
     String? conversationId,
     List<String>? conversationContext,
   }) async {
-    debugPrint('🤖 Getting AI recommendations for moods: $moods');
-    
+    debugPrint('🤖 Getting explore recommendations (moody/get_explore) for moods: $moods');
+
     try {
-      final requestBody = {
-        'moods': moods,
-        'latitude': latitude,
-        'longitude': longitude,
-        'city': city ?? 'Rotterdam',
-        'preferences': preferences ?? {},
+      final locationName = city ?? 'Rotterdam';
+      final primaryMood =
+          moods.isNotEmpty ? moods.first : 'adventurous';
+
+      final requestBody = <String, dynamic>{
+        'action': 'get_explore',
+        'location': locationName,
+        'coordinates': {
+          'lat': latitude,
+          'lng': longitude,
+        },
+        'mood': primaryMood,
+        'filters': _preferencesToExploreFilters(preferences),
       };
 
-      debugPrint('📤 Sending request to wandermood-ai function: $requestBody');
+      debugPrint('📤 Invoking moody (get_explore): $requestBody');
 
       final response = await _supabase.functions.invoke(
-        _functionName,
+        _moodyFunctionName,
         body: requestBody,
       );
 
       if (response.status != 200) {
-        throw Exception('AI service error: ${response.status}');
+        throw Exception(
+          'Moody get_explore error: HTTP ${response.status} ${response.data}',
+        );
       }
 
-      final data = response.data as Map<String, dynamic>;
-      debugPrint('✅ AI recommendations received: ${data['recommendations']?.length ?? 0} items');
-      
-      // Convert the new edge function format to the expected format
+      final raw = response.data;
+      if (raw is! Map<String, dynamic>) {
+        throw Exception('Moody get_explore: expected JSON object response');
+      }
+
+      final data = raw;
+      final cards = (data['cards'] as List<dynamic>?) ?? [];
+      if (data['error'] != null && cards.isEmpty) {
+        debugPrint(
+          '⚠️ Moody get_explore returned no cards: ${data['error']} — ${data['message']}',
+        );
+      }
+
+      final recommendations = <AIRecommendation>[];
+      for (final item in cards) {
+        if (item is Map<String, dynamic>) {
+          recommendations
+              .add(_exploreCardToAiRecommendation(item, moods, preferences));
+        } else if (item is Map) {
+          recommendations.add(
+            _exploreCardToAiRecommendation(
+              Map<String, dynamic>.from(item),
+              moods,
+              preferences,
+            ),
+          );
+        }
+      }
+
+      debugPrint('✅ Moody explore cards mapped: ${recommendations.length} items');
+
       return AIRecommendationResponse(
-        success: data['success'] ?? false,
+        success: recommendations.isNotEmpty,
         action: 'recommend',
         timestamp: MoodyClock.now().toIso8601String(),
-        summary: 'AI-powered recommendations for ${moods.join(', ')} in ${city ?? 'Rotterdam'}',
-        availablePlaces: (data['recommendations'] as List<dynamic>?)?.length ?? 0,
-        recommendations: (data['recommendations'] as List<dynamic>?)
-            ?.map((rec) => AIRecommendation.fromJson(rec))
-            .toList() ?? [],
+        summary:
+            'Explore recommendations for ${moods.join(', ')} in $locationName',
+        availablePlaces: recommendations.length,
+        recommendations: recommendations,
       );
     } catch (e) {
-      debugPrint('❌ Error getting AI recommendations: $e');
+      debugPrint('❌ Error getting recommendations from moody: $e');
       rethrow;
     }
   }
@@ -76,11 +207,27 @@ class WanderMoodAIService {
     double? latitude,
     double? longitude,
     String? city,
+    /// Prior turns in the current UI session (excluding the message being sent).
+    /// Used when [getConversationHistory] is empty (e.g. guest or failed saves).
+    List<Map<String, String>>? clientTurns,
   }) async {
     debugPrint('💬 Starting AI chat: ${message.substring(0, message.length.clamp(0, 50))}...');
     
     final openAiKey = ApiKeys.openAiKey;
     final convId = conversationId ?? _generateConversationId();
+
+    if (openAiKey.isEmpty) {
+      debugPrint(
+        '❌ OPENAI_API_KEY is not available to the Flutter app. '
+        'WanderMoodAIService.chat reads it only from '
+        '--dart-define=OPENAI_API_KEY=sk-... (see lib/core/constants/api_keys.dart). '
+        'There is no debug fallback key — chat will use the local fallback until the key is set.',
+      );
+    } else {
+      debugPrint(
+        '🤖 OpenAI key is configured (length ${openAiKey.length}); attempting direct API call…',
+      );
+    }
     
     // If OpenAI key is available, call OpenAI directly
     if (openAiKey.isNotEmpty) {
@@ -102,6 +249,17 @@ class WanderMoodAIService {
         } catch (e) {
           debugPrint('⚠️ Could not load conversation history: $e');
           // Continue without history - new conversation
+        }
+
+        if (conversationHistory.isEmpty &&
+            clientTurns != null &&
+            clientTurns.isNotEmpty) {
+          conversationHistory = clientTurns
+              .map((m) => Map<String, String>.from(m))
+              .toList();
+          debugPrint(
+            '📚 No DB history — using ${conversationHistory.length} client turns for context',
+          );
         }
         
         // Build messages array
@@ -161,11 +319,33 @@ class WanderMoodAIService {
     
     // Fallback response when OpenAI is not available or fails
     debugPrint('⚠️ Using fallback response');
+    List<Map<String, String>> fallbackHistory = [];
+    try {
+      final history = await getConversationHistory(convId);
+      fallbackHistory = history
+          .map((msg) => {'role': msg.role, 'content': msg.content})
+          .toList();
+    } catch (_) {}
+    if (fallbackHistory.isEmpty &&
+        clientTurns != null &&
+        clientTurns.isNotEmpty) {
+      fallbackHistory =
+          clientTurns.map((m) => Map<String, String>.from(m)).toList();
+      debugPrint(
+          '📚 Using ${fallbackHistory.length} client turns for fallback context');
+    }
+    final hasPriorExchanges = fallbackHistory.isNotEmpty;
+
     return AIChatResponse(
       success: true,
       action: 'chat',
       timestamp: MoodyClock.now().toIso8601String(),
-      message: _getFallbackResponse(message, moods?.first ?? 'exploring'),
+      message: _getFallbackResponse(
+        message,
+        moods?.first ?? 'exploring',
+        hasPriorExchanges: hasPriorExchanges,
+        city: city,
+      ),
       conversationId: convId,
       contextUsed: {},
     );
@@ -234,12 +414,45 @@ Guidelines:
     }
   }
 
+  /// True when the message is only a short greeting (not e.g. "this" or "ship").
+  static bool _isStandaloneGreeting(String trimmedLower) {
+    final t =
+        trimmedLower.replaceAll(RegExp(r'[\s\u200b]+'), ' ').trim();
+    return RegExp(
+      r'^(hi+|hey+|hello+|heya+|howdy+|yo+|sup+|hola+|hallo+)(\s*[!.?👋🙂😊]*)$',
+      caseSensitive: false,
+    ).hasMatch(t);
+  }
+
   /// Fallback response when AI service is unavailable
-  static String _getFallbackResponse(String userMessage, String mood) {
-    final lowerMessage = userMessage.toLowerCase();
-    
-    if (lowerMessage.contains('hi') || lowerMessage.contains('hello') || lowerMessage.contains('hey')) {
+  static String _getFallbackResponse(
+    String userMessage,
+    String mood, {
+    required bool hasPriorExchanges,
+    String? city,
+  }) {
+    final lowerMessage = userMessage.toLowerCase().trim();
+
+    if (_isStandaloneGreeting(lowerMessage)) {
+      if (hasPriorExchanges) {
+        final place = (city != null && city.isNotEmpty) ? city : 'your area';
+        return "Hey again! 👋 What kind of spots are you in the mood for in $place?";
+      }
       return "Hey there! 👋 I'm Moody, your travel companion! I'm here to help you discover amazing places based on your ${mood} mood. What would you like to explore today?";
+    }
+
+    if (lowerMessage.contains('how are you') ||
+        lowerMessage.contains('how r u') ||
+        lowerMessage.contains('howre you')) {
+      return "I'm feeling great and ready to plan something fun ✨ Want food, culture, or outdoors today?";
+    }
+
+    if (lowerMessage == 'moody' ||
+        lowerMessage == 'moodyyy' ||
+        lowerMessage == 'moodyyyy' ||
+        lowerMessage.startsWith('moody ')) {
+      final place = (city != null && city.isNotEmpty) ? city : 'your city';
+      return "I'm here 🙌 Tell me one vibe for $place: cozy cafe, unique dinner, scenic walk, or hidden gems.";
     }
     
     if (lowerMessage.contains('help') || lowerMessage.contains('what can you do')) {
@@ -255,6 +468,9 @@ Guidelines:
     }
     
     // Default response
+    if (hasPriorExchanges) {
+      return "Nice — tell me a bit more so I can narrow it down: budget, distance, and whether you want indoor or outdoor spots.";
+    }
     return "I'm here to help you discover amazing places! 🌟 Tell me more about what you're looking for, and I'll suggest the perfect spots for your ${mood} mood.";
   }
 

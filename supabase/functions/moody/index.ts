@@ -572,10 +572,10 @@ async function handleGetExplore(
     console.log('🔄 Cache miss or insufficient places - fetching from Google Places API')
     let places = await fetchPlacesFromGoogle(location, coordinates, mood, {})
 
-    // 4. CRITICAL: Ensure we have MINIMUM 50 places (keep fetching until we have 50+)
+    // 4. Ensure we have a practical minimum before stopping retries.
     let fetchAttempts = 0
-    const maxAttempts = 5
-    while (places.length < 50 && fetchAttempts < maxAttempts) {
+    const maxAttempts = 2
+    while (places.length < 15 && fetchAttempts < maxAttempts) {
       fetchAttempts++
       console.log(`⚠️ Only found ${places.length} places, fetching more (attempt ${fetchAttempts}/${maxAttempts})...`)
       
@@ -589,8 +589,8 @@ async function handleGetExplore(
       
       places = uniquePlaces
       
-      // If we still don't have 50, try broader searches
-      if (places.length < 50 && fetchAttempts < maxAttempts) {
+      // If we still don't have enough, try broader searches
+      if (places.length < 15 && fetchAttempts < maxAttempts) {
         const broaderPlaces = await fetchBroaderPlaces(location, coordinates, [mood])
         const allPlacesWithBroader = [...places, ...broaderPlaces]
         places = Array.from(
@@ -601,7 +601,7 @@ async function handleGetExplore(
 
     // Cap at 80 places max
     places = places.slice(0, 80)
-    console.log(`✅ Fetched ${places.length} total places (minimum 50 required)`)
+    console.log(`✅ Fetched ${places.length} total places (minimum 15 target)`)
 
     // 5. Rank by user preferences (soft ranking, not filtering)
     const rankedPlaces = rankPlacesByPreferences(places, profile, mood, {})
@@ -735,9 +735,19 @@ async function fetchPlacesFromGoogle(
       console.log(`📊 API Response status: ${data.status}, results: ${data.results?.length || 0}`)
       
       if (data.status === 'OK' && data.results) {
-        const places = data.results.map((place: any) => transformPlace(place, [mood]))
+        // Initial fetch quality gate: keep strong places but not overly strict.
+        const qualityFiltered = data.results.filter((place: any) => {
+          const rating = Number(place.rating ?? 0)
+          const reviewCount = Number(place.user_ratings_total ?? 0)
+          if (rating < 4.0) return false
+          if (reviewCount < 20) return false
+          return true
+        })
+        const places = qualityFiltered.map((place: any) => transformPlace(place, [mood]))
         allPlaces.push(...places)
-        console.log(`✅ Added ${places.length} places from query "${query}"`)
+        console.log(`✅ Added ${places.length} quality places from query "${query}"`)
+      } else if (data.status === 'ZERO_RESULTS') {
+        console.log(`ℹ️ Google Places returned ZERO_RESULTS for query "${query}"`)
       } else if (data.status !== 'OK') {
         console.error(`❌ Google Places API error: ${data.status} - ${data.error_message || 'Unknown error'}`)
       }

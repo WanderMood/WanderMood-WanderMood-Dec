@@ -299,6 +299,15 @@ Future<void> _validateApiKeys() async {
   } catch (e) {
     debugPrint('⚠️ WARNING: GOOGLE_PLACES_API_KEY is missing: $e');
   }
+
+  final openAi = ApiKeys.openAiKey;
+  if (openAi.isEmpty) {
+    debugPrint(
+      '⚠️ WARNING: OPENAI_API_KEY is not set for the app. Moody chat in '
+      'WanderMoodAIService will use the offline fallback until you run/build with '
+      '--dart-define=OPENAI_API_KEY=sk-...',
+    );
+  }
   
   // If critical keys are missing, throw error
   if (missingKeys.isNotEmpty) {

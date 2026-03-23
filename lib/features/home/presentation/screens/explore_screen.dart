@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,9 +26,9 @@ import 'package:wandermood/core/services/distance_service.dart';
 import 'package:wandermood/core/services/user_preferences_service.dart';
 
 import '../widgets/conversational_explore_header.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import '../../application/intent_processor.dart';
 import '../../providers/smart_context_provider.dart';
-import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
@@ -45,6 +46,9 @@ const Color _afWmForestTint = Color(0xFFEBF3EE);
 const Color _afWmCharcoal = Color(0xFF1E1C18);
 const Color _afWmStone = Color(0xFF8C8780);
 
+/// Clears MainScreen floating pill nav + typical home indicator ([MainScreen] `extendBody`).
+const double _kExploreFloatingNavClearance = 88;
+
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({Key? key}) : super(key: key);
 
@@ -59,26 +63,24 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   String _searchFilter = 'All';
   bool _isSearching = false;
   String _searchQuery = '';
-  
+
   // Scroll detection for content
   bool _isScrolling = false;
   double _lastScrollOffset = 0.0;
-  
+
   // View mode toggle - grid, list or map
   bool _isGridView = false;
   bool _isMapView = false;
   GoogleMapController? _mapController;
-  
+
   // Conversational interface state
   String _selectedIntent = '';
   String _currentExplanation = '';
   List<Place> _intentFilteredPlaces = [];
 
-
-
   // Advanced filter settings - New Structure
   int _activeFiltersCount = 0;
-  
+
   // Expandable sections state - ALL CLOSED BY DEFAULT
   bool _advancedSuggestionsExpanded = false;
   bool _dietaryExpanded = false;
@@ -86,9 +88,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   bool _logisticsExpanded = false;
   bool _photoExpanded = false;
 
-
-  
-  
   // Moody Suggests filters
   String? _selectedMood; // Keep for backward compatibility
   bool _indoorOnly = false;
@@ -99,7 +98,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   bool _crowdLively = false;
   bool _romanticVibe = false;
   bool _surpriseMe = false;
-  
+
   // Dietary Preferences
   bool _vegan = false;
   bool _vegetarian = false;
@@ -107,7 +106,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   bool _glutenFree = false;
   bool _pescatarian = false;
   bool _noAlcohol = false;
-  
+
   // Accessibility & Inclusion
   bool _wheelchairAccessible = false;
   bool _lgbtqFriendly = false;
@@ -119,21 +118,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   // Quick filter state (used primarily in map view, but applied globally)
   bool _quickFilterDistance1km = false;
   bool _quickFilterRating45 = false;
-  
+
   // Comfort & Convenience
   // Price Range - Multi-select
   // Price Range slider (€0 to €100)
   RangeValues _priceRange = const RangeValues(0, 100);
-  
+
   // Distance slider (0 to 50 km)
   double _maxDistance = 25.0;
-  
+
   bool _parkingAvailable = false;
   bool _transportIncluded = false;
   bool _creditCards = false;
   bool _wifiAvailable = false;
   bool _chargingPoints = false;
-  
+
   // Photo Options
   bool _instagrammable = false;
   bool _artisticDesign = false;
@@ -169,21 +168,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     super.initState();
     _searchController.addListener(_onSearchChanged);
     _scrollController.addListener(_onScrollChanged);
-    
+
     // Refresh location; keep Supabase/SharedPreferences explore caches (cache-first).
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       ref.read(locationNotifierProvider.notifier).getCurrentLocation();
-
-      // Wire daily mood selection → Explore filter so the user's current mood
-      // is pre-selected when they open Explore after choosing moods.
-      final moodState = ref.read(dailyMoodStateNotifierProvider);
-      final currentMood = moodState.currentMood;
-      if (currentMood != null && currentMood.isNotEmpty) {
-        setState(() {
-          _selectedMood = currentMood;
-          _updateActiveFiltersCount();
-        });
-      }
     });
   }
 
@@ -206,7 +194,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   void _onScrollChanged() {
     final currentScrollOffset = _scrollController.offset;
     final scrollDelta = currentScrollOffset - _lastScrollOffset;
-    
+
     // Track scrolling state for any future use
     if (scrollDelta > 10 && !_isScrolling) {
       setState(() {
@@ -217,7 +205,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         _isScrolling = false;
       });
     }
-    
+
     _lastScrollOffset = currentScrollOffset;
   }
 
@@ -225,21 +213,20 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     setState(() {
       _selectedIntent = intent;
     });
-    
+
     // Get smart context for enhanced processing
     final smartContext = ref.read(smartContextProvider);
-    
+
     // Process intent with current places and context
     // NEW: Use Moody Edge Function
     final explorePlacesAsync = ref.read(moodyExploreAutoProvider);
     // OLD: ref.read(explorePlacesProvider(city: ref.read(locationNotifierProvider).value ?? 'Rotterdam'))
     explorePlacesAsync.whenData((places) {
-      final result = IntentProcessor.processIntent(intent, places, context: smartContext);
+      final result =
+          IntentProcessor.processIntent(intent, places, context: smartContext);
       final sortedPlaces = IntentProcessor.sortByPriority(
-        result['filteredPlaces'], 
-        result['priority']
-      );
-      
+          result['filteredPlaces'], result['priority']);
+
       setState(() {
         _intentFilteredPlaces = sortedPlaces;
         _currentExplanation = result['explanation'];
@@ -252,22 +239,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       _searchQuery = query;
       _isSearching = query.isNotEmpty;
     });
-    
+
     if (query.isNotEmpty) {
       // Get smart context for enhanced search
       final smartContext = ref.read(smartContextProvider);
-      
+
       // Process natural language query with context
       // NEW: Use Moody Edge Function
-    final explorePlacesAsync = ref.read(moodyExploreAutoProvider);
-    // OLD: ref.read(explorePlacesProvider(city: ref.read(locationNotifierProvider).value ?? 'Rotterdam'))
+      final explorePlacesAsync = ref.read(moodyExploreAutoProvider);
+      // OLD: ref.read(explorePlacesProvider(city: ref.read(locationNotifierProvider).value ?? 'Rotterdam'))
       explorePlacesAsync.whenData((places) {
-        final result = IntentProcessor.processNaturalLanguage(query, places, context: smartContext);
+        final result = IntentProcessor.processNaturalLanguage(query, places,
+            context: smartContext);
         final sortedPlaces = IntentProcessor.sortByPriority(
-          result['filteredPlaces'], 
-          result['priority']
-        );
-        
+            result['filteredPlaces'], result['priority']);
+
         setState(() {
           _intentFilteredPlaces = sortedPlaces;
           _currentExplanation = result['explanation'];
@@ -295,7 +281,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   void _updateActiveFiltersCount() {
     int count = 0;
-    
+
     // Moody Suggests filters
     if (_selectedMood != null) count++;
     if (_indoorOnly) count++;
@@ -306,7 +292,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     if (_crowdLively) count++;
     if (_romanticVibe) count++;
     if (_surpriseMe) count++;
-    
+
     // Dietary Preferences
     if (_vegan) count++;
     if (_vegetarian) count++;
@@ -314,7 +300,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     if (_glutenFree) count++;
     if (_pescatarian) count++;
     if (_noAlcohol) count++;
-    
+
     // Accessibility & Inclusion
     if (_wheelchairAccessible) count++;
     if (_lgbtqFriendly) count++;
@@ -322,7 +308,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     if (_seniorFriendly) count++;
     if (_babyFriendly) count++;
     if (_blackOwned) count++;
-    
+
     // Comfort & Convenience
     // Count price range if not default (0-100)
     if (_priceRange.start != 0 || _priceRange.end != 100) count++;
@@ -333,7 +319,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     if (_creditCards) count++;
     if (_wifiAvailable) count++;
     if (_chargingPoints) count++;
-    
+
     // Photo Options
     if (_instagrammable) count++;
     if (_artisticDesign) count++;
@@ -341,10 +327,70 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     if (_scenicViews) count++;
     if (_bestAtNight) count++;
     if (_bestAtSunset) count++;
-    
+
     setState(() {
       _activeFiltersCount = count;
     });
+  }
+
+  // Per-section active filter counts — used for badge indicators.
+  int get _quickSuggestionsActiveCount {
+    int n = 0;
+    if (_selectedMood != null) n++;
+    if (_indoorOnly) n++;
+    if (_outdoorOnly) n++;
+    if (_weatherSafe) n++;
+    if (_openNow) n++;
+    if (_crowdQuiet) n++;
+    if (_crowdLively) n++;
+    if (_romanticVibe) n++;
+    if (_surpriseMe) n++;
+    return n;
+  }
+
+  int get _dietaryActiveCount {
+    int n = 0;
+    if (_vegan) n++;
+    if (_vegetarian) n++;
+    if (_halal) n++;
+    if (_glutenFree) n++;
+    if (_pescatarian) n++;
+    if (_noAlcohol) n++;
+    return n;
+  }
+
+  int get _accessibilityActiveCount {
+    int n = 0;
+    if (_wheelchairAccessible) n++;
+    if (_lgbtqFriendly) n++;
+    if (_sensoryFriendly) n++;
+    if (_seniorFriendly) n++;
+    if (_babyFriendly) n++;
+    if (_blackOwned) n++;
+    return n;
+  }
+
+  int get _comfortActiveCount {
+    int n = 0;
+    if (_priceRange.start != 0 || _priceRange.end != 100) n++;
+    if (_maxDistance != 25.0) n++;
+    if (_parkingAvailable) n++;
+    if (_transportIncluded) n++;
+    if (_creditCards) n++;
+    if (_wifiAvailable) n++;
+    if (_chargingPoints) n++;
+    return n;
+  }
+
+  int get _photoActiveCount {
+    int n = 0;
+    if (_instagrammable) n++;
+    if (_artisticDesign) n++;
+    if (_aestheticSpaces) n++;
+    if (_scenicViews) n++;
+    if (_bestAtNight) n++;
+    if (_bestAtSunset) n++;
+    return n;
   }
 
   void _clearAllFilters() {
@@ -359,7 +405,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       _crowdLively = false;
       _romanticVibe = false;
       _surpriseMe = false;
-      
+
       // Dietary Preferences
       _vegan = false;
       _vegetarian = false;
@@ -367,7 +413,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       _glutenFree = false;
       _pescatarian = false;
       _noAlcohol = false;
-      
+
       // Accessibility & Inclusion
       _wheelchairAccessible = false;
       _lgbtqFriendly = false;
@@ -375,7 +421,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       _seniorFriendly = false;
       _babyFriendly = false;
       _blackOwned = false;
-      
+
       // Comfort & Convenience
       _priceRange = const RangeValues(0, 100);
       _maxDistance = 25.0;
@@ -384,7 +430,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       _creditCards = false;
       _wifiAvailable = false;
       _chargingPoints = false;
-      
+
       // Photo Options
       _instagrammable = false;
       _artisticDesign = false;
@@ -392,7 +438,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       _scenicViews = false;
       _bestAtNight = false;
       _bestAtSunset = false;
-      
+
       _activeFiltersCount = 0;
     });
   }
@@ -443,8 +489,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 category,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
-                  fontWeight: category == _searchFilter ? FontWeight.w600 : FontWeight.w400,
-                  color: category == _searchFilter ? const Color(0xFF2A6049) : Colors.black87,
+                  fontWeight: category == _searchFilter
+                      ? FontWeight.w600
+                      : FontWeight.w400,
+                  color: category == _searchFilter
+                      ? const Color(0xFF2A6049)
+                      : Colors.black87,
                 ),
               ),
             ],
@@ -463,12 +513,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   List<Place> _filterPlaces(List<Place> places) {
     final initialCount = places.length;
     final preferencesService = ref.read(userPreferencesServiceProvider);
-    
+
     var filteredPlaces = places.where((place) {
       // Filter by search query
       bool matchesSearch = _searchQuery.isEmpty ||
           place.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          (place.description?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
+          (place.description
+                  ?.toLowerCase()
+                  .contains(_searchQuery.toLowerCase()) ??
+              false) ||
           place.address.toLowerCase().contains(_searchQuery.toLowerCase());
 
       // Apply advanced filters (mood, dietary, accessibility, etc.)
@@ -480,7 +533,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       if (_activeFiltersCount == 0 && _searchQuery.isEmpty) {
         // Soft preference matching: prefer places that match interests/styles
         matchesPreferences = preferencesService.placeMatchesInterests(place) ||
-                            preferencesService.placeMatchesTravelStyles(place);
+            preferencesService.placeMatchesTravelStyles(place);
       }
 
       return matchesSearch && matchesAdvancedFilters && matchesPreferences;
@@ -488,21 +541,22 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
     // Sort places: preference matches first, then by rating
     filteredPlaces.sort((a, b) {
-      final aMatchesPrefs = preferencesService.placeMatchesInterests(a) || 
-                           preferencesService.placeMatchesTravelStyles(a);
-      final bMatchesPrefs = preferencesService.placeMatchesInterests(b) || 
-                           preferencesService.placeMatchesTravelStyles(b);
-      
+      final aMatchesPrefs = preferencesService.placeMatchesInterests(a) ||
+          preferencesService.placeMatchesTravelStyles(a);
+      final bMatchesPrefs = preferencesService.placeMatchesInterests(b) ||
+          preferencesService.placeMatchesTravelStyles(b);
+
       if (aMatchesPrefs && !bMatchesPrefs) return -1;
       if (!aMatchesPrefs && bMatchesPrefs) return 1;
-      
+
       return (b.rating ?? 0.0).compareTo(a.rating ?? 0.0);
     });
 
     // Debug logging
     if (_activeFiltersCount > 0 || _searchQuery.isNotEmpty) {
       if (kDebugMode) {
-        debugPrint('🔍 Filtering: ${initialCount} → ${filteredPlaces.length} places');
+        debugPrint(
+            '🔍 Filtering: ${initialCount} → ${filteredPlaces.length} places');
         debugPrint('   Active filters: $_activeFiltersCount');
         debugPrint('   Search query: "$_searchQuery"');
       }
@@ -564,11 +618,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return result;
   }
 
-
-
   bool _checkAdvancedFilters(Place place) {
     // Mood filter
-    if (_selectedMood != null && !_placeMatchesMood(place, _selectedMood!)) return false;
+    if (_selectedMood != null && !_placeMatchesMood(place, _selectedMood!))
+      return false;
 
     // Indoor/Outdoor filters
     if (_indoorOnly && !_placeIsIndoor(place)) return false;
@@ -585,24 +638,33 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     if (_vegetarian && !_matchesFilter(place, 'vegetarian')) return false;
     if (_halal && !_matchesFilter(place, 'halal')) return false;
     if (_glutenFree && !_matchesFilter(place, 'gluten_free')) return false;
-    if (_pescatarian && !_placeSupportsVeganVegetarian(place)) return false; // Pescatarian matches vegetarian
+    if (_pescatarian && !_placeSupportsVeganVegetarian(place))
+      return false; // Pescatarian matches vegetarian
 
     // Accessibility & Inclusion - using smart metadata matching
-    if (_wheelchairAccessible && !_matchesFilter(place, 'wheelchair_accessible')) return false;
-    if (_lgbtqFriendly && !_matchesFilter(place, 'lgbtq_friendly')) return false;
-    if (_seniorFriendly && !_matchesFilter(place, 'senior_friendly')) return false;
+    if (_wheelchairAccessible &&
+        !_matchesFilter(place, 'wheelchair_accessible')) return false;
+    if (_lgbtqFriendly && !_matchesFilter(place, 'lgbtq_friendly'))
+      return false;
+    if (_seniorFriendly && !_matchesFilter(place, 'senior_friendly'))
+      return false;
     if (_babyFriendly && !_matchesFilter(place, 'baby_friendly')) return false;
     if (_blackOwned && !_matchesFilter(place, 'black_owned')) return false;
 
     // Comfort & Convenience - using smart metadata matching
-    if (_wifiAvailable && !_matchesFilter(place, 'wifi_available')) return false;
-    if (_chargingPoints && !_matchesFilter(place, 'charging_points')) return false;
-    if (_parkingAvailable && !_matchesFilter(place, 'parking_available')) return false;
+    if (_wifiAvailable && !_matchesFilter(place, 'wifi_available'))
+      return false;
+    if (_chargingPoints && !_matchesFilter(place, 'charging_points'))
+      return false;
+    if (_parkingAvailable && !_matchesFilter(place, 'parking_available'))
+      return false;
     if (_creditCards && !_matchesFilter(place, 'credit_cards')) return false;
 
     // Photo Options - using smart metadata matching
-    if (_instagrammable && !_matchesFilter(place, 'instagrammable')) return false;
-    if (_aestheticSpaces && !_matchesFilter(place, 'aesthetic_spaces')) return false;
+    if (_instagrammable && !_matchesFilter(place, 'instagrammable'))
+      return false;
+    if (_aestheticSpaces && !_matchesFilter(place, 'aesthetic_spaces'))
+      return false;
     if (_scenicViews && !_matchesFilter(place, 'scenic_views')) return false;
     if (_bestAtSunset && !_matchesFilter(place, 'best_at_sunset')) return false;
 
@@ -614,59 +676,104 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     // NEW: Edge Function handles mood-based filtering
     // Local filters use keyword matching (no need for metadata from old provider)
     // Create search text for keyword matching
-    final searchText = '${place.name.toLowerCase()} ${place.description?.toLowerCase() ?? ''} ${place.address.toLowerCase()}';
-    
+    final searchText =
+        '${place.name.toLowerCase()} ${place.description?.toLowerCase() ?? ''} ${place.address.toLowerCase()}';
+
     // Use keyword-based matching (Edge Function already filtered by mood)
     return _matchesFilterByKeywords(place, filterKey, searchText);
   }
-  
+
   // Fallback keyword matching when metadata is not available
-  bool _matchesFilterByKeywords(Place place, String filterKey, String searchText) {
+  bool _matchesFilterByKeywords(
+      Place place, String filterKey, String searchText) {
     final keywordMap = {
       'vegan': ['vegan', 'plant-based', 'plant based', 'vegetarian'],
       'vegetarian': ['vegetarian', 'veggie', 'meat-free', 'meat free'],
       'halal': ['halal', 'muslim', 'islamic'],
       'gluten_free': ['gluten-free', 'gluten free', 'celiac', 'gf'],
-      'wheelchair_accessible': ['accessible', 'wheelchair', 'ramp', 'elevator', 'disabled'],
+      'wheelchair_accessible': [
+        'accessible',
+        'wheelchair',
+        'ramp',
+        'elevator',
+        'disabled'
+      ],
       'lgbtq_friendly': ['lgbtq', 'lgbt', 'gay', 'pride', 'inclusive'],
       'senior_friendly': ['senior', 'elderly', 'accessible', 'easy access'],
-      'baby_friendly': ['baby', 'child', 'family', 'kids', 'stroller', 'changing'],
+      'baby_friendly': [
+        'baby',
+        'child',
+        'family',
+        'kids',
+        'stroller',
+        'changing'
+      ],
       'black_owned': ['black owned', 'black-owned', 'african'],
       'wifi_available': ['wifi', 'wi-fi', 'wireless', 'internet', 'free wifi'],
       'charging_points': ['charging', 'power outlet', 'usb', 'electric'],
       'parking_available': ['parking', 'car park', 'garage'],
       'credit_cards': ['card', 'credit', 'debit', 'payment', 'cashless'],
-      'instagrammable': ['instagram', 'photo', 'picturesque', 'scenic', 'beautiful'],
-      'aesthetic_spaces': ['aesthetic', 'design', 'decor', 'interior', 'stylish'],
+      'instagrammable': [
+        'instagram',
+        'photo',
+        'picturesque',
+        'scenic',
+        'beautiful'
+      ],
+      'aesthetic_spaces': [
+        'aesthetic',
+        'design',
+        'decor',
+        'interior',
+        'stylish'
+      ],
       'scenic_views': ['view', 'scenic', 'panoramic', 'vista', 'overlook'],
       'best_at_sunset': ['sunset', 'evening', 'golden hour', 'dusk'],
     };
-    
+
     final keywords = keywordMap[filterKey] ?? [];
-    if (keywords.isEmpty) return true; // If no keywords defined, don't filter out
-    
+    if (keywords.isEmpty)
+      return true; // If no keywords defined, don't filter out
+
     // Check if any keyword matches
-    return keywords.any((keyword) => searchText.contains(keyword.toLowerCase()));
+    return keywords
+        .any((keyword) => searchText.contains(keyword.toLowerCase()));
   }
 
   // Helper method for mood matching
   bool _placeMatchesMood(Place place, String mood) {
     switch (mood.toLowerCase()) {
       case 'adventure':
-        return place.types.contains('park') || place.types.contains('tourist_attraction') ||
-               place.activities.any((activity) => activity.toLowerCase().contains('adventure'));
+        return place.types.contains('park') ||
+            place.types.contains('tourist_attraction') ||
+            place.activities.any(
+                (activity) => activity.toLowerCase().contains('adventure'));
       case 'creative':
-        return place.types.contains('art_gallery') || place.types.contains('museum') ||
-               place.activities.any((activity) => ['art', 'creative', 'workshop'].contains(activity.toLowerCase()));
+        return place.types.contains('art_gallery') ||
+            place.types.contains('museum') ||
+            place.activities.any((activity) => ['art', 'creative', 'workshop']
+                .contains(activity.toLowerCase()));
       case 'relaxed':
-        return place.types.contains('spa') || place.types.contains('cafe') || place.types.contains('park') ||
-               place.activities.any((activity) => ['relaxation', 'wellness', 'meditation'].contains(activity.toLowerCase()));
+        return place.types.contains('spa') ||
+            place.types.contains('cafe') ||
+            place.types.contains('park') ||
+            place.activities.any((activity) => [
+                  'relaxation',
+                  'wellness',
+                  'meditation'
+                ].contains(activity.toLowerCase()));
       case 'mindful':
-        return place.types.contains('place_of_worship') || place.types.contains('park') ||
-               place.activities.any((activity) => ['meditation', 'spiritual', 'mindfulness'].contains(activity.toLowerCase()));
+        return place.types.contains('place_of_worship') ||
+            place.types.contains('park') ||
+            place.activities.any((activity) => [
+                  'meditation',
+                  'spiritual',
+                  'mindfulness'
+                ].contains(activity.toLowerCase()));
       case 'romantic':
         return place.types.contains('restaurant') && place.rating > 4.0 ||
-               place.activities.any((activity) => ['romantic', 'date', 'intimate'].contains(activity.toLowerCase()));
+            place.activities.any((activity) => ['romantic', 'date', 'intimate']
+                .contains(activity.toLowerCase()));
       default:
         return true;
     }
@@ -674,21 +781,23 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   // Helper method for indoor places
   bool _placeIsIndoor(Place place) {
-    return !place.types.contains('park') && !place.types.contains('zoo') && 
-           !place.types.contains('campground') && !place.types.contains('amusement_park');
+    return !place.types.contains('park') &&
+        !place.types.contains('zoo') &&
+        !place.types.contains('campground') &&
+        !place.types.contains('amusement_park');
   }
 
   // Helper method for weather safe places
   bool _placeIsWeatherSafe(Place place) {
     // Weather safe places are typically indoor or have good weather protection
     return _placeIsIndoor(place) ||
-           place.types.contains('shopping_mall') ||
-           place.types.contains('subway_station') ||
-           place.types.contains('train_station') ||
-           place.types.contains('airport') ||
-           place.types.contains('hospital') ||
-           place.types.contains('university') ||
-           place.types.contains('school');
+        place.types.contains('shopping_mall') ||
+        place.types.contains('subway_station') ||
+        place.types.contains('train_station') ||
+        place.types.contains('airport') ||
+        place.types.contains('hospital') ||
+        place.types.contains('university') ||
+        place.types.contains('school');
   }
 
   // Helper method to check if place is currently open
@@ -698,35 +807,35 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     if (place.openingHours != null && place.openingHours!.isOpen != null) {
       return place.openingHours!.isOpen!;
     }
-    
+
     // Fallback: estimate based on place type and current time
     // This is a reasonable fallback when real data isn't available
     final hour = MoodyClock.now().hour;
     if (place.types.contains('museum')) return hour >= 9 && hour <= 17;
     if (place.types.contains('restaurant')) return hour >= 11 && hour <= 22;
-    if (place.types.contains('bar')) return hour >= 17 || hour <= 2; // Bars open late
+    if (place.types.contains('bar'))
+      return hour >= 17 || hour <= 2; // Bars open late
     if (place.types.contains('park')) return hour >= 6 && hour <= 22;
     return hour >= 8 && hour <= 20; // Default business hours
   }
 
   // Helper methods for filter logic (in a real app, this data would come from your database)
-  bool _placeSupportsHalal(Place place) => 
-    place.types.contains('restaurant') && place.name.toLowerCase().contains('halal') ||
-    place.description?.toLowerCase().contains('halal') == true;
+  bool _placeSupportsHalal(Place place) =>
+      place.types.contains('restaurant') &&
+          place.name.toLowerCase().contains('halal') ||
+      place.description?.toLowerCase().contains('halal') == true;
 
-  bool _placeSupportsVeganVegetarian(Place place) => 
-    place.types.contains('restaurant') && (
-      place.name.toLowerCase().contains('vegan') ||
-      place.name.toLowerCase().contains('vegetarian') ||
-      place.description?.toLowerCase().contains('vegan') == true ||
-      place.description?.toLowerCase().contains('vegetarian') == true
-    );
+  bool _placeSupportsVeganVegetarian(Place place) =>
+      place.types.contains('restaurant') &&
+      (place.name.toLowerCase().contains('vegan') ||
+          place.name.toLowerCase().contains('vegetarian') ||
+          place.description?.toLowerCase().contains('vegan') == true ||
+          place.description?.toLowerCase().contains('vegetarian') == true);
 
   bool _placeSupportsGlutenFree(Place place) =>
-    place.types.contains('restaurant') && (
-      place.name.toLowerCase().contains('gluten') ||
-      place.description?.toLowerCase().contains('gluten') == true
-    );
+      place.types.contains('restaurant') &&
+      (place.name.toLowerCase().contains('gluten') ||
+          place.description?.toLowerCase().contains('gluten') == true);
 
   // Helper methods for accessibility and inclusivity
   // These use rating as a proxy when real data isn't available
@@ -734,17 +843,22 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   bool _placeIsAccessible(Place place) {
     // Check description for accessibility keywords
     final desc = place.description?.toLowerCase() ?? '';
-    if (desc.contains('accessible') || desc.contains('wheelchair') || desc.contains('ramp')) {
+    if (desc.contains('accessible') ||
+        desc.contains('wheelchair') ||
+        desc.contains('ramp')) {
       return true;
     }
     // Fallback: higher-rated places are more likely to be accessible
     return place.rating > 4.0;
   }
-  
+
   bool _placeIsLGBTQFriendly(Place place) {
     // Check description for inclusivity keywords
     final desc = place.description?.toLowerCase() ?? '';
-    if (desc.contains('lgbtq') || desc.contains('inclusive') || desc.contains('diverse') || desc.contains('pride')) {
+    if (desc.contains('lgbtq') ||
+        desc.contains('inclusive') ||
+        desc.contains('diverse') ||
+        desc.contains('pride')) {
       return true;
     }
     // Fallback: higher-rated places are more likely to be inclusive
@@ -754,461 +868,418 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   bool _checkCategoryMatch(Place place, String category) {
     switch (category.toLowerCase()) {
       case 'popular':
-        return place.rating >= 4.0 || place.types.contains('tourist_attraction');
+        return place.rating >= 4.0 ||
+            place.types.contains('tourist_attraction');
       case 'accommodations':
-        return place.types.any((type) => ['lodging', 'hotel', 'apartment_rental'].contains(type.toLowerCase()));
+        return place.types.any((type) => [
+              'lodging',
+              'hotel',
+              'apartment_rental'
+            ].contains(type.toLowerCase()));
       case 'nature':
-        return place.types.any((type) => ['park', 'natural_feature', 'zoo', 'campground'].contains(type.toLowerCase())) ||
-               place.activities.any((activity) => activity.toLowerCase().contains('nature'));
+        return place.types.any((type) => [
+                  'park',
+                  'natural_feature',
+                  'zoo',
+                  'campground'
+                ].contains(type.toLowerCase())) ||
+            place.activities
+                .any((activity) => activity.toLowerCase().contains('nature'));
       case 'culture':
-        return place.types.any((type) => ['museum', 'art_gallery', 'library', 'tourist_attraction'].contains(type.toLowerCase())) ||
-               place.activities.any((activity) => ['culture', 'history', 'art'].contains(activity.toLowerCase()));
+        return place.types.any((type) => [
+                  'museum',
+                  'art_gallery',
+                  'library',
+                  'tourist_attraction'
+                ].contains(type.toLowerCase())) ||
+            place.activities.any((activity) =>
+                ['culture', 'history', 'art'].contains(activity.toLowerCase()));
       case 'food':
-        return place.types.any((type) => ['restaurant', 'cafe', 'bakery', 'food', 'meal_takeaway'].contains(type.toLowerCase())) ||
-               place.activities.any((activity) => activity.toLowerCase().contains('dining'));
+        return place.types.any((type) => [
+                  'restaurant',
+                  'cafe',
+                  'bakery',
+                  'food',
+                  'meal_takeaway'
+                ].contains(type.toLowerCase())) ||
+            place.activities
+                .any((activity) => activity.toLowerCase().contains('dining'));
       case 'activities':
         return place.activities.isNotEmpty;
       case 'history':
-        return place.types.any((type) => ['museum', 'cemetery', 'church', 'mosque', 'synagogue', 'hindu_temple', 'place_of_worship'].contains(type.toLowerCase())) ||
-               place.activities.any((activity) => activity.toLowerCase().contains('history'));
+        return place.types.any((type) => [
+                  'museum',
+                  'cemetery',
+                  'church',
+                  'mosque',
+                  'synagogue',
+                  'hindu_temple',
+                  'place_of_worship'
+                ].contains(type.toLowerCase())) ||
+            place.activities
+                .any((activity) => activity.toLowerCase().contains('history'));
       default:
-        return place.types.any((type) => type.toLowerCase() == category.toLowerCase()) ||
-               place.activities.any((activity) => activity.toLowerCase() == category.toLowerCase());
+        return place.types
+                .any((type) => type.toLowerCase() == category.toLowerCase()) ||
+            place.activities.any(
+                (activity) => activity.toLowerCase() == category.toLowerCase());
     }
+  }
+
+  Widget _buildExploreHeaderColumn(int activitiesCount) {
+    return SafeArea(
+      bottom: false,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+          Padding(
+            padding:
+                const EdgeInsets.fromLTRB(16, 8, 16, 10),
+            child: Row(
+              children: [
+                Text(
+                  'Explore',
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.grey[900],
+                  ),
+                ),
+                const Spacer(),
+                const LocationDropdown(),
+              ],
+            ),
+          ),
+          ConversationalExploreHeader(
+            onIntentSelected: _onIntentSelected,
+            onSearchChanged: _onConversationalSearchChanged,
+            selectedIntent: _selectedIntent,
+            onFilterTap: _showAdvancedFilters,
+            activeFiltersCount: _activeFiltersCount,
+            activitiesCount: activitiesCount,
+            isGridView: _isGridView,
+            isMapView: _isMapView,
+            onViewToggle: (isGrid, isMap) {
+              setState(() {
+                _isGridView = isGrid;
+                _isMapView = isMap;
+              });
+            },
+          ),
+        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExploreSliverAppBar(int activitiesCount) {
+    return SliverAppBar(
+      floating: true,
+      pinned: true,
+      snap: false,
+      expandedHeight: 268,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      automaticallyImplyLeading: false,
+      leading: null,
+      title: null,
+      flexibleSpace: FlexibleSpaceBar(
+        collapseMode: CollapseMode.parallax,
+        background: _buildExploreHeaderColumn(activitiesCount),
+      ),
+      bottom: const PreferredSize(
+        preferredSize: Size.fromHeight(0),
+        child: SizedBox.shrink(),
+      ),
+    );
+  }
+
+  Widget _buildExploreErrorBody(Object error, StackTrace? stack) {
+    final errorMessage = error.toString();
+    final isLocationError = errorMessage.contains('Location is required') ||
+        errorMessage.contains('GPS coordinates') ||
+        errorMessage.contains('location services');
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            isLocationError ? Icons.location_off : Icons.error_outline,
+            size: 64,
+            color: Colors.red[300],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            isLocationError ? 'Location Required' : 'Error loading places',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: Colors.red[700],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: Text(
+              isLocationError
+                  ? 'Please enable location services or set your location in settings to discover places near you.'
+                  : errorMessage,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey[700],
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              ref.invalidate(moodyExploreAutoProvider);
+              if (isLocationError) {
+                ref
+                    .read(locationNotifierProvider.notifier)
+                    .retryLocationAccess();
+                ref.read(userLocationProvider.notifier).refreshLocation();
+              }
+            },
+            child: Text(isLocationError ? 'Enable Location' : 'Try Again'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Map mode avoids [NestedScrollView] so pinch/pan gestures are not stolen by the header scroll coordinator.
+  Widget _buildExploreMapModeBody(List<Place> allPlaces, int activitiesCount) {
+    final locationAsync = ref.watch(locationNotifierProvider);
+    final userLocationAsync = ref.read(userLocationProvider);
+    final currentCity = locationAsync.value ?? 'Rotterdam';
+    final userLocation = userLocationAsync.value;
+
+    List<Place> filteredPlaces;
+    if (_intentFilteredPlaces.isNotEmpty ||
+        _selectedIntent.isNotEmpty ||
+        _searchQuery.isNotEmpty) {
+      filteredPlaces = _intentFilteredPlaces;
+    } else {
+      filteredPlaces = allPlaces;
+      if (_selectedCategory != 'All') {
+        filteredPlaces = filteredPlaces.where((place) {
+          return place.types.any(
+            (type) =>
+                type.toLowerCase().contains(_selectedCategory.toLowerCase()),
+          );
+        }).toList();
+      }
+      filteredPlaces = _filterPlaces(filteredPlaces);
+    }
+
+    final placesForMap = filteredPlaces;
+    final gygLinks = ref.watch(gygLinksProvider(currentCity)).valueOrNull ?? [];
+    final bottomPad = MediaQuery.viewPaddingOf(context).bottom +
+        _kExploreFloatingNavClearance;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildExploreHeaderColumn(activitiesCount),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _buildMapView(placesForMap, userLocation),
+              ),
+              Padding(
+                padding: EdgeInsets.only(bottom: bottomPad),
+                child: BookWithGygSection(
+                  cityName: currentCity,
+                  links: gygLinks,
+                  compactForMap: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExploreListGridBody(List<Place> allPlaces) {
+    final locationAsync = ref.watch(locationNotifierProvider);
+    final userLocationAsync = ref.read(userLocationProvider);
+    final currentCity = locationAsync.value ?? 'Rotterdam';
+    final userLocation = userLocationAsync.value;
+
+    List<Place> filteredPlaces;
+    if (_intentFilteredPlaces.isNotEmpty ||
+        _selectedIntent.isNotEmpty ||
+        _searchQuery.isNotEmpty) {
+      filteredPlaces = _intentFilteredPlaces;
+    } else {
+      filteredPlaces = allPlaces;
+      if (_selectedCategory != 'All') {
+        filteredPlaces = filteredPlaces.where((place) {
+          return place.types.any(
+            (type) =>
+                type.toLowerCase().contains(_selectedCategory.toLowerCase()),
+          );
+        }).toList();
+      }
+      filteredPlaces = _filterPlaces(filteredPlaces);
+    }
+
+    filteredPlaces = _applyQuickFilters(
+      filteredPlaces,
+      userLocation: userLocation,
+      currentCity: currentCity,
+    );
+
+    if (filteredPlaces.length < 5 && allPlaces.length >= 50) {
+      debugPrint(
+          '⚠️ Filters reduced results to ${filteredPlaces.length} places (${allPlaces.length} unfiltered).');
+    }
+
+    if (filteredPlaces.isEmpty) {
+      return CustomScrollView(
+        slivers: [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Column(
+              children: [
+                const Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.search_off, size: 64, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text('No places found',
+                            style: TextStyle(fontSize: 18, color: Colors.grey)),
+                      ],
+                    ),
+                  ),
+                ),
+                BookWithGygSection(
+                  cityName: currentCity,
+                  links: ref.watch(gygLinksProvider(currentCity)).valueOrNull ??
+                      [],
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    final gygFooterSliver = SliverToBoxAdapter(
+      child: BookWithGygSection(
+        cityName: currentCity,
+        links: ref.watch(gygLinksProvider(currentCity)).valueOrNull ?? [],
+      ),
+    );
+    const explanationSliver = null;
+
+    final placesSliver = _isGridView
+        ? SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.66,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final place = filteredPlaces[index];
+                final ul = userLocationAsync.value;
+                return PlaceGridCard(
+                  place: place,
+                  userLocation: ul,
+                  cityName: currentCity,
+                  onTap: () => context.push('/place/${place.id}'),
+                  onAddToMyDayTap: () => _showAddToMyDaySheet(place),
+                ).animate().fadeIn(
+                    duration: 300.ms,
+                    delay: Duration(milliseconds: index * 30));
+              },
+              childCount: filteredPlaces.length,
+            ),
+          )
+        : SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final place = filteredPlaces[index];
+                final ul = userLocationAsync.value;
+                return PlaceCard(
+                  place: place,
+                  userLocation: ul,
+                  cityName: currentCity,
+                  cardMargin: const EdgeInsets.only(top: 2, bottom: 16),
+                  showAddToMyDayButton: true,
+                  onAddToMyDayTap: () => _showAddToMyDaySheet(place),
+                  onTap: () => context.push('/place/${place.id}'),
+                ).animate().fadeIn(
+                    duration: 300.ms,
+                    delay: Duration(milliseconds: index * 50));
+              },
+              childCount: filteredPlaces.length,
+            ),
+          );
+
+    return CustomScrollView(
+      slivers: [
+        if (explanationSliver != null) explanationSliver,
+        SliverPadding(
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 4, bottom: 16),
+          sliver: placesSliver,
+        ),
+        gygFooterSliver,
+        const SliverToBoxAdapter(child: SizedBox(height: 100)),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Get the current location from the location provider
-    final locationAsync = ref.watch(locationNotifierProvider);
-    
-    // Get user's GPS location for distance calculation (cached to prevent excessive rebuilds)
-    final userLocationAsync = ref.read(userLocationProvider);
-    
-    // Use the location to fetch places - optimized to prevent excessive rebuilds
-    final city = locationAsync.value ?? 'Rotterdam';
-    // NEW: Use Moody Edge Function for 60-80 places
     final explorePlacesAsync = ref.watch(moodyExploreAutoProvider);
-    // OLD: ref.watch(explorePlacesProvider(city: city)) - Replaced by Edge Function
 
     return Scaffold(
-        backgroundColor: const Color(0xFFF5F0E8),
-        // Removed drawer and floating action button for Moody chat
-        body: NestedScrollView(
+      backgroundColor: const Color(0xFFF5F0E8),
+      body: explorePlacesAsync.when(
+        loading: () => NestedScrollView(
           controller: _scrollController,
-          headerSliverBuilder: (context, innerBoxIsScrolled) {
-            return [
-              SliverAppBar(
-                floating: true,
-                pinned: true,
-                snap: false,
-                expandedHeight: 300, // Increased to accommodate the activities count and view toggle
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                automaticallyImplyLeading: false,
-                // Removed hamburger menu
-                leading: null,
-                // Removed compact title, search and location buttons
-                title: null,
-                flexibleSpace: FlexibleSpaceBar(
-                  collapseMode: CollapseMode.parallax,
-                  background: SafeArea(
-          child: Column(
-            children: [
-              // Header with title
-              Padding(
-                // 16 horizontal aligns list cards with day plan screen insets
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-                child: Row(
-                  children: [
-                    Text(
-                      'Explore',
-                      style: GoogleFonts.poppins(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.grey[900],
-                      ),
-                    ),
-                    const Spacer(),
-                    const LocationDropdown(),
-                  ],
-                ),
-              ),
-              
-              // Conversational Explore Header
-              ConversationalExploreHeader(
-                onIntentSelected: _onIntentSelected,
-                onSearchChanged: _onConversationalSearchChanged,
-                selectedIntent: _selectedIntent,
-                onFilterTap: _showAdvancedFilters,
-                activeFiltersCount: _activeFiltersCount,
-                          activitiesCount: explorePlacesAsync.when(
-                            data: (places) => _filterPlaces(places).length,
-                            loading: () => 0,
-                            error: (_, __) => 0,
-                          ),
-                          isGridView: _isGridView,
-                          isMapView: _isMapView,
-                          onViewToggle: (isGrid, isMap) {
-                            setState(() {
-                              _isGridView = isGrid;
-                              _isMapView = isMap;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(0), // Changed from 60 to 0
-                  child: Container(), // Empty container since we moved the UI elements
-                ),
-              ),
-            ];
-          },
-          body: explorePlacesAsync.when(
-                  data: (allPlaces) {
-                    // Get city name for filtering
-                    final currentCity = locationAsync.value ?? 'Rotterdam';
-                    
-                    List<Place> filteredPlaces;
-                    final userLocation = userLocationAsync.value;
-                    
-                    // Use conversational filtering if active, otherwise use traditional filtering
-                    if (_intentFilteredPlaces.isNotEmpty || _selectedIntent.isNotEmpty || _searchQuery.isNotEmpty) {
-                      filteredPlaces = _intentFilteredPlaces;
-                    } else {
-                      // NEW: Edge Function already returns filtered/ranked places based on mood
-                      // Just apply local UI filters (search, category, etc.)
-                      filteredPlaces = allPlaces; // Start with all places from Edge Function
-                      
-                      // Apply local UI filters (category, search, etc.)
-                      if (_selectedCategory != 'All') {
-                        filteredPlaces = filteredPlaces.where((place) {
-                          return place.types.any((type) => 
-                            type.toLowerCase().contains(_selectedCategory.toLowerCase())
-                          );
-                        }).toList();
-                      }
-                      
-                      // Apply additional search and advanced filters locally
-                      filteredPlaces = _filterPlaces(filteredPlaces);
-                    }
-
-                    // For map view: show ALL places (filters are visual indicators only)
-                    // For list/grid view: apply quick filters to actually filter results
-                    final placesForMap = filteredPlaces; // Keep all places for map
-                    
-                    if (!_isMapView) {
-                      // Apply quick filters only for list/grid views
-                      filteredPlaces = _applyQuickFilters(
-                        filteredPlaces,
-                        userLocation: userLocation,
-                        currentCity: currentCity,
-                      );
-                    }
-                    
-                    // REMOVED: Auto-invalidate was causing infinite loop
-                    // If filters reduce results too much, user can manually refresh or adjust filters
-                    if (filteredPlaces.length < 5 && allPlaces.length >= 50) {
-                      debugPrint('⚠️ Filters reduced results to ${filteredPlaces.length} places (${allPlaces.length} unfiltered).');
-                    }
-
-                    // Map view: full map first; GYG footer (v2 — not a top "ad")
-                    if (_isMapView) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
-                            child: _buildMapView(placesForMap, userLocationAsync.value),
-                          ),
-                          BookWithGygSection(
-                            cityName: currentCity,
-                            links: ref.watch(gygLinksProvider(currentCity)).valueOrNull ?? [],
-                          ),
-                        ],
-                      );
-                    }
-                    
-                    if (filteredPlaces.isEmpty) {
-                      return CustomScrollView(
-                        slivers: [
-                          SliverFillRemaining(
-                            hasScrollBody: false,
-                            child: Column(
-                              children: [
-                                const Expanded(
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(Icons.search_off, size: 64, color: Colors.grey),
-                                        SizedBox(height: 16),
-                                        Text('No places found', style: TextStyle(fontSize: 18, color: Colors.grey)),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                BookWithGygSection(
-                                  cityName: currentCity,
-                                  links: ref.watch(gygLinksProvider(currentCity)).valueOrNull ?? [],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    }
-
-                    // List/Grid: GYG after place cards (footer, not top banner)
-                    final gygFooterSliver = SliverToBoxAdapter(
-                      child: BookWithGygSection(
-                        cityName: currentCity,
-                        links: ref.watch(gygLinksProvider(currentCity)).valueOrNull ?? [],
-                      ),
-                    );
-                    final explanationSliver = _currentExplanation.isNotEmpty
-                        ? SliverToBoxAdapter(
-                            child: Container(
-                            width: double.infinity,
-                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  const Color(0xFFEAF5EE),
-                                  const Color(0xFFEAF5EE),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: const Color(0xFF2A6049).withOpacity(0.2),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF2A6049),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: const Icon(
-                                    Icons.psychology_outlined,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _currentExplanation,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          color: const Color(0xFF2A6049),
-                                        ),
-                                      ),
-                                      Text(
-                                        '${filteredPlaces.length} places found',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14,
-                                          color: const Color(0xFF8C8780), // wmStone
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _currentExplanation = '';
-                                      _selectedIntent = '';
-                                      _intentFilteredPlaces = [];
-                                      _searchQuery = '';
-                                    });
-                                  },
-                                  icon: Icon(
-                                    Icons.close,
-                                    size: 20,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2, end: 0)
-                        )
-                        : null;
-
-                    final placesSliver = _isGridView
-                        ? SliverGrid(
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 0.75,
-                              crossAxisSpacing: 12,
-                              mainAxisSpacing: 12,
-                            ),
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) {
-                                final place = filteredPlaces[index];
-                                final userLocation = userLocationAsync.value;
-                                return PlaceGridCard(
-                                  place: place,
-                                  userLocation: userLocation,
-                                  cityName: currentCity,
-                                  onTap: () => context.push('/place/${place.id}'),
-                                  onAddToMyDayTap: () => _showAddToMyDaySheet(place),
-                                ).animate().fadeIn(duration: 300.ms, delay: Duration(milliseconds: index * 30));
-                              },
-                              childCount: filteredPlaces.length,
-                            ),
-                          )
-                        : SliverList(
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) {
-                                final place = filteredPlaces[index];
-                                final userLocation = userLocationAsync.value;
-                                return Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    PlaceCard(
-                                      place: place,
-                                      userLocation: userLocation,
-                                      cityName: currentCity,
-                                      cardMargin: const EdgeInsets.only(top: 8, bottom: 16),
-                                      showAddToMyDayButton: false,
-                                      onTap: () => context.push('/place/${place.id}'),
-                                    ),
-                                    Positioned(
-                                      right: 14,
-                                      bottom: 30,
-                                      child: Material(
-                                        color: Colors.transparent,
-                                        child: InkWell(
-                                          borderRadius: BorderRadius.circular(22),
-                                          onTap: () => _showAddToMyDaySheet(place),
-                                          child: Container(
-                                            height: 44,
-                                            padding: const EdgeInsets.symmetric(horizontal: 18),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF2A6049),
-                                              borderRadius: BorderRadius.circular(22),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: const Color(0xFF2A6049).withValues(alpha: 0.25),
-                                                  blurRadius: 10,
-                                                  offset: const Offset(0, 4),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                const Icon(Icons.add, color: Colors.white, size: 17),
-                                                const SizedBox(width: 7),
-                                                Text(
-                                                  'Mijn Dag',
-                                                  style: GoogleFonts.poppins(
-                                                    color: Colors.white,
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ).animate().fadeIn(duration: 300.ms, delay: Duration(milliseconds: index * 50));
-                              },
-                              childCount: filteredPlaces.length,
-                            ),
-                          );
-
-                    return CustomScrollView(
-                      slivers: [
-                        if (explanationSliver != null) explanationSliver,
-                        // Horizontal 16 matches day plan activity list (ListView.fromLTRB(16,...))
-                        SliverPadding(
-                          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-                          sliver: placesSliver,
-                        ),
-                        gygFooterSliver,
-                        const SliverToBoxAdapter(child: SizedBox(height: 100)),
-                      ],
-                    );
-                  },
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                  error: (error, stack) {
-                    // Check if error is location-related
-                    final errorMessage = error.toString();
-                    final isLocationError = errorMessage.contains('Location is required') || 
-                                          errorMessage.contains('GPS coordinates') ||
-                                          errorMessage.contains('location services');
-                    
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            isLocationError ? Icons.location_off : Icons.error_outline,
-                            size: 64,
-                            color: Colors.red[300],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            isLocationError ? 'Location Required' : 'Error loading places',
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.red[700],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                            child: Text(
-                              isLocationError
-                                  ? 'Please enable location services or set your location in settings to discover places near you.'
-                                  : errorMessage,
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: Colors.grey[700],
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          ElevatedButton(
-                            onPressed: () {
-                              ref.invalidate(moodyExploreAutoProvider);
-                              if (isLocationError) {
-                                ref.read(locationNotifierProvider.notifier).retryLocationAccess();
-                                ref.read(userLocationProvider.notifier).refreshLocation();
-                              }
-                            },
-                            child: Text(isLocationError ? 'Enable Location' : 'Try Again'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-          ),
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            _buildExploreSliverAppBar(0),
+          ],
+          body: const Center(child: CircularProgressIndicator()),
         ),
-      );
+        error: (error, stack) => NestedScrollView(
+          controller: _scrollController,
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            _buildExploreSliverAppBar(0),
+          ],
+          body: _buildExploreErrorBody(error, stack),
+        ),
+        data: (allPlaces) {
+          final activitiesCount = _filterPlaces(allPlaces).length;
+          if (_isMapView) {
+            return _buildExploreMapModeBody(allPlaces, activitiesCount);
+          }
+          return NestedScrollView(
+            controller: _scrollController,
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              _buildExploreSliverAppBar(activitiesCount),
+            ],
+            body: _buildExploreListGridBody(allPlaces),
+          );
+        },
+      ),
+    );
   }
-
-
-
-
 
   // Show dialog for talking to Moody
   void _showMoodyTalkDialog() {
@@ -1216,7 +1287,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   // Send chat message in modal
-  Future<void> _sendChatMessageInModal(String message, StateSetter setModalState) async {
+  Future<void> _sendChatMessageInModal(
+      String message, StateSetter setModalState) async {
     // Removed - Moody chat now only available on Moody screen
   }
 
@@ -1224,13 +1296,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   Widget _buildMessageBubble(ChatMessage message) {
     // Removed - Moody chat now only available on Moody screen
     return Container();
-   }
+  }
 
-   // Helper method to build quick suggestion buttons
-   Widget _buildQuickSuggestion(String text) {
+  // Helper method to build quick suggestion buttons
+  Widget _buildQuickSuggestion(String text) {
     // Removed - Moody chat now only available on Moody screen
     return Container();
-   }
+  }
 
   Widget _buildAdvancedFilterModal() {
     return StatefulBuilder(
@@ -1241,7 +1313,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           setState(() {}); // Trigger main widget rebuild
           setModalState(() {}); // Trigger modal rebuild
         }
-        
+
         return Dialog(
           backgroundColor: Colors.transparent,
           insetPadding: const EdgeInsets.all(24),
@@ -1323,10 +1395,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           style: TextButton.styleFrom(
                             foregroundColor: _afWmStone,
                             backgroundColor: Colors.transparent,
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             minimumSize: Size.zero,
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            shape: const RoundedRectangleBorder(side: BorderSide.none),
+                            shape: const RoundedRectangleBorder(
+                                side: BorderSide.none),
                           ),
                           child: Text(
                             'Clear All',
@@ -1351,7 +1425,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     ],
                   ),
                 ),
-                
+
                 // Filter Content - New Expandable Structure
                 Expanded(
                   child: SingleChildScrollView(
@@ -1359,52 +1433,71 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Empty state when no filters selected
-                        if (_activeFiltersCount == 0) ...[
-                          Center(
-                            child: Column(
+                        // Moody hint card
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF2F7F4),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: const Color(0xFFD0E4DA), width: 1),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(
-                                  Icons.tune_rounded,
-                                  size: 80,
-                                  color: Colors.grey[400],
-                                ),
-                                const SizedBox(height: 16),
-                                // Filter tip
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                                  child: Text(
-                                    "🎯 Use filters to find exactly what you're looking for!",
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.grey[600],
-                                      height: 1.3,
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: _afWmForestTint,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: _afWmParchment, width: 1),
+                                  ),
+                                  child: Center(
+                                    child: MoodyCharacter(
+                                      size: 30,
+                                      mood: _activeFiltersCount > 0 ? 'happy' : 'default',
+                                      glowOpacityScale: 0.35,
                                     ),
-                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _activeFiltersCount > 0
+                                            ? 'Nice! $_activeFiltersCount filter${_activeFiltersCount == 1 ? '' : 's'} active — I\'ll keep that in mind.'
+                                            : 'Hey! I\'m Moody. Use filters to find exactly what fits your vibe — dietary, accessibility, photo spots, and more.',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 13,
+                                          color: const Color(0xFF2A6049),
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.45,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 32),
-                        ],
-                        
-                        // Advanced Suggestions 
-                        _buildExpandableSection(
-                          '⚡', 
-                          'Quick Suggestions', 
-                          _advancedSuggestionsExpanded,
-                          () {
-                            updateFilter(() {
-                              _advancedSuggestionsExpanded = !_advancedSuggestionsExpanded;
-                            });
-                          },
-                          _buildAdvancedSuggestionFilters(updateFilter),
                         ),
-                        
-                        const SizedBox(height: 12),
-                        
+
+                        // Quick Suggestions
+                        _buildExpandableSection(
+                          '⚡',
+                          'Quick Suggestions',
+                          _advancedSuggestionsExpanded,
+                          () => updateFilter(() {
+                            _advancedSuggestionsExpanded = !_advancedSuggestionsExpanded;
+                          }),
+                          _buildAdvancedSuggestionFilters(updateFilter),
+                          activeCount: _quickSuggestionsActiveCount,
+                        ),
+
                         // Dietary Preferences
                         _buildExpandableSection(
                           '🍽️',
@@ -1414,10 +1507,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             _dietaryExpanded = !_dietaryExpanded;
                           }),
                           _buildDietaryFilters(updateFilter),
+                          activeCount: _dietaryActiveCount,
                         ),
-                        
-                        const SizedBox(height: 12),
-                        
+
                         // Accessibility & Inclusion
                         _buildExpandableSection(
                           '♿',
@@ -1427,88 +1519,90 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             _accessibilityExpanded = !_accessibilityExpanded;
                           }),
                           _buildAccessibilityFilters(updateFilter),
+                          activeCount: _accessibilityActiveCount,
                         ),
-                        
-                        const SizedBox(height: 12),
-                        
+
                         // Comfort & Convenience
                         _buildExpandableSection(
-                          '📍',
+                          '🛋️',
                           'Comfort & Convenience',
                           _logisticsExpanded,
                           () => updateFilter(() {
                             _logisticsExpanded = !_logisticsExpanded;
                           }),
                           _buildLogisticsFilters(updateFilter),
+                          activeCount: _comfortActiveCount,
                         ),
-                        
-                        const SizedBox(height: 12),
-                        
-                        // Photo Options
+
+                        // Photo & Aesthetic
                         _buildExpandableSection(
                           '📸',
-                          'Photo Options',
+                          'Photo & Aesthetic',
                           _photoExpanded,
                           () => updateFilter(() {
                             _photoExpanded = !_photoExpanded;
                           }),
                           _buildPhotoFilters(updateFilter),
+                          activeCount: _photoActiveCount,
                         ),
-                         
-                        const SizedBox(height: 100), // Extra space for apply button
+
+                        const SizedBox(height: 80),
                       ],
                     ),
                   ),
                 ),
-                
-                          // Apply Button
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: const BoxDecoration(
-              color: _afWmWhite,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
-            ),
-                  child: Column(
-                                  children: [
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      // Force a rebuild to apply filters
-                      setState(() {
-                        // Update active filters count
-                        _updateActiveFiltersCount();
-                        debugPrint('💾 Saved filters - Active count: $_activeFiltersCount');
-                        debugPrint('🔍 Filter state - Vegan: $_vegan, Vegetarian: $_vegetarian, Wheelchair: $_wheelchairAccessible');
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _afWmForest,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      elevation: 0,
-                      shadowColor: Colors.transparent,
+
+                // Apply Button
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: const BoxDecoration(
+                    color: _afWmWhite,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
                     ),
+                  ),
+                  child: Column(
+                    children: [
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            // Force a rebuild to apply filters
+                            setState(() {
+                              // Update active filters count
+                              _updateActiveFiltersCount();
+                              debugPrint(
+                                  '💾 Saved filters - Active count: $_activeFiltersCount');
+                              debugPrint(
+                                  '🔍 Filter state - Vegan: $_vegan, Vegetarian: $_vegetarian, Wheelchair: $_wheelchairAccessible');
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _afWmForest,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 24),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const Icon(Icons.check_circle, size: 20),
                               const SizedBox(width: 8),
-                                                      Text(
-                          _activeFiltersCount > 0 
-                            ? 'Save $_activeFiltersCount filters'
-                            : 'Save filters',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                              Text(
+                                _activeFiltersCount > 0
+                                    ? 'Save $_activeFiltersCount filters'
+                                    : 'Save filters',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -1524,7 +1618,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  Widget _buildFilterSection(String title, IconData icon, List<Widget> children) {
+  Widget _buildFilterSection(
+      String title, IconData icon, List<Widget> children) {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -1601,12 +1696,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: moods.map((mood) => 
-          Padding(
-            padding: const EdgeInsets.only(right: 12.0),
-            child: _buildMoodButton(mood),
-          )
-        ).toList(),
+        children: moods
+            .map((mood) => Padding(
+                  padding: const EdgeInsets.only(right: 12.0),
+                  child: _buildMoodButton(mood),
+                ))
+            .toList(),
       ),
     );
   }
@@ -1634,27 +1729,29 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               color: isSelected ? mood['color'] : Colors.grey[300]!,
               width: isSelected ? 3 : 1,
             ),
-            boxShadow: isSelected ? [
-              BoxShadow(
-                color: mood['color'].withOpacity(0.4),
-                blurRadius: 8,
-                spreadRadius: 2,
-                offset: const Offset(0, 4),
-              ),
-              BoxShadow(
-                color: mood['color'].withOpacity(0.2),
-                blurRadius: 12,
-                spreadRadius: 0,
-                offset: const Offset(0, 6),
-              ),
-            ] : [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 4,
-                spreadRadius: 0,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: mood['color'].withOpacity(0.4),
+                      blurRadius: 8,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 4),
+                    ),
+                    BoxShadow(
+                      color: mood['color'].withOpacity(0.2),
+                      blurRadius: 12,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -1688,17 +1785,18 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: moods.map((mood) => 
-          Padding(
-            padding: const EdgeInsets.only(right: 12.0),
-            child: _buildMoodButtonWithCallback(mood, updateFilter),
-          )
-        ).toList(),
+        children: moods
+            .map((mood) => Padding(
+                  padding: const EdgeInsets.only(right: 12.0),
+                  child: _buildMoodButtonWithCallback(mood, updateFilter),
+                ))
+            .toList(),
       ),
     );
   }
 
-  Widget _buildMoodButtonWithCallback(Map<String, dynamic> mood, Function(VoidCallback) updateFilter) {
+  Widget _buildMoodButtonWithCallback(
+      Map<String, dynamic> mood, Function(VoidCallback) updateFilter) {
     final isSelected = _selectedMood == mood['name'];
     return Material(
       color: Colors.transparent,
@@ -1721,27 +1819,29 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               color: isSelected ? mood['color'] : Colors.grey[300]!,
               width: isSelected ? 3 : 1,
             ),
-            boxShadow: isSelected ? [
-              BoxShadow(
-                color: mood['color'].withOpacity(0.4),
-                blurRadius: 8,
-                spreadRadius: 2,
-                offset: const Offset(0, 4),
-              ),
-              BoxShadow(
-                color: mood['color'].withOpacity(0.2),
-                blurRadius: 12,
-                spreadRadius: 0,
-                offset: const Offset(0, 6),
-              ),
-            ] : [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 4,
-                spreadRadius: 0,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: mood['color'].withOpacity(0.4),
+                      blurRadius: 8,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 4),
+                    ),
+                    BoxShadow(
+                      color: mood['color'].withOpacity(0.2),
+                      blurRadius: 12,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -1763,14 +1863,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  Widget _buildSuggestionChip(String emoji, String label, bool value, Function(bool)? onChanged) {
+  Widget _buildSuggestionChip(
+      String emoji, String label, bool value, Function(bool)? onChanged) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onChanged != null ? () {
-          HapticFeedback.lightImpact();
-          onChanged(!value);
-        } : null,
+        onTap: onChanged != null
+            ? () {
+                HapticFeedback.lightImpact();
+                onChanged(!value);
+              }
+            : null,
         borderRadius: BorderRadius.circular(20),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
@@ -1782,27 +1885,29 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               color: value ? const Color(0xFF2A6049) : Colors.grey[300]!,
               width: value ? 2 : 1,
             ),
-            boxShadow: value ? [
-              BoxShadow(
-                color: const Color(0xFF2A6049).withOpacity(0.3),
-                blurRadius: 6,
-                spreadRadius: 1,
-                offset: const Offset(0, 3),
-              ),
-              BoxShadow(
-                color: const Color(0xFF2A6049).withOpacity(0.1),
-                blurRadius: 10,
-                spreadRadius: 0,
-                offset: const Offset(0, 5),
-              ),
-            ] : [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 3,
-                spreadRadius: 0,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            boxShadow: value
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF2A6049).withOpacity(0.3),
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 3),
+                    ),
+                    BoxShadow(
+                      color: const Color(0xFF2A6049).withOpacity(0.1),
+                      blurRadius: 10,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 5),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 3,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -1826,7 +1931,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  Widget _buildSuggestionChipWithCallback(String emoji, String label, bool value, VoidCallback? onChanged) {
+  Widget _buildSuggestionChipWithCallback(
+      String emoji, String label, bool value, VoidCallback? onChanged) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1842,27 +1948,29 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               color: value ? const Color(0xFF2A6049) : Colors.grey[300]!,
               width: value ? 2 : 1,
             ),
-            boxShadow: value ? [
-              BoxShadow(
-                color: const Color(0xFF2A6049).withOpacity(0.3),
-                blurRadius: 6,
-                spreadRadius: 1,
-                offset: const Offset(0, 3),
-              ),
-              BoxShadow(
-                color: const Color(0xFF2A6049).withOpacity(0.1),
-                blurRadius: 10,
-                spreadRadius: 0,
-                offset: const Offset(0, 5),
-              ),
-            ] : [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 3,
-                spreadRadius: 0,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            boxShadow: value
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF2A6049).withOpacity(0.3),
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 3),
+                    ),
+                    BoxShadow(
+                      color: const Color(0xFF2A6049).withOpacity(0.1),
+                      blurRadius: 10,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 5),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 3,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -1886,7 +1994,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  Widget _buildOutlineButton(String emoji, String label, bool value, Function(bool) onChanged) {
+  Widget _buildOutlineButton(
+      String emoji, String label, bool value, Function(bool) onChanged) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1905,27 +2014,29 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               color: value ? const Color(0xFF2A6049) : Colors.grey[300]!,
               width: value ? 2.5 : 1.5,
             ),
-            boxShadow: value ? [
-              BoxShadow(
-                color: const Color(0xFF2A6049).withOpacity(0.3),
-                blurRadius: 6,
-                spreadRadius: 1,
-                offset: const Offset(0, 3),
-              ),
-              BoxShadow(
-                color: const Color(0xFF2A6049).withOpacity(0.1),
-                blurRadius: 8,
-                spreadRadius: 0,
-                offset: const Offset(0, 4),
-              ),
-            ] : [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 2,
-                spreadRadius: 0,
-                offset: const Offset(0, 1),
-              ),
-            ],
+            boxShadow: value
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF2A6049).withOpacity(0.3),
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 3),
+                    ),
+                    BoxShadow(
+                      color: const Color(0xFF2A6049).withOpacity(0.1),
+                      blurRadius: 8,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 2,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -1949,7 +2060,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  Widget _buildOutlineButtonWithCallback(String emoji, String label, bool value, VoidCallback? onChanged) {
+  Widget _buildOutlineButtonWithCallback(
+      String emoji, String label, bool value, VoidCallback? onChanged) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1965,27 +2077,29 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               color: value ? const Color(0xFF2A6049) : Colors.grey[300]!,
               width: value ? 2.5 : 1.5,
             ),
-            boxShadow: value ? [
-              BoxShadow(
-                color: const Color(0xFF2A6049).withOpacity(0.3),
-                blurRadius: 6,
-                spreadRadius: 1,
-                offset: const Offset(0, 3),
-              ),
-              BoxShadow(
-                color: const Color(0xFF2A6049).withOpacity(0.1),
-                blurRadius: 8,
-                spreadRadius: 0,
-                offset: const Offset(0, 4),
-              ),
-            ] : [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 2,
-                spreadRadius: 0,
-                offset: const Offset(0, 1),
-              ),
-            ],
+            boxShadow: value
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF2A6049).withOpacity(0.3),
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 3),
+                    ),
+                    BoxShadow(
+                      color: const Color(0xFF2A6049).withOpacity(0.1),
+                      blurRadius: 8,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 2,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -2011,11 +2125,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   String _getPriceLevelText(int level) {
     switch (level) {
-      case 1: return 'Budget';
-      case 2: return 'Moderate';
-      case 3: return 'Expensive';
-      case 4: return 'Luxury';
-      default: return 'Budget';
+      case 1:
+        return 'Budget';
+      case 2:
+        return 'Moderate';
+      case 3:
+        return 'Expensive';
+      case 4:
+        return 'Luxury';
+      default:
+        return 'Budget';
     }
   }
 
@@ -2025,14 +2144,19 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     String title,
     bool isExpanded,
     VoidCallback onToggle,
-    Widget content,
-  ) {
+    Widget content, {
+    int activeCount = 0,
+  }) {
+    final hasActive = activeCount > 0;
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
       decoration: BoxDecoration(
         color: _afWmWhite,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _afWmParchment, width: 0.5),
+        border: Border.all(
+          color: hasActive && !isExpanded ? _afWmForest.withValues(alpha: 0.55) : _afWmParchment,
+          width: hasActive && !isExpanded ? 1.25 : 0.75,
+        ),
       ),
       child: Column(
         children: [
@@ -2043,36 +2167,52 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 HapticFeedback.lightImpact();
                 onToggle();
               },
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              child: Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: isExpanded ? _afWmWhite : Colors.transparent,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                ),
+              borderRadius: BorderRadius.vertical(
+                top: const Radius.circular(16),
+                bottom: isExpanded ? Radius.zero : const Radius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                 child: Row(
                   children: [
-                    Text(
-                      icon,
-                      style: const TextStyle(fontSize: 20),
-                    ),
+                    Text(icon, style: const TextStyle(fontSize: 20)),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         title,
                         style: GoogleFonts.poppins(
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: _afWmCharcoal,
+                          color: hasActive ? _afWmForest : _afWmCharcoal,
                         ),
                       ),
                     ),
+                    // Active count badge
+                    if (hasActive && !isExpanded) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: _afWmForest,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '$activeCount',
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     AnimatedRotation(
                       turns: isExpanded ? 0.5 : 0,
                       duration: const Duration(milliseconds: 200),
                       child: Icon(
                         Icons.keyboard_arrow_down,
                         color: isExpanded ? _afWmForest : _afWmStone,
+                        size: 22,
                       ),
                     ),
                   ],
@@ -2103,7 +2243,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildFilterChip('🏠', 'Indoor Only', _indoorOnly, (value) {
+              child:
+                  _buildFilterChip('🏠', 'Indoor Only', _indoorOnly, (value) {
                 updateFilter(() {
                   _indoorOnly = value;
                   if (value) _outdoorOnly = false; // Exclusive
@@ -2113,7 +2254,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: _buildFilterChip('☀️', 'Outdoor Only', _outdoorOnly, (value) {
+              child:
+                  _buildFilterChip('☀️', 'Outdoor Only', _outdoorOnly, (value) {
                 updateFilter(() {
                   _outdoorOnly = value;
                   if (value) _indoorOnly = false; // Exclusive
@@ -2127,7 +2269,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildFilterChip('🌧️', 'Weather-Safe', _weatherSafe, (value) {
+              child: _buildFilterChip('🌧️', 'Weather-Safe', _weatherSafe,
+                  (value) {
                 updateFilter(() {
                   _weatherSafe = value;
                   _updateActiveFiltersCount();
@@ -2173,7 +2316,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildFilterChip('💕', 'Romantic Vibe', _romanticVibe, (value) {
+              child: _buildFilterChip('💕', 'Romantic Vibe', _romanticVibe,
+                  (value) {
                 updateFilter(() {
                   _romanticVibe = value;
                   _updateActiveFiltersCount();
@@ -2182,7 +2326,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: _buildFilterChip('🔀', 'Surprise Me', _surpriseMe, (value) {
+              child:
+                  _buildFilterChip('🔀', 'Surprise Me', _surpriseMe, (value) {
                 updateFilter(() {
                   _surpriseMe = value;
                   _updateActiveFiltersCount();
@@ -2247,7 +2392,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       spacing: 8,
       runSpacing: 8,
       children: [
-        _buildFilterChip('♿', 'Wheelchair Accessible', _wheelchairAccessible, (value) {
+        _buildFilterChip('♿', 'Wheelchair Accessible', _wheelchairAccessible,
+            (value) {
           updateFilter(() {
             _wheelchairAccessible = value;
             _updateActiveFiltersCount();
@@ -2406,7 +2552,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             _updateActiveFiltersCount();
           });
         }),
-        _buildFilterChip('🧘‍♀️', 'Aesthetic Spaces', _aestheticSpaces, (value) {
+        _buildFilterChip('🧘‍♀️', 'Aesthetic Spaces', _aestheticSpaces,
+            (value) {
           updateFilter(() {
             _aestheticSpaces = value;
             _updateActiveFiltersCount();
@@ -2435,7 +2582,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   /// v2 filter pills (SCREEN 7): unselected cream + parchment + charcoal; selected forestTint + forest + forest text.
-  Widget _buildFilterChip(String emoji, String label, bool isSelected, Function(bool) onChanged) {
+  Widget _buildFilterChip(
+      String emoji, String label, bool isSelected, Function(bool) onChanged) {
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -2473,10 +2621,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-
-
   // Helper to build selectable chips (for single-select options)
-  Widget _buildSelectableChip(String label, bool isSelected, VoidCallback onTap) {
+  Widget _buildSelectableChip(
+      String label, bool isSelected, VoidCallback onTap) {
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -2489,7 +2636,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           color: isSelected ? const Color(0xFFEBF3EE) : const Color(0xFFF5F0E8),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFF2A6049) : const Color(0xFFE8E2D8),
+            color:
+                isSelected ? const Color(0xFF2A6049) : const Color(0xFFE8E2D8),
             width: isSelected ? 1.5 : 0.5,
           ),
         ),
@@ -2498,7 +2646,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           style: GoogleFonts.poppins(
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            color: isSelected ? const Color(0xFF2A6049) : const Color(0xFF8C8780),
+            color:
+                isSelected ? const Color(0xFF2A6049) : const Color(0xFF8C8780),
           ),
         ),
       ),
@@ -2526,48 +2675,53 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         ),
       );
     }
-    
+
     // Determine initial camera position
     LatLng initialPosition;
     if (userLocation != null) {
       // Check if it's simulator coordinates
-      final isSanFrancisco = (userLocation.latitude - 37.785834).abs() < 0.1 && 
-                            (userLocation.longitude + 122.406417).abs() < 0.1;
+      final isSanFrancisco = (userLocation.latitude - 37.785834).abs() < 0.1 &&
+          (userLocation.longitude + 122.406417).abs() < 0.1;
       if (!isSanFrancisco) {
         initialPosition = LatLng(userLocation.latitude, userLocation.longitude);
       } else {
         // Use city center as fallback
-        final currentCity = ref.read(locationNotifierProvider).value ?? 'Rotterdam';
+        final currentCity =
+            ref.read(locationNotifierProvider).value ?? 'Rotterdam';
         final cityCoords = _getCityCoordinates(currentCity);
         initialPosition = LatLng(cityCoords['lat']!, cityCoords['lng']!);
       }
     } else {
       // Use city center
-      final currentCity = ref.read(locationNotifierProvider).value ?? 'Rotterdam';
+      final currentCity =
+          ref.read(locationNotifierProvider).value ?? 'Rotterdam';
       final cityCoords = _getCityCoordinates(currentCity);
       initialPosition = LatLng(cityCoords['lat']!, cityCoords['lng']!);
     }
-    
+
     // Create markers for all places (not filtered - show everything on map)
     final Set<Marker> markers = {};
     final currentCity = ref.read(locationNotifierProvider).value ?? 'Rotterdam';
-    
+
     for (int i = 0; i < places.length; i++) {
       final place = places[i];
       final markerId = MarkerId(place.id);
-      
+
       // Determine marker color based on quick filters (visual indicator only)
       BitmapDescriptor markerIcon = BitmapDescriptor.defaultMarker;
       if (_quickFilterRating45 && place.rating >= 4.5) {
-        markerIcon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+        markerIcon =
+            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
       } else if (_quickFilterDistance1km) {
         // Check if within 1km (for visual highlighting)
-        final distance = _calculatePlaceDistance(place, userLocation, currentCity);
+        final distance =
+            _calculatePlaceDistance(place, userLocation, currentCity);
         if (distance != null && distance <= 1.0) {
-          markerIcon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+          markerIcon =
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
         }
       }
-      
+
       // Store place ID for navigation
       final placeId = place.id;
       markers.add(
@@ -2576,7 +2730,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           position: LatLng(place.location.lat, place.location.lng),
           infoWindow: InfoWindow(
             title: place.name,
-            snippet: place.rating > 0 ? '⭐ ${place.rating.toStringAsFixed(1)}' : null,
+            snippet: place.rating > 0
+                ? '⭐ ${place.rating.toStringAsFixed(1)}'
+                : null,
           ),
           icon: markerIcon,
           onTap: () async {
@@ -2590,7 +2746,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         ),
       );
     }
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
@@ -2605,23 +2761,32 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height - 300, // Proper height constraint
-          child: Stack(
-            children: [
-              // Google Map
-              GoogleMap(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned.fill(
+              child: GoogleMap(
                 initialCameraPosition: CameraPosition(
                   target: initialPosition,
                   zoom: 13,
                 ),
                 markers: markers,
-                mapType: MapType.normal, // Ensure map type is set
+                mapType: MapType.normal,
+                gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                  Factory<OneSequenceGestureRecognizer>(
+                      () => EagerGestureRecognizer()),
+                },
+                scrollGesturesEnabled: true,
+                zoomGesturesEnabled: true,
+                rotateGesturesEnabled: true,
+                tiltGesturesEnabled: true,
+                minMaxZoomPreference: const MinMaxZoomPreference(9, 20),
                 onMapCreated: (GoogleMapController controller) {
                   _mapController = controller;
                   if (kDebugMode) {
                     debugPrint('✅ Google Map created successfully');
-                    debugPrint('📍 Initial position: ${initialPosition.latitude}, ${initialPosition.longitude}');
+                    debugPrint(
+                        '📍 Initial position: ${initialPosition.latitude}, ${initialPosition.longitude}');
                     debugPrint('📍 Markers count: ${markers.length}');
                   }
                 },
@@ -2632,94 +2797,94 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 },
                 onTap: (LatLng position) {
                   if (kDebugMode) {
-                    debugPrint('🗺️ Map tapped at: ${position.latitude}, ${position.longitude}');
+                    debugPrint(
+                        '🗺️ Map tapped at: ${position.latitude}, ${position.longitude}');
                   }
                 },
-                // Error handling for map loading
                 onCameraIdle: () {
                   if (kDebugMode) {
                     debugPrint('🗺️ Camera idle - map should be fully loaded');
                   }
                 },
-                myLocationEnabled: userLocation != null && 
-                  (userLocation.latitude - 37.785834).abs() > 0.1, // Don't show if SF simulator
+                myLocationEnabled: userLocation != null &&
+                    (userLocation.latitude - 37.785834).abs() > 0.1,
                 myLocationButtonEnabled: true,
-                zoomControlsEnabled: true,
-                mapToolbarEnabled: false, // Hide default toolbar
+                zoomControlsEnabled: false,
+                mapToolbarEnabled: false,
                 compassEnabled: true,
-                // Additional map settings to ensure proper rendering
                 trafficEnabled: false,
                 buildingsEnabled: true,
                 indoorViewEnabled: false,
               ),
-              
-              // Quick filter chips at the top
-              Positioned(
-                top: 16,
-                left: 16,
-                right: 16,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+            ),
+
+            // Quick filter chips at the top
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.filter_list,
+                      size: 20,
+                      color: Colors.grey[600],
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Quick Filters',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[800],
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.filter_list,
-                        size: 20,
-                        color: Colors.grey[600],
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Quick Filters',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey[800],
-                        ),
-                      ),
-                      const Spacer(),
-                      // Distance filter (highlights places within 1km)
-                      _buildQuickFilterChip(
-                        '1km',
-                        isActive: _quickFilterDistance1km,
-                        onTap: () {
-                          setState(() {
-                            _quickFilterDistance1km = !_quickFilterDistance1km;
-                          });
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      // Rating filter (highlights places 4.5+)
-                      _buildQuickFilterChip(
-                        '4.5+',
-                        isActive: _quickFilterRating45,
-                        onTap: () {
-                          setState(() {
-                            _quickFilterRating45 = !_quickFilterRating45;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
+                    ),
+                    const Spacer(),
+                    // Distance filter (highlights places within 1km)
+                    _buildQuickFilterChip(
+                      '1km',
+                      isActive: _quickFilterDistance1km,
+                      onTap: () {
+                        setState(() {
+                          _quickFilterDistance1km = !_quickFilterDistance1km;
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    // Rating filter (highlights places 4.5+)
+                    _buildQuickFilterChip(
+                      '4.5+',
+                      isActive: _quickFilterRating45,
+                      onTap: () {
+                        setState(() {
+                          _quickFilterRating45 = !_quickFilterRating45;
+                        });
+                      },
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
-  
+
   /// Get city coordinates for map initialization
   Map<String, double> _getCityCoordinates(String cityName) {
     final cityCoords = {
@@ -2734,19 +2899,20 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     };
     return cityCoords[cityName] ?? cityCoords['Rotterdam']!;
   }
-  
+
   /// Calculate distance for a place (helper for map markers)
-  double? _calculatePlaceDistance(Place place, Position? userLocation, String cityName) {
+  double? _calculatePlaceDistance(
+      Place place, Position? userLocation, String cityName) {
     Position? referencePoint;
-    
+
     if (userLocation != null) {
-      final isSanFrancisco = (userLocation.latitude - 37.785834).abs() < 0.1 && 
-                            (userLocation.longitude + 122.406417).abs() < 0.1;
+      final isSanFrancisco = (userLocation.latitude - 37.785834).abs() < 0.1 &&
+          (userLocation.longitude + 122.406417).abs() < 0.1;
       if (!isSanFrancisco) {
         referencePoint = userLocation;
       }
     }
-    
+
     if (referencePoint == null) {
       final cityCoords = _getCityCoordinates(cityName);
       referencePoint = Position(
@@ -2762,7 +2928,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         speedAccuracy: 0,
       );
     }
-    
+
     return DistanceService.calculateDistance(
       referencePoint.latitude,
       referencePoint.longitude,
@@ -2790,7 +2956,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       builder: (_) => _ExploreAddToMyDaySheet(
         place: place,
         planningDate: planningDate,
-        onTimeSelected: (DateTime startTime) => _addActivityToMyDay(place, startTime),
+        onTimeSelected: (DateTime startTime) =>
+            _addActivityToMyDay(place, startTime),
       ),
     );
   }
@@ -2859,9 +3026,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         priceLevel: place.priceRange,
       );
 
-      final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
-      await scheduledActivityService.saveScheduledActivities([activity], isConfirmed: false);
+      final scheduledActivityService =
+          ref.read(scheduledActivityServiceProvider);
+      await scheduledActivityService
+          .saveScheduledActivities([activity], isConfirmed: false);
 
+      final selectedDay =
+          DateTime(startTime.year, startTime.month, startTime.day);
+      ref.read(selectedMyDayDateProvider.notifier).state = selectedDay;
       ref.invalidate(scheduledActivityServiceProvider);
       ref.invalidate(scheduledActivitiesForTodayProvider);
       ref.invalidate(todayActivitiesProvider);
@@ -2874,7 +3046,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           duration: const Duration(seconds: 3),
           actionLabel: 'Bekijk',
           onAction: () {
-            if (mounted) context.go('/main', extra: {'tab': 0, 'refresh': true});
+            if (mounted)
+              context.go('/main', extra: {
+                'tab': 0,
+                'refresh': true,
+                'targetDate': selectedDay.toIso8601String(),
+              });
           },
         );
       }
@@ -2934,68 +3111,104 @@ class _ExploreAddToMyDaySheet extends StatefulWidget {
   });
 
   @override
-  State<_ExploreAddToMyDaySheet> createState() => _ExploreAddToMyDaySheetState();
+  State<_ExploreAddToMyDaySheet> createState() =>
+      _ExploreAddToMyDaySheetState();
 }
 
 class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
-  int _selectedSlotIndex = 0;
-  late final List<Map<String, dynamic>> _timeSlots;
+  int _selectedSlotIndex = 1; // 0 morning, 1 afternoon, 2 evening
+  late DateTime _selectedDate;
+
+  DateTime _dateOnly(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
+
+  bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  String _formatDateShort(DateTime date) {
+    final dd = date.day.toString().padLeft(2, '0');
+    final mm = date.month.toString().padLeft(2, '0');
+    return '$dd/$mm';
+  }
+
+  String _formatDateLong(DateTime date) {
+    final dd = date.day.toString().padLeft(2, '0');
+    final mm = date.month.toString().padLeft(2, '0');
+    return '$dd/$mm/${date.year}';
+  }
+
+  DateTime get _selectedStartTime {
+    final d = _selectedDate;
+    final hour = _selectedSlotIndex == 0 ? 9 : (_selectedSlotIndex == 1 ? 14 : 19);
+    return DateTime(d.year, d.month, d.day, hour, 0);
+  }
+
+  Future<void> _pickCustomDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate.isBefore(_dateOnly(now))
+          ? _dateOnly(now)
+          : _selectedDate,
+      firstDate: _dateOnly(now),
+      lastDate: DateTime(now.year + 1, 12, 31),
+      helpText: 'Kies een dag',
+      cancelText: 'Annuleren',
+      confirmText: 'Kies',
+    );
+    if (picked == null) return;
+    setState(() {
+      _selectedDate = _dateOnly(picked);
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    final planningDay = DateTime(
-      widget.planningDate.year,
-      widget.planningDate.month,
-      widget.planningDate.day,
-    );
-    _timeSlots = [
-      {
-        'label': '🌅 Ochtend',
-        'subtitle': '08:00 - 12:00',
-        'time': DateTime(planningDay.year, planningDay.month, planningDay.day, 9, 0),
-      },
-      {
-        'label': '☀️ Middag',
-        'subtitle': '12:00 - 17:00',
-        'time': DateTime(planningDay.year, planningDay.month, planningDay.day, 13, 0),
-      },
-      {
-        'label': '🌙 Avond',
-        'subtitle': '17:00 - 22:00',
-        'time': DateTime(planningDay.year, planningDay.month, planningDay.day, 19, 0),
-      },
-    ];
-
-    // Default to first upcoming slot only for "today"; otherwise default to morning.
-    final now = DateTime.now();
-    final isPlanningToday = planningDay.year == now.year &&
-        planningDay.month == now.month &&
-        planningDay.day == now.day;
-    if (isPlanningToday) {
-      _selectedSlotIndex = _timeSlots.length - 1; // fallback: last slot
-      for (int i = 0; i < _timeSlots.length; i++) {
-        if ((_timeSlots[i]['time'] as DateTime).isAfter(now)) {
-          _selectedSlotIndex = i;
-          break;
-        }
-      }
-    } else {
-      _selectedSlotIndex = 0;
-    }
+    _selectedDate = _dateOnly(widget.planningDate);
   }
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final planningDay = DateTime(
-      widget.planningDate.year,
-      widget.planningDate.month,
-      widget.planningDate.day,
-    );
-    final isPlanningToday = planningDay.year == now.year &&
-        planningDay.month == now.month &&
-        planningDay.day == now.day;
+    final today = _dateOnly(now);
+    final tomorrow = today.add(const Duration(days: 1));
+    final isTodaySelected = _isSameDay(_selectedDate, today);
+    final isTomorrowSelected = _isSameDay(_selectedDate, tomorrow);
+    final isCustomSelected = !isTodaySelected && !isTomorrowSelected;
+
+    Widget chip({
+      required String label,
+      required bool selected,
+      required VoidCallback onTap,
+    }) {
+      return Expanded(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: selected ? const Color(0xFFEBF3EE) : const Color(0xFFF5F0E8),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: selected ? const Color(0xFF2A6049) : const Color(0xFFE8E2D8),
+                width: selected ? 1.5 : 1,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                  color: selected ? const Color(0xFF2A6049) : const Color(0xFF8C8780),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -3021,9 +3234,9 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Wanneer wil je dit doen?',
+            'Add to My Day',
             style: GoogleFonts.poppins(
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF1E1C18),
             ),
@@ -3039,61 +3252,76 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 20),
-          // Time slot options
-          ...List.generate(_timeSlots.length, (index) {
-            final slot = _timeSlots[index];
-            final slotTime = slot['time'] as DateTime;
-            final isPast = isPlanningToday && slotTime.isBefore(now);
-            final isSelected = _selectedSlotIndex == index;
-
-            return GestureDetector(
-              onTap: isPast ? null : () => setState(() => _selectedSlotIndex = index),
-              child: Container(
-                height: 56,
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFFEBF3EE) // wmForestTint
-                      : Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: isSelected
-                        ? const Color(0xFF2A6049) // wmForest
-                        : const Color(0xFFE8E2D8), // wmParchment
-                    width: isSelected ? 1.5 : 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      slot['label'] as String,
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: isPast
-                            ? const Color(0xFFBBB7B0)
-                            : isSelected
-                                ? const Color(0xFF2A6049)
-                                : const Color(0xFF1E1C18),
-                      ),
-                    ),
-                    Text(
-                      slot['subtitle'] as String,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        color: isPast
-                            ? const Color(0xFFBBB7B0)
-                            : const Color(0xFF8C8780),
-                      ),
-                    ),
-                  ],
-                ),
+          const SizedBox(height: 16),
+          Text(
+            'Day',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF8C8780),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              chip(
+                label: 'Today',
+                selected: isTodaySelected,
+                onTap: () => setState(() => _selectedDate = today),
               ),
-            );
-          }),
+              const SizedBox(width: 8),
+              chip(
+                label: 'Tomorrow',
+                selected: isTomorrowSelected,
+                onTap: () => setState(() => _selectedDate = tomorrow),
+              ),
+              const SizedBox(width: 8),
+              chip(
+                label: isCustomSelected ? _formatDateShort(_selectedDate) : 'Pick date',
+                selected: isCustomSelected,
+                onTap: _pickCustomDate,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Selected: ${_formatDateLong(_selectedDate)}',
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: const Color(0xFF8C8780),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Time',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF8C8780),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              chip(
+                label: 'Morning',
+                selected: _selectedSlotIndex == 0,
+                onTap: () => setState(() => _selectedSlotIndex = 0),
+              ),
+              const SizedBox(width: 8),
+              chip(
+                label: 'Afternoon',
+                selected: _selectedSlotIndex == 1,
+                onTap: () => setState(() => _selectedSlotIndex = 1),
+              ),
+              const SizedBox(width: 8),
+              chip(
+                label: 'Evening',
+                selected: _selectedSlotIndex == 2,
+                onTap: () => setState(() => _selectedSlotIndex = 2),
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
           // Confirm button
           SizedBox(
@@ -3101,7 +3329,7 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                final selected = _timeSlots[_selectedSlotIndex]['time'] as DateTime;
+                final selected = _selectedStartTime;
                 widget.onTimeSelected(selected);
                 Navigator.pop(context);
               },
@@ -3114,7 +3342,7 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
                 elevation: 0,
               ),
               child: Text(
-                'Toevoegen aan Mijn Dag',
+                'Add to My Day',
                 style: GoogleFonts.poppins(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -3127,6 +3355,7 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
       ),
     );
   }
+
 }
 
 class ChatMessage {

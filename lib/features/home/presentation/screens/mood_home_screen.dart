@@ -23,11 +23,13 @@ import 'package:wandermood/features/profile/domain/providers/profile_provider.da
 import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.dart';
 import 'package:wandermood/features/home/presentation/screens/main_screen.dart'; // Import mainTabProvider from here
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
+import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/features/mood/presentation/screens/moody_hub_screen.dart';
 import 'package:wandermood/features/mood/presentation/widgets/mood_action_choice_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:wandermood/core/providers/communication_style_provider.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_chat_header_subtitle.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
@@ -553,51 +555,6 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     return 'night';
   }
 
-  // Suggest moods based on chat conversation
-  void _suggestMoodsFromChat() {
-    final chatText = _chatMessages
-        .where((msg) => msg.isUser)
-        .map((msg) => msg.message.toLowerCase())
-        .join(' ');
-
-    // Enhanced keyword-based mood detection
-    final suggestedMoods = <String>[];
-
-    if (chatText.contains(RegExp(
-        r'\b(food|eat|hungry|restaurant|dinner|lunch|asian|cuisine|tasty|sushi)\b'))) {
-      suggestedMoods.add('Foody');
-    }
-    if (chatText
-        .contains(RegExp(r'\b(romantic|date|love|couple|intimate)\b'))) {
-      suggestedMoods.add('Romantic');
-    }
-    if (chatText
-        .contains(RegExp(r'\b(adventure|explore|active|exciting|outdoor)\b'))) {
-      suggestedMoods.add('Adventure');
-    }
-    if (chatText.contains(
-        RegExp(r'\b(chill|relax|calm|peaceful|tired|nothing much)\b'))) {
-      suggestedMoods.add('Relaxed');
-    }
-    if (chatText.contains(RegExp(
-        r'\b(energy|energetic|party|parties|dance|active|lively|bar|club|going out)\b'))) {
-      suggestedMoods.add('Energetic');
-    }
-    if (chatText
-        .contains(RegExp(r'\b(surprise|different|new|unique|creative)\b'))) {
-      suggestedMoods.add('Surprise');
-    }
-
-    print('🎯 Chat analysis: "$chatText"');
-    print('🎭 Suggested moods: $suggestedMoods');
-
-    // Auto-select suggested moods
-    setState(() {
-      _selectedMoods.clear();
-      _selectedMoods.addAll(suggestedMoods.take(3)); // Max 3 moods
-    });
-  }
-
   // Show weather details dialog
   void _showWeatherDetails(BuildContext context) {
     // First give visual feedback
@@ -765,14 +722,21 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      useSafeArea: true,
+      useSafeArea: false,
       builder: (context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.9,
-          minChildSize: 0.5,
-          maxChildSize: 0.95,
-          builder: (context, scrollController) {
-            return StatefulBuilder(
+        final mq = MediaQuery.of(context);
+        final topInset = mq.padding.top;
+        final bottomObstruction = mq.viewInsets.bottom > 0
+            ? mq.viewInsets.bottom
+            : mq.padding.bottom;
+        final sheetHeight = (mq.size.height - topInset - bottomObstruction)
+            .clamp(280.0, mq.size.height);
+
+        return Padding(
+          padding: EdgeInsets.only(top: topInset),
+          child: SizedBox(
+            height: sheetHeight,
+            child: StatefulBuilder(
               builder: (context, setModalState) {
                 return ClipRRect(
                   borderRadius: const BorderRadius.only(
@@ -866,7 +830,19 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                                 const SizedBox(width: 8),
                                                 Flexible(
                                                   child: Text(
-                                                    'Your Rotterdam travel companion',
+                                                    moodyChatTravelBestieSubtitle(
+                                                      city: ref
+                                                          .watch(
+                                                              locationNotifierProvider)
+                                                          .value,
+                                                      style: ref
+                                                          .watch(
+                                                              communicationStyleProvider)
+                                                          .style,
+                                                    ),
+                                                    maxLines: 2,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                     style: GoogleFonts.poppins(
                                                       fontSize: 14,
                                                       color: const Color(
@@ -1003,7 +979,6 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                     children: [
                                       Expanded(
                                         child: ListView.builder(
-                                          controller: scrollController,
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 12),
                                           itemCount: _chatMessages.length,
@@ -1035,71 +1010,80 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                                 ),
                                               ),
                                               const SizedBox(width: 12),
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 20,
-                                                        vertical: 14),
-                                                decoration: BoxDecoration(
-                                                  color: _mcSkyTint
-                                                      .withOpacity(0.95),
-                                                  border: Border.all(
-                                                      color: _mcParchment
-                                                          .withOpacity(0.6)),
-                                                  borderRadius:
-                                                      const BorderRadius.only(
-                                                    topLeft:
-                                                        Radius.circular(20),
-                                                    topRight:
-                                                        Radius.circular(20),
-                                                    bottomRight:
-                                                        Radius.circular(20),
-                                                    bottomLeft:
-                                                        Radius.circular(4),
-                                                  ),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: _mcForest
-                                                          .withOpacity(0.06),
-                                                      blurRadius: 12,
-                                                      offset:
-                                                          const Offset(0, 4),
+                                              Expanded(
+                                                child: Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                          horizontal: 20,
+                                                          vertical: 14),
+                                                  decoration: BoxDecoration(
+                                                    color: _mcSkyTint
+                                                        .withOpacity(0.95),
+                                                    border: Border.all(
+                                                        color: _mcParchment
+                                                            .withOpacity(0.6)),
+                                                    borderRadius:
+                                                        const BorderRadius.only(
+                                                      topLeft:
+                                                          Radius.circular(20),
+                                                      topRight:
+                                                          Radius.circular(20),
+                                                      bottomRight:
+                                                          Radius.circular(20),
+                                                      bottomLeft:
+                                                          Radius.circular(4),
                                                     ),
-                                                  ],
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    SizedBox(
-                                                      width: 18,
-                                                      height: 18,
-                                                      child:
-                                                          CircularProgressIndicator(
-                                                        strokeWidth: 2.5,
-                                                        valueColor:
-                                                            AlwaysStoppedAnimation<
-                                                                Color>(
-                                                          _mcForest.withOpacity(
-                                                              0.75),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: _mcForest
+                                                            .withOpacity(0.06),
+                                                        blurRadius: 12,
+                                                        offset:
+                                                            const Offset(0, 4),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width: 18,
+                                                        height: 18,
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                          strokeWidth: 2.5,
+                                                          valueColor:
+                                                              AlwaysStoppedAnimation<
+                                                                  Color>(
+                                                            _mcForest
+                                                                .withOpacity(
+                                                                    0.75),
+                                                          ),
                                                         ),
                                                       ),
-                                                    ),
-                                                    const SizedBox(width: 12),
-                                                    Text(
-                                                      'Moody is crafting something special...',
-                                                      style:
-                                                          GoogleFonts.poppins(
-                                                        fontSize: 15,
-                                                        color: const Color(
-                                                            0xFF2D3748),
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontStyle:
-                                                            FontStyle.italic,
+                                                      const SizedBox(
+                                                          width: 12),
+                                                      Expanded(
+                                                        child: Text(
+                                                          'Moody is crafting something special...',
+                                                          maxLines: 2,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: GoogleFonts
+                                                              .poppins(
+                                                            fontSize: 15,
+                                                            color: const Color(
+                                                                0xFF2D3748),
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w500,
+                                                            fontStyle:
+                                                                FontStyle
+                                                                    .italic,
+                                                          ),
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ],
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                             ],
@@ -1109,68 +1093,13 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                   ),
                           ),
 
-                          // Quick action button if conversation has started - Enhanced
-                          if (_chatMessages.isNotEmpty)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 24, vertical: 12),
-                              child: Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      const Color(0xFF2A6049).withOpacity(0.05),
-                                      const Color(0xFF2A6049).withOpacity(0.02),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: const Color(0xFF2A6049)
-                                        .withOpacity(0.2),
-                                  ),
-                                ),
-                                child: OutlinedButton.icon(
-                                  onPressed: () {
-                                    Navigator.pop(context); // Close chat
-                                    _suggestMoodsFromChat(); // Auto-suggest moods from conversation
-
-                                    // Small delay to let mood selection UI update, then generate plan
-                                    Future.delayed(
-                                        const Duration(milliseconds: 300), () {
-                                      _generatePlan(); // Automatically start plan generation
-                                    });
-                                  },
-                                  icon:
-                                      const Icon(Icons.auto_awesome, size: 20),
-                                  label: Text(
-                                    '✨ Create My Perfect Plan',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: const Color(0xFF2A6049),
-                                    backgroundColor: Colors.transparent,
-                                    side: BorderSide.none,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 16),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-
                           // Enhanced input area with modern styling
                           Container(
-                            padding: EdgeInsets.only(
+                            padding: const EdgeInsets.only(
                               left: 24,
                               right: 24,
                               top: 24,
-                              bottom:
-                                  24 + MediaQuery.of(context).viewInsets.bottom,
+                              bottom: 24,
                             ),
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -1294,8 +1223,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                   ),
                 );
               },
-            );
-          },
+            ),
+          ),
         );
       },
     );
@@ -1485,6 +1414,15 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       print('🎭 Selected moods: ${_selectedMoods.toList()}');
 
       final loc = await _getUserLocation();
+      final priorTurns = _chatMessages.length > 1
+          ? _chatMessages
+              .sublist(0, _chatMessages.length - 1)
+              .map((m) => {
+                    'role': m.isUser ? 'user' : 'assistant',
+                    'content': m.message,
+                  })
+              .toList()
+          : null;
       final response = await WanderMoodAIService.chat(
         message: message.trim(),
         conversationId: _conversationId,
@@ -1492,6 +1430,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         latitude: loc.lat,
         longitude: loc.lng,
         city: loc.city,
+        clientTurns: priorTurns,
       );
 
       debugPrint('✅ Moody AI response received successfully');
@@ -1553,6 +1492,15 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
 
     try {
       final loc = await _getUserLocation();
+      final priorTurns = _chatMessages.length > 1
+          ? _chatMessages
+              .sublist(0, _chatMessages.length - 1)
+              .map((m) => {
+                    'role': m.isUser ? 'user' : 'assistant',
+                    'content': m.message,
+                  })
+              .toList()
+          : null;
       final response = await WanderMoodAIService.chat(
         message: message.trim(),
         conversationId: _conversationId,
@@ -1560,6 +1508,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         latitude: loc.lat,
         longitude: loc.lng,
         city: loc.city,
+        clientTurns: priorTurns,
       );
 
       print('✅ Moody AI response: ${response.message}');
@@ -1640,10 +1589,10 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     final userData = ref.watch(userDataProvider);
     final weatherAsync = ref.watch(weatherProvider);
     final dailyMoodState = ref.watch(dailyMoodStateNotifierProvider);
+    // Watch the live Supabase source so the "already planned" card disappears
+    // immediately when the user deletes activities in My Day.
+    ref.watch(scheduledActivitiesForTodayProvider);
 
-    // Archived old Moody hub screen:
-    // For the standalone Moody route, always show the new mood selection
-    // experience with tiles instead of the previous hub UI.
     return _buildMoodSelectionScreen(
       context,
       ref,
@@ -2292,14 +2241,22 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   }
 
   bool _hasPlanForSelectedDate(DailyMoodState state) {
+    // Read the live Supabase activities so this reflects deletions immediately.
+    final liveActivities = ref
+        .read(scheduledActivitiesForTodayProvider)
+        .maybeWhen(data: (list) => list, orElse: () => <Map<String, dynamic>>[]);
+    if (liveActivities.isNotEmpty) return true;
+    // Fallback to stale state while the provider is still loading.
     if (state.plannedActivities.isEmpty) return false;
-    return state.plannedActivities.any((activity) {
-      final start = activity.startTime;
-      return _isSameDay(start, _selectedPlanningDate);
-    });
+    return state.plannedActivities.any((activity) =>
+        _isSameDay(activity.startTime, _selectedPlanningDate));
   }
 
   int _activityCountForSelectedDate(DailyMoodState state) {
+    final liveActivities = ref
+        .read(scheduledActivitiesForTodayProvider)
+        .maybeWhen(data: (list) => list, orElse: () => <Map<String, dynamic>>[]);
+    if (liveActivities.isNotEmpty) return liveActivities.length;
     if (state.plannedActivities.isEmpty) return 0;
     return state.plannedActivities
         .where((activity) => _isSameDay(activity.startTime, _selectedPlanningDate))

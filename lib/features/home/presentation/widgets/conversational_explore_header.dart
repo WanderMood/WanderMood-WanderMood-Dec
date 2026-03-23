@@ -71,19 +71,20 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Search bar at the top
           _buildSearchBar(),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           
           // Category filter bubbles
           _buildCategoryFilters(),
           
-          // Activities count and view toggle
-          const SizedBox(height: 20),
+          // View toggle (tight to chips so list can sit closer)
+          const SizedBox(height: 10),
           _buildActivitiesHeader(),
         ],
       ),
@@ -278,19 +279,8 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
   
   Widget _buildActivitiesHeader() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-                  // Activities count label
-          Text(
-            widget.activitiesCount > 0 
-              ? '${widget.activitiesCount} activities found'
-              : 'Searching activities...',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: _wmStone,
-            ),
-          ),
         // View toggle buttons
         Container(
           height: 40,

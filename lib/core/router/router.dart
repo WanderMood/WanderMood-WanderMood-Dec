@@ -51,7 +51,6 @@ import '../../features/home/presentation/screens/mood_home_screen.dart';
 import '../../features/home/presentation/screens/main_screen.dart';
 import '../../features/home/presentation/screens/agenda_screen.dart';
 import '../../features/home/presentation/screens/view_receipt_screen.dart';
-import '../../features/home/presentation/screens/edit_activity_screen.dart';
 import '../../features/gamification/presentation/screens/gamification_screen.dart';
 import '../../features/social/presentation/screens/create_post_screen.dart';
 import '../../features/social/presentation/screens/create_story_screen.dart';
@@ -60,12 +59,12 @@ import '../../features/social/presentation/screens/unified_profile_screen.dart';
 import '../../features/social/presentation/screens/message_hub_screen.dart';
 import '../../features/social/presentation/screens/view_story_screen.dart';
 import '../../features/social/domain/providers/social_providers.dart';
-import '../../features/social/presentation/screens/user_profile_screen.dart';
 import '../../features/social/presentation/screens/edit_social_profile_screen.dart';
 import '../../features/social/presentation/screens/create_diary_entry_screen.dart';
 import '../../features/social/presentation/screens/diary_detail_screen.dart';
 import '../../features/social/presentation/screens/wanderfeed_coming_soon_screen.dart';
 import '../../features/social/presentation/screens/travel_diary_profile_screen.dart';
+// Note: social/user_profile_screen.dart removed — all social profile routes use UnifiedProfileScreen
 import '../../features/auth/providers/auth_state_provider.dart';
 import '../../features/auth/presentation/screens/magic_link_signup_screen.dart';
 import '../../features/auth/presentation/screens/auth_welcome_screen.dart';
@@ -633,15 +632,6 @@ GoRouter router(RouterRef ref) {
           return ViewReceiptScreen(activity: activity);
         },
       ),
-      GoRoute(
-        path: '/edit-activity',
-        name: 'edit-activity',
-        builder: (context, state) {
-          final activity = state.extra as Map<String, dynamic>;
-          return EditActivityScreen(activity: activity);
-        },
-      ),
-      
       // Social Feature Routes
       GoRoute(
         path: '/social/user-profile',

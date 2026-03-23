@@ -14,11 +14,9 @@ final selectedMyDayDateProvider = StateProvider<DateTime>((ref) {
 
 // Enum for activity status
 enum ActivityStatus {
-  upcoming,    // Scheduled for later today
-  activeNow,   // Currently happening  
-  awaitingCompletion, // Planned end passed; waiting for user confirmation
-  completed,   // Recently finished
-  overdue,     // Missed/passed time
+  upcoming,    // Added to the day plan, not yet checked in
+  activeNow,   // User tapped "I'm Here" — currently at this activity
+  completed,   // User tapped "Done"
   scheduled,   // Future days
   cancelled,   // User cancelled
 }
@@ -64,24 +62,19 @@ class EnhancedActivityData {
 class ActivityManagerState {
   final List<Map<String, dynamic>> activities;
   final Map<String, ActivityStatus> statusUpdates;
-  final Map<String, DateTime> completionPromptSnoozes;
 
   ActivityManagerState({
     required this.activities,
     required this.statusUpdates,
-    required this.completionPromptSnoozes,
   });
 
   ActivityManagerState copyWith({
     List<Map<String, dynamic>>? activities,
     Map<String, ActivityStatus>? statusUpdates,
-    Map<String, DateTime>? completionPromptSnoozes,
   }) {
     return ActivityManagerState(
       activities: activities ?? this.activities,
       statusUpdates: statusUpdates ?? this.statusUpdates,
-      completionPromptSnoozes:
-          completionPromptSnoozes ?? this.completionPromptSnoozes,
     );
   }
 }
@@ -92,7 +85,6 @@ class ActivityManagerNotifier extends StateNotifier<ActivityManagerState> {
           ActivityManagerState(
             activities: [],
             statusUpdates: {},
-            completionPromptSnoozes: {},
           ),
         );
 
@@ -106,47 +98,26 @@ class ActivityManagerNotifier extends StateNotifier<ActivityManagerState> {
     state = state.copyWith(statusUpdates: newStatusUpdates);
   }
 
-  void snoozeCompletionPrompt(
-    String activityId, {
-    Duration duration = const Duration(minutes: 45),
-  }) {
-    final newSnoozes =
-        Map<String, DateTime>.from(state.completionPromptSnoozes);
-    newSnoozes[activityId] = MoodyClock.now().add(duration);
-
-    final newStatusUpdates = Map<String, ActivityStatus>.from(state.statusUpdates);
-    newStatusUpdates[activityId] = ActivityStatus.activeNow;
-
-    state = state.copyWith(
-      statusUpdates: newStatusUpdates,
-      completionPromptSnoozes: newSnoozes,
-    );
+  /// User tapped "I'm Here" — marks the activity as actively in progress.
+  void checkInActivity(String activityId) {
+    updateActivityStatus(activityId, ActivityStatus.activeNow);
   }
 
-  void clearCompletionPromptSnooze(String activityId) {
-    if (!state.completionPromptSnoozes.containsKey(activityId)) return;
-
-    final newSnoozes =
-        Map<String, DateTime>.from(state.completionPromptSnoozes);
-    newSnoozes.remove(activityId);
-    state = state.copyWith(completionPromptSnoozes: newSnoozes);
+  /// User tapped "Done" — marks the activity as completed.
+  void markActivityDone(String activityId) {
+    updateActivityStatus(activityId, ActivityStatus.completed);
   }
 
   void cancelActivity(String activityId) {
     updateActivityStatus(activityId, ActivityStatus.cancelled);
   }
 
-  /// After removing an activity from the backend, drop any local status/snooze for that id.
+  /// After removing an activity from the backend, drop any local status for that id.
   void clearLocalStatusForActivity(String activityId) {
     if (activityId.isEmpty) return;
     final newStatus =
         Map<String, ActivityStatus>.from(state.statusUpdates)..remove(activityId);
-    final newSnoozes =
-        Map<String, DateTime>.from(state.completionPromptSnoozes)..remove(activityId);
-    state = state.copyWith(
-      statusUpdates: newStatus,
-      completionPromptSnoozes: newSnoozes,
-    );
+    state = state.copyWith(statusUpdates: newStatus);
   }
 
   void updateActivity(String activityId, Map<String, dynamic> updatedData) {
@@ -186,6 +157,7 @@ Map<String, dynamic> _activityToRawData(Activity activity) {
     'location': '${activity.location.latitude},${activity.location.longitude}',
     'price': activity.price ?? 0.0,
     'rating': activity.rating,
+    'placeId': activity.placeId,
   };
 }
 
@@ -264,14 +236,14 @@ final cachedActivitySuggestionsProvider = FutureProvider<List<Map<String, dynami
 });
 
 /// Provider for today's enhanced activities with status detection.
-/// Reads from Supabase (scheduled_activities) as single source of truth for My Day.
+/// Status is entirely user-driven: "upcoming" until the user taps "I'm Here",
+/// then "activeNow" until the user taps "Done". No clock-driven transitions.
 /// CRITICAL: NOT autoDispose to prevent API calls on hot reload
 final todayActivitiesProvider = FutureProvider<List<EnhancedActivityData>>((ref) async {
   final activities = await ref.watch(scheduledActivitiesForTodayProvider.future);
   final activityManagerState = ref.watch(activityManagerProvider);
   final selectedDate = ref.watch(selectedMyDayDateProvider);
   final dateOnly = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
-  final now = MoodyClock.now();
 
   final enhancedActivities = <EnhancedActivityData>[];
 
@@ -284,90 +256,31 @@ final todayActivitiesProvider = FutureProvider<List<EnhancedActivityData>>((ref)
       final duration = activity['duration'] as int? ?? 60;
       final endTime = startTime.add(Duration(minutes: duration));
 
-      // Only process activities for today
       if (startTime.year != dateOnly.year ||
           startTime.month != dateOnly.month ||
           startTime.day != dateOnly.day) {
         continue;
       }
 
-      // Check if activity has been cancelled
       final activityId = activity['id'] as String? ?? activity['title'] as String? ?? '';
       final managerStatus = activityManagerState.statusUpdates[activityId];
-      final snoozedUntil =
-          activityManagerState.completionPromptSnoozes[activityId];
-      
-      if (managerStatus == ActivityStatus.cancelled) {
-        // Add cancelled activity
-        enhancedActivities.add(EnhancedActivityData(
-          rawData: activity,
-          status: ActivityStatus.cancelled,
-          startTime: startTime,
-          endTime: endTime,
-          timeRemaining: null,
-          timeSinceStart: null,
-        ));
-        continue;
-      }
-      
-      // Determine activity status
-      ActivityStatus status;
-      Duration? timeRemaining;
-      Duration? timeSinceStart;
 
-      final isCompletionPromptSnoozed =
-          snoozedUntil != null && now.isBefore(snoozedUntil);
+      // Status is purely user-driven — default is always "upcoming".
+      final status = managerStatus ?? ActivityStatus.upcoming;
 
-      if (managerStatus == ActivityStatus.completed) {
-        status = ActivityStatus.completed;
-        timeSinceStart = now.difference(endTime);
-      } else if (now.isAfter(endTime)) {
-        if (isCompletionPromptSnoozed) {
-          status = ActivityStatus.activeNow;
-          timeRemaining = snoozedUntil.difference(now);
-          timeSinceStart = now.difference(startTime);
-        } else {
-          status = ActivityStatus.awaitingCompletion;
-          timeSinceStart = now.difference(endTime);
-        }
-      } else if (now.isAfter(startTime) && now.isBefore(endTime)) {
-        // Activity is happening now
-        status = ActivityStatus.activeNow;
-        timeRemaining = endTime.difference(now);
-        timeSinceStart = now.difference(startTime);
-      } else if (now.isBefore(startTime)) {
-        // Activity is upcoming
-        status = ActivityStatus.upcoming;
-        timeRemaining = startTime.difference(now);
-  } else {
-        status = ActivityStatus.scheduled;
-      }
-      
-      // Override with manager status if available
-      if (managerStatus != null &&
-          managerStatus != ActivityStatus.activeNow &&
-          managerStatus != ActivityStatus.completed) {
-        status = managerStatus;
-      }
-      
       enhancedActivities.add(EnhancedActivityData(
         rawData: activity,
         status: status,
         startTime: startTime,
         endTime: endTime,
-        timeRemaining: timeRemaining,
-        timeSinceStart: timeSinceStart,
       ));
-      
     } catch (e) {
       debugPrint('❌ Error processing activity: $e');
       continue;
     }
   }
-  
-  // Sort by start time
+
   enhancedActivities.sort((a, b) => a.startTime.compareTo(b.startTime));
-  
   return enhancedActivities;
 });
 
@@ -379,77 +292,59 @@ final currentActivityStatusProvider = FutureProvider<Map<String, dynamic>>((ref)
   final hour = now.hour;
 
   if (todayActivities.isEmpty) {
-    return {
-      'type': 'no_plan',
-    };
+    return {'type': 'no_plan'};
   }
-  
-  // Find active activity
-  final activeActivity = todayActivities.where((a) => a.status == ActivityStatus.activeNow).firstOrNull;
+
+  // Active: user has checked in
+  final activeActivity = todayActivities
+      .where((a) => a.status == ActivityStatus.activeNow)
+      .firstOrNull;
   if (activeActivity != null) {
     return {
       'type': 'active',
-              'title': 'Right Now',
+      'title': 'Right Now',
       'subtitle': activeActivity.rawData['title'],
-      'description': 'Started ${_formatDuration(activeActivity.timeSinceStart!)} ago • Ends in ${_formatDuration(activeActivity.timeRemaining!)}',
+      'description': 'You\'re here! Tap Done when you\'re finished.',
       'activity': activeActivity.rawData,
       'enhancedActivity': activeActivity,
-      'imageUrl': activeActivity.rawData['imageUrl'] ?? 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80',
+      'imageUrl': activeActivity.rawData['imageUrl'] ?? '',
     };
   }
 
-  final awaitingCompletionActivity = todayActivities
-      .where((a) => a.status == ActivityStatus.awaitingCompletion)
-      .lastOrNull;
-  if (awaitingCompletionActivity != null) {
-    return {
-      'type': 'awaiting_completion',
-      'title': '⏱ CHECK IN',
-      'subtitle': awaitingCompletionActivity.rawData['title'],
-      'description':
-          'Planned to finish ${_formatDuration(awaitingCompletionActivity.timeSinceStart!)} ago. Still there or done?',
-      'activity': awaitingCompletionActivity.rawData,
-      'enhancedActivity': awaitingCompletionActivity,
-    };
-  }
-  
-  // Find next upcoming activity
+  // Upcoming: first activity not yet checked in
   final upcomingActivity = todayActivities
       .where((a) => a.status == ActivityStatus.upcoming)
       .firstOrNull;
   if (upcomingActivity != null) {
+    final slot = _timeSlotLabel(upcomingActivity.startTime.hour);
     return {
       'type': 'upcoming',
-      'title': '⏳ COMING UP',
+      'title': 'Up Next',
       'subtitle': upcomingActivity.rawData['title'],
-      'description': 'Starts in ${_formatDuration(upcomingActivity.timeRemaining!)} (${_formatTime(upcomingActivity.startTime)})',
-      'action2': 'Get Ready',
+      'description': 'Planned for $slot · tap "I\'m Here" when you arrive',
       'activity': upcomingActivity.rawData,
       'enhancedActivity': upcomingActivity,
     };
   }
-  
-  // Find recently completed activity  
-  final recentlyCompleted = todayActivities
-      .where((a) => a.status == ActivityStatus.completed && a.timeSinceStart!.inHours < 1)
+
+  // All completed
+  final lastCompleted = todayActivities
+      .where((a) => a.status == ActivityStatus.completed)
       .lastOrNull;
-  if (recentlyCompleted != null) {
+  if (lastCompleted != null) {
     return {
       'type': 'completed',
-      'title': '✅ COMPLETED',
-      'subtitle': recentlyCompleted.rawData['title'],
-      'description': 'Finished ${_formatDuration(recentlyCompleted.timeSinceStart!)} ago',
-      'action1': 'Rate Experience',
-      'action2': 'Share',
-      'activity': recentlyCompleted.rawData,
-      'enhancedActivity': recentlyCompleted,
+      'title': '✅ All Done',
+      'subtitle': lastCompleted.rawData['title'],
+      'description': 'Great day! You\'ve completed everything.',
+      'activity': lastCompleted.rawData,
+      'enhancedActivity': lastCompleted,
     };
   }
-  
-  // Default free time status
+
+  // Default free time
   String timeOfDay;
   String suggestion;
-  
   if (hour >= 6 && hour < 12) {
     timeOfDay = 'Morning';
     suggestion = 'Perfect time to start your day with energy';
@@ -460,7 +355,7 @@ final currentActivityStatusProvider = FutureProvider<Map<String, dynamic>>((ref)
     timeOfDay = 'Evening';
     suggestion = 'Wind down with something special';
   }
-  
+
   return {
     'type': 'free_time',
     'title': '📅 FREE TIME',
@@ -471,6 +366,12 @@ final currentActivityStatusProvider = FutureProvider<Map<String, dynamic>>((ref)
   };
 });
 
+String _timeSlotLabel(int hour) {
+  if (hour >= 6 && hour < 12) return 'the morning';
+  if (hour >= 12 && hour < 18) return 'the afternoon';
+  return 'the evening';
+}
+
 /// Provider for timeline categorized activities
 /// CRITICAL: NOT autoDispose to prevent API calls on hot reload
 final timelineCategorizedActivitiesProvider = FutureProvider<Map<String, List<EnhancedActivityData>>>((ref) async {
@@ -480,22 +381,17 @@ final timelineCategorizedActivitiesProvider = FutureProvider<Map<String, List<En
     'morning': [],    // 6 AM - 12 PM
     'afternoon': [],  // 12 PM - 6 PM
     'evening': [],    // 6 PM - 12 AM
-    'active': [],     // Currently happening
-    'awaiting': [],   // Waiting for done / still here
-    'upcoming': [],   // Next activities
+    'active': [],     // User checked in
+    'upcoming': [],   // Not yet checked in
     'completed': [],  // Finished activities
   };
   
   for (final activity in todayActivities) {
     final hour = activity.startTime.hour;
     
-    // Categorize by status first
     switch (activity.status) {
       case ActivityStatus.activeNow:
         categorized['active']!.add(activity);
-        break;
-      case ActivityStatus.awaitingCompletion:
-        categorized['awaiting']!.add(activity);
         break;
       case ActivityStatus.upcoming:
         categorized['upcoming']!.add(activity);
@@ -507,7 +403,6 @@ final timelineCategorizedActivitiesProvider = FutureProvider<Map<String, List<En
         break;
     }
     
-    // Also categorize by time of day
     if (hour >= 6 && hour < 12) {
       categorized['morning']!.add(activity);
     } else if (hour >= 12 && hour < 18) {

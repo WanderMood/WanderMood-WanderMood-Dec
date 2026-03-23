@@ -18,6 +18,7 @@ import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import '../widgets/profile_stats_cards.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
 
 /// v2 profile — design tokens
@@ -29,6 +30,37 @@ const Color _wmForestTint = Color(0xFFEBF3EE);
 const Color _wmCharcoal = Color(0xFF1E1C18);
 const Color _wmDusk = Color(0xFF4A4640);
 const Color _wmStone = Color(0xFF8C8780);
+const Color _wmSunsetTint = Color(0xFFFDF0E8);
+const Color _wmSkyTint = Color(0xFFEDF5F9);
+/// Matches My Day "PLANNED" chip (`my_day_timeline_section.dart` _kWmWarmBronze).
+const Color _wmWarmBronze = Color(0xFF8F7355);
+const Color _wmWarmBronzeDeep = Color(0xFF6B5A47);
+
+List<BoxShadow> _profileCardShadow() {
+  return [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.035),
+      blurRadius: 18,
+      offset: const Offset(0, 8),
+    ),
+  ];
+}
+
+/// Same elevation feel as My Day activity cards.
+List<BoxShadow> _savedPlacesCarouselCardShadow() {
+  return [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.08),
+      blurRadius: 14,
+      offset: const Offset(0, 5),
+    ),
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.04),
+      blurRadius: 6,
+      offset: const Offset(0, 2),
+    ),
+  ];
+}
 
 class UserProfileScreen extends ConsumerStatefulWidget {
   const UserProfileScreen({Key? key}) : super(key: key);
@@ -145,15 +177,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildProfileHeader(context, profile),
+                  const SizedBox(height: 18),
+                  _buildSavedPlacesCarouselStrip(context),
                   const SizedBox(height: 20),
-                  if (profile.ageGroup != null && profile.ageGroup!.isNotEmpty) ...[
-                    _buildAgeGroupTag(profile.ageGroup!),
-                    const SizedBox(height: 12),
-                  ],
-                  if (profile.bio != null && profile.bio!.isNotEmpty) ...[
-                    _buildBio(profile.bio!),
-                    const SizedBox(height: 20),
-                  ],
                   TravelModeToggle(
                     isLocal: profile.isLocalMode,
                     onModeChanged: _updateTravelMode,
@@ -165,13 +191,14 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     selectedVibes: profile.selectedMoods,
                     onEditTap: () => _navigateToEditVibes(profile.selectedMoods),
                   ),
-                  const SizedBox(height: 20),
-                  _buildSavedPlacesPreview(context),
-                  const SizedBox(height: 20),
-                  _buildMoodJourneyCard(context),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   _buildTravelGlobeCard(context),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
+                  _buildSectionHeader(
+                    title: l10n.profilePreferencesTitle,
+                    subtitle: l10n.profileSectionPreferencesSubtitle,
+                  ),
+                  const SizedBox(height: 14),
                   _buildPreferencesCard(context, profile),
                   const SizedBox(height: 12),
                   _buildBottomSettingsLink(context),
@@ -190,107 +217,243 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     final avatarUrl = profile.avatarUrl;
     final userName = profile.fullName ?? l10n.profileFallbackUser;
     final username = profile.username;
+    final displayedVibes = profile.selectedMoods.take(3).toList();
+    final hasChips = (profile.ageGroup != null && profile.ageGroup!.isNotEmpty) ||
+        displayedVibes.isNotEmpty;
+    final bioText = profile.bio?.trim();
+    final hasBio = bioText != null && bioText.isNotEmpty;
+    final String bioDisplay;
+    if (hasBio) {
+      bioDisplay = bioText;
+    } else {
+      bioDisplay = l10n.profileBioEmptyHint;
+    }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-            GestureDetector(
-              onTap: () => context.push('/profile/edit'),
-              child: Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: _wmForest, width: 2),
-                ),
-                child: ClipOval(
-                  child: (avatarUrl != null && avatarUrl.isNotEmpty)
-                      ? Image.network(
-                          avatarUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildAvatarPlaceholder(userName, username),
-                        )
-                      : _buildAvatarPlaceholder(userName, username),
+    // Non-uniform border colors cannot use borderRadius (Flutter assert).
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: _profileCardShadow(),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: _wmWhite,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: _wmParchment, width: 1),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 5,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: _wmForest,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  bottomLeft: Radius.circular(24),
                 ),
               ),
             ),
-            Positioned(
-              right: -4,
-              bottom: -4,
-              child: GestureDetector(
-                onTap: _changeProfilePicture,
-                child: Container(
-                  width: 28,
-                  height: 28,
-                  decoration: const BoxDecoration(
-                    color: _wmForest,
-                    shape: BoxShape.circle,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 18, 18, 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: () => context.push('/profile/edit'),
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _wmForestTint,
+                        border: Border.all(color: _wmForest, width: 1.5),
+                      ),
+                      child: ClipOval(
+                        child: (avatarUrl != null && avatarUrl.isNotEmpty)
+                            ? Image.network(
+                                avatarUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                    _buildAvatarPlaceholder(userName, username),
+                              )
+                            : _buildAvatarPlaceholder(userName, username),
+                      ),
+                    ),
                   ),
-                  child: _isUploadingImage
-                      ? const Padding(
-                          padding: EdgeInsets.all(6),
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  Positioned(
+                    right: -2,
+                    bottom: -2,
+                    child: GestureDetector(
+                      onTap: _changeProfilePicture,
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: _wmForest,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: _wmWhite, width: 2),
+                        ),
+                        child: _isUploadingImage
+                            ? const Padding(
+                                padding: EdgeInsets.all(6),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : const Icon(Icons.camera_alt, color: Colors.white, size: 15),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: _wmSunsetTint,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: _wmParchment, width: 1),
+                        ),
+                        child: const Text('✨', style: TextStyle(fontSize: 18, height: 1)),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          userName,
+                          style: GoogleFonts.poppins(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: _wmCharcoal,
+                            letterSpacing: -0.5,
+                            height: 1.2,
                           ),
-                        )
-                      : const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: _wmSkyTint,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: _wmParchment, width: 1),
+                ),
+                child: const Text('📝', style: TextStyle(fontSize: 16, height: 1)),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.bio,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: _wmStone,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      bioDisplay,
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400,
+                        color: hasBio ? _wmDusk : _wmStone,
+                        height: 1.45,
+                        fontStyle: hasBio ? FontStyle.normal : FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (hasChips) ...[
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (profile.ageGroup != null && profile.ageGroup!.isNotEmpty)
+                  _buildHeroChip(
+                    icon: Icons.calendar_today_rounded,
+                    label: _formatAgeGroup(profile.ageGroup!),
+                    fillColor: _wmCream,
+                    textColor: _wmDusk,
+                  ),
+                ...displayedVibes.map(
+                  (vibe) => _buildHeroChip(
+                    icon: Icons.auto_awesome_rounded,
+                    label: vibe,
+                    fillColor: _wmCream,
+                    textColor: _wmForest,
+                  ),
+                ),
+              ],
             ),
           ],
-        ),
-        const SizedBox(height: 16),
-        Text(
-          userName,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.poppins(
-            fontSize: 26,
-            fontWeight: FontWeight.w700,
-            color: _wmCharcoal,
-            letterSpacing: -0.5,
-          ),
-        ),
-        if (username != null && username.isNotEmpty) ...[
-          const SizedBox(height: 4),
-          Text(
-            '@$username',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-              color: _wmStone,
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 46,
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => context.push('/profile/edit'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _wmForest,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              icon: const Text('✏️', style: TextStyle(fontSize: 16)),
+              label: Text(
+                l10n.profileEditProfileButton,
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ],
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 44,
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: () => context.push('/profile/edit'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: _wmForest,
-              side: const BorderSide(color: _wmForest, width: 1.5),
-              backgroundColor: _wmWhite,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-            child: Text(
-              l10n.profileEditProfileButton,
-              style: GoogleFonts.poppins(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -313,29 +476,30 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     );
   }
 
-  Widget _buildAgeGroupTag(String ageGroup) {
-    final formattedAge = _formatAgeGroup(ageGroup);
+  Widget _buildHeroChip({
+    required IconData icon,
+    required String label,
+    required Color fillColor,
+    required Color textColor,
+  }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
-        color: _wmForest,
-        borderRadius: BorderRadius.circular(20),
+        color: fillColor,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: _wmParchment, width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.calendar_today,
-            size: 14,
-            color: Colors.white,
-          ),
+          Icon(icon, size: 15, color: textColor),
           const SizedBox(width: 6),
           Text(
-            formattedAge,
+            label,
             style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
               fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: textColor,
             ),
           ),
         ],
@@ -343,19 +507,182 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     );
   }
 
-  Widget _buildBio(String bio) {
-    return Text(
-      bio,
-      style: GoogleFonts.poppins(
-        fontSize: 15,
-        fontWeight: FontWeight.w400,
-        color: _wmDusk,
-        height: 1.5,
+  Widget _buildSectionHeader({
+    required String title,
+    required String subtitle,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: _wmCharcoal,
+            letterSpacing: -0.4,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          subtitle,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: _wmStone,
+            height: 1.45,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Frosted bronze tile — photo + blur + gradient; white type (profile carousel).
+  Widget _buildSavedPlaceGlassCarouselTile(
+    BuildContext context, {
+    required Place place,
+    required double width,
+    required double height,
+  }) {
+    final img = place.photos.isNotEmpty ? place.photos.first : null;
+    final hasPhoto = img != null && img.startsWith('http');
+    final addressLine =
+        place.address.isNotEmpty ? place.address.split(',').first.trim() : '';
+
+    return GestureDetector(
+      onTap: () => context.push('/place/${place.id}'),
+      child: Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: _savedPlacesCarouselCardShadow(),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.32),
+            width: 1.25,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (hasPhoto)
+              CachedNetworkImage(
+                imageUrl: img,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => Container(
+                  color: _wmWarmBronze,
+                  child: const Center(
+                    child: SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white54,
+                      ),
+                    ),
+                  ),
+                ),
+                errorWidget: (_, __, ___) => _savedPlaceGlassFallbackFill(),
+              )
+            else
+              _savedPlaceGlassFallbackFill(),
+            // Photo stays sharp: only a bottom scrim (no full-card blur — that
+            // hid the image behind brown mush).
+            if (hasPhoto)
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.transparent,
+                        _wmWarmBronze.withValues(alpha: 0.45),
+                        _wmWarmBronzeDeep.withValues(alpha: 0.9),
+                      ],
+                      stops: const [0.0, 0.42, 0.72, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 16, 14, 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      place.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        height: 1.25,
+                        shadows: const [
+                          Shadow(
+                            color: Color(0x66000000),
+                            blurRadius: 8,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (addressLine.isNotEmpty) ...[
+                      const SizedBox(height: 5),
+                      Text(
+                        addressLine,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withValues(alpha: 0.88),
+                          height: 1.25,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildSavedPlacesPreview(BuildContext context) {
+  Widget _savedPlaceGlassFallbackFill() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            _wmWarmBronze,
+            _wmWarmBronzeDeep,
+          ],
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.place_rounded,
+          color: Colors.white.withValues(alpha: 0.45),
+          size: 44,
+        ),
+      ),
+    );
+  }
+
+  /// Horizontal saved places on cream background (no outer white card).
+  Widget _buildSavedPlacesCarouselStrip(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final savedAsync = ref.watch(savedPlacesProvider);
 
@@ -363,29 +690,46 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              l10n.profileSavedPlacesTitle,
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: _wmCharcoal,
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: _wmForestTint,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _wmParchment, width: 1),
+              ),
+              child: const Text('📌', style: TextStyle(fontSize: 16, height: 1)),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                l10n.profileSavedPlacesTitle,
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: _wmCharcoal,
+                ),
               ),
             ),
             TextButton(
               onPressed: () => context.push('/places/saved'),
               style: TextButton.styleFrom(
                 foregroundColor: _wmForest,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                backgroundColor: _wmWhite,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
+                  side: const BorderSide(color: _wmParchment),
+                ),
               ),
               child: Text(
                 l10n.profileSavedPlacesSeeAll,
                 style: GoogleFonts.poppins(
                   fontSize: 12,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   letterSpacing: 0.2,
                 ),
               ),
@@ -396,92 +740,67 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         savedAsync.when(
           data: (places) {
             if (places.isEmpty) {
-              return Text(
-                l10n.profileSavedPlacesEmpty,
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w400,
-                  color: _wmStone,
-                  height: 1.5,
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: _wmSunsetTint,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Text('💡', style: TextStyle(fontSize: 14, height: 1)),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        l10n.profileSavedPlacesCarouselEmpty,
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: _wmDusk,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               );
             }
-            final preview = places.take(8).toList();
-            final cardW = (MediaQuery.sizeOf(context).width - 40 - 24) / 3.2;
-            // Image 80 + gap 6 + title (2 lines ~34px) + address (~15px) ≈ 135; extra for font metrics.
+            final preview = places.take(12).toList();
+            final trackW = MediaQuery.sizeOf(context).width - 40;
+            const sepW = 14.0;
+            final double cardW;
+            if (preview.length <= 1) {
+              cardW = trackW;
+            } else {
+              // Layout: [card][sep][card][sep][½ card] ≈ 2.5 tiles visible.
+              cardW = ((trackW - 2 * sepW) / 2.5).clamp(108.0, 148.0);
+            }
+            final cardH = preview.length <= 1 ? 216.0 : (cardW * 1.28).clamp(150.0, 182.0);
             return SizedBox(
-              height: 152,
+              height: cardH,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.only(right: 6),
+                physics: const BouncingScrollPhysics(),
                 itemCount: preview.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                separatorBuilder: (_, __) => const SizedBox(width: sepW),
                 itemBuilder: (context, i) {
-                  final sp = preview[i];
-                  final p = sp.place;
-                  final img = p.photos.isNotEmpty ? p.photos.first : null;
-                  return GestureDetector(
-                    onTap: () => context.push('/place/${p.id}'),
-                    child: SizedBox(
-                      width: cardW.clamp(108.0, 140.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: SizedBox(
-                              height: 80,
-                              width: double.infinity,
-                              child: img != null && img.startsWith('http')
-                                  ? CachedNetworkImage(
-                                      imageUrl: img,
-                                      fit: BoxFit.cover,
-                                      placeholder: (_, __) => Container(color: _wmForestTint),
-                                      errorWidget: (_, __, ___) => Container(
-                                        color: _wmForestTint,
-                                        child: const Icon(Icons.place_outlined, color: _wmStone),
-                                      ),
-                                    )
-                                  : Container(
-                                      color: _wmForestTint,
-                                      child: const Icon(Icons.place_outlined, color: _wmStone, size: 32),
-                                    ),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            p.name,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: _wmCharcoal,
-                              height: 1.2,
-                            ),
-                          ),
-                          if (p.address.isNotEmpty) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              p.address.split(',').first.trim(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                height: 1.2,
-                                color: _wmStone,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
+                  return _buildSavedPlaceGlassCarouselTile(
+                    context,
+                    place: preview[i].place,
+                    width: cardW,
+                    height: cardH,
                   );
                 },
               ),
             );
           },
           loading: () => const SizedBox(
-            height: 80,
+            height: 176,
             child: Center(
               child: SizedBox(
                 width: 24,
@@ -492,59 +811,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           ),
           error: (_, __) => Text(
             l10n.profileSavedPlacesEmpty,
-            style: GoogleFonts.poppins(fontSize: 15, color: _wmStone),
+            style: GoogleFonts.poppins(fontSize: 14, color: _wmStone),
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildMoodJourneyCard(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => context.push('/moods/history'),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: _wmForestTint,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _wmForest, width: 0.5),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.profileMoodJourneyTitle,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: _wmCharcoal,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      l10n.profileMoodJourneySubtitle,
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w400,
-                        color: _wmDusk,
-                        height: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right, size: 22, color: _wmForest),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -553,75 +823,56 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         onTap: () => context.push('/profile/globe'),
         child: Container(
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             color: _wmWhite,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _wmParchment, width: 0.5),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: _wmParchment, width: 1),
+            boxShadow: _profileCardShadow(),
           ),
-          clipBehavior: Clip.antiAlias,
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFF0F172A),
-                  Color(0xFF1E293B),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+          child: Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: _wmForestTint,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: _wmParchment, width: 1),
+                ),
+                child: const Icon(Icons.public_rounded, color: _wmForest, size: 24),
               ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(
-                    Icons.public,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.profileTravelGlobeTitle,
-                        style: GoogleFonts.poppins(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.profileTravelGlobeTitle,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: _wmCharcoal,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        l10n.profileTravelGlobeSubtitle,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.white70,
-                          height: 1.4,
-                        ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.profileTravelGlobeSubtitle,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: _wmStone,
+                        height: 1.4,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const Icon(
-                  Icons.chevron_right,
-                  color: Colors.white70,
-                  size: 22,
-                ),
-              ],
-            ),
+              ),
+              const Icon(Icons.chevron_right_rounded, color: _wmForest, size: 22),
+            ],
           ),
         ),
       ),
@@ -630,31 +881,81 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
   Widget _buildPreferencesCard(BuildContext context, CurrentUserProfile profile) {
     final l10n = AppLocalizations.of(context)!;
-    final hasAny = (profile.budgetLevel != null && profile.budgetLevel!.isNotEmpty) ||
-        (profile.socialVibe != null && profile.socialVibe!.isNotEmpty) ||
-        profile.dietaryRestrictions.isNotEmpty;
+    final preferenceRows = <MapEntry<String, String>>[
+      if (profile.budgetLevel != null && profile.budgetLevel!.isNotEmpty)
+        MapEntry(
+          l10n.profilePreferencesBudgetStyle,
+          _formatBudget(l10n, profile.budgetLevel),
+        ),
+      if (profile.socialVibe != null && profile.socialVibe!.isNotEmpty)
+        MapEntry(
+          l10n.profilePreferencesSocialVibe,
+          _formatSocialVibe(l10n, profile.socialVibe),
+        ),
+      if (profile.dietaryRestrictions.isNotEmpty)
+        MapEntry(
+          l10n.profilePreferencesFoodPreferences,
+          _formatFoodPreferences(profile.dietaryRestrictions),
+        ),
+    ];
+    final hasAny = preferenceRows.isNotEmpty;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: _wmWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _wmParchment, width: 0.5),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _wmParchment, width: 1),
+        boxShadow: _profileCardShadow(),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                l10n.profilePreferencesTitle,
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: _wmCharcoal,
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: _wmCream,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.tune_rounded,
+                  color: _wmForest,
+                  size: 22,
                 ),
               ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.profilePreferencesTitle,
+                      style: GoogleFonts.poppins(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w700,
+                        color: _wmCharcoal,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      hasAny
+                          ? l10n.profilePreferencesFilledHint
+                          : l10n.profilePreferencesEmptyDescription,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: _wmStone,
+                        height: 1.45,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
               TextButton(
                 onPressed: () async {
                   await context.push('/preferences');
@@ -662,45 +963,66 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 },
                 style: TextButton.styleFrom(
                   foregroundColor: _wmForest,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  backgroundColor: _wmForestTint,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
                 ),
                 child: Text(
                   l10n.profilePreferencesEditAll,
                   style: GoogleFonts.poppins(
                     fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: 0.2,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          if (profile.budgetLevel != null && profile.budgetLevel!.isNotEmpty) ...[
-            _buildPrefRow(l10n.profilePreferencesBudgetStyle, _formatBudget(l10n, profile.budgetLevel)),
-            const SizedBox(height: 10),
-          ],
-          if (profile.socialVibe != null && profile.socialVibe!.isNotEmpty) ...[
-            _buildPrefRow(l10n.profilePreferencesSocialVibe, _formatSocialVibe(l10n, profile.socialVibe)),
-            const SizedBox(height: 10),
-          ],
-          if (profile.dietaryRestrictions.isNotEmpty) ...[
-            _buildPrefRow(l10n.profilePreferencesFoodPreferences, _formatFoodPreferences(profile.dietaryRestrictions)),
-            const SizedBox(height: 10),
-          ],
+          const SizedBox(height: 14),
+          if (hasAny)
+            ...preferenceRows.asMap().entries.expand((entry) {
+              final index = entry.key;
+              final row = entry.value;
+              return [
+                _buildPrefRow(row.key, row.value),
+                if (index != preferenceRows.length - 1) const SizedBox(height: 10),
+              ];
+            }),
           if (!hasAny)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                l10n.profilePreferencesEmptyHint,
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  color: _wmStone,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: _wmCream,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: _wmParchment, width: 1),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: _wmWhite,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.add_rounded, color: _wmForest),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      l10n.profilePreferencesEmptyHint,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: _wmDusk,
+                        height: 1.45,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
         ],
@@ -710,37 +1032,47 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
   Widget _buildPrefRow(String label, String value) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: _wmCream,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _wmParchment, width: 0.5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _wmParchment, width: 1),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              label,
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
-                color: _wmStone,
-              ),
+          Container(
+            width: 10,
+            height: 10,
+            decoration: const BoxDecoration(
+              color: _wmForest,
+              shape: BoxShape.circle,
             ),
           ),
+          const SizedBox(width: 10),
           Expanded(
-            flex: 3,
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: GoogleFonts.poppins(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: _wmCharcoal,
-                height: 1.4,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: _wmStone,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  value,
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: _wmCharcoal,
+                    height: 1.35,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -750,25 +1082,25 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
   Widget _buildBottomSettingsLink(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: () => context.push('/settings'),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.settings_outlined, color: _wmStone, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              l10n.profileAppSettingsLink,
-              style: GoogleFonts.poppins(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: _wmStone,
-              ),
-            ),
-          ],
+    return Center(
+      child: TextButton.icon(
+        onPressed: () => context.push('/settings'),
+        style: TextButton.styleFrom(
+          foregroundColor: _wmStone,
+          backgroundColor: Colors.transparent,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(999),
+          ),
+        ),
+        icon: const Icon(Icons.settings_outlined, size: 18),
+        label: Text(
+          l10n.profileAppSettingsLink,
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: _wmStone,
+          ),
         ),
       ),
     );

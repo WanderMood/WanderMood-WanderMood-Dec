@@ -17,6 +17,16 @@ const Color _wmSkyTint = Color(0xFFEDF5F9);
 const Color _wmParchment = Color(0xFFE8E2D8);
 const Color _wmStone = Color(0xFF8C8780);
 
+List<BoxShadow> _travelModeShadow() {
+  return [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.035),
+      blurRadius: 18,
+      offset: const Offset(0, 8),
+    ),
+  ];
+}
+
 class TravelModeToggle extends ConsumerStatefulWidget {
   final bool isLocal; // true = Local Mode, false = Traveling
   final Function(bool) onModeChanged;
@@ -95,67 +105,72 @@ class _TravelModeToggleState extends ConsumerState<TravelModeToggle> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Column(
-      children: [
-        // Toggle buttons
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.6),
-            borderRadius: BorderRadius.circular(50),
-            boxShadow: const [],
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _wmParchment, width: 1),
+        boxShadow: _travelModeShadow(),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: _wmParchment.withOpacity(0.55),
+              borderRadius: BorderRadius.circular(50),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _ToggleButton(
+                      icon: Icons.home,
+                      label: l10n.profileModeLocal,
+                      isActive: widget.isLocal,
+                      onTap: () => _handleToggleTap(true),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _ToggleButton(
+                      icon: Icons.map,
+                      label: l10n.profileModeTravel,
+                      isActive: !widget.isLocal,
+                      onTap: () => _handleToggleTap(false),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(50),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Padding(
-                padding: const EdgeInsets.all(4),
-                child: Row(
-                  children: [
-                    // Local Mode Button
-                    Expanded(
-                      child: _ToggleButton(
-                        icon: Icons.home,
-                        label: l10n.profileModeLocal,
-                        isActive: widget.isLocal,
-                        onTap: () => _handleToggleTap(true),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // Travel Mode Button
-                    Expanded(
-                      child: _ToggleButton(
-                        icon: Icons.map,
-                        label: l10n.profileModeTravel,
-                        isActive: !widget.isLocal,
-                        onTap: () => _handleToggleTap(false),
-                      ),
-                    ),
-                  ],
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: _showExplanationModal,
+              style: TextButton.styleFrom(
+                foregroundColor: _wmForest,
+                backgroundColor: _wmForestTint,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              icon: const Icon(Icons.info_outline_rounded, size: 18),
+              label: Text(
+                l10n.profileModeWhatDoesThisDo,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
           ),
-        ),
-        const SizedBox(height: 12),
-        // Info button
-        GestureDetector(
-          onTap: _showExplanationModal,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'ℹ️ ${l10n.profileModeWhatDoesThisDo}',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF2A6049),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

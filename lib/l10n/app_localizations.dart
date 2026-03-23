@@ -2702,6 +2702,120 @@ abstract class AppLocalizations {
   /// **'Tap \"Edit All\" to set your preferences'**
   String get profilePreferencesEmptyHint;
 
+  /// No description provided for @profilePreferencesFilledHint.
+  ///
+  /// In en, this message translates to:
+  /// **'These preferences subtly guide which places and plans fit you best.'**
+  String get profilePreferencesFilledHint;
+
+  /// No description provided for @profilePreferencesEmptyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in your preferences so WanderMood can better align with your style.'**
+  String get profilePreferencesEmptyDescription;
+
+  /// No description provided for @profileSectionWorldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your World'**
+  String get profileSectionWorldTitle;
+
+  /// No description provided for @profileSectionWorldSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Places you save, moods you track, and the story of your travels.'**
+  String get profileSectionWorldSubtitle;
+
+  /// No description provided for @profileSectionPreferencesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The details that make WanderMood more personal and smarter.'**
+  String get profileSectionPreferencesSubtitle;
+
+  /// No description provided for @profileSavedPlacesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Places you want to easily find back later.'**
+  String get profileSavedPlacesSubtitle;
+
+  /// No description provided for @profileSavedPlacesEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no saved places yet. Save a few favorites so your profile feels more like your travel map.'**
+  String get profileSavedPlacesEmptyHint;
+
+  /// No description provided for @profileSavedPlacesCarouselEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No saves yet — tap ♥ on a place to bookmark it.'**
+  String get profileSavedPlacesCarouselEmpty;
+
+  /// No description provided for @profileBioEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a short bio in Edit profile.'**
+  String get profileBioEmptyHint;
+
+  /// No description provided for @profileStatsTopMoodEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Still discovering'**
+  String get profileStatsTopMoodEmpty;
+
+  /// No description provided for @profileStatsSavePlacesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Start saving places that match your mood.'**
+  String get profileStatsSavePlacesHint;
+
+  /// No description provided for @profileStatsSavedPlacesReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Your saved spots are ready whenever you need inspiration.'**
+  String get profileStatsSavedPlacesReady;
+
+  /// No description provided for @profileFavoriteVibesEmptyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a few vibes so Moody quickly understands what you’re really looking for.'**
+  String get profileFavoriteVibesEmptyDescription;
+
+  /// No description provided for @profileFavoriteVibesFilledDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'These vibes help WanderMood determine which places and plans suit you best.'**
+  String get profileFavoriteVibesFilledDescription;
+
+  /// No description provided for @profileFavoriteVibesEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first vibe and give your profile more personality right away.'**
+  String get profileFavoriteVibesEmptyHint;
+
+  /// No description provided for @profileVibesProTipsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'💡 Pro Tips'**
+  String get profileVibesProTipsTitle;
+
+  /// No description provided for @profileVibesProTipsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'• Be honest about what you enjoy — better recommendations!\n• You can change these anytime\n• Mix different vibes for varied suggestions'**
+  String get profileVibesProTipsBody;
+
+  /// No description provided for @profileModeLocalCardDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'WanderMood keeps your suggestions closer to home and aligned with your regular rhythm.'**
+  String get profileModeLocalCardDescription;
+
+  /// No description provided for @profileModeTravelCardDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'WanderMood thinks more like a travel companion and sends you to new places to discover.'**
+  String get profileModeTravelCardDescription;
+
   /// No description provided for @profileActionEdit.
   ///
   /// In en, this message translates to:

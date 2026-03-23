@@ -505,6 +505,31 @@
   "profilePreferencesSocialVibe": "Social Vibe",
   "profilePreferencesFoodPreferences": "Food Preferences",
   "profilePreferencesEmptyHint": "Tap \"Edit All\" to set your preferences",
+  "profilePreferencesFilledHint": "These preferences subtly guide which places and plans fit you best.",
+  "profilePreferencesEmptyDescription": "Fill in your preferences so WanderMood can better align with your style.",
+
+  "profileSectionWorldTitle": "Your World",
+  "profileSectionWorldSubtitle": "Places you save, moods you track, and the story of your travels.",
+  "profileSectionPreferencesSubtitle": "The details that make WanderMood more personal and smarter.",
+
+  "profileSavedPlacesSubtitle": "Places you want to easily find back later.",
+  "profileSavedPlacesEmptyHint": "You have no saved places yet. Save a few favorites so your profile feels more like your travel map.",
+  "profileSavedPlacesCarouselEmpty": "No saves yet — tap ♥ on a place to bookmark it.",
+  "profileBioEmptyHint": "Add a short bio in Edit profile.",
+
+  "profileStatsTopMoodEmpty": "Still discovering",
+  "profileStatsSavePlacesHint": "Start saving places that match your mood.",
+  "profileStatsSavedPlacesReady": "Your saved spots are ready whenever you need inspiration.",
+
+  "profileFavoriteVibesEmptyDescription": "Choose a few vibes so Moody quickly understands what you\u2019re really looking for.",
+  "profileFavoriteVibesFilledDescription": "These vibes help WanderMood determine which places and plans suit you best.",
+  "profileFavoriteVibesEmptyHint": "Add your first vibe and give your profile more personality right away.",
+
+  "profileVibesProTipsTitle": "\uD83D\uDCA1 Pro Tips",
+  "profileVibesProTipsBody": "\u2022 Be honest about what you enjoy \u2014 better recommendations!\n\u2022 You can change these anytime\n\u2022 Mix different vibes for varied suggestions",
+
+  "profileModeLocalCardDescription": "WanderMood keeps your suggestions closer to home and aligned with your regular rhythm.",
+  "profileModeTravelCardDescription": "WanderMood thinks more like a travel companion and sends you to new places to discover.",
 
   "profileActionEdit": "Edit",
   "profileActionShare": "Share",

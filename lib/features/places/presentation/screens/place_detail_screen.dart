@@ -224,9 +224,11 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         child: IconButton(
           icon: Icon(Icons.arrow_back, color: iconColor),
           onPressed: () {
-            // Always return to Explore tab (index 1). Tapping a place card comes from Explore,
-            // but the route stack keeps the original /main tab (e.g. 2 from splash), so pop()
-            // would wrongly land on Mood or My Day. Going to main with tab 1 ensures back = Explore.
+            if (context.canPop()) {
+              context.pop();
+              return;
+            }
+            // Deep link / no stack: default to Explore.
             context.goNamed('main', extra: {'tab': 1});
           },
         ),

@@ -18,8 +18,13 @@ class ApiKeys {
   /// OpenAI API Key — optional, services use mock responses when empty.
   static String get openAiKey {
     const buildKey = String.fromEnvironment('OPENAI_API_KEY');
-    if (buildKey.isNotEmpty && buildKey != 'YOUR_OPENAI_API_KEY_HERE') {
-      return buildKey;
+    final normalized = buildKey.trim();
+    final looksLikePlaceholder =
+        normalized == 'YOUR_OPENAI_API_KEY_HERE' ||
+        normalized == 'sk-your-key-here' ||
+        normalized.toLowerCase().contains('your-key-here');
+    if (normalized.isNotEmpty && !looksLikePlaceholder) {
+      return normalized;
     }
     return '';
   }

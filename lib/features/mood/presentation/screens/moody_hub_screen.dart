@@ -945,6 +945,18 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       final latitude = position?.latitude ?? 51.9225;
       final longitude = position?.longitude ?? 4.4792;
 
+      final priorTurns = _chatMessages.length > 1
+          ? _chatMessages
+              .sublist(0, _chatMessages.length - 1)
+              .map((m) => {
+                    'role': m['role'] as String? ?? 'user',
+                    'content': m['content'] as String? ?? '',
+                  })
+              .where((m) =>
+                  m['role'] == 'user' || m['role'] == 'assistant')
+              .toList()
+          : null;
+
       // ONLY make API call when user explicitly sends a message
       final response = await WanderMoodAIService.chat(
         message: message.trim(),
@@ -953,6 +965,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         latitude: latitude,
         longitude: longitude,
         city: city,
+        clientTurns: priorTurns,
       );
 
       if (response.conversationId != null) {

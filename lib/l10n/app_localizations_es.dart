@@ -1460,6 +1460,78 @@ class AppLocalizationsEs extends AppLocalizations {
       'Toca \"Editar todo\" para configurar tus preferencias';
 
   @override
+  String get profilePreferencesFilledHint =>
+      'Estas preferencias guían sutilmente qué lugares y planes te van mejor.';
+
+  @override
+  String get profilePreferencesEmptyDescription =>
+      'Completa tus preferencias para que WanderMood se adapte mejor a tu estilo.';
+
+  @override
+  String get profileSectionWorldTitle => 'Tu mundo';
+
+  @override
+  String get profileSectionWorldSubtitle =>
+      'Lugares que guardas, estados de ánimo que sigues y la historia de tus viajes.';
+
+  @override
+  String get profileSectionPreferencesSubtitle =>
+      'Los detalles que hacen WanderMood más personal e inteligente.';
+
+  @override
+  String get profileSavedPlacesSubtitle =>
+      'Lugares que quieres encontrar fácilmente más tarde.';
+
+  @override
+  String get profileSavedPlacesEmptyHint =>
+      'Aún no tienes lugares guardados. Guarda algunos favoritos para que tu perfil se sienta más como tu mapa de viajes.';
+
+  @override
+  String get profileSavedPlacesCarouselEmpty =>
+      'Sin guardados aún — toca ♥ en un lugar para guardarlo.';
+
+  @override
+  String get profileBioEmptyHint => 'Añade una bio corta en Editar perfil.';
+
+  @override
+  String get profileStatsTopMoodEmpty => 'Still discovering';
+
+  @override
+  String get profileStatsSavePlacesHint =>
+      'Start saving places that match your mood.';
+
+  @override
+  String get profileStatsSavedPlacesReady =>
+      'Your saved spots are ready whenever you need inspiration.';
+
+  @override
+  String get profileFavoriteVibesEmptyDescription =>
+      'Elige algunos vibes para que Moody entienda rápidamente lo que buscas.';
+
+  @override
+  String get profileFavoriteVibesFilledDescription =>
+      'Estos vibes ayudan a WanderMood a determinar qué lugares y planes te van mejor.';
+
+  @override
+  String get profileFavoriteVibesEmptyHint =>
+      'Añade tu primer vibe y dale más personalidad a tu perfil enseguida.';
+
+  @override
+  String get profileVibesProTipsTitle => '💡 Pro Tips';
+
+  @override
+  String get profileVibesProTipsBody =>
+      '• Sé honesto sobre lo que disfrutas — ¡mejores recomendaciones!\n• Puedes cambiar esto en cualquier momento\n• Mezcla diferentes vibes para sugerencias variadas';
+
+  @override
+  String get profileModeLocalCardDescription =>
+      'WanderMood mantiene tus sugerencias más cerca de casa y alineadas con tu ritmo habitual.';
+
+  @override
+  String get profileModeTravelCardDescription =>
+      'WanderMood piensa más como compañero de viaje y te envía a nuevos lugares por descubrir.';
+
+  @override
   String get profileActionEdit => 'Editar';
 
   @override
