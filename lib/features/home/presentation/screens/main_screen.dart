@@ -113,10 +113,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   void initState() {
     super.initState();
-    // Apply route tab before the first frame so we never paint My Day (0)
-    // while [mainTabProvider] is already on another tab (e.g. after pop).
-    _applyMainTabFromRoute();
-    _applyTargetDateFromExtra();
+    // Defer provider writes: Riverpod forbids modifying providers during
+    // mount/build (throws from StateNotifier). didUpdateWidget uses the same pattern.
+    Future.microtask(() {
+      if (!mounted) return;
+      _applyMainTabFromRoute();
+      _applyTargetDateFromExtra();
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future(() async {

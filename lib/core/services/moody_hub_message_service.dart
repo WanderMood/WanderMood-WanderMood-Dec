@@ -6,7 +6,8 @@ import 'package:wandermood/core/utils/auth_helper.dart';
 class MoodyHubMessageService {
   MoodyHubMessageService._();
 
-  static const Duration _timeout = Duration(seconds: 2);
+  /// Edge + optional OpenAI needs more than a tight client timeout.
+  static const Duration _timeout = Duration(seconds: 8);
 
   /// Returns `null` on timeout, non-200, or missing `message` — caller shows fallback.
   static Future<String?> fetchHubMessage({
