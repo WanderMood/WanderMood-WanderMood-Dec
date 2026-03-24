@@ -8,8 +8,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
-import 'package:map_launcher/map_launcher.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'dynamic_my_day_provider.dart';
 import 'package:wandermood/features/home/presentation/providers/my_day_free_time_cache_provider.dart';
@@ -43,6 +44,37 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   late DateTime _selectedDate;
   
   bool _hasInitialized = false; // Prevent invalidate on hot reload
+  int _moodStreak = 0;
+
+  String _safeActivityTitle(Map<String, dynamic> activity) {
+    return activity['title']?.toString() ??
+        AppLocalizations.of(context)!.dayPlanCardActivity;
+  }
+
+  Uri _googleWebDirectionsUri(double? lat, double? lng, String title) {
+    if (lat != null && lng != null) {
+      return Uri.parse(
+        'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng',
+      );
+    }
+    return Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(title)}',
+    );
+  }
+
+  Uri _googleAppDirectionsUri(double? lat, double? lng, String title) {
+    if (lat != null && lng != null) {
+      return Uri.parse('comgooglemaps://?daddr=$lat,$lng&directionsmode=driving');
+    }
+    return Uri.parse('comgooglemaps://?q=${Uri.encodeComponent(title)}');
+  }
+
+  Uri _appleMapsUri(double? lat, double? lng, String title) {
+    if (lat != null && lng != null) {
+      return Uri.parse('maps://?q=${Uri.encodeComponent(title)}&ll=$lat,$lng');
+    }
+    return Uri.parse('maps://?q=${Uri.encodeComponent(title)}');
+  }
   
   @override
   void initState() {
@@ -66,6 +98,78 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         });
       });
     }
+    _loadMoodStreak();
+  }
+
+  Future<void> _loadMoodStreak() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+    final profile = await Supabase.instance.client
+        .from('profiles')
+        .select('mood_streak')
+        .eq('id', userId)
+        .maybeSingle();
+    if (!mounted) return;
+    setState(() {
+      _moodStreak = (profile?['mood_streak'] as int?) ?? 0;
+    });
+  }
+
+  Future<void> _updateMoodStreakFromCompletions() async {
+    final client = Supabase.instance.client;
+    final userId = client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    final now = MoodyClock.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final todayIso = today.toIso8601String().split('T').first;
+    final yesterdayIso = yesterday.toIso8601String().split('T').first;
+
+    final prefs = await SharedPreferences.getInstance();
+    final lastUpdate = prefs.getString('mood_streak_last_update');
+    if (lastUpdate == todayIso) {
+      await _loadMoodStreak();
+      return;
+    }
+
+    final completedToday = await client
+        .from('scheduled_activities')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('scheduled_date', todayIso)
+        .eq('is_confirmed', true)
+        .limit(1);
+
+    if (completedToday.isEmpty) return;
+
+    final completedYesterday = await client
+        .from('scheduled_activities')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('scheduled_date', yesterdayIso)
+        .eq('is_confirmed', true)
+        .limit(1);
+
+    final profile = await client
+        .from('profiles')
+        .select('mood_streak')
+        .eq('id', userId)
+        .maybeSingle();
+    final currentStreak = (profile?['mood_streak'] as int?) ?? 0;
+    final nextStreak = completedYesterday.isNotEmpty
+        ? (currentStreak > 0 ? currentStreak + 1 : 1)
+        : 1;
+
+    await client
+        .from('profiles')
+        .update({
+          'mood_streak': nextStreak,
+          'updated_at': DateTime.now().toIso8601String(),
+        })
+        .eq('id', userId);
+    await prefs.setString('mood_streak_last_update', todayIso);
+    await _loadMoodStreak();
   }
 
   bool _timelineHasActivities(
@@ -191,6 +295,31 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                           height: 1.5,
                         ),
                       ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
+                      if (_moodStreak > 0) ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF6E8),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: const Color(0xFFE8E2D8),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            '🔥 $_moodStreak day streak',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF2A6049),
+                            ),
+                          ),
+                        ),
+                      ],
                       
                       const SizedBox(height: 12),
                       currentStatus.when(
@@ -2191,6 +2320,17 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
     HapticFeedback.mediumImpact();
     ref.read(activityManagerProvider.notifier).markActivityDone(activityId);
+    final confirmId =
+        activity.rawData['placeId'] as String? ??
+        activity.rawData['id'] as String? ??
+        activity.rawData['title'] as String? ??
+        '';
+    if (confirmId.isNotEmpty) {
+      ref
+          .read(scheduledActivityServiceProvider)
+          .updateActivityConfirmation(confirmId, true)
+          .then((_) => _updateMoodStreakFromCompletions());
+    }
     ref.invalidate(currentActivityStatusProvider);
     ref.invalidate(todayActivitiesProvider);
 
@@ -2906,37 +3046,90 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
   void _openDirections(Map<String, dynamic> activity) async {
     try {
-      // Check if maps are available
-      final availableMaps = await MapLauncher.installedMaps;
       final lat = (activity['lat'] as num?)?.toDouble();
       final lng = (activity['lng'] as num?)?.toDouble();
-      final hasCoords = lat != null && lng != null && lat != 0 && lng != 0;
+      final title = _safeActivityTitle(activity);
 
-      if (availableMaps.isNotEmpty) {
-        // Use the first available map app
-        final coords = hasCoords && lat != null && lng != null
-            ? Coords(lat, lng)
-            : Coords(51.9225, 4.4792);
-        await availableMaps.first.showMarker(
-          coords: coords,
-          title: activity['title'] ??
-              AppLocalizations.of(context)!.myDayActivityLocationFallback,
-          description: activity['description'] ?? '',
+      final appleUri = _appleMapsUri(lat, lng, title);
+      final googleAppUri = _googleAppDirectionsUri(lat, lng, title);
+      final googleWebUri = _googleWebDirectionsUri(lat, lng, title);
+
+      final canOpenApple = await canLaunchUrl(appleUri);
+      final canOpenGoogleApp = await canLaunchUrl(googleAppUri);
+
+      if (!mounted) return;
+
+      final options = <({String label, Uri uri})>[
+        (
+          label: AppLocalizations.of(context)!.myDayOpenGoogleMaps,
+          uri: canOpenGoogleApp ? googleAppUri : googleWebUri,
+        ),
+        if (canOpenApple)
+          (
+            label: AppLocalizations.of(context)!.myDayOpenAppleMaps,
+            uri: appleUri,
+          ),
+      ];
+
+      if (options.length == 1) {
+        await launchUrl(
+          options.first.uri,
+          mode: LaunchMode.externalApplication,
         );
-      } else {
-        // Fallback to Google Maps web
-        final url = Uri.parse(
-          'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(activity['title'] ?? AppLocalizations.of(context)!.dayPlanCardActivity)}'
-        );
-        
-        if (await canLaunchUrl(url)) {
-          await launchUrl(url, mode: LaunchMode.externalApplication);
-        } else {
-          throw 'Could not open maps';
-        }
+        return;
       }
+
+      await showModalBottomSheet<void>(
+        context: context,
+        backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (sheetContext) => SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8E2D8),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Navigeer naar',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1E1C18),
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...options.map(
+                (opt) => ListTile(
+                  leading: const Icon(Icons.map_outlined, color: Color(0xFF2A6049)),
+                  title: Text(
+                    opt.label,
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF1E1C18),
+                    ),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(sheetContext);
+                    await launchUrl(opt.uri, mode: LaunchMode.externalApplication);
+                  },
+                ),
+              ),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
+            ],
+          ),
+        ),
+      );
     } catch (e) {
-      // Show error message
       showWanderMoodToast(
         context,
         message: AppLocalizations.of(context)!.myDayUnableOpenDirections,

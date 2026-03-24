@@ -113,15 +113,6 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                 _buildSectionHeader(l10n.settingsSectionPrivacySecurity),
                 const SizedBox(height: 10),
                 _buildSettingButton(
-                  icon: Icons.lock_outline_rounded,
-                  label: l10n.settingsAccountSecurityTitle,
-                  subtitle: l10n.settingsAccountSecuritySubtitle,
-                  iconBgColor: _wmErrorRedTint,
-                  iconColor: _wmErrorRed,
-                  onTap: () => context.push('/settings/account-security'),
-                ),
-                const SizedBox(height: 10),
-                _buildSettingButton(
                   icon: Icons.shield_outlined,
                   label: l10n.settingsPrivacyTitle,
                   subtitle: l10n.settingsPrivacySubtitle,

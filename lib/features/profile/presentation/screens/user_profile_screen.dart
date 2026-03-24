@@ -73,6 +73,61 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   final _supabase = Supabase.instance.client;
   final ImagePicker _imagePicker = ImagePicker();
   bool _isUploadingImage = false;
+  bool _isLoadingPreferences = false;
+  String? _communicationStyle;
+  List<String> _travelInterests = [];
+  List<String> _socialVibe = [];
+  List<String> _travelStyles = [];
+  List<String> _favoriteMoods = [];
+  String? _planningPace;
+  List<String> _selectedMoods = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPreferences();
+  }
+
+  Future<void> _loadPreferences() async {
+    final currentUser = _supabase.auth.currentUser;
+    if (currentUser == null) return;
+    setState(() => _isLoadingPreferences = true);
+    try {
+      final prefs = await _supabase
+          .from('user_preferences')
+          .select('''
+            communication_style,
+            travel_interests,
+            social_vibe,
+            travel_styles,
+            favorite_moods,
+            planning_pace,
+            selected_moods
+          ''')
+          .eq('user_id', currentUser.id)
+          .maybeSingle();
+
+      if (!mounted) return;
+      setState(() {
+        _communicationStyle = prefs?['communication_style'] as String?;
+        _travelInterests =
+            List<String>.from((prefs?['travel_interests'] as List?) ?? const []);
+        _socialVibe =
+            List<String>.from((prefs?['social_vibe'] as List?) ?? const []);
+        _travelStyles =
+            List<String>.from((prefs?['travel_styles'] as List?) ?? const []);
+        _favoriteMoods =
+            List<String>.from((prefs?['favorite_moods'] as List?) ?? const []);
+        _planningPace = prefs?['planning_pace'] as String?;
+        _selectedMoods =
+            List<String>.from((prefs?['selected_moods'] as List?) ?? const []);
+        _isLoadingPreferences = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoadingPreferences = false);
+    }
+  }
 
   Future<void> _changeProfilePicture() async {
     try {
@@ -123,6 +178,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
   Future<void> _updateTravelMode(bool isLocal) async {
     await ref.read(currentUserProfileProvider.notifier).updateTravelMode(isLocal);
+    if (!mounted) return;
+    showWanderMoodToast(
+      context,
+      message: isLocal ? 'Lokale modus opgeslagen' : 'Traveling modus opgeslagen',
+    );
   }
 
   void _handleVibesUpdated(List<String> updatedVibes) {
@@ -880,201 +940,96 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   }
 
   Widget _buildPreferencesCard(BuildContext context, CurrentUserProfile profile) {
-    final l10n = AppLocalizations.of(context)!;
-    final preferenceRows = <MapEntry<String, String>>[
-      if (profile.budgetLevel != null && profile.budgetLevel!.isNotEmpty)
-        MapEntry(
-          l10n.profilePreferencesBudgetStyle,
-          _formatBudget(l10n, profile.budgetLevel),
-        ),
-      if (profile.socialVibe != null && profile.socialVibe!.isNotEmpty)
-        MapEntry(
-          l10n.profilePreferencesSocialVibe,
-          _formatSocialVibe(l10n, profile.socialVibe),
-        ),
-      if (profile.dietaryRestrictions.isNotEmpty)
-        MapEntry(
-          l10n.profilePreferencesFoodPreferences,
-          _formatFoodPreferences(profile.dietaryRestrictions),
-        ),
+    final chips = <String>[
+      if (_communicationStyle != null && _communicationStyle!.trim().isNotEmpty)
+        _communicationStyle!,
+      ..._travelInterests,
+      ..._socialVibe,
+      ..._travelStyles,
+      ..._favoriteMoods,
+      if (_planningPace != null && _planningPace!.trim().isNotEmpty) _planningPace!,
+      ..._selectedMoods,
     ];
-    final hasAny = preferenceRows.isNotEmpty;
-
     return Container(
-      padding: const EdgeInsets.all(18),
+      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: _wmWhite,
-        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: _wmParchment, width: 1),
-        boxShadow: _profileCardShadow(),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: _wmCream,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(
-                  Icons.tune_rounded,
-                  color: _wmForest,
-                  size: 22,
+              Text(
+                'Jouw voorkeuren',
+                style: GoogleFonts.poppins(
+                  color: _wmCharcoal,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.profilePreferencesTitle,
-                      style: GoogleFonts.poppins(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w700,
-                        color: _wmCharcoal,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      hasAny
-                          ? l10n.profilePreferencesFilledHint
-                          : l10n.profilePreferencesEmptyDescription,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        color: _wmStone,
-                        height: 1.45,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              TextButton(
-                onPressed: () async {
+              GestureDetector(
+                onTap: () async {
                   await context.push('/preferences');
-                  if (mounted) ref.read(currentUserProfileProvider.notifier).refresh();
+                  if (!mounted) return;
+                  await _loadPreferences();
+                  ref.read(currentUserProfileProvider.notifier).refresh();
                 },
-                style: TextButton.styleFrom(
-                  foregroundColor: _wmForest,
-                  backgroundColor: _wmForestTint,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
                 child: Text(
-                  l10n.profilePreferencesEditAll,
+                  'Bewerk alles',
                   style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.2,
+                    color: _wmForest,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          if (hasAny)
-            ...preferenceRows.asMap().entries.expand((entry) {
-              final index = entry.key;
-              final row = entry.value;
-              return [
-                _buildPrefRow(row.key, row.value),
-                if (index != preferenceRows.length - 1) const SizedBox(height: 10),
-              ];
-            }),
-          if (!hasAny)
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: _wmCream,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: _wmParchment, width: 1),
+          const SizedBox(height: 12),
+          if (_isLoadingPreferences)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2, color: _wmForest),
               ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: _wmWhite,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.add_rounded, color: _wmForest),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      l10n.profilePreferencesEmptyHint,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: _wmDusk,
-                        height: 1.45,
+            )
+          else if (chips.isEmpty)
+            Text(
+              'Nog geen voorkeuren ingesteld.',
+              style: GoogleFonts.poppins(color: _wmStone, fontSize: 13),
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: chips
+                  .map(
+                    (chip) => Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: _wmForestTint,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: _wmParchment, width: 0.8),
+                      ),
+                      child: Text(
+                        chip,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: _wmForest,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                  )
+                  .toList(),
             ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPrefRow(String label, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      decoration: BoxDecoration(
-        color: _wmCream,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _wmParchment, width: 1),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            width: 10,
-            height: 10,
-            decoration: const BoxDecoration(
-              color: _wmForest,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: _wmStone,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  value,
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: _wmCharcoal,
-                    height: 1.35,
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );

@@ -270,27 +270,6 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
                   ],
                 ),
               ),
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => _openMoodyChat(context),
-                  borderRadius: BorderRadius.circular(16),
-                  child: Ink(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: _wmForestTint,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: _wmParchment, width: 0.5),
-                    ),
-                    child: const Icon(
-                      Icons.auto_awesome_rounded,
-                      color: _wmForest,
-                      size: 24,
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 20),

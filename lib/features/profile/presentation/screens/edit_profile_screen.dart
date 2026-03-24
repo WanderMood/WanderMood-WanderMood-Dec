@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_places_flutter/google_places_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
 import 'package:wandermood/features/profile/domain/providers/current_user_profile_provider.dart';
-import 'package:wandermood/features/places/application/places_service.dart';
-import 'package:wandermood/features/places/domain/models/place.dart';
-import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import '../widgets/edit_favorite_vibes.dart' show allVibes;
 import 'dart:io';
-import 'dart:async';
 
 // WanderMood v2 — Edit Profile (Screen 12)
 const Color _wmCream = Color(0xFFF5F0E8);
@@ -49,13 +46,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   EditScreenMode _currentMode = EditScreenMode.edit;
   List<String> _favoriteVibes = [];
   
-  // Location autocomplete
-  List<PlaceAutocomplete> _locationSuggestions = [];
-  bool _isLoadingSuggestions = false;
-  Timer? _debounceTimer;
-  OverlayEntry? _overlayEntry;
-  final LayerLink _layerLink = LayerLink();
-  
   // Original data for comparison
   Map<String, dynamic> _originalData = {};
 
@@ -63,7 +53,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   void initState() {
     super.initState();
     _loadCurrentProfile();
-    _locationController.addListener(_onLocationChanged);
   }
 
   Future<void> _loadCurrentProfile() async {
@@ -89,13 +78,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           .eq('id', userId)
           .maybeSingle();
 
-      final travelVibesRaw = profileResponse?['travel_vibes'];
-      final List<String> travelVibes = travelVibesRaw is List
-          ? travelVibesRaw.map((e) => e?.toString() ?? '').where((s) => s.isNotEmpty).toList()
-          : (travelVibesRaw is String ? [travelVibesRaw] : <String>[]);
-      
-      // Prefer travel_vibes from profiles; fall back to selectedMoods from user_preferences
-      final vibes = travelVibes.isNotEmpty ? travelVibes : (currentProfile?.selectedMoods ?? []);
+      final travelVibesRaw = profileResponse?['travel_vibes'] as List<dynamic>?;
+      final vibes = _loadTravelVibes(travelVibesRaw);
       
       final dateOfBirthRaw = profileResponse?['date_of_birth'];
       final DateTime? dateOfBirth = dateOfBirthRaw != null
@@ -141,147 +125,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   void dispose() {
-    _debounceTimer?.cancel();
-    _removeOverlay();
     _nameController.dispose();
     _usernameController.dispose();
     _emailController.dispose();
     _bioController.dispose();
     _locationController.dispose();
     super.dispose();
-  }
-
-  void _onLocationChanged() {
-    _checkForChanges();
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
-      _fetchLocationSuggestions();
-    });
-  }
-
-  Future<void> _fetchLocationSuggestions() async {
-    final query = _locationController.text.trim();
-    
-    if (query.isEmpty || query.length < 2) {
-      setState(() {
-        _locationSuggestions = [];
-        _isLoadingSuggestions = false;
-      });
-      _removeOverlay();
-      return;
-    }
-
-    setState(() => _isLoadingSuggestions = true);
-
-    try {
-      final placesService = ref.read(placesServiceProvider.notifier);
-
-      // Use text-based autocomplete so cities like "Rotterdam" always appear,
-      // regardless of current GPS radius.
-      final suggestions = await placesService.getAutocomplete(query);
-
-      if (mounted) {
-        setState(() {
-          _locationSuggestions = suggestions;
-          _isLoadingSuggestions = false;
-        });
-        _showSuggestionsOverlay();
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _locationSuggestions = [];
-          _isLoadingSuggestions = false;
-        });
-        _removeOverlay();
-      }
-    }
-  }
-
-  void _showSuggestionsOverlay() {
-    _removeOverlay();
-    
-    if (_locationSuggestions.isEmpty) {
-      return;
-    }
-
-    final overlay = Overlay.of(context);
-    final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
-    if (renderBox == null) return;
-
-    _overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        width: renderBox.size.width - 48, // Match card padding
-        child: CompositedTransformFollower(
-          link: _layerLink,
-          showWhenUnlinked: false,
-          offset: Offset(0, renderBox.size.height + 8),
-          child: Material(
-            elevation: 8,
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              constraints: const BoxConstraints(maxHeight: 200),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: _isLoadingSuggestions
-                  ? const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                  : ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: _locationSuggestions.length,
-                      itemBuilder: (context, index) {
-                        final suggestion = _locationSuggestions[index];
-                        return ListTile(
-                          leading: const Icon(
-                            Icons.location_on,
-                            color: _wmForest,
-                            size: 20,
-                          ),
-                          title: Text(
-                            suggestion.description,
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.grey[800],
-                            ),
-                          ),
-                          onTap: () {
-                            _selectLocation(suggestion);
-                          },
-                        );
-                      },
-                    ),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    overlay.insert(_overlayEntry!);
-  }
-
-  void _selectLocation(PlaceAutocomplete suggestion) {
-    setState(() {
-      _locationController.text = suggestion.description;
-      _locationSuggestions = [];
-    });
-    _removeOverlay();
-    _checkForChanges();
-  }
-
-  void _removeOverlay() {
-    _overlayEntry?.remove();
-    _overlayEntry = null;
   }
 
   void _checkForChanges() {
@@ -304,6 +153,42 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       if (!b.contains(a[i])) return false;
     }
     return true;
+  }
+
+  List<String> _loadTravelVibes(List<dynamic>? rawVibes) {
+    if (rawVibes == null || rawVibes.isEmpty) return [];
+    final vibes = rawVibes
+        .map((v) => v.toString())
+        .where((v) => v.trim().isNotEmpty)
+        .toList();
+
+    const defaultVibes = ['Spontaneous', 'Social', 'Relaxed'];
+    final isDefault =
+        vibes.length == defaultVibes.length &&
+            vibes.every(defaultVibes.contains);
+
+    if (isDefault) return [];
+    return vibes;
+  }
+
+  int? _calculateAge(DateTime? dateOfBirth) {
+    if (dateOfBirth == null) return null;
+    final now = DateTime.now();
+    var age = now.year - dateOfBirth.year;
+    if (now.month < dateOfBirth.month ||
+        (now.month == dateOfBirth.month && now.day < dateOfBirth.day)) {
+      age--;
+    }
+    return age;
+  }
+
+  String? _deriveAgeGroup(DateTime? dateOfBirth) {
+    final age = _calculateAge(dateOfBirth);
+    if (age == null) return null;
+    if (age < 25) return 'young_adult';
+    if (age <= 34) return 'twenties_thirties';
+    if (age <= 44) return 'thirties_forties';
+    return 'forties_plus';
   }
 
   Future<void> _pickImage({bool fromCamera = false}) async {
@@ -403,6 +288,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           .upsert({
             'user_id': userId,
             'selected_moods': _favoriteVibes,
+            'age_group': _deriveAgeGroup(_dateOfBirth),
             'updated_at': DateTime.now().toIso8601String(),
           }, onConflict: 'user_id');
 
@@ -553,21 +439,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             // Content
             Expanded(
               child: GestureDetector(
-                onTap: () => _removeOverlay(),
-                child: NotificationListener<ScrollNotification>(
-                  onNotification: (notification) {
-                    if (notification is ScrollUpdateNotification) {
-                      _removeOverlay();
-                    }
-                    return false;
-                  },
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                           // Profile Photo Section
                           _buildProfilePhotoCard(),
                           const SizedBox(height: 10),
@@ -775,10 +653,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       // Favorite Vibes
                       _buildFavoriteVibesCard(),
                       const SizedBox(height: 20), // Bottom padding
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ),
             ),
           ),
         ),
@@ -821,38 +698,60 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: displayImage == null ? _wmForestTint : null,
-              shape: BoxShape.circle,
-              border: displayImage == null
-                  ? Border.all(color: _wmParchment, width: 1.5)
-                  : null,
-              image: displayImage != null
-                  ? DecorationImage(image: displayImage, fit: BoxFit.cover)
-                  : null,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+          GestureDetector(
+            onTap: () => setState(() => _currentMode = EditScreenMode.photo),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: displayImage == null ? _wmForestTint : null,
+                    border: Border.all(color: _wmForest, width: 2),
+                    image: displayImage != null
+                        ? DecorationImage(image: displayImage, fit: BoxFit.cover)
+                        : null,
+                  ),
+                  child: displayImage == null
+                      ? Center(
+                          child: Text(
+                            initial,
+                            style: GoogleFonts.poppins(
+                              fontSize: 36,
+                              fontWeight: FontWeight.bold,
+                              color: _wmForest,
+                            ),
+                          ),
+                        )
+                      : null,
+                ),
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withOpacity(0.35),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.camera_alt, color: Colors.white, size: 24),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Wijzigen',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            child: displayImage == null
-                ? Center(
-                    child: Text(
-                      initial,
-                      style: GoogleFonts.poppins(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: _wmForest,
-                      ),
-                    ),
-                  )
-                : null,
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -876,22 +775,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   ),
                 ),
               ],
-            ),
-          ),
-          GestureDetector(
-            onTap: () => setState(() => _currentMode = EditScreenMode.photo),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: _wmForestTint,
-                shape: BoxShape.circle,
-                border: Border.all(color: _wmParchment, width: 0.5),
-              ),
-              child: const Icon(
-                Icons.camera_alt,
-                color: _wmForest,
-                size: 24,
-              ),
             ),
           ),
         ],
@@ -957,64 +840,84 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          CompositedTransformTarget(
-            link: _layerLink,
-            child: Row(
-              children: [
-                const Icon(Icons.location_on_outlined, color: Color(0xFF9CA3AF), size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: _locationController,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey[800],
-                    ),
-                    decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context)!.profileEditLocationHint,
-                      hintStyle: GoogleFonts.poppins(color: Colors.grey[400]),
-                      filled: true,
-                      fillColor: const Color(0xFFF9FAFB),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: _wmParchment, width: 1.5),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: _wmParchment, width: 1.5),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: _wmForest, width: 2),
-                      ),
-                      suffixIcon: _isLoadingSuggestions
-                          ? const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: _wmForest,
-                                ),
-                              ),
-                            )
-                          : null,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    ),
-                    onTap: () {
-                      if (_locationController.text.isNotEmpty && _locationSuggestions.isNotEmpty) {
-                        _showSuggestionsOverlay();
-                      }
-                    },
-                    onChanged: (_) {
-                      // _onLocationChanged will handle this via listener
-                    },
+          GooglePlaceAutoCompleteTextField(
+            textEditingController: _locationController,
+            googleAPIKey: const String.fromEnvironment(
+              'GOOGLE_PLACES_API_KEY',
+              defaultValue: '',
+            ),
+            inputDecoration: InputDecoration(
+              hintText: 'Zoek je stad...',
+              hintStyle: GoogleFonts.poppins(color: _wmStone),
+              prefixIcon: const Icon(
+                Icons.location_on_outlined,
+                color: _wmStone,
+                size: 20,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: _wmParchment),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: _wmForest, width: 1.5),
+              ),
+              filled: true,
+              fillColor: Colors.white,
+            ),
+            debounceTime: 600,
+            isLatLngRequired: false,
+            countries: const ['nl'],
+            getPlaceDetailWithLatLng: (prediction) {
+              final description = prediction.description ?? '';
+              _locationController.text = description;
+              _checkForChanges();
+            },
+            itemClick: (prediction) {
+              final description = prediction.description ?? '';
+              _locationController.text = description;
+              _locationController.selection = TextSelection.fromPosition(
+                TextPosition(offset: description.length),
+              );
+              _checkForChanges();
+            },
+            itemBuilder: (context, index, prediction) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: const BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: _wmParchment, width: 0.5),
                   ),
                 ),
-              ],
+                child: Row(
+                  children: [
+                    const Icon(Icons.location_on_outlined, color: _wmStone, size: 16),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        prediction.description ?? '',
+                        style: GoogleFonts.poppins(
+                          color: const Color(0xFF1E1C18),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+            seperatedBuilder: const Divider(height: 0, color: _wmParchment),
+            isCrossBtnShown: true,
+            textStyle: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF1E1C18),
             ),
+            boxDecoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            containerHorizontalPadding: 0,
           ),
         ],
       ),

@@ -46,6 +46,25 @@ class MoodyEdgeFunctionService {
     }
   }
 
+  Future<bool> _readIsLocalMode() async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return true;
+    try {
+      final profile = await _supabase
+          .from('profiles')
+          .select('currently_exploring')
+          .eq('id', userId)
+          .maybeSingle();
+      final mode = (profile?['currently_exploring'] as String?)
+              ?.toLowerCase()
+              .trim() ??
+          'local';
+      return mode != 'traveling';
+    } catch (_) {
+      return true;
+    }
+  }
+
   /// Get explore places from Edge Function
   /// 
   /// Returns 60-80 places based on mood, location, and filters
@@ -103,12 +122,14 @@ class MoodyEdgeFunctionService {
       final supabaseUrl = SupabaseConfig.url;
       final functionUrl = '$supabaseUrl/functions/v1/moody';
 
+      final isLocal = await _readIsLocalMode();
       final response = await dio.post(
         functionUrl,
         data: {
           'action': 'get_explore',
           'mood': mood,
           'location': location,
+          'is_local': isLocal,
           'coordinates': {
             'lat': latitude,
             'lng': longitude,
@@ -212,12 +233,14 @@ class MoodyEdgeFunctionService {
     final dio = Dio();
     final functionUrl = '${SupabaseConfig.url}/functions/v1/moody';
 
+    final isLocal = await _readIsLocalMode();
     final response = await dio.post<Map<String, dynamic>>(
       functionUrl,
       data: {
         'action': 'create_day_plan',
         'moods': moods,
         'location': location.trim(),
+        'is_local': isLocal,
         'coordinates': {'lat': latitude, 'lng': longitude},
         'filters': filters ?? <String, dynamic>{},
       },

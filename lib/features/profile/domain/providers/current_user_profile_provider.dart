@@ -37,7 +37,7 @@ class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
           .from('profiles')
           // Some environments don't have `avatar_url` in the profiles table.
           // Prefer `image_url` and never request `avatar_url` to avoid 42703 errors.
-          .select('full_name, username, bio, image_url, mood_streak')
+          .select('full_name, username, bio, image_url, mood_streak, currently_exploring')
           .eq('id', userId)
           .maybeSingle();
 
@@ -82,7 +82,8 @@ class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
         avatarUrl: avatarUrl,
         ageGroup: prefsRes?['age_group'] as String?,
         moodStreak: moodStreak,
-        homeBase: prefsRes?['home_base'] as String?,
+        homeBase: (profileRes?['currently_exploring'] as String?) ??
+            (prefsRes?['home_base'] as String?),
         selectedMoods: selectedMoods,
         budgetLevel: prefsRes?['budget_level'] as String?,
         socialVibe: socialVibe,
@@ -111,9 +112,15 @@ class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
     final supabase = Supabase.instance.client;
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) return;
-    await supabase.from('user_preferences').update({
+    await supabase.from('profiles').update({
+      'currently_exploring': isLocal ? 'local' : 'traveling',
+      'updated_at': DateTime.now().toIso8601String(),
+    }).eq('id', userId);
+    await supabase.from('user_preferences').upsert({
+      'user_id': userId,
       'home_base': isLocal ? 'Local Explorer' : 'Traveler',
-    }).eq('user_id', userId);
+      'updated_at': DateTime.now().toIso8601String(),
+    }, onConflict: 'user_id');
     await refresh();
   }
 

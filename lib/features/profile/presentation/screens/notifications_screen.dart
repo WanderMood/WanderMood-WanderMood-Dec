@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
-import '../../domain/providers/profile_provider.dart';
 import '../widgets/settings_screen_template.dart';
 
 /// v2 tokens
@@ -21,12 +21,9 @@ class NotificationsScreen extends ConsumerStatefulWidget {
 }
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
-  bool _pushNotifications = true;
-  bool _emailNotifications = false;
-  bool _inAppNotifications = true;
-  bool _newActivities = true;
-  bool _nearbyEvents = true;
-  bool _friendActivity = false;
+  bool _tripReminders = true;
+  bool _weatherUpdates = true;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -34,38 +31,45 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     _loadSettings();
   }
 
-  void _loadSettings() {
-    final profileAsync = ref.read(profileProvider);
-    profileAsync.whenData((profile) {
-      if (mounted && profile != null) {
-        final prefs = profile.notificationPreferences;
-        setState(() {
-          _pushNotifications = prefs['push'] ?? true;
-          _emailNotifications = prefs['email'] ?? false;
-          _inAppNotifications = prefs['inApp'] ?? true;
-          _newActivities = prefs['newActivities'] ?? true;
-          _nearbyEvents = prefs['nearbyEvents'] ?? true;
-          _friendActivity = prefs['friendActivity'] ?? false;
-        });
+  Future<void> _loadSettings() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) {
+        if (mounted) setState(() => _isLoading = false);
+        return;
       }
-    });
+      final prefs = await Supabase.instance.client
+          .from('user_preferences')
+          .select('trip_reminders, weather_updates')
+          .eq('user_id', user.id)
+          .maybeSingle();
+      if (!mounted) return;
+      setState(() {
+        _tripReminders = (prefs?['trip_reminders'] as bool?) ?? true;
+        _weatherUpdates = (prefs?['weather_updates'] as bool?) ?? true;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
-  Future<void> _updateNotifications() async {
+  Future<void> _updateNotifications({
+    required bool? tripReminders,
+    required bool? weatherUpdates,
+  }) async {
     try {
-      await ref.read(profileProvider.notifier).updateProfile(
-        notificationPreferences: {
-          'push': _pushNotifications,
-          'email': _emailNotifications,
-          'inApp': _inAppNotifications,
-          'newActivities': _newActivities,
-          'nearbyEvents': _nearbyEvents,
-          'friendActivity': _friendActivity,
-        },
-      );
-    } catch (e) {
-      // Handle error silently
-    }
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return;
+      await Supabase.instance.client
+          .from('user_preferences')
+          .upsert({
+            'user_id': user.id,
+            if (tripReminders != null) 'trip_reminders': tripReminders,
+            if (weatherUpdates != null) 'weather_updates': weatherUpdates,
+            'updated_at': DateTime.now().toIso8601String(),
+          }, onConflict: 'user_id');
+    } catch (_) {}
   }
 
   @override
@@ -75,90 +79,52 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       title: l10n.settingsNotificationsTitle,
       onBack: () => context.pop(),
       wanderMoodV2Chrome: true,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.notificationsMethodsTitle.toUpperCase(),
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              letterSpacing: 1.0,
-              color: _wmStone,
+      child: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: _wmForest),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'MELDINGEN'.toUpperCase(),
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 1.0,
+                    color: _wmStone,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildToggleOption(
+                  label: 'Trip reminders',
+                  subtitle: 'Herinneringen voor geplande activiteiten',
+                  checked: _tripReminders,
+                  onChange: () async {
+                    final next = !_tripReminders;
+                    setState(() => _tripReminders = next);
+                    await _updateNotifications(
+                      tripReminders: next,
+                      weatherUpdates: null,
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildToggleOption(
+                  label: 'Weer-updates',
+                  subtitle: 'Updates over het weer op jouw bestemming',
+                  checked: _weatherUpdates,
+                  onChange: () async {
+                    final next = !_weatherUpdates;
+                    setState(() => _weatherUpdates = next);
+                    await _updateNotifications(
+                      tripReminders: null,
+                      weatherUpdates: next,
+                    );
+                  },
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 12),
-          _buildToggleOption(
-            label: l10n.notificationsPushTitle,
-            subtitle: l10n.notificationsPushSubtitle,
-            checked: _pushNotifications,
-            onChange: () {
-              setState(() => _pushNotifications = !_pushNotifications);
-              _updateNotifications();
-            },
-          ),
-          const SizedBox(height: 12),
-          _buildToggleOption(
-            label: l10n.notificationsEmailTitle,
-            subtitle: l10n.notificationsEmailSubtitle,
-            checked: _emailNotifications,
-            onChange: () {
-              setState(() => _emailNotifications = !_emailNotifications);
-              _updateNotifications();
-            },
-          ),
-          const SizedBox(height: 12),
-          _buildToggleOption(
-            label: l10n.notificationsInAppTitle,
-            subtitle: l10n.notificationsInAppSubtitle,
-            checked: _inAppNotifications,
-            onChange: () {
-              setState(() => _inAppNotifications = !_inAppNotifications);
-              _updateNotifications();
-            },
-          ),
-          const SizedBox(height: 24),
-          Text(
-            l10n.notificationsWhatToNotifyTitle.toUpperCase(),
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              letterSpacing: 1.0,
-              color: _wmStone,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildToggleOption(
-            label: l10n.notificationsNewActivitiesTitle,
-            subtitle: l10n.notificationsNewActivitiesSubtitle,
-            checked: _newActivities,
-            onChange: () {
-              setState(() => _newActivities = !_newActivities);
-              _updateNotifications();
-            },
-          ),
-          const SizedBox(height: 12),
-          _buildToggleOption(
-            label: l10n.notificationsNearbyEventsTitle,
-            subtitle: l10n.notificationsNearbyEventsSubtitle,
-            checked: _nearbyEvents,
-            onChange: () {
-              setState(() => _nearbyEvents = !_nearbyEvents);
-              _updateNotifications();
-            },
-          ),
-          const SizedBox(height: 12),
-          _buildToggleOption(
-            label: l10n.notificationsFriendActivityTitle,
-            subtitle: l10n.notificationsFriendActivitySubtitle,
-            checked: _friendActivity,
-            onChange: () {
-              setState(() => _friendActivity = !_friendActivity);
-              _updateNotifications();
-            },
-          ),
-        ],
-      ),
     );
   }
 

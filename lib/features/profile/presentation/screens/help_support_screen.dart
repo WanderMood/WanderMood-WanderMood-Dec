@@ -58,10 +58,10 @@ class HelpSupportScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           _buildSettingCard(
-            icon: Icons.help_outline,
-            title: l10n.helpSupportFaqTitle,
-            subtitle: l10n.helpSupportFaqSubtitle,
-            onTap: () {},
+            icon: Icons.email_outlined,
+            title: 'E-mail support',
+            subtitle: 'info@wandermood.com',
+            onTap: () => _sendEmail(context),
           ),
           const SizedBox(height: 8),
           _buildSettingCard(
@@ -69,21 +69,6 @@ class HelpSupportScreen extends ConsumerWidget {
             title: l10n.helpSupportContactTitle,
             subtitle: l10n.helpSupportContactSubtitle,
             onTap: () => _sendEmail(context),
-          ),
-          const SizedBox(height: 8),
-          _buildSettingCard(
-            icon: Icons.message,
-            title: l10n.helpSupportLiveChatTitle,
-            subtitle: l10n.helpSupportLiveChatSubtitle,
-            badge: l10n.helpSupportLiveChatBadgeOnline,
-            onTap: () {},
-          ),
-          const SizedBox(height: 8),
-          _buildSettingCard(
-            icon: Icons.phone,
-            title: l10n.helpSupportReportBugTitle,
-            subtitle: l10n.helpSupportReportBugSubtitle,
-            onTap: () {},
           ),
           const SizedBox(height: 24),
           Text(
@@ -99,14 +84,7 @@ class HelpSupportScreen extends ConsumerWidget {
             icon: Icons.shield,
             title: l10n.helpSupportPrivacyTitle,
             subtitle: l10n.helpSupportPrivacySubtitle,
-            onTap: () {},
-          ),
-          const SizedBox(height: 8),
-          _buildSettingCard(
-            icon: Icons.shield,
-            title: l10n.helpSupportTermsTitle,
-            subtitle: l10n.helpSupportTermsSubtitle,
-            onTap: () {},
+            onTap: () => _openPrivacyPolicy(context),
           ),
         ],
       ),
@@ -200,14 +178,16 @@ class HelpSupportScreen extends ConsumerWidget {
   }
 
   Future<void> _sendEmail(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
-    final uri = Uri(
-      scheme: 'mailto',
-      path: l10n.helpSupportEmailAddress,
-      query: 'subject=${Uri.encodeComponent(l10n.helpSupportEmailSubject)}',
+    final uri = Uri.parse(
+      'mailto:info@wandermood.com?subject=${Uri.encodeComponent('WanderMood Support')}',
     );
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     }
+  }
+
+  Future<void> _openPrivacyPolicy(BuildContext context) async {
+    final uri = Uri.parse('https://wandermood.com/nl/privacy');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 }

@@ -36,7 +36,11 @@ class CurrentUserProfile {
   final String? timeAvailable;
   final dynamic interests;
 
-  bool get isLocalMode => homeBase == null || homeBase == 'Local Explorer';
+  bool get isLocalMode {
+    if (homeBase == null) return true;
+    final normalized = homeBase!.toLowerCase().trim();
+    return normalized != 'traveling' && normalized != 'traveler';
+  }
 
   CurrentUserProfile copyWith({
     String? userId,

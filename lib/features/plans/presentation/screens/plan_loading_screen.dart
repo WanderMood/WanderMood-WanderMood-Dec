@@ -180,12 +180,24 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
       debugPrint('🔑 Calling Edge Function with explicit Authorization header');
       debugPrint('   Token preview: ${token.substring(0, 20)}...');
       
+      final profile = await Supabase.instance.client
+          .from('profiles')
+          .select('currently_exploring')
+          .eq('id', user.id)
+          .maybeSingle();
+      final isLocal = ((profile?['currently_exploring'] as String?)
+                      ?.toLowerCase()
+                      .trim() ??
+                  'local') !=
+              'traveling';
+
       final response = await dio.post(
         functionUrl,
         data: {
           'action': 'create_day_plan',
           'moods': widget.selectedMoods,
           'location': location.trim(),
+          'is_local': isLocal,
           'coordinates': {
             'lat': position.latitude,
             'lng': position.longitude,
