@@ -144,10 +144,13 @@ void showMoodyChatSheet(BuildContext context, WidgetRef ref) {
           final mq = MediaQuery.of(context);
           final topInset = mq.padding.top;
           final keyboardBottom = mq.viewInsets.bottom;
-          final bottomObstruction =
+          // Keep sheet at full height; push input above keyboard with padding.
+          // This is more reliable than shrinking the sheet because the sheet is
+          // anchored at the screen bottom — shrinking it just hides content
+          // behind the keyboard rather than moving it.
+          final inputBottomPad =
               keyboardBottom > 0 ? keyboardBottom : mq.padding.bottom;
-          final sheetHeight = (mq.size.height - topInset - bottomObstruction)
-              .clamp(280.0, mq.size.height);
+          final sheetHeight = mq.size.height - topInset;
 
           return ClipRect(
             child: BackdropFilter(
@@ -217,13 +220,22 @@ void showMoodyChatSheet(BuildContext context, WidgetRef ref) {
                                           ],
                                         ),
                                 ),
-                                Material(
-                                  color: Colors.transparent,
-                                  child: _MoodyChatInput(
-                                    controller: chatController,
-                                    isLoading: isAILoading,
-                                    onSend: (text) =>
-                                        sendMessage(text, setModalState),
+                                // Padding pushes the input above the keyboard.
+                                // AnimatedPadding gives a smooth slide as the
+                                // keyboard animates in/out.
+                                AnimatedPadding(
+                                  duration: const Duration(milliseconds: 250),
+                                  curve: Curves.easeOut,
+                                  padding: EdgeInsets.only(
+                                      bottom: inputBottomPad),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: _MoodyChatInput(
+                                      controller: chatController,
+                                      isLoading: isAILoading,
+                                      onSend: (text) =>
+                                          sendMessage(text, setModalState),
+                                    ),
                                   ),
                                 ),
                               ],
