@@ -84,8 +84,10 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     if (kDebugMode) debugPrint('🔥 PLACE DETAIL SCREEN - BUILDING WITH PLACE ID: ${widget.placeId}');
     
     // Prevent rebuild loops: If we have a cached place and it matches, use it immediately
+    // Don't use broken fallback places — let the fetch retry succeed.
     // Don't do any provider reads/watches that could trigger rebuilds
-    if (_cachedPlace != null && _cachedPlace!.id == widget.placeId && _isInitialized) {
+    if (_cachedPlace != null && _cachedPlace!.id == widget.placeId && _isInitialized &&
+        _cachedPlace!.name != 'Place details unavailable') {
       _syncResolvedPlace(_cachedPlace!);
       return Scaffold(
         backgroundColor: const Color(0xFFF5F0E8),
@@ -124,7 +126,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         ),
                       );
                     }
-                    if (snapshot.hasData && snapshot.data != null) {
+                    if (snapshot.hasData && snapshot.data != null &&
+                        snapshot.data!.name != 'Place details unavailable') {
                       final place = snapshot.data!;
                       _cachedPlace = place;
                       _syncResolvedPlace(place);

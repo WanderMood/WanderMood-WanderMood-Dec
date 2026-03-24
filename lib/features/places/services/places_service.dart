@@ -1,8 +1,8 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_google_maps_webservices/places.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/api_keys.dart';
 import '../models/place.dart';
 import 'opening_hours_service.dart';
@@ -125,36 +125,40 @@ class PlacesService extends _$PlacesService {
     }
   }
 
-  /// Get detailed place information by place ID via direct HTTP — no package JSON parsing
-  /// that can throw 'Null is not a subtype of Map' on missing fields.
+  /// Get detailed place information by place ID via the Supabase `places` edge function.
+  /// Routes server-side so the Google API key is never exposed on the client.
   Future<Map<String, dynamic>> getPlaceDetails(String placeId) async {
     debugPrint('🏷️ Getting details for place: $placeId');
 
     try {
-      final apiKey = ApiKeys.googlePlacesKey;
-      final dio = Dio();
-      final response = await dio.get<Map<String, dynamic>>(
-        'https://maps.googleapis.com/maps/api/place/details/json',
-        queryParameters: {
-          'place_id': placeId,
-          'fields': 'name,formatted_address,rating,user_ratings_total,reviews,photos,types,geometry,price_level,opening_hours',
-          'key': apiKey,
+      final supabase = Supabase.instance.client;
+      final fnResponse = await supabase.functions.invoke(
+        'places',
+        body: {
+          'type': 'details',
+          'placeId': placeId,
+          'language': 'en',
         },
-      ).timeout(const Duration(seconds: 5), onTimeout: () {
-        debugPrint('⏱️ Place details API call timed out for ID: $placeId');
-        throw TimeoutException('API call timed out');
-      });
+      );
 
-      final data = response.data;
-      final status = data?['status'] as String?;
-      debugPrint('🏷️ Place details status: $status');
-
-      if (status != 'OK') {
-        debugPrint('❌ Details error: ${data?['error_message'] ?? status}');
+      if (fnResponse.status != 200) {
+        debugPrint('❌ Edge function error ${fnResponse.status}: ${fnResponse.data}');
         return {};
       }
 
-      final result = data?['result'] as Map<String, dynamic>?;
+      // Edge function wraps Google response as { success, data: { result, status } }
+      final outer = fnResponse.data as Map<String, dynamic>?;
+      final data = (outer?['data'] as Map<String, dynamic>?) ?? outer ?? {};
+
+      final status = data['status'] as String?;
+      debugPrint('🏷️ Place details status: $status');
+
+      if (status != 'OK') {
+        debugPrint('❌ Details error: ${data['error_message'] ?? status}');
+        return {};
+      }
+
+      final result = data['result'] as Map<String, dynamic>?;
       if (result == null) {
         debugPrint('❌ Place details result is null');
         return {};
