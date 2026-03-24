@@ -1,0 +1,8 @@
+{
+  "SUPABASE_URL": "https://your-project.supabase.co",
+  "SUPABASE_ANON_KEY": "your-anon-key",
+  "GOOGLE_PLACES_API_KEY": "your-key",
+  "OPENWEATHER_API_KEY": "your-key",
+  "GOOGLE_MAPS_API_KEY": "your-key",
+  "OPENAI_API_KEY": ""
+}

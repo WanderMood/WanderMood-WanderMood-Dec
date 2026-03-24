@@ -134,100 +134,147 @@ void showMoodyChatSheet(BuildContext context, WidgetRef ref) {
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withOpacity(0.75),
-    // We size the sheet manually so it uses the full area above the keyboard.
+    // Root route gets reliable viewInsets on iOS when the keyboard opens.
+    useRootNavigator: true,
     useSafeArea: false,
     builder: (context) {
-      final mq = MediaQuery.of(context);
-      final topInset = mq.padding.top;
-      // Keyboard uses viewInsets; when it's closed, keep space for the home indicator.
-      final bottomObstruction = mq.viewInsets.bottom > 0
-          ? mq.viewInsets.bottom
-          : mq.padding.bottom;
-      final sheetHeight = (mq.size.height - topInset - bottomObstruction)
-          .clamp(280.0, mq.size.height);
+      return _RepaintWhenKeyboardMetricsChange(
+        builder: (context) {
+          final mq = MediaQuery.of(context);
+          final topInset = mq.padding.top;
+          final keyboardBottom = mq.viewInsets.bottom;
+          final bottomObstruction =
+              keyboardBottom > 0 ? keyboardBottom : mq.padding.bottom;
+          final sheetHeight = (mq.size.height - topInset - bottomObstruction)
+              .clamp(280.0, mq.size.height);
 
-      return ClipRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Padding(
-            padding: EdgeInsets.only(top: topInset),
-            child: SizedBox(
-              height: sheetHeight,
-              child: StatefulBuilder(
-                builder: (context, setModalState) {
-                  return ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(24),
-                      topRight: Radius.circular(24),
-                    ),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Column(
-                          children: const [
-                            Expanded(
-                                flex: 5, child: ColoredBox(color: _wmSkyTint)),
-                            Expanded(
-                                flex: 5, child: ColoredBox(color: _wmCream)),
-                          ],
+          return ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Padding(
+                padding: EdgeInsets.only(top: topInset),
+                child: SizedBox(
+                  height: sheetHeight,
+                  child: StatefulBuilder(
+                    builder: (context, setModalState) {
+                      return ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(24),
+                          topRight: Radius.circular(24),
                         ),
-                        Column(
+                        child: Stack(
+                          fit: StackFit.expand,
                           children: [
-                            Consumer(
-                              builder: (context, ref, _) {
-                                final city =
-                                    ref.watch(locationNotifierProvider).value;
-                                final style = ref
-                                    .watch(communicationStyleProvider)
-                                    .style;
-                                return _MoodyChatHeader(
-                                  subtitle: moodyChatTravelBestieSubtitle(
-                                    city: city,
-                                    style: style,
-                                  ),
-                                );
-                              },
+                            Column(
+                              children: const [
+                                Expanded(
+                                    flex: 5,
+                                    child: ColoredBox(color: _wmSkyTint)),
+                                Expanded(
+                                    flex: 5, child: ColoredBox(color: _wmCream)),
+                              ],
                             ),
-                            Expanded(
-                              child: chatMessages.isEmpty
-                                  ? const _MoodyChatEmptyState()
-                                  : Column(
-                                      children: [
-                                        Expanded(
-                                          child: ListView.builder(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 12),
-                                            itemCount: chatMessages.length,
-                                            itemBuilder: (context, index) {
-                                              return _MessageBubble(
-                                                  msg: chatMessages[index]);
-                                            },
-                                          ),
+                            Column(
+                              children: [
+                                Consumer(
+                                  builder: (context, ref, _) {
+                                    final city = ref
+                                        .watch(locationNotifierProvider)
+                                        .value;
+                                    final style = ref
+                                        .watch(communicationStyleProvider)
+                                        .style;
+                                    return _MoodyChatHeader(
+                                      subtitle: moodyChatTravelBestieSubtitle(
+                                        city: city,
+                                        style: style,
+                                      ),
+                                    );
+                                  },
+                                ),
+                                Expanded(
+                                  child: chatMessages.isEmpty
+                                      ? _MoodyChatEmptyState(
+                                          keyboardOpen: keyboardBottom > 0,
+                                        )
+                                      : Column(
+                                          children: [
+                                            Expanded(
+                                              child: ListView.builder(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 12),
+                                                itemCount: chatMessages.length,
+                                                itemBuilder: (context, index) {
+                                                  return _MessageBubble(
+                                                      msg: chatMessages[index]);
+                                                },
+                                              ),
+                                            ),
+                                            if (isAILoading)
+                                              const _MoodyTypingIndicator(),
+                                          ],
                                         ),
-                                        if (isAILoading)
-                                          const _MoodyTypingIndicator(),
-                                      ],
-                                    ),
-                            ),
-                            _MoodyChatInput(
-                              controller: chatController,
-                              isLoading: isAILoading,
-                              onSend: (text) =>
-                                  sendMessage(text, setModalState),
+                                ),
+                                Material(
+                                  color: Colors.transparent,
+                                  child: _MoodyChatInput(
+                                    controller: chatController,
+                                    isLoading: isAILoading,
+                                    onSend: (text) =>
+                                        sendMessage(text, setModalState),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                  );
-                },
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       );
     },
   );
+}
+
+/// iOS often does not rebuild modal bottom sheets when the keyboard opens;
+/// this forces a rebuild when [WidgetsBindingObserver.didChangeMetrics] fires.
+class _RepaintWhenKeyboardMetricsChange extends StatefulWidget {
+  const _RepaintWhenKeyboardMetricsChange({required this.builder});
+
+  final WidgetBuilder builder;
+
+  @override
+  State<_RepaintWhenKeyboardMetricsChange> createState() =>
+      _RepaintWhenKeyboardMetricsChangeState();
+}
+
+class _RepaintWhenKeyboardMetricsChangeState
+    extends State<_RepaintWhenKeyboardMetricsChange> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.builder(context);
 }
 
 // ---------------------------------------------------------------------------
@@ -341,18 +388,26 @@ class _MoodyChatHeader extends StatelessWidget {
 // Empty State
 // ---------------------------------------------------------------------------
 class _MoodyChatEmptyState extends StatelessWidget {
-  const _MoodyChatEmptyState();
+  const _MoodyChatEmptyState({this.keyboardOpen = false});
+
+  /// When true, compress hero + copy so the composer stays on screen with the keyboard.
+  final bool keyboardOpen;
 
   @override
   Widget build(BuildContext context) {
+    final avatar = keyboardOpen ? 72.0 : 140.0;
+    final moodySize = keyboardOpen ? 36.0 : 70.0;
+    final verticalPad = keyboardOpen ? 12.0 : 32.0;
+
     return Padding(
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.symmetric(horizontal: 24, vertical: verticalPad),
       child: Column(
         children: [
-          const Spacer(),
+          if (!keyboardOpen) const Spacer(),
+          if (keyboardOpen) const SizedBox(height: 4),
           Container(
-            width: 140,
-            height: 140,
+            width: avatar,
+            height: avatar,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: _wmSky.withOpacity(0.35),
@@ -362,28 +417,44 @@ class _MoodyChatEmptyState extends StatelessWidget {
               ),
               boxShadow: const [],
             ),
-            child: const Center(child: MoodyCharacter(size: 70)),
+            child: Center(child: MoodyCharacter(size: moodySize)),
           ),
-          const SizedBox(height: 32),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.92),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: _wmParchment.withOpacity(0.9)),
-            ),
-            child: Text(
-              "I know Rotterdam like the back of my hand! Tell me your mood, and I'll craft the perfect day just for you. Whether you're feeling adventurous, romantic, or need some chill vibes - I've got you covered! 🎯",
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                color: const Color(0xFF2D3748),
-                height: 1.5,
+          SizedBox(height: keyboardOpen ? 12 : 32),
+          if (keyboardOpen)
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: _messageCard(compact: true),
               ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const Spacer(),
+            )
+          else ...[
+            _messageCard(compact: false),
+            const Spacer(),
+          ],
         ],
+      ),
+    );
+  }
+
+  Widget _messageCard({required bool compact}) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 12 : 24,
+        vertical: compact ? 12 : 20,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.92),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _wmParchment.withOpacity(0.9)),
+      ),
+      child: Text(
+        "I know Rotterdam like the back of my hand! Tell me your mood, and I'll craft the perfect day just for you. Whether you're feeling adventurous, romantic, or need some chill vibes - I've got you covered! 🎯",
+        style: GoogleFonts.poppins(
+          fontSize: compact ? 13 : 16,
+          color: const Color(0xFF2D3748),
+          height: 1.45,
+        ),
+        textAlign: TextAlign.center,
       ),
     );
   }
@@ -553,12 +624,13 @@ class _MoodyChatInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final kb = MediaQuery.viewInsetsOf(context).bottom;
     return Container(
-      padding: const EdgeInsets.only(
+      padding: EdgeInsets.only(
         left: 24,
         right: 24,
         top: 24,
-        bottom: 24,
+        bottom: kb > 0 ? 12 : 24,
       ),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -570,6 +642,9 @@ class _MoodyChatInput extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: controller,
+              textInputAction: TextInputAction.send,
+              keyboardType: TextInputType.text,
+              scrollPadding: const EdgeInsets.only(bottom: 120, top: 80),
               decoration: InputDecoration(
                 hintText: "What's your mood today?",
                 hintStyle:

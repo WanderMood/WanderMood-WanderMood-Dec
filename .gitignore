@@ -194,3 +194,6 @@ push.log
 
 # Local MCP / deploy scratch (do not commit)
 .mcp_moody_deploy_*.json
+
+# Release/TestFlight dart-defines (copy from release_defines.json.example)
+release_defines.json
