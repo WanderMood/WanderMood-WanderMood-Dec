@@ -147,6 +147,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
         
         if (alternatives.isNotEmpty) {
           final selectedRec = alternatives.first;
+          final recPlaceId = _extractPlaceIdFromRecommendation(selectedRec);
           replacementActivity = Activity(
             id: 'ai_alt_${DateTime.now().millisecondsSinceEpoch}_${selectedRec.name?.hashCode ?? 0}',
             name: selectedRec.name ?? 'AI Alternative',
@@ -165,13 +166,13 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
             ],
             startTime: activity.startTime, // Keep same start time
             priceLevel: _parsePriceLevel(selectedRec.cost ?? '€€'),
-            placeId: null, // AI alternative has no Place ID
+            placeId: recPlaceId,
             refreshCount: 0, // Reset for new activity
           );
         }
       }
       
-      if (replacementActivity != null) {
+      if (replacementActivity != null && replacementActivity.placeId != null && replacementActivity.placeId!.isNotEmpty) {
         debugPrint('✅ Generated AI alternative activity: ${replacementActivity.name}');
         debugPrint('   Rating: ${replacementActivity.rating}');
         
@@ -204,10 +205,10 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
           ),
         );
       } else {
-        // No alternative found
+        // No linked-place alternative found
         showWanderMoodToast(
           context,
-          message: AppLocalizations.of(context)!.dayPlanNoOptionsFound,
+          message: 'No high-quality linked-place alternative found yet. Try again.',
         );
       }
     } catch (e) {
@@ -385,6 +386,15 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
     
     // Fall back to provided coordinates
     return LatLng(fallbackLat, fallbackLng);
+  }
+
+  String? _extractPlaceIdFromRecommendation(AIRecommendation rec) {
+    final loc = rec.location;
+    if (loc == null) return null;
+    final dynamic raw = loc['placeId'] ?? loc['place_id'] ?? loc['id'];
+    if (raw == null) return null;
+    final id = raw.toString().trim();
+    return id.isEmpty ? null : id;
   }
 
   String _getFallbackImageForType(String type) {

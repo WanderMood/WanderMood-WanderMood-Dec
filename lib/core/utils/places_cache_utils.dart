@@ -144,6 +144,19 @@ class PlacesCacheUtils {
 
     final types = (card['types'] as List<dynamic>?)?.cast<String>() ?? <String>[];
 
+    final openingRaw = card['opening_hours'] as Map<String, dynamic>?;
+    PlaceOpeningHours? openingHours;
+    if (openingRaw != null && openingRaw.isNotEmpty) {
+      openingHours = PlaceOpeningHours(
+        isOpen: openingRaw['open_now'] as bool? ?? false,
+        currentStatus: (openingRaw['open_now'] as bool?) == true ? 'open' : 'closed',
+        weekdayText: (openingRaw['weekday_text'] as List<dynamic>?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            const [],
+      );
+    }
+
     return Place(
       id: card['id'] as String? ?? '',
       name: card['name'] as String? ?? 'Unknown Place',
@@ -158,6 +171,8 @@ class PlacesCacheUtils {
       description: card['description'] as String?,
       priceLevel: card['price_level'] as int?,
       isFree: card['price_level'] == null || card['price_level'] == 0,
+      reviewCount: (card['user_ratings_total'] as num?)?.toInt() ?? 0,
+      openingHours: openingHours,
     );
   }
 

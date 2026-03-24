@@ -101,18 +101,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 color: wmCard,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: wmForest.withValues(alpha: 0.35), width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: wmForest.withValues(alpha: 0.16),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                  BoxShadow(
-                    color: const Color(0xFF1E1C18).withValues(alpha: 0.07),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
+                boxShadow: const [],
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

@@ -468,30 +468,27 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        // ⋮ only shown when there's no Get Ready button
-                        if (activity.status != ActivityStatus.upcoming) ...[
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              onMoreTap();
-                            },
-                            child: Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: _kWmParchment, width: 1),
-                              ),
-                              child: Icon(
-                                Icons.more_vert,
-                                size: 16,
-                                color: _kWmStone,
-                              ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            onMoreTap();
+                          },
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: _kWmParchment, width: 1),
+                            ),
+                            child: Icon(
+                              Icons.more_vert,
+                              size: 16,
+                              color: _kWmStone,
                             ),
                           ),
-                        ],
+                        ),
                       ],
                     ),
                   ],

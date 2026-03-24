@@ -333,7 +333,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         boxShadow: const [],
                       ),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           _buildRegularNavItem(context, ref, selectedIndex, 0, 'My Day', Icons.calendar_today_outlined, Icons.calendar_today, _navWmForest, _navWmForestTint),
                           _buildRegularNavItem(context, ref, selectedIndex, 1, 'Explore', Icons.explore_outlined, Icons.explore, _navWmForest, _navWmForestTint),
@@ -467,7 +467,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       }
     };
 
-    return Expanded(
+    return SizedBox(
+      width: 72,
       child: Material(
         color: Colors.transparent,
         child: InkWell(

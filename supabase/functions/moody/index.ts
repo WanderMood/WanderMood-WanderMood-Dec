@@ -14,6 +14,7 @@ interface PlaceCard {
   id: string
   name: string
   rating: number
+  user_ratings_total?: number
   types: string[]
   location: { lat: number; lng: number }
   photo_reference?: string
@@ -22,6 +23,7 @@ interface PlaceCard {
   vicinity?: string
   address?: string
   description?: string
+  opening_hours?: { open_now?: boolean; weekday_text?: string[] }
 }
 
 interface ExploreResponse {
@@ -377,7 +379,8 @@ async function handleCreateDayPlan(supabase: any, userId: string, params: any): 
     console.log(`🎯 create_day_plan: moods=${moods.join(', ')}, location=${location}, local=${userContext.isLocalMode}`)
 
     const moodyQueries = await getMoodySearchQueries(moods, location, userContext)
-    const places = await fetchPlacesFromGoogle(location, coordinates, moods[0], params.filters || {}, moodyQueries)
+    let places = await fetchPlacesFromGoogle(location, coordinates, moods[0], params.filters || {}, moodyQueries)
+    places = await enrichAndFilterPlaces(places, { minRating: 3.8, minReviews: 8 })
 
     if (places.length === 0) {
       return new Response(JSON.stringify({ success: false, activities: [], location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: 0, error: 'No places found' }),
@@ -423,12 +426,12 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     const coordinates = params.coordinates
     const filters = params.filters || {}
     const userContext = await fetchUserContext(supabase, userId)
-    const userMode = userContext.isLocalMode ? 'local' : 'travel'
 
-    console.log(`🔍 get_explore: mood=${mood}, location=${location}, mode=${userMode}`)
+    console.log(`🔍 get_explore: mood=${mood}, location=${location}`)
 
     const isDevMode = Deno.env.get('DEV_MODE') === 'true'
-    const cacheKey = `explore_${mood}_${location.toLowerCase().trim()}_${userMode}`
+    // Keep key aligned with Flutter PlacesCacheUtils.standardExploreCacheKey.
+    const cacheKey = `explore_${mood}_${location.toLowerCase().trim()}`
     const cachedResult = await checkCache(supabase, cacheKey, userId)
 
     if (cachedResult && cachedResult.cards.length > 0) {
@@ -458,7 +461,20 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     }
 
     places = places.slice(0, 80)
-    console.log(`✅ Total places: ${places.length}`)
+    console.log(`✅ Total places before enrichment: ${places.length}`)
+
+    // Enrich and enforce quality contract:
+    // - Require valid id/name/address/location/photo/rating/reviews
+    // - Prefer real Google details (opening hours + review totals)
+    // - If too strict yields too few cards, relax only min reviews/rating (never id/photo/address)
+    const strictQuality = await enrichAndFilterPlaces(places)
+    let qualifiedPlaces = strictQuality
+    if (qualifiedPlaces.length < 15) {
+      console.log(`⚠️ Strict quality yielded ${qualifiedPlaces.length}. Applying relaxed thresholds.`)
+      qualifiedPlaces = await enrichAndFilterPlaces(places, { minRating: 3.8, minReviews: 8 })
+    }
+    places = qualifiedPlaces
+    console.log(`✅ Total places after quality gating: ${places.length}`)
 
     const rankedPlaces = rankPlacesByPreferences(places, userContext.profile, mood, {})
     await cachePlaces(supabase, cacheKey, rankedPlaces, userId, location)
@@ -529,6 +545,7 @@ function transformPlace(place: any, moods: string[] = []): PlaceCard {
     id: `google_${place.place_id}`,
     name: place.name,
     rating: place.rating || 0,
+    user_ratings_total: place.user_ratings_total || 0,
     types: place.types || [],
     location: { lat: place.geometry?.location?.lat || 0, lng: place.geometry?.location?.lng || 0 },
     photo_reference: photoReference,
@@ -537,7 +554,114 @@ function transformPlace(place: any, moods: string[] = []): PlaceCard {
     vicinity: place.vicinity,
     address: place.formatted_address,
     description: place.editorial_summary?.overview || generatePlaceDescription(place, moods),
+    opening_hours: place.opening_hours
+      ? {
+          open_now: place.opening_hours.open_now,
+          weekday_text: place.opening_hours.weekday_text || [],
+        }
+      : undefined,
   }
+}
+
+async function enrichAndFilterPlaces(
+  input: PlaceCard[],
+  thresholds: { minRating?: number; minReviews?: number } = {},
+): Promise<PlaceCard[]> {
+  const minRating = thresholds.minRating ?? 4.0
+  const minReviews = thresholds.minReviews ?? 20
+  const out: PlaceCard[] = []
+  for (const p of input) {
+    const enriched = await enrichPlaceIfNeeded(p)
+    if (!isPlaceCardValidForExplore(enriched, { minRating, minReviews })) continue
+    out.push(enriched)
+  }
+  return out
+}
+
+function normalizeRawPlaceId(id: string): string {
+  return id.startsWith('google_') ? id.substring(7) : id
+}
+
+async function enrichPlaceIfNeeded(place: PlaceCard): Promise<PlaceCard> {
+  const needsDetails =
+    !place.address?.trim() ||
+    !place.photo_url?.trim() ||
+    !place.user_ratings_total ||
+    !place.opening_hours
+  if (!needsDetails) return place
+  try {
+    const details = await fetchGooglePlaceDetails(normalizeRawPlaceId(place.id))
+    if (!details) return place
+    return {
+      ...place,
+      address: place.address || details.address || place.vicinity,
+      photo_reference: place.photo_reference || details.photo_reference,
+      photo_url: place.photo_url || details.photo_url,
+      rating: place.rating || details.rating || 0,
+      user_ratings_total: place.user_ratings_total || details.user_ratings_total || 0,
+      opening_hours: place.opening_hours || details.opening_hours,
+      price_level: place.price_level ?? details.price_level,
+      types: place.types.length > 0 ? place.types : (details.types || []),
+    }
+  } catch (e) {
+    console.warn('⚠️ enrichPlaceIfNeeded failed:', e)
+    return place
+  }
+}
+
+async function fetchGooglePlaceDetails(placeId: string): Promise<Partial<PlaceCard> | null> {
+  const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY')
+  if (!apiKey?.trim()) return null
+  const fields = [
+    'place_id',
+    'name',
+    'formatted_address',
+    'geometry',
+    'photos',
+    'rating',
+    'user_ratings_total',
+    'price_level',
+    'opening_hours',
+    'types',
+  ].join(',')
+  const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(placeId)}&fields=${encodeURIComponent(fields)}&key=${apiKey}`
+  const response = await fetch(url)
+  const data = await response.json()
+  if (data.status !== 'OK' || !data.result) return null
+  const r = data.result
+  const photoReference = r.photos?.[0]?.photo_reference
+  return {
+    address: r.formatted_address,
+    rating: r.rating || 0,
+    user_ratings_total: r.user_ratings_total || 0,
+    price_level: r.price_level,
+    types: r.types || [],
+    photo_reference: photoReference,
+    photo_url: photoReference
+      ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photoReference}&key=${apiKey}`
+      : undefined,
+    opening_hours: r.opening_hours
+      ? {
+          open_now: r.opening_hours.open_now,
+          weekday_text: r.opening_hours.weekday_text || [],
+        }
+      : undefined,
+  }
+}
+
+function isPlaceCardValidForExplore(
+  place: PlaceCard,
+  thresholds: { minRating: number; minReviews: number },
+): boolean {
+  const rawId = normalizeRawPlaceId(place.id || '')
+  const hasStableId = rawId.trim().length > 0
+  const hasName = !!place.name?.trim()
+  const hasAddress = !!(place.address?.trim() || place.vicinity?.trim())
+  const hasCoords = Number.isFinite(place.location?.lat) && Number.isFinite(place.location?.lng) && (place.location.lat !== 0 || place.location.lng !== 0)
+  const hasPhoto = !!place.photo_url?.trim()
+  const ratingOk = (place.rating || 0) >= thresholds.minRating
+  const reviewsOk = (place.user_ratings_total || 0) >= thresholds.minReviews
+  return hasStableId && hasName && hasAddress && hasCoords && hasPhoto && ratingOk && reviewsOk
 }
 
 function generatePlaceDescription(place: any, moods: string[] = []): string {
@@ -569,6 +693,7 @@ function applyFilters(places: PlaceCard[], filters: any): PlaceCard[] {
       const hasType = place.types.some(t => filters.types.some((ft: string) => t.toLowerCase().includes(ft.toLowerCase())))
       if (!hasType) return false
     }
+    if (filters.minReviews && (place.user_ratings_total || 0) < filters.minReviews) return false
     return true
   })
 }

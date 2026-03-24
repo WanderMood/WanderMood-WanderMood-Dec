@@ -1383,6 +1383,8 @@ class PlaceCard extends ConsumerWidget {
         location: LatLng(place.location.lat, place.location.lng),
         paymentType: paymentType,
         priceLevel: place.priceRange,
+        // Preserve place link so My Day/Agenda can open rich Place Detail.
+        placeId: place.id,
       );
 
       final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
