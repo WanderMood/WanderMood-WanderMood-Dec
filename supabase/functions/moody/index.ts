@@ -460,7 +460,8 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
       places = Array.from(new Map(allPlaces.map(p => [p.id, p])).values())
     }
 
-    places = places.slice(0, 80)
+    // Cap before enrichment: sequential per-place Details calls caused edge timeouts (502).
+    places = places.slice(0, 45)
     console.log(`✅ Total places before enrichment: ${places.length}`)
 
     // Enrich and enforce quality contract:
@@ -484,7 +485,18 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (error) {
     console.error('❌ handleGetExplore:', error)
-    throw error
+    const errMsg = error instanceof Error ? error.message : String(error)
+    // Return 200 with empty cards so the app gets JSON (Dio) instead of 502 when upstream fails.
+    return new Response(
+      JSON.stringify({
+        cards: [],
+        cached: false,
+        total_found: 0,
+        error: 'explore_fetch_failed',
+        message: errMsg,
+      }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    )
   }
 }
 
@@ -570,10 +582,16 @@ async function enrichAndFilterPlaces(
   const minRating = thresholds.minRating ?? 4.0
   const minReviews = thresholds.minReviews ?? 20
   const out: PlaceCard[] = []
-  for (const p of input) {
-    const enriched = await enrichPlaceIfNeeded(p)
-    if (!isPlaceCardValidForExplore(enriched, { minRating, minReviews })) continue
-    out.push(enriched)
+  const concurrency = 6
+  for (let i = 0; i < input.length; i += concurrency) {
+    const chunk = input.slice(i, i + concurrency)
+    const enrichedChunk = await Promise.all(chunk.map((p) => enrichPlaceIfNeeded(p)))
+    for (const enriched of enrichedChunk) {
+      if (!isPlaceCardValidForExplore(enriched, { minRating, minReviews })) continue
+      out.push(enriched)
+    }
+    // Enough for Explore UI; stop early to stay under edge CPU/time limits.
+    if (out.length >= 35) break
   }
   return out
 }

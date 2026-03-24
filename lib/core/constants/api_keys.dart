@@ -29,15 +29,21 @@ class ApiKeys {
     return '';
   }
 
+  /// Same dev key as previous kDebug fallback; override with `--dart-define=OPENWEATHER_API_KEY=...`.
+  static const String _defaultOpenWeatherKey =
+      'd158323777e324a2537591bc7fa6ca17';
+
   /// OpenWeather API Key
   static String get openWeather {
-    const buildKey = String.fromEnvironment('OPENWEATHER_API_KEY');
-    if (buildKey.isNotEmpty && buildKey != 'YOUR_OPENWEATHER_API_KEY_HERE') {
-      return buildKey;
+    const buildKey = String.fromEnvironment(
+      'OPENWEATHER_API_KEY',
+      defaultValue: _defaultOpenWeatherKey,
+    );
+    if (buildKey.isEmpty || buildKey == 'YOUR_OPENWEATHER_API_KEY_HERE') {
+      throw Exception(
+          'OPENWEATHER_API_KEY not configured. Pass via --dart-define=OPENWEATHER_API_KEY=...');
     }
-    if (kDebugMode) return 'd158323777e324a2537591bc7fa6ca17';
-    throw Exception(
-        'OPENWEATHER_API_KEY not configured. Pass via --dart-define=OPENWEATHER_API_KEY=...');
+    return buildKey;
   }
 
   /// Default production Supabase (same project as local debug). Override with

@@ -159,12 +159,16 @@ class MoodyEdgeFunctionService {
       }
 
       final responseData = response.data as Map<String, dynamic>;
-      
-      if (responseData.containsKey('error')) {
-        throw Exception(responseData['error'] as String);
-      }
 
       final cards = responseData['cards'] as List<dynamic>?;
+      if (responseData.containsKey('error') &&
+          (cards == null || cards.isEmpty)) {
+        final detail = responseData['message'] as String? ??
+            responseData['error'] as String? ??
+            'Explore unavailable';
+        throw Exception(detail);
+      }
+
       if (cards == null) {
         if (kDebugMode) {
           debugPrint('⚠️ No cards in response, returning empty list');

@@ -97,8 +97,13 @@ final weatherProvider = FutureProvider.autoDispose<WeatherData?>((ref) async {
   final locationState = await ref.watch(locationNotifierProvider.future);
   if (locationState == null) return null;
   
-  // Get API key from ApiKeys (--dart-define or fallback)
-  final apiKey = ApiKeys.openWeather;
+  // Get API key from ApiKeys (--dart-define or compile-time default for release).
+  String apiKey = '';
+  try {
+    apiKey = ApiKeys.openWeather;
+  } catch (_) {
+    apiKey = '';
+  }
   debugPrint('🌤️ Weather API Key: ${apiKey.isEmpty ? 'EMPTY' : 'EXISTS (${apiKey.length} chars)'}');
   debugPrint('🌤️ Weather location: $locationState');
   
