@@ -407,7 +407,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                isToday ? 'Vandaag' : _formatDisplayDate(_selectedDate),
+                isToday
+                    ? AppLocalizations.of(context)!.timeLabelToday
+                    : _formatDisplayDate(_selectedDate),
                 style: GoogleFonts.poppins(
                   color: isToday ? const Color(0xFF2A6049) : const Color(0xFF1E1C18),
                   fontSize: 14,

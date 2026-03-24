@@ -5117,4 +5117,32 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get placeDetailRecently => 'Récemment';
+
+  @override
+  String get moodyHubYourDayToday => 'Ta journée aujourd\'hui';
+
+  @override
+  String get moodyHubChangeMood => 'Changer d\'humeur';
+
+  @override
+  String get moodyHubNoMoodChosen => 'Pas encore d\'humeur choisie';
+
+  @override
+  String get moodyHubJourneyPrefix => 'Tu es en mode ';
+
+  @override
+  String get moodyHubJourneySuffix => ' pour ta journée';
+
+  @override
+  String get moodyHubFallbackAiMessage =>
+      'Ta journée est prête — Moody est là pour toi 🌟';
+
+  @override
+  String get moodyHubActivitySingular => 'activité';
+
+  @override
+  String get moodyHubActivityPlural => 'activités';
+
+  @override
+  String get moodyHubPlanForWhen => 'Tu planifies pour quand ?';
 }

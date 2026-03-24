@@ -2360,5 +2360,15 @@
   "placeDetailSoloDate": "Solo / Date",
   "placeDetailSoloFriends": "Solo / Friends",
   "placeDetailAnonymous": "Anonymous",
-  "placeDetailRecently": "Recently"
+  "placeDetailRecently": "Recently",
+
+  "moodyHubYourDayToday": "Your day today",
+  "moodyHubChangeMood": "Change mood",
+  "moodyHubNoMoodChosen": "No mood selected yet",
+  "moodyHubJourneyPrefix": "You are on a ",
+  "moodyHubJourneySuffix": " journey",
+  "moodyHubFallbackAiMessage": "Your day is set — Moody's here for you 🌟",
+  "moodyHubActivitySingular": "activity",
+  "moodyHubActivityPlural": "activities",
+  "moodyHubPlanForWhen": "When are you planning for?"
 }

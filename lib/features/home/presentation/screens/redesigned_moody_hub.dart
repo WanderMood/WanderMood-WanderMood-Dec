@@ -45,11 +45,11 @@ class RedesignedMoodyHub extends ConsumerStatefulWidget {
 }
 
 class _RedesignedMoodyHubState extends ConsumerState<RedesignedMoodyHub> {
-  String _getTimeGreeting() {
+  String _timeGreeting(AppLocalizations l10n) {
     final hour = MoodyClock.now().hour;
-    if (hour < 12) return 'Good morning!';
-    if (hour < 17) return 'Good afternoon!';
-    return 'Good evening!';
+    if (hour < 12) return '${l10n.goodMorning}!';
+    if (hour < 17) return '${l10n.goodAfternoon}!';
+    return '${l10n.goodEvening}!';
   }
 
   String _getTimeEmoji() {
@@ -66,6 +66,7 @@ class _RedesignedMoodyHubState extends ConsumerState<RedesignedMoodyHub> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final todayActivities = ref.watch(todayActivitiesProvider);
     final dailyMoodState = ref.watch(dailyMoodStateNotifierProvider);
 
@@ -84,18 +85,18 @@ class _RedesignedMoodyHubState extends ConsumerState<RedesignedMoodyHub> {
             );
           }
           return _MoodyHubNoPlan(
-            greeting: _getTimeGreeting(),
+            greeting: _timeGreeting(l10n),
             emoji: _getTimeEmoji(),
             city: _getCityName(),
           );
         },
         loading: () => _MoodyHubNoPlan(
-          greeting: _getTimeGreeting(),
+          greeting: _timeGreeting(l10n),
           emoji: _getTimeEmoji(),
           city: _getCityName(),
         ),
         error: (_, __) => _MoodyHubNoPlan(
-          greeting: _getTimeGreeting(),
+          greeting: _timeGreeting(l10n),
           emoji: _getTimeEmoji(),
           city: _getCityName(),
         ),
@@ -143,11 +144,11 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
     super.dispose();
   }
 
-  String _dutchTimeGreeting() {
+  String _timeGreeting(AppLocalizations l10n) {
     final h = MoodyClock.now().hour;
-    if (h < 12) return 'Goedemorgen!';
-    if (h < 18) return 'Goedemiddag!';
-    return 'Goedenavond!';
+    if (h < 12) return '${l10n.goodMorning}!';
+    if (h < 18) return '${l10n.goodAfternoon}!';
+    return '${l10n.goodEvening}!';
   }
 
   String _apiTimeOfDay() {
@@ -210,6 +211,7 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final activities = widget.activities;
     final moods = widget.moodState.selectedMoods;
 
@@ -233,7 +235,7 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _dutchTimeGreeting(),
+                      _timeGreeting(l10n),
                       style: GoogleFonts.poppins(
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
@@ -249,7 +251,7 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
                             color: _wmStone,
                           ),
                           children: [
-                            const TextSpan(text: 'Je bent op een '),
+                            TextSpan(text: l10n.moodyHubJourneyPrefix),
                             for (var i = 0; i < moods.length; i++) ...[
                               if (i > 0 && i == moods.length - 1)
                                 const TextSpan(text: ' & '),
@@ -263,7 +265,7 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
                                 ),
                               ),
                             ],
-                            const TextSpan(text: ' reis'),
+                            TextSpan(text: l10n.moodyHubJourneySuffix),
                           ],
                         ),
                       ),
@@ -325,7 +327,7 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
               ),
               onPressed: () => _openMoodyChat(context),
               child: Text(
-                'Chat met Moody',
+                l10n.myDayChatWithMoodyTitle,
             style: GoogleFonts.poppins(
               fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -349,7 +351,7 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
                   ),
                   onPressed: () => context.pushNamed('moody-standalone'),
                   child: Text(
-                    'Verander stemming',
+                    l10n.moodyHubChangeMood,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -373,7 +375,7 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
                     ref.read(mainTabProvider.notifier).state = 1;
                   },
                   child: Text(
-                    'Voeg activiteit toe',
+                    l10n.myDayQuickAddActivity,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -409,8 +411,6 @@ class _MoodyHubAiMessageLine extends ConsumerStatefulWidget {
 
 class _MoodyHubAiMessageLineState extends ConsumerState<_MoodyHubAiMessageLine>
     with SingleTickerProviderStateMixin {
-  static const _fallback = 'Jouw dag is klaar, Moody is er voor je 🌟';
-
   String? _message;
   bool _loading = true;
   late final AnimationController _pulseController;
@@ -444,7 +444,7 @@ class _MoodyHubAiMessageLineState extends ConsumerState<_MoodyHubAiMessageLine>
     );
     if (!mounted) return;
     setState(() {
-      _message = result ?? _fallback;
+      _message = result;
       _loading = false;
     });
   }
@@ -457,6 +457,7 @@ class _MoodyHubAiMessageLineState extends ConsumerState<_MoodyHubAiMessageLine>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_loading) {
       return AnimatedBuilder(
         animation: _pulseController,
@@ -478,7 +479,7 @@ class _MoodyHubAiMessageLineState extends ConsumerState<_MoodyHubAiMessageLine>
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
                 child: Text(
-        _message ?? _fallback,
+        _message ?? l10n.moodyHubFallbackAiMessage,
         textAlign: TextAlign.center,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
@@ -510,6 +511,7 @@ class _MoodyHubMoodCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (moods.isEmpty) {
     return Container(
         width: double.infinity,
@@ -526,7 +528,7 @@ class _MoodyHubMoodCard extends StatelessWidget {
                     children: [
             Expanded(
               child: Text(
-                'Nog geen stemming gekozen',
+                l10n.moodyHubNoMoodChosen,
                         style: GoogleFonts.poppins(
                   fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -537,7 +539,7 @@ class _MoodyHubMoodCard extends StatelessWidget {
             TextButton(
               onPressed: onChangeMood,
                 child: Text(
-                'Wijzig stemming',
+                l10n.moodyHubChangeMood,
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -581,7 +583,7 @@ class _MoodyHubMoodCard extends StatelessWidget {
             TextButton(
               onPressed: onChangeMood,
                 child: Text(
-                'Wijzig stemming',
+                l10n.moodyHubChangeMood,
                   style: GoogleFonts.poppins(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -641,7 +643,7 @@ class _MoodyHubMoodCard extends StatelessWidget {
             child: TextButton(
               onPressed: onChangeMood,
                 child: Text(
-                'Wijzig stemming',
+                l10n.moodyHubChangeMood,
                   style: GoogleFonts.poppins(
                   fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -671,6 +673,9 @@ class _JouwDagVandaagCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    String actWord(int n) =>
+        n == 1 ? l10n.moodyHubActivitySingular : l10n.moodyHubActivityPlural;
     final meta = GoogleFonts.poppins(
       fontSize: 13,
       height: 1.35,
@@ -688,7 +693,7 @@ class _JouwDagVandaagCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-            'Jouw dag vandaag',
+            l10n.moodyHubYourDayToday,
                     style: GoogleFonts.poppins(
               fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -697,17 +702,17 @@ class _JouwDagVandaagCard extends StatelessWidget {
                   ),
           const SizedBox(height: 12),
                   Text(
-            '🌅 Morning · $morningCount activiteiten',
+            '🌅 ${l10n.timeLabelMorning} · $morningCount ${actWord(morningCount)}',
             style: meta,
           ),
           const SizedBox(height: 6),
           Text(
-            '☀️ Afternoon · $afternoonCount activiteiten',
+            '☀️ ${l10n.timeLabelAfternoon} · $afternoonCount ${actWord(afternoonCount)}',
             style: meta,
           ),
           const SizedBox(height: 6),
           Text(
-            '🌙 Evening · $eveningCount activiteiten',
+            '🌙 ${l10n.timeLabelEvening} · $eveningCount ${actWord(eveningCount)}',
             style: meta,
           ),
           const SizedBox(height: 12),
@@ -722,7 +727,7 @@ class _JouwDagVandaagCard extends StatelessWidget {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               child: Text(
-                'Bekijk Mijn Dag →',
+                '${l10n.dayPlanViewMyDay} →',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,

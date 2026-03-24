@@ -2154,6 +2154,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   }
 
   Widget _buildDateSelector() {
+    final l10n = AppLocalizations.of(context)!;
     final today = DateTime.now();
     final days = List.generate(7, (i) => today.add(Duration(days: i)));
 
@@ -2163,7 +2164,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Text(
-            'Voor wanneer plan je?',
+            l10n.moodyHubPlanForWhen,
             style: GoogleFonts.poppins(
               color: _mcParchment,
               fontSize: 13,
@@ -2202,7 +2203,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        isToday ? 'Vandaag' : _getShortDayName(day),
+                        isToday ? l10n.timeLabelToday : _getShortDayName(day),
                         style: GoogleFonts.poppins(
                           color: isSelected ? Colors.white : _mcCharcoal,
                           fontSize: 12,

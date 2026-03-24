@@ -1077,7 +1077,7 @@ class PlaceCard extends ConsumerWidget {
                                         const Icon(Icons.add_rounded, color: Colors.white, size: 16),
                                         const SizedBox(width: 6),
                                         Text(
-                                          'Mijn Dag',
+                                          l10n.dayPlanAddToMyDay,
                                           style: GoogleFonts.poppins(
                                             color: Colors.white,
                                             fontSize: 13,

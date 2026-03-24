@@ -5088,4 +5088,32 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get placeDetailRecently => 'Onlangs';
+
+  @override
+  String get moodyHubYourDayToday => 'Jouw dag vandaag';
+
+  @override
+  String get moodyHubChangeMood => 'Verander stemming';
+
+  @override
+  String get moodyHubNoMoodChosen => 'Nog geen stemming gekozen';
+
+  @override
+  String get moodyHubJourneyPrefix => 'Je bent op een ';
+
+  @override
+  String get moodyHubJourneySuffix => ' reis';
+
+  @override
+  String get moodyHubFallbackAiMessage =>
+      'Jouw dag is klaar, Moody is er voor je 🌟';
+
+  @override
+  String get moodyHubActivitySingular => 'activiteit';
+
+  @override
+  String get moodyHubActivityPlural => 'activiteiten';
+
+  @override
+  String get moodyHubPlanForWhen => 'Voor wanneer plan je?';
 }

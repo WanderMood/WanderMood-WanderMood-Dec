@@ -1442,5 +1442,15 @@
   "placeDetailSoloDate": "Solo / Date",
   "placeDetailSoloFriends": "Solo / Freunde",
   "placeDetailAnonymous": "Anonym",
-  "placeDetailRecently": "Kürzlich"
+  "placeDetailRecently": "Kürzlich",
+
+  "moodyHubYourDayToday": "Dein Tag heute",
+  "moodyHubChangeMood": "Stimmung ändern",
+  "moodyHubNoMoodChosen": "Noch keine Stimmung gewählt",
+  "moodyHubJourneyPrefix": "Du bist auf einer ",
+  "moodyHubJourneySuffix": "-Reise",
+  "moodyHubFallbackAiMessage": "Dein Tag steht — Moody ist für dich da 🌟",
+  "moodyHubActivitySingular": "Aktivität",
+  "moodyHubActivityPlural": "Aktivitäten",
+  "moodyHubPlanForWhen": "Für wann planst du?"
 }

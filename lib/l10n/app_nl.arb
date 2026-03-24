@@ -1525,5 +1525,15 @@
   "placeDetailSoloDate": "Solo / Date",
   "placeDetailSoloFriends": "Solo / Vrienden",
   "placeDetailAnonymous": "Anoniem",
-  "placeDetailRecently": "Onlangs"
+  "placeDetailRecently": "Onlangs",
+
+  "moodyHubYourDayToday": "Jouw dag vandaag",
+  "moodyHubChangeMood": "Verander stemming",
+  "moodyHubNoMoodChosen": "Nog geen stemming gekozen",
+  "moodyHubJourneyPrefix": "Je bent op een ",
+  "moodyHubJourneySuffix": " reis",
+  "moodyHubFallbackAiMessage": "Jouw dag is klaar, Moody is er voor je 🌟",
+  "moodyHubActivitySingular": "activiteit",
+  "moodyHubActivityPlural": "activiteiten",
+  "moodyHubPlanForWhen": "Voor wanneer plan je?"
 }

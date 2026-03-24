@@ -9337,6 +9337,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Recently'**
   String get placeDetailRecently;
+
+  /// No description provided for @moodyHubYourDayToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Your day today'**
+  String get moodyHubYourDayToday;
+
+  /// No description provided for @moodyHubChangeMood.
+  ///
+  /// In en, this message translates to:
+  /// **'Change mood'**
+  String get moodyHubChangeMood;
+
+  /// No description provided for @moodyHubNoMoodChosen.
+  ///
+  /// In en, this message translates to:
+  /// **'No mood selected yet'**
+  String get moodyHubNoMoodChosen;
+
+  /// No description provided for @moodyHubJourneyPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'You are on a '**
+  String get moodyHubJourneyPrefix;
+
+  /// No description provided for @moodyHubJourneySuffix.
+  ///
+  /// In en, this message translates to:
+  /// **' journey'**
+  String get moodyHubJourneySuffix;
+
+  /// No description provided for @moodyHubFallbackAiMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your day is set — Moody\'s here for you 🌟'**
+  String get moodyHubFallbackAiMessage;
+
+  /// No description provided for @moodyHubActivitySingular.
+  ///
+  /// In en, this message translates to:
+  /// **'activity'**
+  String get moodyHubActivitySingular;
+
+  /// No description provided for @moodyHubActivityPlural.
+  ///
+  /// In en, this message translates to:
+  /// **'activities'**
+  String get moodyHubActivityPlural;
+
+  /// No description provided for @moodyHubPlanForWhen.
+  ///
+  /// In en, this message translates to:
+  /// **'When are you planning for?'**
+  String get moodyHubPlanForWhen;
 }
 
 class _AppLocalizationsDelegate
