@@ -453,29 +453,26 @@ class PlacesService extends _$PlacesService {
   /// Call Supabase Edge Function for places data
   Future<PlacesApiResponse> _callPlacesFunction(Map<String, dynamic> requestData) async {
     try {
-      print('🔍 Calling google-places edge function with data: $requestData');
-      
-      // Call the new google-places edge function
       final response = await _supabase.functions.invoke(
-        'google-places',
+        'places',
         body: requestData,
       );
 
-      print('✅ Google Places function response status: ${response.status}');
-
       if (response.status != 200) {
-        throw Exception('Google Places function returned status ${response.status}');
+        throw Exception('Places function returned status ${response.status}');
       }
 
-      final data = response.data as Map<String, dynamic>;
-      
+      final responseMap = response.data as Map<String, dynamic>;
+      // The places edge function wraps the Google API response in {success, data}
+      final data = responseMap['data'] as Map<String, dynamic>? ?? responseMap;
+
       return PlacesApiResponse(
         success: data['status'] == 'OK',
         data: data,
         error: data['status'] != 'OK' ? data['status'] : null,
       );
     } catch (e) {
-      print('❌ Error calling google-places function: $e');
+      print('❌ Error calling places function: $e');
       return PlacesApiResponse(
         success: false,
         error: e.toString(),
