@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
   const CreatePostScreen({super.key});
@@ -112,7 +113,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         } else {
           showWanderMoodToast(
             context,
-            message: 'You can select up to 5 tags',
+            message: AppLocalizations.of(context)!.socialSelectUpToTags('5'),
           );
         }
       }
@@ -206,7 +207,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             ListTile(
               leading: const Icon(Icons.photo_library, color: Color(0xFF2A6049)),
               title: Text(
-                'Choose from Gallery',
+                AppLocalizations.of(context)!.profileEditPhotoChoose,
                 style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
               ),
               onTap: () {
@@ -217,7 +218,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             ListTile(
               leading: const Icon(Icons.photo_camera, color: Color(0xFF2A6049)),
               title: Text(
-                'Take a Photo',
+                AppLocalizations.of(context)!.profileEditPhotoTake,
                 style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
               ),
               onTap: () {
@@ -235,7 +236,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     if (_selectedImages.isEmpty) {
       showWanderMoodToast(
         context,
-        message: 'Please add at least one image',
+        message: AppLocalizations.of(context)!.socialPleaseAddOneImage,
       );
       return;
     }
@@ -255,7 +256,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       Navigator.pop(context, true); // Return true for success
       showWanderMoodToast(
         context,
-        message: 'Post created successfully!',
+        message: AppLocalizations.of(context)!.socialPostCreatedSuccess,
       );
     }
   }
@@ -275,7 +276,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           title: Text(
-            'Create Post',
+            AppLocalizations.of(context)!.socialCreatePost,
             style: GoogleFonts.museoModerno(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -337,7 +338,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'Add Photos',
+                                AppLocalizations.of(context)!.socialAddPhotos,
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   color: Colors.grey[600],
@@ -381,7 +382,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                           ),
                                           const SizedBox(height: 8),
                                           Text(
-                                            'Add More',
+                                            AppLocalizations.of(context)!.socialAddMore,
                                             style: GoogleFonts.poppins(
                                               fontSize: 12,
                                               color: Colors.grey[600],
@@ -459,7 +460,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                       maxLines: 4,
                       maxLength: 500,
                       decoration: InputDecoration(
-                        hintText: 'Write a caption...',
+                        hintText: AppLocalizations.of(context)!.socialWriteCaptionHint,
                         hintStyle: GoogleFonts.poppins(
                           fontSize: 14,
                           color: Colors.grey[400],
@@ -501,7 +502,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                _location.isEmpty ? 'Add Location' : _location,
+                                _location.isEmpty
+                                    ? AppLocalizations.of(context)!.socialAddLocation
+                                    : _location,
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: _location.isEmpty ? FontWeight.w400 : FontWeight.w500,
@@ -542,7 +545,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                _activity.isEmpty ? 'Add Activity' : _activity,
+                                _activity.isEmpty
+                                    ? AppLocalizations.of(context)!.dayPlanCardActivity
+                                    : _activity,
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: _activity.isEmpty ? FontWeight.w400 : FontWeight.w500,

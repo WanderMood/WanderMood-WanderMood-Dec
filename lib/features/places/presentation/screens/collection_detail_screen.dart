@@ -16,6 +16,7 @@ import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/places/presentation/screens/place_detail_screen.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 const _wmForest = Color(0xFF2A6049);
 const _wmCream = Color(0xFFF5F0E8);
@@ -91,12 +92,12 @@ class _CollectionDetailScreenState
         IconButton(
           icon: const Icon(Icons.edit_outlined, color: Colors.white),
           onPressed: _showEditSheet,
-          tooltip: 'Edit collection',
+          tooltip: AppLocalizations.of(context)!.profileActionEdit,
         ),
         IconButton(
           icon: const Icon(Icons.delete_outline, color: Colors.white),
           onPressed: _confirmDelete,
-          tooltip: 'Delete collection',
+          tooltip: AppLocalizations.of(context)!.myDayDeleteActivityCta,
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
@@ -507,7 +508,8 @@ class _CollectionDetailScreenState
     if (mounted) {
       showWanderMoodToast(
         context,
-        message: '${cp.placeName} removed from ${_collection.name}',
+        message: AppLocalizations.of(context)!
+            .socialRemovedFromCollection(cp.placeName, _collection.name),
         duration: const Duration(seconds: 2),
         backgroundColor: Colors.grey.shade700,
       );
@@ -555,7 +557,7 @@ class _CollectionDetailScreenState
                     ),
                   ),
                 ),
-                Text('Edit collection',
+                Text(AppLocalizations.of(context)!.socialEditCollection,
                     style: GoogleFonts.poppins(
                         fontSize: 18, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 16),
@@ -592,7 +594,7 @@ class _CollectionDetailScreenState
                 TextField(
                   controller: nameCtrl,
                   decoration: InputDecoration(
-                    hintText: 'Collection name',
+                    hintText: AppLocalizations.of(context)!.socialCollectionName,
                     filled: true,
                     fillColor: _wmCream,
                     border: OutlineInputBorder(
@@ -632,7 +634,7 @@ class _CollectionDetailScreenState
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14)),
                     ),
-                    child: Text('Save',
+                    child: Text(AppLocalizations.of(context)!.saveChanges,
                         style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w600)),
                   ),
@@ -649,7 +651,7 @@ class _CollectionDetailScreenState
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Delete collection?',
+        title: Text(AppLocalizations.of(context)!.socialDeleteCollectionTitle,
             style: GoogleFonts.poppins(fontWeight: FontWeight.w700)),
         content: Text(
             'This removes "${_collection.name}" and all its places. Your saved places are not deleted.',
@@ -657,7 +659,7 @@ class _CollectionDetailScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel',
+            child: Text(AppLocalizations.of(context)!.cancel,
                 style: GoogleFonts.poppins(color: _wmStone)),
           ),
           TextButton(
@@ -669,7 +671,7 @@ class _CollectionDetailScreenState
                               ref.invalidate(tripCollectionsProvider);
                               if (mounted) Navigator.pop(context);
             },
-            child: Text('Delete',
+            child: Text(AppLocalizations.of(context)!.myDayDeleteActivityCta,
                 style: GoogleFonts.poppins(
                     color: Colors.red, fontWeight: FontWeight.w600)),
           ),
@@ -828,7 +830,7 @@ class _PlanCollectionPlaceSheetState
       initialDate: _selectedDate.isBefore(first) ? first : _selectedDate,
       firstDate: first,
       lastDate: first.add(const Duration(days: 365)),
-      helpText: 'Pick day for plan',
+      helpText: AppLocalizations.of(context)!.socialPickDayForPlan,
     );
     if (picked != null && mounted) {
       setState(() {
@@ -907,9 +909,9 @@ class _PlanCollectionPlaceSheetState
         Navigator.pop(context);
         showWanderMoodToast(
           context,
-          message: '${place.name} added to My Day!',
+          message: AppLocalizations.of(context)!.dayPlanCardAddedToMyDay(place.name),
           duration: const Duration(seconds: 3),
-          actionLabel: 'View',
+          actionLabel: AppLocalizations.of(context)!.bookingViewAction,
           onAction: () {
             if (mounted) {
               context.go('/main', extra: {
@@ -925,7 +927,7 @@ class _PlanCollectionPlaceSheetState
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: 'Could not add to My Day. Please try again.',
+          message: AppLocalizations.of(context)!.dayPlanCardCouldNotAddMyDay,
           isError: true,
         );
       }
@@ -936,6 +938,7 @@ class _PlanCollectionPlaceSheetState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     Widget chip({
       required String label,
       required bool selected,
@@ -998,7 +1001,7 @@ class _PlanCollectionPlaceSheetState
             ),
           ),
           Text(
-            'Add to My Day',
+            l10n.myDayQuickAddActivity,
             style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 6),
@@ -1009,18 +1012,18 @@ class _PlanCollectionPlaceSheetState
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 16),
-          Text('Day', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
+          Text(AppLocalizations.of(context)!.socialDay, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           Row(
             children: [
               chip(
-                label: 'Today',
+                label: l10n.timeLabelToday,
                 selected: isToday,
                 onTap: () => setState(() => _selectedDate = todayDate),
               ),
               const SizedBox(width: 8),
               chip(
-                label: 'Tomorrow',
+                label: l10n.timeLabelTomorrow,
                 selected: isTomorrow,
                 onTap: () => setState(() => _selectedDate = tomorrowDate),
               ),
@@ -1038,15 +1041,15 @@ class _PlanCollectionPlaceSheetState
             style: GoogleFonts.poppins(fontSize: 11, color: _wmStone),
           ),
           const SizedBox(height: 14),
-          Text('Time', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
+          Text(AppLocalizations.of(context)!.socialTime, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           Row(
             children: [
-              chip(label: 'Morning', selected: _slotIndex == 0, onTap: () => setState(() => _slotIndex = 0)),
+              chip(label: l10n.timeLabelMorning, selected: _slotIndex == 0, onTap: () => setState(() => _slotIndex = 0)),
               const SizedBox(width: 8),
-              chip(label: 'Afternoon', selected: _slotIndex == 1, onTap: () => setState(() => _slotIndex = 1)),
+              chip(label: l10n.timeLabelAfternoon, selected: _slotIndex == 1, onTap: () => setState(() => _slotIndex = 1)),
               const SizedBox(width: 8),
-              chip(label: 'Evening', selected: _slotIndex == 2, onTap: () => setState(() => _slotIndex = 2)),
+              chip(label: l10n.timeLabelEvening, selected: _slotIndex == 2, onTap: () => setState(() => _slotIndex = 2)),
             ],
           ),
           const SizedBox(height: 18),
@@ -1066,7 +1069,7 @@ class _PlanCollectionPlaceSheetState
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
-                  : Text('Add to My Day', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                  : Text(AppLocalizations.of(context)!.dayPlanCardAddToMyDay, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
             ),
           ),
         ],

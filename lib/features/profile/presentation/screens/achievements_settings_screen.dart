@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../gamification/providers/gamification_provider.dart';
 import '../../../gamification/domain/models/achievement.dart';
 import '../widgets/settings_screen_template.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 const Color _achWmForest = Color(0xFF2A6049);
 const Color _achWmForestTint = Color(0xFFEBF3EE);
@@ -22,8 +23,9 @@ class AchievementsSettingsScreen extends ConsumerWidget {
     final unlockedAchievements = achievements.where((a) => a.unlocked).toList();
     final lockedAchievements = achievements.where((a) => !a.unlocked).toList();
     
+    final l10n = AppLocalizations.of(context)!;
     return SettingsScreenTemplate(
-      title: 'Achievements',
+      title: l10n.gamificationTitle,
       onBack: () => context.pop(),
       wanderMoodV2Chrome: true,
       child: Column(
@@ -61,7 +63,7 @@ class AchievementsSettingsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Achievements Unlocked',
+                  l10n.achievementsUnlocked,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: const Color(0xFF374151),
@@ -73,7 +75,7 @@ class AchievementsSettingsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
           if (unlockedAchievements.isNotEmpty) ...[
             Text(
-              'Unlocked',
+              l10n.gamificationUnlocked,
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -92,7 +94,7 @@ class AchievementsSettingsScreen extends ConsumerWidget {
           ],
           if (lockedAchievements.isNotEmpty) ...[
             Text(
-              'Locked',
+              l10n.gamificationLocked,
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,

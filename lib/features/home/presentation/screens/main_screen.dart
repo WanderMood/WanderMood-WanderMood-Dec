@@ -15,6 +15,7 @@ import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 // v2 bottom nav — Screen 11 (active = wmForest, pill bg = wmForestTint)
 const Color _navWmForest = Color(0xFF2A6049);
@@ -288,6 +289,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final rawTabIndex = ref.watch(mainTabProvider);
     final selectedIndex = normalizeMainTabIndex(rawTabIndex);
     final dailyMoodState = ref.watch(dailyMoodStateNotifierProvider);
@@ -335,10 +337,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _buildRegularNavItem(context, ref, selectedIndex, 0, 'My Day', Icons.calendar_today_outlined, Icons.calendar_today, _navWmForest, _navWmForestTint),
-                          _buildRegularNavItem(context, ref, selectedIndex, 1, 'Explore', Icons.explore_outlined, Icons.explore, _navWmForest, _navWmForestTint),
+                          _buildRegularNavItem(context, ref, selectedIndex, 0, l10n.navMyDay, Icons.calendar_today_outlined, Icons.calendar_today, _navWmForest, _navWmForestTint),
+                          _buildRegularNavItem(context, ref, selectedIndex, 1, l10n.navExplore, Icons.explore_outlined, Icons.explore, _navWmForest, _navWmForestTint),
                           _buildCenterMoodyButton(context, ref, selectedIndex),
-                          _buildRegularNavItem(context, ref, selectedIndex, 3, 'Profile', Icons.person_outline, Icons.person, _navWmForest, _navWmForestTint),
+                          _buildRegularNavItem(context, ref, selectedIndex, 3, l10n.navProfile, Icons.person_outline, Icons.person, _navWmForest, _navWmForestTint),
                         ],
                       ),
                     ),
@@ -360,6 +362,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   Widget _buildWeekendBanner(DateTime saturday, DateTime sunday) {
+    final l10n = AppLocalizations.of(context)!;
     Widget weekendPlanButton(String label, DateTime date) {
       return GestureDetector(
         onTap: () {
@@ -402,7 +405,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Je weekend is nog leeg!',
+                  l10n.myDayWeekendEmptyTitle,
                   style: GoogleFonts.poppins(
                     color: _wmCharcoal,
                     fontSize: 15,
@@ -411,7 +414,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Wil je zaterdag of zondag alvast plannen?',
+                  l10n.myDayWeekendEmptySubtitle,
                   style: GoogleFonts.poppins(
                     color: _wmDusk,
                     fontSize: 13,
@@ -420,9 +423,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    weekendPlanButton('Za ${saturday.day}', saturday),
+                    weekendPlanButton(l10n.myDayWeekendSaturdayShort('${saturday.day}'), saturday),
                     const SizedBox(width: 8),
-                    weekendPlanButton('Zo ${sunday.day}', sunday),
+                    weekendPlanButton(l10n.myDayWeekendSundayShort('${sunday.day}'), sunday),
                   ],
                 ),
               ],

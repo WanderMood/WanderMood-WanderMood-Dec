@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/mood/services/end_of_day_check_in_service.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 const Color _wmCream = Color(0xFFF5F0E8);
 const Color _wmParchment = Color(0xFFE8E2D8);
@@ -30,26 +31,36 @@ class EndOfDayCheckInSheet extends StatefulWidget {
 
 class _EndOfDayCheckInSheetState extends State<EndOfDayCheckInSheet>
     with TickerProviderStateMixin {
-  static const _q1Options = [
-    'De activiteiten 🎯',
-    'Met vrienden 👥',
-    'Ontdekken 🔍',
-    'Eten & drinken 🍽',
-    'Relaxen 🛋',
+  // Internal keys used for DB storage (language-neutral)
+  static const _q1Keys = ['activities', 'friends', 'exploring', 'food', 'relaxing'];
+  static const _q2Keys = ['amazing', 'good', 'ok', 'not_for_me'];
+  static const _q3EmojiKeys = <String, String>{
+    '😊': 'happy',
+    '😌': 'relaxed',
+    '😴': 'tired',
+    '🤔': 'mixed',
+  };
+
+  List<String> _q1Labels(AppLocalizations l10n) => [
+    l10n.checkInQ1Activities,
+    l10n.checkInQ1Friends,
+    l10n.checkInQ1Exploring,
+    l10n.checkInQ1Food,
+    l10n.checkInQ1Relaxing,
   ];
 
-  static const _q2Options = [
-    'Geweldig! 🤩',
-    'Goed 👍',
-    'Prima',
-    'Niet voor mij',
+  List<String> _q2Labels(AppLocalizations l10n) => [
+    l10n.checkInQ2Amazing,
+    l10n.checkInQ2Good,
+    l10n.checkInQ2Ok,
+    l10n.checkInQ2NotForMe,
   ];
 
-  static const _q3Options = <String, String>{
-    '😊': 'Blij',
-    '😌': 'Ontspannen',
-    '😴': 'Moe',
-    '🤔': 'Gemengd',
+  Map<String, String> _q3Labels(AppLocalizations l10n) => {
+    '😊': l10n.checkInQ3Happy,
+    '😌': l10n.checkInQ3Relaxed,
+    '😴': l10n.checkInQ3Tired,
+    '🤔': l10n.checkInQ3Mixed,
   };
 
   int _step = 0;
@@ -113,7 +124,7 @@ class _EndOfDayCheckInSheetState extends State<EndOfDayCheckInSheet>
       if (mounted) {
         setState(() {
           _submitting = false;
-          _error = 'Opslaan lukte niet. Probeer het nog eens.';
+          _error = AppLocalizations.of(context)!.checkInSaveError;
         });
       }
     }
@@ -223,10 +234,12 @@ class _EndOfDayCheckInSheetState extends State<EndOfDayCheckInSheet>
   }
 
   Widget _buildQ1() {
+    final l10n = AppLocalizations.of(context)!;
+    final labels = _q1Labels(l10n);
     return Column(
       children: [
         Text(
-          'Hoe was je dag?',
+          l10n.checkInQ1Title,
           style: GoogleFonts.poppins(
             fontSize: 22,
             fontWeight: FontWeight.w800,
@@ -236,7 +249,7 @@ class _EndOfDayCheckInSheetState extends State<EndOfDayCheckInSheet>
         ),
         const SizedBox(height: 6),
         Text(
-          'Moody wil je beter leren kennen 🌙',
+          l10n.checkInQ1Subtitle,
           style: GoogleFonts.poppins(
             fontSize: 14,
             height: 1.35,
@@ -246,7 +259,7 @@ class _EndOfDayCheckInSheetState extends State<EndOfDayCheckInSheet>
         ),
         const SizedBox(height: 8),
         Text(
-          'Wat was het beste moment van vandaag?',
+          l10n.checkInQ1Question,
           style: GoogleFonts.poppins(
             fontSize: 15,
             fontWeight: FontWeight.w600,
@@ -259,14 +272,15 @@ class _EndOfDayCheckInSheetState extends State<EndOfDayCheckInSheet>
           height: 44,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            itemCount: _q1Options.length,
+            itemCount: _q1Keys.length,
             separatorBuilder: (_, __) => const SizedBox(width: 8),
             itemBuilder: (context, i) {
-              final label = _q1Options[i];
+              final key = _q1Keys[i];
+              final label = labels[i];
               return _ChipButton(
                 label: label,
-                selected: _q1 == label,
-                onTap: () => _advanceFromQ1(label),
+                selected: _q1 == key,
+                onTap: () => _advanceFromQ1(key),
               );
             },
           ),
@@ -275,7 +289,7 @@ class _EndOfDayCheckInSheetState extends State<EndOfDayCheckInSheet>
         TextButton(
           onPressed: _onSkip,
           child: Text(
-            'Misschien later',
+            l10n.checkInMaybeLater,
             style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w500,
@@ -288,11 +302,13 @@ class _EndOfDayCheckInSheetState extends State<EndOfDayCheckInSheet>
   }
 
   Widget _buildQ2() {
+    final l10n = AppLocalizations.of(context)!;
     final name = widget.spotlightActivityName.trim();
+    final labels = _q2Labels(l10n);
     return Column(
       children: [
         Text(
-          'Was $name de moeite waard?',
+          l10n.checkInQ2Question(name),
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -305,25 +321,27 @@ class _EndOfDayCheckInSheetState extends State<EndOfDayCheckInSheet>
           alignment: WrapAlignment.center,
           spacing: 8,
           runSpacing: 8,
-          children: _q2Options
-              .map(
-                (label) => _ChipButton(
-                  label: label,
-                  selected: _q2 == label,
-                  onTap: () => _advanceFromQ2(label),
-                ),
-              )
-              .toList(),
+          children: List.generate(_q2Keys.length, (i) {
+            final key = _q2Keys[i];
+            final label = labels[i];
+            return _ChipButton(
+              label: label,
+              selected: _q2 == key,
+              onTap: () => _advanceFromQ2(key),
+            );
+          }),
         ),
       ],
     );
   }
 
   Widget _buildQ3() {
+    final l10n = AppLocalizations.of(context)!;
+    final localizedLabels = _q3Labels(l10n);
     return Column(
       children: [
         Text(
-          'Hoe voel je je nu?',
+          l10n.checkInQ3Question,
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -336,12 +354,12 @@ class _EndOfDayCheckInSheetState extends State<EndOfDayCheckInSheet>
           alignment: WrapAlignment.center,
           spacing: 8,
           runSpacing: 8,
-          children: _q3Options.entries.map((e) {
-            final label = '${e.key} ${e.value}';
+          children: _q3EmojiKeys.entries.map((e) {
+            final displayLabel = '${e.key} ${localizedLabels[e.key]}';
             return _ChipButton(
-              label: label,
+              label: displayLabel,
               selected: _q3Emoji == e.key,
-              onTap: () => _advanceFromQ3(e.key, e.value.toLowerCase()),
+              onTap: () => _advanceFromQ3(e.key, e.value),
             );
           }).toList(),
         ),
@@ -353,7 +371,7 @@ class _EndOfDayCheckInSheetState extends State<EndOfDayCheckInSheet>
     return Column(
       children: [
         Text(
-          'Dankje! Tot morgen 🌟',
+          AppLocalizations.of(context)!.checkInDoneTitle,
           style: GoogleFonts.poppins(
             fontSize: 22,
             fontWeight: FontWeight.w800,
@@ -363,7 +381,7 @@ class _EndOfDayCheckInSheetState extends State<EndOfDayCheckInSheet>
         ),
         const SizedBox(height: 8),
         Text(
-          'Moody onthoudt dit voor de volgende keer',
+          AppLocalizations.of(context)!.checkInDoneSubtitle,
           style: GoogleFonts.poppins(
             fontSize: 14,
             color: _wmStone,
@@ -400,7 +418,7 @@ class _EndOfDayCheckInSheetState extends State<EndOfDayCheckInSheet>
                     ),
                   )
                 : Text(
-                    'Sluiten',
+                    AppLocalizations.of(context)!.checkInClose,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

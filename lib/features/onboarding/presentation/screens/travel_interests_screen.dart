@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/providers/preferences_provider.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 /// WanderMood design tokens — interesses onboarding
 const Color _wmCream = Color(0xFFF5F0E8);
@@ -19,15 +20,15 @@ const Color _wmDusk = Color(0xFF4A4640);
 const Color _wmStone = Color(0xFF8C8780);
 
 /// UI + opslag-key (keys sluiten aan bij [UserPreferencesService] waar mogelijk).
-const List<({String storageKey, String emoji, String label})> _interestOptions = [
-  (storageKey: 'Food & Dining', emoji: '🍽', label: 'Eten & drinken'),
-  (storageKey: 'Arts & Culture', emoji: '🎨', label: 'Kunst & cultuur'),
-  (storageKey: 'Shopping & Markets', emoji: '🛍', label: 'Winkelen & markten'),
-  (storageKey: 'Sports', emoji: '⚽', label: 'Sport & activiteiten'),
-  (storageKey: 'Nature & Outdoors', emoji: '🌿', label: 'Natuur & parken'),
-  (storageKey: 'Nightlife', emoji: '🎭', label: 'Uitgaan & nightlife'),
-  (storageKey: 'Coffee & Cafés', emoji: '☕', label: 'Koffie & cafés'),
-  (storageKey: 'Photography & Spots', emoji: '📸', label: 'Fotografie & spots'),
+const List<({String storageKey, String emoji})> _interestOptions = [
+  (storageKey: 'Food & Dining', emoji: '🍽'),
+  (storageKey: 'Arts & Culture', emoji: '🎨'),
+  (storageKey: 'Shopping & Markets', emoji: '🛍'),
+  (storageKey: 'Sports', emoji: '⚽'),
+  (storageKey: 'Nature & Outdoors', emoji: '🌿'),
+  (storageKey: 'Nightlife', emoji: '🎭'),
+  (storageKey: 'Coffee & Cafés', emoji: '☕'),
+  (storageKey: 'Photography & Spots', emoji: '📸'),
 ];
 
 class TravelInterestsScreen extends ConsumerStatefulWidget {
@@ -61,6 +62,20 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen>
   void dispose() {
     _breathController.dispose();
     super.dispose();
+  }
+
+  String _interestLabel(String storageKey, AppLocalizations l10n) {
+    switch (storageKey) {
+      case 'Food & Dining': return l10n.interestFoodDining;
+      case 'Arts & Culture': return l10n.interestArtsCulture;
+      case 'Shopping & Markets': return l10n.interestShoppingMarkets;
+      case 'Sports': return l10n.interestSports;
+      case 'Nature & Outdoors': return l10n.interestNatureOutdoors;
+      case 'Nightlife': return l10n.interestNightlife;
+      case 'Coffee & Cafés': return l10n.interestCoffeeCafes;
+      case 'Photography & Spots': return l10n.interestPhotographySpots;
+      default: return storageKey;
+    }
   }
 
   void _toggleInterest(String storageKey) {
@@ -109,7 +124,7 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen>
                     color: _wmStone,
                     size: 20,
                   ),
-                  tooltip: 'Terug',
+                  tooltip: AppLocalizations.of(context)!.prefBack,
                 ),
               ),
             ),
@@ -161,7 +176,7 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen>
                               border: Border.all(color: _wmSky, width: 0.5),
                             ),
                             child: Text(
-                              'Wat vind jij leuk? Ik zoek het voor je uit! 🔍',
+                              AppLocalizations.of(context)!.interestsPrompt,
                               textAlign: TextAlign.right,
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
@@ -198,7 +213,7 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Wat zijn jouw interesses?',
+                    AppLocalizations.of(context)!.interestsTitle,
                     style: GoogleFonts.poppins(
                       fontSize: 24,
                       fontWeight: FontWeight.w800,
@@ -208,7 +223,7 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Kies alles wat je aanspreekt.',
+                    AppLocalizations.of(context)!.interestsSubtitle,
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.w400,
@@ -218,7 +233,7 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Meerdere keuzes mogelijk',
+                    AppLocalizations.of(context)!.interestsMultipleChoice,
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
@@ -255,7 +270,7 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen>
                             _selectedInterests.contains(o.storageKey);
                         return _InterestChip(
                           emoji: o.emoji,
-                          label: o.label,
+                          label: _interestLabel(o.storageKey, AppLocalizations.of(context)!),
                           selected: selected,
                           onTap: () => _toggleInterest(o.storageKey),
                         );
@@ -289,7 +304,7 @@ class _TravelInterestsScreenState extends ConsumerState<TravelInterestsScreen>
                     ),
                   ),
                   child: Text(
-                    'Doorgaan →',
+                    AppLocalizations.of(context)!.interestsContinue,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,

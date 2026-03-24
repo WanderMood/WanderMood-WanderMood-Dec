@@ -36,6 +36,7 @@ import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 /// WanderMood v2 — Advanced Filters modal (SCREEN 7)
 const Color _afWmWhite = Color(0xFFFFFFFF);
@@ -451,6 +452,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
+  String _categoryLabel(String key) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (key) {
+      case 'All': return l10n.exploreCategoryAll;
+      case 'Popular': return l10n.exploreCategoryPopular;
+      case 'Accommodations': return l10n.exploreCategoryAccommodations;
+      case 'Nature': return l10n.exploreCategoryNature;
+      case 'Culture': return l10n.exploreCategoryCulture;
+      case 'Food': return l10n.exploreCategoryFood;
+      case 'Activities': return l10n.exploreCategoryActivities;
+      case 'History': return l10n.exploreCategoryHistory;
+      default: return key;
+    }
+  }
+
   void _onCategorySelected(String category) {
     setState(() {
       _selectedCategory = category;
@@ -486,7 +502,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               ),
               const SizedBox(width: 8),
               Text(
-                category,
+                _categoryLabel(category),
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: category == _searchFilter
@@ -1151,15 +1167,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             hasScrollBody: false,
             child: Column(
               children: [
-                const Expanded(
+                Expanded(
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.search_off, size: 64, color: Colors.grey),
-                        SizedBox(height: 16),
-                        Text('No places found',
-                            style: TextStyle(fontSize: 18, color: Colors.grey)),
+                        const Icon(Icons.search_off, size: 64, color: Colors.grey),
+                        const SizedBox(height: 16),
+                        Text(
+                          AppLocalizations.of(context)!.exploreNoPlacesFound,
+                          style: const TextStyle(fontSize: 18, color: Colors.grey),
+                        ),
                       ],
                     ),
                   ),
@@ -2238,27 +2256,26 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   // Advanced Suggestion filters
   Widget _buildAdvancedSuggestionFilters(Function(VoidCallback) updateFilter) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         Row(
           children: [
             Expanded(
-              child:
-                  _buildFilterChip('🏠', 'Indoor Only', _indoorOnly, (value) {
+              child: _buildFilterChip('🏠', l10n.exploreFilterIndoorOnly, _indoorOnly, (value) {
                 updateFilter(() {
                   _indoorOnly = value;
-                  if (value) _outdoorOnly = false; // Exclusive
+                  if (value) _outdoorOnly = false;
                   _updateActiveFiltersCount();
                 });
               }),
             ),
             const SizedBox(width: 8),
             Expanded(
-              child:
-                  _buildFilterChip('☀️', 'Outdoor Only', _outdoorOnly, (value) {
+              child: _buildFilterChip('☀️', l10n.exploreFilterOutdoorOnly, _outdoorOnly, (value) {
                 updateFilter(() {
                   _outdoorOnly = value;
-                  if (value) _indoorOnly = false; // Exclusive
+                  if (value) _indoorOnly = false;
                   _updateActiveFiltersCount();
                 });
               }),
@@ -2269,8 +2286,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildFilterChip('🌧️', 'Weather-Safe', _weatherSafe,
-                  (value) {
+              child: _buildFilterChip('🌧️', l10n.exploreFilterWeatherSafe, _weatherSafe, (value) {
                 updateFilter(() {
                   _weatherSafe = value;
                   _updateActiveFiltersCount();
@@ -2279,7 +2295,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: _buildFilterChip('🌙', 'Open Now', _openNow, (value) {
+              child: _buildFilterChip('🌙', l10n.exploreFilterOpenNow, _openNow, (value) {
                 updateFilter(() {
                   _openNow = value;
                   _updateActiveFiltersCount();
@@ -2292,20 +2308,20 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildFilterChip('🤫', 'Quiet', _crowdQuiet, (value) {
+              child: _buildFilterChip('🤫', l10n.exploreFilterQuiet, _crowdQuiet, (value) {
                 updateFilter(() {
                   _crowdQuiet = value;
-                  if (value) _crowdLively = false; // Exclusive
+                  if (value) _crowdLively = false;
                   _updateActiveFiltersCount();
                 });
               }),
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: _buildFilterChip('💃', 'Lively', _crowdLively, (value) {
+              child: _buildFilterChip('💃', l10n.exploreFilterLively, _crowdLively, (value) {
                 updateFilter(() {
                   _crowdLively = value;
-                  if (value) _crowdQuiet = false; // Exclusive
+                  if (value) _crowdQuiet = false;
                   _updateActiveFiltersCount();
                 });
               }),
@@ -2316,8 +2332,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildFilterChip('💕', 'Romantic Vibe', _romanticVibe,
-                  (value) {
+              child: _buildFilterChip('💕', l10n.exploreFilterRomanticVibe, _romanticVibe, (value) {
                 updateFilter(() {
                   _romanticVibe = value;
                   _updateActiveFiltersCount();
@@ -2326,8 +2341,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child:
-                  _buildFilterChip('🔀', 'Surprise Me', _surpriseMe, (value) {
+              child: _buildFilterChip('🔀', l10n.exploreFilterSurpriseMe, _surpriseMe, (value) {
                 updateFilter(() {
                   _surpriseMe = value;
                   _updateActiveFiltersCount();
@@ -2342,45 +2356,28 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   // Dietary Preferences filters
   Widget _buildDietaryFilters(Function(VoidCallback) updateFilter) {
+    final l10n = AppLocalizations.of(context)!;
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
-        _buildFilterChip('🌱', 'Vegan', _vegan, (value) {
-          updateFilter(() {
-            _vegan = value;
-            _updateActiveFiltersCount();
-          });
+        _buildFilterChip('🌱', l10n.exploreFilterVegan, _vegan, (value) {
+          updateFilter(() { _vegan = value; _updateActiveFiltersCount(); });
         }),
-        _buildFilterChip('🥬', 'Vegetarian', _vegetarian, (value) {
-          updateFilter(() {
-            _vegetarian = value;
-            _updateActiveFiltersCount();
-          });
+        _buildFilterChip('🥬', l10n.exploreFilterVegetarian, _vegetarian, (value) {
+          updateFilter(() { _vegetarian = value; _updateActiveFiltersCount(); });
         }),
-        _buildFilterChip('🥗', 'Halal', _halal, (value) {
-          updateFilter(() {
-            _halal = value;
-            _updateActiveFiltersCount();
-          });
+        _buildFilterChip('🥗', l10n.exploreFilterHalal, _halal, (value) {
+          updateFilter(() { _halal = value; _updateActiveFiltersCount(); });
         }),
-        _buildFilterChip('🌾', 'Gluten-Free', _glutenFree, (value) {
-          updateFilter(() {
-            _glutenFree = value;
-            _updateActiveFiltersCount();
-          });
+        _buildFilterChip('🌾', l10n.exploreFilterGlutenFree, _glutenFree, (value) {
+          updateFilter(() { _glutenFree = value; _updateActiveFiltersCount(); });
         }),
-        _buildFilterChip('🐟', 'Pescatarian', _pescatarian, (value) {
-          updateFilter(() {
-            _pescatarian = value;
-            _updateActiveFiltersCount();
-          });
+        _buildFilterChip('🐟', l10n.exploreFilterPescatarian, _pescatarian, (value) {
+          updateFilter(() { _pescatarian = value; _updateActiveFiltersCount(); });
         }),
-        _buildFilterChip('❌', 'No Alcohol', _noAlcohol, (value) {
-          updateFilter(() {
-            _noAlcohol = value;
-            _updateActiveFiltersCount();
-          });
+        _buildFilterChip('❌', l10n.exploreFilterNoAlcohol, _noAlcohol, (value) {
+          updateFilter(() { _noAlcohol = value; _updateActiveFiltersCount(); });
         }),
       ],
     );
@@ -2388,40 +2385,25 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   // Accessibility & Inclusion filters
   Widget _buildAccessibilityFilters(Function(VoidCallback) updateFilter) {
+    final l10n = AppLocalizations.of(context)!;
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
-        _buildFilterChip('♿', 'Wheelchair Accessible', _wheelchairAccessible,
-            (value) {
-          updateFilter(() {
-            _wheelchairAccessible = value;
-            _updateActiveFiltersCount();
-          });
+        _buildFilterChip('♿', l10n.exploreFilterWheelchairAccessible, _wheelchairAccessible, (value) {
+          updateFilter(() { _wheelchairAccessible = value; _updateActiveFiltersCount(); });
         }),
-        _buildFilterChip('🏳️‍🌈', 'LGBTQ+ Friendly', _lgbtqFriendly, (value) {
-          updateFilter(() {
-            _lgbtqFriendly = value;
-            _updateActiveFiltersCount();
-          });
+        _buildFilterChip('🏳️‍🌈', l10n.exploreFilterLgbtqFriendly, _lgbtqFriendly, (value) {
+          updateFilter(() { _lgbtqFriendly = value; _updateActiveFiltersCount(); });
         }),
-        _buildFilterChip('🧓', 'Senior-Friendly', _seniorFriendly, (value) {
-          updateFilter(() {
-            _seniorFriendly = value;
-            _updateActiveFiltersCount();
-          });
+        _buildFilterChip('🧓', l10n.exploreFilterSeniorFriendly, _seniorFriendly, (value) {
+          updateFilter(() { _seniorFriendly = value; _updateActiveFiltersCount(); });
         }),
-        _buildFilterChip('🧑‍🍼', 'Baby-Friendly', _babyFriendly, (value) {
-          updateFilter(() {
-            _babyFriendly = value;
-            _updateActiveFiltersCount();
-          });
+        _buildFilterChip('🧑‍🍼', l10n.exploreFilterBabyFriendly, _babyFriendly, (value) {
+          updateFilter(() { _babyFriendly = value; _updateActiveFiltersCount(); });
         }),
-        _buildFilterChip('✊🏿', 'Black-owned', _blackOwned, (value) {
-          updateFilter(() {
-            _blackOwned = value;
-            _updateActiveFiltersCount();
-          });
+        _buildFilterChip('✊🏿', l10n.exploreFilterBlackOwned, _blackOwned, (value) {
+          updateFilter(() { _blackOwned = value; _updateActiveFiltersCount(); });
         }),
       ],
     );
@@ -2429,11 +2411,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   // Comfort & Convenience filters
   Widget _buildLogisticsFilters(Function(VoidCallback) updateFilter) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Price Range (€)',
+          l10n.exploreFilterPriceRange,
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -2461,7 +2444,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Maximum Distance (km)',
+          l10n.exploreFilterMaxDistance,
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -2486,7 +2469,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Additional Options',
+          l10n.exploreFilterAdditionalOptions,
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -2498,35 +2481,20 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           spacing: 8,
           runSpacing: 8,
           children: [
-            _buildFilterChip('🚗', 'Parking', _parkingAvailable, (value) {
-              updateFilter(() {
-                _parkingAvailable = value;
-                _updateActiveFiltersCount();
-              });
+            _buildFilterChip('🚗', l10n.exploreFilterParking, _parkingAvailable, (value) {
+              updateFilter(() { _parkingAvailable = value; _updateActiveFiltersCount(); });
             }),
-            _buildFilterChip('🚌', 'Transport', _transportIncluded, (value) {
-              updateFilter(() {
-                _transportIncluded = value;
-                _updateActiveFiltersCount();
-              });
+            _buildFilterChip('🚌', l10n.exploreFilterTransport, _transportIncluded, (value) {
+              updateFilter(() { _transportIncluded = value; _updateActiveFiltersCount(); });
             }),
-            _buildFilterChip('💳', 'Credit Cards', _creditCards, (value) {
-              updateFilter(() {
-                _creditCards = value;
-                _updateActiveFiltersCount();
-              });
+            _buildFilterChip('💳', l10n.exploreFilterCreditCards, _creditCards, (value) {
+              updateFilter(() { _creditCards = value; _updateActiveFiltersCount(); });
             }),
-            _buildFilterChip('📶', 'Wi-Fi', _wifiAvailable, (value) {
-              updateFilter(() {
-                _wifiAvailable = value;
-                _updateActiveFiltersCount();
-              });
+            _buildFilterChip('📶', l10n.exploreFilterWifi, _wifiAvailable, (value) {
+              updateFilter(() { _wifiAvailable = value; _updateActiveFiltersCount(); });
             }),
-            _buildFilterChip('🔌', 'Charging', _chargingPoints, (value) {
-              updateFilter(() {
-                _chargingPoints = value;
-                _updateActiveFiltersCount();
-              });
+            _buildFilterChip('🔌', l10n.exploreFilterCharging, _chargingPoints, (value) {
+              updateFilter(() { _chargingPoints = value; _updateActiveFiltersCount(); });
             }),
           ],
         ),
@@ -2536,46 +2504,28 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   // Photo Options filters
   Widget _buildPhotoFilters(Function(VoidCallback) updateFilter) {
+    final l10n = AppLocalizations.of(context)!;
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
-        _buildFilterChip('📸', 'Instagrammable', _instagrammable, (value) {
-          updateFilter(() {
-            _instagrammable = value;
-            _updateActiveFiltersCount();
-          });
+        _buildFilterChip('📸', l10n.exploreFilterInstagrammable, _instagrammable, (value) {
+          updateFilter(() { _instagrammable = value; _updateActiveFiltersCount(); });
         }),
-        _buildFilterChip('🎨', 'Artistic Design', _artisticDesign, (value) {
-          updateFilter(() {
-            _artisticDesign = value;
-            _updateActiveFiltersCount();
-          });
+        _buildFilterChip('🎨', l10n.exploreFilterArtisticDesign, _artisticDesign, (value) {
+          updateFilter(() { _artisticDesign = value; _updateActiveFiltersCount(); });
         }),
-        _buildFilterChip('🧘‍♀️', 'Aesthetic Spaces', _aestheticSpaces,
-            (value) {
-          updateFilter(() {
-            _aestheticSpaces = value;
-            _updateActiveFiltersCount();
-          });
+        _buildFilterChip('🧘‍♀️', l10n.exploreFilterAestheticSpaces, _aestheticSpaces, (value) {
+          updateFilter(() { _aestheticSpaces = value; _updateActiveFiltersCount(); });
         }),
-        _buildFilterChip('🌆', 'Scenic Views', _scenicViews, (value) {
-          updateFilter(() {
-            _scenicViews = value;
-            _updateActiveFiltersCount();
-          });
+        _buildFilterChip('🌆', l10n.exploreFilterScenicViews, _scenicViews, (value) {
+          updateFilter(() { _scenicViews = value; _updateActiveFiltersCount(); });
         }),
-        _buildFilterChip('🌙', 'Best at Night', _bestAtNight, (value) {
-          updateFilter(() {
-            _bestAtNight = value;
-            _updateActiveFiltersCount();
-          });
+        _buildFilterChip('🌙', l10n.exploreFilterBestAtNight, _bestAtNight, (value) {
+          updateFilter(() { _bestAtNight = value; _updateActiveFiltersCount(); });
         }),
-        _buildFilterChip('🌅', 'Best at Sunset', _bestAtSunset, (value) {
-          updateFilter(() {
-            _bestAtSunset = value;
-            _updateActiveFiltersCount();
-          });
+        _buildFilterChip('🌅', l10n.exploreFilterBestAtSunset, _bestAtSunset, (value) {
+          updateFilter(() { _bestAtSunset = value; _updateActiveFiltersCount(); });
         }),
       ],
     );
@@ -2665,7 +2615,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             Icon(Icons.map, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
-              'No places to display on map',
+              AppLocalizations.of(context)!.exploreNoPlacesOnMap,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 color: Colors.grey[600],
@@ -2969,7 +2919,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         if (mounted) {
           showWanderMoodToast(
             context,
-            message: 'Meld je aan om activiteiten toe te voegen.',
+            message: AppLocalizations.of(context)!.myDayAddSignInRequired,
             isError: true,
           );
         }
@@ -3042,9 +2992,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: '${place.name} toegevoegd aan Mijn Dag!',
+          message: AppLocalizations.of(context)!.dayPlanCardAddedToMyDay(place.name),
           duration: const Duration(seconds: 3),
-          actionLabel: 'Bekijk',
+          actionLabel: AppLocalizations.of(context)!.activityOptionsViewAction,
           onAction: () {
             if (mounted)
               context.go('/main', extra: {
@@ -3060,7 +3010,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: 'Kon niet toevoegen. Probeer opnieuw.',
+          message: AppLocalizations.of(context)!.myDayAddFailedTryAgain,
           isError: true,
         );
       }
@@ -3169,6 +3119,7 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final today = _dateOnly(now);
     final tomorrow = today.add(const Duration(days: 1));
@@ -3234,7 +3185,7 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Add to My Day',
+            l10n.myDayQuickAddActivity,
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -3265,13 +3216,13 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
           Row(
             children: [
               chip(
-                label: 'Today',
+                label: l10n.timeLabelToday,
                 selected: isTodaySelected,
                 onTap: () => setState(() => _selectedDate = today),
               ),
               const SizedBox(width: 8),
               chip(
-                label: 'Tomorrow',
+                label: l10n.timeLabelTomorrow,
                 selected: isTomorrowSelected,
                 onTap: () => setState(() => _selectedDate = tomorrow),
               ),
@@ -3304,19 +3255,19 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
           Row(
             children: [
               chip(
-                label: 'Morning',
+                label: l10n.timeLabelMorning,
                 selected: _selectedSlotIndex == 0,
                 onTap: () => setState(() => _selectedSlotIndex = 0),
               ),
               const SizedBox(width: 8),
               chip(
-                label: 'Afternoon',
+                label: l10n.timeLabelAfternoon,
                 selected: _selectedSlotIndex == 1,
                 onTap: () => setState(() => _selectedSlotIndex = 1),
               ),
               const SizedBox(width: 8),
               chip(
-                label: 'Evening',
+                label: l10n.timeLabelEvening,
                 selected: _selectedSlotIndex == 2,
                 onTap: () => setState(() => _selectedSlotIndex = 2),
               ),
@@ -3342,7 +3293,7 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
                 elevation: 0,
               ),
               child: Text(
-                'Add to My Day',
+                l10n.myDayQuickAddActivity,
                 style: GoogleFonts.poppins(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,

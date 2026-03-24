@@ -11,6 +11,7 @@ import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dar
 import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/core/providers/communication_style_provider.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_chat_header_subtitle.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 // WanderMood v2 — Moody chat (Screen 9)
 const Color _wmSkyTint = Color(0xFFEDF5F9);
@@ -117,10 +118,10 @@ void showMoodyChatSheet(BuildContext context, WidgetRef ref) {
         isAILoading = false;
       });
     } catch (e) {
+      final l10n = AppLocalizations.of(context)!;
       setModalState(() {
         chatMessages.add(_ChatMsg(
-          message:
-              "Oops! I'm having trouble connecting right now. Can you try again? 🤔",
+          message: l10n.chatSheetErrorMessage,
           isUser: false,
           timestamp: MoodyClock.now(),
         ));
@@ -323,7 +324,7 @@ class _MoodyChatHeader extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Moody',
+                        AppLocalizations.of(context)!.chatSheetMoodyName,
                         style: GoogleFonts.poppins(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -424,11 +425,11 @@ class _MoodyChatEmptyState extends StatelessWidget {
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                child: _messageCard(compact: true),
+                child: _messageCard(context, compact: true),
               ),
             )
           else ...[
-            _messageCard(compact: false),
+            _messageCard(context, compact: false),
             const Spacer(),
           ],
         ],
@@ -436,7 +437,8 @@ class _MoodyChatEmptyState extends StatelessWidget {
     );
   }
 
-  Widget _messageCard({required bool compact}) {
+  Widget _messageCard(BuildContext context, {required bool compact}) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: compact ? 12 : 24,
@@ -448,7 +450,7 @@ class _MoodyChatEmptyState extends StatelessWidget {
         border: Border.all(color: _wmParchment.withOpacity(0.9)),
       ),
       child: Text(
-        "I know Rotterdam like the back of my hand! Tell me your mood, and I'll craft the perfect day just for you. Whether you're feeling adventurous, romantic, or need some chill vibes - I've got you covered! 🎯",
+        l10n.chatSheetEmptyStateBody,
         style: GoogleFonts.poppins(
           fontSize: compact ? 13 : 16,
           color: const Color(0xFF2D3748),
@@ -587,7 +589,7 @@ class _MoodyTypingIndicator extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Moody is crafting something special...',
+                      AppLocalizations.of(context)!.chatSheetCraftingMessage,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
@@ -646,7 +648,7 @@ class _MoodyChatInput extends StatelessWidget {
               keyboardType: TextInputType.text,
               scrollPadding: const EdgeInsets.only(bottom: 120, top: 80),
               decoration: InputDecoration(
-                hintText: "What's your mood today?",
+                hintText: AppLocalizations.of(context)!.chatSheetInputHint,
                 hintStyle:
                     GoogleFonts.poppins(color: Colors.grey[500], fontSize: 16),
                 contentPadding:

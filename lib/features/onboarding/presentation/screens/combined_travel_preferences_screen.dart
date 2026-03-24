@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/providers/preferences_provider.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 /// WanderMood — gecombineerde reisvoorkeuren (stap 3/4)
 const Color _wmCream = Color(0xFFF5F0E8);
@@ -53,84 +54,25 @@ class _CombinedTravelPreferencesScreenState
   late final AnimationController _breathController;
   late final Animation<double> _breathScale;
 
-  static const List<({String key, String emoji, String title, String hint})>
-      _socialOptions = [
-    (
-      key: 'Solo Adventures',
-      emoji: '🧘',
-      title: 'Solo-avonturen',
-      hint: 'Tijd voor mezelf',
-    ),
-    (
-      key: 'Small Groups',
-      emoji: '👫',
-      title: 'Kleine groepen',
-      hint: 'Intieme sfeer',
-    ),
-    (
-      key: 'Social Butterfly',
-      emoji: '🦋',
-      title: 'Sociale vlinder',
-      hint: 'Nieuwe mensen',
-    ),
-    (
-      key: 'Mood Dependent',
-      emoji: '🎭',
-      title: 'Wisselend',
-      hint: 'Soms solo, soms sociaal',
-    ),
+  static const List<({String key, String emoji})> _socialOptions = [
+    (key: 'Solo Adventures', emoji: '🧘'),
+    (key: 'Small Groups', emoji: '👫'),
+    (key: 'Social Butterfly', emoji: '🦋'),
+    (key: 'Mood Dependent', emoji: '🎭'),
   ];
 
-  static const List<({String key, String label})> _paceOptions = [
-    (key: 'Right Now Vibes', label: 'Nu direct ⚡'),
-    (key: 'Same Day Planner', label: 'Vandaag 📅'),
-    (key: 'Master Planner', label: 'Gepland 🗓'),
+  static const List<String> _paceKeys = [
+    'Right Now Vibes',
+    'Same Day Planner',
+    'Master Planner',
   ];
 
-  static const List<
-          ({
-            String key,
-            String emoji,
-            String title,
-            String subtitle,
-            Color emojiBg,
-          })>
-      _travelOptions = [
-    (
-      key: 'Local Experience',
-      emoji: '🏡',
-      title: 'Lokale ervaring',
-      subtitle: 'Authentiek en buiten de standaardroutes.',
-      emojiBg: Color(0xFFEBF3EE),
-    ),
-    (
-      key: 'Luxury Seeker',
-      emoji: '✨',
-      title: 'Luxezoeker',
-      subtitle: 'Comfort en bijzondere ervaringen.',
-      emojiBg: Color(0xFFFDF0E8),
-    ),
-    (
-      key: 'Budget Conscious',
-      emoji: '💰',
-      title: 'Budgetbewust',
-      subtitle: 'Maximaal plezier, slim uitgeven.',
-      emojiBg: Color(0xFFEDF5F9),
-    ),
-    (
-      key: 'Off the Beaten Path',
-      emoji: '⭐',
-      title: 'Van de gebaande paden',
-      subtitle: 'Verborgen parels en lokale favorieten.',
-      emojiBg: Color(0xFFF5F0E8),
-    ),
-    (
-      key: 'Tourist Highlights',
-      emoji: '🗺️',
-      title: 'Toeristische hoogtepunten',
-      subtitle: 'Iconische plekken die je gezien wilt hebben.',
-      emojiBg: Color(0xFFEBF3EE),
-    ),
+  static const List<({String key, String emoji, Color emojiBg})> _travelOptions = [
+    (key: 'Local Experience', emoji: '🏡', emojiBg: Color(0xFFEBF3EE)),
+    (key: 'Luxury Seeker', emoji: '✨', emojiBg: Color(0xFFFDF0E8)),
+    (key: 'Budget Conscious', emoji: '💰', emojiBg: Color(0xFFEDF5F9)),
+    (key: 'Off the Beaten Path', emoji: '⭐', emojiBg: Color(0xFFF5F0E8)),
+    (key: 'Tourist Highlights', emoji: '🗺️', emojiBg: Color(0xFFEBF3EE)),
   ];
 
   @override
@@ -145,6 +87,36 @@ class _CombinedTravelPreferencesScreenState
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) => _hydrateFromProvider());
+  }
+
+  ({String title, String hint}) _socialLabel(String key, AppLocalizations l10n) {
+    switch (key) {
+      case 'Solo Adventures': return (title: l10n.prefSocialSoloTitle, hint: l10n.prefSocialSoloHint);
+      case 'Small Groups': return (title: l10n.prefSocialSmallTitle, hint: l10n.prefSocialSmallHint);
+      case 'Social Butterfly': return (title: l10n.prefSocialButterflyTitle, hint: l10n.prefSocialButterflyHint);
+      case 'Mood Dependent': return (title: l10n.prefSocialMoodTitle, hint: l10n.prefSocialMoodHint);
+      default: return (title: key, hint: '');
+    }
+  }
+
+  String _paceLabel(String key, AppLocalizations l10n) {
+    switch (key) {
+      case 'Right Now Vibes': return l10n.prefPaceNow;
+      case 'Same Day Planner': return l10n.prefPaceToday;
+      case 'Master Planner': return l10n.prefPacePlanned;
+      default: return key;
+    }
+  }
+
+  ({String title, String subtitle}) _styleLabel(String key, AppLocalizations l10n) {
+    switch (key) {
+      case 'Local Experience': return (title: l10n.prefStyleLocalTitle, subtitle: l10n.prefStyleLocalSubtitle);
+      case 'Luxury Seeker': return (title: l10n.prefStyleLuxuryTitle, subtitle: l10n.prefStyleLuxurySubtitle);
+      case 'Budget Conscious': return (title: l10n.prefStyleBudgetTitle, subtitle: l10n.prefStyleBudgetSubtitle);
+      case 'Off the Beaten Path': return (title: l10n.prefStyleOffTitle, subtitle: l10n.prefStyleOffSubtitle);
+      case 'Tourist Highlights': return (title: l10n.prefStyleTouristTitle, subtitle: l10n.prefStyleTouristSubtitle);
+      default: return (title: key, subtitle: '');
+    }
   }
 
   void _hydrateFromProvider() {
@@ -254,7 +226,7 @@ class _CombinedTravelPreferencesScreenState
                     color: _wmStone,
                     size: 20,
                   ),
-                  tooltip: 'Terug',
+                  tooltip: AppLocalizations.of(context)!.prefBack,
                 ),
               ),
             ),
@@ -309,7 +281,7 @@ class _CombinedTravelPreferencesScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Jouw reisprofiel',
+                    AppLocalizations.of(context)!.prefTravelProfileTitle,
                     style: GoogleFonts.poppins(
                       fontSize: 24,
                       fontWeight: FontWeight.w800,
@@ -328,10 +300,10 @@ class _CombinedTravelPreferencesScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _sectionLabel('Sociale vibe 👥'),
+                    _sectionLabel(AppLocalizations.of(context)!.prefSocialVibeLabel),
                     const SizedBox(height: 6),
                     Text(
-                      'Meerdere keuzes mogelijk',
+                      AppLocalizations.of(context)!.interestsMultipleChoice,
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         color: _wmStone,
@@ -353,39 +325,40 @@ class _CombinedTravelPreferencesScreenState
                       itemBuilder: (context, i) {
                         final o = _socialOptions[i];
                         final sel = _selectedVibes.contains(o.key);
+                        final labels = _socialLabel(o.key, AppLocalizations.of(context)!);
                         return _SocialCard(
                           emoji: o.emoji,
-                          title: o.title,
-                          hint: o.hint,
+                          title: labels.title,
+                          hint: labels.hint,
                           selected: sel,
                           onTap: () => _toggleSocialVibe(o.key),
                         );
                       },
                     ),
                     const SizedBox(height: 24),
-                    _sectionLabel('Planningsritme ⚡'),
+                    _sectionLabel(AppLocalizations.of(context)!.prefPaceLabel),
                     const SizedBox(height: 12),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        children: _paceOptions.map((o) {
-                          final sel = _selectedPace == o.key;
+                        children: _paceKeys.map((key) {
+                          final sel = _selectedPace == key;
                           return Padding(
                             padding: const EdgeInsets.only(right: 8),
                             child: _PaceChip(
-                              label: o.label,
+                              label: _paceLabel(key, AppLocalizations.of(context)!),
                               selected: sel,
-                              onTap: () => _selectPace(o.key),
+                              onTap: () => _selectPace(key),
                             ),
                           );
                         }).toList(),
                       ),
                     ),
                     const SizedBox(height: 24),
-                    _sectionLabel('Jouw stijl 🌟'),
+                    _sectionLabel(AppLocalizations.of(context)!.prefStyleLabel),
                     const SizedBox(height: 8),
                     Text(
-                      'Kies tot $_maxStyleSelections stijlen die bij je passen.',
+                      AppLocalizations.of(context)!.prefStyleLimit(_maxStyleSelections.toString()),
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         color: _wmStone,
@@ -395,12 +368,13 @@ class _CombinedTravelPreferencesScreenState
                     const SizedBox(height: 12),
                     ..._travelOptions.map((o) {
                       final sel = _selectedStyles.contains(o.key);
+                      final labels = _styleLabel(o.key, AppLocalizations.of(context)!);
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: _TravelStyleRow(
                           emoji: o.emoji,
-                          title: o.title,
-                          subtitle: o.subtitle,
+                          title: labels.title,
+                          subtitle: labels.subtitle,
                           emojiBg: o.emojiBg,
                           selected: sel,
                           onTap: () => _toggleStyle(o.key),
@@ -431,7 +405,7 @@ class _CombinedTravelPreferencesScreenState
                     ),
                   ),
                   child: Text(
-                    'Doorgaan →',
+                    AppLocalizations.of(context)!.interestsContinue,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -479,7 +453,7 @@ class _MoodySpeechBubble extends StatelessWidget {
                 border: Border.all(color: _wmSky, width: 0.5),
               ),
               child: Text(
-                'Nog een paar vragen en ik ken je helemaal! ✈️',
+                AppLocalizations.of(context)!.prefMoodySpeech,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,

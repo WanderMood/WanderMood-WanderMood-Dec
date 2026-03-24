@@ -625,7 +625,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
 
             // Title
             Text(
-              'Select Location',
+              AppLocalizations.of(context)!.homeSelectLocation,
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
@@ -649,25 +649,26 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                 ),
               ),
               title: Text(
-                'Current Location',
+                AppLocalizations.of(context)!.homeCurrentLocation,
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w500,
                 ),
               ),
               subtitle: Text(
-                'Using GPS',
+                AppLocalizations.of(context)!.homeUsingGps,
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   color: Colors.grey[600],
                 ),
               ),
               onTap: () async {
+                final l10n = AppLocalizations.of(context)!;
                 // Close the dialog
                 Navigator.pop(context);
                 // Show loading message
                 showWanderMoodToast(
                   context,
-                  message: 'Getting your location...',
+                  message: l10n.homeGettingLocation,
                   duration: const Duration(seconds: 1),
                 );
                 // Trigger location update
@@ -677,7 +678,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                 // Show result message
                 showWanderMoodToast(
                   context,
-                  message: 'Location: ${location ?? "Could not get location"}',
+                  message: l10n.homeLocationResult(location ?? l10n.homeLocationNotFound),
                   duration: const Duration(seconds: 3),
                 );
               },
@@ -808,7 +809,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              'Moody',
+                                              AppLocalizations.of(context)!.chatSheetMoodyName,
                                               style: GoogleFonts.poppins(
                                                 fontSize: 24,
                                                 fontWeight: FontWeight.bold,
@@ -1120,7 +1121,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                   child: TextField(
                                     controller: _chatController,
                                     decoration: InputDecoration(
-                                      hintText: 'What\'s your mood today?',
+                                      hintText: AppLocalizations.of(context)!.chatSheetInputHint,
                                       hintStyle: GoogleFonts.poppins(
                                         color: Colors.grey[500],
                                         fontSize: 16,
@@ -1530,7 +1531,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       if (mounted) {
         setState(() {
           _chatMessages.add(ChatMessage(
-            message: 'Sorry, I couldn\'t respond right now. Try again! 😅',
+            message: AppLocalizations.of(context)!.homeChatErrorRetry,
             isUser: false,
             timestamp: MoodyClock.now(),
           ));

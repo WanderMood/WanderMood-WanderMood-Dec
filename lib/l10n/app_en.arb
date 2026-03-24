@@ -37,7 +37,13 @@
   "myDayInspiredHiddenGemsSubtitle": "Local favorites nearby",
   "skipForNow": "Skip for now",
   "moodyIntroGreeting": "Hey {name}! 👋",
-  "@moodyIntroGreeting": { "placeholders": { "name": { "type": "String" } } },
+  "@moodyIntroGreeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodyIntroImMoody": "I'm Moody.",
   "moodyIntroSubtext": "I'm here to help you plan days that match your mood, energy, and vibe.",
   "moodyIntroSuggestActivities": "I'll suggest activities like:",
@@ -433,14 +439,41 @@
   "signupCheckSpam": "Check spam folder if not in inbox",
   "signupTryAgain": "Didn't receive email? Try again",
   "signupAlmostThere": "You're almost there! One click away from discovering amazing mood-based adventures in {city} ✨",
-  "@signupAlmostThere": { "placeholders": { "city": { "type": "String" } } },
+  "@signupAlmostThere": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
   "signupAlmostThereTitle": "You're almost there!",
   "signupAlmostThereBody": "One click away from discovering amazing mood-based adventures in {city} ✨",
-  "@signupAlmostThereBody": { "placeholders": { "city": { "type": "String" } } },
+  "@signupAlmostThereBody": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
   "signupJoinTravelersInCity": "Join {count} travelers in {city}!",
-  "@signupJoinTravelersInCity": { "placeholders": { "count": { "type": "String" }, "city": { "type": "String" } } },
+  "@signupJoinTravelersInCity": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "city": {
+        "type": "String"
+      }
+    }
+  },
   "signupJoinTravelers": "Join {count} travelers!",
-  "@signupJoinTravelers": { "placeholders": { "count": { "type": "String" } } },
+  "@signupJoinTravelers": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "signupWhatYouUnlock": "What you'll unlock",
   "signupUnlockPersonalized": "Personalized recommendations",
   "signupUnlockFavorites": "Save your favorite places",
@@ -450,20 +483,26 @@
   "signupLoveIt": "98% Love It",
   "signupTestimonial": "WanderMood helped me discover places I never knew existed!",
   "signupTestimonialBy": "– Sarah, {city}",
-  "@signupTestimonialBy": { "placeholders": { "city": { "type": "String" } } },
+  "@signupTestimonialBy": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
   "signupDefaultCity": "Rotterdam",
-
   "profileSnackAvatarUpdated": "Profile picture updated!",
   "profileSnackAvatarFailed": "Failed to update picture: {error}",
   "@profileSnackAvatarFailed": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "profileErrorLoad": "Could not load profile",
   "profileRetry": "Retry",
   "profileFallbackUser": "User",
-
   "profileStatsTitle": "Your Stats",
   "profileStatsCheckinsTitle": "Check-ins",
   "profileStatsPlacesTitle": "Places",
@@ -476,14 +515,11 @@
   "profileSavedPlacesEmpty": "No saved places yet",
   "profileEditProfileButton": "Edit profile",
   "profileAppSettingsLink": "App settings",
-
   "profileFavoriteVibesTitle": "Your Favorite Vibes",
   "profileFavoriteVibesEdit": "Edit",
   "profileFavoriteVibesAdd": "+ Add Vibe",
-
   "profileMoodJourneyTitle": "Your Mood Journey",
   "profileMoodJourneySubtitle": "View your mood history",
-
   "moodHistoryIntro": "A calm timeline of how you've been feeling.",
   "moodHistorySectionRecent": "Recent",
   "moodHistorySectionTimeline": "Timeline",
@@ -495,10 +531,8 @@
   "moodHistoryTodayBadge": "Today",
   "moodHistoryDayToday": "Today",
   "moodHistoryDayYesterday": "Yesterday",
-
   "profileTravelGlobeTitle": "Your Travel Globe",
   "profileTravelGlobeSubtitle": "Explore your travel journey",
-
   "profilePreferencesTitle": "Your Preferences",
   "profilePreferencesEditAll": "Edit All",
   "profilePreferencesBudgetStyle": "Budget Style",
@@ -507,49 +541,38 @@
   "profilePreferencesEmptyHint": "Tap \"Edit All\" to set your preferences",
   "profilePreferencesFilledHint": "These preferences subtly guide which places and plans fit you best.",
   "profilePreferencesEmptyDescription": "Fill in your preferences so WanderMood can better align with your style.",
-
   "profileSectionWorldTitle": "Your World",
   "profileSectionWorldSubtitle": "Places you save, moods you track, and the story of your travels.",
   "profileSectionPreferencesSubtitle": "The details that make WanderMood more personal and smarter.",
-
   "profileSavedPlacesSubtitle": "Places you want to easily find back later.",
   "profileSavedPlacesEmptyHint": "You have no saved places yet. Save a few favorites so your profile feels more like your travel map.",
   "profileSavedPlacesCarouselEmpty": "No saves yet — tap ♥ on a place to bookmark it.",
   "profileBioEmptyHint": "Add a short bio in Edit profile.",
-
   "profileStatsTopMoodEmpty": "Still discovering",
   "profileStatsSavePlacesHint": "Start saving places that match your mood.",
   "profileStatsSavedPlacesReady": "Your saved spots are ready whenever you need inspiration.",
-
-  "profileFavoriteVibesEmptyDescription": "Choose a few vibes so Moody quickly understands what you\u2019re really looking for.",
+  "profileFavoriteVibesEmptyDescription": "Choose a few vibes so Moody quickly understands what you’re really looking for.",
   "profileFavoriteVibesFilledDescription": "These vibes help WanderMood determine which places and plans suit you best.",
   "profileFavoriteVibesEmptyHint": "Add your first vibe and give your profile more personality right away.",
-
-  "profileVibesProTipsTitle": "\uD83D\uDCA1 Pro Tips",
-  "profileVibesProTipsBody": "\u2022 Be honest about what you enjoy \u2014 better recommendations!\n\u2022 You can change these anytime\n\u2022 Mix different vibes for varied suggestions",
-
+  "profileVibesProTipsTitle": "💡 Pro Tips",
+  "profileVibesProTipsBody": "• Be honest about what you enjoy — better recommendations!\n• You can change these anytime\n• Mix different vibes for varied suggestions",
   "profileModeLocalCardDescription": "WanderMood keeps your suggestions closer to home and aligned with your regular rhythm.",
   "profileModeTravelCardDescription": "WanderMood thinks more like a travel companion and sends you to new places to discover.",
-
   "profileActionEdit": "Edit",
   "profileActionShare": "Share",
-
   "profileAgeGroup20s": "20s Adventurer",
   "profileAgeGroup30s": "30s Adventurer",
   "profileAgeGroup40s": "40s Adventurer",
   "profileAgeGroup50s": "50s Adventurer",
   "profileAgeGroup55Plus": "55+ Adventurer",
-
   "profileBudgetLow": "$ Budget",
   "profileBudgetMid": "$$ Moderate",
   "profileBudgetHigh": "$$$ Luxury",
-
   "profileSocialSolo": "Solo",
   "profileSocialCouple": "Couple",
   "profileSocialGroup": "Group",
   "profileSocialMix": "Mix",
   "profileSocialSocial": "Social",
-
   "profileEditTitle": "Edit Profile",
   "profileEditProfilePhoto": "Profile Photo",
   "profileEditProfilePhotoTap": "Tap to change",
@@ -579,21 +602,26 @@
   "profileEditUpdateFailed": "Failed to update profile: {error}",
   "@profileEditUpdateFailed": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "profileEditErrorLoading": "Error loading profile: {error}",
   "@profileEditErrorLoading": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
-
   "profileVibesUpdated": "Vibes updated! 🎉",
   "profileVibesSaveFailed": "Failed to save vibes: {error}",
   "@profileVibesSaveFailed": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "profileVibesEditTitle": "Edit Favorite Vibes",
@@ -601,7 +629,9 @@
   "profileVibesSelectedCount": "Selected ({count}/5)",
   "@profileVibesSelectedCount": {
     "placeholders": {
-      "count": { "type": "String" }
+      "count": {
+        "type": "String"
+      }
     }
   },
   "profileVibesMaxReached": "Maximum reached",
@@ -609,17 +639,37 @@
   "profileVibesAddMore": "Add More Vibes",
   "profileVibesSubtitle": "Select up to 5 vibes that match your personality. We'll use these to personalize your recommendations!",
   "profileVibesCurrentTitle": "YOUR CURRENT VIBES",
-
   "shareProfileTitle": "Share Profile",
   "shareProfileShareTextMy": "Check out my profile on WanderMood! 🧳✨\n\n{url}",
-  "@shareProfileShareTextMy": { "placeholders": { "url": { "type": "String" } } },
+  "@shareProfileShareTextMy": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
   "shareProfileShareTextNamed": "Check out {name}'s profile on WanderMood! 🧳✨\n\n{url}",
-  "@shareProfileShareTextNamed": { "placeholders": { "name": { "type": "String" }, "url": { "type": "String" } } },
+  "@shareProfileShareTextNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "url": {
+        "type": "String"
+      }
+    }
+  },
   "shareProfileMy": "my",
   "shareProfileDefaultUsername": "wanderer",
   "shareProfileEmailSubject": "Check out my WanderMood profile",
   "shareProfileFailedToShare": "Failed to share: {error}",
-  "@shareProfileFailedToShare": { "placeholders": { "error": { "type": "String" } } },
+  "@shareProfileFailedToShare": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "shareProfileDefaultBio": "Always chasing sunsets & good vibes ✨",
   "shareProfileDayStreak": "Day Streak",
   "shareProfileQRCode": "QR Code",
@@ -634,21 +684,32 @@
   "shareProfilePublicProfile": "Public Profile",
   "shareProfileAnyoneCanView": "Anyone can view your profile",
   "shareProfileUpdateFailed": "Failed to update: {error}",
-  "@shareProfileUpdateFailed": { "placeholders": { "error": { "type": "String" } } },
+  "@shareProfileUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "shareProfileMyQRCode": "My QR Code",
   "shareProfileHowItWorks": "How it works",
   "shareProfileQRInstructions": "Ask someone to scan this code with their WanderMood app to instantly connect and share your profile!",
   "shareProfileDownloaded": "Downloaded!",
   "shareProfileSaveQRCode": "Save QR Code",
   "shareProfileShareMessage": "Check out my WanderMood profile! {url}",
-  "@shareProfileShareMessage": { "placeholders": { "url": { "type": "String" } } },
+  "@shareProfileShareMessage": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
   "shareProfileShareQRImage": "Share QR Image",
   "shareProfileShareLinkTitle": "Share Link",
   "shareProfileYourProfileLink": "YOUR PROFILE LINK",
   "shareProfileLinkCopied": "Link Copied!",
   "shareProfileQuickShare": "QUICK SHARE",
   "shareProfileLinkInfo": "Anyone with this link can view your public profile. You can change your privacy settings anytime.",
-
   "drawerYourJourney": "Your Journey",
   "drawerNavigation": "Navigation",
   "drawerSettings": "Settings",
@@ -667,7 +728,9 @@
   "drawerErrorSigningOut": "Error signing out: {error}",
   "@drawerErrorSigningOut": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "drawerNewExplorer": "New Explorer",
@@ -678,10 +741,11 @@
   "drawerDayStreak": "{count} Day Streak",
   "@drawerDayStreak": {
     "placeholders": {
-      "count": { "type": "String" }
+      "count": {
+        "type": "String"
+      }
     }
   },
-
   "profileModeLocal": "Local Mode",
   "profileModeTravel": "Traveling",
   "profileModeWhatDoesThisDo": "What does this do?",
@@ -717,60 +781,46 @@
   "profileModeTravelSpot2": "Must-see tourist spots",
   "profileModeTravelSpot3": "Popular destinations",
   "profileModeTravelSpot4": "Tourist-friendly locations",
-
   "settingsSectionGeneral": "General",
   "settingsSectionDiscovery": "Discovery",
   "settingsSectionDataPrivacy": "Data & Privacy",
-
   "settingsNotificationsTitle": "Notifications",
   "settingsNotificationsSubtitle": "Enable push notifications",
-
   "settingsLocationTrackingTitle": "Location Tracking",
   "settingsLocationTrackingSubtitle": "Allow app to track your location",
-
   "settingsDarkModeTitle": "Dark Mode",
   "settingsDarkModeSubtitle": "Use dark theme throughout the app",
-
   "settingsDiscoveryRadiusTitle": "Discovery Radius",
   "settingsDiscoveryRadiusSubtitle": "Show places within {distance} km",
   "@settingsDiscoveryRadiusSubtitle": {
     "placeholders": {
-      "distance": { "type": "String" }
+      "distance": {
+        "type": "String"
+      }
     }
   },
-
   "settingsClearCacheTitle": "Clear App Cache",
   "settingsClearCacheSubtitle": "Free up space by removing cached images and data",
-
   "settingsPrivacyPolicyTitle": "Privacy Policy",
   "settingsPrivacyPolicySubtitle": "Read our privacy policy",
-
   "settingsTermsOfServiceTitle": "Terms of Service",
   "settingsTermsOfServiceSubtitle": "Read our terms of service",
-
   "settingsSaveButton": "Save Settings",
-
   "settingsClearCacheDialogTitle": "Clear Cache?",
   "settingsClearCacheDialogBody": "This will remove all cached data. Your saved places and settings will not be affected.",
   "settingsDialogCancel": "Cancel",
   "settingsDialogConfirmClear": "Clear",
-
   "settingsCacheCleared": "Cache cleared successfully",
   "settingsSaved": "Settings saved",
-
   "settingsHubTitle": "Settings",
-
   "settingsQuickTipTitle": "Quick Tip",
   "settingsQuickTipBody": "To edit your profile or preferences, go back to your profile screen!",
-
   "settingsSectionPrivacySecurity": "Privacy & Security",
   "settingsSectionAppSettings": "App Settings",
   "settingsSectionMore": "More",
   "settingsSectionDangerZone": "Danger Zone",
-
   "settingsAccountSecurityTitle": "Account Security",
   "settingsAccountSecuritySubtitle": "Password, 2FA",
-
   "settingsTwoFactorTitle": "Two-Factor Authentication",
   "settingsTwoFactorEnabled": "Enabled",
   "settingsTwoFactorNotEnabled": "Not enabled",
@@ -779,74 +829,69 @@
   "settingsActiveSessionsSubtitle": "{count} devices",
   "@settingsActiveSessionsSubtitle": {
     "placeholders": {
-      "count": { "type": "String" }
+      "count": {
+        "type": "String"
+      }
     }
   },
-
   "settingsPrivacyTitle": "Privacy",
   "settingsPrivacySubtitle": "Profile visibility, data",
-
   "settingsHubNotificationsSubtitle": "Push, email, in-app",
-
   "settingsLocationLabel": "Location",
   "settingsLocationSubtitle": "Auto-detect, permissions",
-
   "settingsLanguageLabel": "Language",
-
   "settingsThemeLabel": "Theme",
   "settingsThemeValueSystem": "System",
-
   "settingsAchievementsLabel": "Achievements",
   "settingsAchievementsSubtitle": "{count} unlocked",
   "@settingsAchievementsSubtitle": {
     "placeholders": {
-      "count": { "type": "String" }
+      "count": {
+        "type": "String"
+      }
     }
   },
-
   "settingsSubscriptionLabel": "Subscription",
   "settingsSubscriptionSubtitleFree": "Free Plan",
   "settingsSubscriptionBadgeFree": "Free",
-
   "settingsDataStorageLabel": "Data & Storage",
   "settingsDataStorageSubtitle": "Export, clear cache",
-
   "settingsHelpSupportLabel": "Help & Support",
   "settingsHelpSupportSubtitle": "FAQ, contact us",
-
   "settingsDangerDeleteAccountLabel": "Delete Account",
   "settingsDangerDeleteAccountSubtitle": "Permanently delete your data",
-
   "settingsDangerSignOutLabel": "Sign Out",
   "settingsDangerSignOutSubtitle": "Log out of your account",
-
   "settingsAppVersion": "WanderMood v{version}",
   "@settingsAppVersion": {
     "placeholders": {
-      "version": { "type": "String" }
+      "version": {
+        "type": "String"
+      }
     }
   },
   "settingsAppTagline": "Made with ❤️ for travelers",
-
   "settingsSignOutTitle": "Sign Out",
   "settingsSignOutMessage": "Are you sure you want to sign out?",
   "settingsSignOutConfirm": "Sign Out",
-
   "settingsOpenPrivacyNetworkError": "Unable to open Privacy Policy. Please check your internet connection.",
   "settingsOpenPrivacyError": "Error opening Privacy Policy: {error}",
   "@settingsOpenPrivacyError": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "settingsOpenTermsNetworkError": "Unable to open Terms of Service. Please check your internet connection.",
   "settingsOpenTermsError": "Error opening Terms of Service: {error}",
   "@settingsOpenTermsError": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
-
   "notificationsMethodsTitle": "Notification Methods",
   "notificationsPushTitle": "Push Notifications",
   "notificationsPushSubtitle": "Receive push notifications on this device",
@@ -861,7 +906,6 @@
   "notificationsNearbyEventsSubtitle": "Events happening around you",
   "notificationsFriendActivityTitle": "Friend Activity",
   "notificationsFriendActivitySubtitle": "When friends share or like something",
-
   "locationScreenTitle": "Location",
   "locationCurrentLocationTitle": "Current Location",
   "locationCurrentLocationValue": "Rotterdam, Netherlands",
@@ -877,12 +921,12 @@
   "locationSnackbarError": "Error updating location settings: {error}",
   "@locationSnackbarError": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
-
   "languageUpdated": "Language updated",
-
   "subscriptionScreenTitle": "Subscription",
   "subscriptionCurrentPlanLabel": "Current Plan",
   "subscriptionPlanFree": "Free",
@@ -894,7 +938,6 @@
   "subscriptionFeaturePrioritySupport": "Priority support",
   "subscriptionFeatureNoAds": "No ads",
   "subscriptionUpgradeCta": "Upgrade for €4.99/month",
-
   "dataStorageTitle": "Data & Storage",
   "dataStorageStorageUsedLabel": "Storage Used",
   "dataStorageExportTitle": "Export My Data",
@@ -908,17 +951,20 @@
   "dataStorageExportFailed": "Export failed: {error}",
   "@dataStorageExportFailed": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "dataStorageCacheCleared": "Cache cleared successfully",
   "dataStorageCacheFailed": "Failed to clear cache: {error}",
   "@dataStorageCacheFailed": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
-
   "helpSupportScreenTitle": "Help & Support",
   "helpSupportSearchHint": "Search help articles...",
   "helpSupportQuickLinksTitle": "Quick Links",
@@ -938,7 +984,6 @@
   "helpSupportTermsSubtitle": "Terms and conditions",
   "helpSupportEmailAddress": "support@wandermood.com",
   "helpSupportEmailSubject": "WanderMood Support",
-
   "prefCommunicationTitle": "How should I talk to you? 💬",
   "prefCommunicationIntro": "To make our journey together more enjoyable, I'd love to know how you prefer me to communicate with you.",
   "prefCommunicationSubtitle": "This helps me adjust my tone and style to match your preferences perfectly! 🎯",
@@ -950,7 +995,6 @@
   "prefStyleEnergeticDesc": "Fun and enthusiastic communication",
   "prefStyleDirect": "Direct",
   "prefStyleDirectDesc": "Straight to the point",
-
   "prefMoodAdventurous": "Adventurous",
   "prefMoodPeaceful": "Peaceful",
   "prefMoodSocial": "Social",
@@ -969,7 +1013,6 @@
   "prefMultipleHintEnergetic": "You can pick multiple - go wild! ✨",
   "prefMultipleHintProfessional": "Multiple selections are permitted",
   "prefMultipleHintDirect": "Multiple selections allowed",
-
   "prefInterestStays": "Stays & Getaways",
   "prefInterestStaysDesc": "Charming hotels and dreamy places",
   "prefInterestFood": "Food & Dining",
@@ -988,7 +1031,6 @@
   "prefInterestsSubtitleEnergetic": "Pick all the things that make your heart race!",
   "prefInterestsSubtitleProfessional": "Select your preferred activity categories",
   "prefInterestsSubtitleDirect": "Choose activity types:",
-
   "prefTravelTitleFriendly": "Tell us about your travel style ✈️",
   "prefTravelTitleEnergetic": "Tell us about your travel style ✈️",
   "prefTravelTitleProfessional": "Tell us about your travel style ✈️",
@@ -1003,7 +1045,9 @@
   "prefSelectUpToStyles": "Select up to {count} styles",
   "@prefSelectUpToStyles": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "prefSocialSolo": "Solo Adventures",
@@ -1036,22 +1080,42 @@
   "prefTravelStyleTouristHighlightsDesc": "Must-see attractions, popular spots",
   "prefTravelStyleOffBeatenPath": "Off the Beaten Path",
   "prefTravelStyleOffBeatenPathDesc": "Hidden gems, unique experiences",
-
   "dayPlanTodayItinerary": "TODAY'S ITINERARY",
   "dayPlanBasedOn": "Your Day Plan based on:",
   "dayPlanEditMoods": "Edit Moods →",
   "dayPlanAddToMyDay": "Add to My Day",
+  "dayPlanAddMoreToMyDay": "Add {count} more to My Day",
+  "@dayPlanAddMoreToMyDay": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "dayPlanViewMyDay": "View My Day",
   "dayPlanPlanAddedToMyDay": "Plan added to My Day!",
   "dayPlanAddPlanFailed": "Couldn't add plan. Try again.",
   "dayPlanAllAlternativesUsed": "You've used all 3 alternative options for this activity!",
   "dayPlanFindingOptions": "Finding new options for {name}...",
-  "@dayPlanFindingOptions": { "placeholders": { "name": { "type": "String" } } },
+  "@dayPlanFindingOptions": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "dayPlanNoOptionsFound": "No other options found for this time slot. Try a different mood!",
   "dayPlanFindOptionsFailed": "Failed to find new options. Please try again later.",
   "dayPlanAllOptionsUsed": "All options used",
   "dayPlanNotFeelingThis": "Not feeling this?",
   "dayPlanTryAgainLeft": "Try again? ({count} left)",
-  "@dayPlanTryAgainLeft": { "placeholders": { "count": { "type": "String" } } },
+  "@dayPlanTryAgainLeft": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "dayPlanMorning": "MORNING",
   "dayPlanAfternoon": "AFTERNOON",
   "dayPlanEvening": "EVENING",
@@ -1067,7 +1131,6 @@
   "dayPlanThemeCreativeVibes": "Creative Vibes",
   "dayPlanThemeRomanticMoments": "Romantic Moments",
   "dayPlanThemeYourVibe": "Your Vibe",
-
   "dayPlanCardActivity": "Activity",
   "dayPlanCardFree": "Free",
   "dayPlanCardOpenNow": "Open now",
@@ -1078,31 +1141,93 @@
   "dayPlanCardUnableToOpenDirections": "Unable to open directions",
   "dayPlanCardFailedToShare": "Failed to share",
   "dayPlanCardRemovedFromSaved": "{name} removed from saved places",
-  "@dayPlanCardRemovedFromSaved": { "placeholders": { "name": { "type": "String" } } },
+  "@dayPlanCardRemovedFromSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "dayPlanCardFailedToRemove": "Failed to remove {name}",
-  "@dayPlanCardFailedToRemove": { "placeholders": { "name": { "type": "String" } } },
+  "@dayPlanCardFailedToRemove": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "dayPlanCardCouldNotSaveMoodyHub": "Could not save to Moody Hub. Sign in may be required.",
   "dayPlanCardCouldNotAddMyDay": "Could not add to My Day. Sign in may be required.",
   "dayPlanCardSavedToMoodyHubAndMyDay": "{name} saved! Find it in Moody Hub (saved) and My Day.",
-  "@dayPlanCardSavedToMoodyHubAndMyDay": { "placeholders": { "name": { "type": "String" } } },
+  "@dayPlanCardSavedToMoodyHubAndMyDay": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "dayPlanCardSavedToMoodyHub": "{name} saved to Moody Hub.",
-  "@dayPlanCardSavedToMoodyHub": { "placeholders": { "name": { "type": "String" } } },
+  "@dayPlanCardSavedToMoodyHub": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "dayPlanCardAddedToMyDay": "{name} added to My Day.",
-  "@dayPlanCardAddedToMyDay": { "placeholders": { "name": { "type": "String" } } },
+  "@dayPlanCardAddedToMyDay": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "dayPlanCardAdded": "Added",
   "dayPlanCardAddRemainingToMyDay": "Add remaining to My Day",
   "dayPlanCardMatch": "{percent}% Match",
-  "@dayPlanCardMatch": { "placeholders": { "percent": { "type": "String" } } },
+  "@dayPlanCardMatch": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
   "dayPlanCardAddToMyDay": "+ Add to My Day",
-
   "moodHubGreetingFriendly": "Hey, {name}!",
-  "@moodHubGreetingFriendly": { "placeholders": { "name": { "type": "String" } } },
+  "@moodHubGreetingFriendly": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodHubGreetingBestie": "Hey bestie, {name}! 😊",
-  "@moodHubGreetingBestie": { "placeholders": { "name": { "type": "String" } } },
+  "@moodHubGreetingBestie": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodHubGreetingProfessional": "{greeting}, {name}",
-  "@moodHubGreetingProfessional": { "placeholders": { "greeting": { "type": "String" }, "name": { "type": "String" } } },
+  "@moodHubGreetingProfessional": {
+    "placeholders": {
+      "greeting": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodHubGreetingDirect": "Hi, {name}",
-  "@moodHubGreetingDirect": { "placeholders": { "name": { "type": "String" } } },
+  "@moodHubGreetingDirect": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodHubGreetingHeyThere": "Hey there!",
   "moodHubGreetingHi": "Hi",
   "moodHubWhatIsYourMood": "What's your mood",
@@ -1117,7 +1242,13 @@
   "moodHubCreatePlan": "Let's create your perfect plan! 🎯",
   "moodHubBackToHub": "Back to Hub",
   "moodHubSelectUpTo": "You can select up to {max} moods",
-  "@moodHubSelectUpTo": { "placeholders": { "max": { "type": "String" } } },
+  "@moodHubSelectUpTo": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
   "moodHubSelectedMoods": "Selected moods: ",
   "moodHubNoMoodOptions": "No mood options available",
   "moodHubMoodyThinking": "Moody is thinking...",
@@ -1133,7 +1264,6 @@
   "moodHubMoodExcited": "Excited",
   "moodHubMoodFoody": "Foody",
   "moodHubMoodSurprise": "Surprise",
-
   "planLoadingErrorTitle": "Oops! Something went wrong",
   "planLoadingTryAgain": "Try Again",
   "planLoadingErrorGeneric": "Unable to generate activities. Please try again or select different moods.",
@@ -1158,9 +1288,21 @@
   "moodCurious": "Curious",
   "dayPlanFoundNewOption": "✨ Found a new option: {name}! ({remaining} more changes available)",
   "activityDetailMatch": "{percent}% Match",
-  "@activityDetailMatch": {"placeholders": {"percent": {"type": "String"}}},
+  "@activityDetailMatch": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
   "activityDetailPhotoCount": "{count} photo",
-  "@activityDetailPhotoCount": {"placeholders": {"count": {"type": "String"}}},
+  "@activityDetailPhotoCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "activityDetailRatingExceptional": "Exceptional",
   "activityDetailDuration": "Duration",
   "activityDetailPrice": "Price",
@@ -1175,8 +1317,12 @@
   "activityDetailBookNow": "Book Now",
   "@dayPlanFoundNewOption": {
     "placeholders": {
-      "name": {"type": "String"},
-      "remaining": {"type": "String"}
+      "name": {
+        "type": "String"
+      },
+      "remaining": {
+        "type": "String"
+      }
     }
   },
   "getReadyTitle": "Get Ready",
@@ -1260,15 +1406,959 @@
     }
   },
   "getReadyCantWait": "Can't wait to see what you discover!",
-
   "noPlanDayOpen": "Your day in {city} is wide open. Want me to put a plan together, or are you looking for a specific vibe?",
-  "@noPlanDayOpen": { "placeholders": { "city": { "type": "String" } } },
+  "@noPlanDayOpen": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
   "noPlanPlanMyWholeDay": "✨ Plan my whole day",
   "noPlanFindMeCoffee": "☕ Find me coffee",
   "noPlanGetMeMoving": "🏃 Get me moving",
   "noPlanJustChat": "Just chat",
   "noPlanPlanLater": "Maybe later",
+  "dayPlanNoLinkedPlaceAlternative": "No high-quality linked-place alternative found yet. Try again.",
+  "myDayCheckInPrompt": "You're here! Tap Done when you're finished.",
+  "myDayDonePrompt": "Nice one! You can leave a review now.",
+  "myDayGetReadyUpcomingFallback": "Your upcoming activity",
+  "myDayDirectionsOpensInMaps": "Opens in maps app",
+  "myDayCallVenue": "Call Venue",
+  "myDayCallVenueSubtitle": "Confirm details or ask questions",
+  "myDayNoPhoneAvailable": "No phone number available",
+  "myDayAddToCalendar": "Add to Calendar",
+  "myDayAddToCalendarSubtitle": "Set reminder and details",
+  "myDayAddedToCalendar": "Added to calendar",
+  "myDayAllSet": "You're all set! Have a great time!",
+  "myDayReadyCta": "I'm Ready!",
+  "myDayTabActivated": "{tab} activated!",
+  "@myDayTabActivated": {
+    "placeholders": {
+      "tab": {
+        "type": "String"
+      }
+    }
+  },
+  "myDaySaveForLater": "Save for later",
+  "myDayDirectionsChooseFor": "Choose how you'd like to get directions to {title}",
+  "@myDayDirectionsChooseFor": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "myDayActivityOptionsTitle": "Activity options",
+  "myDayViewDetails": "View details",
+  "myDayImHere": "I'm here",
+  "myDayImHereSubtitle": "Check in when you arrive at this spot",
+  "myDayDone": "Done",
+  "myDayDoneSubtitle": "Mark complete and leave a review",
+  "myDayShareActivity": "Share activity",
+  "myDayShareComingSoon": "Share functionality coming soon!",
+  "myDaySavedForLater": "{title} saved for later!",
+  "@myDaySavedForLater": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "myDayDeleteActivity": "Delete activity",
+  "myDayDeleteActivitySubtitle": "Remove this activity from My Day",
+  "myDayDeleteConfirmTitle": "Delete activity?",
+  "myDayDeleteConfirmBody": "\"{title}\" will be removed from your My Day plan.",
+  "@myDayDeleteConfirmBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "myDayDeleteActivityCta": "Delete",
+  "myDayDeleteMissingId": "Could not delete activity (missing id).",
+  "myDayDeletedFromPlan": "{title} deleted from My Day.",
+  "@myDayDeletedFromPlan": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "myDayDeleteFailed": "Delete failed. Please try again.",
+  "myDayActivityLocationFallback": "Activity Location",
+  "myDayUnableOpenDirections": "Unable to open directions",
+  "myDayChatWithMoodyTitle": "Chat with Moody",
+  "myDayChatWithMoodyComingSoon": "Coming soon! Moody will be able to help you plan your day and suggest activities based on your mood and preferences.",
+  "myDayHeroActiveSubtitle": "You're in this activity right now.",
+  "myDayUnableLoadActivities": "Unable to load activities",
+  "navMyDay": "My Day",
+  "navExplore": "Explore",
+  "navProfile": "Profile",
+  "myDayWeekendEmptyTitle": "Your weekend is still empty!",
+  "myDayWeekendEmptySubtitle": "Want to plan Saturday or Sunday in advance?",
+  "myDayWeekendSaturdayShort": "Sa {day}",
+  "myDayWeekendSundayShort": "Su {day}",
+  "@myDayWeekendSaturdayShort": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "@myDayWeekendSundayShort": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "placeCardFailedToShare": "Failed to share: {error}",
+  "placeCardSaved": "{name} saved!",
+  "placeCardFailedToggleSave": "Failed to update saved state for {name}",
+  "placeDetailSavedToFavorites": "{name} saved to favorites!",
+  "placeDetailSaveToggleFailed": "Failed to update saved place",
+  "placeDetailCouldNotOpenMaps": "Could not open maps: {error}",
+  "bookingSavedViewMyBookings": "Booking saved! View in My Bookings",
+  "bookingViewAction": "View",
+  "bookingErrorSaving": "Error saving booking: {error}",
+  "gygCodeCopied": "Code copied 💚",
+  "@placeCardFailedToShare": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@placeCardSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@placeCardFailedToggleSave": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@placeDetailSavedToFavorites": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@placeDetailCouldNotOpenMaps": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@bookingErrorSaving": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "socialNewMessageComingSoon": "New message feature coming soon!",
+  "socialSearchMessagesHint": "Search messages",
+  "socialCallComingSoon": "Call feature coming soon!",
+  "socialVideoCallComingSoon": "Video call feature coming soon!",
+  "socialPhotoSharingComingSoon": "Photo sharing coming soon!",
+  "socialTypeMessageHint": "Type a message...",
+  "socialReportUser": "Report User",
+  "socialBlockUser": "Block User",
+  "socialShareProfile": "Share Profile",
+  "socialMessageTraveler": "Message {name}",
+  "socialWriteMessageHint": "Write your message...",
+  "socialMessageSentTo": "Message sent to {name}!",
+  "socialSend": "Send",
+  "socialUserReportedThankYou": "User reported. Thank you for keeping our community safe.",
+  "socialUserBlocked": "{name} has been blocked.",
+  "socialProfileShared": "{name}'s profile shared!",
+  "socialSavedPostsUnavailable": "Saved posts are not available yet.",
+  "socialCloseFriendsUnavailable": "Close friends is not available yet.",
+  "@socialMessageTraveler": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialMessageSentTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialUserBlocked": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialProfileShared": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "socialMarkAsRead": "Mark as read",
+  "socialMarkAsUnread": "Mark as unread",
+  "socialFollowBack": "Follow Back",
+  "socialViewPost": "View Post",
+  "socialReply": "Reply",
+  "socialAccept": "Accept",
+  "socialFilteringBy": "Filtering by: {filter}",
+  "socialOpeningPost": "Opening post...",
+  "socialOpeningUserProfile": "Opening {name} profile...",
+  "socialOpeningTrendingPost": "Opening trending post...",
+  "socialOpeningMention": "Opening mention...",
+  "socialFollowingUser": "Following {name}!",
+  "socialReplyToComment": "Reply to Comment",
+  "socialWriteReplyHint": "Write your reply...",
+  "socialReplySent": "Reply sent!",
+  "socialRequestAccepted": "Request accepted!",
+  "socialOpeningContent": "Opening content...",
+  "socialNotificationDeleted": "Notification deleted",
+  "socialUndo": "Undo",
+  "socialClose": "Close",
+  "socialToggleState": "{title} {state}",
+  "socialAllNotificationsRead": "All notifications marked as read",
+  "socialYouHaveNewNotifications": "You have {count} new notifications",
+  "socialSampleNotificationLiked": "• Sarah liked your post",
+  "socialSampleNotificationFollowed": "• Marco started following you",
+  "socialSampleNotificationStory": "• New travel story from Luna",
+  "socialOpeningAllTravelStories": "Opening all travel stories...",
+  "socialOpeningUserStory": "Opening {name}'s story...",
+  "socialSavePost": "Save Post",
+  "socialFollowUser": "Follow {name}",
+  "socialReportPost": "Report Post",
+  "socialLikedUserPost": "Liked {name}'s post!",
+  "socialCommentOnUserPost": "Comment on {name}'s post",
+  "socialWriteCommentHint": "Write a comment...",
+  "socialCommentPosted": "Comment posted!",
+  "socialPost": "Post",
+  "socialSharedUserPost": "Shared {name}'s post!",
+  "socialSavedUserPost": "Saved {name}'s post!",
+  "socialReportedUserPost": "Reported {name}'s post",
+  "@socialFilteringBy": {
+    "placeholders": {
+      "filter": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialOpeningUserProfile": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialFollowingUser": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialToggleState": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialYouHaveNewNotifications": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialOpeningUserStory": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialFollowUser": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialLikedUserPost": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialCommentOnUserPost": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialSharedUserPost": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialSavedUserPost": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialReportedUserPost": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "socialShareComingSoon": "Share feature coming soon!",
+  "socialFoundPostsWithTag": "Found {count} posts with #{tag}",
+  "socialLinkCopiedClipboard": "Link copied to clipboard",
+  "socialAddCommentHint": "Add a comment...",
+  "socialCommentFeatureComingSoon": "Comment feature coming soon!",
+  "@socialFoundPostsWithTag": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "tag": {
+        "type": "String"
+      }
+    }
+  },
+  "socialRemovedFromCollection": "{place} removed from {collection}",
+  "socialEditCollection": "Edit collection",
+  "socialCollectionName": "Collection name",
+  "socialDeleteCollectionTitle": "Delete collection?",
+  "socialPickDayForPlan": "Pick day for plan",
+  "socialDay": "Day",
+  "socialTime": "Time",
+  "socialAddToCollection": "Add to collection",
+  "socialRemoved": "{name} removed",
+  "socialCollectionNameHint": "e.g. Rotterdam weekend, Kid-friendly…",
+  "socialCreate": "Create",
+  "@socialRemovedFromCollection": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "collection": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "socialMessagingComingSoon": "Messaging feature coming soon!",
+  "socialQrSharingComingSoon": "QR code sharing coming soon!",
+  "socialReportComingSoon": "Report feature coming soon!",
+  "socialBlockComingSoon": "Block feature coming soon!",
+  "socialUserNotFound": "User not found",
+  "socialPleaseSelectImage": "Please select an image",
+  "socialStoryPostedSuccess": "Story posted successfully!",
+  "socialCreateStory": "Create Story",
+  "socialTapAddPhoto": "Tap to add a photo",
+  "socialAddStoryCaptionHint": "Add a caption to your story...",
+  "socialAddLocation": "Add Location",
+  "socialLocationComingSoon": "Location feature coming soon!",
+  "socialActivityTaggingComingSoon": "Activity tagging coming soon!",
+  "socialNameUsernameRequired": "Name and username are required",
+  "socialSelectUpToTags": "You can select up to {count} tags",
+  "socialPleaseAddOneImage": "Please add at least one image",
+  "socialPostCreatedSuccess": "Post created successfully!",
+  "socialCreatePost": "Create Post",
+  "socialAddPhotos": "Add Photos",
+  "socialAddMore": "Add More",
+  "socialWriteCaptionHint": "Write a caption...",
+  "moodySpeechNotAvailable": "Speech recognition is not available on this device",
+  "@socialSelectUpToTags": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "socialFailedSharePost": "Failed to share post: {error}",
+  "socialViewingPostsTagged": "Viewing posts tagged with #{tag}",
+  "@socialFailedSharePost": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialViewingPostsTagged": {
+    "placeholders": {
+      "tag": {
+        "type": "String"
+      }
+    }
+  },
+  "socialSearchTravelersHint": "Search travelers by name or interests...",
+  "socialConnectionRequestSent": "Connection request sent to {name}!",
+  "socialViewProfile": "View Profile",
+  "socialSendRequest": "Send Request",
+  "socialProfileUpdatedDevMode": "Profile updated successfully! (Development mode)",
+  "socialErrorUpdatingProfile": "Error updating profile: {error}",
+  "socialUploadingPhoto": "Uploading photo...",
+  "socialErrorUploadingPhoto": "Error uploading photo: {error}",
+  "socialEditProfileInfo": "Edit Profile Info",
+  "myDayAddSignInRequired": "Sign in to add activities.",
+  "myDayAddFailedTryAgain": "Could not add activity. Please try again.",
+  "activityOptionsViewAction": "View",
+  "exploreNoPlacesFound": "No places found",
+  "agendaChooseActivityForDay": "Choose an activity to add for {day}.",
+  "agendaLoadingActivities": "Loading activities...",
+  "agendaErrorLoadingActivities": "Error loading activities",
+  "agendaPleaseTryAgainLater": "Please try again later",
+  "agendaNoActivitiesScheduled": "No activities scheduled",
+  "agendaNoActivitiesPlannedYet": "You do not have any planned activities in your agenda yet",
+  "agendaDeleteMissingId": "Could not delete activity (missing id).",
+  "agendaRemovedFromPlanner": "{title} removed from your planner.",
+  "socialGetDirections": "Get directions",
+  "socialShare": "Share",
+  "socialOpenDirectionsFailed": "Unable to open directions",
+  "socialDeleteActivityConfirmTitle": "Delete activity?",
+  "socialDeleteFailedTryAgain": "Delete failed. Please try again.",
+  "socialShareActivityDetailsCopied": "Activity details copied to share",
+  "dailyScheduleTitle": "Daily Schedule",
+  "dailyScheduleToday": "Today",
+  "dailyScheduleTomorrow": "Tomorrow",
+  "dailyScheduleNoActivities": "No activities scheduled",
+  "dailyScheduleExplorePrompt": "Tap the button below to explore activities",
+  "dailyScheduleExploreActivities": "Explore Activities",
+  "dailyScheduleUpcomingActivities": "Upcoming Activities",
+  "dailyScheduleCompletedActivities": "Completed Activities",
+  "dailyScheduleActivitiesPlanned": "{count} activities planned",
+  "dailyScheduleActivitiesCompleted": "{count} activities completed",
+  "dailyScheduleNoActivitiesForDate": "No activities scheduled for this date",
+  "dailyScheduleConfirmed": "Confirmed",
+  "dailyScheduleCompleted": "Completed",
+  "dailyScheduleDurationMinutes": "{minutes} minutes",
+  "@socialConnectionRequestSent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialErrorUpdatingProfile": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialErrorUploadingPhoto": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@agendaChooseActivityForDay": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "@agendaRemovedFromPlanner": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@dailyScheduleActivitiesPlanned": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@dailyScheduleActivitiesCompleted": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@dailyScheduleDurationMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "signupNoPasswordNeeded": "No password needed ✨",
+  "signupRatingBadge": "⭐ 4.9/5 · Free · No password",
+  "signupPrivacyPrefix": "By continuing, you agree to our ",
+  "signupPrivacyLinkLabel": "privacy policy",
+  "signupSuccessCheckInbox": "Check your inbox! 📬",
+  "signupSuccessWeSentTo": "We sent a link to",
+  "signupOpenGmail": "Open Gmail",
+  "signupOpenOutlook": "Open Outlook",
+  "signupOpenAppleMail": "Open Apple Mail",
+  "signupOpenEmailApp": "Open email app",
+  "signupNoEmailReceived": "Didn't receive an email?",
+  "signupWrongEmailAddress": "Wrong email address?",
 
-  "myDayHeroActiveSubtitle": "You're in this activity right now."
+  "introSkip": "Skip",
+  "introHeadline1": "Your mood,",
+  "introHeadline2": "your adventure",
+  "introTagline": "Your mood. Your day. Your adventure.",
+  "introSeeHowItWorks": "See how it works →",
+
+  "demoModeLabel": "▶ Demo mode",
+  "demoSkip": "Skip",
+  "demoMoodyName": "Moody",
+  "demoTapToChooseMood": "Tap to choose your mood:",
+  "demoDiscoverMore": "Discover more →",
+  "demoMoodAdventurous": "Adventurous",
+  "demoMoodRelaxed": "Relaxed",
+  "demoMoodRomantic": "Romantic",
+  "demoMoodCultural": "Cultural",
+  "demoMoodFoodie": "Foodie",
+  "demoMoodSocial": "Social",
+  "demoMoodyGreeting": "Hey! 👋 I'm Moody, your travel companion.",
+  "demoMoodyQuestion": "I help you discover amazing places based on how you feel. What's your mood today?",
+  "demoUserReplyRelaxed": "I'm feeling relaxed",
+  "demoUserReplyAdventurous": "I'm feeling adventurous",
+  "demoUserReplyRomantic": "I'm feeling romantic",
+  "demoUserReplyCultural": "I'm feeling cultural",
+  "demoUserReplyFoodie": "I'm feeling like a foodie",
+  "demoUserReplySocial": "I'm feeling social",
+  "demoUserReplyDefault": "This is my mood!",
+  "demoMoodyResponseRelaxed": "Taking it easy today? Great plan! 🌿",
+  "demoMoodyResponseAdventurous": "Time for adventure! I know exactly what you need 🔥",
+  "demoMoodyResponseFoodie": "I know the best spots in the city 🍽",
+  "demoMoodyResponseSocial": "Looking for fun? I've got you! 👥",
+  "demoMoodyResponseCultural": "The city's culture scene is waiting for you 🎭",
+  "demoMoodyResponseRomantic": "A romantic day? Moody has you 💕",
+  "demoMoodyResponseDefault": "Nice! Let's go explore ✨",
+
+  "dayMon": "Monday",
+  "dayTue": "Tuesday",
+  "dayWed": "Wednesday",
+  "dayThu": "Thursday",
+  "dayFri": "Friday",
+  "daySat": "Saturday",
+  "daySun": "Sunday",
+  "monthJan": "jan",
+  "monthFeb": "feb",
+  "monthMar": "mar",
+  "monthApr": "apr",
+  "monthMay": "may",
+  "monthJun": "jun",
+  "monthJul": "jul",
+  "monthAug": "aug",
+  "monthSep": "sep",
+  "monthOct": "oct",
+  "monthNov": "nov",
+  "monthDec": "dec",
+
+  "myDayEmptyDayTitle": "Your day is empty ✨",
+  "myDayEmptyDaySubtitle": "Let Moody make a plan for your mood today",
+  "myDayPlanWithMoodyButton": "Plan my day with Moody",
+  "myDayExploreActivitiesButton": "Explore activities",
+  "myDayExploreNearbyButton": "Explore Nearby",
+  "myDayAskMoodyButton": "Ask Moody",
+  "myDayGetReadyButton": "Get Ready",
+  "myDayRightNow": "RIGHT NOW",
+  "myDayStatusError": "⚠️ ERROR",
+  "myDayStatusUnableToLoad": "Unable to load status",
+  "myDayOpenGoogleMaps": "Google Maps",
+  "myDayOpenAppleMaps": "Apple Maps",
+
+  "agendaTitle": "My Agenda",
+  "agendaStatusCancelled": "CANCELLED",
+  "agendaTodayEmpty": "Today is still empty",
+  "agendaTodaySubtitle": "Let Moody plan your day based on your mood",
+  "agendaTomorrowEmpty": "Tomorrow is still free",
+  "agendaTomorrowSubtitle": "Plan what you want to do tomorrow",
+  "agendaDayEmpty": "{dayName} is still empty",
+  "@agendaDayEmpty": {
+    "placeholders": { "dayName": { "type": "String" } }
+  },
+  "agendaDaySubtitle": "Want to plan for {dayName}?",
+  "@agendaDaySubtitle": {
+    "placeholders": { "dayName": { "type": "String" } }
+  },
+  "agendaFarFutureEmpty": "Nothing planned yet",
+  "agendaFarFutureSubtitle": "Plan activities for this day",
+  "agendaPlanWithMoody": "Plan with Moody",
+  "agendaAddActivity": "Add activity",
+  "agendaUntitledActivity": "Untitled Activity",
+  "agendaNoDescription": "No description available",
+  "agendaLocationTBD": "Location TBD",
+
+  "exploreCategoryAll": "All",
+  "exploreCategoryPopular": "Popular",
+  "exploreCategoryAccommodations": "Accommodations",
+  "exploreCategoryNature": "Nature",
+  "exploreCategoryCulture": "Culture",
+  "exploreCategoryFood": "Food",
+  "exploreCategoryActivities": "Activities",
+  "exploreCategoryHistory": "History",
+  "exploreFilterAdditionalOptions": "Additional Options",
+  "exploreFilterParking": "Parking",
+  "exploreFilterTransport": "Transport",
+  "exploreFilterCreditCards": "Credit Cards",
+  "exploreFilterWifi": "Wi-Fi",
+  "exploreFilterCharging": "Charging",
+  "exploreFilterInstagrammable": "Instagrammable",
+  "exploreFilterArtisticDesign": "Artistic Design",
+  "exploreFilterAestheticSpaces": "Aesthetic Spaces",
+  "exploreFilterScenicViews": "Scenic Views",
+  "exploreFilterBestAtNight": "Best at Night",
+  "exploreFilterBestAtSunset": "Best at Sunset",
+  "exploreNoPlacesOnMap": "No places to display on map",
+  "timeLabelToday": "Today",
+  "timeLabelTomorrow": "Tomorrow",
+  "timeLabelMorning": "Morning",
+  "timeLabelAfternoon": "Afternoon",
+  "timeLabelEvening": "Evening",
+
+  "exploreFilterIndoorOnly": "Indoor Only",
+  "exploreFilterOutdoorOnly": "Outdoor Only",
+  "exploreFilterWeatherSafe": "Weather-Safe",
+  "exploreFilterOpenNow": "Open Now",
+  "exploreFilterQuiet": "Quiet",
+  "exploreFilterLively": "Lively",
+  "exploreFilterRomanticVibe": "Romantic Vibe",
+  "exploreFilterSurpriseMe": "Surprise Me",
+  "exploreFilterVegan": "Vegan",
+  "exploreFilterVegetarian": "Vegetarian",
+  "exploreFilterHalal": "Halal",
+  "exploreFilterGlutenFree": "Gluten-Free",
+  "exploreFilterPescatarian": "Pescatarian",
+  "exploreFilterNoAlcohol": "No Alcohol",
+  "exploreFilterWheelchairAccessible": "Wheelchair Accessible",
+  "exploreFilterLgbtqFriendly": "LGBTQ+ Friendly",
+  "exploreFilterSeniorFriendly": "Senior-Friendly",
+  "exploreFilterBabyFriendly": "Baby-Friendly",
+  "exploreFilterBlackOwned": "Black-owned",
+  "exploreFilterPriceRange": "Price Range (€)",
+  "exploreFilterMaxDistance": "Maximum Distance (km)",
+
+  "chatSheetMoodyName": "Moody",
+  "chatSheetErrorMessage": "Oops! I'm having trouble connecting right now. Can you try again? 🤔",
+  "chatSheetEmptyStateBody": "I know the city like the back of my hand! Tell me your mood, and I'll craft the perfect day just for you. Whether you're feeling adventurous, romantic, or need some chill vibes - I've got you covered! 🎯",
+  "chatSheetCraftingMessage": "Moody is crafting something special...",
+  "chatSheetInputHint": "What's your mood today?",
+  "moodyConversationGreeting": "Hi there! How are you feeling today? I can suggest activities based on your mood.",
+  "moodyConversationTalkToMoody": "Talk to Moody",
+  "moodyConversationSpeaking": "Speaking...",
+  "moodyConversationListening": "Listening...",
+  "moodyConversationThinking": "Thinking...",
+  "moodyConversationTypeMessage": "Type your message...",
+
+  "homeSelectLocation": "Select Location",
+  "homeCurrentLocation": "Current Location",
+  "homeUsingGps": "Using GPS",
+  "homeGettingLocation": "Getting your location...",
+  "homeLocationResult": "Location: {location}",
+  "@homeLocationResult": {
+    "placeholders": {
+      "location": {
+        "type": "String"
+      }
+    }
+  },
+  "homeLocationNotFound": "Could not get location",
+  "homeChatErrorRetry": "Sorry, I couldn't respond right now. Try again! 😅",
+
+  "checkInQ1Title": "How was your day?",
+  "checkInQ1Subtitle": "Moody wants to get to know you better 🌙",
+  "checkInQ1Question": "What was the best moment of today?",
+  "checkInQ1Activities": "The activities 🎯",
+  "checkInQ1Friends": "With friends 👥",
+  "checkInQ1Exploring": "Exploring 🔍",
+  "checkInQ1Food": "Food & drinks 🍽",
+  "checkInQ1Relaxing": "Relaxing 🛋",
+  "checkInMaybeLater": "Maybe later",
+  "checkInQ2Question": "Was {name} worth it?",
+  "@checkInQ2Question": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "checkInQ2Amazing": "Amazing! 🤩",
+  "checkInQ2Good": "Good 👍",
+  "checkInQ2Ok": "It was okay",
+  "checkInQ2NotForMe": "Not for me",
+  "checkInQ3Question": "How are you feeling now?",
+  "checkInQ3Happy": "Happy",
+  "checkInQ3Relaxed": "Relaxed",
+  "checkInQ3Tired": "Tired",
+  "checkInQ3Mixed": "Mixed",
+  "checkInDoneTitle": "Thank you! See you tomorrow 🌟",
+  "checkInDoneSubtitle": "Moody will remember this for next time",
+  "checkInSaveError": "Save failed. Please try again.",
+  "checkInClose": "Close",
+
+  "dagSheetOpener1": "You're home! How was your day?",
+  "dagSheetOpener2": "Tell me! How was it today?",
+  "dagSheetOpener3": "How did it go today?",
+  "dagSheetOpener4": "Moody is curious — how was your day?",
+  "dagSheetE1Amazing": "Amazing! 🤩",
+  "dagSheetE1PrettyGood": "Pretty good 😊",
+  "dagSheetE1Okay": "Okay 😐",
+  "dagSheetE1Letdown": "Letdown 😔",
+  "dagSheetFollowupAmazing": "Awesome! What was the best moment? 🌟",
+  "dagSheetFollowupPrettyGood": "Nice! Something that really stood out?",
+  "dagSheetFollowupOkay": "Fair enough. What could have been better?",
+  "dagSheetFollowupLetdown": "Too bad... What went wrong?",
+  "dagSheetFollowupDefault": "Tell me more! ✨",
+  "dagSheetE2Activities": "The activities 🎯",
+  "dagSheetE2People": "With people 👥",
+  "dagSheetE2Exploring": "The exploring 🔍",
+  "dagSheetE2Food": "Great food 🍽",
+  "dagSheetE2Relaxing": "Just relaxing 🛋",
+  "dagSheetE2Unexpected": "Something unexpected ✨",
+  "dagSheetClosing1": "Well done today. Sleep well 🌙",
+  "dagSheetClosing2": "Moody will remember this for tomorrow. See you! ✨",
+  "dagSheetClosing3": "Thanks for sharing. Tomorrow is another beautiful day 🌟",
+  "dagSheetClosing4": "Sleep well. Tomorrow we'll make it special 🌙",
+  "dagSheetReflectionPrompt": "Anything else on your mind? All good — or leave it empty and go sleep. ✨",
+  "dagSheetReflectionHint": "Type here… (optional)",
+  "dagSheetGoodnight": "Goodnight Moody 🌙",
+
+  "carouselPerfectMatches": "{count} perfect matches",
+  "@carouselPerfectMatches": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "carouselRefreshing": "Refreshing recommendations...",
+  "carouselTopPick": "TOP PICK",
+  "carouselTellMeMore": "Tell me more",
+  "carouselAddToDay": "Add to day",
+  "carouselDirections": "Directions",
+  "carouselShare": "Share",
+  "carouselDetails": "Details",
+  "carouselSaveForLater": "Save for later",
+  "carouselNotInterested": "Not interested",
+  "carouselNoRecommendations": "No recommendations yet",
+  "carouselCheckBackSoon": "Check back soon for personalized suggestions!",
+
+  "prefBack": "Back",
+  "interestsPrompt": "What do you like? I'll find it for you! 🔍",
+  "interestsTitle": "What are your interests?",
+  "interestsSubtitle": "Choose everything that appeals to you.",
+  "interestsMultipleChoice": "Multiple choices possible",
+  "interestsContinue": "Continue →",
+  "interestFoodDining": "Food & Drinks",
+  "interestArtsCulture": "Arts & Culture",
+  "interestShoppingMarkets": "Shopping & Markets",
+  "interestSports": "Sports & Activities",
+  "interestNatureOutdoors": "Nature & Parks",
+  "interestNightlife": "Nightlife",
+  "interestCoffeeCafes": "Coffee & Cafés",
+  "interestPhotographySpots": "Photography & Spots",
+  "prefTravelProfileTitle": "Your Travel Profile",
+  "prefSocialVibeLabel": "Social Vibe 👥",
+  "prefPaceLabel": "Planning Pace ⚡",
+  "prefStyleLabel": "Your Style 🌟",
+  "prefStyleLimit": "Choose up to {count} styles that suit you.",
+  "@prefStyleLimit": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "prefMoodySpeech": "Just a few more questions and I'll know you completely! ✈️",
+  "prefSocialSoloTitle": "Solo Adventures",
+  "prefSocialSoloHint": "Time for myself",
+  "prefSocialSmallTitle": "Small Groups",
+  "prefSocialSmallHint": "Intimate setting",
+  "prefSocialButterflyTitle": "Social Butterfly",
+  "prefSocialButterflyHint": "Meeting new people",
+  "prefSocialMoodTitle": "Mood Dependent",
+  "prefSocialMoodHint": "Sometimes solo, sometimes social",
+  "prefPaceNow": "Right Now ⚡",
+  "prefPaceToday": "Today 📅",
+  "prefPacePlanned": "Planned 🗓",
+  "prefStyleLocalTitle": "Local Experience",
+  "prefStyleLocalSubtitle": "Authentic and off the beaten track.",
+  "prefStyleLuxuryTitle": "Luxury Seeker",
+  "prefStyleLuxurySubtitle": "Comfort and special experiences.",
+  "prefStyleBudgetTitle": "Budget Conscious",
+  "prefStyleBudgetSubtitle": "Maximum fun, smart spending.",
+  "prefStyleOffTitle": "Off the Beaten Path",
+  "prefStyleOffSubtitle": "Hidden gems and local favorites.",
+  "prefStyleTouristTitle": "Tourist Highlights",
+  "prefStyleTouristSubtitle": "Iconic places you want to have seen.",
+
+  "gamificationTitle": "Achievements",
+  "gamificationYourProgress": "Your Progress",
+  "gamificationCompleteToUnlock": "Complete activities to unlock achievements",
+  "gamificationUnlocked": "Unlocked",
+  "gamificationInProgress": "In Progress",
+  "gamificationLocked": "Locked",
+  "gamificationUnlockedOn": "Unlocked on {date}",
+  "@gamificationUnlockedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "gamificationClose": "Close",
+  "gamificationCategoryExploration": "Exploration",
+  "gamificationCategoryActivities": "Activities",
+  "gamificationCategorySocial": "Social",
+  "gamificationCategoryStreaks": "Streaks",
+  "gamificationCategoryMood": "Mood",
+  "gamificationCategorySpecial": "Special",
+  "gamificationCategoryOther": "Other",
+
+  "prefScreenTitle": "Your Preferences",
+  "prefSave": "Save",
+  "prefSavedSuccess": "Preferences saved successfully",
+  "prefSaveError": "Error saving preferences",
+  "prefSectionAgeGroup": "Age Group",
+  "prefSectionAgeGroupSub": "Helps us recommend age-appropriate activities",
+  "prefSectionBudget": "Budget Comfort",
+  "prefSectionBudgetSub": "Your typical spending range for activities",
+  "prefSectionSocialVibe": "Social Vibe",
+  "prefSectionSocialVibeSub": "Do you prefer solo activities or social scenes?",
+  "prefSectionActivityPace": "Activity Pace",
+  "prefSectionActivityPaceSub": "How energetic do you like your day?",
+  "prefSectionTimeAvailable": "Typical Time Available",
+  "prefSectionTimeAvailableSub": "How much time do you usually have for activities?",
+  "prefSectionInterests": "Your Interests",
+  "prefSectionInterestsSub": "Select all that apply (helps personalize recommendations)",
+  "prefAge1824Label": "Early 20s",
+  "prefAge1824Desc": "Budget-friendly, social",
+  "prefAge2534Label": "20s-30s",
+  "prefAge2534Desc": "Trendy, adventurous",
+  "prefAge3544Label": "30s-40s",
+  "prefAge3544Desc": "Quality experiences",
+  "prefAge4554Label": "40s-50s",
+  "prefAge4554Desc": "Refined, relaxed",
+  "prefAge55Label": "55+",
+  "prefAge55Desc": "Cultural, scenic",
+  "prefBudgetLabel": "Budget",
+  "prefBudgetDesc": "Free - $20",
+  "prefModerateLabel": "Moderate",
+  "prefModerateDesc": "$20 - $50",
+  "prefUpscaleLabel": "Upscale",
+  "prefUpscaleDesc": "$50 - $100",
+  "prefLuxuryLabel": "Luxury",
+  "prefLuxuryDesc": "$100+",
+  "prefSoloLabel": "Solo Friendly",
+  "prefSoloDesc": "Quiet, peaceful, me-time",
+  "prefSmallGroupLabel": "Small Groups",
+  "prefSmallGroupDesc": "Intimate, cozy gatherings",
+  "prefMixLabel": "Mix of Both",
+  "prefMixDesc": "Flexible, variety",
+  "prefSocialSceneLabel": "Social Scene",
+  "prefSocialSceneDesc": "Lively, meet people",
+  "prefSlowChillLabel": "Slow & Chill",
+  "prefSlowChillDesc": "Take it easy",
+  "prefModerateActivityLabel": "Moderate",
+  "prefModerateActivityDesc": "Balanced pace",
+  "prefActiveLabel": "Active",
+  "prefActiveDesc": "Energetic, on-the-go",
+  "prefQuickVisitLabel": "Quick Visit",
+  "prefHalfDayLabel": "Half Day",
+  "prefFullDayLabel": "Full Day",
+  "prefInterestFood": "Food & Drink",
+  "prefInterestCulture": "Culture & Arts",
+  "prefInterestNature": "Nature & Outdoors",
+  "prefInterestShopping": "Shopping",
+  "prefInterestNightlife": "Nightlife",
+  "prefInterestWellness": "Wellness",
+  "prefInterestAdventure": "Adventure",
+  "prefInterestHistory": "History",
+
+  "achievementsUnlocked": "Achievements Unlocked",
+  "deleteAccountTitle": "Delete Account",
+  "deleteAccountAreYouSure": "Are you sure?",
+  "deleteAccountWarning": "This action cannot be undone. All your data, activities, and preferences will be permanently deleted.",
+  "deleteAccountWhatWillBeDeleted": "What will be deleted:",
+  "deleteAccountProfile": "Your profile and preferences",
+  "deleteAccountActivities": "All saved activities",
+  "deleteAccountAchievements": "Your achievements and progress",
+  "deleteAccountPhotos": "All photos and memories",
+  "deleteAccountTypeToConfirm": "Type \"DELETE\" to confirm",
+  "deleteAccountTypeIncorrect": "Please type DELETE to confirm",
+  "deleteAccountFinalTitle": "Final Confirmation",
+  "deleteAccountFinalContent": "This action cannot be undone. All your data will be permanently deleted.",
+  "deleteAccountCancel": "Cancel",
+  "deleteAccountDeleteForever": "Delete Forever",
+  "deleteAccountDeleteButton": "Delete My Account Forever",
+  "deleteAccountSuccess": "Account deleted successfully",
+  "deleteAccountError": "Error deleting account",
+
+  "placeDetailAboutThisPlace": "About this place",
+  "placeDetailGoodToKnow": "Good to know",
+  "placeDetailDurationLabel": "Duration",
+  "placeDetailPriceLabel": "Price",
+  "placeDetailDistanceLabel": "Distance",
+  "placeDetailBestTimeLabel": "Best time",
+  "placeDetailGoodWithLabel": "Good with",
+  "placeDetailEnergyLabel": "Energy",
+  "placeDetailTimeNeededLabel": "Time needed",
+  "placeDetailNoPhotos": "No photos available",
+  "placeDetailNoReviews": "No reviews available",
+  "placeDetailReviewsWhenAvailable": "Reviews will appear here when available",
+  "placeDetailNotFound": "Place not found",
+  "placeDetailOpenMaps": "Open maps",
+  "placeDetailCheckLocally": "Check locally",
+  "placeDetailFreeToVisit": "Free to visit",
+  "placeDetailVaries": "Varies",
+  "placeDetailFreeEntry": "Free entry",
+  "placeDetailEvening": "Evening",
+  "placeDetailMorning": "Morning",
+  "placeDetailAfternoon": "Afternoon",
+  "placeDetailAnytime": "Anytime",
+  "placeDetailGoodFitForTonight": "Good fit for tonight",
+  "placeDetailBestOnWeekends": "Best on weekends",
+  "placeDetailSkipIfChill": "Skip if you're looking for something chill",
+  "placeDetailClosedCheckHours": "Closed now — check hours",
+  "placeDetailFriendsGroups": "Friends / Groups",
+  "placeDetailSoloDate": "Solo / Date",
+  "placeDetailSoloFriends": "Solo / Friends",
+  "placeDetailAnonymous": "Anonymous",
+  "placeDetailRecently": "Recently"
 }
-

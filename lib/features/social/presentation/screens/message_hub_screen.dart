@@ -6,6 +6,7 @@ import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/social/domain/models/social_post.dart';
 import 'package:wandermood/features/social/domain/providers/social_providers.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 // Provider for mock conversations
 final mockConversationsProvider = Provider<List<Map<String, dynamic>>>((ref) {
@@ -100,7 +101,7 @@ class _MessageHubScreenState extends ConsumerState<MessageHubScreen> {
                 // Open new message composer
                 showWanderMoodToast(
                   context,
-                  message: 'New message feature coming soon!',
+                  message: AppLocalizations.of(context)!.socialNewMessageComingSoon,
                 );
               },
             ),
@@ -114,7 +115,7 @@ class _MessageHubScreenState extends ConsumerState<MessageHubScreen> {
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Search messages',
+                  hintText: AppLocalizations.of(context)!.socialSearchMessagesHint,
                   hintStyle: GoogleFonts.poppins(
                     fontSize: 14,
                     color: Colors.grey[400],
@@ -437,7 +438,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             onPressed: () {
               showWanderMoodToast(
                 context,
-                message: 'Call feature coming soon!',
+                message: AppLocalizations.of(context)!.socialCallComingSoon,
               );
             },
           ),
@@ -449,7 +450,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             onPressed: () {
               showWanderMoodToast(
                 context,
-                message: 'Video call feature coming soon!',
+                message: AppLocalizations.of(context)!.socialVideoCallComingSoon,
               );
             },
           ),
@@ -551,7 +552,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                           onPressed: () {
                             showWanderMoodToast(
                               context,
-                              message: 'Photo sharing coming soon!',
+                              message: AppLocalizations.of(context)!.socialPhotoSharingComingSoon,
                             );
                           },
                         ),
@@ -559,7 +560,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                           child: TextField(
                             controller: _messageController,
                             decoration: InputDecoration(
-                              hintText: 'Type a message...',
+                              hintText: AppLocalizations.of(context)!.socialTypeMessageHint,
                               hintStyle: GoogleFonts.poppins(
                                 fontSize: 14,
                                 color: Colors.grey[400],

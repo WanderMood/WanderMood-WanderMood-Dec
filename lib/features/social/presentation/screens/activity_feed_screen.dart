@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class ActivityFeedScreen extends StatefulWidget {
   const ActivityFeedScreen({Key? key}) : super(key: key);
@@ -593,23 +594,23 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          'Notifications',
+          AppLocalizations.of(context)!.notifications,
           style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('You have 3 new notifications'),
+            Text(AppLocalizations.of(context)!.socialYouHaveNewNotifications('3')),
             const SizedBox(height: 12),
-            Text('• Sarah liked your post'),
-            Text('• Marco started following you'),
-            Text('• New travel story from Luna'),
+            Text(AppLocalizations.of(context)!.socialSampleNotificationLiked),
+            Text(AppLocalizations.of(context)!.socialSampleNotificationFollowed),
+            Text(AppLocalizations.of(context)!.socialSampleNotificationStory),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text(AppLocalizations.of(context)!.socialClose),
           ),
         ],
       ),
@@ -619,7 +620,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   void _viewAllStories() {
     showWanderMoodToast(
       context,
-      message: 'Opening all travel stories...',
+      message: AppLocalizations.of(context)!.socialOpeningAllTravelStories,
       backgroundColor: const Color(0xFF2A6049),
     );
   }
@@ -627,7 +628,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   void _viewStory(Map<String, dynamic> story) {
     showWanderMoodToast(
       context,
-      message: 'Opening ${story['author']}\'s story...',
+      message: AppLocalizations.of(context)!
+          .socialOpeningUserStory((story['author'] ?? '').toString()),
       backgroundColor: const Color(0xFF2A6049),
     );
   }
@@ -635,7 +637,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   void _onFilterChanged(String filter) {
     showWanderMoodToast(
       context,
-      message: 'Filtering by: $filter',
+      message: AppLocalizations.of(context)!.socialFilteringBy(filter),
       backgroundColor: const Color(0xFF2A6049),
     );
   }
@@ -648,7 +650,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
       // Fallback: show a snackbar if userId is not available
       showWanderMoodToast(
         context,
-        message: 'Opening ${activity['user']}\'s profile...',
+        message: AppLocalizations.of(context)!
+            .socialOpeningUserProfile((activity['user'] ?? '').toString()),
         backgroundColor: const Color(0xFF2A6049),
         duration: const Duration(seconds: 2),
       );
@@ -665,7 +668,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.bookmark),
-              title: const Text('Save Post'),
+              title: Text(AppLocalizations.of(context)!.socialSavePost),
               onTap: () {
                 Navigator.pop(context);
                 _savePost(activity);
@@ -673,7 +676,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.person_add),
-              title: Text('Follow ${activity['user']}'),
+              title: Text(AppLocalizations.of(context)!
+                  .socialFollowUser((activity['user'] ?? '').toString())),
               onTap: () {
                 Navigator.pop(context);
                 _followUser(activity['user']);
@@ -681,7 +685,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.report),
-              title: const Text('Report Post'),
+              title: Text(AppLocalizations.of(context)!.socialReportPost),
               onTap: () {
                 Navigator.pop(context);
                 _reportPost(activity);
@@ -696,7 +700,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   void _likePost(Map<String, dynamic> activity) {
     showWanderMoodToast(
       context,
-      message: 'Liked ${activity['user']}\'s post!',
+      message: AppLocalizations.of(context)!
+          .socialLikedUserPost((activity['user'] ?? '').toString()),
       backgroundColor: const Color(0xFF2A6049),
     );
   }
@@ -705,10 +710,11 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Comment on ${activity['user']}\'s post'),
+        title: Text(AppLocalizations.of(context)!
+            .socialCommentOnUserPost((activity['user'] ?? '').toString())),
         content: TextField(
-          decoration: const InputDecoration(
-            hintText: 'Write a comment...',
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context)!.socialWriteCommentHint,
             border: OutlineInputBorder(),
           ),
           maxLines: 3,
@@ -716,18 +722,18 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               showWanderMoodToast(
                 context,
-                message: 'Comment posted!',
+                message: AppLocalizations.of(context)!.socialCommentPosted,
                 backgroundColor: const Color(0xFF2A6049),
               );
             },
-            child: const Text('Post'),
+            child: Text(AppLocalizations.of(context)!.socialPost),
           ),
         ],
       ),
@@ -737,7 +743,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   void _sharePost(Map<String, dynamic> activity) {
     showWanderMoodToast(
       context,
-      message: 'Shared ${activity['user']}\'s post!',
+      message: AppLocalizations.of(context)!
+          .socialSharedUserPost((activity['user'] ?? '').toString()),
       backgroundColor: const Color(0xFF2A6049),
     );
   }
@@ -745,7 +752,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   void _savePost(Map<String, dynamic> activity) {
     showWanderMoodToast(
       context,
-      message: 'Saved ${activity['user']}\'s post!',
+      message: AppLocalizations.of(context)!
+          .socialSavedUserPost((activity['user'] ?? '').toString()),
       backgroundColor: const Color(0xFF2A6049),
     );
   }
@@ -753,7 +761,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   void _followUser(String username) {
     showWanderMoodToast(
       context,
-      message: 'Following $username!',
+      message: AppLocalizations.of(context)!.socialFollowingUser(username),
       backgroundColor: const Color(0xFF2A6049),
     );
   }
@@ -761,7 +769,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   void _reportPost(Map<String, dynamic> activity) {
     showWanderMoodToast(
       context,
-      message: 'Reported ${activity['user']}\'s post',
+      message: AppLocalizations.of(context)!
+          .socialReportedUserPost((activity['user'] ?? '').toString()),
       backgroundColor: const Color(0xFFFF6B6B),
     );
   }

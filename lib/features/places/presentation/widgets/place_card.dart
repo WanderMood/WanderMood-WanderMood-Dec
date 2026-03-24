@@ -808,7 +808,11 @@ class PlaceCard extends ConsumerWidget {
                             try {
                               await SharingService.sharePlace(place);
                             } catch (e) {
-                              showWanderMoodToast(context, message: 'Failed to share: $e', isError: true);
+                              showWanderMoodToast(
+                                context,
+                                message: l10n.placeCardFailedToShare('$e'),
+                                isError: true,
+                              );
                             }
                           },
                         ),
@@ -829,15 +833,26 @@ class PlaceCard extends ConsumerWidget {
                               if (isFavorite) {
                                 await savedPlacesService.unsavePlace(place.id);
                                 ref.invalidate(savedPlacesProvider);
-                                showWanderMoodToast(context, message: '${place.name} removed from saved places', isWarning: true);
+                                showWanderMoodToast(
+                                  context,
+                                  message: l10n.dayPlanCardRemovedFromSaved(place.name),
+                                  isWarning: true,
+                                );
                               } else {
                                 await savedPlacesService.savePlace(place);
                                 ref.invalidate(savedPlacesProvider);
-                                showWanderMoodToast(context, message: '${place.name} saved!');
+                                showWanderMoodToast(
+                                  context,
+                                  message: l10n.placeCardSaved(place.name),
+                                );
                               }
                             } catch (e) {
                               if (kDebugMode) debugPrint('❌ Error toggling favorite: $e');
-                              showWanderMoodToast(context, message: 'Failed to ${isFavorite ? 'remove' : 'save'} ${place.name}', isError: true);
+                              showWanderMoodToast(
+                                context,
+                                message: l10n.placeCardFailedToggleSave(place.name),
+                                isError: true,
+                              );
                             }
                           },
                         ),

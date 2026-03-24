@@ -8,6 +8,7 @@ import 'package:wandermood/features/social/domain/models/social_post.dart';
 import 'package:wandermood/features/social/domain/providers/social_providers.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class UnifiedProfileScreen extends ConsumerStatefulWidget {
   final String? userId;
@@ -142,7 +143,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
   void _sendMessage() {
     showWanderMoodToast(
       context,
-      message: 'Messaging feature coming soon!',
+      message: AppLocalizations.of(context)!.socialMessagingComingSoon,
       backgroundColor: const Color(0xFF2A6049),
       duration: const Duration(seconds: 2),
     );
@@ -152,7 +153,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
     // QR code functionality for own profile
     showWanderMoodToast(
       context,
-      message: 'QR code sharing coming soon!',
+      message: AppLocalizations.of(context)!.socialQrSharingComingSoon,
       backgroundColor: const Color(0xFF2A6049),
     );
   }
@@ -160,7 +161,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
   void _reportUser() {
     showWanderMoodToast(
       context,
-      message: 'Report feature coming soon!',
+      message: AppLocalizations.of(context)!.socialReportComingSoon,
       backgroundColor: Colors.orange,
     );
   }
@@ -168,7 +169,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
   void _blockUser() {
     showWanderMoodToast(
       context,
-      message: 'Block feature coming soon!',
+      message: AppLocalizations.of(context)!.socialBlockComingSoon,
       isError: true,
     );
   }
@@ -176,7 +177,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
   void _shareProfile() {
     showWanderMoodToast(
       context,
-      message: 'Share feature coming soon!',
+      message: AppLocalizations.of(context)!.socialShareComingSoon,
       backgroundColor: Colors.blue,
     );
   }
@@ -195,7 +196,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
               const CircularProgressIndicator(color: Color(0xFF2A6049)),
               const SizedBox(height: 16),
               Text(
-                'Loading profile...',
+                AppLocalizations.of(context)!.loading,
                 style: GoogleFonts.poppins(color: Colors.grey[600]),
               ),
             ],

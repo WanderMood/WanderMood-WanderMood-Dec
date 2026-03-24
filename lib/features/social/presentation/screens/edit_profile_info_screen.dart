@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/social/domain/providers/profile_settings_providers.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class EditProfileInfoScreen extends ConsumerStatefulWidget {
   const EditProfileInfoScreen({super.key});
@@ -94,7 +95,7 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: 'Profile updated successfully!',
+          message: AppLocalizations.of(context)!.profileEditUpdated,
           backgroundColor: const Color(0xFF2A6049),
           leading: const Icon(Icons.check_circle, color: Colors.white, size: 22),
         );
@@ -120,7 +121,7 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
         if (mounted) {
           showWanderMoodToast(
             context,
-            message: 'Profile updated successfully! (Development mode)',
+            message: AppLocalizations.of(context)!.socialProfileUpdatedDevMode,
             backgroundColor: const Color(0xFF2A6049),
             leading: const Icon(Icons.check_circle, color: Colors.white, size: 22),
           );
@@ -134,10 +135,10 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
         if (mounted) {
           showWanderMoodToast(
             context,
-            message: 'Error updating profile: ${e.toString()}',
+            message: AppLocalizations.of(context)!.socialErrorUpdatingProfile('${e.toString()}'),
             isError: true,
             leading: const Icon(Icons.error, color: Colors.white, size: 22),
-            actionLabel: 'Retry',
+            actionLabel: AppLocalizations.of(context)!.profileRetry,
             onAction: _saveChanges,
             duration: const Duration(seconds: 4),
           );
@@ -167,7 +168,7 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
         if (mounted) {
           showWanderMoodToast(
             context,
-            message: 'Uploading photo...',
+            message: AppLocalizations.of(context)!.socialUploadingPhoto,
             backgroundColor: const Color(0xFF2A6049),
             duration: const Duration(seconds: 2),
             leading: const SizedBox(
@@ -191,7 +192,7 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
           dismissWanderMoodToast();
           showWanderMoodToast(
             context,
-            message: 'Profile photo updated successfully!',
+            message: AppLocalizations.of(context)!.profileSnackAvatarUpdated,
             backgroundColor: const Color(0xFF2A6049),
             leading: const Icon(Icons.check_circle, color: Colors.white, size: 22),
           );
@@ -205,10 +206,10 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
         dismissWanderMoodToast();
         showWanderMoodToast(
           context,
-          message: 'Error uploading photo: ${e.toString()}',
+          message: AppLocalizations.of(context)!.socialErrorUploadingPhoto('${e.toString()}'),
           isError: true,
           leading: const Icon(Icons.error, color: Colors.white, size: 22),
-          actionLabel: 'Retry',
+          actionLabel: AppLocalizations.of(context)!.profileRetry,
           onAction: _changeProfilePhoto,
           duration: const Duration(seconds: 4),
         );
@@ -229,7 +230,7 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           title: Text(
-            'Edit Profile Info',
+            AppLocalizations.of(context)!.socialEditProfileInfo,
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.w600,
@@ -244,7 +245,7 @@ class _EditProfileInfoScreenState extends ConsumerState<EditProfileInfoScreen> {
             TextButton(
               onPressed: _isLoading ? null : _saveChanges,
               child: Text(
-                'Save',
+                AppLocalizations.of(context)!.saveChanges,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

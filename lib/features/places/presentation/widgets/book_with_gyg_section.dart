@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../domain/models/gyg_link.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 const String _appLink = 'https://gyg.me/edviennemerencia-app';
 const String _promoCode = 'EDVIENNEMERENCIA5';
@@ -455,7 +456,7 @@ class BookWithGygSection extends StatelessWidget {
                                 const ClipboardData(text: _promoCode));
                             showWanderMoodToast(
                               context,
-                              message: 'Code gekopieerd 💚',
+                              message: AppLocalizations.of(context)!.gygCodeCopied,
                             );
                           },
                           child: Container(

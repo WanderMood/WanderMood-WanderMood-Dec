@@ -6,6 +6,7 @@ import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/social/domain/models/social_post.dart';
 import 'package:wandermood/features/social/domain/providers/social_providers.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class SocialProfileScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -65,7 +66,7 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
                 Navigator.pop(context);
                 showWanderMoodToast(
                   context,
-                  message: 'Report feature coming soon!',
+                  message: AppLocalizations.of(context)!.socialReportComingSoon,
                   duration: const Duration(seconds: 2),
                 );
               },
@@ -82,7 +83,7 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
                 Navigator.pop(context);
                 showWanderMoodToast(
                   context,
-                  message: 'Block feature coming soon!',
+                  message: AppLocalizations.of(context)!.socialBlockComingSoon,
                   duration: const Duration(seconds: 2),
                 );
               },
@@ -99,7 +100,7 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
                 Navigator.pop(context);
                 showWanderMoodToast(
                   context,
-                  message: 'Share feature coming soon!',
+                  message: AppLocalizations.of(context)!.socialShareComingSoon,
                   duration: const Duration(seconds: 2),
                 );
               },
@@ -113,7 +114,7 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
   void _openDirectMessage(SocialProfile profile) {
     showWanderMoodToast(
       context,
-      message: 'Messaging feature coming soon!',
+      message: AppLocalizations.of(context)!.socialMessagingComingSoon,
       duration: const Duration(seconds: 2),
     );
   }
@@ -124,7 +125,7 @@ class _SocialProfileScreenState extends ConsumerState<SocialProfileScreen> with 
     if (profileData == null) {
       return const Scaffold(
         body: Center(
-          child: Text('User not found'),
+          child: Text(AppLocalizations.of(context)!.socialUserNotFound),
         ),
       );
     }

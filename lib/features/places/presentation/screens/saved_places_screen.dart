@@ -18,6 +18,7 @@ import 'package:wandermood/features/plans/data/services/scheduled_activity_servi
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import 'place_detail_screen.dart';
 import 'collection_detail_screen.dart';
 
@@ -182,7 +183,7 @@ class _AllSavedTab extends ConsumerWidget {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16)),
               ),
-              child: Text('Discover places',
+              child: Text(AppLocalizations.of(context)!.guestExplorePlaces,
                   style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
             ),
           ],
@@ -450,7 +451,7 @@ class _SavedPlaceCardState extends ConsumerState<_SavedPlaceCard> {
                         icon: Icons.collections_bookmark_outlined,
                         color: Colors.white,
                         bg: Colors.white.withValues(alpha: 0.2),
-                        tooltip: 'Add to collection',
+                        tooltip: AppLocalizations.of(context)!.socialAddToCollection,
                         onTap: () => _showAddToCollectionSheet(context),
                       ),
                       const SizedBox(width: 8),
@@ -458,7 +459,7 @@ class _SavedPlaceCardState extends ConsumerState<_SavedPlaceCard> {
                         icon: Icons.directions_outlined,
                         color: Colors.white,
                         bg: Colors.white.withValues(alpha: 0.2),
-                        tooltip: 'Directions',
+                        tooltip: AppLocalizations.of(context)!.activityDetailDirections,
                         onTap: () => _openDirections(place),
                       ),
                       const SizedBox(width: 8),
@@ -466,7 +467,7 @@ class _SavedPlaceCardState extends ConsumerState<_SavedPlaceCard> {
                         icon: Icons.bookmark_remove_outlined,
                         color: const Color(0xFFFFD0D0),
                         bg: Colors.white.withValues(alpha: 0.14),
-                        tooltip: 'Remove',
+                        tooltip: AppLocalizations.of(context)!.myDayDeleteActivityCta,
                         onTap: () => _remove(context),
                       ),
                     ],
@@ -527,7 +528,8 @@ class _SavedPlaceCardState extends ConsumerState<_SavedPlaceCard> {
         .unsavePlace(widget.savedPlace.placeId);
     showWanderMoodToast(
       context,
-      message: '${widget.savedPlace.placeName} removed',
+      message: AppLocalizations.of(context)!
+          .socialRemoved(widget.savedPlace.placeName),
       duration: const Duration(seconds: 2),
       backgroundColor: Colors.grey.shade700,
     );
@@ -928,7 +930,7 @@ class _CreateCollectionSheetState extends ConsumerState<_CreateCollectionSheet> 
               controller: _nameCtrl,
               autofocus: true,
               decoration: InputDecoration(
-                hintText: 'e.g. Rotterdam weekend, Kid-friendly…',
+                hintText: AppLocalizations.of(context)!.socialCollectionNameHint,
                 filled: true,
                 fillColor: _wmCream,
                 border: OutlineInputBorder(
@@ -969,7 +971,7 @@ class _CreateCollectionSheetState extends ConsumerState<_CreateCollectionSheet> 
                           strokeWidth: 2,
                         ),
                       )
-                    : Text('Create',
+                    : Text(AppLocalizations.of(context)!.socialCreate,
                         style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w600)),
               ),
@@ -1240,7 +1242,7 @@ class _PlanSavedPlaceSheetState extends ConsumerState<_PlanSavedPlaceSheet> {
       initialDate: _selectedDate.isBefore(first) ? first : _selectedDate,
       firstDate: first,
       lastDate: first.add(const Duration(days: 365)),
-      helpText: 'Pick day for plan',
+      helpText: AppLocalizations.of(context)!.socialPickDayForPlan,
     );
     if (picked != null && mounted) {
       setState(() {
@@ -1319,9 +1321,9 @@ class _PlanSavedPlaceSheetState extends ConsumerState<_PlanSavedPlaceSheet> {
         Navigator.pop(context);
         showWanderMoodToast(
           context,
-          message: '${place.name} added to My Day!',
+          message: AppLocalizations.of(context)!.dayPlanCardAddedToMyDay(place.name),
           duration: const Duration(seconds: 3),
-          actionLabel: 'View',
+          actionLabel: AppLocalizations.of(context)!.bookingViewAction,
           onAction: () {
             if (mounted) {
               context.go('/main', extra: {
@@ -1337,7 +1339,7 @@ class _PlanSavedPlaceSheetState extends ConsumerState<_PlanSavedPlaceSheet> {
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: 'Could not add to My Day. Please try again.',
+          message: AppLocalizations.of(context)!.dayPlanCardCouldNotAddMyDay,
           isError: true,
         );
       }
@@ -1348,6 +1350,7 @@ class _PlanSavedPlaceSheetState extends ConsumerState<_PlanSavedPlaceSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     Widget chip({
       required String label,
       required bool selected,
@@ -1421,18 +1424,18 @@ class _PlanSavedPlaceSheetState extends ConsumerState<_PlanSavedPlaceSheet> {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 16),
-          Text('Day', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
+          Text(AppLocalizations.of(context)!.socialDay, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           Row(
             children: [
               chip(
-                label: 'Today',
+                label: l10n.timeLabelToday,
                 selected: isToday,
                 onTap: () => setState(() => _selectedDate = todayDate),
               ),
               const SizedBox(width: 8),
               chip(
-                label: 'Tomorrow',
+                label: l10n.timeLabelTomorrow,
                 selected: isTomorrow,
                 onTap: () => setState(() => _selectedDate = tomorrowDate),
               ),
@@ -1450,15 +1453,15 @@ class _PlanSavedPlaceSheetState extends ConsumerState<_PlanSavedPlaceSheet> {
             style: GoogleFonts.poppins(fontSize: 11, color: _wmStone),
           ),
           const SizedBox(height: 14),
-          Text('Time', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
+          Text(AppLocalizations.of(context)!.socialTime, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           Row(
             children: [
-              chip(label: 'Morning', selected: _slotIndex == 0, onTap: () => setState(() => _slotIndex = 0)),
+              chip(label: l10n.timeLabelMorning, selected: _slotIndex == 0, onTap: () => setState(() => _slotIndex = 0)),
               const SizedBox(width: 8),
-              chip(label: 'Afternoon', selected: _slotIndex == 1, onTap: () => setState(() => _slotIndex = 1)),
+              chip(label: l10n.timeLabelAfternoon, selected: _slotIndex == 1, onTap: () => setState(() => _slotIndex = 1)),
               const SizedBox(width: 8),
-              chip(label: 'Evening', selected: _slotIndex == 2, onTap: () => setState(() => _slotIndex = 2)),
+              chip(label: l10n.timeLabelEvening, selected: _slotIndex == 2, onTap: () => setState(() => _slotIndex = 2)),
             ],
           ),
           const SizedBox(height: 18),
@@ -1478,7 +1481,7 @@ class _PlanSavedPlaceSheetState extends ConsumerState<_PlanSavedPlaceSheet> {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
-                  : Text('Add to My Day', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                  : Text(AppLocalizations.of(context)!.dayPlanCardAddToMyDay, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
             ),
           ),
         ],

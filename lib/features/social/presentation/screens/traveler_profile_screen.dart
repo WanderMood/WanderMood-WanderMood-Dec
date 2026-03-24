@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class TravelerProfileScreen extends StatefulWidget {
   final Map<String, dynamic> traveler;
@@ -548,7 +549,7 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.report),
-              title: const Text('Report User'),
+              title: Text(AppLocalizations.of(context)!.socialReportUser),
               onTap: () {
                 Navigator.pop(context);
                 _reportUser();
@@ -556,7 +557,7 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.block),
-              title: const Text('Block User'),
+              title: Text(AppLocalizations.of(context)!.socialBlockUser),
               onTap: () {
                 Navigator.pop(context);
                 _blockUser();
@@ -564,7 +565,7 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.share),
-              title: const Text('Share Profile'),
+              title: Text(AppLocalizations.of(context)!.socialShareProfile),
               onTap: () {
                 Navigator.pop(context);
                 _shareProfile();
@@ -580,10 +581,13 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Message ${widget.traveler['name']}'),
+        title: Text(
+          AppLocalizations.of(context)!
+              .socialMessageTraveler((widget.traveler['name'] ?? '').toString()),
+        ),
         content: TextField(
-          decoration: const InputDecoration(
-            hintText: 'Write your message...',
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context)!.socialWriteMessageHint,
             border: OutlineInputBorder(),
           ),
           maxLines: 3,
@@ -591,18 +595,20 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               showWanderMoodToast(
                 context,
-                message: 'Message sent to ${widget.traveler['name']}!',
+                message: AppLocalizations.of(context)!.socialMessageSentTo(
+                  (widget.traveler['name'] ?? '').toString(),
+                ),
                 backgroundColor: const Color(0xFF2A6049),
               );
             },
-            child: const Text('Send'),
+            child: Text(AppLocalizations.of(context)!.socialSend),
           ),
         ],
       ),
@@ -613,7 +619,7 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
     showWanderMoodToast(
       context,
       message:
-          'User reported. Thank you for keeping our community safe.',
+          AppLocalizations.of(context)!.socialUserReportedThankYou,
       backgroundColor: const Color(0xFFFF6B6B),
     );
   }
@@ -621,7 +627,9 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
   void _blockUser() {
     showWanderMoodToast(
       context,
-      message: '${widget.traveler['name']} has been blocked.',
+      message: AppLocalizations.of(context)!.socialUserBlocked(
+        (widget.traveler['name'] ?? '').toString(),
+      ),
       backgroundColor: const Color(0xFF718096),
     );
   }
@@ -629,7 +637,9 @@ class _TravelerProfileScreenState extends State<TravelerProfileScreen> {
   void _shareProfile() {
     showWanderMoodToast(
       context,
-      message: '${widget.traveler['name']}\'s profile shared!',
+      message: AppLocalizations.of(context)!.socialProfileShared(
+        (widget.traveler['name'] ?? '').toString(),
+      ),
       backgroundColor: const Color(0xFF2A6049),
     );
   }

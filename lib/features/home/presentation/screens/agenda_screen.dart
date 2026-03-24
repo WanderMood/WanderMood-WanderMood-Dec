@@ -12,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/home/presentation/widgets/planner_activity_detail_sheet.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import 'dynamic_my_day_provider.dart';
 // WanderMood v2 — Agenda / calendar (Screen 10)
 const Color _wmCharcoal = Color(0xFF1E1C18);
@@ -32,12 +33,12 @@ class _AgendaCardStatus {
   const _AgendaCardStatus(this.color, this.label, this.icon);
 }
 
-_AgendaCardStatus _agendaCardStatusFor(String? status) {
+_AgendaCardStatus _agendaCardStatusFor(String? status, AppLocalizations l10n) {
   switch (status) {
     case 'completed':
       return const _AgendaCardStatus(_wmForest, 'DONE', Icons.check_circle_rounded);
     case 'cancelled':
-      return const _AgendaCardStatus(Color(0xFFC62828), 'CANCELLED', Icons.cancel_outlined);
+      return _AgendaCardStatus(const Color(0xFFC62828), l10n.agendaStatusCancelled, Icons.cancel_outlined);
     case 'active':
       return const _AgendaCardStatus(_wmSunset, 'NOW', Icons.play_circle_filled_rounded);
     default:
@@ -122,7 +123,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 ),
               ),
               title: Text(
-                'My Agenda',
+                AppLocalizations.of(context)!.agendaTitle,
                 style: GoogleFonts.poppins(
                   fontSize: 26,
                   fontWeight: FontWeight.w700,
@@ -172,6 +173,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   }
   
   Widget _buildCalendarView(AsyncValue<List<Map<String, dynamic>>> activitiesAsyncValue) {
+    final l10n = AppLocalizations.of(context)!;
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -291,6 +293,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   }
   
   Widget _buildSelectedDayActivities(AsyncValue<List<Map<String, dynamic>>> activitiesAsyncValue) {
+    final l10n = AppLocalizations.of(context)!;
     // ✅ FIXED: Receive data as parameter instead of calling ref.watch
     return activitiesAsyncValue.when(
       data: (activities) {
@@ -332,21 +335,21 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
 
           if (diff == 0) {
             emoji = '🌅';
-            title = 'Vandaag is nog leeg';
-            subtitle = 'Laat Moody je dag plannen op basis van je stemming';
+            title = l10n.agendaTodayEmpty;
+            subtitle = l10n.agendaTodaySubtitle;
           } else if (diff == 1) {
             emoji = '🌙';
-            title = 'Morgen is nog vrij';
-            subtitle = 'Plan alvast wat je morgen wilt doen';
+            title = l10n.agendaTomorrowEmpty;
+            subtitle = l10n.agendaTomorrowSubtitle;
           } else if (diff <= 7) {
             final dayName = _getDayName(selectedDate);
             emoji = '📅';
-            title = '$dayName is nog leeg';
-            subtitle = 'Wil je alvast plannen voor $dayName?';
+            title = l10n.agendaDayEmpty(dayName);
+            subtitle = l10n.agendaDaySubtitle(dayName);
           } else {
             emoji = '✈️';
-            title = 'Nog niets gepland';
-            subtitle = 'Plan alvast activiteiten voor deze dag';
+            title = l10n.agendaFarFutureEmpty;
+            subtitle = l10n.agendaFarFutureSubtitle;
           }
 
           return SliverToBoxAdapter(
@@ -400,7 +403,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                             const Text('✨', style: TextStyle(fontSize: 16)),
                             const SizedBox(width: 8),
                             Text(
-                              'Plan met Moody',
+                              l10n.agendaPlanWithMoody,
                               style: GoogleFonts.poppins(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -428,7 +431,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                             const Icon(Icons.add, color: _wmForest, size: 18),
                             const SizedBox(width: 6),
                             Text(
-                              'Activiteit toevoegen',
+                              l10n.agendaAddActivity,
                               style: GoogleFonts.poppins(
                                 color: _wmForest,
                                 fontSize: 14,
@@ -480,7 +483,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Loading activities...',
+                  AppLocalizations.of(context)!.agendaLoadingActivities,
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -514,7 +517,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Error loading activities',
+                  AppLocalizations.of(context)!.agendaErrorLoadingActivities,
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -523,7 +526,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Please try again later',
+                  AppLocalizations.of(context)!.agendaPleaseTryAgainLater,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: Colors.grey[500],
@@ -552,20 +555,15 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     });
     showWanderMoodToast(
       context,
-      message: 'Kies een activiteit om toe te voegen voor ${_getDayName(selectedDate).toLowerCase()}.',
+      message: AppLocalizations.of(context)!.agendaChooseActivityForDay(
+        _getDayName(selectedDate).toLowerCase(),
+      ),
     );
   }
 
   String _getDayName(DateTime date) {
-    const days = [
-      'Maandag',
-      'Dinsdag',
-      'Woensdag',
-      'Donderdag',
-      'Vrijdag',
-      'Zaterdag',
-      'Zondag',
-    ];
+    final l10n = AppLocalizations.of(context)!;
+    final days = [l10n.dayMon, l10n.dayTue, l10n.dayWed, l10n.dayThu, l10n.dayFri, l10n.daySat, l10n.daySun];
     return days[date.weekday - 1];
   }
   
@@ -601,13 +599,13 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Geen activiteiten gepland',
+                      AppLocalizations.of(context)!.agendaNoActivitiesScheduled,
                       style: _wmBodyAgendaTextStyle(),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Er staan nog geen geplande activiteiten in je agenda',
+                      AppLocalizations.of(context)!.agendaNoActivitiesPlannedYet,
                       style: _wmBodyAgendaTextStyle(),
                       textAlign: TextAlign.center,
                     ),
@@ -682,7 +680,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Loading activities...',
+                  AppLocalizations.of(context)!.agendaLoadingActivities,
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -716,7 +714,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Error loading activities',
+                  AppLocalizations.of(context)!.agendaErrorLoadingActivities,
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -725,7 +723,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Please try again later',
+                  AppLocalizations.of(context)!.agendaPleaseTryAgainLater,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: Colors.grey[500],
@@ -852,10 +850,11 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   }
 
   Widget _buildAgendaActivityCard(Map<String, dynamic> activity) {
+    final l10n = AppLocalizations.of(context)!;
     final statusStr = (activity['status'] ?? 'upcoming').toString();
     final paymentStatus = activity['paymentStatus'] ?? 'free';
     final price = (activity['price'] as num?)?.toDouble() ?? 0.0;
-    final cardStatus = _agendaCardStatusFor(statusStr);
+    final cardStatus = _agendaCardStatusFor(statusStr, l10n);
     final durationM = activity['duration'] as int? ?? 60;
     final timeLabel = activity['time'] ?? '10:00 AM';
 
@@ -1071,7 +1070,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                                 },
                                 child: Center(
                                   child: Text(
-                                    'Directions',
+                                    AppLocalizations.of(context)!.socialGetDirections,
                                     style: GoogleFonts.poppins(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
@@ -1123,7 +1122,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                                     children: [
                                       Icon(Icons.info_outline, size: 18, color: _wmForest),
                                       const SizedBox(width: 8),
-                                      Text('View details', style: GoogleFonts.poppins()),
+                                      Text(AppLocalizations.of(context)!.myDayViewDetails, style: GoogleFonts.poppins()),
                                     ],
                                   ),
                                 ),
@@ -1133,7 +1132,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                                     children: [
                                       Icon(Icons.directions_rounded, size: 18, color: _wmForest),
                                       const SizedBox(width: 8),
-                                      Text('Get directions', style: GoogleFonts.poppins()),
+                                      Text(AppLocalizations.of(context)!.socialGetDirections, style: GoogleFonts.poppins()),
                                     ],
                                   ),
                                 ),
@@ -1156,7 +1155,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                                     children: [
                                       const Icon(Icons.share, size: 18),
                                       const SizedBox(width: 8),
-                                      Text('Share', style: GoogleFonts.poppins()),
+                                      Text(AppLocalizations.of(context)!.socialShare, style: GoogleFonts.poppins()),
                                     ],
                                   ),
                                 ),
@@ -1218,6 +1217,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   }
   
   Map<String, dynamic> _transformActivityData(Map<String, dynamic> activity) {
+    final l10n = AppLocalizations.of(context)!;
     final activityManager = ref.watch(activityManagerProvider);
     final activityId = activity['id'] as String? ?? activity['title'] as String? ?? '';
     
@@ -1227,13 +1227,13 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     
     final transformed = {
       'id': activityId,
-      'title': activity['title'] ?? activity['name'] ?? 'Untitled Activity',
-      'description': activity['description'] ?? 'No description available',
+      'title': activity['title'] ?? activity['name'] ?? l10n.agendaUntitledActivity,
+      'description': activity['description'] ?? l10n.agendaNoDescription,
       'date': startTime.toIso8601String(),
       'time': _formatTime(startTime),
       'duration': activity['duration'] ?? 60,
       'status': _getActivityStatus(activity, activityManager),
-      'location': activity['location'] ?? 'Location TBD',
+      'location': activity['location'] ?? l10n.agendaLocationTBD,
       'imageUrl': activity['imageUrl'] ?? _getDefaultImageUrl(activity),
       'paymentStatus': _getPaymentStatus(activity),
       'price': activity['price'] ?? 0.0,
@@ -1389,7 +1389,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       if (!mounted) return;
       showWanderMoodToast(
         context,
-        message: 'Unable to open directions',
+        message: AppLocalizations.of(context)!.socialOpenDirectionsFailed,
         isError: true,
       );
     }
@@ -1403,7 +1403,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Activiteit verwijderen?',
+          AppLocalizations.of(context)!.socialDeleteActivityConfirmTitle,
           style: GoogleFonts.museoModerno(
             fontWeight: FontWeight.bold,
             color: _wmCharcoal,
@@ -1430,7 +1430,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 if (mounted) {
                   showWanderMoodToast(
                     context,
-                    message: 'Kon activiteit niet verwijderen (ontbrekend id).',
+                    message: AppLocalizations.of(context)!.agendaDeleteMissingId,
                     isError: true,
                   );
                 }
@@ -1450,14 +1450,15 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 if (mounted) {
                   showWanderMoodToast(
                     context,
-                    message: '$title verwijderd uit je planner.',
+                    message:
+                        AppLocalizations.of(context)!.agendaRemovedFromPlanner(title),
                   );
                 }
               } catch (e) {
                 if (mounted) {
                   showWanderMoodToast(
                     context,
-                    message: 'Verwijderen mislukt. Probeer opnieuw.',
+                    message: AppLocalizations.of(context)!.socialDeleteFailedTryAgain,
                     isError: true,
                   );
                 }
@@ -1486,7 +1487,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     // In a real app, this would use the share_plus package
     showWanderMoodToast(
       context,
-      message: 'Activity details copied to share',
+      message: AppLocalizations.of(context)!.socialShareActivityDetailsCopied,
     );
   }
   
@@ -1511,7 +1512,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                   _openAgendaDirections(activity);
                 },
                 icon: const Icon(Icons.directions),
-                label: const Text('Get Directions'),
+                label: Text(AppLocalizations.of(context)!.socialGetDirections),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF2A6049),
                   side: const BorderSide(color: Color(0xFF2A6049)),
@@ -1530,7 +1531,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                   _deleteScheduledActivity(activity);
                 },
                 icon: const Icon(Icons.delete_outline),
-                label: const Text('Delete Activity'),
+                label: Text(AppLocalizations.of(context)!.myDayDeleteActivityCta),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,

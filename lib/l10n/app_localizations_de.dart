@@ -2550,7 +2550,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get prefInterestStaysDesc => 'Charming hotels and dreamy places';
 
   @override
-  String get prefInterestFood => 'Food & Dining';
+  String get prefInterestFood => 'Essen & Trinken';
 
   @override
   String get prefInterestFoodDesc => 'Local cuisine and unique restaurants';
@@ -2562,7 +2562,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get prefInterestArtsDesc => 'Museums, galleries, and theaters';
 
   @override
-  String get prefInterestShopping => 'Shopping & Markets';
+  String get prefInterestShopping => 'Shopping';
 
   @override
   String get prefInterestShoppingDesc => 'Local markets and shopping districts';
@@ -2630,7 +2630,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'A few quick questions to personalize your experience';
 
   @override
-  String get prefSectionSocialVibe => 'Social Vibe 👥';
+  String get prefSectionSocialVibe => 'Soziale Stimmung';
 
   @override
   String get prefSectionPlanningPace => 'Planning Pace ⏰';
@@ -2748,6 +2748,14 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get dayPlanAddToMyDay => 'Zu Mein Tag hinzufügen';
+
+  @override
+  String dayPlanAddMoreToMyDay(String count) {
+    return 'Füge noch $count zu Mein Tag hinzu';
+  }
+
+  @override
+  String get dayPlanViewMyDay => 'Mein Tag ansehen';
 
   @override
   String get dayPlanPlanAddedToMyDay => 'Plan zu Mein Tag hinzugefügt!';
@@ -3285,5 +3293,1814 @@ class AppLocalizationsDe extends AppLocalizations {
   String get noPlanPlanLater => 'Vielleicht später';
 
   @override
+  String get dayPlanNoLinkedPlaceAlternative =>
+      'No high-quality linked-place alternative found yet. Try again.';
+
+  @override
+  String get myDayCheckInPrompt =>
+      'You\'re here! Tap Done when you\'re finished.';
+
+  @override
+  String get myDayDonePrompt => 'Nice one! You can leave a review now.';
+
+  @override
+  String get myDayGetReadyUpcomingFallback => 'Your upcoming activity';
+
+  @override
+  String get myDayDirectionsOpensInMaps => 'Opens in maps app';
+
+  @override
+  String get myDayCallVenue => 'Call Venue';
+
+  @override
+  String get myDayCallVenueSubtitle => 'Confirm details or ask questions';
+
+  @override
+  String get myDayNoPhoneAvailable => 'No phone number available';
+
+  @override
+  String get myDayAddToCalendar => 'Add to Calendar';
+
+  @override
+  String get myDayAddToCalendarSubtitle => 'Set reminder and details';
+
+  @override
+  String get myDayAddedToCalendar => 'Added to calendar';
+
+  @override
+  String get myDayAllSet => 'You\'re all set! Have a great time!';
+
+  @override
+  String get myDayReadyCta => 'I\'m Ready!';
+
+  @override
+  String myDayTabActivated(String tab) {
+    return '$tab activated!';
+  }
+
+  @override
+  String get myDaySaveForLater => 'Save for later';
+
+  @override
+  String myDayDirectionsChooseFor(String title) {
+    return 'Choose how you\'d like to get directions to $title';
+  }
+
+  @override
+  String get myDayActivityOptionsTitle => 'Activity options';
+
+  @override
+  String get myDayViewDetails => 'View details';
+
+  @override
+  String get myDayImHere => 'I\'m here';
+
+  @override
+  String get myDayImHereSubtitle => 'Check in when you arrive at this spot';
+
+  @override
+  String get myDayDone => 'Done';
+
+  @override
+  String get myDayDoneSubtitle => 'Mark complete and leave a review';
+
+  @override
+  String get myDayShareActivity => 'Share activity';
+
+  @override
+  String get myDayShareComingSoon => 'Share functionality coming soon!';
+
+  @override
+  String myDaySavedForLater(String title) {
+    return '$title saved for later!';
+  }
+
+  @override
+  String get myDayDeleteActivity => 'Delete activity';
+
+  @override
+  String get myDayDeleteActivitySubtitle => 'Remove this activity from My Day';
+
+  @override
+  String get myDayDeleteConfirmTitle => 'Delete activity?';
+
+  @override
+  String myDayDeleteConfirmBody(String title) {
+    return '\"$title\" will be removed from your My Day plan.';
+  }
+
+  @override
+  String get myDayDeleteActivityCta => 'Delete';
+
+  @override
+  String get myDayDeleteMissingId => 'Could not delete activity (missing id).';
+
+  @override
+  String myDayDeletedFromPlan(String title) {
+    return '$title deleted from My Day.';
+  }
+
+  @override
+  String get myDayDeleteFailed => 'Delete failed. Please try again.';
+
+  @override
+  String get myDayActivityLocationFallback => 'Activity Location';
+
+  @override
+  String get myDayUnableOpenDirections => 'Unable to open directions';
+
+  @override
+  String get myDayChatWithMoodyTitle => 'Chat with Moody';
+
+  @override
+  String get myDayChatWithMoodyComingSoon =>
+      'Coming soon! Moody will be able to help you plan your day and suggest activities based on your mood and preferences.';
+
+  @override
   String get myDayHeroActiveSubtitle => 'Du bist gerade bei dieser Aktivität.';
+
+  @override
+  String get myDayUnableLoadActivities =>
+      'Aktivitäten konnten nicht geladen werden';
+
+  @override
+  String get navMyDay => 'Mein Tag';
+
+  @override
+  String get navExplore => 'Entdecken';
+
+  @override
+  String get navProfile => 'Profil';
+
+  @override
+  String get myDayWeekendEmptyTitle => 'Dein Wochenende ist noch leer!';
+
+  @override
+  String get myDayWeekendEmptySubtitle =>
+      'Möchtest du Samstag oder Sonntag schon planen?';
+
+  @override
+  String myDayWeekendSaturdayShort(String day) {
+    return 'Sa $day';
+  }
+
+  @override
+  String myDayWeekendSundayShort(String day) {
+    return 'So $day';
+  }
+
+  @override
+  String placeCardFailedToShare(String error) {
+    return 'Teilen fehlgeschlagen: $error';
+  }
+
+  @override
+  String placeCardSaved(String name) {
+    return '$name gespeichert!';
+  }
+
+  @override
+  String placeCardFailedToggleSave(String name) {
+    return 'Speicherstatus für $name konnte nicht aktualisiert werden';
+  }
+
+  @override
+  String placeDetailSavedToFavorites(String name) {
+    return '$name zu Favoriten hinzugefügt!';
+  }
+
+  @override
+  String get placeDetailSaveToggleFailed =>
+      'Gespeicherten Ort konnte nicht aktualisiert werden';
+
+  @override
+  String placeDetailCouldNotOpenMaps(String error) {
+    return 'Karten konnten nicht geöffnet werden: $error';
+  }
+
+  @override
+  String get bookingSavedViewMyBookings =>
+      'Buchung gespeichert! In Meine Buchungen ansehen';
+
+  @override
+  String get bookingViewAction => 'Ansehen';
+
+  @override
+  String bookingErrorSaving(String error) {
+    return 'Fehler beim Speichern der Buchung: $error';
+  }
+
+  @override
+  String get gygCodeCopied => 'Code kopiert 💚';
+
+  @override
+  String get socialNewMessageComingSoon =>
+      'Neue Nachrichtenfunktion kommt bald!';
+
+  @override
+  String get socialSearchMessagesHint => 'Nachrichten suchen';
+
+  @override
+  String get socialCallComingSoon => 'Anruffunktion kommt bald!';
+
+  @override
+  String get socialVideoCallComingSoon => 'Videoanruf-Funktion kommt bald!';
+
+  @override
+  String get socialPhotoSharingComingSoon => 'Foto teilen kommt bald!';
+
+  @override
+  String get socialTypeMessageHint => 'Nachricht schreiben...';
+
+  @override
+  String get socialReportUser => 'Nutzer melden';
+
+  @override
+  String get socialBlockUser => 'Nutzer blockieren';
+
+  @override
+  String get socialShareProfile => 'Profil teilen';
+
+  @override
+  String socialMessageTraveler(String name) {
+    return 'Nachricht an $name';
+  }
+
+  @override
+  String get socialWriteMessageHint => 'Schreibe deine Nachricht...';
+
+  @override
+  String socialMessageSentTo(String name) {
+    return 'Nachricht an $name gesendet!';
+  }
+
+  @override
+  String get socialSend => 'Senden';
+
+  @override
+  String get socialUserReportedThankYou =>
+      'Nutzer gemeldet. Danke, dass du unsere Community sicher hältst.';
+
+  @override
+  String socialUserBlocked(String name) {
+    return '$name wurde blockiert.';
+  }
+
+  @override
+  String socialProfileShared(String name) {
+    return 'Profil von $name geteilt!';
+  }
+
+  @override
+  String get socialSavedPostsUnavailable =>
+      'Gespeicherte Beiträge sind noch nicht verfügbar.';
+
+  @override
+  String get socialCloseFriendsUnavailable =>
+      'Enge Freunde sind noch nicht verfügbar.';
+
+  @override
+  String get socialMarkAsRead => 'Mark as read';
+
+  @override
+  String get socialMarkAsUnread => 'Mark as unread';
+
+  @override
+  String get socialFollowBack => 'Follow Back';
+
+  @override
+  String get socialViewPost => 'View Post';
+
+  @override
+  String get socialReply => 'Reply';
+
+  @override
+  String get socialAccept => 'Accept';
+
+  @override
+  String socialFilteringBy(String filter) {
+    return 'Filtering by: $filter';
+  }
+
+  @override
+  String get socialOpeningPost => 'Opening post...';
+
+  @override
+  String socialOpeningUserProfile(String name) {
+    return 'Opening $name profile...';
+  }
+
+  @override
+  String get socialOpeningTrendingPost => 'Opening trending post...';
+
+  @override
+  String get socialOpeningMention => 'Opening mention...';
+
+  @override
+  String socialFollowingUser(String name) {
+    return 'Following $name!';
+  }
+
+  @override
+  String get socialReplyToComment => 'Reply to Comment';
+
+  @override
+  String get socialWriteReplyHint => 'Write your reply...';
+
+  @override
+  String get socialReplySent => 'Reply sent!';
+
+  @override
+  String get socialRequestAccepted => 'Request accepted!';
+
+  @override
+  String get socialOpeningContent => 'Opening content...';
+
+  @override
+  String get socialNotificationDeleted => 'Notification deleted';
+
+  @override
+  String get socialUndo => 'Undo';
+
+  @override
+  String get socialClose => 'Close';
+
+  @override
+  String socialToggleState(String title, String state) {
+    return '$title $state';
+  }
+
+  @override
+  String get socialAllNotificationsRead => 'All notifications marked as read';
+
+  @override
+  String socialYouHaveNewNotifications(String count) {
+    return 'You have $count new notifications';
+  }
+
+  @override
+  String get socialSampleNotificationLiked => '• Sarah liked your post';
+
+  @override
+  String get socialSampleNotificationFollowed =>
+      '• Marco started following you';
+
+  @override
+  String get socialSampleNotificationStory => '• New travel story from Luna';
+
+  @override
+  String get socialOpeningAllTravelStories => 'Opening all travel stories...';
+
+  @override
+  String socialOpeningUserStory(String name) {
+    return 'Opening $name\'s story...';
+  }
+
+  @override
+  String get socialSavePost => 'Save Post';
+
+  @override
+  String socialFollowUser(String name) {
+    return 'Follow $name';
+  }
+
+  @override
+  String get socialReportPost => 'Report Post';
+
+  @override
+  String socialLikedUserPost(String name) {
+    return 'Liked $name\'s post!';
+  }
+
+  @override
+  String socialCommentOnUserPost(String name) {
+    return 'Comment on $name\'s post';
+  }
+
+  @override
+  String get socialWriteCommentHint => 'Write a comment...';
+
+  @override
+  String get socialCommentPosted => 'Comment posted!';
+
+  @override
+  String get socialPost => 'Post';
+
+  @override
+  String socialSharedUserPost(String name) {
+    return 'Shared $name\'s post!';
+  }
+
+  @override
+  String socialSavedUserPost(String name) {
+    return 'Saved $name\'s post!';
+  }
+
+  @override
+  String socialReportedUserPost(String name) {
+    return 'Reported $name\'s post';
+  }
+
+  @override
+  String get socialShareComingSoon => 'Share feature coming soon!';
+
+  @override
+  String socialFoundPostsWithTag(String count, String tag) {
+    return 'Found $count posts with #$tag';
+  }
+
+  @override
+  String get socialLinkCopiedClipboard => 'Link copied to clipboard';
+
+  @override
+  String get socialAddCommentHint => 'Add a comment...';
+
+  @override
+  String get socialCommentFeatureComingSoon => 'Comment feature coming soon!';
+
+  @override
+  String socialRemovedFromCollection(String place, String collection) {
+    return '$place removed from $collection';
+  }
+
+  @override
+  String get socialEditCollection => 'Edit collection';
+
+  @override
+  String get socialCollectionName => 'Collection name';
+
+  @override
+  String get socialDeleteCollectionTitle => 'Delete collection?';
+
+  @override
+  String get socialPickDayForPlan => 'Pick day for plan';
+
+  @override
+  String get socialDay => 'Day';
+
+  @override
+  String get socialTime => 'Time';
+
+  @override
+  String get socialAddToCollection => 'Add to collection';
+
+  @override
+  String socialRemoved(String name) {
+    return '$name removed';
+  }
+
+  @override
+  String get socialCollectionNameHint =>
+      'e.g. Rotterdam weekend, Kid-friendly…';
+
+  @override
+  String get socialCreate => 'Create';
+
+  @override
+  String get socialMessagingComingSoon => 'Messaging feature coming soon!';
+
+  @override
+  String get socialQrSharingComingSoon => 'QR code sharing coming soon!';
+
+  @override
+  String get socialReportComingSoon => 'Report feature coming soon!';
+
+  @override
+  String get socialBlockComingSoon => 'Block feature coming soon!';
+
+  @override
+  String get socialUserNotFound => 'User not found';
+
+  @override
+  String get socialPleaseSelectImage => 'Please select an image';
+
+  @override
+  String get socialStoryPostedSuccess => 'Story posted successfully!';
+
+  @override
+  String get socialCreateStory => 'Create Story';
+
+  @override
+  String get socialTapAddPhoto => 'Tap to add a photo';
+
+  @override
+  String get socialAddStoryCaptionHint => 'Add a caption to your story...';
+
+  @override
+  String get socialAddLocation => 'Add Location';
+
+  @override
+  String get socialLocationComingSoon => 'Location feature coming soon!';
+
+  @override
+  String get socialActivityTaggingComingSoon => 'Activity tagging coming soon!';
+
+  @override
+  String get socialNameUsernameRequired => 'Name and username are required';
+
+  @override
+  String socialSelectUpToTags(String count) {
+    return 'You can select up to $count tags';
+  }
+
+  @override
+  String get socialPleaseAddOneImage => 'Please add at least one image';
+
+  @override
+  String get socialPostCreatedSuccess => 'Post created successfully!';
+
+  @override
+  String get socialCreatePost => 'Create Post';
+
+  @override
+  String get socialAddPhotos => 'Add Photos';
+
+  @override
+  String get socialAddMore => 'Add More';
+
+  @override
+  String get socialWriteCaptionHint => 'Write a caption...';
+
+  @override
+  String get moodySpeechNotAvailable =>
+      'Speech recognition is not available on this device';
+
+  @override
+  String socialFailedSharePost(String error) {
+    return 'Failed to share post: $error';
+  }
+
+  @override
+  String socialViewingPostsTagged(String tag) {
+    return 'Viewing posts tagged with #$tag';
+  }
+
+  @override
+  String get socialSearchTravelersHint =>
+      'Search travelers by name or interests...';
+
+  @override
+  String socialConnectionRequestSent(String name) {
+    return 'Connection request sent to $name!';
+  }
+
+  @override
+  String get socialViewProfile => 'View Profile';
+
+  @override
+  String get socialSendRequest => 'Send Request';
+
+  @override
+  String get socialProfileUpdatedDevMode =>
+      'Profile updated successfully! (Development mode)';
+
+  @override
+  String socialErrorUpdatingProfile(String error) {
+    return 'Error updating profile: $error';
+  }
+
+  @override
+  String get socialUploadingPhoto => 'Uploading photo...';
+
+  @override
+  String socialErrorUploadingPhoto(String error) {
+    return 'Error uploading photo: $error';
+  }
+
+  @override
+  String get socialEditProfileInfo => 'Edit Profile Info';
+
+  @override
+  String get myDayAddSignInRequired => 'Sign in to add activities.';
+
+  @override
+  String get myDayAddFailedTryAgain =>
+      'Could not add activity. Please try again.';
+
+  @override
+  String get activityOptionsViewAction => 'View';
+
+  @override
+  String get exploreNoPlacesFound => 'No places found';
+
+  @override
+  String agendaChooseActivityForDay(String day) {
+    return 'Choose an activity to add for $day.';
+  }
+
+  @override
+  String get agendaLoadingActivities => 'Loading activities...';
+
+  @override
+  String get agendaErrorLoadingActivities => 'Error loading activities';
+
+  @override
+  String get agendaPleaseTryAgainLater => 'Please try again later';
+
+  @override
+  String get agendaNoActivitiesScheduled => 'No activities scheduled';
+
+  @override
+  String get agendaNoActivitiesPlannedYet =>
+      'You do not have any planned activities in your agenda yet';
+
+  @override
+  String get agendaDeleteMissingId => 'Could not delete activity (missing id).';
+
+  @override
+  String agendaRemovedFromPlanner(String title) {
+    return '$title removed from your planner.';
+  }
+
+  @override
+  String get socialGetDirections => 'Get directions';
+
+  @override
+  String get socialShare => 'Share';
+
+  @override
+  String get socialOpenDirectionsFailed => 'Unable to open directions';
+
+  @override
+  String get socialDeleteActivityConfirmTitle => 'Delete activity?';
+
+  @override
+  String get socialDeleteFailedTryAgain => 'Delete failed. Please try again.';
+
+  @override
+  String get socialShareActivityDetailsCopied =>
+      'Activity details copied to share';
+
+  @override
+  String get dailyScheduleTitle => 'Daily Schedule';
+
+  @override
+  String get dailyScheduleToday => 'Today';
+
+  @override
+  String get dailyScheduleTomorrow => 'Tomorrow';
+
+  @override
+  String get dailyScheduleNoActivities => 'No activities scheduled';
+
+  @override
+  String get dailyScheduleExplorePrompt =>
+      'Tap the button below to explore activities';
+
+  @override
+  String get dailyScheduleExploreActivities => 'Explore Activities';
+
+  @override
+  String get dailyScheduleUpcomingActivities => 'Upcoming Activities';
+
+  @override
+  String get dailyScheduleCompletedActivities => 'Completed Activities';
+
+  @override
+  String dailyScheduleActivitiesPlanned(String count) {
+    return '$count activities planned';
+  }
+
+  @override
+  String dailyScheduleActivitiesCompleted(String count) {
+    return '$count activities completed';
+  }
+
+  @override
+  String get dailyScheduleNoActivitiesForDate =>
+      'No activities scheduled for this date';
+
+  @override
+  String get dailyScheduleConfirmed => 'Confirmed';
+
+  @override
+  String get dailyScheduleCompleted => 'Completed';
+
+  @override
+  String dailyScheduleDurationMinutes(String minutes) {
+    return '$minutes minutes';
+  }
+
+  @override
+  String get signupNoPasswordNeeded => 'Kein Passwort nötig ✨';
+
+  @override
+  String get signupRatingBadge => '⭐ 4,9/5 · Kostenlos · Kein Passwort';
+
+  @override
+  String get signupPrivacyPrefix => 'Durch Fortfahren stimmst du unserer ';
+
+  @override
+  String get signupPrivacyLinkLabel => 'Datenschutzrichtlinie zu';
+
+  @override
+  String get signupSuccessCheckInbox => 'Schau in dein Postfach! 📬';
+
+  @override
+  String get signupSuccessWeSentTo => 'Wir haben einen Link gesendet an';
+
+  @override
+  String get signupOpenGmail => 'Gmail öffnen';
+
+  @override
+  String get signupOpenOutlook => 'Outlook öffnen';
+
+  @override
+  String get signupOpenAppleMail => 'Apple Mail öffnen';
+
+  @override
+  String get signupOpenEmailApp => 'E-Mail-App öffnen';
+
+  @override
+  String get signupNoEmailReceived => 'Keine E-Mail erhalten?';
+
+  @override
+  String get signupWrongEmailAddress => 'Falsche E-Mail-Adresse?';
+
+  @override
+  String get introHeadline1 => 'Deine Stimmung,';
+
+  @override
+  String get introHeadline2 => 'dein Abenteuer';
+
+  @override
+  String get demoModeLabel => '▶ Demo-Modus';
+
+  @override
+  String get demoSkip => 'Überspringen';
+
+  @override
+  String get demoTapToChooseMood => 'Tippe um deine Stimmung zu wählen:';
+
+  @override
+  String get demoDiscoverMore => 'Mehr entdecken →';
+
+  @override
+  String get demoMoodyQuestion =>
+      'Ich helfe dir, tolle Orte basierend auf deiner Stimmung zu entdecken. Wie ist deine Stimmung heute?';
+
+  @override
+  String get demoUserReplyRelaxed => 'Ich fühle mich entspannt';
+
+  @override
+  String get demoUserReplyAdventurous => 'Ich fühle mich abenteuerlustig';
+
+  @override
+  String get demoUserReplyRomantic => 'Ich fühle mich romantisch';
+
+  @override
+  String get demoUserReplyCultural => 'Ich fühle mich kulturell';
+
+  @override
+  String get demoUserReplyFoodie => 'Ich fühle mich wie ein Foodie';
+
+  @override
+  String get demoUserReplySocial => 'Ich fühle mich gesellig';
+
+  @override
+  String get demoUserReplyDefault => 'Das ist meine Stimmung!';
+
+  @override
+  String get dayMon => 'Montag';
+
+  @override
+  String get dayTue => 'Dienstag';
+
+  @override
+  String get dayWed => 'Mittwoch';
+
+  @override
+  String get dayThu => 'Donnerstag';
+
+  @override
+  String get dayFri => 'Freitag';
+
+  @override
+  String get daySat => 'Samstag';
+
+  @override
+  String get daySun => 'Sonntag';
+
+  @override
+  String get monthJan => 'Jan';
+
+  @override
+  String get monthFeb => 'Feb';
+
+  @override
+  String get monthMar => 'Mär';
+
+  @override
+  String get monthApr => 'Apr';
+
+  @override
+  String get monthMay => 'Mai';
+
+  @override
+  String get monthJun => 'Jun';
+
+  @override
+  String get monthJul => 'Jul';
+
+  @override
+  String get monthAug => 'Aug';
+
+  @override
+  String get monthSep => 'Sep';
+
+  @override
+  String get monthOct => 'Okt';
+
+  @override
+  String get monthNov => 'Nov';
+
+  @override
+  String get monthDec => 'Dez';
+
+  @override
+  String get myDayEmptyDayTitle => 'Dein Tag ist leer ✨';
+
+  @override
+  String get myDayEmptyDaySubtitle =>
+      'Lass Moody einen Plan für deine heutige Stimmung erstellen';
+
+  @override
+  String get myDayPlanWithMoodyButton => 'Meinen Tag mit Moody planen';
+
+  @override
+  String get myDayExploreActivitiesButton => 'Aktivitäten erkunden';
+
+  @override
+  String get myDayExploreNearbyButton => 'In der Nähe erkunden';
+
+  @override
+  String get myDayAskMoodyButton => 'Moody fragen';
+
+  @override
+  String get myDayGetReadyButton => 'Bereit machen';
+
+  @override
+  String get myDayRightNow => 'JETZT';
+
+  @override
+  String get myDayStatusError => '⚠️ FEHLER';
+
+  @override
+  String get myDayStatusUnableToLoad => 'Status nicht ladbar';
+
+  @override
+  String get myDayOpenGoogleMaps => 'Google Maps';
+
+  @override
+  String get myDayOpenAppleMaps => 'Apple Maps';
+
+  @override
+  String get agendaTitle => 'Meine Agenda';
+
+  @override
+  String get agendaStatusCancelled => 'STORNIERT';
+
+  @override
+  String get agendaTodayEmpty => 'Heute ist noch leer';
+
+  @override
+  String get agendaTodaySubtitle =>
+      'Lass Moody deinen Tag nach deiner Stimmung planen';
+
+  @override
+  String get agendaTomorrowEmpty => 'Morgen ist noch frei';
+
+  @override
+  String get agendaTomorrowSubtitle =>
+      'Plane schon, was du morgen machen möchtest';
+
+  @override
+  String agendaDayEmpty(String dayName) {
+    return '$dayName ist noch leer';
+  }
+
+  @override
+  String agendaDaySubtitle(String dayName) {
+    return 'Möchtest du schon für $dayName planen?';
+  }
+
+  @override
+  String get agendaFarFutureEmpty => 'Noch nichts geplant';
+
+  @override
+  String get agendaFarFutureSubtitle =>
+      'Plane schon Aktivitäten für diesen Tag';
+
+  @override
+  String get agendaPlanWithMoody => 'Mit Moody planen';
+
+  @override
+  String get agendaAddActivity => 'Aktivität hinzufügen';
+
+  @override
+  String get agendaUntitledActivity => 'Unbenannte Aktivität';
+
+  @override
+  String get agendaNoDescription => 'Keine Beschreibung verfügbar';
+
+  @override
+  String get agendaLocationTBD => 'Standort unbekannt';
+
+  @override
+  String get exploreCategoryAll => 'Alle';
+
+  @override
+  String get exploreCategoryPopular => 'Beliebt';
+
+  @override
+  String get exploreCategoryAccommodations => 'Unterkünfte';
+
+  @override
+  String get exploreCategoryNature => 'Natur';
+
+  @override
+  String get exploreCategoryCulture => 'Kultur';
+
+  @override
+  String get exploreCategoryFood => 'Essen';
+
+  @override
+  String get exploreCategoryActivities => 'Aktivitäten';
+
+  @override
+  String get exploreCategoryHistory => 'Geschichte';
+
+  @override
+  String get exploreFilterAdditionalOptions => 'Weitere Optionen';
+
+  @override
+  String get exploreFilterParking => 'Parken';
+
+  @override
+  String get exploreFilterTransport => 'Transport';
+
+  @override
+  String get exploreFilterCreditCards => 'Kreditkarten';
+
+  @override
+  String get exploreFilterWifi => 'WLAN';
+
+  @override
+  String get exploreFilterCharging => 'Laden';
+
+  @override
+  String get exploreFilterInstagrammable => 'Instagrammabel';
+
+  @override
+  String get exploreFilterArtisticDesign => 'Künstlerisches Design';
+
+  @override
+  String get exploreFilterAestheticSpaces => 'Ästhetische Räume';
+
+  @override
+  String get exploreFilterScenicViews => 'Malerische Aussicht';
+
+  @override
+  String get exploreFilterBestAtNight => 'Am besten nachts';
+
+  @override
+  String get exploreFilterBestAtSunset => 'Am besten beim Sonnenuntergang';
+
+  @override
+  String get exploreNoPlacesOnMap => 'Keine Orte auf der Karte';
+
+  @override
+  String get timeLabelToday => 'Heute';
+
+  @override
+  String get timeLabelTomorrow => 'Morgen';
+
+  @override
+  String get timeLabelMorning => 'Morgen';
+
+  @override
+  String get timeLabelAfternoon => 'Nachmittag';
+
+  @override
+  String get timeLabelEvening => 'Abend';
+
+  @override
+  String get exploreFilterIndoorOnly => 'Nur drinnen';
+
+  @override
+  String get exploreFilterOutdoorOnly => 'Nur draußen';
+
+  @override
+  String get exploreFilterWeatherSafe => 'Wettersicher';
+
+  @override
+  String get exploreFilterOpenNow => 'Jetzt geöffnet';
+
+  @override
+  String get exploreFilterQuiet => 'Ruhig';
+
+  @override
+  String get exploreFilterLively => 'Lebendig';
+
+  @override
+  String get exploreFilterRomanticVibe => 'Romantische Atmosphäre';
+
+  @override
+  String get exploreFilterSurpriseMe => 'Überrasch mich';
+
+  @override
+  String get exploreFilterVegan => 'Vegan';
+
+  @override
+  String get exploreFilterVegetarian => 'Vegetarisch';
+
+  @override
+  String get exploreFilterHalal => 'Halal';
+
+  @override
+  String get exploreFilterGlutenFree => 'Glutenfrei';
+
+  @override
+  String get exploreFilterPescatarian => 'Pescetarisch';
+
+  @override
+  String get exploreFilterNoAlcohol => 'Kein Alkohol';
+
+  @override
+  String get exploreFilterWheelchairAccessible => 'Rollstuhlgerecht';
+
+  @override
+  String get exploreFilterLgbtqFriendly => 'LGBTQ+-freundlich';
+
+  @override
+  String get exploreFilterSeniorFriendly => 'Seniorenfreundlich';
+
+  @override
+  String get exploreFilterBabyFriendly => 'Babyfreundlich';
+
+  @override
+  String get exploreFilterBlackOwned => 'Black-owned';
+
+  @override
+  String get exploreFilterPriceRange => 'Preisbereich (€)';
+
+  @override
+  String get exploreFilterMaxDistance => 'Maximale Entfernung (km)';
+
+  @override
+  String get chatSheetMoodyName => 'Moody';
+
+  @override
+  String get chatSheetErrorMessage =>
+      'Ups! Ich habe gerade Verbindungsprobleme. Kannst du es nochmal versuchen? 🤔';
+
+  @override
+  String get chatSheetEmptyStateBody =>
+      'Ich kenne die Stadt wie meine Westentasche! Sag mir deine Stimmung und ich gestalte den perfekten Tag für dich. Ob du dich abenteuerlustig, romantisch oder entspannt fühlst - ich hab dich! 🎯';
+
+  @override
+  String get chatSheetCraftingMessage =>
+      'Moody bereitet etwas Besonderes vor...';
+
+  @override
+  String get chatSheetInputHint => 'Wie ist deine Stimmung heute?';
+
+  @override
+  String get moodyConversationGreeting =>
+      'Hey! Wie geht es dir heute? Ich kann Aktivitäten basierend auf deiner Stimmung vorschlagen.';
+
+  @override
+  String get moodyConversationTalkToMoody => 'Mit Moody sprechen';
+
+  @override
+  String get moodyConversationSpeaking => 'Spricht...';
+
+  @override
+  String get moodyConversationListening => 'Hört zu...';
+
+  @override
+  String get moodyConversationThinking => 'Denkt nach...';
+
+  @override
+  String get moodyConversationTypeMessage => 'Nachricht eingeben...';
+
+  @override
+  String get homeSelectLocation => 'Standort auswählen';
+
+  @override
+  String get homeCurrentLocation => 'Aktueller Standort';
+
+  @override
+  String get homeUsingGps => 'GPS verwenden';
+
+  @override
+  String get homeGettingLocation => 'Standort abrufen...';
+
+  @override
+  String homeLocationResult(String location) {
+    return 'Standort: $location';
+  }
+
+  @override
+  String get homeLocationNotFound => 'Standort konnte nicht ermittelt werden';
+
+  @override
+  String get homeChatErrorRetry =>
+      'Sorry, ich konnte gerade nicht antworten. Versuch es nochmal! 😅';
+
+  @override
+  String get checkInQ1Title => 'Wie war dein Tag?';
+
+  @override
+  String get checkInQ1Subtitle => 'Moody möchte dich besser kennenlernen 🌙';
+
+  @override
+  String get checkInQ1Question => 'Was war der beste Moment des Tages?';
+
+  @override
+  String get checkInQ1Activities => 'Die Aktivitäten 🎯';
+
+  @override
+  String get checkInQ1Friends => 'Mit Freunden 👥';
+
+  @override
+  String get checkInQ1Exploring => 'Entdecken 🔍';
+
+  @override
+  String get checkInQ1Food => 'Essen & Trinken 🍽';
+
+  @override
+  String get checkInQ1Relaxing => 'Entspannen 🛋';
+
+  @override
+  String get checkInMaybeLater => 'Vielleicht später';
+
+  @override
+  String checkInQ2Question(String name) {
+    return 'War $name es wert?';
+  }
+
+  @override
+  String get checkInQ2Amazing => 'Fantastisch! 🤩';
+
+  @override
+  String get checkInQ2Good => 'Gut 👍';
+
+  @override
+  String get checkInQ2Ok => 'In Ordnung';
+
+  @override
+  String get checkInQ2NotForMe => 'Nicht für mich';
+
+  @override
+  String get checkInQ3Question => 'Wie fühlst du dich jetzt?';
+
+  @override
+  String get checkInQ3Happy => 'Glücklich';
+
+  @override
+  String get checkInQ3Relaxed => 'Entspannt';
+
+  @override
+  String get checkInQ3Tired => 'Müde';
+
+  @override
+  String get checkInQ3Mixed => 'Gemischt';
+
+  @override
+  String get checkInDoneTitle => 'Danke! Bis morgen 🌟';
+
+  @override
+  String get checkInDoneSubtitle => 'Moody merkt sich das für das nächste Mal';
+
+  @override
+  String get checkInSaveError =>
+      'Speichern fehlgeschlagen. Bitte versuche es erneut.';
+
+  @override
+  String get checkInClose => 'Schließen';
+
+  @override
+  String get dagSheetOpener1 => 'Du bist zu Hause! Wie war dein Tag?';
+
+  @override
+  String get dagSheetOpener2 => 'Erzähl! Wie war es heute?';
+
+  @override
+  String get dagSheetOpener3 => 'Wie lief es heute?';
+
+  @override
+  String get dagSheetOpener4 => 'Moody ist neugierig — wie war dein Tag?';
+
+  @override
+  String get dagSheetE1Amazing => 'Fantastisch! 🤩';
+
+  @override
+  String get dagSheetE1PrettyGood => 'Ganz gut 😊';
+
+  @override
+  String get dagSheetE1Okay => 'Okay 😐';
+
+  @override
+  String get dagSheetE1Letdown => 'Enttäuschend 😔';
+
+  @override
+  String get dagSheetFollowupAmazing => 'Toll! Was war der schönste Moment? 🌟';
+
+  @override
+  String get dagSheetFollowupPrettyGood =>
+      'Schön! Etwas, das wirklich herausragte?';
+
+  @override
+  String get dagSheetFollowupOkay =>
+      'Ehrliche Antwort. Was hätte besser sein können?';
+
+  @override
+  String get dagSheetFollowupLetdown => 'Schade... Was ist schiefgelaufen?';
+
+  @override
+  String get dagSheetFollowupDefault => 'Erzähl mir mehr! ✨';
+
+  @override
+  String get dagSheetE2Activities => 'Die Aktivitäten 🎯';
+
+  @override
+  String get dagSheetE2People => 'Mit Menschen 👥';
+
+  @override
+  String get dagSheetE2Exploring => 'Das Entdecken 🔍';
+
+  @override
+  String get dagSheetE2Food => 'Lecker gegessen 🍽';
+
+  @override
+  String get dagSheetE2Relaxing => 'Einfach entspannen 🛋';
+
+  @override
+  String get dagSheetE2Unexpected => 'Etwas Unerwartetes ✨';
+
+  @override
+  String get dagSheetClosing1 => 'Gut gemacht heute. Schlaf gut 🌙';
+
+  @override
+  String get dagSheetClosing2 => 'Moody merkt sich das für morgen. Bis dann! ✨';
+
+  @override
+  String get dagSheetClosing3 =>
+      'Danke fürs Teilen. Morgen ist wieder ein schöner Tag 🌟';
+
+  @override
+  String get dagSheetClosing4 =>
+      'Schlaf gut. Morgen machen wir was Schönes daraus 🌙';
+
+  @override
+  String get dagSheetReflectionPrompt =>
+      'Noch etwas auf dem Herzen? Alles ok — oder lass es leer und schlaf gut. ✨';
+
+  @override
+  String get dagSheetReflectionHint => 'Hier tippen… (optional)';
+
+  @override
+  String get dagSheetGoodnight => 'Gute Nacht Moody 🌙';
+
+  @override
+  String carouselPerfectMatches(String count) {
+    return '$count perfekte Treffer';
+  }
+
+  @override
+  String get carouselRefreshing => 'Empfehlungen aktualisieren...';
+
+  @override
+  String get carouselTopPick => 'TOP-AUSWAHL';
+
+  @override
+  String get carouselTellMeMore => 'Sag mir mehr';
+
+  @override
+  String get carouselAddToDay => 'Zum Tag hinzufügen';
+
+  @override
+  String get carouselDirections => 'Route';
+
+  @override
+  String get carouselShare => 'Teilen';
+
+  @override
+  String get carouselDetails => 'Details';
+
+  @override
+  String get carouselSaveForLater => 'Für später speichern';
+
+  @override
+  String get carouselNotInterested => 'Nicht interessiert';
+
+  @override
+  String get carouselNoRecommendations => 'Noch keine Empfehlungen';
+
+  @override
+  String get carouselCheckBackSoon =>
+      'Schau bald wieder vorbei für personalisierte Vorschläge!';
+
+  @override
+  String get prefBack => 'Zurück';
+
+  @override
+  String get interestsPrompt => 'Was magst du? Ich finde es für dich! 🔍';
+
+  @override
+  String get interestsTitle => 'Was sind deine Interessen?';
+
+  @override
+  String get interestsSubtitle => 'Wähle alles, was dich anspricht.';
+
+  @override
+  String get interestsMultipleChoice => 'Mehrere Auswahlen möglich';
+
+  @override
+  String get interestsContinue => 'Weiter →';
+
+  @override
+  String get interestFoodDining => 'Essen & Trinken';
+
+  @override
+  String get interestArtsCulture => 'Kunst & Kultur';
+
+  @override
+  String get interestShoppingMarkets => 'Shopping & Märkte';
+
+  @override
+  String get interestSports => 'Sport & Aktivitäten';
+
+  @override
+  String get interestNatureOutdoors => 'Natur & Parks';
+
+  @override
+  String get interestNightlife => 'Ausgehen & Nightlife';
+
+  @override
+  String get interestCoffeeCafes => 'Kaffee & Cafés';
+
+  @override
+  String get interestPhotographySpots => 'Fotografie & Spots';
+
+  @override
+  String get prefTravelProfileTitle => 'Dein Reiseprofil';
+
+  @override
+  String get prefSocialVibeLabel => 'Soziale Stimmung 👥';
+
+  @override
+  String get prefPaceLabel => 'Planungsrhythmus ⚡';
+
+  @override
+  String get prefStyleLabel => 'Dein Stil 🌟';
+
+  @override
+  String prefStyleLimit(String count) {
+    return 'Wähle bis zu $count Stile, die zu dir passen.';
+  }
+
+  @override
+  String get prefMoodySpeech =>
+      'Noch ein paar Fragen und ich kenne dich vollständig! ✈️';
+
+  @override
+  String get prefSocialSoloTitle => 'Solo-Abenteuer';
+
+  @override
+  String get prefSocialSoloHint => 'Zeit für mich';
+
+  @override
+  String get prefSocialSmallTitle => 'Kleine Gruppen';
+
+  @override
+  String get prefSocialSmallHint => 'Intime Atmosphäre';
+
+  @override
+  String get prefSocialButterflyTitle => 'Sozialer Schmetterling';
+
+  @override
+  String get prefSocialButterflyHint => 'Neue Menschen';
+
+  @override
+  String get prefSocialMoodTitle => 'Stimmungsabhängig';
+
+  @override
+  String get prefSocialMoodHint => 'Manchmal solo, manchmal sozial';
+
+  @override
+  String get prefPaceNow => 'Sofort ⚡';
+
+  @override
+  String get prefPaceToday => 'Heute 📅';
+
+  @override
+  String get prefPacePlanned => 'Geplant 🗓';
+
+  @override
+  String get prefStyleLocalTitle => 'Lokales Erlebnis';
+
+  @override
+  String get prefStyleLocalSubtitle =>
+      'Authentisch und abseits der Standardrouten.';
+
+  @override
+  String get prefStyleLuxuryTitle => 'Luxussuchender';
+
+  @override
+  String get prefStyleLuxurySubtitle => 'Komfort und besondere Erlebnisse.';
+
+  @override
+  String get prefStyleBudgetTitle => 'Bewusst sparen';
+
+  @override
+  String get prefStyleBudgetSubtitle => 'Maximaler Spaß, klug ausgeben.';
+
+  @override
+  String get prefStyleOffTitle => 'Abseits der ausgetretenen Pfade';
+
+  @override
+  String get prefStyleOffSubtitle => 'Verborgene Perlen und lokale Favoriten.';
+
+  @override
+  String get prefStyleTouristTitle => 'Touristische Highlights';
+
+  @override
+  String get prefStyleTouristSubtitle =>
+      'Ikonische Orte, die du gesehen haben musst.';
+
+  @override
+  String get gamificationTitle => 'Erfolge';
+
+  @override
+  String get gamificationYourProgress => 'Dein Fortschritt';
+
+  @override
+  String get gamificationCompleteToUnlock =>
+      'Schließe Aktivitäten ab, um Erfolge freizuschalten';
+
+  @override
+  String get gamificationUnlocked => 'Freigeschaltet';
+
+  @override
+  String get gamificationInProgress => 'In Bearbeitung';
+
+  @override
+  String get gamificationLocked => 'Gesperrt';
+
+  @override
+  String gamificationUnlockedOn(String date) {
+    return 'Freigeschaltet am $date';
+  }
+
+  @override
+  String get gamificationClose => 'Schließen';
+
+  @override
+  String get gamificationCategoryExploration => 'Erkundung';
+
+  @override
+  String get gamificationCategoryActivities => 'Aktivitäten';
+
+  @override
+  String get gamificationCategorySocial => 'Soziales';
+
+  @override
+  String get gamificationCategoryStreaks => 'Strähnen';
+
+  @override
+  String get gamificationCategoryMood => 'Stimmung';
+
+  @override
+  String get gamificationCategorySpecial => 'Besonders';
+
+  @override
+  String get gamificationCategoryOther => 'Sonstiges';
+
+  @override
+  String get prefScreenTitle => 'Deine Einstellungen';
+
+  @override
+  String get prefSave => 'Speichern';
+
+  @override
+  String get prefSavedSuccess => 'Einstellungen gespeichert';
+
+  @override
+  String get prefSaveError => 'Fehler beim Speichern';
+
+  @override
+  String get prefSectionAgeGroup => 'Altersgruppe';
+
+  @override
+  String get prefSectionAgeGroupSub =>
+      'Hilft uns, altersgerechte Aktivitäten zu empfehlen';
+
+  @override
+  String get prefSectionBudget => 'Budget';
+
+  @override
+  String get prefSectionBudgetSub =>
+      'Dein typischer Ausgabenbereich für Aktivitäten';
+
+  @override
+  String get prefSectionSocialVibeSub =>
+      'Bevorzugst du Solo-Aktivitäten oder soziale Orte?';
+
+  @override
+  String get prefSectionActivityPace => 'Aktivitätstempo';
+
+  @override
+  String get prefSectionActivityPaceSub =>
+      'Wie energiegeladen soll dein Tag sein?';
+
+  @override
+  String get prefSectionTimeAvailable => 'Verfügbare Zeit';
+
+  @override
+  String get prefSectionTimeAvailableSub =>
+      'Wie viel Zeit hast du normalerweise für Aktivitäten?';
+
+  @override
+  String get prefSectionInterests => 'Deine Interessen';
+
+  @override
+  String get prefSectionInterestsSub => 'Wähle alles Zutreffende aus';
+
+  @override
+  String get prefAge1824Label => 'Anfang 20';
+
+  @override
+  String get prefAge1824Desc => 'Budgetfreundlich, sozial';
+
+  @override
+  String get prefAge2534Label => '20er-30er';
+
+  @override
+  String get prefAge2534Desc => 'Trendig, abenteuerlich';
+
+  @override
+  String get prefAge3544Label => '30er-40er';
+
+  @override
+  String get prefAge3544Desc => 'Qualitätserlebnisse';
+
+  @override
+  String get prefAge4554Label => '40er-50er';
+
+  @override
+  String get prefAge4554Desc => 'Verfeinert, entspannt';
+
+  @override
+  String get prefAge55Label => '55+';
+
+  @override
+  String get prefAge55Desc => 'Kulturell, malerisch';
+
+  @override
+  String get prefBudgetLabel => 'Günstig';
+
+  @override
+  String get prefBudgetDesc => 'Kostenlos - 20€';
+
+  @override
+  String get prefModerateLabel => 'Mittelklasse';
+
+  @override
+  String get prefModerateDesc => '20€ - 50€';
+
+  @override
+  String get prefUpscaleLabel => 'Gehoben';
+
+  @override
+  String get prefUpscaleDesc => '50€ - 100€';
+
+  @override
+  String get prefLuxuryLabel => 'Luxus';
+
+  @override
+  String get prefLuxuryDesc => '100€+';
+
+  @override
+  String get prefSoloLabel => 'Solo-freundlich';
+
+  @override
+  String get prefSoloDesc => 'Ruhig, friedlich, Zeit für mich';
+
+  @override
+  String get prefSmallGroupLabel => 'Kleine Gruppen';
+
+  @override
+  String get prefSmallGroupDesc => 'Intime, gemütliche Treffen';
+
+  @override
+  String get prefMixLabel => 'Mischung aus beidem';
+
+  @override
+  String get prefMixDesc => 'Flexibel, vielfältig';
+
+  @override
+  String get prefSocialSceneLabel => 'Soziale Szene';
+
+  @override
+  String get prefSocialSceneDesc => 'Lebendig, neue Menschen kennenlernen';
+
+  @override
+  String get prefSlowChillLabel => 'Langsam & Entspannt';
+
+  @override
+  String get prefSlowChillDesc => 'Entspannt vorgehen';
+
+  @override
+  String get prefModerateActivityLabel => 'Moderat';
+
+  @override
+  String get prefModerateActivityDesc => 'Ausgewogenes Tempo';
+
+  @override
+  String get prefActiveLabel => 'Aktiv';
+
+  @override
+  String get prefActiveDesc => 'Energiegeladen, immer unterwegs';
+
+  @override
+  String get prefQuickVisitLabel => 'Kurzbesuch';
+
+  @override
+  String get prefHalfDayLabel => 'Halber Tag';
+
+  @override
+  String get prefFullDayLabel => 'Ganzer Tag';
+
+  @override
+  String get prefInterestCulture => 'Kultur & Kunst';
+
+  @override
+  String get prefInterestNature => 'Natur & Outdoor';
+
+  @override
+  String get prefInterestNightlife => 'Nachtleben';
+
+  @override
+  String get prefInterestWellness => 'Wellness';
+
+  @override
+  String get prefInterestAdventure => 'Abenteuer';
+
+  @override
+  String get prefInterestHistory => 'Geschichte';
+
+  @override
+  String get achievementsUnlocked => 'Erfolge freigeschaltet';
+
+  @override
+  String get deleteAccountTitle => 'Konto löschen';
+
+  @override
+  String get deleteAccountAreYouSure => 'Bist du sicher?';
+
+  @override
+  String get deleteAccountWarning =>
+      'Diese Aktion kann nicht rückgängig gemacht werden. Alle deine Daten, Aktivitäten und Einstellungen werden dauerhaft gelöscht.';
+
+  @override
+  String get deleteAccountWhatWillBeDeleted => 'Was wird gelöscht:';
+
+  @override
+  String get deleteAccountProfile => 'Dein Profil und deine Einstellungen';
+
+  @override
+  String get deleteAccountActivities => 'Alle gespeicherten Aktivitäten';
+
+  @override
+  String get deleteAccountAchievements => 'Deine Erfolge und Fortschritte';
+
+  @override
+  String get deleteAccountPhotos => 'Alle Fotos und Erinnerungen';
+
+  @override
+  String get deleteAccountTypeToConfirm => 'Gib \"DELETE\" zur Bestätigung ein';
+
+  @override
+  String get deleteAccountTypeIncorrect =>
+      'Bitte DELETE eingeben zur Bestätigung';
+
+  @override
+  String get deleteAccountFinalTitle => 'Endgültige Bestätigung';
+
+  @override
+  String get deleteAccountFinalContent =>
+      'Diese Aktion kann nicht rückgängig gemacht werden. Alle deine Daten werden dauerhaft gelöscht.';
+
+  @override
+  String get deleteAccountCancel => 'Abbrechen';
+
+  @override
+  String get deleteAccountDeleteForever => 'Für immer löschen';
+
+  @override
+  String get deleteAccountDeleteButton => 'Mein Konto dauerhaft löschen';
+
+  @override
+  String get deleteAccountSuccess => 'Konto erfolgreich gelöscht';
+
+  @override
+  String get deleteAccountError => 'Fehler beim Löschen des Kontos';
+
+  @override
+  String get placeDetailAboutThisPlace => 'Über diesen Ort';
+
+  @override
+  String get placeDetailGoodToKnow => 'Gut zu wissen';
+
+  @override
+  String get placeDetailDurationLabel => 'Dauer';
+
+  @override
+  String get placeDetailPriceLabel => 'Preis';
+
+  @override
+  String get placeDetailDistanceLabel => 'Entfernung';
+
+  @override
+  String get placeDetailBestTimeLabel => 'Beste Zeit';
+
+  @override
+  String get placeDetailGoodWithLabel => 'Gut mit';
+
+  @override
+  String get placeDetailEnergyLabel => 'Energie';
+
+  @override
+  String get placeDetailTimeNeededLabel => 'Benötigte Zeit';
+
+  @override
+  String get placeDetailNoPhotos => 'Keine Fotos verfügbar';
+
+  @override
+  String get placeDetailNoReviews => 'Keine Bewertungen verfügbar';
+
+  @override
+  String get placeDetailReviewsWhenAvailable =>
+      'Bewertungen erscheinen hier, wenn sie verfügbar sind';
+
+  @override
+  String get placeDetailNotFound => 'Ort nicht gefunden';
+
+  @override
+  String get placeDetailOpenMaps => 'Karte öffnen';
+
+  @override
+  String get placeDetailCheckLocally => 'Vor Ort prüfen';
+
+  @override
+  String get placeDetailFreeToVisit => 'Kostenlos zu besuchen';
+
+  @override
+  String get placeDetailVaries => 'Variiert';
+
+  @override
+  String get placeDetailFreeEntry => 'Freier Eintritt';
+
+  @override
+  String get placeDetailEvening => 'Abend';
+
+  @override
+  String get placeDetailMorning => 'Morgen';
+
+  @override
+  String get placeDetailAfternoon => 'Nachmittag';
+
+  @override
+  String get placeDetailAnytime => 'Jederzeit';
+
+  @override
+  String get placeDetailGoodFitForTonight => 'Gut geeignet für heute Abend';
+
+  @override
+  String get placeDetailBestOnWeekends => 'Am besten am Wochenende';
+
+  @override
+  String get placeDetailSkipIfChill =>
+      'Überspringen, wenn du etwas Ruhiges suchst';
+
+  @override
+  String get placeDetailClosedCheckHours =>
+      'Jetzt geschlossen — Öffnungszeiten prüfen';
+
+  @override
+  String get placeDetailFriendsGroups => 'Freunde / Gruppen';
+
+  @override
+  String get placeDetailSoloDate => 'Solo / Date';
+
+  @override
+  String get placeDetailSoloFriends => 'Solo / Freunde';
+
+  @override
+  String get placeDetailAnonymous => 'Anonym';
+
+  @override
+  String get placeDetailRecently => 'Kürzlich';
 }

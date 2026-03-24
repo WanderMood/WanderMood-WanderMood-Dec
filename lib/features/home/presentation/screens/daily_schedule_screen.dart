@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
@@ -78,10 +79,11 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
   }
 
   String _getFormattedDate() {
+    final l10n = AppLocalizations.of(context)!;
     if (_isToday(_selectedDate)) {
-      return 'Today, ${DateFormat('d MMMM').format(_selectedDate)}';
+      return '${l10n.dailyScheduleToday}, ${DateFormat('d MMMM').format(_selectedDate)}';
     } else if (_isTomorrow(_selectedDate)) {
-      return 'Tomorrow, ${DateFormat('d MMMM').format(_selectedDate)}';
+      return '${l10n.dailyScheduleTomorrow}, ${DateFormat('d MMMM').format(_selectedDate)}';
     } else {
       return DateFormat('EEEE, d MMMM').format(_selectedDate);
     }
@@ -145,7 +147,7 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
         ),
                       Expanded(
                         child: Text(
-          'Daily Schedule',
+          AppLocalizations.of(context)!.dailyScheduleTitle,
           style: GoogleFonts.museoModerno(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -240,7 +242,7 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              'No activities scheduled',
+              AppLocalizations.of(context)!.dailyScheduleNoActivities,
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -249,7 +251,7 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Tap the button below to explore activities',
+              AppLocalizations.of(context)!.dailyScheduleExplorePrompt,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 color: Colors.grey.shade600,
@@ -274,7 +276,7 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
               ),
               icon: const Icon(Icons.explore),
               label: Text(
-                'Explore Activities',
+                AppLocalizations.of(context)!.dailyScheduleExploreActivities,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
@@ -312,7 +314,11 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
       children: [
         // Upcoming Activities Section
         if (upcomingActivities.isNotEmpty) ...[
-          _buildSectionHeader('📅 Upcoming Activities', subtitle: '${upcomingActivities.length} activities planned'),
+          _buildSectionHeader(
+            AppLocalizations.of(context)!.dailyScheduleUpcomingActivities,
+            subtitle: AppLocalizations.of(context)!
+                .dailyScheduleActivitiesPlanned('${upcomingActivities.length}'),
+          ),
           const SizedBox(height: 8),
           ...upcomingActivities.map((activity) => _buildActivityCard(activity, isPast: false)).toList(),
           const SizedBox(height: 24),
@@ -320,7 +326,11 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
         
         // Past Activities Section
         if (pastActivities.isNotEmpty) ...[
-          _buildSectionHeader('✅ Completed Activities', subtitle: '${pastActivities.length} activities completed'),
+          _buildSectionHeader(
+            AppLocalizations.of(context)!.dailyScheduleCompletedActivities,
+            subtitle: AppLocalizations.of(context)!
+                .dailyScheduleActivitiesCompleted('${pastActivities.length}'),
+          ),
           const SizedBox(height: 8),
           ...pastActivities.take(10).map((activity) => _buildActivityCard(activity, isPast: true)).toList(), // Limit to 10 past activities
           const SizedBox(height: 24),
@@ -376,7 +386,7 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'No activities scheduled for this date',
+              AppLocalizations.of(context)!.dailyScheduleNoActivitiesForDate,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 color: Colors.grey[600],
@@ -497,7 +507,9 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          isPast ? 'Completed' : 'Confirmed',
+                          isPast
+                              ? AppLocalizations.of(context)!.dailyScheduleCompleted
+                              : AppLocalizations.of(context)!.dailyScheduleConfirmed,
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -551,7 +563,8 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
                       const Icon(Icons.access_time, color: Colors.black45, size: 16),
                       const SizedBox(width: 4),
                       Text(
-                        '${activity.duration} minutes',
+                        AppLocalizations.of(context)!
+                            .dailyScheduleDurationMinutes('${activity.duration}'),
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: Colors.black54,

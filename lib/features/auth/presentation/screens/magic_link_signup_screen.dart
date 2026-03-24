@@ -169,20 +169,21 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
   }
 
   String _getEmailButtonLabel() {
+    final l10n = AppLocalizations.of(context)!;
     final domain = _emailController.text.trim().split('@').last.toLowerCase();
-    if (domain.contains('gmail')) return 'Open Gmail';
+    if (domain.contains('gmail')) return l10n.signupOpenGmail;
     if (domain.contains('outlook') ||
         domain.contains('hotmail') ||
         domain.contains('live') ||
         domain.contains('msn')) {
-      return 'Open Outlook';
+      return l10n.signupOpenOutlook;
     }
     if (domain.contains('icloud') ||
         domain.contains('me.com') ||
         domain.contains('mac.com')) {
-      return 'Open Apple Mail';
+      return l10n.signupOpenAppleMail;
     }
-    return 'Open e-mail app';
+    return l10n.signupOpenEmailApp;
   }
 
   Future<void> _openEmailApp() async {
@@ -333,7 +334,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                             ),
                             const SizedBox(height: 20),
                             Text(
-                              'Word lid van WanderMood',
+                              l10n.signupJoinWanderMood,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.poppins(
                                 fontSize: 26,
@@ -344,7 +345,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                             ),
                             const SizedBox(height: 10),
                             Text(
-                              'Geen wachtwoord nodig ✨',
+                              l10n.signupNoPasswordNeeded,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.poppins(
                                 fontSize: 15,
@@ -367,7 +368,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                                   color: _wmCharcoal,
                                 ),
                                 decoration: InputDecoration(
-                                  hintText: 'jouw@email.nl',
+                                  hintText: l10n.signupEmailHint,
                                   hintStyle: GoogleFonts.poppins(color: _wmStone),
                                   prefixIcon: const Icon(
                                     Icons.mail_outline,
@@ -515,7 +516,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                             ),
                             const SizedBox(height: 18),
                             Text(
-                              '⭐ 4,9/5 • Gratis • Geen wachtwoord',
+                              l10n.signupRatingBadge,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
@@ -548,6 +549,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
   }
 
   Widget _buildNlPrivacyFooter() {
+    final l10n = AppLocalizations.of(context)!;
     final base = GoogleFonts.poppins(
       fontSize: 12,
       height: 1.45,
@@ -563,11 +565,9 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
       TextSpan(
         style: base,
         children: [
-          const TextSpan(
-            text: 'Door verder te gaan ga je akkoord met ons ',
-          ),
+          TextSpan(text: l10n.signupPrivacyPrefix),
           TextSpan(
-            text: 'privacybeleid',
+            text: l10n.signupPrivacyLinkLabel,
             style: linkStyle,
             recognizer: _privacyTapRecognizer,
           ),
@@ -578,6 +578,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
   }
 
   Widget _buildSuccessState() {
+    final l10n = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -592,9 +593,9 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Check je inbox! 📬',
-              style: TextStyle(
+            Text(
+              l10n.signupSuccessCheckInbox,
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1E1C18),
@@ -602,9 +603,9 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            const Text(
-              'We stuurden een link naar',
-              style: TextStyle(
+            Text(
+              l10n.signupSuccessWeSentTo,
+              style: const TextStyle(
                 fontSize: 14,
                 color: Color(0xFF4A4640),
               ),
@@ -645,16 +646,16 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
             const SizedBox(height: 16),
             TextButton(
               onPressed: _resendMagicLink,
-              child: const Text(
-                'Geen e-mail ontvangen?',
-                style: TextStyle(color: Color(0xFF8C8780)),
+              child: Text(
+                l10n.signupNoEmailReceived,
+                style: const TextStyle(color: Color(0xFF8C8780)),
               ),
             ),
             TextButton(
               onPressed: () => setState(() => _emailSent = false),
-              child: const Text(
-                'Verkeerd e-mailadres?',
-                style: TextStyle(color: Color(0xFF8C8780)),
+              child: Text(
+                l10n.signupWrongEmailAddress,
+                style: const TextStyle(color: Color(0xFF8C8780)),
               ),
             ),
           ],

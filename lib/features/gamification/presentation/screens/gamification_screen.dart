@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 import '../../domain/models/achievement.dart';
 import '../../domain/models/streak.dart';
@@ -53,7 +54,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Achievements',
+          AppLocalizations.of(context)!.gamificationTitle,
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.bold,
           ),
@@ -96,7 +97,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Your Progress',
+                        AppLocalizations.of(context)!.gamificationYourProgress,
                         style: GoogleFonts.poppins(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -105,7 +106,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Complete activities to unlock achievements',
+                        AppLocalizations.of(context)!.gamificationCompleteToUnlock,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: Colors.black54,
@@ -120,19 +121,19 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen> {
                           _buildProgressStat(
                             achievements.where((a) => a.unlocked).length,
                             achievements.length,
-                            'Unlocked',
+                            AppLocalizations.of(context)!.gamificationUnlocked,
                             Colors.green,
                           ),
                           _buildProgressStat(
                             achievements.where((a) => a.progress > 0 && !a.unlocked).length,
                             achievements.length,
-                            'In Progress',
+                            AppLocalizations.of(context)!.gamificationInProgress,
                             Colors.orange,
                           ),
                           _buildProgressStat(
                             achievements.where((a) => a.progress == 0).length,
                             achievements.length,
-                            'Locked',
+                            AppLocalizations.of(context)!.gamificationLocked,
                             Colors.grey,
                           ),
                         ],
@@ -337,7 +338,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen> {
                 // Unlock date for unlocked achievements
                 if (achievement.unlocked && achievement.unlockedAt != null)
                   Text(
-                    'Unlocked on ${_formatDate(achievement.unlockedAt!)}',
+                    AppLocalizations.of(context)!.gamificationUnlockedOn(_formatDate(achievement.unlockedAt!)),
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: Colors.grey.shade600,
@@ -354,7 +355,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen> {
                     });
                   },
                   child: Text(
-                    'Close',
+                    AppLocalizations.of(context)!.gamificationClose,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -373,21 +374,22 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen> {
   }
   
   String _getCategoryName(AchievementCategory category) {
+    final l10n = AppLocalizations.of(context)!;
     switch (category) {
       case AchievementCategory.exploration:
-        return 'Exploration';
+        return l10n.gamificationCategoryExploration;
       case AchievementCategory.activity:
-        return 'Activities';
+        return l10n.gamificationCategoryActivities;
       case AchievementCategory.social:
-        return 'Social';
+        return l10n.gamificationCategorySocial;
       case AchievementCategory.streak:
-        return 'Streaks';
+        return l10n.gamificationCategoryStreaks;
       case AchievementCategory.mood:
-        return 'Mood';
+        return l10n.gamificationCategoryMood;
       case AchievementCategory.special:
-        return 'Special';
+        return l10n.gamificationCategorySpecial;
       default:
-        return 'Other';
+        return l10n.gamificationCategoryOther;
     }
   }
   

@@ -8,6 +8,7 @@ import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/social/domain/models/social_post.dart';
 import 'package:wandermood/features/social/domain/providers/social_providers.dart';
 import 'package:wandermood/features/social/presentation/screens/user_profile_screen.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class EditSocialProfileScreen extends ConsumerStatefulWidget {
   const EditSocialProfileScreen({super.key});
@@ -71,7 +72,7 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
     } catch (e) {
       showWanderMoodToast(
         context,
-        message: 'Error selecting image: $e',
+        message: AppLocalizations.of(context)!.profileSnackAvatarFailed('$e'),
         isError: true,
         duration: const Duration(seconds: 2),
       );
@@ -94,7 +95,7 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
         _usernameController.text.trim().isEmpty) {
       showWanderMoodToast(
         context,
-        message: 'Name and username are required',
+        message: AppLocalizations.of(context)!.socialNameUsernameRequired,
         isError: true,
         duration: const Duration(seconds: 2),
       );
@@ -113,7 +114,7 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
       
       showWanderMoodToast(
         context,
-        message: 'Profile updated successfully',
+        message: AppLocalizations.of(context)!.profileEditUpdated,
         duration: const Duration(seconds: 2),
       );
       
@@ -135,7 +136,7 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
           backgroundColor: Colors.transparent,
           elevation: 0,
           title: Text(
-            'Edit Profile',
+            AppLocalizations.of(context)!.profileEditTitle,
             style: GoogleFonts.museoModerno(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -215,7 +216,7 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
                     
                     // Form fields
                     Text(
-                      'Full Name',
+                      AppLocalizations.of(context)!.fullName,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -225,7 +226,7 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
                     TextField(
                       controller: _nameController,
                       decoration: InputDecoration(
-                        hintText: 'Your full name',
+                        hintText: AppLocalizations.of(context)!.profileEditNameHint,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -241,7 +242,7 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
                     
                     const SizedBox(height: 24),
                     Text(
-                      'Username',
+                      AppLocalizations.of(context)!.profileEditUsernameLabel,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -251,7 +252,7 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
                     TextField(
                       controller: _usernameController,
                       decoration: InputDecoration(
-                        hintText: 'Your username',
+                        hintText: AppLocalizations.of(context)!.profileEditUsernameHint,
                         prefixText: '@',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -268,7 +269,7 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
                     
                     const SizedBox(height: 24),
                     Text(
-                      'Bio',
+                      AppLocalizations.of(context)!.bio,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -279,7 +280,7 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
                       controller: _bioController,
                       maxLines: 3,
                       decoration: InputDecoration(
-                        hintText: 'Tell us about yourself...',
+                        hintText: AppLocalizations.of(context)!.profileEditBioHint,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

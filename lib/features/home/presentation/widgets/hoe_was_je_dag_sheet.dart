@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/utils/auth_helper.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/mood/services/end_of_day_check_in_service.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 // WanderMood design tokens (Moody Hub / sheets)
 const Color _wmWhite = Color(0xFFFFFFFF);
@@ -18,42 +19,9 @@ const Color _wmForestTint = Color(0xFFEBF3EE);
 const Color _wmCharcoal = Color(0xFF1E1C18);
 const Color _wmStone = Color(0xFF8C8780);
 
-const List<String> _openerFallbacks = [
-  'Je bent thuis! Hoe was je dag?',
-  'Vertel! Hoe was het vandaag?',
-  'Hoe ging het vandaag?',
-  'Moody is benieuwd — hoe was je dag?',
-];
-
-const Map<String, String> _followupFallbacks = {
-  'Geweldig! 🤩': 'Tof! Wat was het mooiste moment? 🌟',
-  'Best goed 😊': 'Fijn! Iets wat er echt uitsprong?',
-  'Oké 😐': 'Eerlijk antwoord. Wat had beter gekund?',
-  'Tegenvaller 😔': 'Jammer... Wat ging er mis?',
-};
-
-const List<String> _closingFallbacks = [
-  'Goed gedaan vandaag. Slaap lekker 🌙',
-  'Moody onthoudt dit voor morgen. Tot dan! ✨',
-  'Dankje voor het delen. Morgen weer een mooie dag 🌟',
-  'Slaap lekker. Morgen maken we er wat moois van 🌙',
-];
-
-const List<String> _exchange1Chips = [
-  'Geweldig! 🤩',
-  'Best goed 😊',
-  'Oké 😐',
-  'Tegenvaller 😔',
-];
-
-const List<String> _exchange2Chips = [
-  'De activiteiten 🎯',
-  'Met mensen 👥',
-  'Het ontdekken 🔍',
-  'Lekker gegeten 🍽',
-  'Gewoon relaxen 🛋',
-  'Iets onverwachts ✨',
-];
+// Internal keys for DB storage (language-neutral)
+const List<String> _exchange1Keys = ['amazing', 'pretty_good', 'okay', 'letdown'];
+const List<String> _exchange2Keys = ['activities', 'people', 'exploring', 'food', 'relaxing', 'unexpected'];
 
 /// End-of-day "Hoe was je dag?" — three short chip exchanges; Moody speaks first.
 class HoeWasJeDagSheet extends StatefulWidget {
@@ -122,6 +90,40 @@ class _HoeWasJeDagSheetState extends State<HoeWasJeDagSheet>
     super.dispose();
   }
 
+  // Localized labels for DB keys
+  List<String> _e1Labels(AppLocalizations l10n) => [
+    l10n.dagSheetE1Amazing,
+    l10n.dagSheetE1PrettyGood,
+    l10n.dagSheetE1Okay,
+    l10n.dagSheetE1Letdown,
+  ];
+  List<String> _e2Labels(AppLocalizations l10n) => [
+    l10n.dagSheetE2Activities,
+    l10n.dagSheetE2People,
+    l10n.dagSheetE2Exploring,
+    l10n.dagSheetE2Food,
+    l10n.dagSheetE2Relaxing,
+    l10n.dagSheetE2Unexpected,
+  ];
+  List<String> _openerFallbacks(AppLocalizations l10n) => [
+    l10n.dagSheetOpener1,
+    l10n.dagSheetOpener2,
+    l10n.dagSheetOpener3,
+    l10n.dagSheetOpener4,
+  ];
+  Map<String, String> _followupFallbacks(AppLocalizations l10n) => {
+    'amazing': l10n.dagSheetFollowupAmazing,
+    'pretty_good': l10n.dagSheetFollowupPrettyGood,
+    'okay': l10n.dagSheetFollowupOkay,
+    'letdown': l10n.dagSheetFollowupLetdown,
+  };
+  List<String> _closingFallbacks(AppLocalizations l10n) => [
+    l10n.dagSheetClosing1,
+    l10n.dagSheetClosing2,
+    l10n.dagSheetClosing3,
+    l10n.dagSheetClosing4,
+  ];
+
   TextStyle get _wmCardTitle => GoogleFonts.poppins(
         fontSize: 16,
         fontWeight: FontWeight.w600,
@@ -174,9 +176,9 @@ class _HoeWasJeDagSheetState extends State<HoeWasJeDagSheet>
     }
 
     if (!mounted) return;
+    final fallbacks = _openerFallbacks(AppLocalizations.of(context)!);
     setState(() {
-      _moodyMessage = text ??
-          _openerFallbacks[math.Random().nextInt(_openerFallbacks.length)];
+      _moodyMessage = text ?? fallbacks[math.Random().nextInt(fallbacks.length)];
       _messageLoading = false;
     });
   }
@@ -203,9 +205,9 @@ class _HoeWasJeDagSheetState extends State<HoeWasJeDagSheet>
     }
 
     if (!mounted) return;
+    final fallbacks = _followupFallbacks(AppLocalizations.of(context)!);
     setState(() {
-      _moodyMessage =
-          text ?? _followupFallbacks[first] ?? 'Vertel eens meer! ✨';
+      _moodyMessage = text ?? fallbacks[first] ?? AppLocalizations.of(context)!.dagSheetFollowupDefault;
       _messageLoading = false;
     });
   }
@@ -234,8 +236,8 @@ class _HoeWasJeDagSheetState extends State<HoeWasJeDagSheet>
     }
 
     if (!mounted) return;
-    final closing = text ??
-        _closingFallbacks[math.Random().nextInt(_closingFallbacks.length)];
+    final fallbacks = _closingFallbacks(AppLocalizations.of(context)!);
+    final closing = text ?? fallbacks[math.Random().nextInt(fallbacks.length)];
     setState(() {
       _closingMessage = closing;
       _moodyMessage = closing;
@@ -245,10 +247,10 @@ class _HoeWasJeDagSheetState extends State<HoeWasJeDagSheet>
   }
 
   String _mapAnswerToMood(String answer) {
-    if (answer.contains('🤩')) return 'amazing';
-    if (answer.contains('😊')) return 'good';
-    if (answer.contains('😐')) return 'okay';
-    if (answer.contains('😔')) return 'low';
+    if (answer == 'amazing') return 'amazing';
+    if (answer == 'pretty_good') return 'good';
+    if (answer == 'okay') return 'okay';
+    if (answer == 'letdown') return 'low';
     return 'okay';
   }
 
@@ -288,7 +290,7 @@ class _HoeWasJeDagSheetState extends State<HoeWasJeDagSheet>
   }
 
   String _saveErrorMessageForUser(Object e) {
-    const fallback = 'Opslaan lukte niet. Probeer het nog eens.';
+    final fallback = AppLocalizations.of(context)!.checkInSaveError;
     if (!kDebugMode) return fallback;
     if (e is PostgrestException) {
       final msg = e.message.trim();
@@ -466,22 +468,24 @@ class _HoeWasJeDagSheetState extends State<HoeWasJeDagSheet>
   }
 
   Widget _buildExchange1Chips() {
+    final l10n = AppLocalizations.of(context)!;
+    final labels = _e1Labels(l10n);
     return Column(
       children: [
         Wrap(
           alignment: WrapAlignment.center,
           spacing: 8,
           runSpacing: 8,
-          children: List.generate(_exchange1Chips.length, (i) {
-            final chip = _exchange1Chips[i];
-            final selecting = _chipSelecting1 == chip;
-            final hidden =
-                _chipSelecting1 != null && _chipSelecting1 != chip;
+          children: List.generate(_exchange1Keys.length, (i) {
+            final key = _exchange1Keys[i];
+            final label = labels[i];
+            final selecting = _chipSelecting1 == key;
+            final hidden = _chipSelecting1 != null && _chipSelecting1 != key;
 
             Widget child = _buildChip(
-              label: chip,
+              label: label,
               selected: selecting,
-              onTap: () => _onExchange1Chip(chip),
+              onTap: () => _onExchange1Chip(key),
             );
 
             if (selecting) {
@@ -500,16 +504,14 @@ class _HoeWasJeDagSheetState extends State<HoeWasJeDagSheet>
               child: child,
             );
 
-            return child
-                .animate()
-                .fadeIn(duration: 200.ms, delay: (i * 60).ms);
+            return child.animate().fadeIn(duration: 200.ms, delay: (i * 60).ms);
           }),
         ),
         const SizedBox(height: 40),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
-            'Misschien later',
+            l10n.checkInMaybeLater,
             style: _wmCaption,
           ),
         ),
@@ -518,19 +520,22 @@ class _HoeWasJeDagSheetState extends State<HoeWasJeDagSheet>
   }
 
   Widget _buildExchange2Chips() {
+    final l10n = AppLocalizations.of(context)!;
+    final labels = _e2Labels(l10n);
     return Wrap(
       alignment: WrapAlignment.center,
       spacing: 8,
       runSpacing: 8,
-      children: List.generate(_exchange2Chips.length, (i) {
-        final chip = _exchange2Chips[i];
-        final selecting = _chipSelecting2 == chip;
-        final hidden = _chipSelecting2 != null && _chipSelecting2 != chip;
+      children: List.generate(_exchange2Keys.length, (i) {
+        final key = _exchange2Keys[i];
+        final label = labels[i];
+        final selecting = _chipSelecting2 == key;
+        final hidden = _chipSelecting2 != null && _chipSelecting2 != key;
 
         Widget child = _buildChip(
-          label: chip,
+          label: label,
           selected: selecting,
-          onTap: () => _onExchange2Chip(chip),
+          onTap: () => _onExchange2Chip(key),
         );
 
         if (selecting) {
@@ -555,10 +560,11 @@ class _HoeWasJeDagSheetState extends State<HoeWasJeDagSheet>
   }
 
   Widget _buildExchange3Cta() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         Text(
-          'Nog iets wat je wilt kwijt? Alles mag — of laat leeg en ga lekker slapen. ✨',
+          l10n.dagSheetReflectionPrompt,
           textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
             fontSize: 14,
@@ -580,7 +586,7 @@ class _HoeWasJeDagSheetState extends State<HoeWasJeDagSheet>
             height: 1.35,
           ),
           decoration: InputDecoration(
-            hintText: 'Typ hier… (optioneel)',
+            hintText: l10n.dagSheetReflectionHint,
             hintStyle: GoogleFonts.poppins(
               fontSize: 14,
               color: _wmStone,
@@ -635,7 +641,7 @@ class _HoeWasJeDagSheetState extends State<HoeWasJeDagSheet>
                     ),
                   )
                 : Text(
-                    'Welterusten Moody 🌙',
+                    AppLocalizations.of(context)!.dagSheetGoodnight,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

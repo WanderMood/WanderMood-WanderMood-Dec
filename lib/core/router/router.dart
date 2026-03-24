@@ -4,7 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/adventure/presentation/screens/adventure_plan_screen.dart';
-import '../../features/auth/presentation/screens/email_verification_screen.dart';
+// email_verification_screen.dart archived — app uses magic link only
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/onboarding/presentation/screens/communication_preference_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
@@ -60,10 +60,7 @@ import '../../features/social/presentation/screens/message_hub_screen.dart';
 import '../../features/social/presentation/screens/view_story_screen.dart';
 import '../../features/social/domain/providers/social_providers.dart';
 import '../../features/social/presentation/screens/edit_social_profile_screen.dart';
-import '../../features/social/presentation/screens/create_diary_entry_screen.dart';
-import '../../features/social/presentation/screens/diary_detail_screen.dart';
 import '../../features/social/presentation/screens/wanderfeed_coming_soon_screen.dart';
-import '../../features/social/presentation/screens/travel_diary_profile_screen.dart';
 // Note: social/user_profile_screen.dart removed — all social profile routes use UnifiedProfileScreen
 import '../../features/auth/providers/auth_state_provider.dart';
 import '../../features/auth/presentation/screens/magic_link_signup_screen.dart';
@@ -433,13 +430,11 @@ GoRouter router(RouterRef ref) {
         name: 'auth-signup',
         builder: (context, state) => const MagicLinkSignupScreen(),
       ),
+      // email_verification archived — magic link only; redirect to signup
       GoRoute(
         path: '/auth/verify-email',
         name: 'verify-email',
-        builder: (context, state) {
-          final email = state.uri.queryParameters['email'] ?? '';
-          return EmailVerificationScreen(email: email);
-        },
+        redirect: (context, state) => '/auth/magic-link',
       ),
       GoRoute(
         path: '/auth-callback',
@@ -695,8 +690,21 @@ GoRouter router(RouterRef ref) {
           );
         },
       ),
+      // Travelers discovery is archived for future release.
+      // Keep legacy links as placeholders so old deep links do not break.
+      GoRoute(
+        path: '/social/discovery',
+        name: 'social-discovery',
+        builder: (context, state) => const WanderFeedComingSoonScreen(),
+      ),
+      GoRoute(
+        path: '/travelers/discovery',
+        name: 'travelers-discovery',
+        builder: (context, state) => const WanderFeedComingSoonScreen(),
+      ),
       
-      // Diary Feature Routes
+      // Diary feature is archived for future release.
+      // Keep routes as placeholders so old deep links don't break.
       GoRoute(
         path: '/diaries',
         name: 'diaries-platform',
@@ -705,24 +713,17 @@ GoRouter router(RouterRef ref) {
       GoRoute(
         path: '/diaries/create-entry',
         name: 'create-diary-entry',
-        builder: (context, state) => const CreateDiaryEntryScreen(),
+        builder: (context, state) => const WanderFeedComingSoonScreen(),
       ),
       GoRoute(
         path: '/diaries/entry/:id',
         name: 'diary-detail',
-        builder: (context, state) {
-          final entryId = state.pathParameters['id']!;
-          return DiaryDetailScreen(entryId: entryId);
-        },
+        builder: (context, state) => const WanderFeedComingSoonScreen(),
       ),
       GoRoute(
         path: '/diaries/profile/:userId',
         name: 'travel-diary-profile',
-        builder: (context, state) {
-          final userId = state.pathParameters['userId']!;
-          final username = state.uri.queryParameters['username'];
-          return TravelDiaryProfileScreen(userId: userId, username: username);
-        },
+        builder: (context, state) => const WanderFeedComingSoonScreen(),
       ),
       
       // Admin route - ONLY available in debug mode for App Store compliance

@@ -5,6 +5,7 @@ import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class PreferencesScreen extends ConsumerStatefulWidget {
   const PreferencesScreen({super.key});
@@ -102,7 +103,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
         setState(() => _hasChanges = false);
         showWanderMoodToast(
           context,
-          message: 'Preferences saved successfully',
+          message: AppLocalizations.of(context)!.prefSavedSuccess,
           duration: const Duration(seconds: 1),
         );
         
@@ -118,7 +119,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: 'Error saving preferences: $e',
+          message: AppLocalizations.of(context)!.prefSaveError,
           isError: true,
           duration: const Duration(seconds: 2),
         );
@@ -198,7 +199,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                     ),
                     Expanded(
                       child: Text(
-                        'Your Preferences',
+                        AppLocalizations.of(context)!.prefScreenTitle,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           fontSize: 20,
@@ -240,7 +241,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                             ),
                           ),
                           child: Text(
-                            'Save',
+                            AppLocalizations.of(context)!.prefSave,
                             style: GoogleFonts.poppins(
                               color: _hasChanges
                                   ? Colors.white
@@ -271,8 +272,8 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                     // Age Group Section
               _buildSectionHeader(
                 icon: Icons.calendar_today,
-                title: 'Age Group',
-                subtitle: 'Helps us recommend age-appropriate activities',
+                title: AppLocalizations.of(context)!.prefSectionAgeGroup,
+                subtitle: AppLocalizations.of(context)!.prefSectionAgeGroupSub,
                 color: Colors.orange,
               ),
               const SizedBox(height: 16),
@@ -282,8 +283,8 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
               // Budget Comfort Section
               _buildSectionHeader(
                 icon: Icons.attach_money,
-                title: 'Budget Comfort',
-                subtitle: 'Your typical spending range for activities',
+                title: AppLocalizations.of(context)!.prefSectionBudget,
+                subtitle: AppLocalizations.of(context)!.prefSectionBudgetSub,
                 color: Colors.green,
               ),
               const SizedBox(height: 16),
@@ -293,8 +294,8 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
               // Social Vibe Section
               _buildSectionHeader(
                 icon: Icons.people,
-                title: 'Social Vibe',
-                subtitle: 'Do you prefer solo activities or social scenes?',
+                title: AppLocalizations.of(context)!.prefSectionSocialVibe,
+                subtitle: AppLocalizations.of(context)!.prefSectionSocialVibeSub,
                 color: Colors.blue,
               ),
               const SizedBox(height: 16),
@@ -304,8 +305,8 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
               // Activity Pace Section
               _buildSectionHeader(
                 icon: Icons.flash_on,
-                title: 'Activity Pace',
-                subtitle: 'How energetic do you like your day?',
+                title: AppLocalizations.of(context)!.prefSectionActivityPace,
+                subtitle: AppLocalizations.of(context)!.prefSectionActivityPaceSub,
                 color: Colors.purple,
               ),
               const SizedBox(height: 16),
@@ -315,8 +316,8 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
               // Time Available Section
               _buildSectionHeader(
                 icon: Icons.access_time,
-                title: 'Typical Time Available',
-                subtitle: 'How much time do you usually have for activities?',
+                title: AppLocalizations.of(context)!.prefSectionTimeAvailable,
+                subtitle: AppLocalizations.of(context)!.prefSectionTimeAvailableSub,
                 color: Colors.pink,
               ),
               const SizedBox(height: 16),
@@ -326,8 +327,8 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
               // Interests Section
               _buildSectionHeader(
                 icon: Icons.favorite,
-                title: 'Your Interests',
-                subtitle: 'Select all that apply (helps personalize recommendations)',
+                title: AppLocalizations.of(context)!.prefSectionInterests,
+                subtitle: AppLocalizations.of(context)!.prefSectionInterestsSub,
                 color: Colors.red,
               ),
               const SizedBox(height: 16),
@@ -382,12 +383,13 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
   }
 
   List<Widget> _buildAgeGroupOptions() {
+    final l10n = AppLocalizations.of(context)!;
     final options = [
-      {'value': '18-24', 'label': 'Early 20s', 'emoji': '🎓', 'desc': 'Budget-friendly, social'},
-      {'value': '25-34', 'label': '20s-30s', 'emoji': '🌟', 'desc': 'Trendy, adventurous'},
-      {'value': '35-44', 'label': '30s-40s', 'emoji': '🎯', 'desc': 'Quality experiences'},
-      {'value': '45-54', 'label': '40s-50s', 'emoji': '🍷', 'desc': 'Refined, relaxed'},
-      {'value': '55+', 'label': '55+', 'emoji': '🌺', 'desc': 'Cultural, scenic'},
+      {'value': '18-24', 'label': l10n.prefAge1824Label, 'emoji': '🎓', 'desc': l10n.prefAge1824Desc},
+      {'value': '25-34', 'label': l10n.prefAge2534Label, 'emoji': '🌟', 'desc': l10n.prefAge2534Desc},
+      {'value': '35-44', 'label': l10n.prefAge3544Label, 'emoji': '🎯', 'desc': l10n.prefAge3544Desc},
+      {'value': '45-54', 'label': l10n.prefAge4554Label, 'emoji': '🍷', 'desc': l10n.prefAge4554Desc},
+      {'value': '55+', 'label': l10n.prefAge55Label, 'emoji': '🌺', 'desc': l10n.prefAge55Desc},
     ];
 
     return options.map((option) {
@@ -445,11 +447,12 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
   }
 
   Widget _buildBudgetOptions() {
+    final l10n = AppLocalizations.of(context)!;
     final options = [
-      {'value': '\$', 'label': 'Budget', 'emoji': '💰', 'desc': 'Free - \$20', 'color': Colors.green},
-      {'value': '\$\$', 'label': 'Moderate', 'emoji': '💳', 'desc': '\$20 - \$50', 'color': Colors.blue},
-      {'value': '\$\$\$', 'label': 'Upscale', 'emoji': '💎', 'desc': '\$50 - \$100', 'color': Colors.purple},
-      {'value': '\$\$\$\$', 'label': 'Luxury', 'emoji': '👑', 'desc': '\$100+', 'color': Colors.orange},
+      {'value': '\$', 'label': l10n.prefBudgetLabel, 'emoji': '💰', 'desc': l10n.prefBudgetDesc, 'color': Colors.green},
+      {'value': '\$\$', 'label': l10n.prefModerateLabel, 'emoji': '💳', 'desc': l10n.prefModerateDesc, 'color': Colors.blue},
+      {'value': '\$\$\$', 'label': l10n.prefUpscaleLabel, 'emoji': '💎', 'desc': l10n.prefUpscaleDesc, 'color': Colors.purple},
+      {'value': '\$\$\$\$', 'label': l10n.prefLuxuryLabel, 'emoji': '👑', 'desc': l10n.prefLuxuryDesc, 'color': Colors.orange},
     ];
 
     return GridView.builder(
@@ -529,11 +532,12 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
   }
 
   List<Widget> _buildSocialVibeOptions() {
+    final l10n = AppLocalizations.of(context)!;
     final options = [
-      {'value': 'solo', 'label': 'Solo Friendly', 'emoji': '🧘', 'desc': 'Quiet, peaceful, me-time'},
-      {'value': 'small-group', 'label': 'Small Groups', 'emoji': '👥', 'desc': 'Intimate, cozy gatherings'},
-      {'value': 'mix', 'label': 'Mix of Both', 'emoji': '🎭', 'desc': 'Flexible, variety'},
-      {'value': 'social', 'label': 'Social Scene', 'emoji': '🎉', 'desc': 'Lively, meet people'},
+      {'value': 'solo', 'label': l10n.prefSoloLabel, 'emoji': '🧘', 'desc': l10n.prefSoloDesc},
+      {'value': 'small-group', 'label': l10n.prefSmallGroupLabel, 'emoji': '👥', 'desc': l10n.prefSmallGroupDesc},
+      {'value': 'mix', 'label': l10n.prefMixLabel, 'emoji': '🎭', 'desc': l10n.prefMixDesc},
+      {'value': 'social', 'label': l10n.prefSocialSceneLabel, 'emoji': '🎉', 'desc': l10n.prefSocialSceneDesc},
     ];
 
     return options.map((option) {
@@ -591,10 +595,11 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
   }
 
   Widget _buildActivityPaceOptions() {
+    final l10n = AppLocalizations.of(context)!;
     final options = [
-      {'value': 'slow', 'label': 'Slow & Chill', 'emoji': '🐢', 'desc': 'Take it easy'},
-      {'value': 'moderate', 'label': 'Moderate', 'emoji': '🚶', 'desc': 'Balanced pace'},
-      {'value': 'active', 'label': 'Active', 'emoji': '🏃', 'desc': 'Energetic, on-the-go'},
+      {'value': 'slow', 'label': l10n.prefSlowChillLabel, 'emoji': '🐢', 'desc': l10n.prefSlowChillDesc},
+      {'value': 'moderate', 'label': l10n.prefModerateActivityLabel, 'emoji': '🚶', 'desc': l10n.prefModerateActivityDesc},
+      {'value': 'active', 'label': l10n.prefActiveLabel, 'emoji': '🏃', 'desc': l10n.prefActiveDesc},
     ];
 
     return GridView.builder(
@@ -659,10 +664,11 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
   }
 
   List<Widget> _buildTimeAvailableOptions() {
+    final l10n = AppLocalizations.of(context)!;
     final options = [
-      {'value': 'quick', 'label': 'Quick Visit', 'time': '< 1 hour', 'emoji': '⚡'},
-      {'value': 'half-day', 'label': 'Half Day', 'time': '2-4 hours', 'emoji': '🌤️'},
-      {'value': 'full-day', 'label': 'Full Day', 'time': '4+ hours', 'emoji': '☀️'},
+      {'value': 'quick', 'label': l10n.prefQuickVisitLabel, 'time': '< 1 hour', 'emoji': '⚡'},
+      {'value': 'half-day', 'label': l10n.prefHalfDayLabel, 'time': '2-4 hours', 'emoji': '🌤️'},
+      {'value': 'full-day', 'label': l10n.prefFullDayLabel, 'time': '4+ hours', 'emoji': '☀️'},
     ];
 
     return options.map((option) {
@@ -720,15 +726,16 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
   }
 
   Widget _buildInterestsGrid() {
+    final l10n = AppLocalizations.of(context)!;
     final interests = [
-      {'value': 'food', 'label': 'Food & Drink', 'emoji': '🍽️'},
-      {'value': 'culture', 'label': 'Culture & Arts', 'emoji': '🎨'},
-      {'value': 'nature', 'label': 'Nature & Outdoors', 'emoji': '🌲'},
-      {'value': 'shopping', 'label': 'Shopping', 'emoji': '🛍️'},
-      {'value': 'nightlife', 'label': 'Nightlife', 'emoji': '🌃'},
-      {'value': 'wellness', 'label': 'Wellness', 'emoji': '💆'},
-      {'value': 'adventure', 'label': 'Adventure', 'emoji': '🏔️'},
-      {'value': 'history', 'label': 'History', 'emoji': '🏛️'},
+      {'value': 'food', 'label': l10n.prefInterestFood, 'emoji': '🍽️'},
+      {'value': 'culture', 'label': l10n.prefInterestCulture, 'emoji': '🎨'},
+      {'value': 'nature', 'label': l10n.prefInterestNature, 'emoji': '🌲'},
+      {'value': 'shopping', 'label': l10n.prefInterestShopping, 'emoji': '🛍️'},
+      {'value': 'nightlife', 'label': l10n.prefInterestNightlife, 'emoji': '🌃'},
+      {'value': 'wellness', 'label': l10n.prefInterestWellness, 'emoji': '💆'},
+      {'value': 'adventure', 'label': l10n.prefInterestAdventure, 'emoji': '🏔️'},
+      {'value': 'history', 'label': l10n.prefInterestHistory, 'emoji': '🏛️'},
     ];
 
     return GridView.builder(

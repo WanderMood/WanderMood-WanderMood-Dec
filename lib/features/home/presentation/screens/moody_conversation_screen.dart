@@ -15,6 +15,7 @@ import 'package:wandermood/features/home/domain/enums/moody_feature.dart';
 import 'package:wandermood/features/plans/presentation/screens/plan_loading_screen.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 // WanderMood v2 — Moody conversation overlay (aligned with moody_chat_sheet / Screen 9)
 const Color _wmSkyTint = Color(0xFFEDF5F9);
@@ -56,6 +57,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
   bool _speechRecognitionAvailable = false;
   bool _conversationCompleted = false;
   Timer? _silenceTimer;
+  bool _greetingAdded = false;
   
   List<ChatMessage> _chatMessages = [];
   final ScrollController _scrollController = ScrollController();
@@ -154,12 +156,19 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
     
     // Copy any pre-selected moods
     _detectedMoods = Set.from(widget.selectedMoods);
-    
-    // Add initial greeting
-    _addMoodyMessage("Hi there! How are you feeling today? I can suggest activities based on your mood.");
-    Future.delayed(Duration(milliseconds: 500), () {
-      _speakMoodyResponse("Hi there! How are you feeling today? I can suggest activities based on your mood.");
-    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_greetingAdded) {
+      _greetingAdded = true;
+      final greeting = AppLocalizations.of(context)!.moodyConversationGreeting;
+      _addMoodyMessage(greeting);
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _speakMoodyResponse(greeting);
+      });
+    }
   }
   
   void _initAnimations() {
@@ -344,7 +353,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
     if (!_speechRecognitionAvailable) {
       showWanderMoodToast(
         context,
-        message: 'Speech recognition is not available on this device',
+        message: AppLocalizations.of(context)!.moodySpeechNotAvailable,
         isError: true,
       );
       return;
@@ -1011,7 +1020,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                         child: Row(
                           children: [
                             Text(
-                              "Talk to Moody",
+                              AppLocalizations.of(context)!.moodyConversationTalkToMoody,
                               style: GoogleFonts.poppins(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w600,
@@ -1064,11 +1073,11 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                         padding: const EdgeInsets.symmetric(vertical: 4.0),
                         child: Text(
                           _isSpeaking 
-                              ? "Speaking..." 
+                              ? AppLocalizations.of(context)!.moodyConversationSpeaking
                               : (_isListening 
-                                  ? "Listening..." 
+                                  ? AppLocalizations.of(context)!.moodyConversationListening
                                   : (_isProcessing 
-                                      ? "Thinking..." 
+                                      ? AppLocalizations.of(context)!.moodyConversationThinking
                                       : "")),
                           style: GoogleFonts.poppins(
                             fontSize: 16,
@@ -1186,8 +1195,8 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                                 controller: _textController,
                                 decoration: InputDecoration(
                                   hintText: _isListening
-                                      ? "Listening..."
-                                      : "Type your message...",
+                                      ? AppLocalizations.of(context)!.moodyConversationListening
+                                      : AppLocalizations.of(context)!.moodyConversationTypeMessage,
                                   hintStyle: GoogleFonts.poppins(color: Colors.black45),
                                   filled: true,
                                   fillColor: const Color(0xFFF8FAFC),

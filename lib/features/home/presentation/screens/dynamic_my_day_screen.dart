@@ -319,33 +319,14 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   String _getDayName(DateTime date) {
-    const days = [
-      'Maandag',
-      'Dinsdag',
-      'Woensdag',
-      'Donderdag',
-      'Vrijdag',
-      'Zaterdag',
-      'Zondag',
-    ];
+    final l10n = AppLocalizations.of(context)!;
+    final days = [l10n.dayMon, l10n.dayTue, l10n.dayWed, l10n.dayThu, l10n.dayFri, l10n.daySat, l10n.daySun];
     return days[date.weekday - 1];
   }
 
   String _getShortMonth(DateTime date) {
-    const months = [
-      'jan',
-      'feb',
-      'mrt',
-      'apr',
-      'mei',
-      'jun',
-      'jul',
-      'aug',
-      'sep',
-      'okt',
-      'nov',
-      'dec',
-    ];
+    final l10n = AppLocalizations.of(context)!;
+    final months = [l10n.monthJan, l10n.monthFeb, l10n.monthMar, l10n.monthApr, l10n.monthMay, l10n.monthJun, l10n.monthJul, l10n.monthAug, l10n.monthSep, l10n.monthOct, l10n.monthNov, l10n.monthDec];
     return months[date.month - 1];
   }
 
@@ -368,7 +349,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               ).animate().fadeIn(duration: 300.ms),
               const SizedBox(height: 16),
               Text(
-                'Jouw dag is leeg ✨',
+                l10n.myDayEmptyDayTitle,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 26,
@@ -379,7 +360,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Laat Moody een plan maken voor jouw stemming vandaag',
+                l10n.myDayEmptyDaySubtitle,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 15,
@@ -403,7 +384,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     elevation: 0,
                   ),
                   child: Text(
-                    'Plan mijn dag met Moody',
+                    l10n.myDayPlanWithMoodyButton,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -426,7 +407,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     ),
                   ),
                   child: Text(
-                    'Verken activiteiten',
+                    l10n.myDayExploreActivitiesButton,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -889,6 +870,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     
     return Consumer(
       builder: (context, ref, child) {
+        final l10n = AppLocalizations.of(context)!;
         final suggestion = ref.watch(timeSuggestionProvider);
         
         return GestureDetector(
@@ -998,15 +980,15 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   Row(
                     children: [
                           _buildActionButton(
-                            'Explore Nearby',
+                            l10n.myDayExploreNearbyButton,
                                     Icons.explore,
                             () => _navigateToTab(1),
                                   ),
                           const SizedBox(width: 12),
                           _buildActionButton(
-                            'Ask Moody',
+                            l10n.myDayAskMoodyButton,
                             Icons.chat_bubble_outline,
-                            () => _navigateToTab(2), // Navigate to Moody Hub (tab 2)
+                            () => _navigateToTab(2),
                                     ),
                         ],
                                   ),
@@ -1052,6 +1034,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   Widget _buildEnhancedStatusCard(Map<String, dynamic> status) {
+    final l10n = AppLocalizations.of(context)!;
     Color primaryColor;
     Color backgroundColor;
     IconData statusIcon;
@@ -1167,7 +1150,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                       onTap: () => _handleStatusAction(status['action2'], status),
                       child: Center(
                         child: Text(
-                          isUpcoming ? 'Get Ready' : status['action2'],
+                          isUpcoming ? l10n.myDayGetReadyButton : status['action2'],
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -1254,6 +1237,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   Widget _buildRightNowCard(Map<String, dynamic> status) {
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -1373,7 +1357,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                                     .scaleXY(begin: 1.4, end: 0.8, duration: 1000.ms),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'RIGHT NOW',
+                                  l10n.myDayRightNow,
                                   style: GoogleFonts.poppins(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
@@ -1505,6 +1489,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   Widget _buildErrorStatusCard() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -1528,7 +1513,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '⚠️ ERROR',
+                  l10n.myDayStatusError,
                   style: GoogleFonts.museoModerno(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -1537,7 +1522,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Unable to load status',
+                  l10n.myDayStatusUnableToLoad,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: Colors.grey[600],
@@ -1758,7 +1743,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Unable to load activities',
+                AppLocalizations.of(context)!.myDayUnableLoadActivities,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   color: Colors.grey[600],
@@ -1774,7 +1759,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   backgroundColor: const Color(0xFF2A6049),
                   foregroundColor: Colors.white,
                 ),
-                child: Text('Retry'),
+                child: Text(AppLocalizations.of(context)!.planLoadingTryAgain),
               ),
             ],
           ),
@@ -2193,7 +2178,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
     showWanderMoodToast(
       context,
-      message: 'You\'re here! Tap Done when you\'re finished.',
+      message: AppLocalizations.of(context)!.myDayCheckInPrompt,
     );
   }
 
@@ -2211,7 +2196,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
     showWanderMoodToast(
       context,
-      message: 'Nice one! You can leave a review now.',
+      message: AppLocalizations.of(context)!.myDayDonePrompt,
     );
   }
 
@@ -2258,7 +2243,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Get Ready',
+                        AppLocalizations.of(context)!.getReadyTitle,
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -2266,7 +2251,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         ),
                       ),
                       Text(
-                        activity['title'] ?? 'Your upcoming activity',
+                        activity['title'] ??
+                            AppLocalizations.of(context)!
+                                .myDayGetReadyUpcomingFallback,
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -2297,14 +2284,14 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 ),
               ),
               title: Text(
-                'Get Directions',
+                AppLocalizations.of(context)!.activityDetailDirections,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               subtitle: Text(
-                'Opens in maps app',
+                AppLocalizations.of(context)!.myDayDirectionsOpensInMaps,
                 style: GoogleFonts.poppins(
                   fontSize: 13,
                   color: Colors.grey[600],
@@ -2334,14 +2321,14 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 ),
               ),
               title: Text(
-                'Call Venue',
+                AppLocalizations.of(context)!.myDayCallVenue,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               subtitle: Text(
-                'Confirm details or ask questions',
+                AppLocalizations.of(context)!.myDayCallVenueSubtitle,
                 style: GoogleFonts.poppins(
                   fontSize: 13,
                   color: Colors.grey[600],
@@ -2354,7 +2341,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 } else {
                   showWanderMoodToast(
                     context,
-                    message: 'No phone number available',
+                    message: AppLocalizations.of(context)!.myDayNoPhoneAvailable,
                   );
                 }
               },
@@ -2378,14 +2365,14 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 ),
               ),
               title: Text(
-                'Add to Calendar',
+                AppLocalizations.of(context)!.myDayAddToCalendar,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               subtitle: Text(
-                'Set reminder and details',
+                AppLocalizations.of(context)!.myDayAddToCalendarSubtitle,
                 style: GoogleFonts.poppins(
                   fontSize: 13,
                   color: Colors.grey[600],
@@ -2396,7 +2383,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 Navigator.pop(context);
                 showWanderMoodToast(
                   context,
-                  message: 'Added to calendar',
+                  message: AppLocalizations.of(context)!.myDayAddedToCalendar,
                 );
               },
             ),
@@ -2411,7 +2398,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   Navigator.pop(context);
                   showWanderMoodToast(
                     context,
-                    message: 'You\'re all set! Have a great time!',
+                    message: AppLocalizations.of(context)!.myDayAllSet,
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -2424,7 +2411,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   elevation: 2,
                 ),
                 child: Text(
-                  'I\'m Ready!',
+                  AppLocalizations.of(context)!.myDayReadyCta,
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -2446,7 +2433,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     if (mounted) {
       showWanderMoodToast(
         context,
-        message: '${tabIndex == 1 ? "Explore" : "Moody"} activated!',
+        message: AppLocalizations.of(context)!
+            .myDayTabActivated(tabIndex == 1 ? 'Explore' : 'Moody'),
         duration: const Duration(milliseconds: 600),
       );
     }
@@ -2494,7 +2482,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   _openDirections(activity);
                 },
                 icon: const Icon(Icons.directions),
-                label: const Text('Get Directions'),
+                label: Text(AppLocalizations.of(context)!.activityDetailDirections),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2A6049),
                   foregroundColor: Colors.white,
@@ -2513,7 +2501,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   _saveActivity(activity);
                 },
                 icon: const Icon(Icons.bookmark_outline),
-                label: const Text('Save for Later'),
+                label: Text(AppLocalizations.of(context)!.myDaySaveForLater),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF2A6049),
                   side: const BorderSide(color: Color(0xFF2A6049)),
@@ -2540,7 +2528,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Get Directions',
+              AppLocalizations.of(context)!.activityDetailDirections,
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -2548,7 +2536,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Choose how you\'d like to get directions to ${activity['title']}',
+              AppLocalizations.of(context)!.myDayDirectionsChooseFor(
+                (activity['title'] ?? '').toString(),
+              ),
               style: GoogleFonts.poppins(fontSize: 14),
               textAlign: TextAlign.center,
             ),
@@ -2559,7 +2549,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   child: ElevatedButton.icon(
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.map),
-                    label: const Text('Google Maps'),
+                    label: Text(AppLocalizations.of(context)!.myDayOpenGoogleMaps),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2A6049),
                       foregroundColor: Colors.white,
@@ -2574,7 +2564,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.navigation),
-                    label: const Text('Apple Maps'),
+                    label: Text(AppLocalizations.of(context)!.myDayOpenAppleMaps),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF2A6049),
                       side: const BorderSide(color: Color(0xFF2A6049)),
@@ -2711,7 +2701,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               ),
               const SizedBox(height: 18),
               Text(
-                'Activity options',
+                AppLocalizations.of(context)!.myDayActivityOptionsTitle,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 20,
@@ -2723,7 +2713,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               const SizedBox(height: 20),
               _activityOptionSheetTile(
                 icon: Icons.info_outline_rounded,
-                title: 'View details',
+                title: AppLocalizations.of(context)!.myDayViewDetails,
                 onTap: () {
                   Navigator.pop(sheetContext);
                   _showActivityDetails(activity.rawData);
@@ -2731,7 +2721,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               ),
               _activityOptionSheetTile(
                 icon: Icons.bookmark_outline_rounded,
-                title: 'Save for later',
+                title: AppLocalizations.of(context)!.myDaySaveForLater,
                 onTap: () {
                   Navigator.pop(sheetContext);
                   _saveActivity(activity.rawData);
@@ -2740,8 +2730,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               if (activity.status == ActivityStatus.upcoming)
                 _activityOptionSheetTile(
                   icon: Icons.place_rounded,
-                  title: 'I\'m here',
-                  subtitle: 'Check in when you arrive at this spot',
+                  title: AppLocalizations.of(context)!.myDayImHere,
+                  subtitle: AppLocalizations.of(context)!.myDayImHereSubtitle,
                   onTap: () {
                     Navigator.pop(sheetContext);
                     _checkInActivity(activity);
@@ -2750,8 +2740,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               if (activity.status == ActivityStatus.activeNow)
                 _activityOptionSheetTile(
                   icon: Icons.check_circle_outline_rounded,
-                  title: 'Done',
-                  subtitle: 'Mark complete and leave a review',
+                  title: AppLocalizations.of(context)!.myDayDone,
+                  subtitle: AppLocalizations.of(context)!.myDayDoneSubtitle,
                   onTap: () {
                     Navigator.pop(sheetContext);
                     _markActivityDone(activity);
@@ -2759,18 +2749,18 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 ),
               _activityOptionSheetTile(
                 icon: Icons.ios_share_rounded,
-                title: 'Share activity',
+                title: AppLocalizations.of(context)!.myDayShareActivity,
                 onTap: () {
                   Navigator.pop(sheetContext);
                   showWanderMoodToast(
                     context,
-                    message: 'Share functionality coming soon!',
+                    message: AppLocalizations.of(context)!.myDayShareComingSoon,
                   );
                 },
               ),
               _activityOptionSheetTile(
                 icon: Icons.directions_rounded,
-                title: 'Get directions',
+                title: AppLocalizations.of(context)!.activityDetailDirections,
                 onTap: () {
                   Navigator.pop(sheetContext);
                   _openDirections(activity.rawData);
@@ -2778,8 +2768,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               ),
               _activityOptionSheetTile(
                 icon: Icons.delete_outline_rounded,
-                title: 'Delete activity',
-                subtitle: 'Remove this activity from My Day',
+                title: AppLocalizations.of(context)!.myDayDeleteActivity,
+                subtitle: AppLocalizations.of(context)!.myDayDeleteActivitySubtitle,
                 destructive: true,
                 onTap: () {
                   Navigator.pop(sheetContext);
@@ -2819,32 +2809,34 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   void _saveActivity(Map<String, dynamic> activity) {
     showWanderMoodToast(
       context,
-      message: '${activity['title']} saved for later!',
+      message: AppLocalizations.of(context)!
+          .myDaySavedForLater((activity['title'] ?? '').toString()),
     );
   }
 
   void _confirmDeleteActivity(EnhancedActivityData activity) {
-    final title = activity.rawData['title'] as String? ?? 'this activity';
+    final title = activity.rawData['title'] as String? ??
+        AppLocalizations.of(context)!.dayPlanCardActivity;
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Delete activity?',
+          AppLocalizations.of(context)!.myDayDeleteConfirmTitle,
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w700,
             color: const Color(0xFF1E1C18),
           ),
         ),
         content: Text(
-          '"$title" will be removed from your My Day plan.',
+          AppLocalizations.of(context)!.myDayDeleteConfirmBody(title),
           style: GoogleFonts.poppins(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(
-              'Cancel',
+              AppLocalizations.of(context)!.cancel,
               style: GoogleFonts.poppins(color: Colors.grey[700]),
             ),
           ),
@@ -2860,7 +2852,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               ),
             ),
             child: Text(
-              'Delete',
+              AppLocalizations.of(context)!.myDayDeleteActivityCta,
               style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
@@ -2875,12 +2867,13 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   Future<void> _deleteActivity(EnhancedActivityData activity) async {
     final activityId =
         activity.rawData['id'] as String? ?? activity.rawData['title'] as String? ?? '';
-    final title = activity.rawData['title'] as String? ?? 'Activity';
+    final title = activity.rawData['title'] as String? ??
+        AppLocalizations.of(context)!.dayPlanCardActivity;
 
     if (activityId.isEmpty) {
       showWanderMoodToast(
         context,
-        message: 'Could not delete activity (missing id).',
+        message: AppLocalizations.of(context)!.myDayDeleteMissingId,
         isError: true,
       );
       return;
@@ -2899,13 +2892,13 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       if (!mounted) return;
       showWanderMoodToast(
         context,
-        message: '$title deleted from My Day.',
+        message: AppLocalizations.of(context)!.myDayDeletedFromPlan(title),
       );
     } catch (_) {
       if (!mounted) return;
       showWanderMoodToast(
         context,
-        message: 'Delete failed. Please try again.',
+        message: AppLocalizations.of(context)!.myDayDeleteFailed,
         isError: true,
       );
     }
@@ -2926,13 +2919,14 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             : Coords(51.9225, 4.4792);
         await availableMaps.first.showMarker(
           coords: coords,
-          title: activity['title'] ?? 'Activity Location',
+          title: activity['title'] ??
+              AppLocalizations.of(context)!.myDayActivityLocationFallback,
           description: activity['description'] ?? '',
         );
       } else {
         // Fallback to Google Maps web
         final url = Uri.parse(
-          'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(activity['title'] ?? 'Activity')}'
+          'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(activity['title'] ?? AppLocalizations.of(context)!.dayPlanCardActivity)}'
         );
         
         if (await canLaunchUrl(url)) {
@@ -2945,7 +2939,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       // Show error message
       showWanderMoodToast(
         context,
-        message: 'Unable to open directions',
+        message: AppLocalizations.of(context)!.myDayUnableOpenDirections,
         isError: true,
       );
     }
@@ -2960,7 +2954,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             const Icon(Icons.chat_bubble_outline),
             const SizedBox(width: 8),
             Text(
-              'Chat with Moody',
+              AppLocalizations.of(context)!.myDayChatWithMoodyTitle,
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -2969,7 +2963,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           ],
         ),
         content: Text(
-          'Coming soon! Moody will be able to help you plan your day and suggest activities based on your mood and preferences.',
+          AppLocalizations.of(context)!.myDayChatWithMoodyComingSoon,
           style: GoogleFonts.poppins(
             fontSize: 14,
           ),

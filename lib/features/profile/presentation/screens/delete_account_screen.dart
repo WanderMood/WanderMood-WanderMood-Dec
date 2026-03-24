@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/settings_screen_template.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class DeleteAccountScreen extends ConsumerStatefulWidget {
   const DeleteAccountScreen({super.key});
@@ -28,7 +29,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
     if (_confirmController.text != 'DELETE') {
       showWanderMoodToast(
         context,
-        message: 'Please type DELETE to confirm',
+        message: AppLocalizations.of(context)!.deleteAccountTypeIncorrect,
         backgroundColor: Colors.orange,
       );
       return;
@@ -39,22 +40,22 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Final Confirmation',
+          AppLocalizations.of(context)!.deleteAccountFinalTitle,
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
         content: Text(
-          'This action cannot be undone. All your data will be permanently deleted.',
+          AppLocalizations.of(context)!.deleteAccountFinalContent,
           style: GoogleFonts.poppins(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancel', style: GoogleFonts.poppins()),
+            child: Text(AppLocalizations.of(context)!.deleteAccountCancel, style: GoogleFonts.poppins()),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: Text('Delete Forever', style: GoogleFonts.poppins(color: Colors.white)),
+            child: Text(AppLocalizations.of(context)!.deleteAccountDeleteForever, style: GoogleFonts.poppins(color: Colors.white)),
           ),
         ],
       ),
@@ -114,7 +115,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: 'Account deleted successfully',
+          message: AppLocalizations.of(context)!.deleteAccountSuccess,
         );
         context.go('/');
       }
@@ -122,7 +123,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: 'Error deleting account: $e',
+          message: AppLocalizations.of(context)!.deleteAccountError,
           isError: true,
         );
         setState(() => _isDeleting = false);
@@ -132,8 +133,9 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SettingsScreenTemplate(
-      title: 'Delete Account',
+      title: l10n.deleteAccountTitle,
       onBack: () => context.pop(),
       danger: true,
       child: Column(
@@ -158,7 +160,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Are you sure?',
+                  l10n.deleteAccountAreYouSure,
                   style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -167,7 +169,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'This action cannot be undone. All your data, activities, and preferences will be permanently deleted.',
+                  l10n.deleteAccountWarning,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: const Color(0xFF374151),
@@ -179,7 +181,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            'What will be deleted:',
+            l10n.deleteAccountWhatWillBeDeleted,
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -187,13 +189,13 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          _buildDeleteItem('Your profile and preferences'),
-          _buildDeleteItem('All saved activities'),
-          _buildDeleteItem('Your achievements and progress'),
-          _buildDeleteItem('All photos and memories'),
+          _buildDeleteItem(l10n.deleteAccountProfile),
+          _buildDeleteItem(l10n.deleteAccountActivities),
+          _buildDeleteItem(l10n.deleteAccountAchievements),
+          _buildDeleteItem(l10n.deleteAccountPhotos),
           const SizedBox(height: 24),
           Text(
-            'Type "DELETE" to confirm',
+            l10n.deleteAccountTypeToConfirm,
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -255,7 +257,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                       ),
                     )
                   : Text(
-                      'Delete My Account Forever',
+                      l10n.deleteAccountDeleteButton,
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -276,7 +278,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                 ),
               ),
               child: Text(
-                'Cancel',
+                l10n.deleteAccountCancel,
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,

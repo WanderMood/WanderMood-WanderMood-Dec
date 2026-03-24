@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../home/domain/enums/moody_feature.dart';
 
@@ -46,15 +47,27 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
   late final Animation<double> _bounceScale;
   late final AnimationController _pulseController;
 
-  /// Demo mood cards — keep existing hex colors (no gradient).
+  /// Demo mood cards — labels resolved at build time via l10n.
   static const List<Map<String, dynamic>> _demoMoodConfig = [
-    {'key': 'adventurous', 'emoji': '🏃', 'colorHex': '#4CAF50', 'label': 'Avontuurlijk'},
-    {'key': 'relaxed', 'emoji': '😌', 'colorHex': '#80CBC4', 'label': 'Ontspannen'},
-    {'key': 'romantic', 'emoji': '💕', 'colorHex': '#F8BBD9', 'label': 'Romantisch'},
-    {'key': 'cultural', 'emoji': '🎨', 'colorHex': '#B39DDB', 'label': 'Cultureel'},
-    {'key': 'foodie', 'emoji': '🍕', 'colorHex': '#FFAB91', 'label': 'Foodie'},
-    {'key': 'social', 'emoji': '🎉', 'colorHex': '#FFF59D', 'label': 'Sociaal'},
+    {'key': 'adventurous', 'emoji': '🏃', 'colorHex': '#4CAF50'},
+    {'key': 'relaxed', 'emoji': '😌', 'colorHex': '#80CBC4'},
+    {'key': 'romantic', 'emoji': '💕', 'colorHex': '#F8BBD9'},
+    {'key': 'cultural', 'emoji': '🎨', 'colorHex': '#B39DDB'},
+    {'key': 'foodie', 'emoji': '🍕', 'colorHex': '#FFAB91'},
+    {'key': 'social', 'emoji': '🎉', 'colorHex': '#FFF59D'},
   ];
+
+  String _moodLabel(String key, AppLocalizations l10n) {
+    switch (key) {
+      case 'adventurous': return l10n.demoMoodAdventurous;
+      case 'relaxed': return l10n.demoMoodRelaxed;
+      case 'romantic': return l10n.demoMoodRomantic;
+      case 'cultural': return l10n.demoMoodCultural;
+      case 'foodie': return l10n.demoMoodFoodie;
+      case 'social': return l10n.demoMoodSocial;
+      default: return key;
+    }
+  }
 
   final List<_DemoMessage> _messages = [];
   bool _demoStarted = false;
@@ -113,25 +126,19 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
   }
 
   Future<void> _startDemo() async {
+    final l10n = AppLocalizations.of(context)!;
     await Future.delayed(const Duration(milliseconds: 550));
     if (!mounted) return;
     setState(() {
       _messages.add(
-        _DemoMessage(
-          text: 'Hé! 👋 Ik ben Moody, je reismaatje.',
-          isFromMoody: true,
-        ),
+        _DemoMessage(text: l10n.demoMoodyGreeting, isFromMoody: true),
       );
     });
     await Future.delayed(const Duration(milliseconds: 1100));
     if (!mounted) return;
     setState(() {
       _messages.add(
-        _DemoMessage(
-          text:
-              'Ik help je geweldige plekken ontdekken op basis van hoe je je voelt. Wat is je mood vandaag?',
-          isFromMoody: true,
-        ),
+        _DemoMessage(text: l10n.demoMoodyQuestion, isFromMoody: true),
       );
       _showMoodOptions = true;
     });
@@ -140,6 +147,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
   Future<void> _selectMood(String mood) async {
     if (_selectedMood != null) return;
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
 
     HapticFeedback.mediumImpact();
     setState(() => _bouncingKey = mood);
@@ -152,10 +160,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
       _selectedMood = mood;
       _showMoodOptions = false;
       _messages.add(
-        _DemoMessage(
-          text: _userReplyDutch(mood),
-          isFromMoody: false,
-        ),
+        _DemoMessage(text: _userReply(mood, l10n), isFromMoody: false),
       );
       _showPostTapTyping = true;
     });
@@ -166,50 +171,33 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
     setState(() {
       _showPostTapTyping = false;
       _messages.add(
-        _DemoMessage(
-          text: _moodyResponseDutch(mood),
-          isFromMoody: true,
-        ),
+        _DemoMessage(text: _moodyResponse(mood, l10n), isFromMoody: true),
       );
       _showContinueCta = true;
     });
   }
 
-  String _userReplyDutch(String mood) {
+  String _userReply(String mood, AppLocalizations l10n) {
     switch (mood.toLowerCase()) {
-      case 'relaxed':
-        return 'Ik voel me ontspannen';
-      case 'adventurous':
-        return 'Ik voel me avontuurlijk';
-      case 'romantic':
-        return 'Ik voel me romantisch';
-      case 'cultural':
-        return 'Ik voel me cultureel';
-      case 'foodie':
-        return 'Ik voel me als een foodie';
-      case 'social':
-        return 'Ik voel me sociaal';
-      default:
-        return 'Dit is mijn mood!';
+      case 'relaxed': return l10n.demoUserReplyRelaxed;
+      case 'adventurous': return l10n.demoUserReplyAdventurous;
+      case 'romantic': return l10n.demoUserReplyRomantic;
+      case 'cultural': return l10n.demoUserReplyCultural;
+      case 'foodie': return l10n.demoUserReplyFoodie;
+      case 'social': return l10n.demoUserReplySocial;
+      default: return l10n.demoUserReplyDefault;
     }
   }
 
-  String _moodyResponseDutch(String mood) {
+  String _moodyResponse(String mood, AppLocalizations l10n) {
     switch (mood.toLowerCase()) {
-      case 'relaxed':
-        return 'Lekker rustig aan doen vandaag? Goed plan! 🌿';
-      case 'adventurous':
-        return 'Tijd voor avontuur! Ik weet precies wat je nodig hebt 🔥';
-      case 'foodie':
-        return 'Ik ken de lekkerste plekken in de stad 🍽';
-      case 'social':
-        return 'Gezelligheid zoeken? Ik regel het! 👥';
-      case 'cultural':
-        return 'Rotterdam\'s cultuurscene wacht op je 🎭';
-      case 'romantic':
-        return 'Een romantische dag? Moody heeft je 💕';
-      default:
-        return 'Mooi! Laten we gaan ontdekken ✨';
+      case 'relaxed': return l10n.demoMoodyResponseRelaxed;
+      case 'adventurous': return l10n.demoMoodyResponseAdventurous;
+      case 'foodie': return l10n.demoMoodyResponseFoodie;
+      case 'social': return l10n.demoMoodyResponseSocial;
+      case 'cultural': return l10n.demoMoodyResponseCultural;
+      case 'romantic': return l10n.demoMoodyResponseRomantic;
+      default: return l10n.demoMoodyResponseDefault;
     }
   }
 
@@ -269,6 +257,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
   }
 
   Widget _buildHeader() {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
       child: Row(
@@ -292,7 +281,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
                   border: Border.all(color: _wmSunset, width: 0.5),
                 ),
                 child: Text(
-                  '▶ Demomodus',
+                  l10n.demoModeLabel,
                   style: GoogleFonts.poppins(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -309,7 +298,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
               padding: const EdgeInsets.symmetric(horizontal: 8),
             ),
             child: Text(
-              'Overslaan',
+              l10n.demoSkip,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -359,7 +348,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
           ),
           const SizedBox(height: 6),
           Text(
-            'Moody',
+            AppLocalizations.of(context)!.demoMoodyName,
             style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w500,
@@ -544,7 +533,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Tik om je mood te kiezen:',
+            AppLocalizations.of(context)!.demoTapToChooseMood,
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: 13,
@@ -564,7 +553,10 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
                 .map(
                   (config) => AspectRatio(
                     aspectRatio: 1.0,
-                    child: _buildMoodCard(config),
+                    child: _buildMoodCard(
+                      config,
+                      _moodLabel(config['key'] as String, AppLocalizations.of(context)!),
+                    ),
                   ),
                 )
                 .toList(),
@@ -597,7 +589,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
               ),
             ),
             child: Text(
-              'Ontdek meer →',
+              AppLocalizations.of(context)!.demoDiscoverMore,
               style: GoogleFonts.poppins(
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
@@ -616,11 +608,10 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
     return Color(int.parse(h, radix: 16));
   }
 
-  Widget _buildMoodCard(Map<String, dynamic> config) {
+  Widget _buildMoodCard(Map<String, dynamic> config, String label) {
     final String key = config['key'] as String;
     final String emoji = config['emoji'] as String;
     final Color pastelBase = _colorFromHex(config['colorHex'] as String);
-    final String label = config['label'] as String;
     const double tileRadius = 20;
     final bool isPressed = _bouncingKey == key;
 

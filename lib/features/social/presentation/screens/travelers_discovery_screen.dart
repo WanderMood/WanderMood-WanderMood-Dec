@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'traveler_profile_screen.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class TravelersDiscoveryScreen extends StatefulWidget {
   const TravelersDiscoveryScreen({Key? key}) : super(key: key);
@@ -83,7 +84,7 @@ class _TravelersDiscoveryScreenState extends State<TravelersDiscoveryScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search travelers by name or interests...',
+                hintText: AppLocalizations.of(context)!.socialSearchTravelersHint,
                 hintStyle: GoogleFonts.poppins(
                   color: const Color(0xFF9CA3AF),
                   fontSize: 14,
@@ -692,7 +693,7 @@ class _TravelersDiscoveryScreenState extends State<TravelersDiscoveryScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -700,17 +701,19 @@ class _TravelersDiscoveryScreenState extends State<TravelersDiscoveryScreen> {
               showWanderMoodToast(
                 context,
                 message:
-                    'Connection request sent to ${traveler['name']}!',
+                    AppLocalizations.of(context)!.socialConnectionRequestSent(
+                      (traveler['name'] ?? '').toString(),
+                    ),
                 backgroundColor: const Color(0xFF2A6049),
                 duration: const Duration(seconds: 4),
-                actionLabel: 'View Profile',
+                actionLabel: AppLocalizations.of(context)!.socialViewProfile,
                 onAction: () => _openTravelerProfile(traveler),
               );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2A6049),
             ),
-            child: Text('Send Request'),
+            child: Text(AppLocalizations.of(context)!.socialSendRequest),
           ),
         ],
       ),

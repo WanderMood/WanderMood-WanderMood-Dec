@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class CreateStoryScreen extends ConsumerStatefulWidget {
   const CreateStoryScreen({super.key});
@@ -87,7 +88,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
     if (_selectedImage == null) {
       showWanderMoodToast(
         context,
-        message: 'Please select an image',
+        message: AppLocalizations.of(context)!.socialPleaseSelectImage,
       );
       return;
     }
@@ -107,7 +108,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
       Navigator.of(context).pop(true); // Return true to indicate success
       showWanderMoodToast(
         context,
-        message: 'Story posted successfully!',
+        message: AppLocalizations.of(context)!.socialStoryPostedSuccess,
       );
     }
   }
@@ -127,7 +128,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           title: Text(
-            'Create Story',
+            AppLocalizations.of(context)!.socialCreateStory,
             style: GoogleFonts.museoModerno(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -142,7 +143,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
             TextButton(
               onPressed: _isLoading ? null : _postStory,
               child: Text(
-                'Post',
+                AppLocalizations.of(context)!.socialPost,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -189,7 +190,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                                     ),
                                     const SizedBox(height: 16),
                                     Text(
-                                      'Tap to add a photo',
+                                      AppLocalizations.of(context)!.socialTapAddPhoto,
                                       style: GoogleFonts.poppins(
                                         fontSize: 16,
                                         color: Colors.grey[600],
@@ -212,7 +213,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                       
                       // Caption input
                       Text(
-                        'Caption',
+                        AppLocalizations.of(context)!.activityDetailAbout,
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -225,7 +226,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                         maxLines: 3,
                         maxLength: 150,
                         decoration: InputDecoration(
-                          hintText: 'Add a caption to your story...',
+                          hintText: AppLocalizations.of(context)!.socialAddStoryCaptionHint,
                           hintStyle: GoogleFonts.poppins(
                             fontSize: 14,
                             color: Colors.grey[400],
@@ -249,7 +250,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                           color: Color(0xFF2A6049),
                         ),
                         title: Text(
-                          'Add Location',
+                          AppLocalizations.of(context)!.socialAddLocation,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -260,7 +261,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                         onTap: () {
                           showWanderMoodToast(
                             context,
-                            message: 'Location feature coming soon!',
+                            message: AppLocalizations.of(context)!.socialLocationComingSoon,
                           );
                         },
                       ),
@@ -274,7 +275,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                           color: Color(0xFF2A6049),
                         ),
                         title: Text(
-                          'Add Activity',
+                          AppLocalizations.of(context)!.dayPlanCardActivity,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -285,7 +286,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                         onTap: () {
                           showWanderMoodToast(
                             context,
-                            message: 'Activity tagging coming soon!',
+                            message: AppLocalizations.of(context)!.socialActivityTaggingComingSoon,
                           );
                         },
                       ),

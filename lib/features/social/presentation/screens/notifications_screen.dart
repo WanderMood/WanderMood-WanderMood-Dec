@@ -301,7 +301,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         children: [
                           Icon(isUnread ? Icons.mark_email_read : Icons.mark_email_unread, size: 16),
                           const SizedBox(width: 8),
-                          Text(isUnread ? 'Mark as read' : 'Mark as unread'),
+                        Text(
+                          isUnread
+                              ? AppLocalizations.of(context)!.socialMarkAsRead
+                              : AppLocalizations.of(context)!.socialMarkAsUnread,
+                        ),
                         ],
                       ),
                     ),
@@ -311,7 +315,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         children: [
                           Icon(Icons.delete_outline, size: 16, color: Colors.red),
                           SizedBox(width: 8),
-                          Text('Delete', style: TextStyle(color: Colors.red)),
+                          Text(
+                            AppLocalizations.of(context)!.myDayDeleteActivityCta,
+                            style: const TextStyle(color: Colors.red),
+                          ),
                         ],
                       ),
                     ),
@@ -332,22 +339,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     
     switch (actionType) {
       case 'follow_back':
-        buttonText = 'Follow Back';
+        buttonText = AppLocalizations.of(context)!.socialFollowBack;
         break;
       case 'view_post':
-        buttonText = 'View Post';
+        buttonText = AppLocalizations.of(context)!.socialViewPost;
         break;
       case 'reply':
-        buttonText = 'Reply';
+        buttonText = AppLocalizations.of(context)!.socialReply;
         break;
       case 'accept':
-        buttonText = 'Accept';
+        buttonText = AppLocalizations.of(context)!.socialAccept;
         break;
       case 'view':
-        buttonText = 'View';
+        buttonText = AppLocalizations.of(context)!.bookingViewAction;
         break;
       default:
-        buttonText = 'View';
+        buttonText = AppLocalizations.of(context)!.bookingViewAction;
     }
     
     return ElevatedButton(
@@ -531,7 +538,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     
     showWanderMoodToast(
       context,
-      message: 'Filtering by: $filter',
+      message: AppLocalizations.of(context)!.socialFilteringBy(filter),
       backgroundColor: const Color(0xFF2A6049),
       duration: const Duration(seconds: 1),
     );
@@ -601,7 +608,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void _openPost(Map<String, dynamic> notification) {
     showWanderMoodToast(
       context,
-      message: 'Opening post...',
+      message: AppLocalizations.of(context)!.socialOpeningPost,
       backgroundColor: const Color(0xFF2A6049),
     );
   }
@@ -609,7 +616,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void _openUserProfile(Map<String, dynamic> notification) {
     showWanderMoodToast(
       context,
-      message: 'Opening ${notification['userName'] ?? 'user'} profile...',
+      message: AppLocalizations.of(context)!.socialOpeningUserProfile(
+        (notification['userName'] ?? 'user').toString(),
+      ),
       backgroundColor: const Color(0xFF2A6049),
     );
   }
@@ -617,7 +626,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void _openTrendingPost(Map<String, dynamic> notification) {
     showWanderMoodToast(
       context,
-      message: 'Opening trending post...',
+      message: AppLocalizations.of(context)!.socialOpeningTrendingPost,
       backgroundColor: const Color(0xFF2A6049),
     );
   }
@@ -625,7 +634,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void _openMentionPost(Map<String, dynamic> notification) {
     showWanderMoodToast(
       context,
-      message: 'Opening mention...',
+      message: AppLocalizations.of(context)!.socialOpeningMention,
       backgroundColor: const Color(0xFF2A6049),
     );
   }
@@ -633,7 +642,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void _followUser(Map<String, dynamic> notification) {
     showWanderMoodToast(
       context,
-      message: 'Following ${notification['userName'] ?? 'user'}!',
+      message: AppLocalizations.of(context)!.socialFollowingUser(
+        (notification['userName'] ?? 'user').toString(),
+      ),
       backgroundColor: const Color(0xFF2A6049),
     );
   }
@@ -642,10 +653,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Reply to Comment'),
+        title: Text(AppLocalizations.of(context)!.socialReplyToComment),
         content: TextField(
-          decoration: const InputDecoration(
-            hintText: 'Write your reply...',
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context)!.socialWriteReplyHint,
             border: OutlineInputBorder(),
           ),
           maxLines: 3,
@@ -653,18 +664,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               showWanderMoodToast(
                 context,
-                message: 'Reply sent!',
+                message: AppLocalizations.of(context)!.socialReplySent,
                 backgroundColor: const Color(0xFF2A6049),
               );
             },
-            child: const Text('Send'),
+            child: Text(AppLocalizations.of(context)!.socialSend),
           ),
         ],
       ),
@@ -674,7 +685,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void _acceptRequest(Map<String, dynamic> notification) {
     showWanderMoodToast(
       context,
-      message: 'Request accepted!',
+      message: AppLocalizations.of(context)!.socialRequestAccepted,
       backgroundColor: const Color(0xFF2A6049),
     );
   }
@@ -682,7 +693,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void _viewContent(Map<String, dynamic> notification) {
     showWanderMoodToast(
       context,
-      message: 'Opening content...',
+      message: AppLocalizations.of(context)!.socialOpeningContent,
       backgroundColor: const Color(0xFF2A6049),
     );
   }
@@ -690,9 +701,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void _deleteNotification(Map<String, dynamic> notification) {
     showWanderMoodToast(
       context,
-      message: 'Notification deleted',
+      message: AppLocalizations.of(context)!.socialNotificationDeleted,
       backgroundColor: Colors.red,
-      actionLabel: 'Undo',
+      actionLabel: AppLocalizations.of(context)!.socialUndo,
       onAction: () {
         // Restore notification
       },
@@ -708,7 +719,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text(AppLocalizations.of(context)!.socialClose),
           ),
         ],
       ),
@@ -775,7 +786,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       if (context.mounted) {
                         showWanderMoodToast(
                           context,
-                          message: '$title ${v ? 'on' : 'off'}',
+                          message: AppLocalizations.of(context)!
+                              .socialToggleState(title, v ? 'on' : 'off'),
                         );
                       }
                     },
@@ -872,7 +884,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void _markAllAsRead() {
     showWanderMoodToast(
       context,
-      message: 'All notifications marked as read',
+      message: AppLocalizations.of(context)!.socialAllNotificationsRead,
       backgroundColor: const Color(0xFF2A6049),
     );
   }

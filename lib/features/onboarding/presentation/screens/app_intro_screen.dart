@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 
 /// Design system — intro (wmForest background)
@@ -63,6 +64,7 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
         statusBarColor: Colors.transparent,
@@ -86,7 +88,7 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   child: Text(
-                    'Overslaan',
+                    l10n.introSkip,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -114,7 +116,7 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                     Column(
                       children: [
                         Text(
-                          'Jouw mood,',
+                          l10n.introHeadline1,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.poppins(
                             fontSize: 28,
@@ -124,7 +126,7 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'jouw avontuur',
+                          l10n.introHeadline2,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.poppins(
                             fontSize: 36,
@@ -136,7 +138,7 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Jouw mood. Jouw dag. Jouw avontuur.',
+                      l10n.introTagline,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
@@ -168,7 +170,7 @@ class _AppIntroScreenState extends ConsumerState<AppIntroScreen>
                           ),
                         ),
                         child: Text(
-                          'Bekijk hoe het werkt →',
+                          l10n.introSeeHowItWorks,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,

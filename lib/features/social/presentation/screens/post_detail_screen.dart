@@ -7,6 +7,7 @@ import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/social/domain/models/social_post.dart';
 import 'package:wandermood/features/social/domain/providers/social_providers.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   final String postId;
@@ -102,7 +103,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: 'Failed to share post: $e',
+          message: AppLocalizations.of(context)!.socialFailedSharePost('$e'),
           isError: true,
           duration: const Duration(seconds: 2),
         );
@@ -156,7 +157,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             ListTile(
               leading: const Icon(Icons.content_copy, color: Colors.blue),
               title: Text(
-                'Copy Link',
+                AppLocalizations.of(context)!.shareProfileCopyLink,
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w500,
                 ),
@@ -165,7 +166,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 Navigator.pop(context);
                 showWanderMoodToast(
                   context,
-                  message: 'Link copied to clipboard',
+                  message: AppLocalizations.of(context)!.socialLinkCopiedClipboard,
                   duration: const Duration(seconds: 2),
                 );
               },
@@ -388,7 +389,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                               // Filter posts by tag
                               showWanderMoodToast(
                                 context,
-                                message: 'Viewing posts tagged with #$tag',
+                                message: AppLocalizations.of(context)!
+                                    .socialViewingPostsTagged(tag),
                                 duration: const Duration(seconds: 1),
                               );
                             },
@@ -558,7 +560,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       child: TextField(
                         controller: _commentController,
                         decoration: InputDecoration(
-                          hintText: 'Add a comment...',
+                          hintText: AppLocalizations.of(context)!.socialAddCommentHint,
                           hintStyle: GoogleFonts.poppins(fontSize: 14),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),

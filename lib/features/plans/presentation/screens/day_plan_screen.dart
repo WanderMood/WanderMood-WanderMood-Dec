@@ -208,7 +208,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
         // No linked-place alternative found
         showWanderMoodToast(
           context,
-          message: 'No high-quality linked-place alternative found yet. Try again.',
+          message: AppLocalizations.of(context)!.dayPlanNoLinkedPlaceAlternative,
         );
       }
     } catch (e) {
@@ -641,9 +641,9 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                       if (_addedCount == 0) {
                         label = AppLocalizations.of(context)!.dayPlanAddToMyDay;
                       } else if (remaining > 0) {
-                        label = 'Add $remaining more to My Day';
+                        label = AppLocalizations.of(context)!.dayPlanAddMoreToMyDay(remaining.toString());
                       } else {
-                        label = 'View My Day';
+                        label = AppLocalizations.of(context)!.dayPlanViewMyDay;
                       }
                       return Text(
                         label,

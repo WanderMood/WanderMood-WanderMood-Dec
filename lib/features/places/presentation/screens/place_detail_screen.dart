@@ -197,6 +197,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
 
   Widget _buildSliverAppBar(Place place, bool innerBoxIsScrolled) {
+    final l10n = AppLocalizations.of(context)!;
     // Use solid background when scrolled to prevent content bleed-through
     final backgroundColor = innerBoxIsScrolled
         ? const Color(0xFFF5F0E8)
@@ -271,13 +272,13 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                           await savedPlacesService.unsavePlace(place.id);
                           showWanderMoodToast(
                             context,
-                            message: '${place.name} removed from saved places',
+                            message: l10n.dayPlanCardRemovedFromSaved(place.name),
                           );
                         } else {
                           await savedPlacesService.savePlace(place);
                           showWanderMoodToast(
                             context,
-                            message: '${place.name} saved to favorites!',
+                            message: l10n.placeDetailSavedToFavorites(place.name),
                           );
                         }
                         ref.invalidate(savedPlacesProvider);
@@ -285,7 +286,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                       } catch (e) {
                         showWanderMoodToast(
                           context,
-                          message: 'Failed to ${isSaved ? 'unsave' : 'save'} place',
+                          message: l10n.placeDetailSaveToggleFailed,
                           isError: true,
                         );
                       }
@@ -551,6 +552,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
 
   Widget _buildDetailsTab(Place place) {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -567,7 +569,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               ),
               const SizedBox(width: 12),
               Text(
-                'About this place',
+                l10n.placeDetailAboutThisPlace,
                 style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -796,13 +798,14 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
 
   /// Duration / Price / Distance — three matching tiles: wmCream + wmParchment + wmForest icons (SCREEN 8).
   Widget _buildQuickStatsRow(Place place) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: _buildStandaloneInfoTile(
             icon: Icons.schedule,
-            label: 'Duration',
+            label: l10n.placeDetailDurationLabel,
             value: _getDurationText(place),
           ),
         ),
@@ -810,16 +813,16 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         Expanded(
           child: _buildStandaloneInfoTile(
             icon: Icons.euro,
-            label: 'Price',
-            value: _getCostText(place),
+            label: l10n.placeDetailPriceLabel,
+            value: _getCostText(place, l10n),
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
           child: _buildStandaloneInfoTile(
             icon: Icons.directions_walk,
-            label: 'Distance',
-            value: _distanceLineForPlace(place),
+            label: l10n.placeDetailDistanceLabel,
+            value: _distanceLineForPlace(place, l10n),
           ),
         ),
       ],
@@ -878,7 +881,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     );
   }
 
-  String _distanceLineForPlace(Place place) {
+  String _distanceLineForPlace(Place place, AppLocalizations l10n) {
     final lat = place.location.lat;
     final lng = place.location.lng;
     final placeHasCoords =
@@ -889,7 +892,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return ref.watch(userLocationProvider).when(
       data: (pos) {
         if (pos == null) {
-          return 'Open maps';
+          return l10n.placeDetailOpenMaps;
         }
         final km = DistanceService.calculateDistance(
           pos.latitude,
@@ -903,18 +906,19 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         return DistanceService.formatDistance(km);
       },
       loading: () => '…',
-      error: (_, __) => 'Open maps',
+      error: (_, __) => l10n.placeDetailOpenMaps,
     );
   }
 
   /// New "Good to know" section - lighter and more decision-focused
   Widget _buildGoodToKnow(Place place) {
+    final l10n = AppLocalizations.of(context)!;
     final hour = DateTime.now().hour;
-    final bestTime = _getBestTimeForPlace(place, hour);
-    final goodWith = _getGoodWithContext(place);
+    final bestTime = _getBestTimeForPlace(place, hour, l10n);
+    final goodWith = _getGoodWithContext(place, l10n);
     final energyLevel = place.energyLevel;
     final timeNeeded = _getTimeNeeded(place);
-    final moodAwareLabel = _getMoodAwareLabel(place, hour);
+    final moodAwareLabel = _getMoodAwareLabel(place, hour, l10n);
     
     return Container(
       padding: const EdgeInsets.all(20),
@@ -937,7 +941,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               ),
               const SizedBox(width: 8),
               Text(
-                'Good to know',
+                l10n.placeDetailGoodToKnow,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -983,7 +987,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               Expanded(
                 child: _buildCompactInfoCard(
                   '🕐',
-                  'Best time',
+                  l10n.placeDetailBestTimeLabel,
                   bestTime,
                 ),
               ),
@@ -991,7 +995,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               Expanded(
                 child: _buildCompactInfoCard(
                   '👥',
-                  'Good with',
+                  l10n.placeDetailGoodWithLabel,
                   goodWith,
                 ),
               ),
@@ -1003,7 +1007,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               Expanded(
                 child: _buildCompactInfoCard(
                   '⚡',
-                  'Energy',
+                  l10n.placeDetailEnergyLabel,
                   energyLevel,
                 ),
               ),
@@ -1011,7 +1015,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               Expanded(
                 child: _buildCompactInfoCard(
                   '⏱️',
-                  'Time needed',
+                  l10n.placeDetailTimeNeededLabel,
                   timeNeeded,
                 ),
               ),
@@ -1064,25 +1068,25 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
   
   /// Get best time for place based on current hour and place properties
-  String _getBestTimeForPlace(Place place, int hour) {
+  String _getBestTimeForPlace(Place place, int hour, AppLocalizations l10n) {
     // Check place type for time hints
     final types = place.types.map((t) => t.toLowerCase()).toList();
     
     if (types.any((t) => t.contains('bar') || t.contains('night_club') || t.contains('nightclub'))) {
-      return 'Evening';
+      return l10n.placeDetailEvening;
     } else if (types.any((t) => t.contains('cafe') || t.contains('breakfast'))) {
-      return 'Morning';
+      return l10n.placeDetailMorning;
     } else if (types.any((t) => t.contains('restaurant'))) {
       return 'Lunch/Dinner';
     }
     
     // Fallback to energy level
     if (place.energyLevel.toLowerCase() == 'high') {
-      return 'Afternoon';
+      return l10n.placeDetailAfternoon;
     } else if (place.energyLevel.toLowerCase() == 'low') {
-      return 'Anytime';
+      return l10n.placeDetailAnytime;
     } else {
-      return 'Morning';
+      return l10n.placeDetailMorning;
     }
   }
   
@@ -1101,14 +1105,14 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
   
   /// Get social context for place
-  String _getGoodWithContext(Place place) {
+  String _getGoodWithContext(Place place, AppLocalizations l10n) {
     if (_isGoodForGroups(place)) {
-      return 'Friends / Groups';
+      return l10n.placeDetailFriendsGroups;
     } else if (place.types.any((t) => 
       t.contains('restaurant') || t.contains('cafe') || t.contains('bar'))) {
-      return 'Solo / Date';
+      return l10n.placeDetailSoloDate;
     } else {
-      return 'Solo / Friends';
+      return l10n.placeDetailSoloFriends;
     }
   }
   
@@ -1129,7 +1133,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
   
   /// Get mood-aware label based on current time and place properties
-  String? _getMoodAwareLabel(Place place, int hour) {
+  String? _getMoodAwareLabel(Place place, int hour, AppLocalizations l10n) {
     final isEvening = hour >= 17;
     final isWeekend = DateTime.now().weekday >= 6;
     final isLateNight = hour >= 21 || hour < 6;
@@ -1138,22 +1142,22 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     if (isEvening && place.energyLevel.toLowerCase() != 'low' && 
         place.types.any((t) => 
           t.contains('bar') || t.contains('restaurant') || t.contains('night_club'))) {
-      return 'Good fit for tonight';
+      return l10n.placeDetailGoodFitForTonight;
     }
     
     // Weekend fit
     if (isWeekend && _isGoodForGroups(place)) {
-      return 'Best on weekends';
+      return l10n.placeDetailBestOnWeekends;
     }
     
     // Chill warning
     if (place.energyLevel.toLowerCase() == 'high' && hour < 12) {
-      return 'Skip if you\'re looking for something chill';
+      return l10n.placeDetailSkipIfChill;
     }
     
     // Late night warning
     if (isLateNight && place.openingHours != null && !place.openingHours!.isOpen) {
-      return 'Closed now — check hours';
+      return l10n.placeDetailClosedCheckHours;
     }
     
     return null; // No special label
@@ -1242,23 +1246,23 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return 'Check locally';
   }
 
-  String _getCostText(Place place) {
-    if (place.isFree) return 'Free to visit';
+  String _getCostText(Place place, AppLocalizations l10n) {
+    if (place.isFree) return l10n.placeDetailFreeToVisit;
     if (place.priceRange != null) return place.priceRange!;
     if (place.priceLevel != null) {
       switch (place.priceLevel!) {
-        case 0: return 'Free to visit';
+        case 0: return l10n.placeDetailFreeToVisit;
         case 1: return '€5-15';
         case 2: return '€15-30';
         case 3: return '€30-50';
         case 4: return '€50+';
-        default: return 'Varies';
+        default: return l10n.placeDetailVaries;
       }
     }
-    return _inferCostFromPlace(place);
+    return _inferCostFromPlace(place, l10n);
   }
 
-  String _inferCostFromPlace(Place place) {
+  String _inferCostFromPlace(Place place, AppLocalizations l10n) {
     final placeName = place.name.toLowerCase();
     final description = place.description?.toLowerCase() ?? '';
     
@@ -1266,7 +1270,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     if (placeName.contains('park') || placeName.contains('garden') || 
         placeName.contains('beach') || placeName.contains('square') ||
         placeName.contains('harbor') || placeName.contains('haven')) {
-      return 'Free to visit';
+      return l10n.placeDetailFreeToVisit;
     }
     
     if (placeName.contains('museum') || placeName.contains('gallery')) {
@@ -1301,18 +1305,18 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       switch (type.toLowerCase()) {
         case 'park':
         case 'tourist_attraction':
-          return 'Free to visit';
+          return l10n.placeDetailFreeToVisit;
         case 'museum':
           return '€10-25';
         case 'restaurant':
           return '€15-40';
         case 'shopping_mall':
-          return 'Free entry';
+          return l10n.placeDetailFreeEntry;
         default:
           continue;
       }
     }
-    return 'Check locally';
+    return l10n.placeDetailCheckLocally;
   }
 
   String _getDurationText(Place place) {
@@ -2035,6 +2039,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
 
   Widget _buildReviewCard(Map<String, dynamic> review) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -2073,7 +2078,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      review['author_name'] ?? 'Anonymous',
+                      review['author_name'] ?? l10n.placeDetailAnonymous,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -2093,7 +2098,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          review['relative_time_description'] ?? 'Recently',
+                          review['relative_time_description'] ?? l10n.placeDetailRecently,
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             color: Colors.grey[500],
@@ -2234,6 +2239,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
 
   Widget _buildPhotosTab(Place place) {
     if (place.photos.isEmpty) {
+      final l10n = AppLocalizations.of(context)!;
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -2245,7 +2251,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              'No photos available',
+              l10n.placeDetailNoPhotos,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 color: Colors.grey[600],
@@ -2286,6 +2292,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
 
   Widget _buildReviewsTab(Place place) {
+    final l10n = AppLocalizations.of(context)!;
     if (!_loadingReviews && _realReviews.isEmpty && !_hasAttemptedReviewFetch) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && !_loadingReviews && _realReviews.isEmpty && !_hasAttemptedReviewFetch) {
@@ -2386,7 +2393,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     Icon(Icons.reviews_outlined, size: 48, color: Colors.grey[400]),
                     const SizedBox(height: 16),
                     Text(
-                      'No reviews available',
+                      l10n.placeDetailNoReviews,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         color: Colors.grey[600],
@@ -2394,7 +2401,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Reviews will appear here when available',
+                      l10n.placeDetailReviewsWhenAvailable,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: Colors.grey[500],
@@ -2451,6 +2458,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
 
   Widget _buildDetailedReviewCard(Map<String, dynamic> review) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
             padding: const EdgeInsets.all(16),
@@ -2489,7 +2497,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      review['author_name'] ?? 'Anonymous',
+                      review['author_name'] ?? l10n.placeDetailAnonymous,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -2510,7 +2518,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         ),
                         const SizedBox(width: 8),
                 Text(
-                          review['relative_time_description'] ?? 'Recently',
+                          review['relative_time_description'] ?? l10n.placeDetailRecently,
                   style: GoogleFonts.poppins(
                             fontSize: 12,
                             color: Colors.grey[500],
@@ -2650,6 +2658,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
 
   Widget _buildErrorState(Object error) {
+    final l10n = AppLocalizations.of(context)!;
     return SafeArea(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -2673,7 +2682,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Place not found',
+                      l10n.placeDetailNotFound,
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -2691,7 +2700,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () => context.pop(),
-                      child: const Text('Go Back'),
+                      child: Text(AppLocalizations.of(context)!.back),
                     ),
                   ],
                 ),
@@ -2742,7 +2751,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: 'Could not open maps: $e',
+          message: AppLocalizations.of(context)!.placeDetailCouldNotOpenMaps('$e'),
           isError: true,
         );
       }

@@ -8,6 +8,7 @@ import '../../../../core/extensions/string_extensions.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:math' as math;
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class EnhancedMoodCarousel extends ConsumerStatefulWidget {
   final List<Place> places;
@@ -108,7 +109,7 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
                 const Icon(Icons.auto_awesome, color: Colors.white, size: 14),
                 const SizedBox(width: 6),
                 Text(
-                  '$count perfect matches',
+                  AppLocalizations.of(context)!.carouselPerfectMatches(count.toString()),
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -127,7 +128,7 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
                 // TODO: Shuffle/refresh recommendations
                 showWanderMoodToast(
                   context,
-                  message: 'Refreshing recommendations...',
+                  message: AppLocalizations.of(context)!.carouselRefreshing,
                   duration: const Duration(seconds: 1),
                 );
               },
@@ -424,8 +425,8 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
           Row(
             children: [
               Expanded(
-                child: _buildActionButton(
-                  label: 'Tell me more',
+                  child: _buildActionButton(
+                  label: AppLocalizations.of(context)!.carouselTellMeMore,
                   icon: Icons.chat_bubble_outline,
                   color: Colors.purple.shade400,
                   onTap: () => _askMoodyAboutPlace(context, place),
@@ -434,7 +435,7 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
               const SizedBox(width: 12),
               Expanded(
                 child: _buildActionButton(
-                  label: 'Add to day',
+                  label: AppLocalizations.of(context)!.carouselAddToDay,
                   icon: Icons.add_circle_outline,
                   color: const Color(0xFF2A6049),
                   onTap: () => _addToSchedule(context, place),
@@ -450,17 +451,17 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
             children: [
               _buildIconButton(
                 icon: Icons.directions,
-                label: 'Directions',
+                label: AppLocalizations.of(context)!.carouselDirections,
                 onTap: () => _openDirections(place),
               ),
               _buildIconButton(
                 icon: Icons.share,
-                label: 'Share',
+                label: AppLocalizations.of(context)!.carouselShare,
                 onTap: () => _sharePlace(place),
               ),
               _buildIconButton(
                 icon: Icons.info_outline,
-                label: 'Details',
+                label: AppLocalizations.of(context)!.carouselDetails,
                 onTap: () => _showPlaceDetails(context, place),
               ),
             ],
@@ -576,7 +577,7 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
             const Icon(Icons.emoji_events, size: 14, color: Colors.white),
             const SizedBox(width: 4),
             Text(
-              'TOP PICK',
+              AppLocalizations.of(context)!.carouselTopPick,
               style: GoogleFonts.poppins(
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
@@ -605,7 +606,7 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
           ),
           const SizedBox(height: 8),
           Text(
-            isRight ? 'Save for later' : 'Not interested',
+            isRight ? AppLocalizations.of(context)!.carouselSaveForLater : AppLocalizations.of(context)!.carouselNotInterested,
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -636,7 +637,7 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
             ),
             const SizedBox(height: 12),
             Text(
-              'No recommendations yet',
+              AppLocalizations.of(context)!.carouselNoRecommendations,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -645,7 +646,7 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
             ),
             const SizedBox(height: 4),
             Text(
-              'Check back soon for personalized suggestions!',
+              AppLocalizations.of(context)!.carouselCheckBackSoon,
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 color: Colors.grey.shade600,

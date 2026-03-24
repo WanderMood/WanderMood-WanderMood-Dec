@@ -11,6 +11,7 @@ import 'package:wandermood/features/social/presentation/screens/create_story_scr
 import 'package:wandermood/features/social/presentation/screens/message_hub_screen.dart';
 import 'package:wandermood/features/social/presentation/screens/post_detail_screen.dart';
 import 'package:wandermood/features/social/presentation/screens/view_story_screen.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class SocialHubScreen extends ConsumerStatefulWidget {
   const SocialHubScreen({super.key});
@@ -405,7 +406,7 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
                       // Share post
                       showWanderMoodToast(
                         context,
-                        message: 'Share feature coming soon!',
+                        message: AppLocalizations.of(context)!.socialShareComingSoon,
                         duration: const Duration(seconds: 2),
                       );
                     },
@@ -492,7 +493,8 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
     
     showWanderMoodToast(
       context,
-      message: 'Found ${filteredPosts.length} posts with #$tag',
+      message: AppLocalizations.of(context)!
+          .socialFoundPostsWithTag('${filteredPosts.length}', tag),
       duration: const Duration(seconds: 2),
     );
     
@@ -541,14 +543,14 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
             ListTile(
               leading: const Icon(Icons.content_copy, color: Colors.blue),
               title: Text(
-                'Copy Link',
+                AppLocalizations.of(context)!.shareProfileCopyLink,
                 style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
               ),
               onTap: () {
                 Navigator.pop(context);
                 showWanderMoodToast(
                   context,
-                  message: 'Link copied to clipboard',
+                  message: AppLocalizations.of(context)!.socialLinkCopiedClipboard,
                   duration: const Duration(seconds: 2),
                 );
               },
@@ -741,7 +743,8 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
                           Expanded(
                             child: TextField(
                               decoration: InputDecoration(
-                                hintText: 'Add a comment...',
+                                hintText: AppLocalizations.of(context)!
+                                    .socialAddCommentHint,
                                 hintStyle: GoogleFonts.poppins(fontSize: 14),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(20),
@@ -767,7 +770,8 @@ class _SocialHubScreenState extends ConsumerState<SocialHubScreen> with SingleTi
                               Navigator.pop(context);
                               showWanderMoodToast(
                                 context,
-                                message: 'Comment feature coming soon!',
+                                message: AppLocalizations.of(context)!
+                                    .socialCommentFeatureComingSoon,
                                 duration: const Duration(seconds: 2),
                               );
                             },

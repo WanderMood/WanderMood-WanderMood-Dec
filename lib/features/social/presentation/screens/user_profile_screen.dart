@@ -8,6 +8,7 @@ import 'package:wandermood/features/social/domain/providers/social_providers.dar
 import 'package:wandermood/features/auth/providers/user_provider.dart';
 import 'package:wandermood/features/social/presentation/screens/create_post_screen.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 // Current user provider - in a real app this would get the authenticated user
 final currentUserIdProvider = Provider<String>((ref) => 'user1');
@@ -69,7 +70,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> with Sing
                 Navigator.pop(context);
                 showWanderMoodToast(
                   context,
-                  message: 'Saved posts are not available yet.',
+                  message: AppLocalizations.of(context)!.socialSavedPostsUnavailable,
                 );
               },
             ),
@@ -85,7 +86,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> with Sing
                 Navigator.pop(context);
                 showWanderMoodToast(
                   context,
-                  message: 'Close friends is not available yet.',
+                  message: AppLocalizations.of(context)!.socialCloseFriendsUnavailable,
                 );
               },
             ),

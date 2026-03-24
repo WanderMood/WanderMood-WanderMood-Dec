@@ -27,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icons.add,
                   title: 'Add Entry',
                   subtitle: 'Capture the moment',
-                  onTap: () => context.push('/diary/create'),
+                  onTap: () => context.push('/diaries'),
                 ),
               ),
               const SizedBox(width: 12),

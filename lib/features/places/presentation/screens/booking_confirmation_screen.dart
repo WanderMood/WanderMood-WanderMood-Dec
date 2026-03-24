@@ -19,6 +19,7 @@ import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_pro
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class BookingConfirmationScreen extends ConsumerStatefulWidget {
   final Place place;
@@ -98,13 +99,14 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
       
       // Show a quick success toast
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         showWanderMoodToast(
           context,
-          message: 'Booking saved! View in My Bookings',
+          message: l10n.bookingSavedViewMyBookings,
           duration: const Duration(seconds: 4),
           backgroundColor: const Color(0xFF2A6049),
           leading: const Icon(Icons.check_circle, color: Colors.white, size: 20),
-          actionLabel: 'View',
+          actionLabel: l10n.bookingViewAction,
           onAction: () {
             dismissWanderMoodToast();
             context.go('/agenda');
@@ -122,7 +124,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: 'Error saving booking: $e',
+          message: AppLocalizations.of(context)!.bookingErrorSaving('$e'),
           isError: true,
           duration: const Duration(seconds: 3),
         );
@@ -723,7 +725,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
           child: ElevatedButton.icon(
             onPressed: _addToCalendar,
             icon: const Icon(Icons.calendar_today),
-            label: const Text('Add to Calendar'),
+            label: Text(AppLocalizations.of(context)!.myDayAddToCalendar),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2A6049),
               foregroundColor: Colors.white,
@@ -742,7 +744,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
               child: OutlinedButton.icon(
                 onPressed: _shareBooking,
                 icon: const Icon(Icons.share),
-                label: const Text('Share'),
+                label: Text(AppLocalizations.of(context)!.getReadyQuickShare),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF2A6049),
                   side: const BorderSide(color: Color(0xFF2A6049)),
@@ -758,7 +760,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
               child: OutlinedButton.icon(
                 onPressed: () => context.goNamed('main', extra: {'tab': 0, 'bypass_preferences': true}),
                 icon: const Icon(Icons.home),
-                label: const Text('My Day'),
+                label: Text(AppLocalizations.of(context)!.navMyDay),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.grey[700],
                   side: BorderSide(color: Colors.grey[300]!),
@@ -800,11 +802,11 @@ Booked with WanderMood! 🌟
                 // Show success message that booking has been saved to My Bookings
     showWanderMoodToast(
       context,
-      message: 'Booking saved! View in My Bookings',
+      message: AppLocalizations.of(context)!.bookingSavedViewMyBookings,
       duration: const Duration(seconds: 3),
       backgroundColor: const Color(0xFF2A6049),
       leading: const Icon(Icons.check_circle, color: Colors.white),
-      actionLabel: 'View',
+      actionLabel: AppLocalizations.of(context)!.bookingViewAction,
       onAction: () {
                           // Navigate to My Bookings screen
         context.go('/plans');
