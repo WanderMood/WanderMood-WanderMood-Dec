@@ -249,7 +249,10 @@ class PlacesService extends _$PlacesService {
       );
 
       if (response.status == 200 && response.data is Map<String, dynamic>) {
-        return _parseAutocompleteResults(response.data as Map<String, dynamic>);
+        final responseMap = response.data as Map<String, dynamic>;
+        // The edge function wraps the Google API response in {success, data}
+        final innerData = responseMap['data'] as Map<String, dynamic>? ?? responseMap;
+        return _parseAutocompleteResults(innerData);
       }
       throw Exception('Failed to get autocomplete (${response.status})');
     } catch (e) {

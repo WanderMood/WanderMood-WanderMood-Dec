@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,8 +10,9 @@ import 'package:wandermood/features/profile/domain/providers/current_user_profil
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/features/places/application/places_service.dart';
+import 'package:wandermood/features/places/domain/models/place.dart' show PlaceAutocomplete;
 import '../widgets/edit_favorite_vibes.dart' show allVibes;
-import 'dart:io';
 
 // WanderMood v2 — Edit Profile (Screen 12)
 const Color _wmCream = Color(0xFFF5F0E8);
@@ -34,7 +37,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _emailController = TextEditingController();
   final _bioController = TextEditingController();
   final _locationController = TextEditingController();
+  final _locationFocusNode = FocusNode();
   
+  List<PlaceAutocomplete> _locationSuggestions = [];
+  bool _showLocationSuggestions = false;
+  Timer? _locationDebounce;
+
   DateTime? _dateOfBirth;
   String? _profileImageUrl;
   String? _selectedImagePath;
@@ -129,6 +137,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _emailController.dispose();
     _bioController.dispose();
     _locationController.dispose();
+    _locationFocusNode.dispose();
+    _locationDebounce?.cancel();
     super.dispose();
   }
 
@@ -813,6 +823,31 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
+  void _onLocationChanged(String value) {
+    _checkForChanges();
+    _locationDebounce?.cancel();
+    if (value.length < 2) {
+      setState(() {
+        _locationSuggestions = [];
+        _showLocationSuggestions = false;
+      });
+      return;
+    }
+    _locationDebounce = Timer(const Duration(milliseconds: 400), () async {
+      try {
+        final suggestions = await ref
+            .read(placesServiceProvider.notifier)
+            .getAutocomplete(value);
+        if (mounted) {
+          setState(() {
+            _locationSuggestions = suggestions;
+            _showLocationSuggestions = suggestions.isNotEmpty;
+          });
+        }
+      } catch (_) {}
+    });
+  }
+
   Widget _buildLocationInputCard() {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -841,7 +876,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           const SizedBox(height: 12),
           TextFormField(
             controller: _locationController,
-            onChanged: (_) => _checkForChanges(),
+            focusNode: _locationFocusNode,
+            onChanged: _onLocationChanged,
             textCapitalization: TextCapitalization.words,
             style: GoogleFonts.poppins(
               fontSize: 16,
@@ -856,6 +892,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 color: _wmStone,
                 size: 20,
               ),
+              suffixIcon: _locationController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear, color: _wmStone, size: 18),
+                      onPressed: () {
+                        _locationController.clear();
+                        setState(() {
+                          _locationSuggestions = [];
+                          _showLocationSuggestions = false;
+                        });
+                        _checkForChanges();
+                      },
+                    )
+                  : null,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
                 borderSide: const BorderSide(color: _wmParchment),
@@ -868,6 +917,95 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               fillColor: Colors.white,
             ),
           ),
+          if (_showLocationSuggestions && _locationSuggestions.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: _wmParchment),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Column(
+                  children: _locationSuggestions
+                      .take(5)
+                      .toList()
+                      .asMap()
+                      .entries
+                      .map((entry) {
+                    final idx = entry.key;
+                    final suggestion = entry.value;
+                    final mainText = suggestion.structuredFormatting?.mainText ??
+                        suggestion.description.split(',').first;
+                    final secondaryText =
+                        suggestion.structuredFormatting?.secondaryText ??
+                            suggestion.description;
+                    return Column(
+                      children: [
+                        if (idx != 0) const Divider(height: 1, color: _wmParchment),
+                        InkWell(
+                          onTap: () {
+                            _locationController.text = suggestion.description;
+                            setState(() {
+                              _locationSuggestions = [];
+                              _showLocationSuggestions = false;
+                            });
+                            _locationFocusNode.unfocus();
+                            _checkForChanges();
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.location_on_outlined,
+                                    size: 18, color: _wmForest),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        mainText,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF1E1C18),
+                                        ),
+                                      ),
+                                      if (secondaryText != suggestion.description ||
+                                          suggestion.terms.length > 1)
+                                        Text(
+                                          secondaryText,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12,
+                                            color: _wmStone,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
