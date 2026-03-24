@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_places_flutter/google_places_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
@@ -840,14 +839,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          GooglePlaceAutoCompleteTextField(
-            textEditingController: _locationController,
-            googleAPIKey: const String.fromEnvironment(
-              'GOOGLE_PLACES_API_KEY',
-              defaultValue: '',
+          TextFormField(
+            controller: _locationController,
+            onChanged: (_) => _checkForChanges(),
+            textCapitalization: TextCapitalization.words,
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF1E1C18),
             ),
-            inputDecoration: InputDecoration(
-              hintText: 'Zoek je stad...',
+            decoration: InputDecoration(
+              hintText: 'Bijv. Rotterdam, Amsterdam...',
               hintStyle: GoogleFonts.poppins(color: _wmStone),
               prefixIcon: const Icon(
                 Icons.location_on_outlined,
@@ -865,59 +867,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               filled: true,
               fillColor: Colors.white,
             ),
-            debounceTime: 600,
-            isLatLngRequired: false,
-            countries: const ['nl'],
-            getPlaceDetailWithLatLng: (prediction) {
-              final description = prediction.description ?? '';
-              _locationController.text = description;
-              _checkForChanges();
-            },
-            itemClick: (prediction) {
-              final description = prediction.description ?? '';
-              _locationController.text = description;
-              _locationController.selection = TextSelection.fromPosition(
-                TextPosition(offset: description.length),
-              );
-              _checkForChanges();
-            },
-            itemBuilder: (context, index, prediction) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: const BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: _wmParchment, width: 0.5),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.location_on_outlined, color: _wmStone, size: 16),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        prediction.description ?? '',
-                        style: GoogleFonts.poppins(
-                          color: const Color(0xFF1E1C18),
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-            seperatedBuilder: const Divider(height: 0, color: _wmParchment),
-            isCrossBtnShown: true,
-            textStyle: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF1E1C18),
-            ),
-            boxDecoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            containerHorizontalPadding: 0,
           ),
         ],
       ),

@@ -243,13 +243,15 @@ class PlacesService extends _$PlacesService {
         requestData['placeTypes'] = types.map((t) => t.googlePlacesType).toList();
       }
 
-      final response = await _callPlacesFunction(requestData);
+      final response = await _supabase.functions.invoke(
+        'places',
+        body: requestData,
+      );
 
-      if (response.success && response.data != null) {
-        return _parseAutocompleteResults(response.data!);
-      } else {
-        throw Exception(response.error ?? 'Failed to get autocomplete');
+      if (response.status == 200 && response.data is Map<String, dynamic>) {
+        return _parseAutocompleteResults(response.data as Map<String, dynamic>);
       }
+      throw Exception('Failed to get autocomplete (${response.status})');
     } catch (e) {
       print('❌ Error getting autocomplete: $e');
       return [];
