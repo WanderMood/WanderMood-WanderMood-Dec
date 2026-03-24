@@ -40,28 +40,41 @@ class ApiKeys {
         'OPENWEATHER_API_KEY not configured. Pass via --dart-define=OPENWEATHER_API_KEY=...');
   }
 
+  /// Default production Supabase (same project as local debug). Override with
+  /// `--dart-define=SUPABASE_URL=...` for TestFlight/CI without baking keys.
+  static const String _defaultSupabaseUrl =
+      'https://oojpipspxwdmiyaymldo.supabase.co';
+
+  /// Supabase anon JWT for [_defaultSupabaseUrl]. RLS still applies server-side.
+  static const String _defaultSupabaseAnonKey =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vanBpcHNweHdkbWl5YXltbGRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYxNjkzMzEsImV4cCI6MjA4MTc0NTMzMX0.zFlCGZw-EjmyLi4E9v3S5V7DAmwXqbcBE-JMxBpotQg';
+
   /// Supabase Project URL
   static String get supabaseUrl {
-    const buildUrl = String.fromEnvironment('SUPABASE_URL');
-    if (buildUrl.isNotEmpty && buildUrl != 'YOUR_SUPABASE_URL_HERE') {
-      return buildUrl;
+    const buildUrl = String.fromEnvironment(
+      'SUPABASE_URL',
+      defaultValue: _defaultSupabaseUrl,
+    );
+    if (buildUrl.isEmpty || buildUrl == 'YOUR_SUPABASE_URL_HERE') {
+      throw Exception(
+          'SUPABASE_URL not configured. Pass via --dart-define=SUPABASE_URL=...');
     }
-    if (kDebugMode) return 'https://oojpipspxwdmiyaymldo.supabase.co';
-    throw Exception(
-        'SUPABASE_URL not configured. Pass via --dart-define=SUPABASE_URL=...');
+    return buildUrl;
   }
 
   /// Supabase Anonymous Key
   static String get supabaseAnonKey {
-    const buildKey = String.fromEnvironment('SUPABASE_ANON_KEY');
-    if (buildKey.isNotEmpty && buildKey != 'YOUR_SUPABASE_ANON_KEY_HERE') {
-      return buildKey;
+    const buildKey = String.fromEnvironment(
+      'SUPABASE_ANON_KEY',
+      defaultValue: _defaultSupabaseAnonKey,
+    );
+    if (buildKey.isEmpty ||
+        buildKey == 'YOUR_SUPABASE_ANON_KEY_HERE' ||
+        buildKey.length < 50) {
+      throw Exception(
+          'SUPABASE_ANON_KEY not configured. Pass via --dart-define=SUPABASE_ANON_KEY=...');
     }
-    if (kDebugMode) {
-      return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vanBpcHNweHdkbWl5YXltbGRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYxNjkzMzEsImV4cCI6MjA4MTc0NTMzMX0.zFlCGZw-EjmyLi4E9v3S5V7DAmwXqbcBE-JMxBpotQg';
-    }
-    throw Exception(
-        'SUPABASE_ANON_KEY not configured. Pass via --dart-define=SUPABASE_ANON_KEY=...');
+    return buildKey;
   }
 
   /// Google Maps API Key
