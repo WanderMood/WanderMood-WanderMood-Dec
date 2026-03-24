@@ -1,9 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:dio/dio.dart';
 import 'package:wandermood/core/models/ai_recommendation.dart';
 import 'package:wandermood/core/models/ai_chat_message.dart';
-import 'package:wandermood/core/constants/api_keys.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 
 /// @deprecated - All methods now route through the moody
@@ -215,7 +213,9 @@ class WanderMoodAIService {
     }
   }
 
-  /// Start or continue a chat conversation with the AI
+  /// Start or continue a chat conversation with the AI.
+  /// Routes through the `moody` edge function (action: chat) so the
+  /// OpenAI key stays server-side and never needs to be baked into the app.
   static Future<AIChatResponse> chat({
     required String message,
     String? conversationId,
@@ -227,209 +227,84 @@ class WanderMoodAIService {
     /// Used when [getConversationHistory] is empty (e.g. guest or failed saves).
     List<Map<String, String>>? clientTurns,
   }) async {
-    debugPrint('💬 Starting AI chat: ${message.substring(0, message.length.clamp(0, 50))}...');
-    
-    final openAiKey = ApiKeys.openAiKey;
+    debugPrint('💬 Routing chat through moody edge function');
+
     final convId = conversationId ?? _generateConversationId();
 
-    if (openAiKey.isEmpty) {
-      debugPrint(
-        '❌ OPENAI_API_KEY is not available to the Flutter app. '
-        'WanderMoodAIService.chat reads it only from '
-        '--dart-define=OPENAI_API_KEY=sk-... (see lib/core/constants/api_keys.dart). '
-        'There is no debug fallback key — chat will use the local fallback until the key is set.',
-      );
-    } else {
-      debugPrint(
-        '🤖 OpenAI key is configured (length ${openAiKey.length}); attempting direct API call…',
-      );
-    }
-    
-    // If OpenAI key is available, call OpenAI directly
-    if (openAiKey.isNotEmpty) {
-      try {
-        debugPrint('🤖 Calling OpenAI API directly...');
-        
-        final dio = Dio();
-        final systemPrompt = _buildSystemPrompt(moods, city);
-        
-        // Get conversation history if available - ALWAYS try to load for continuity
-        List<Map<String, String>> conversationHistory = [];
-        try {
-          final history = await getConversationHistory(convId);
-          conversationHistory = history.map((msg) => {
-            'role': msg.role,
-            'content': msg.content,
-          }).toList();
-          debugPrint('📚 Using ${conversationHistory.length} previous messages for context');
-        } catch (e) {
-          debugPrint('⚠️ Could not load conversation history: $e');
-          // Continue without history - new conversation
-        }
-
-        if (conversationHistory.isEmpty &&
-            clientTurns != null &&
-            clientTurns.isNotEmpty) {
-          conversationHistory = clientTurns
-              .map((m) => Map<String, String>.from(m))
-              .toList();
-          debugPrint(
-            '📚 No DB history — using ${conversationHistory.length} client turns for context',
-          );
-        }
-        
-        // Build messages array
-        final messages = <Map<String, String>>[
-          {'role': 'system', 'content': systemPrompt},
-          ...conversationHistory,
-          {'role': 'user', 'content': message},
-        ];
-        
-        final response = await dio.post(
-          'https://api.openai.com/v1/chat/completions',
-          options: Options(
-            headers: {
-              'Authorization': 'Bearer $openAiKey',
-              'Content-Type': 'application/json',
-            },
-          ),
-          data: {
-            'model': 'gpt-4o', // Using gpt-4o for better responses
-            'messages': messages,
-            'max_tokens': 300,
-            'temperature': 0.8,
-          },
-        );
-        
-        if (response.statusCode == 200) {
-          final aiMessage = response.data['choices'][0]['message']['content'] as String;
-          
-          // Save conversation to database
-          try {
-            await _saveConversation(convId, message, aiMessage);
-          } catch (e) {
-            debugPrint('⚠️ Could not save conversation: $e');
-          }
-          
-          debugPrint('✅ AI chat response received from OpenAI');
-          
-          return AIChatResponse(
-            success: true,
-            action: 'chat',
-            timestamp: MoodyClock.now().toIso8601String(),
-            message: aiMessage.trim(),
-            conversationId: convId,
-            contextUsed: {
-              'moods': moods ?? [],
-              'location': city ?? 'Unknown',
-            },
-          );
-        } else {
-          throw Exception('OpenAI API error: ${response.statusCode}');
-        }
-      } catch (e) {
-        debugPrint('❌ Error calling OpenAI directly: $e');
-        // Fall through to fallback
+    // Load conversation history for context continuity
+    List<Map<String, String>> history = [];
+    try {
+      final dbHistory = await getConversationHistory(convId);
+      history = dbHistory.map((msg) => {
+        'role': msg.role,
+        'content': msg.content,
+      }).toList();
+      if (history.isNotEmpty) {
+        debugPrint('📚 Loaded ${history.length} messages from DB history');
       }
-    }
-    
-    // Fallback response when OpenAI is not available or fails
-    debugPrint('⚠️ Using fallback response');
-    List<Map<String, String>> fallbackHistory = [];
-    try {
-      final history = await getConversationHistory(convId);
-      fallbackHistory = history
-          .map((msg) => {'role': msg.role, 'content': msg.content})
-          .toList();
     } catch (_) {}
-    if (fallbackHistory.isEmpty &&
-        clientTurns != null &&
-        clientTurns.isNotEmpty) {
-      fallbackHistory =
-          clientTurns.map((m) => Map<String, String>.from(m)).toList();
-      debugPrint(
-          '📚 Using ${fallbackHistory.length} client turns for fallback context');
+
+    // Fall back to client-provided turns when DB is empty
+    if (history.isEmpty && clientTurns != null && clientTurns.isNotEmpty) {
+      history = clientTurns.map((m) => Map<String, String>.from(m)).toList();
+      debugPrint('📚 Using ${history.length} client turns for context');
     }
-    final hasPriorExchanges = fallbackHistory.isNotEmpty;
 
-    return AIChatResponse(
-      success: true,
-      action: 'chat',
-      timestamp: MoodyClock.now().toIso8601String(),
-      message: _getFallbackResponse(
-        message,
-        moods?.first ?? 'exploring',
-        hasPriorExchanges: hasPriorExchanges,
-        city: city,
-      ),
-      conversationId: convId,
-      contextUsed: {},
-    );
-  }
-  
-  /// Build system prompt for Moody
-  static String _buildSystemPrompt(List<String>? moods, String? city) {
-    final moodText = moods?.isNotEmpty == true 
-        ? 'The user is currently feeling ${moods!.join(' and ')}.'
-        : 'The user is exploring.';
-    
-    final locationText = city != null ? 'They are in $city.' : '';
-    
-    return '''You are Moody — a warm, playful travel companion for WanderMood, not a formal assistant. You speak like a close friend: casual, supportive, and genuinely excited about travel.
-
-Your personality:
-- Casual and friendly, like talking to a bestie
-- Use emojis naturally (but not excessively) ✨
-- Remember what users tell you and reference it later
-- Ask thoughtful follow-up questions
-- Celebrate wins and empathize with struggles
-- Keep responses concise (2-3 sentences max)
-- Be enthusiastic about travel and discovery
-
-Context:
-$moodText $locationText
-
-Guidelines:
-- Respond naturally to what the user says
-- If they mention activities or places, show interest
-- If they're asking for help, be helpful and specific
-- Keep it conversational, not robotic
-- Match their energy level''';
-  }
-  
-  /// Save conversation to database
-  static Future<void> _saveConversation(
-    String conversationId,
-    String userMessage,
-    String aiMessage,
-  ) async {
     try {
-      final user = _supabase.auth.currentUser;
-      if (user == null) return; // Skip if not authenticated
-      
-      // Save user message
-      await _supabase.from('ai_conversations').insert({
-        'conversation_id': conversationId,
-        'user_id': user.id,
-        'role': 'user',
-        'content': userMessage,
-        'created_at': MoodyClock.now().toIso8601String(),
-      });
-      
-      // Save AI message
-      await _supabase.from('ai_conversations').insert({
-        'conversation_id': conversationId,
-        'user_id': user.id,
-        'role': 'assistant',
-        'content': aiMessage,
-        'created_at': MoodyClock.now().toIso8601String(),
-      });
+      final response = await _supabase.functions.invoke(
+        _moodyFunctionName,
+        body: {
+          'action': 'chat',
+          'message': message,
+          'history': history,
+          'conversationId': convId,
+        },
+      );
+
+      if (response.status != 200) {
+        throw Exception('Moody chat returned HTTP ${response.status}');
+      }
+
+      final data = response.data;
+      if (data is! Map<String, dynamic>) {
+        throw Exception('Unexpected moody chat response format');
+      }
+
+      final reply = (data['reply'] as String?)?.trim() ?? '';
+      if (reply.isEmpty) throw Exception('Empty reply from moody');
+
+      debugPrint('✅ Moody chat response received');
+
+      return AIChatResponse(
+        success: true,
+        action: 'chat',
+        timestamp: MoodyClock.now().toIso8601String(),
+        message: reply,
+        conversationId: data['conversationId'] as String? ?? convId,
+        contextUsed: {
+          'moods': moods ?? [],
+          'location': city ?? 'Unknown',
+        },
+      );
     } catch (e) {
-      debugPrint('⚠️ Error saving conversation: $e');
-      // Don't throw - conversation saving is optional
+      debugPrint('❌ Moody chat error: $e — using fallback');
+
+      return AIChatResponse(
+        success: true,
+        action: 'chat',
+        timestamp: MoodyClock.now().toIso8601String(),
+        message: _getFallbackResponse(
+          message,
+          moods?.first ?? 'exploring',
+          hasPriorExchanges: history.isNotEmpty,
+          city: city,
+        ),
+        conversationId: convId,
+        contextUsed: {},
+      );
     }
   }
-
+  
   /// True when the message is only a short greeting (not e.g. "this" or "ship").
   static bool _isStandaloneGreeting(String trimmedLower) {
     final t =
