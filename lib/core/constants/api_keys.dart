@@ -4,13 +4,19 @@ import 'package:flutter/foundation.dart';
 ///   1. Build-time --dart-define (production builds)
 ///   2. Hardcoded debug fallback (debug only — real dev keys baked in)
 class ApiKeys {
+  /// Default Google Places key used when dart-define is omitted in local/dev builds.
+  static const String _defaultGooglePlacesKey =
+      'AIzaSyDOZgpNquJFfd2Hqp_DUd8xQJc-W-lbRXs';
+
   /// Google Places API Key
   static String get googlePlacesKey {
-    const buildKey = String.fromEnvironment('GOOGLE_PLACES_API_KEY');
+    const buildKey = String.fromEnvironment(
+      'GOOGLE_PLACES_API_KEY',
+      defaultValue: _defaultGooglePlacesKey,
+    );
     if (buildKey.isNotEmpty && buildKey != 'YOUR_GOOGLE_PLACES_API_KEY_HERE') {
       return buildKey;
     }
-    if (kDebugMode) return 'AIzaSyAzmi2Z4Y0Z4ZMLTtiZcbZseOHwAlMux60';
     throw Exception(
         'GOOGLE_PLACES_API_KEY not configured. Pass via --dart-define=GOOGLE_PLACES_API_KEY=...');
   }

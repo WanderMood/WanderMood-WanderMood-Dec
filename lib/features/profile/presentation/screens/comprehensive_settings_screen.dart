@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../providers/settings_providers.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/features/profile/presentation/widgets/travel_mode_toggle.dart';
 
 // v2 design tokens
 const Color _wmCream = Color(0xFFF5F0E8);
@@ -150,6 +151,15 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                   iconBgColor: _wmForestTint,
                   iconColor: _wmForest,
                   onTap: () => context.push('/settings/language'),
+                ),
+                const SizedBox(height: 10),
+                _buildSettingButton(
+                  icon: Icons.travel_explore_rounded,
+                  label: l10n.settingsTravelModeHelpLabel,
+                  subtitle: l10n.settingsTravelModeHelpSubtitle,
+                  iconBgColor: _wmSkyTint,
+                  iconColor: _wmForest,
+                  onTap: () => _showTravelModeHelp(context),
                 ),
                 const SizedBox(height: 10),
                 _buildSettingButton(
@@ -482,5 +492,14 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
         }
       }
     }
+  }
+
+  void _showTravelModeHelp(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => TravelModeExplanationModal(),
+    );
   }
 }

@@ -33,6 +33,8 @@ const Color _pdWmParchment = Color(0xFFE8E2D8);
 const Color _pdWmForest = Color(0xFF2A6049);
 const Color _pdWmForestTint = Color(0xFFEBF3EE);
 const Color _pdWmCharcoal = Color(0xFF1E1C18);
+const Color _pdWmCard = Color(0xFFFFFFFF);
+const Color _pdWmCardBorder = Color(0xFFD9D0C3);
 
 class PlaceDetailScreen extends ConsumerStatefulWidget {
   final String placeId;
@@ -113,31 +115,31 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               if (kDebugMode) debugPrint('✅ Place found in Edge Function cache');
               return _buildPlaceDetail(place);
             } catch (e) {
-              // Place not found in Edge Function cache - try to fetch it directly if it's a Google Place ID
-              if (widget.placeId.startsWith('google_')) {
-                if (kDebugMode) debugPrint('🔄 Place not in Edge Function cache, fetching directly from Google Places API...');
-                return FutureBuilder<Place>(
-                  future: _fetchPlaceDirectly(widget.placeId),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
-                        ),
-                      );
-                    }
-                    if (snapshot.hasData && snapshot.data != null &&
-                        snapshot.data!.name != 'Place details unavailable') {
-                      final place = snapshot.data!;
-                      _cachedPlace = place;
-                      _syncResolvedPlace(place);
-                      return _buildPlaceDetail(place);
-                    }
-                    return _buildErrorState(Exception('Place not found and could not be fetched'));
-                  },
+              // Place not found in Edge Function cache - always attempt direct fetch fallback.
+              if (kDebugMode) {
+                debugPrint(
+                  '🔄 Place not in Edge Function cache, trying direct fallback for: ${widget.placeId}',
                 );
               }
-              return _buildErrorState(Exception('Place not found'));
+              return FutureBuilder<Place>(
+                future: _fetchPlaceDirectly(widget.placeId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
+                      ),
+                    );
+                  }
+                  if (snapshot.hasData && snapshot.data != null) {
+                    final place = snapshot.data!;
+                    _cachedPlace = place;
+                    _syncResolvedPlace(place);
+                    return _buildPlaceDetail(place);
+                  }
+                  return _buildErrorState(Exception('Place not found and could not be fetched'));
+                },
+              );
             }
           },
           loading: () => const Center(
@@ -504,18 +506,24 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 24),
         decoration: BoxDecoration(
-          color: _pdWmWhite,
+          color: _pdWmCard,
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
-            color: _pdWmParchment,
-            width: 0.5,
+            color: _pdWmCardBorder,
+            width: 1,
           ),
-          boxShadow: const [],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: TabBar(
         controller: _tabController,
         labelColor: Colors.white,
-        unselectedLabelColor: const Color(0xFF2A6049),
+        unselectedLabelColor: _pdWmCharcoal.withValues(alpha: 0.78),
         indicator: BoxDecoration(
           color: _pdWmForest,
           borderRadius: BorderRadius.circular(28),
@@ -576,7 +584,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF2E2E2E),
+                  color: _pdWmCharcoal,
                 ),
               ),
             ],
@@ -593,7 +601,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             style: GoogleFonts.poppins(
                   fontSize: 15,
               height: 1.6,
-                  color: const Color(0xFF424242),
+                  color: _pdWmCharcoal.withValues(alpha: 0.86),
                   fontWeight: FontWeight.w400,
             ),
           ),
@@ -602,12 +610,19 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: _pdWmCream,
+                color: _pdWmCard,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: _pdWmParchment,
+                  color: _pdWmCardBorder,
                   width: 1,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -645,7 +660,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                      color: _pdWmWhite,
+                      color: _pdWmCard,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: place.openingHours!.isOpen
@@ -727,7 +742,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF2E2E2E),
+                        color: _pdWmCharcoal,
                       ),
                     ),
                   ],
@@ -840,9 +855,16 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: _pdWmCream,
+        color: _pdWmCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _pdWmParchment, width: 0.5),
+        border: Border.all(color: _pdWmCardBorder, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -926,12 +948,19 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: _pdWmCream,
+        color: _pdWmCard,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _pdWmParchment,
+          color: _pdWmCardBorder,
           width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1034,9 +1063,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: _pdWmCream,
+        color: _pdWmWhite,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _pdWmParchment, width: 0.5),
+        border: Border.all(color: _pdWmCardBorder, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1762,8 +1791,16 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFEAF5EE),
+        color: _pdWmCard,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _pdWmCardBorder, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1840,8 +1877,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               return Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.6),
+                  color: _pdWmForestTint.withValues(alpha: 0.55),
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _pdWmParchment.withValues(alpha: 0.9),
+                    width: 1,
+                  ),
                 ),
                           child: Text(
                   conversationalTip,
@@ -2693,7 +2734,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      error.toString(),
+                      l10n.agendaPleaseTryAgainLater,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -2944,9 +2985,34 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       if (kDebugMode) {
         debugPrint('✅ Successfully fetched place directly: ${place.name}');
       }
+      if (place.name.trim().isNotEmpty &&
+          place.name.trim().toLowerCase() != 'place details unavailable') {
+        return place;
+      }
+
+      // Fallback to user_saved_places payload when external details are unavailable.
+      final savedPlaces = await ref.read(savedPlacesServiceProvider).getSavedPlaces();
+      for (final saved in savedPlaces) {
+        if (saved.placeId == placeId || saved.place.id == placeId) {
+          if (kDebugMode) {
+            debugPrint('✅ Using fallback place data from saved places: ${saved.place.name}');
+          }
+          return saved.place;
+        }
+      }
+
       return place;
     } catch (e) {
       if (kDebugMode) debugPrint('❌ Error fetching place directly: $e');
+      final savedPlaces = await ref.read(savedPlacesServiceProvider).getSavedPlaces();
+      for (final saved in savedPlaces) {
+        if (saved.placeId == placeId || saved.place.id == placeId) {
+          if (kDebugMode) {
+            debugPrint('✅ Recovered place from saved places after fetch failure: ${saved.place.name}');
+          }
+          return saved.place;
+        }
+      }
       rethrow;
     }
   }

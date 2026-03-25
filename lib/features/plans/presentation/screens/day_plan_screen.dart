@@ -14,6 +14,7 @@ import 'package:wandermood/core/services/wandermood_ai_service.dart' as ai_servi
 import 'package:wandermood/core/models/ai_recommendation.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/core/extensions/string_extensions.dart';
+import 'package:wandermood/features/places/presentation/screens/place_detail_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
@@ -64,6 +65,20 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
     return formatter.format(now);
   }
 
+  void _refreshMyDayProviders(WidgetRef ref) {
+    ref.invalidate(scheduledActivityServiceProvider);
+    ref.invalidate(scheduledActivitiesForTodayProvider);
+    ref.invalidate(todayActivitiesProvider);
+  }
+
+  /// Opens My Day without inserting new rows (per-card adds stay the only new items).
+  Future<void> _navigateToMyDayOnly(WidgetRef ref) async {
+    _refreshMyDayProviders(ref);
+    if (!mounted) return;
+    ref.read(mainTabProvider.notifier).state = 0;
+    context.goNamed('main', extra: {'tab': 0});
+  }
+
   /// Adds only the activities the user has NOT already added individually.
   /// Does NOT clear existing scheduled activities — preserves what was already added.
   Future<void> _addPlanToMyDay(WidgetRef ref) async {
@@ -72,19 +87,20 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
       final remaining = _activities
           .where((a) => !_addedActivityIds.contains(a.id))
           .toList();
-      if (remaining.isNotEmpty) {
+      final didSave = remaining.isNotEmpty;
+      if (didSave) {
         final service = ref.read(scheduledActivityServiceProvider);
         await service.saveScheduledActivities(remaining, isConfirmed: false);
       }
-      ref.invalidate(scheduledActivityServiceProvider);
-      ref.invalidate(scheduledActivitiesForTodayProvider);
-      ref.invalidate(todayActivitiesProvider);
+      _refreshMyDayProviders(ref);
       if (!mounted) return;
       ref.read(mainTabProvider.notifier).state = 0;
       context.goNamed('main', extra: {'tab': 0});
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      showWanderMoodToast(context, message: l10n.dayPlanPlanAddedToMyDay);
+      if (didSave) {
+        showWanderMoodToast(context, message: l10n.dayPlanPlanAddedToMyDay);
+      }
     } catch (e) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
@@ -616,7 +632,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
               ],
             ),
           ),
-          // Single CTA: Add to My Day
+          // Bottom CTAs: default is View My Day (no bulk save). Explicit second action adds all suggestions.
           Positioned(
             bottom: 0,
             left: 0,
@@ -630,40 +646,83 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
               ),
               child: SafeArea(
                 top: false,
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _activities.isEmpty ? null : () => _addPlanToMyDay(ref),
-                    icon: const Text('🗓️', style: TextStyle(fontSize: 22)),
-                    label: Builder(builder: (context) {
-                      final remaining = _activities.length - _addedCount;
-                      final String label;
-                      if (_addedCount == 0) {
-                        label = AppLocalizations.of(context)!.dayPlanAddToMyDay;
-                      } else if (remaining > 0) {
-                        label = AppLocalizations.of(context)!.dayPlanAddMoreToMyDay(remaining.toString());
-                      } else {
-                        label = AppLocalizations.of(context)!.dayPlanViewMyDay;
-                      }
-                      return Text(
-                        label,
+                child: Builder(builder: (context) {
+                  final l10n = AppLocalizations.of(context)!;
+                  final remaining = _activities.length - _addedCount;
+                  if (_addedCount == 0) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _activities.isEmpty
+                                ? null
+                                : () => _navigateToMyDayOnly(ref),
+                            icon: const Text('🗓️', style: TextStyle(fontSize: 22)),
+                            label: Text(
+                              l10n.dayPlanViewMyDay,
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: wmForest,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                              elevation: 0,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: _activities.isEmpty
+                              ? null
+                              : () => _addPlanToMyDay(ref),
+                          child: Text(
+                            l10n.dayPlanAddAllSuggestions(
+                              _activities.length.toString(),
+                            ),
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: wmForest,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                  return SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _activities.isEmpty ? null : () => _addPlanToMyDay(ref),
+                      icon: const Text('🗓️', style: TextStyle(fontSize: 22)),
+                      label: Text(
+                        remaining > 0
+                            ? l10n.dayPlanAddMoreToMyDay(remaining.toString())
+                            : l10n.dayPlanViewMyDay,
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
-                      );
-                    }),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: wmForest,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
                       ),
-                      elevation: 0,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: wmForest,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        elevation: 0,
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                }),
               ),
             ),
           ),
@@ -821,6 +880,17 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
   }
 
   void _openActivityDetail(Activity activity, {String? distanceKm}) {
+    final placeId = activity.placeId?.trim();
+    if (placeId != null && placeId.isNotEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlaceDetailScreen(placeId: placeId),
+        ),
+      );
+      return;
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(

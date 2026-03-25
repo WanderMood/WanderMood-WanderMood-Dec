@@ -1868,7 +1868,7 @@
   "chatSheetMoodyName": "Moody",
   "chatSheetErrorMessage": "Oeps! Ik heb momenteel verbindingsproblemen. Kun je het opnieuw proberen? 🤔",
   "chatSheetEmptyStateBody": "Ik ken de stad als mijn broekzak! Vertel me je stemming en ik maak de perfecte dag voor je. Of je je avontuurlijk voelt, romantisch, of gewoon wilt chilllen - ik heb je! 🎯",
-  "chatSheetCraftingMessage": "Moody bereidt iets speciaals voor...",
+  "chatSheetCraftingMessage": "Moody is aan het typen...",
   "chatSheetInputHint": "Wat is jouw stemming vandaag?",
   "moodyConversationGreeting": "Hé! Hoe voel je je vandaag? Ik kan activiteiten voorstellen op basis van jouw stemming.",
   "moodyConversationTalkToMoody": "Praat met Moody",
@@ -1878,6 +1878,14 @@
   "moodyConversationTypeMessage": "Typ je bericht...",
   "dayPlanAddMoreToMyDay": "Voeg nog {count} toe aan Mijn Dag",
   "dayPlanViewMyDay": "Bekijk Mijn Dag",
+  "dayPlanAddAllSuggestions": "Voeg alle {count} toe aan Mijn Dag",
+  "@dayPlanAddAllSuggestions": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "homeSelectLocation": "Locatie kiezen",
   "homeCurrentLocation": "Huidige locatie",
   "homeUsingGps": "GPS gebruiken",
@@ -2232,4 +2240,7 @@
   "moodHomePlanAgain": "Opnieuw plannen",
   "planLoadingRotating2": "Je dag wordt samengesteld…",
   "planLoadingRotating3": "Bijna klaar — je plan is bijna gereed ✨"
+,
+  "settingsTravelModeHelpLabel": "Hulp bij reismodus",
+  "settingsTravelModeHelpSubtitle": "Open de gids Lokaal vs Reizen opnieuw"
 }

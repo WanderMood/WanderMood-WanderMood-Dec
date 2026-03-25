@@ -89,6 +89,21 @@ serve(async (req) => {
         const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${GOOGLE_PLACES_API_KEY}&language=${language}&fields=place_id,name,formatted_address,geometry,photos,rating,user_ratings_total,price_level,opening_hours,website,formatted_phone_number,reviews,types,vicinity`
         response = await fetch(detailsUrl)
         data = await response.json()
+        {
+          const photos = Array.isArray(data?.result?.photos) ? data.result.photos : []
+          console.log(
+            `📸 places.details placeId=${placeId} status=${data?.status ?? 'unknown'} photos_count=${photos.length}`,
+          )
+          if (photos.length > 0) {
+            const firstRef = photos[0]?.photo_reference ?? ''
+            console.log(`📸 places.details first_photo_reference_present=${firstRef ? 'yes' : 'no'}`)
+          } else {
+            console.log(`📸 places.details no photos returned by Google for placeId=${placeId}`)
+          }
+          if (data?.error_message) {
+            console.log(`📸 places.details error_message=${data.error_message}`)
+          }
+        }
         break
 
       case 'photos':
@@ -96,9 +111,15 @@ serve(async (req) => {
         
         const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?photoreference=${photoReference}&key=${GOOGLE_PLACES_API_KEY}&maxwidth=${maxWidth}&maxheight=${maxHeight}`
         response = await fetch(photoUrl)
+        console.log(
+          `📸 places.photos reference=${photoReference.slice(0, 24)}... status=${response.status}`,
+        )
         
         if (response.ok) {
           const imageBlob = await response.blob()
+          console.log(
+            `📸 places.photos success content_type=${response.headers.get('Content-Type') ?? 'unknown'}`,
+          )
           return new Response(imageBlob, {
             headers: {
               ...corsHeaders,
@@ -106,6 +127,11 @@ serve(async (req) => {
             },
           })
         } else {
+          let responsePreview = ''
+          try {
+            responsePreview = (await response.text()).slice(0, 300)
+          } catch (_) {}
+          console.log(`📸 places.photos failed status=${response.status} body=${responsePreview}`)
           throw new Error('Failed to fetch photo')
         }
 

@@ -3376,6 +3376,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get dayPlanViewMyDay => 'Mein Tag ansehen';
 
   @override
+  String dayPlanAddAllSuggestions(String count) {
+    return 'Alle $count zu Mein Tag hinzufügen';
+  }
+
+  @override
   String get dayPlanPlanAddedToMyDay => 'Plan zu Mein Tag hinzugefügt!';
 
   @override
@@ -5364,8 +5369,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Ich kenne die Stadt wie meine Westentasche! Sag mir deine Stimmung und ich gestalte den perfekten Tag für dich. Ob du dich abenteuerlustig, romantisch oder entspannt fühlst - ich hab dich! 🎯';
 
   @override
-  String get chatSheetCraftingMessage =>
-      'Moody bereitet etwas Besonderes vor...';
+  String get chatSheetCraftingMessage => 'Moody tippt...';
 
   @override
   String get chatSheetInputHint => 'Wie ist deine Stimmung heute?';
@@ -6390,4 +6394,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get planLoadingRotating3 => 'Gleich fertig — dein Plan ist fast da ✨';
+
+  @override
+  String get settingsTravelModeHelpLabel => 'Hilfe zum Reisemodus';
+
+  @override
+  String get settingsTravelModeHelpSubtitle =>
+      'Leitfaden Lokal vs Reisen erneut öffnen';
 }

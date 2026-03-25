@@ -1024,7 +1024,12 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan>
                     // Plan later button
                     GestureDetector(
                       onTap: () {
-                        // Dismiss / do nothing — user will come back later
+                        if (Navigator.of(context).canPop()) {
+                          Navigator.of(context).maybePop();
+                          return;
+                        }
+                        // Fallback for root route: send user back to main home tab.
+                        context.goNamed('main', extra: {'tab': 0});
                       },
                       child: Text(
                         AppLocalizations.of(context)!.noPlanPlanLater,

@@ -6164,6 +6164,12 @@ abstract class AppLocalizations {
   /// **'View My Day'**
   String get dayPlanViewMyDay;
 
+  /// No description provided for @dayPlanAddAllSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Add all {count} to My Day'**
+  String dayPlanAddAllSuggestions(String count);
+
   /// No description provided for @dayPlanPlanAddedToMyDay.
   ///
   /// In en, this message translates to:
@@ -9653,7 +9659,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatSheetCraftingMessage.
   ///
   /// In en, this message translates to:
-  /// **'Moody is crafting something special...'**
+  /// **'Moody is typing...'**
   String get chatSheetCraftingMessage;
 
   /// No description provided for @chatSheetInputHint.
@@ -11587,6 +11593,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Almost there — your plan is almost ready ✨'**
   String get planLoadingRotating3;
+
+  /// No description provided for @settingsTravelModeHelpLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel mode help'**
+  String get settingsTravelModeHelpLabel;
+
+  /// No description provided for @settingsTravelModeHelpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen Local vs Travel guide'**
+  String get settingsTravelModeHelpSubtitle;
 }
 
 class _AppLocalizationsDelegate

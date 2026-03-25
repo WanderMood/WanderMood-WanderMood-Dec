@@ -1422,6 +1422,14 @@
     }
   },
   "dayPlanViewMyDay": "View My Day",
+  "dayPlanAddAllSuggestions": "Add all {count} to My Day",
+  "@dayPlanAddAllSuggestions": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "dayPlanPlanAddedToMyDay": "Plan added to My Day!",
   "dayPlanAddPlanFailed": "Couldn't add plan. Try again.",
   "dayPlanAllAlternativesUsed": "You've used all 3 alternative options for this activity!",
@@ -2599,7 +2607,7 @@
   "chatSheetMoodyName": "Moody",
   "chatSheetErrorMessage": "Oops! I'm having trouble connecting right now. Can you try again? 🤔",
   "chatSheetEmptyStateBody": "I know the city like the back of my hand! Tell me your mood, and I'll craft the perfect day just for you. Whether you're feeling adventurous, romantic, or need some chill vibes - I've got you covered! 🎯",
-  "chatSheetCraftingMessage": "Moody is crafting something special...",
+  "chatSheetCraftingMessage": "Moody is typing...",
   "chatSheetInputHint": "What's your mood today?",
   "moodyConversationGreeting": "Hi there! How are you feeling today? I can suggest activities based on your mood.",
   "moodyConversationTalkToMoody": "Talk to Moody",
@@ -3010,4 +3018,7 @@
   "moodHomePlanAgain": "Plan again",
   "planLoadingRotating2": "Putting your day together…",
   "planLoadingRotating3": "Almost there — your plan is almost ready ✨"
+,
+  "settingsTravelModeHelpLabel": "Travel mode help",
+  "settingsTravelModeHelpSubtitle": "Reopen Local vs Travel guide"
 }

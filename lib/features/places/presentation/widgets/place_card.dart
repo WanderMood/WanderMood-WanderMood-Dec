@@ -7,6 +7,7 @@ import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/core/services/distance_service.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:wandermood/features/places/services/sharing_service.dart';
+import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -59,6 +60,7 @@ class PlaceCard extends ConsumerWidget {
   // Cache distance calculation to prevent spam
   static final Map<String, String> _distanceCache = {};
   static final Map<String, DateTime> _distanceCacheTime = {};
+  static final Map<String, Future<List<String>>> _photoListCache = {};
   static const Duration _cacheValidDuration = Duration(minutes: 5);
   
   // Clean up expired cache entries
@@ -412,17 +414,18 @@ class PlaceCard extends ConsumerWidget {
     }
   }
 
-  /// Get energy level label (standard terms instead of "low/medium/high energy")
-  String _getEnergyLabel(String energyLevel) {
+  /// Get energy level label using localized preference labels.
+  String _getEnergyLabel(BuildContext context, String energyLevel) {
+    final l10n = AppLocalizations.of(context)!;
     switch (energyLevel.toLowerCase()) {
       case 'low':
-        return 'Relaxing';
+        return l10n.prefSlowChillLabel;
       case 'medium':
-        return 'Moderate pace';
+        return l10n.prefModerateLabel;
       case 'high':
-        return 'Active';
+        return l10n.prefActiveLabel;
       default:
-        return 'Moderate pace';
+        return l10n.prefModerateLabel;
     }
   }
 
@@ -495,11 +498,72 @@ class PlaceCard extends ConsumerWidget {
     return _wmForest;
   }
 
-  Widget _buildPlaceImage() {
+  Future<List<String>> _resolvePhotos(WidgetRef ref) {
+    if (place.photos.length > 1 || !place.id.startsWith('google_')) {
+      return Future.value(place.photos);
+    }
+    return _photoListCache.putIfAbsent(place.id, () async {
+      try {
+        final resolvedPlace =
+            await ref.read(placesServiceProvider.notifier).getPlaceById(place.id);
+        if (resolvedPlace.photos.length > 1) {
+          return resolvedPlace.photos;
+        }
+      } catch (e) {
+        if (kDebugMode) debugPrint('⚠️ Failed resolving extra photos for ${place.id}: $e');
+      }
+      return place.photos;
+    });
+  }
+
+  Widget _buildPlaceImage(List<String> photos) {
     Widget mainImage;
-    
-    // Determine the main image
-    if (place.photos.isEmpty) {
+
+    Widget buildPhotoAt(int index) {
+      final safeIndex = index >= 0 && index < photos.length ? index : 0;
+      final photo = photos[safeIndex];
+      if (place.isAsset) {
+        return Image.asset(
+          photo,
+          height: 200,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            debugPrint('Error loading asset image: $error');
+            return _buildFallbackImage();
+          },
+        );
+      }
+      return Image.network(
+        photo,
+        height: 200,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          debugPrint('Error loading network image: $error');
+          return _buildFallbackImage();
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            height: 200,
+            width: double.infinity,
+            color: Colors.grey[200],
+            child: Center(
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                    : null,
+                color: const Color(0xFF2A6049),
+              ),
+            ),
+          );
+        },
+      );
+    }
+
+    if (photos.isEmpty) {
       mainImage = Container(
         height: 200,
         width: double.infinity,
@@ -523,57 +587,13 @@ class PlaceCard extends ConsumerWidget {
           ),
         ),
       );
-    } else if (place.isAsset) {
-      try {
-        if (place.photos.isEmpty) {
-          mainImage = _buildFallbackImage();
-        } else {
-          mainImage = Image.asset(
-            place.photos.first,
-            height: 200,
-            width: double.infinity,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              debugPrint('Error loading asset image: $error');
-              return _buildFallbackImage();
-            },
-          );
-        }
-      } catch (e) {
-        debugPrint('Exception loading asset image: $e');
-        mainImage = _buildFallbackImage();
-      }
+    } else if (photos.length == 1) {
+      mainImage = buildPhotoAt(0);
     } else {
-      if (place.photos.isEmpty) {
-        mainImage = _buildFallbackImage();
-      } else {
-        mainImage = Image.network(
-          place.photos.first,
-          height: 200,
-          width: double.infinity,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            debugPrint('Error loading network image: $error');
-            return _buildFallbackImage();
-          },
-          loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Container(
-            height: 200,
-            width: double.infinity,
-            color: Colors.grey[200],
-            child: Center(
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                    : null,
-                color: const Color(0xFF2A6049),
-              ),
-            ),
-          );
-        },
-        );
-      }
+      mainImage = _PlacePhotoCarousel(
+        photoCount: photos.length,
+        photoBuilder: buildPhotoAt,
+      );
     }
     
     // Return stack with image and badges
@@ -737,7 +757,14 @@ class PlaceCard extends ConsumerWidget {
               child: Stack(
                 children: [
                   // Main image
-                  _buildPlaceImage(),
+                  FutureBuilder<List<String>>(
+                    future: _resolvePhotos(ref),
+                    initialData: place.photos,
+                    builder: (context, snapshot) {
+                      final photos = snapshot.data ?? place.photos;
+                      return _buildPlaceImage(photos);
+                    },
+                  ),
                       
                   // Opening hours pill
                   if (place.openingHours?.todayHours != null)
@@ -816,13 +843,6 @@ class PlaceCard extends ConsumerWidget {
                             }
                           },
                         ),
-                        if (showAddToMyDayButton) ...[
-                          const SizedBox(height: 8),
-                          _CardIconButton(
-                            icon: Icons.add_circle_outline_rounded,
-                            onTap: () => _addToMyDay(context, ref),
-                          ),
-                        ],
                         const SizedBox(height: 8),
                         _CardIconButton(
                           icon: isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
@@ -950,7 +970,7 @@ class PlaceCard extends ConsumerWidget {
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  _getEnergyLabel(place.energyLevel),
+                                  _getEnergyLabel(context, place.energyLevel),
                                   style: GoogleFonts.poppins(
                                     fontSize: 12,
                                     color: _getEnergyColor(place.energyLevel),
@@ -1534,6 +1554,76 @@ class PlaceCard extends ConsumerWidget {
       message: message,
       isError: true,
       duration: const Duration(seconds: 3),
+    );
+  }
+}
+
+class _PlacePhotoCarousel extends StatefulWidget {
+  final int photoCount;
+  final Widget Function(int index) photoBuilder;
+
+  const _PlacePhotoCarousel({
+    required this.photoCount,
+    required this.photoBuilder,
+  });
+
+  @override
+  State<_PlacePhotoCarousel> createState() => _PlacePhotoCarouselState();
+}
+
+class _PlacePhotoCarouselState extends State<_PlacePhotoCarousel> {
+  int _currentIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 200,
+      width: double.infinity,
+      child: Stack(
+        children: [
+          PageView.builder(
+            itemCount: widget.photoCount,
+            onPageChanged: (index) {
+              if (!mounted) return;
+              setState(() => _currentIndex = index);
+            },
+            itemBuilder: (context, index) => widget.photoBuilder(index),
+          ),
+          Positioned(
+            bottom: 10,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                widget.photoCount,
+                (index) {
+                  final isActive = index == _currentIndex;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: isActive ? 16 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: isActive
+                          ? Colors.white.withValues(alpha: 0.95)
+                          : Colors.white.withValues(alpha: 0.55),
+                      borderRadius: BorderRadius.circular(999),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.20),
+                          blurRadius: 3,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

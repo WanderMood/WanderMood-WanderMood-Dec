@@ -1784,7 +1784,7 @@
   "chatSheetMoodyName": "Moody",
   "chatSheetErrorMessage": "Oups ! J'ai des problèmes de connexion en ce moment. Tu peux réessayer ? 🤔",
   "chatSheetEmptyStateBody": "Je connais la ville comme ma poche ! Dis-moi ton mood et je créerai la journée parfaite pour toi. Que tu te sentes aventurier, romantique ou relaxé - je suis là pour toi ! 🎯",
-  "chatSheetCraftingMessage": "Moody prépare quelque chose de spécial...",
+  "chatSheetCraftingMessage": "Moody écrit...",
   "chatSheetInputHint": "Quel est ton mood aujourd'hui ?",
   "moodyConversationGreeting": "Salut ! Comment tu te sens aujourd'hui ? Je peux te suggérer des activités selon ton mood.",
   "moodyConversationTalkToMoody": "Parler à Moody",
@@ -1794,6 +1794,14 @@
   "moodyConversationTypeMessage": "Tape ton message...",
   "dayPlanAddMoreToMyDay": "Ajouter {count} de plus à Ma Journée",
   "dayPlanViewMyDay": "Voir Ma Journée",
+  "dayPlanAddAllSuggestions": "Ajouter les {count} à Ma Journée",
+  "@dayPlanAddAllSuggestions": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "homeSelectLocation": "Choisir un lieu",
   "homeCurrentLocation": "Localisation actuelle",
   "homeUsingGps": "Via GPS",
@@ -2151,4 +2159,7 @@
   "moodHomePlanAgain": "Replanifier",
   "planLoadingRotating2": "On compose ta journée…",
   "planLoadingRotating3": "Presque prêt — ton plan arrive ✨"
+,
+  "settingsTravelModeHelpLabel": "Aide mode voyage",
+  "settingsTravelModeHelpSubtitle": "Rouvrir le guide Local vs Voyage"
 }

@@ -4,6 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_character.dart'
+    as home_moody;
 import 'dart:ui';
 
 // v2 — travel mode dialogs / explainer (Screen 11)
@@ -15,6 +18,8 @@ const Color _wmSunsetTint = Color(0xFFFDF0E8);
 const Color _wmSky = Color(0xFFA8C8DC);
 const Color _wmSkyTint = Color(0xFFEDF5F9);
 const Color _wmParchment = Color(0xFFE8E2D8);
+const Color _wmCharcoal = Color(0xFF1E1C18);
+const Color _wmDusk = Color(0xFF4A4640);
 const Color _wmStone = Color(0xFF8C8780);
 
 List<BoxShadow> _travelModeShadow() {
@@ -42,6 +47,33 @@ class TravelModeToggle extends ConsumerStatefulWidget {
 }
 
 class _TravelModeToggleState extends ConsumerState<TravelModeToggle> {
+  static const String _modeExplainerSeenKey = 'profile_mode_explainer_seen_v1';
+  bool _showWhatDoesThisDo = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExplainerVisibility();
+  }
+
+  Future<void> _loadExplainerVisibility() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeen = prefs.getBool(_modeExplainerSeenKey) ?? false;
+    if (!mounted) return;
+    setState(() {
+      _showWhatDoesThisDo = !hasSeen;
+    });
+  }
+
+  Future<void> _markExplainerSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_modeExplainerSeenKey, true);
+    if (!mounted) return;
+    setState(() {
+      _showWhatDoesThisDo = false;
+    });
+  }
+
   void _handleToggleTap(bool newMode) {
     if (newMode == widget.isLocal) return;
 
@@ -94,6 +126,7 @@ class _TravelModeToggleState extends ConsumerState<TravelModeToggle> {
   }
 
   void _showExplanationModal() {
+    _markExplainerSeen();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -146,29 +179,31 @@ class _TravelModeToggleState extends ConsumerState<TravelModeToggle> {
               ),
             ),
           ),
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: _showExplanationModal,
-              style: TextButton.styleFrom(
-                foregroundColor: _wmForest,
-                backgroundColor: _wmForestTint,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(999),
+          if (_showWhatDoesThisDo) ...[
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: _showExplanationModal,
+                style: TextButton.styleFrom(
+                  foregroundColor: _wmForest,
+                  backgroundColor: _wmForestTint,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
                 ),
-              ),
-              icon: const Icon(Icons.info_outline_rounded, size: 18),
-              label: Text(
-                l10n.profileModeWhatDoesThisDo,
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                icon: const Icon(Icons.info_outline_rounded, size: 18),
+                label: Text(
+                  l10n.profileModeWhatDoesThisDo,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -875,18 +910,18 @@ class TravelModeExplanationModal extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(20, 16, 12, 8),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  l10n.profileModeTravelModesExplained,
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
+                Expanded(
+                  child: Text(
+                    l10n.profileModeTravelModesExplained,
+                    style: GoogleFonts.poppins(
+                      fontSize: 21,
+                      fontWeight: FontWeight.w700,
+                      color: _wmCharcoal,
+                    ),
                   ),
                 ),
                 IconButton(
@@ -896,223 +931,87 @@ class TravelModeExplanationModal extends StatelessWidget {
               ],
             ),
           ),
-
-          // Content
           Flexible(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Local Mode
                   Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: _wmForestTint,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: _wmParchment, width: 2),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: const BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [_wmForest, _wmForestDark],
-                                ),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.home, color: Colors.white, size: 24),
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              l10n.profileModeLocalTitle,
-                              style: GoogleFonts.poppins(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[800],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          l10n.profileModeLocalExplainer,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: Colors.grey[700],
-                            height: 1.5,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        _buildFeatureItem(Icons.check, _wmForest, l10n.profileModeLocalGem1),
-                        _buildFeatureItem(Icons.check, _wmForest, l10n.profileModeLocalGem2),
-                        _buildFeatureItem(Icons.check, _wmForest, l10n.profileModeLocalGem3),
-                        _buildFeatureItem(Icons.check, _wmForest, l10n.profileModeLocalGem4),
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.5),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            l10n.profileModeLocalExample,
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Travel Mode
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: _wmSunsetTint,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: _wmParchment, width: 2),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: const BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [_wmSunset, _wmForest],
-                                ),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.map, color: Colors.white, size: 24),
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              l10n.profileModeTravelTitle,
-                              style: GoogleFonts.poppins(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[800],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          l10n.profileModeTravelExplainer,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: Colors.grey[700],
-                            height: 1.5,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        _buildFeatureItem(Icons.check, _wmSunset, l10n.profileModeTravelSpot1),
-                        _buildFeatureItem(Icons.check, _wmSunset, l10n.profileModeTravelSpot2),
-                        _buildFeatureItem(Icons.check, _wmSunset, l10n.profileModeTravelSpot3),
-                        _buildFeatureItem(Icons.check, _wmSunset, l10n.profileModeTravelSpot4),
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.5),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            l10n.profileModeTravelExample,
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Pro Tip
-                  Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: _wmSkyTint,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: _wmParchment, width: 2),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: _wmParchment, width: 1),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: const BoxDecoration(
-                            color: _wmSky,
-                            shape: BoxShape.circle,
+                        const SizedBox(
+                          width: 56,
+                          height: 56,
+                          child: home_moody.MoodyCharacter(
+                            size: 56,
+                            mood: 'happy',
                           ),
-                          child: const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '💡 ',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.grey[800],
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Text(
-                                      l10n.profileModeProTip,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey[800],
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 9,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: _wmParchment, width: 1),
+                            ),
+                            child: Text(
+                              l10n.profileModeProTip,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                                color: _wmDusk,
+                                height: 1.4,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                l10n.profileModeSwitchAnytime,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  color: Colors.grey[700],
-                                  height: 1.5,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 14),
+                  _buildCompactModeCard(
+                    icon: Icons.home_rounded,
+                    title: l10n.profileModeLocalTitle,
+                    description: l10n.profileModeLocalExplainer,
+                    feature1: l10n.profileModeLocalGem1,
+                    feature2: l10n.profileModeLocalGem2,
+                    feature3: l10n.profileModeLocalGem3,
+                    example: l10n.profileModeLocalExample,
+                    bgColor: _wmForestTint,
+                    accent: _wmForest,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildCompactModeCard(
+                    icon: Icons.map_outlined,
+                    title: l10n.profileModeTravelTitle,
+                    description: l10n.profileModeTravelExplainer,
+                    feature1: l10n.profileModeTravelSpot1,
+                    feature2: l10n.profileModeTravelSpot2,
+                    feature3: l10n.profileModeTravelSpot3,
+                    example: l10n.profileModeTravelExample,
+                    bgColor: _wmSunsetTint,
+                    accent: _wmSunset,
+                  ),
+                  const SizedBox(height: 10),
                 ],
               ),
             ),
           ),
-
-          // Footer Button
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 22),
             decoration: BoxDecoration(
               color: Colors.white,
               border: Border(
@@ -1128,7 +1027,7 @@ class TravelModeExplanationModal extends StatelessWidget {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(999),
                   ),
                   elevation: 0,
                 ),
@@ -1147,19 +1046,113 @@ class TravelModeExplanationModal extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatureItem(IconData icon, Color color, String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
+  Widget _buildCompactModeCard({
+    required IconData icon,
+    required String title,
+    required String description,
+    required String feature1,
+    required String feature2,
+    required String feature3,
+    required String example,
+    required Color bgColor,
+    required Color accent,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _wmParchment, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
+          Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: accent,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: Colors.white, size: 18),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 21,
+                    fontWeight: FontWeight.w700,
+                    color: _wmCharcoal,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            description,
+            style: GoogleFonts.poppins(
+              fontSize: 13.5,
+              color: _wmDusk,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildFeaturePill(feature1, accent),
+              _buildFeaturePill(feature2, accent),
+              _buildFeaturePill(feature3, accent),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.75),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: _wmParchment, width: 0.8),
+            ),
+            child: Text(
+              example,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: _wmStone,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeaturePill(String text, Color accent) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: _wmParchment, width: 0.8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.check_rounded, size: 14, color: accent),
+          const SizedBox(width: 4),
+          Flexible(
             child: Text(
               text,
               style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: Colors.grey[700],
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                color: _wmDusk,
               ),
             ),
           ),
