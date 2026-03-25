@@ -9,6 +9,7 @@ import '../../../../core/providers/user_location_provider.dart';
 import '../../../../core/providers/preferences_provider.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class LocationPickerScreen extends ConsumerStatefulWidget {
   final String? currentLocation;
@@ -129,17 +130,19 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
       ref.invalidate(preferencesProvider);
 
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         showWanderMoodToast(
           context,
-          message: 'Location updated to ${suggestion.description}',
+          message: l10n.locationPickerToastUpdated(suggestion.description),
         );
         context.pop(suggestion.description);
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         showWanderMoodToast(
           context,
-          message: 'Error saving location: $e',
+          message: l10n.locationPickerToastError(e.toString()),
           isError: true,
         );
       }
@@ -149,7 +152,8 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
@@ -161,7 +165,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Select Location',
+          l10n.locationPickerTitle,
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -181,7 +185,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search for a city or location...',
+                hintText: l10n.locationPickerSearchHint,
                 hintStyle: GoogleFonts.poppins(color: Colors.grey[400]),
                 prefixIcon: const Icon(Icons.search, color: Colors.grey),
                 suffixIcon: _isLoading
@@ -227,8 +231,8 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
                         const SizedBox(height: 16),
                         Text(
                           _searchController.text.isEmpty
-                              ? 'Start typing to search for a location'
-                              : 'No locations found',
+                              ? l10n.locationPickerEmptyPrompt
+                              : l10n.locationPickerNoResults,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             color: Colors.grey[600],

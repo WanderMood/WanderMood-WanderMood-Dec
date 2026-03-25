@@ -302,9 +302,7 @@ final currentActivityStatusProvider = FutureProvider<Map<String, dynamic>>((ref)
   if (activeActivity != null) {
     return {
       'type': 'active',
-      'title': 'Right Now',
       'subtitle': activeActivity.rawData['title'],
-      'description': 'You\'re here! Tap Done when you\'re finished.',
       'activity': activeActivity.rawData,
       'enhancedActivity': activeActivity,
       'imageUrl': activeActivity.rawData['imageUrl'] ?? '',
@@ -316,12 +314,10 @@ final currentActivityStatusProvider = FutureProvider<Map<String, dynamic>>((ref)
       .where((a) => a.status == ActivityStatus.upcoming)
       .firstOrNull;
   if (upcomingActivity != null) {
-    final slot = _timeSlotLabel(upcomingActivity.startTime.hour);
     return {
       'type': 'upcoming',
-      'title': 'Up Next',
       'subtitle': upcomingActivity.rawData['title'],
-      'description': 'Planned for $slot · tap "I\'m Here" when you arrive',
+      'timePeriod': _timeSlotPeriod(upcomingActivity.startTime.hour),
       'activity': upcomingActivity.rawData,
       'enhancedActivity': upcomingActivity,
     };
@@ -334,42 +330,27 @@ final currentActivityStatusProvider = FutureProvider<Map<String, dynamic>>((ref)
   if (lastCompleted != null) {
     return {
       'type': 'completed',
-      'title': '✅ All Done',
       'subtitle': lastCompleted.rawData['title'],
-      'description': 'Great day! You\'ve completed everything.',
       'activity': lastCompleted.rawData,
       'enhancedActivity': lastCompleted,
     };
   }
 
-  // Default free time
-  String timeOfDay;
-  String suggestion;
-  if (hour >= 6 && hour < 12) {
-    timeOfDay = 'Morning';
-    suggestion = 'Perfect time to start your day with energy';
-  } else if (hour >= 12 && hour < 17) {
-    timeOfDay = 'Afternoon';
-    suggestion = 'Great time to explore and discover';
-  } else {
-    timeOfDay = 'Evening';
-    suggestion = 'Wind down with something special';
-  }
-
+  // Default free time — UI localizes titles/descriptions via [timePeriod] + type.
+  final period = _timeSlotPeriod(hour);
   return {
     'type': 'free_time',
-    'title': '📅 FREE TIME',
-    'subtitle': timeOfDay,
-    'description': suggestion,
-    'action1': 'Explore Nearby',
-    'action2': 'Ask Moody',
+    'period': period,
+    'action1': 'explore_nearby',
+    'action2': 'ask_moody',
   };
 });
 
-String _timeSlotLabel(int hour) {
-  if (hour >= 6 && hour < 12) return 'the morning';
-  if (hour >= 12 && hour < 18) return 'the afternoon';
-  return 'the evening';
+/// `morning` | `afternoon` | `evening` for localization lookup.
+String _timeSlotPeriod(int hour) {
+  if (hour >= 6 && hour < 12) return 'morning';
+  if (hour >= 12 && hour < 18) return 'afternoon';
+  return 'evening';
 }
 
 /// Provider for timeline categorized activities

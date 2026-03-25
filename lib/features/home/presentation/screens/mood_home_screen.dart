@@ -32,6 +32,7 @@ import 'package:wandermood/core/providers/communication_style_provider.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_chat_header_subtitle.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 
 // WanderMood v2 — Moody chat modal (Screen 9), aligned with moody_chat_sheet.dart
 const Color _mcSkyTint = Color(0xFFEDF5F9);
@@ -2203,7 +2204,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        isToday ? l10n.timeLabelToday : _getShortDayName(day),
+                        isToday ? l10n.timeLabelToday : _localizedShortWeekday(day),
                         style: GoogleFonts.poppins(
                           color: isSelected ? Colors.white : _mcCharcoal,
                           fontSize: 12,
@@ -2212,7 +2213,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                       ),
                       if (!isToday)
                         Text(
-                          '${day.day} ${_getShortMonth(day)}',
+                          _localizedDayAndShortMonth(day),
                           style: GoogleFonts.poppins(
                             color: isSelected ? Colors.white.withValues(alpha: 0.85) : _mcParchment,
                             fontSize: 11,
@@ -2232,15 +2233,13 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
 
-  String _getShortDayName(DateTime date) {
-    const days = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
-    return days[date.weekday - 1];
-  }
+  String _localeTag() => Localizations.localeOf(context).toString();
 
-  String _getShortMonth(DateTime date) {
-    const months = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
-    return months[date.month - 1];
-  }
+  String _localizedShortWeekday(DateTime date) =>
+      DateFormat.E(_localeTag()).format(date);
+
+  String _localizedDayAndShortMonth(DateTime date) =>
+      DateFormat('d MMM', _localeTag()).format(date);
 
   bool _hasPlanForSelectedDate(DailyMoodState state) {
     // Read the live Supabase activities so this reflects deletions immediately.
@@ -2266,6 +2265,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   }
 
   Widget _buildAlreadyPlannedState(DateTime date, int activityCount) {
+    final l10n = AppLocalizations.of(context)!;
+    final dayName = DateFormat.EEEE(_localeTag()).format(date);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
       padding: const EdgeInsets.all(16),
@@ -2282,7 +2283,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '${_getLongDayName(date)} is al gepland!',
+                  l10n.moodHomeAlreadyPlannedTitle(dayName),
                   style: GoogleFonts.poppins(
                     color: _mcForest,
                     fontSize: 16,
@@ -2296,7 +2297,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              '$activityCount activiteiten staan klaar voor je.',
+              l10n.moodHomeActivitiesReadyCount(activityCount),
               style: GoogleFonts.poppins(
                 color: _mcCharcoal.withValues(alpha: 0.78),
                 fontSize: 14,
@@ -2318,7 +2319,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                     ),
                     child: Center(
                       child: Text(
-                        'Bekijk plan',
+                        l10n.moodHomeViewPlan,
                         style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontSize: 14,
@@ -2342,7 +2343,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                     ),
                     child: Center(
                       child: Text(
-                        'Opnieuw plannen',
+                        l10n.moodHomePlanAgain,
                         style: GoogleFonts.poppins(
                           color: _mcForest,
                           fontSize: 14,
@@ -2364,19 +2365,6 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     context.go('/main?tab=0', extra: {
       'targetDate': DateTime(date.year, date.month, date.day).toIso8601String(),
     });
-  }
-
-  String _getLongDayName(DateTime date) {
-    const days = [
-      'Maandag',
-      'Dinsdag',
-      'Woensdag',
-      'Donderdag',
-      'Vrijdag',
-      'Zaterdag',
-      'Zondag',
-    ];
-    return days[date.weekday - 1];
   }
 
   /// Returns localized label for a mood (by English label key).

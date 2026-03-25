@@ -203,7 +203,7 @@ class _LocationSettingsScreenState extends ConsumerState<LocationSettingsScreen>
                       context.push('/settings/location/picker');
                     },
                     child: Text(
-                      'Change',
+                      l10n.settingsLocationChangeCta,
                       style: GoogleFonts.poppins(
                         color: _locWmForest,
                         fontWeight: FontWeight.w600,

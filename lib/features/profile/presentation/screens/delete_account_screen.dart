@@ -26,10 +26,11 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
   }
 
   Future<void> _deleteAccount() async {
-    if (_confirmController.text != 'DELETE') {
+    final l10n = AppLocalizations.of(context)!;
+    if (_confirmController.text != l10n.deleteAccountConfirmKeyword) {
       showWanderMoodToast(
         context,
-        message: AppLocalizations.of(context)!.deleteAccountTypeIncorrect,
+        message: l10n.deleteAccountTypeIncorrect,
         backgroundColor: Colors.orange,
       );
       return;
@@ -208,7 +209,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
-              hintText: 'DELETE',
+              hintText: l10n.deleteAccountConfirmKeyword,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: const BorderSide(

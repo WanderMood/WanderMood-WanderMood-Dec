@@ -1011,7 +1011,7 @@ class PlaceCard extends ConsumerWidget {
                                     Icon(_getCurrencyIcon(), color: _getPriceBadgeColor(), size: 13),
                                     const SizedBox(width: 4),
                                     Text(
-                                      _getPriceBadgeText(),
+                                      _getPriceBadgeText(l10n),
                                       style: GoogleFonts.poppins(
                                         fontSize: 12,
                                         color: _getPriceBadgeColor(),
@@ -1103,7 +1103,7 @@ class PlaceCard extends ConsumerWidget {
                         const Icon(Icons.visibility_outlined, size: 18, color: _wmForest),
                         const SizedBox(width: 6),
                         Text(
-                          'See activity',
+                          l10n.placeCardSeeActivity,
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -1233,12 +1233,12 @@ class PlaceCard extends ConsumerWidget {
     return place.isFree || place.priceLevel != null || hasPriceRange;
   }
   
-  String _getPriceBadgeText() {
+  String _getPriceBadgeText(AppLocalizations l10n) {
     final currency = _getCurrencySymbol();
     
     // Show only explicit backend-derived free state
     if (place.isFree || place.priceLevel == 0) {
-      return 'Free';
+      return l10n.dayPlanCardFree;
     }
     
     // If we have explicit price range, use it (but replace currency if needed)
@@ -1249,7 +1249,7 @@ class PlaceCard extends ConsumerWidget {
     
     // If we have explicit price level, convert to range with currency
     if (place.priceLevel != null) {
-      return _getPriceLevelText(place.priceLevel!, currency: currency);
+      return _getPriceLevelText(l10n, place.priceLevel!, currency: currency);
     }
     
     return '';
@@ -1279,9 +1279,10 @@ class PlaceCard extends ConsumerWidget {
     return _wmDusk.withValues(alpha: 0.8);
   }
   
-  String _getPriceLevelText(int priceLevel, {String currency = '€'}) {
+  String _getPriceLevelText(AppLocalizations l10n, int priceLevel,
+      {String currency = '€'}) {
     switch (priceLevel) {
-      case 0: return 'Free';
+      case 0: return l10n.dayPlanCardFree;
       case 1: return '$currency 5-15';
       case 2: return '$currency 15-30';
       case 3: return '$currency 30-50';

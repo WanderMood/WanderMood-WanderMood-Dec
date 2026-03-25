@@ -943,6 +943,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   Widget _buildExploreHeaderColumn(int activitiesCount) {
+    final l10n = AppLocalizations.of(context)!;
     return SafeArea(
       bottom: false,
       child: Align(
@@ -957,7 +958,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             child: Row(
               children: [
                 Text(
-                  'Explore',
+                  l10n.navExplore,
                   style: GoogleFonts.poppins(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
@@ -1014,10 +1015,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   Widget _buildExploreErrorBody(Object error, StackTrace? stack) {
+    final l10n = AppLocalizations.of(context)!;
     final errorMessage = error.toString();
     final isLocationError = errorMessage.contains('Location is required') ||
         errorMessage.contains('GPS coordinates') ||
-        errorMessage.contains('location services');
+        errorMessage.contains('location services') ||
+        errorMessage.contains('Locatie') ||
+        errorMessage.contains('Standort') ||
+        errorMessage.contains('Localisation');
 
     return Center(
       child: Column(
@@ -1030,7 +1035,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            isLocationError ? 'Location Required' : 'Error loading places',
+            isLocationError
+                ? l10n.exploreErrorLocationRequiredTitle
+                : l10n.exploreErrorLoadingPlacesTitle,
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w500,
@@ -1041,9 +1048,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
             child: Text(
-              isLocationError
-                  ? 'Please enable location services or set your location in settings to discover places near you.'
-                  : errorMessage,
+              isLocationError ? l10n.exploreErrorLocationBody : errorMessage,
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 color: Colors.grey[700],
@@ -1062,7 +1067,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 ref.read(userLocationProvider.notifier).refreshLocation();
               }
             },
-            child: Text(isLocationError ? 'Enable Location' : 'Try Again'),
+            child: Text(
+              isLocationError
+                  ? l10n.exploreErrorEnableLocation
+                  : l10n.planLoadingTryAgain,
+            ),
           ),
         ],
       ),
@@ -1325,6 +1334,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   Widget _buildAdvancedFilterModal() {
     return StatefulBuilder(
       builder: (BuildContext context, StateSetter setModalState) {
+        final l10n = AppLocalizations.of(context)!;
         // Create updateFilter function that updates both states
         void updateFilter(VoidCallback updateCallback) {
           updateCallback(); // Execute the state change once
@@ -1385,7 +1395,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Advanced Filters',
+                              l10n.exploreAdvancedFiltersTitle,
                               style: GoogleFonts.poppins(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -1394,7 +1404,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             ),
                             if (_activeFiltersCount > 0)
                               Text(
-                                '$_activeFiltersCount filters active',
+                                l10n.exploreFiltersActiveCount(_activeFiltersCount),
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   color: _afWmForest,
@@ -1421,7 +1431,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                 side: BorderSide.none),
                           ),
                           child: Text(
-                            'Clear All',
+                            l10n.exploreClearAll,
                             style: GoogleFonts.poppins(
                               color: _afWmStone,
                               fontWeight: FontWeight.w600,
@@ -1487,8 +1497,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                     children: [
                                       Text(
                                         _activeFiltersCount > 0
-                                            ? 'Nice! $_activeFiltersCount filter${_activeFiltersCount == 1 ? '' : 's'} active — I\'ll keep that in mind.'
-                                            : 'Hey! I\'m Moody. Use filters to find exactly what fits your vibe — dietary, accessibility, photo spots, and more.',
+                                            ? l10n.exploreMoodyHintFiltersActive(_activeFiltersCount)
+                                            : l10n.exploreMoodyHintFiltersIntro,
                                         style: GoogleFonts.poppins(
                                           fontSize: 13,
                                           color: const Color(0xFF2A6049),
@@ -1507,7 +1517,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         // Quick Suggestions
                         _buildExpandableSection(
                           '⚡',
-                          'Quick Suggestions',
+                          l10n.exploreSectionQuickSuggestions,
                           _advancedSuggestionsExpanded,
                           () => updateFilter(() {
                             _advancedSuggestionsExpanded = !_advancedSuggestionsExpanded;
@@ -1519,7 +1529,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         // Dietary Preferences
                         _buildExpandableSection(
                           '🍽️',
-                          'Dietary Preferences',
+                          l10n.exploreSectionDietaryPreferences,
                           _dietaryExpanded,
                           () => updateFilter(() {
                             _dietaryExpanded = !_dietaryExpanded;
@@ -1531,7 +1541,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         // Accessibility & Inclusion
                         _buildExpandableSection(
                           '♿',
-                          'Accessibility & Inclusion',
+                          l10n.exploreSectionAccessibilityInclusion,
                           _accessibilityExpanded,
                           () => updateFilter(() {
                             _accessibilityExpanded = !_accessibilityExpanded;
@@ -1543,7 +1553,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         // Comfort & Convenience
                         _buildExpandableSection(
                           '🛋️',
-                          'Comfort & Convenience',
+                          l10n.exploreSectionComfortConvenience,
                           _logisticsExpanded,
                           () => updateFilter(() {
                             _logisticsExpanded = !_logisticsExpanded;
@@ -1555,7 +1565,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         // Photo & Aesthetic
                         _buildExpandableSection(
                           '📸',
-                          'Photo & Aesthetic',
+                          l10n.exploreSectionPhotoAesthetic,
                           _photoExpanded,
                           () => updateFilter(() {
                             _photoExpanded = !_photoExpanded;
@@ -1614,8 +1624,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               const SizedBox(width: 8),
                               Text(
                                 _activeFiltersCount > 0
-                                    ? 'Save $_activeFiltersCount filters'
-                                    : 'Save filters',
+                                    ? l10n.exploreSaveFiltersWithCount(_activeFiltersCount)
+                                    : l10n.exploreSaveFilters,
                                 style: GoogleFonts.poppins(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
@@ -1703,13 +1713,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   Widget _buildMoodButtons() {
-    final moods = [
-      {'name': 'Adventure', 'emoji': '🏔️', 'color': const Color(0xFFFFD700)},
-      {'name': 'Creative', 'emoji': '😊', 'color': const Color(0xFF87CEEB)},
-      {'name': 'Relaxed', 'emoji': '🍀', 'color': const Color(0xFF98FB98)},
-      {'name': 'Mindful', 'emoji': '🍀', 'color': const Color(0xFFDDA0DD)},
-      {'name': 'Romantic', 'emoji': '❤️', 'color': const Color(0xFFFFB6C1)},
-    ];
+    final l10n = AppLocalizations.of(context)!;
+    final moods = _exploreMoodDefinitions(l10n);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -1725,14 +1730,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   Widget _buildMoodButton(Map<String, dynamic> mood) {
-    final isSelected = _selectedMood == mood['name'];
+    final isSelected = _selectedMood == mood['id'];
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
           HapticFeedback.lightImpact();
           setState(() {
-            _selectedMood = isSelected ? null : mood['name'];
+            _selectedMood = isSelected ? null : mood['id'] as String;
             _updateActiveFiltersCount();
           });
         },
@@ -1777,7 +1782,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               Text(mood['emoji'], style: const TextStyle(fontSize: 16)),
               const SizedBox(width: 8),
               Text(
-                mood['name'],
+                mood['label'] as String,
                 style: GoogleFonts.poppins(
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   color: isSelected ? Colors.white : Colors.black87,
@@ -1792,13 +1797,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   Widget _buildMoodButtonsWithCallback(Function(VoidCallback) updateFilter) {
-    final moods = [
-      {'name': 'Adventure', 'emoji': '🏔️', 'color': const Color(0xFFFFD700)},
-      {'name': 'Creative', 'emoji': '😊', 'color': const Color(0xFF87CEEB)},
-      {'name': 'Relaxed', 'emoji': '🍀', 'color': const Color(0xFF98FB98)},
-      {'name': 'Mindful', 'emoji': '🍀', 'color': const Color(0xFFDDA0DD)},
-      {'name': 'Romantic', 'emoji': '❤️', 'color': const Color(0xFFFFB6C1)},
-    ];
+    final l10n = AppLocalizations.of(context)!;
+    final moods = _exploreMoodDefinitions(l10n);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -1815,14 +1815,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   Widget _buildMoodButtonWithCallback(
       Map<String, dynamic> mood, Function(VoidCallback) updateFilter) {
-    final isSelected = _selectedMood == mood['name'];
+    final isSelected = _selectedMood == mood['id'];
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
           HapticFeedback.lightImpact();
           updateFilter(() {
-            _selectedMood = isSelected ? null : mood['name'];
+            _selectedMood = isSelected ? null : mood['id'] as String;
             _updateActiveFiltersCount();
           });
         },
@@ -1867,7 +1867,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               Text(mood['emoji'], style: const TextStyle(fontSize: 16)),
               const SizedBox(width: 8),
               Text(
-                mood['name'],
+                mood['label'] as String,
                 style: GoogleFonts.poppins(
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   color: isSelected ? Colors.white : Colors.black87,
@@ -2141,19 +2141,29 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  String _getPriceLevelText(int level) {
+  String _getPriceLevelText(AppLocalizations l10n, int level) {
     switch (level) {
       case 1:
-        return 'Budget';
+        return l10n.explorePriceLevelBudget;
       case 2:
-        return 'Moderate';
+        return l10n.explorePriceLevelModerate;
       case 3:
-        return 'Expensive';
+        return l10n.explorePriceLevelExpensive;
       case 4:
-        return 'Luxury';
+        return l10n.explorePriceLevelLuxury;
       default:
-        return 'Budget';
+        return l10n.explorePriceLevelBudget;
     }
+  }
+
+  List<Map<String, dynamic>> _exploreMoodDefinitions(AppLocalizations l10n) {
+    return [
+      {'id': 'adventure', 'label': l10n.exploreMoodAdventure, 'emoji': '🏔️', 'color': const Color(0xFFFFD700)},
+      {'id': 'creative', 'label': l10n.exploreMoodCreative, 'emoji': '😊', 'color': const Color(0xFF87CEEB)},
+      {'id': 'relaxed', 'label': l10n.exploreMoodRelaxed, 'emoji': '🍀', 'color': const Color(0xFF98FB98)},
+      {'id': 'mindful', 'label': l10n.exploreMoodMindful, 'emoji': '🍀', 'color': const Color(0xFFDDA0DD)},
+      {'id': 'romantic', 'label': l10n.exploreMoodRomantic, 'emoji': '❤️', 'color': const Color(0xFFFFB6C1)},
+    ];
   }
 
   // Helper method to build expandable sections
@@ -2626,6 +2636,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       );
     }
 
+    final l10n = AppLocalizations.of(context)!;
+
     // Determine initial camera position
     LatLng initialPosition;
     if (userLocation != null) {
@@ -2796,7 +2808,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Quick Filters',
+                      l10n.exploreQuickFilters,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -2960,10 +2972,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           ? place.photos.first
           : 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80';
 
+      final l10n = AppLocalizations.of(context)!;
       final activity = Activity(
         id: 'place_${place.id}_${DateTime.now().millisecondsSinceEpoch}',
         name: place.name,
-        description: place.description ?? 'Verken ${place.name}',
+        description: place.description ??
+            l10n.explorePlaceDescriptionFallback(place.name),
         imageUrl: imageUrl,
         rating: place.rating > 0 ? place.rating : 4.5,
         startTime: startTime,
@@ -3093,6 +3107,7 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
   }
 
   Future<void> _pickCustomDate() async {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
@@ -3101,9 +3116,9 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
           : _selectedDate,
       firstDate: _dateOnly(now),
       lastDate: DateTime(now.year + 1, 12, 31),
-      helpText: 'Kies een dag',
-      cancelText: 'Annuleren',
-      confirmText: 'Kies',
+      helpText: l10n.exploreDatePickerHelp,
+      cancelText: l10n.cancel,
+      confirmText: l10n.exploreDatePickerConfirm,
     );
     if (picked == null) return;
     setState(() {
@@ -3205,7 +3220,7 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Day',
+            l10n.exploreAddToMyDayDayLabel,
             style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -3228,7 +3243,9 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
               ),
               const SizedBox(width: 8),
               chip(
-                label: isCustomSelected ? _formatDateShort(_selectedDate) : 'Pick date',
+                label: isCustomSelected
+                    ? _formatDateShort(_selectedDate)
+                    : l10n.exploreAddToMyDayPickDate,
                 selected: isCustomSelected,
                 onTap: _pickCustomDate,
               ),
@@ -3236,7 +3253,7 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Selected: ${_formatDateLong(_selectedDate)}',
+            l10n.exploreAddToMyDaySelectedDate(_formatDateLong(_selectedDate)),
             style: GoogleFonts.poppins(
               fontSize: 12,
               color: const Color(0xFF8C8780),
@@ -3244,7 +3261,7 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
           ),
           const SizedBox(height: 14),
           Text(
-            'Time',
+            l10n.exploreAddToMyDayTimeLabel,
             style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w600,

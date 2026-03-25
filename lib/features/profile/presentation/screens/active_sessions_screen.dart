@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../providers/settings_providers.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class ActiveSessionsScreen extends ConsumerWidget {
   const ActiveSessionsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final sessionsAsync = ref.watch(activeSessionsProvider);
 
     final theme = Theme.of(context);
@@ -27,7 +30,7 @@ class ActiveSessionsScreen extends ConsumerWidget {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Active Sessions',
+          l10n.settingsActiveSessionsTitle,
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -40,13 +43,14 @@ class ActiveSessionsScreen extends ConsumerWidget {
         child: sessionsAsync.when(
           data: (sessions) => _buildSessionsList(context, sessions),
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, __) => _buildErrorState(),
+          error: (_, __) => _buildErrorState(context),
         ),
       ),
     );
   }
 
   Widget _buildSessionsList(BuildContext context, List<ActiveSession> sessions) {
+    final l10n = AppLocalizations.of(context)!;
     if (sessions.isEmpty) {
       return Center(
         child: Padding(
@@ -62,7 +66,7 @@ class ActiveSessionsScreen extends ConsumerWidget {
               Icon(Icons.device_unknown, size: 64, color: Colors.grey[400]),
               const SizedBox(height: 16),
               Text(
-                'No active sessions',
+                l10n.activeSessionsNoActiveTitle,
                 style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -71,7 +75,7 @@ class ActiveSessionsScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'You are not signed in on any devices.',
+                l10n.activeSessionsNoActiveBody,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   color: Colors.grey[500],
@@ -88,7 +92,7 @@ class ActiveSessionsScreen extends ConsumerWidget {
       padding: const EdgeInsets.all(24),
       children: [
         Text(
-          '${sessions.length} Active Session${sessions.length == 1 ? '' : 's'}',
+          l10n.activeSessionsCountLabel(sessions.length),
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -108,7 +112,7 @@ class ActiveSessionsScreen extends ConsumerWidget {
             ),
           ),
           child: Text(
-            'Sign Out All Other Devices',
+            l10n.activeSessionsSignOutAllOther,
             style: GoogleFonts.poppins(
               fontWeight: FontWeight.w600,
               fontSize: 16,
@@ -121,6 +125,7 @@ class ActiveSessionsScreen extends ConsumerWidget {
   }
 
   Widget _buildSessionCard(BuildContext context, ActiveSession session) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -161,7 +166,7 @@ class ActiveSessionsScreen extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        session.deviceName ?? 'Unknown Device',
+                        session.deviceName ?? l10n.activeSessionsUnknownDevice,
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
@@ -180,7 +185,7 @@ class ActiveSessionsScreen extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          'Current',
+                          l10n.activeSessionsCurrentBadge,
                           style: GoogleFonts.poppins(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
@@ -192,7 +197,7 @@ class ActiveSessionsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${session.location ?? 'Unknown location'} • ${_formatDate(session.lastActiveAt)}',
+                  '${session.location ?? l10n.activeSessionsUnknownLocation} • ${_formatDate(context, session.lastActiveAt)}',
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     color: Colors.grey[600],
@@ -215,14 +220,15 @@ class ActiveSessionsScreen extends ConsumerWidget {
             IconButton(
               icon: const Icon(Icons.logout, color: Colors.red),
               onPressed: () => _signOutSession(context, session),
-              tooltip: 'Sign out this device',
+              tooltip: l10n.activeSessionsSignOutThisDevice,
             ),
         ],
       ),
     );
   }
 
-  Widget _buildErrorState() {
+  Widget _buildErrorState(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -232,7 +238,7 @@ class ActiveSessionsScreen extends ConsumerWidget {
             Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
             const SizedBox(height: 16),
             Text(
-              'Error loading sessions',
+              l10n.activeSessionsErrorLoading,
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -258,49 +264,53 @@ class ActiveSessionsScreen extends ConsumerWidget {
     }
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDate(BuildContext context, DateTime date) {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
       if (difference.inHours == 0) {
-        return 'Just now';
+        return l10n.activeSessionsTimeJustNow;
       }
-      return '${difference.inHours} hour${difference.inHours == 1 ? '' : 's'} ago';
+      return l10n.activeSessionsTimeHoursAgo(difference.inHours);
     } else if (difference.inDays == 1) {
-      return 'Yesterday';
+      return l10n.activeSessionsTimeYesterday;
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
+      return l10n.activeSessionsTimeDaysAgo(difference.inDays);
     } else if (difference.inDays < 30) {
       final weeks = (difference.inDays / 7).floor();
-      return '$weeks week${weeks == 1 ? '' : 's'} ago';
+      return l10n.activeSessionsTimeWeeksAgo(weeks);
     } else {
-      return '${date.day}/${date.month}/${date.year}';
+      return DateFormat.yMd(Localizations.localeOf(context).toString()).format(date);
     }
   }
 
   Future<void> _signOutSession(BuildContext context, ActiveSession session) async {
+    final l10n = AppLocalizations.of(context)!;
     final shouldSignOut = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Sign Out Device',
+          l10n.activeSessionsDialogSignOutDeviceTitle,
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
         content: Text(
-          'Are you sure you want to sign out from ${session.deviceName ?? 'this device'}?',
+          l10n.activeSessionsDialogSignOutDeviceBody(
+            session.deviceName ?? l10n.activeSessionsUnknownDevice,
+          ),
           style: GoogleFonts.poppins(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancel', style: GoogleFonts.poppins()),
+            child: Text(l10n.activeSessionsDialogCancel, style: GoogleFonts.poppins()),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: Text('Sign Out', style: GoogleFonts.poppins(color: Colors.white)),
+            child: Text(l10n.activeSessionsDialogSignOut, style: GoogleFonts.poppins(color: Colors.white)),
           ),
         ],
       ),
@@ -315,7 +325,7 @@ class ActiveSessionsScreen extends ConsumerWidget {
       if (context.mounted) {
         showWanderMoodToast(
           context,
-          message: 'Device signed out successfully',
+          message: l10n.activeSessionsToastSignedOutDevice,
           backgroundColor: Colors.green,
         );
       }
@@ -323,7 +333,7 @@ class ActiveSessionsScreen extends ConsumerWidget {
       if (context.mounted) {
         showWanderMoodToast(
           context,
-          message: 'Error signing out device: $e',
+          message: l10n.activeSessionsToastSignOutDeviceError(e.toString()),
           isError: true,
         );
       }
@@ -331,27 +341,28 @@ class ActiveSessionsScreen extends ConsumerWidget {
   }
 
   Future<void> _signOutAllOtherDevices(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final shouldSignOut = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Sign Out All Other Devices',
+          l10n.activeSessionsDialogSignOutAllTitle,
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
         content: Text(
-          'This will sign you out from all devices except this one. Are you sure?',
+          l10n.activeSessionsDialogSignOutAllBody,
           style: GoogleFonts.poppins(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancel', style: GoogleFonts.poppins()),
+            child: Text(l10n.activeSessionsDialogCancel, style: GoogleFonts.poppins()),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: Text('Sign Out All', style: GoogleFonts.poppins(color: Colors.white)),
+            child: Text(l10n.activeSessionsDialogSignOutAllCta, style: GoogleFonts.poppins(color: Colors.white)),
           ),
         ],
       ),
@@ -373,7 +384,7 @@ class ActiveSessionsScreen extends ConsumerWidget {
       if (context.mounted) {
         showWanderMoodToast(
           context,
-          message: 'All other devices signed out successfully',
+          message: l10n.activeSessionsToastSignedOutAll,
           backgroundColor: Colors.green,
         );
       }
@@ -381,7 +392,7 @@ class ActiveSessionsScreen extends ConsumerWidget {
       if (context.mounted) {
         showWanderMoodToast(
           context,
-          message: 'Error signing out devices: $e',
+          message: l10n.activeSessionsToastSignOutAllError(e.toString()),
           isError: true,
         );
       }

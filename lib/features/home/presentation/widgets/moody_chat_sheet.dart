@@ -1,5 +1,7 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,13 +16,36 @@ import 'package:wandermood/features/home/presentation/widgets/moody_chat_header_
 import 'package:wandermood/l10n/app_localizations.dart';
 
 // WanderMood v2 — Moody chat (Screen 9)
-const Color _wmSkyTint = Color(0xFFEDF5F9);
+const Color _wmSkyTint = Color(0xFFF1F7FB);
 const Color _wmCream = Color(0xFFF5F0E8);
-const Color _wmSky = Color(0xFFA8C8DC);
+const Color _wmSky = Color(0xFFC5DCEB);
 const Color _wmForest = Color(0xFF2A6049);
 const Color _wmForestTint = Color(0xFFEBF3EE);
 const Color _wmParchment = Color(0xFFE8E2D8);
 const Color _wmCharcoal = Color(0xFF1E1C18);
+
+/// Below 1.0 leaves a strip of scrim above the sheet so it feels slightly shorter.
+const double _kMoodyChatSheetHeightFactor = 0.93;
+
+/// Host status bar / in-app browser chrome often overlaps when only [MediaQuery.padding]
+/// is used, or when horizontal safe area is omitted. [viewPadding] is the physical inset.
+({double top, double left, double right, double bottom})
+    _moodyChatSheetSafeInsets(MediaQueryData mq) {
+  var top = math.max(mq.viewPadding.top, mq.padding.top);
+  var left = math.max(mq.viewPadding.left, mq.padding.left);
+  var right = math.max(mq.viewPadding.right, mq.padding.right);
+  var bottom = math.max(mq.viewPadding.bottom, mq.padding.bottom);
+
+  // Phone-sized webviews (e.g. Instagram in-app browser) may report tiny insets while
+  // still painting host UI over the page; avoid only on wide desktop tabs.
+  final narrowWeb = kIsWeb && mq.size.width < 600;
+  if (narrowWeb) {
+    if (mq.viewPadding.top < 16) top = math.max(top, 48);
+    if (mq.viewPadding.left < 8) left = math.max(left, 52);
+  }
+
+  return (top: top, left: left, right: right, bottom: bottom);
+}
 
 class _ChatMsg {
   final String message;
@@ -59,6 +84,29 @@ class _DailyMoodyChatCache {
   }
 }
 
+void _scheduleMoodyChatScroll(
+  ScrollController controller, {
+  bool animate = true,
+}) {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    try {
+      if (!controller.hasClients) return;
+      final target = controller.position.maxScrollExtent;
+      if (animate) {
+        controller.animateTo(
+          target,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+        );
+      } else {
+        controller.jumpTo(target);
+      }
+    } catch (_) {
+      // Sheet closed; controller may already be disposed.
+    }
+  });
+}
+
 /// Opens the Moody chat bottom sheet — the same UI from the original MoodHomeScreen.
 /// Can be called from any screen that has access to a [BuildContext] and a [WidgetRef].
 void showMoodyChatSheet(BuildContext context, WidgetRef ref) {
@@ -66,69 +114,6 @@ void showMoodyChatSheet(BuildContext context, WidgetRef ref) {
   final now = MoodyClock.now();
   final conversationId = _DailyMoodyChatCache.getConversationId(now);
   final chatMessages = _DailyMoodyChatCache.getMessages(now);
-  final chatController = TextEditingController();
-  var isAILoading = false;
-
-  Future<({double lat, double lng, String city})> getLocation() async {
-    final position = await ref.read(userLocationProvider.future);
-    final city = ref.read(locationNotifierProvider).value ?? 'Rotterdam';
-    return (
-      lat: position?.latitude ?? 51.9225,
-      lng: position?.longitude ?? 4.4792,
-      city: city,
-    );
-  }
-
-  Future<void> sendMessage(String text, StateSetter setModalState) async {
-    if (text.trim().isEmpty || isAILoading) return;
-
-    setModalState(() {
-      chatMessages.add(_ChatMsg(
-          message: text.trim(), isUser: true, timestamp: MoodyClock.now()));
-      isAILoading = true;
-    });
-    chatController.clear();
-
-    try {
-      final loc = await getLocation();
-      final priorTurns = chatMessages.length > 1
-          ? chatMessages
-              .sublist(0, chatMessages.length - 1)
-              .map((m) => {
-                    'role': m.isUser ? 'user' : 'assistant',
-                    'content': m.message,
-                  })
-              .toList()
-          : null;
-      final response = await WanderMoodAIService.chat(
-        message: text.trim(),
-        conversationId: conversationId,
-        moods: moods,
-        latitude: loc.lat,
-        longitude: loc.lng,
-        city: loc.city,
-        clientTurns: priorTurns,
-      );
-
-      setModalState(() {
-        chatMessages.add(_ChatMsg(
-            message: response.message,
-            isUser: false,
-            timestamp: MoodyClock.now()));
-        isAILoading = false;
-      });
-    } catch (e) {
-      final l10n = AppLocalizations.of(context)!;
-      setModalState(() {
-        chatMessages.add(_ChatMsg(
-          message: l10n.chatSheetErrorMessage,
-          isUser: false,
-          timestamp: MoodyClock.now(),
-        ));
-        isAILoading = false;
-      });
-    }
-  }
 
   showModalBottomSheet(
     context: context,
@@ -138,121 +123,275 @@ void showMoodyChatSheet(BuildContext context, WidgetRef ref) {
     // Root route gets reliable viewInsets on iOS when the keyboard opens.
     useRootNavigator: true,
     useSafeArea: false,
-    builder: (context) {
-      return _RepaintWhenKeyboardMetricsChange(
-        builder: (context) {
-          final mq = MediaQuery.of(context);
-          final topInset = mq.padding.top;
-          final keyboardBottom = mq.viewInsets.bottom;
-          // Keep sheet at full height; push input above keyboard with padding.
-          // This is more reliable than shrinking the sheet because the sheet is
-          // anchored at the screen bottom — shrinking it just hides content
-          // behind the keyboard rather than moving it.
-          final inputBottomPad =
-              keyboardBottom > 0 ? keyboardBottom : mq.padding.bottom;
-          final sheetHeight = mq.size.height - topInset;
+    builder: (context) => _MoodyChatSheetContent(
+      chatMessages: chatMessages,
+      conversationId: conversationId,
+      moods: moods,
+    ),
+  );
+}
 
-          return ClipRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Padding(
-                padding: EdgeInsets.only(top: topInset),
-                child: SizedBox(
-                  height: sheetHeight,
-                  child: StatefulBuilder(
-                    builder: (context, setModalState) {
-                      return ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(24),
-                          topRight: Radius.circular(24),
+/// Owns text/scroll controllers so they are disposed with the sheet widget tree.
+/// Disposing them in [showModalBottomSheet]'s future caused framework assertions
+/// when the route was still tearing down.
+class _MoodyChatSheetContent extends ConsumerStatefulWidget {
+  const _MoodyChatSheetContent({
+    required this.chatMessages,
+    required this.conversationId,
+    required this.moods,
+  });
+
+  final List<_ChatMsg> chatMessages;
+  final String conversationId;
+  final List<String> moods;
+
+  @override
+  ConsumerState<_MoodyChatSheetContent> createState() =>
+      _MoodyChatSheetContentState();
+}
+
+class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> {
+  late final TextEditingController _chatController;
+  late final ScrollController _scrollController;
+  bool _isAILoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _chatController = TextEditingController();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _chatController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<({double lat, double lng, String city})> _getLocation() async {
+    final position = await ref.read(userLocationProvider.future);
+    final city = ref.read(locationNotifierProvider).value ?? 'Rotterdam';
+    return (
+      lat: position?.latitude ?? 51.9225,
+      lng: position?.longitude ?? 4.4792,
+      city: city,
+    );
+  }
+
+  Future<void> _sendMessage(String text) async {
+    if (text.trim().isEmpty || _isAILoading) return;
+
+    setState(() {
+      widget.chatMessages.add(_ChatMsg(
+          message: text.trim(), isUser: true, timestamp: MoodyClock.now()));
+      _isAILoading = true;
+    });
+    _scheduleMoodyChatScroll(_scrollController);
+    _chatController.clear();
+
+    try {
+      final loc = await _getLocation();
+      if (!mounted) return;
+      final msgs = widget.chatMessages;
+      final priorTurns = msgs.length > 1
+          ? msgs
+              .sublist(0, msgs.length - 1)
+              .map((m) => {
+                    'role': m.isUser ? 'user' : 'assistant',
+                    'content': m.message,
+                  })
+              .toList()
+          : null;
+      final response = await WanderMoodAIService.chat(
+        message: text.trim(),
+        conversationId: widget.conversationId,
+        moods: widget.moods,
+        latitude: loc.lat,
+        longitude: loc.lng,
+        city: loc.city,
+        clientTurns: priorTurns,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        widget.chatMessages.add(_ChatMsg(
+            message: response.message,
+            isUser: false,
+            timestamp: MoodyClock.now()));
+        _isAILoading = false;
+      });
+      _scheduleMoodyChatScroll(_scrollController);
+    } catch (e) {
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      setState(() {
+        widget.chatMessages.add(_ChatMsg(
+          message: l10n.chatSheetErrorMessage,
+          isUser: false,
+          timestamp: MoodyClock.now(),
+        ));
+        _isAILoading = false;
+      });
+      _scheduleMoodyChatScroll(_scrollController);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _RepaintWhenKeyboardMetricsChange(
+      builder: (context) {
+        final mq = MediaQuery.of(context);
+        final insets = _moodyChatSheetSafeInsets(mq);
+        final topInset = insets.top;
+        final keyboardBottom = mq.viewInsets.bottom;
+        final inputBottomPad = keyboardBottom > 0
+            ? keyboardBottom
+            : math.max(insets.bottom, mq.padding.bottom);
+        final maxSheetHeight = mq.size.height - topInset;
+        final sheetHeight = maxSheetHeight * _kMoodyChatSheetHeightFactor;
+        final sheetTopGap = maxSheetHeight - sheetHeight;
+
+        return ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Padding(
+              padding: EdgeInsets.only(top: topInset + sheetTopGap),
+              child: SizedBox(
+                height: sheetHeight,
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
+                  ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Column(
+                        children: const [
+                          Expanded(
+                              flex: 5, child: ColoredBox(color: _wmSkyTint)),
+                          Expanded(flex: 5, child: ColoredBox(color: _wmCream)),
+                        ],
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(
+                          left: insets.left,
+                          right: insets.right,
                         ),
-                        child: Stack(
-                          fit: StackFit.expand,
+                        child: Column(
                           children: [
-                            Column(
-                              children: const [
-                                Expanded(
-                                    flex: 5,
-                                    child: ColoredBox(color: _wmSkyTint)),
-                                Expanded(
-                                    flex: 5, child: ColoredBox(color: _wmCream)),
-                              ],
-                            ),
-                            Column(
-                              children: [
-                                Consumer(
-                                  builder: (context, ref, _) {
-                                    final city = ref
-                                        .watch(locationNotifierProvider)
-                                        .value;
-                                    final style = ref
-                                        .watch(communicationStyleProvider)
-                                        .style;
-                                    return _MoodyChatHeader(
-                                      subtitle: moodyChatTravelBestieSubtitle(
-                                        city: city,
-                                        style: style,
-                                      ),
-                                    );
-                                  },
-                                ),
-                                Expanded(
-                                  child: chatMessages.isEmpty
-                                      ? _MoodyChatEmptyState(
-                                          keyboardOpen: keyboardBottom > 0,
-                                        )
-                                      : Column(
-                                          children: [
-                                            Expanded(
-                                              child: ListView.builder(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 12),
-                                                itemCount: chatMessages.length,
-                                                itemBuilder: (context, index) {
-                                                  return _MessageBubble(
-                                                      msg: chatMessages[index]);
-                                                },
-                                              ),
-                                            ),
-                                            if (isAILoading)
-                                              const _MoodyTypingIndicator(),
-                                          ],
-                                        ),
-                                ),
-                                // Padding pushes the input above the keyboard.
-                                // AnimatedPadding gives a smooth slide as the
-                                // keyboard animates in/out.
-                                AnimatedPadding(
-                                  duration: const Duration(milliseconds: 250),
-                                  curve: Curves.easeOut,
-                                  padding: EdgeInsets.only(
-                                      bottom: inputBottomPad),
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: _MoodyChatInput(
-                                      controller: chatController,
-                                      isLoading: isAILoading,
-                                      onSend: (text) =>
-                                          sendMessage(text, setModalState),
-                                    ),
+                            Consumer(
+                              builder: (context, ref, _) {
+                                final city =
+                                    ref.watch(locationNotifierProvider).value;
+                                final style = ref
+                                    .watch(communicationStyleProvider)
+                                    .style;
+                                return _MoodyChatHeader(
+                                  subtitle: moodyChatTravelBestieSubtitle(
+                                    city: city,
+                                    style: style,
                                   ),
+                                );
+                              },
+                            ),
+                            Expanded(
+                              child: widget.chatMessages.isEmpty
+                                  ? _MoodyChatEmptyState(
+                                      keyboardOpen: keyboardBottom > 0,
+                                    )
+                                  : _ScrollChatWhenMetricsChange(
+                                      scrollController: _scrollController,
+                                      child: Column(
+                                        children: [
+                                          Expanded(
+                                            child: ListView.builder(
+                                              controller: _scrollController,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 12),
+                                              itemCount:
+                                                  widget.chatMessages.length,
+                                              itemBuilder: (context, index) {
+                                                return _MessageBubble(
+                                                  msg: widget
+                                                      .chatMessages[index],
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                          if (_isAILoading)
+                                            const _MoodyTypingIndicator(),
+                                        ],
+                                      ),
+                                    ),
+                            ),
+                            AnimatedPadding(
+                              duration: const Duration(milliseconds: 250),
+                              curve: Curves.easeOut,
+                              padding: EdgeInsets.only(bottom: inputBottomPad),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: _MoodyChatInput(
+                                  controller: _chatController,
+                                  isLoading: _isAILoading,
+                                  onSend: _sendMessage,
                                 ),
-                              ],
+                              ),
                             ),
                           ],
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
-          );
-        },
-      );
-    },
-  );
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Keeps the latest messages in view when the keyboard opens or safe area changes.
+class _ScrollChatWhenMetricsChange extends StatefulWidget {
+  const _ScrollChatWhenMetricsChange({
+    required this.scrollController,
+    required this.child,
+  });
+
+  final ScrollController scrollController;
+  final Widget child;
+
+  @override
+  State<_ScrollChatWhenMetricsChange> createState() =>
+      _ScrollChatWhenMetricsChangeState();
+}
+
+class _ScrollChatWhenMetricsChangeState extends State<_ScrollChatWhenMetricsChange>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _scheduleMoodyChatScroll(widget.scrollController);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    _scheduleMoodyChatScroll(widget.scrollController, animate: false);
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 /// iOS often does not rebuild modal bottom sheets when the keyboard opens;
@@ -300,98 +439,119 @@ class _MoodyChatHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: const BoxDecoration(
-        color: _wmSkyTint,
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.white.withValues(alpha: 0.78),
+                Colors.white.withValues(alpha: 0.38),
+              ],
+            ),
+            border: Border(
+              bottom: BorderSide(
+                color: Colors.white.withValues(alpha: 0.45),
+                width: 0.5,
+              ),
             ),
           ),
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 12),
+            child: Column(
               children: [
                 Container(
-                  width: 56,
-                  height: 56,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _wmSky,
-                    boxShadow: [],
-                  ),
-                  child: const Center(child: MoodyCharacter(size: 32)),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        AppLocalizations.of(context)!.chatSheetMoodyName,
-                        style: GoogleFonts.poppins(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF1A202C),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: _wmSky,
-                              shape: BoxShape.circle,
-                              border:
-                                  Border.all(color: _wmParchment, width: 0.5),
-                            ),
-                            child: const SizedBox(width: 8, height: 8),
-                          ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              subtitle,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: const Color(0xFF4A5568),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.92),
+                    borderRadius: BorderRadius.circular(2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
                       ),
                     ],
                   ),
                 ),
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    shape: BoxShape.circle,
-                    boxShadow: const [],
-                  ),
-                  child: IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close_rounded,
-                        color: Colors.grey, size: 20),
-                    padding: EdgeInsets.zero,
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _wmSky.withValues(alpha: 0.55),
+                          boxShadow: [
+                            BoxShadow(
+                              color: _wmSky.withValues(alpha: 0.35),
+                              blurRadius: 12,
+                              spreadRadius: 0,
+                            ),
+                          ],
+                        ),
+                        child: const Center(child: MoodyCharacter(size: 30)),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppLocalizations.of(context)!.chatSheetMoodyName,
+                              style: GoogleFonts.poppins(
+                                fontSize: 23,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF1A202C),
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              '• $subtitle',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                color: const Color(0xFF5A6B7A),
+                                fontWeight: FontWeight.w500,
+                                height: 1.25,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Material(
+                        color: Colors.white.withValues(alpha: 0.55),
+                        shape: const CircleBorder(),
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          onTap: () => Navigator.pop(context),
+                          customBorder: const CircleBorder(),
+                          child: SizedBox(
+                            width: 40,
+                            height: 40,
+                            child: Icon(
+                              Icons.close_rounded,
+                              color: Colors.grey.shade700,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -641,44 +801,42 @@ class _MoodyChatInput extends StatelessWidget {
     final kb = MediaQuery.viewInsetsOf(context).bottom;
     return Container(
       padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        top: 24,
-        bottom: kb > 0 ? 12 : 24,
+        left: 16,
+        right: 16,
+        top: 6,
+        bottom: kb > 0 ? 6 : 10,
       ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey[100]!)),
-        boxShadow: const [],
+      decoration: const BoxDecoration(
+        color: Colors.transparent,
+        boxShadow: [],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Expanded(
             child: TextField(
               controller: controller,
               textInputAction: TextInputAction.send,
               keyboardType: TextInputType.text,
-              scrollPadding: const EdgeInsets.only(bottom: 120, top: 80),
+              scrollPadding: const EdgeInsets.only(bottom: 80, top: 48),
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.chatSheetInputHint,
                 hintStyle:
-                    GoogleFonts.poppins(color: Colors.grey[500], fontSize: 16),
+                    GoogleFonts.poppins(color: Colors.grey[500], fontSize: 15),
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                isDense: true,
                 filled: true,
-                fillColor: const Color(0xFFF8FAFC),
+                fillColor: Colors.white.withValues(alpha: 0.82),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(28),
-                  borderSide: BorderSide(
-                    color: _wmParchment,
-                    width: 1.5,
-                  ),
+                  borderSide: BorderSide.none,
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(28),
-                  borderSide: const BorderSide(
-                    color: _wmForest,
-                    width: 2,
+                  borderSide: BorderSide(
+                    color: _wmForest.withValues(alpha: 0.5),
+                    width: 1.25,
                   ),
                 ),
                 prefixIcon: Padding(
@@ -691,38 +849,39 @@ class _MoodyChatInput extends StatelessWidget {
                 ),
               ),
               style: GoogleFonts.poppins(
-                  fontSize: 16, color: const Color(0xFF1A202C)),
+                  fontSize: 15, color: const Color(0xFF1A202C)),
               onSubmitted: onSend,
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 10),
           Container(
-            width: 52,
-            height: 52,
+            width: 46,
+            height: 46,
+            margin: const EdgeInsets.only(bottom: 2),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [_wmForest, _wmForest],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(26),
+              borderRadius: BorderRadius.circular(23),
               boxShadow: const [],
             ),
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                borderRadius: BorderRadius.circular(26),
+                borderRadius: BorderRadius.circular(23),
                 onTap: isLoading ? null : () => onSend(controller.text),
                 child: Center(
                   child: isLoading
                       ? const SizedBox(
-                          width: 22,
-                          height: 22,
+                          width: 20,
+                          height: 20,
                           child: CircularProgressIndicator(
                               strokeWidth: 2.5, color: Colors.white),
                         )
                       : const Icon(Icons.send_rounded,
-                          color: Colors.white, size: 22),
+                          color: Colors.white, size: 20),
                 ),
               ),
             ),

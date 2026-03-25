@@ -7,6 +7,7 @@ import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:wandermood/features/profile/data/providers/visited_places_provider.dart';
 import 'package:wandermood/features/profile/domain/models/visited_place.dart';
 import 'package:wandermood/features/profile/presentation/widgets/threejs_globe_widget.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 // ── Demo data shown when the user has no real visited places yet ──────────────
 const _demoUserId = 'demo';
@@ -104,6 +105,7 @@ class _GlobeScreenState extends ConsumerState<GlobeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final locationAsync = ref.watch(userLocationProvider);
     final position = locationAsync.valueOrNull;
 
@@ -125,9 +127,9 @@ class _GlobeScreenState extends ConsumerState<GlobeScreen> {
         title: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Your Journey',
-              style: TextStyle(
+            Text(
+              l10n.profileGlobeYourJourney,
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
                 fontSize: 18,
@@ -135,7 +137,9 @@ class _GlobeScreenState extends ConsumerState<GlobeScreen> {
             ),
             const SizedBox(height: 2),
             Text(
-              isDemo ? 'Demo — tap a marker!' : '${places.length} places visited',
+              isDemo
+                  ? l10n.profileGlobeDemoHint
+                  : l10n.profileGlobePlacesVisitedCount('${places.length}'),
               style: TextStyle(
                 color: isDemo
                     ? const Color(0xFFFFD600).withValues(alpha: 0.9)
@@ -159,7 +163,7 @@ class _GlobeScreenState extends ConsumerState<GlobeScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  isDemo ? 'Demo' : '${places.length}',
+                  isDemo ? l10n.profileGlobeBadgeDemo : '${places.length}',
                   style: TextStyle(
                     color: isDemo ? const Color(0xFF2A6049) : Colors.white,
                     fontWeight: FontWeight.w600,
@@ -190,7 +194,9 @@ class _GlobeScreenState extends ConsumerState<GlobeScreen> {
               children: [
                 _ControlButton(
                   icon: _isRotating ? Icons.pause : Icons.play_arrow,
-                  label: _isRotating ? 'Pause' : 'Rotate',
+                  label: _isRotating
+                      ? l10n.profileGlobeControlPause
+                      : l10n.profileGlobeControlRotate,
                   onPressed: () {
                     setState(() => _isRotating = !_isRotating);
                     _globeKey.currentState?.setAutoRotate(_isRotating);
@@ -198,7 +204,7 @@ class _GlobeScreenState extends ConsumerState<GlobeScreen> {
                 ),
                 _ControlButton(
                   icon: Icons.refresh_rounded,
-                  label: 'Reset',
+                  label: l10n.profileGlobeControlReset,
                   onPressed: () {
                     _globeKey.currentState?.resetCamera();
                   },
@@ -220,9 +226,11 @@ class _MoodMemoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final color = place.moodColor;
+    final localeName = Localizations.localeOf(context).toString();
     final dateStr = place.visitedAt != null
-        ? DateFormat('MMMM d, yyyy').format(place.visitedAt!.toLocal())
+        ? DateFormat.yMMMMd(localeName).format(place.visitedAt!.toLocal())
         : null;
 
     // We use a light frosted glass theme now
@@ -383,7 +391,10 @@ class _MoodMemoryCard extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  _capitalize(place.mood ?? 'Unknown'),
+                                  _capitalize(
+                                    place.mood ??
+                                        l10n.profileGlobeUnknownMood,
+                                  ),
                                   style: TextStyle(
                                     color: color.withValues(alpha: 1.0)
                                                 .computeLuminance() >

@@ -27,6 +27,43 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
   bool _isLoading = true;
   bool _hasChanges = false;
 
+  static const _communicationOptions = ['Friendly', 'Playful', 'Calm', 'Practical'];
+  static const _interestOptions = [
+    'Food',
+    'Culture',
+    'Nature',
+    'Nightlife',
+    'Shopping',
+    'Wellness',
+  ];
+  static const _socialOptions = ['Solo', 'Small-group', 'Mix', 'Social'];
+  static const _travelStyleOptions = [
+    'Relaxed',
+    'Adventurous',
+    'Cultural',
+    'City-break',
+  ];
+  static const _favoriteMoodOptions = [
+    'Happy',
+    'Adventurous',
+    'Calm',
+    'Romantic',
+    'Energetic',
+  ];
+  static const _planningOptions = [
+    'Same Day Planner',
+    'Week Ahead Planner',
+    'Spontaneous',
+  ];
+  static const _selectedMoodOptions = [
+    'Happy',
+    'Relaxed',
+    'Cultural',
+    'Romantic',
+    'Energetic',
+    'Creative',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -98,7 +135,6 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
           .from('user_preferences')
           .upsert({'user_id': userId, ...updateData}, onConflict: 'user_id');
 
-      // Invalidate preferences provider to refresh
       ref.invalidate(preferencesProvider);
 
       if (mounted) {
@@ -108,8 +144,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
           message: AppLocalizations.of(context)!.prefSavedSuccess,
           duration: const Duration(seconds: 1),
         );
-        
-        // Navigate back to profile after a short delay to show success message
+
         Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted) {
             Navigator.of(context).pop();
@@ -151,8 +186,122 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
     });
   }
 
+  String _communicationLabel(AppLocalizations l10n, String stored) {
+    switch (stored) {
+      case 'Friendly':
+        return l10n.prefCommFriendly;
+      case 'Playful':
+        return l10n.prefCommPlayful;
+      case 'Calm':
+        return l10n.prefCommCalm;
+      case 'Practical':
+        return l10n.prefCommPractical;
+      default:
+        return stored;
+    }
+  }
+
+  String _interestLabel(AppLocalizations l10n, String stored) {
+    switch (stored) {
+      case 'Food':
+        return l10n.prefIntFood;
+      case 'Culture':
+        return l10n.prefIntCulture;
+      case 'Nature':
+        return l10n.prefIntNature;
+      case 'Nightlife':
+        return l10n.prefIntNightlife;
+      case 'Shopping':
+        return l10n.prefIntShopping;
+      case 'Wellness':
+        return l10n.prefIntWellness;
+      default:
+        return stored;
+    }
+  }
+
+  String _socialLabel(AppLocalizations l10n, String stored) {
+    switch (stored) {
+      case 'Solo':
+        return l10n.prefSocSolo;
+      case 'Small-group':
+        return l10n.prefSocSmallGroup;
+      case 'Mix':
+        return l10n.prefSocMix;
+      case 'Social':
+        return l10n.prefSocSocial;
+      default:
+        return stored;
+    }
+  }
+
+  String _travelStyleLabel(AppLocalizations l10n, String stored) {
+    switch (stored) {
+      case 'Relaxed':
+        return l10n.prefTravelRelaxed;
+      case 'Adventurous':
+        return l10n.prefTravelAdventurous;
+      case 'Cultural':
+        return l10n.prefTravelCultural;
+      case 'City-break':
+        return l10n.prefTravelCityBreak;
+      default:
+        return stored;
+    }
+  }
+
+  String _favoriteMoodLabel(AppLocalizations l10n, String stored) {
+    switch (stored) {
+      case 'Happy':
+        return l10n.prefFavHappy;
+      case 'Adventurous':
+        return l10n.prefFavAdventurous;
+      case 'Calm':
+        return l10n.prefFavCalm;
+      case 'Romantic':
+        return l10n.prefFavRomantic;
+      case 'Energetic':
+        return l10n.prefFavEnergetic;
+      default:
+        return stored;
+    }
+  }
+
+  String _planningLabel(AppLocalizations l10n, String stored) {
+    switch (stored) {
+      case 'Same Day Planner':
+        return l10n.prefPlanSameDay;
+      case 'Week Ahead Planner':
+        return l10n.prefPlanWeekAhead;
+      case 'Spontaneous':
+        return l10n.prefPlanSpontaneous;
+      default:
+        return stored;
+    }
+  }
+
+  String _selectedMoodLabel(AppLocalizations l10n, String stored) {
+    switch (stored) {
+      case 'Happy':
+        return l10n.prefSelHappy;
+      case 'Relaxed':
+        return l10n.prefSelRelaxed;
+      case 'Cultural':
+        return l10n.prefSelCultural;
+      case 'Romantic':
+        return l10n.prefSelRomantic;
+      case 'Energetic':
+        return l10n.prefSelEnergetic;
+      case 'Creative':
+        return l10n.prefSelCreative;
+      default:
+        return stored;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: const Color(0xFFF5F0E8),
       body: _isLoading
@@ -175,7 +324,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                         ),
                         Expanded(
                           child: Text(
-                            'Bewerk voorkeuren',
+                            l10n.preferencesScreenTitle,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               fontSize: 18,
@@ -187,7 +336,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                         TextButton(
                           onPressed: _hasChanges ? _savePreferences : null,
                           child: Text(
-                            AppLocalizations.of(context)!.prefSave,
+                            l10n.prefSave,
                             style: GoogleFonts.poppins(
                               color: _hasChanges
                                   ? const Color(0xFF2A6049)
@@ -207,59 +356,73 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildSectionTitle('Communicatiestijl'),
+                        _buildSectionTitle(l10n.prefSectionCommunicationStyle),
                         const SizedBox(height: 10),
                         _buildSingleOptions(
-                          options: const ['Friendly', 'Playful', 'Calm', 'Practical'],
+                          l10n: l10n,
+                          options: _communicationOptions,
                           selected: _communicationStyle,
+                          labelFor: _communicationLabel,
                           onSelected: (v) => _setSingle('communicationStyle', v),
                         ),
                         const SizedBox(height: 22),
-                        _buildSectionTitle('Interesses'),
+                        _buildSectionTitle(l10n.prefSectionInterests),
                         const SizedBox(height: 10),
                         _buildChipOptions(
-                          options: const ['Food', 'Culture', 'Nature', 'Nightlife', 'Shopping', 'Wellness'],
+                          l10n: l10n,
+                          options: _interestOptions,
                           selected: _travelInterests,
+                          labelFor: _interestLabel,
                           onTap: (v) => _toggleValue(_travelInterests, v),
                         ),
                         const SizedBox(height: 22),
-                        _buildSectionTitle('Sociale vibe'),
+                        _buildSectionTitle(l10n.prefSectionSocialVibe),
                         const SizedBox(height: 10),
                         _buildChipOptions(
-                          options: const ['Solo', 'Small-group', 'Mix', 'Social'],
+                          l10n: l10n,
+                          options: _socialOptions,
                           selected: _socialVibe,
+                          labelFor: _socialLabel,
                           onTap: (v) => _toggleValue(_socialVibe, v),
                         ),
                         const SizedBox(height: 22),
-                        _buildSectionTitle('Reisstijlen'),
+                        _buildSectionTitle(l10n.prefSectionTravelStyles),
                         const SizedBox(height: 10),
                         _buildChipOptions(
-                          options: const ['Relaxed', 'Adventurous', 'Cultural', 'City-break'],
+                          l10n: l10n,
+                          options: _travelStyleOptions,
                           selected: _travelStyles,
+                          labelFor: _travelStyleLabel,
                           onTap: (v) => _toggleValue(_travelStyles, v),
                         ),
                         const SizedBox(height: 22),
-                        _buildSectionTitle('Favoriete moods'),
+                        _buildSectionTitle(l10n.prefSectionFavoriteMoods),
                         const SizedBox(height: 10),
                         _buildChipOptions(
-                          options: const ['Happy', 'Adventurous', 'Calm', 'Romantic', 'Energetic'],
+                          l10n: l10n,
+                          options: _favoriteMoodOptions,
                           selected: _favoriteMoods,
+                          labelFor: _favoriteMoodLabel,
                           onTap: (v) => _toggleValue(_favoriteMoods, v),
                         ),
                         const SizedBox(height: 22),
-                        _buildSectionTitle('Planningstempo'),
+                        _buildSectionTitle(l10n.prefSectionPlanningPace),
                         const SizedBox(height: 10),
                         _buildSingleOptions(
-                          options: const ['Same Day Planner', 'Week Ahead Planner', 'Spontaneous'],
+                          l10n: l10n,
+                          options: _planningOptions,
                           selected: _planningPace,
+                          labelFor: _planningLabel,
                           onSelected: (v) => _setSingle('planningPace', v),
                         ),
                         const SizedBox(height: 22),
-                        _buildSectionTitle('Geselecteerde moods'),
+                        _buildSectionTitle(l10n.prefSectionSelectedMoods),
                         const SizedBox(height: 10),
                         _buildChipOptions(
-                          options: const ['Happy', 'Relaxed', 'Cultural', 'Romantic', 'Energetic', 'Creative'],
+                          l10n: l10n,
+                          options: _selectedMoodOptions,
                           selected: _selectedMoods,
+                          labelFor: _selectedMoodLabel,
                           onTap: (v) => _toggleValue(_selectedMoods, v),
                         ),
                         const SizedBox(height: 16),
@@ -284,8 +447,10 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
   }
 
   Widget _buildSingleOptions({
+    required AppLocalizations l10n,
     required List<String> options,
     required String? selected,
+    required String Function(AppLocalizations l10n, String stored) labelFor,
     required void Function(String) onSelected,
   }) {
     return Wrap(
@@ -294,7 +459,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
       children: options
           .map(
             (o) => ChoiceChip(
-              label: Text(o),
+              label: Text(labelFor(l10n, o)),
               selected: selected == o,
               selectedColor: const Color(0xFF2A6049),
               labelStyle: GoogleFonts.poppins(
@@ -310,8 +475,10 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
   }
 
   Widget _buildChipOptions({
+    required AppLocalizations l10n,
     required List<String> options,
     required List<String> selected,
+    required String Function(AppLocalizations l10n, String stored) labelFor,
     required void Function(String) onTap,
   }) {
     return Wrap(
@@ -320,7 +487,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
       children: options
           .map(
             (o) => FilterChip(
-              label: Text(o),
+              label: Text(labelFor(l10n, o)),
               selected: selected.contains(o),
               selectedColor: const Color(0xFFEBF3EE),
               checkmarkColor: const Color(0xFF2A6049),

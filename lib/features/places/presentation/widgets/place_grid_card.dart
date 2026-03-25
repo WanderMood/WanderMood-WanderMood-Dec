@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
-import 'package:go_router/go_router.dart';
 import 'package:wandermood/core/services/distance_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
@@ -431,10 +430,10 @@ class PlaceGridCard extends ConsumerWidget {
                             label: _calculateDistance()!,
                             color: _wmForest,
                           ),
-                        if (_getPriceBadgeText().isNotEmpty)
+                        if (_getPriceBadgeText(l10n).isNotEmpty)
                           _buildCategoryPill(
                             icon: _getCurrencyIcon(),
-                            label: _getPriceBadgeText(),
+                            label: _getPriceBadgeText(l10n),
                             color: _getPriceBadgeColor(),
                           ),
                       ],
@@ -612,12 +611,12 @@ class PlaceGridCard extends ConsumerWidget {
   }
 
   /// Get price badge text
-  String _getPriceBadgeText() {
+  String _getPriceBadgeText(AppLocalizations l10n) {
     final currency = _getCurrencySymbol();
 
     // Check if truly free
     if (place.isFree || place.priceLevel == 0 || _isFreeByType()) {
-      return 'Free 🎉';
+      return '${l10n.dayPlanCardFree} 🎉';
     }
 
     // If we have explicit price range, use it
@@ -627,23 +626,24 @@ class PlaceGridCard extends ConsumerWidget {
 
     // If we have explicit price level, convert to range
     if (place.priceLevel != null) {
-      return _getPriceLevelText(place.priceLevel!, currency: currency);
+      return _getPriceLevelText(l10n, place.priceLevel!, currency: currency);
     }
 
     // Infer from place types
-    final inferredPrice = _inferPriceFromTypes(currency: currency);
+    final inferredPrice = _inferPriceFromTypes(l10n, currency: currency);
     if (inferredPrice != null) {
       return inferredPrice;
     }
 
     // Last resort: show "Price varies"
-    return 'Price varies';
+    return l10n.placeCardPriceVaries;
   }
 
-  String _getPriceLevelText(int priceLevel, {String currency = '€'}) {
+  String _getPriceLevelText(AppLocalizations l10n, int priceLevel,
+      {String currency = '€'}) {
     switch (priceLevel) {
       case 0:
-        return 'Free 🎉';
+        return '${l10n.dayPlanCardFree} 🎉';
       case 1:
         return '$currency 5-15';
       case 2:
@@ -658,9 +658,9 @@ class PlaceGridCard extends ConsumerWidget {
   }
 
   /// Infer price from place types
-  String? _inferPriceFromTypes({String currency = '€'}) {
+  String? _inferPriceFromTypes(AppLocalizations l10n, {String currency = '€'}) {
     if (_isFreeByType()) {
-      return 'Free 🎉';
+      return '${l10n.dayPlanCardFree} 🎉';
     }
 
     for (final type in place.types) {

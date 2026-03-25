@@ -1374,7 +1374,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileSavedPlacesEmpty => 'No saved places yet';
 
   @override
-  String get profileEditProfileButton => 'Edit profile';
+  String get profileEditProfileButton => 'Profiel bewerken';
 
   @override
   String get profileAppSettingsLink => 'App settings';
@@ -1439,6 +1439,15 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get profilePreferencesEditAll => 'Alles bewerken';
+
+  @override
+  String get profilePreferencesNoneSet => 'Nog geen voorkeuren ingesteld.';
+
+  @override
+  String get profileSnackLocalModeSaved => 'Lokale modus opgeslagen';
+
+  @override
+  String get profileSnackTravelingModeSaved => 'Reismodus opgeslagen';
 
   @override
   String get profilePreferencesBudgetStyle => 'Budgetstijl';
@@ -1548,6 +1557,11 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileAgeGroup55Plus => '55+ avonturier';
 
   @override
+  String profileAgeGroupGenericSuffix(String ageGroup) {
+    return '$ageGroup avonturier';
+  }
+
+  @override
   String get profileBudgetLow => '\$ Budget';
 
   @override
@@ -1572,55 +1586,55 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileSocialSocial => 'Sociaal';
 
   @override
-  String get profileEditTitle => 'Edit Profile';
+  String get profileEditTitle => 'Profiel bewerken';
 
   @override
-  String get profileEditProfilePhoto => 'Profile Photo';
+  String get profileEditProfilePhoto => 'Profielfoto';
 
   @override
-  String get profileEditProfilePhotoTap => 'Tap to change';
+  String get profileEditProfilePhotoTap => 'Tik om te wijzigen';
 
   @override
-  String get profileEditNameLabel => 'Full Name';
+  String get profileEditNameLabel => 'Volledige naam';
 
   @override
-  String get profileEditUsernameLabel => 'Username';
+  String get profileEditUsernameLabel => 'Gebruikersnaam';
 
   @override
-  String get profileEditEmailLabel => 'Email';
+  String get profileEditEmailLabel => 'E-mail';
 
   @override
   String get profileEditBioLabel => 'Bio';
 
   @override
-  String get profileEditSelectDate => 'Select date';
+  String get profileEditSelectDate => 'Selecteer datum';
 
   @override
-  String get profileEditUsernameHint => 'username';
+  String get profileEditUsernameHint => 'gebruikersnaam';
 
   @override
-  String get profileEditEmailHint => 'email@example.com';
+  String get profileEditEmailHint => 'email@voorbeeld.com';
 
   @override
-  String get profileEditNameHint => 'Enter your name';
+  String get profileEditNameHint => 'Voer je naam in';
 
   @override
-  String get profileEditBioHint => 'Tell us about yourself...';
+  String get profileEditBioHint => 'Vertel iets over jezelf...';
 
   @override
-  String get profileEditLocationLabel => 'Location';
+  String get profileEditLocationLabel => 'Locatie';
 
   @override
-  String get profileEditLocationHint => 'City, Country';
+  String get profileEditLocationHint => 'Stad, land';
 
   @override
-  String get profileEditBirthdayLabel => 'Birthday';
+  String get profileEditBirthdayLabel => 'Verjaardag';
 
   @override
-  String get profileEditSave => 'Save';
+  String get profileEditSave => 'Opslaan';
 
   @override
-  String get profileEditNoChanges => 'No Changes';
+  String get profileEditNoChanges => 'Geen wijzigingen';
 
   @override
   String get profileEditFavoriteVibesTitle => 'Favoriete vibes';
@@ -1633,13 +1647,13 @@ class AppLocalizationsNl extends AppLocalizations {
       'Kies je favoriete vibes om je aanbevelingen te personaliseren';
 
   @override
-  String get profileEditPhotoTake => 'Take Photo';
+  String get profileEditPhotoTake => 'Foto maken';
 
   @override
-  String get profileEditPhotoChoose => 'Choose from Gallery';
+  String get profileEditPhotoChoose => 'Kies uit galerij';
 
   @override
-  String get profileEditPhotoRemove => 'Remove Photo';
+  String get profileEditPhotoRemove => 'Foto verwijderen';
 
   @override
   String get profileEditVibesTitle => 'Favoriete vibes bewerken';
@@ -1648,16 +1662,16 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileEditVibesDone => 'Klaar';
 
   @override
-  String get profileEditUpdated => 'Profile updated successfully';
+  String get profileEditUpdated => 'Profiel succesvol bijgewerkt';
 
   @override
   String profileEditUpdateFailed(String error) {
-    return 'Failed to update profile: $error';
+    return 'Profiel bijwerken mislukt: $error';
   }
 
   @override
   String profileEditErrorLoading(String error) {
-    return 'Error loading profile: $error';
+    return 'Fout bij laden van profiel: $error';
   }
 
   @override
@@ -1694,6 +1708,231 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get profileVibesCurrentTitle => 'JE HUIDIGE VIBES';
+
+  @override
+  String get profileEditPhotoOverlayLabel => 'Wijzigen';
+
+  @override
+  String get profileEditLocationHintExamples => 'Bijv. Rotterdam, Amsterdam...';
+
+  @override
+  String get preferencesScreenTitle => 'Voorkeuren bewerken';
+
+  @override
+  String get prefSectionCommunicationStyle => 'Communicatiestijl';
+
+  @override
+  String get prefSectionInterests => 'Jouw interesses';
+
+  @override
+  String get prefSectionSocialVibe => 'Sociale vibe 👥';
+
+  @override
+  String get prefSectionTravelStyles => 'Reisstijlen';
+
+  @override
+  String get prefSectionFavoriteMoods => 'Favoriete moods';
+
+  @override
+  String get prefSectionPlanningPace => 'Planningsritme ⏰';
+
+  @override
+  String get prefSectionSelectedMoods => 'Geselecteerde moods';
+
+  @override
+  String get prefCommFriendly => 'Vriendelijk';
+
+  @override
+  String get prefCommPlayful => 'Speels';
+
+  @override
+  String get prefCommCalm => 'Rustig';
+
+  @override
+  String get prefCommPractical => 'Praktisch';
+
+  @override
+  String get prefIntFood => 'Eten';
+
+  @override
+  String get prefIntCulture => 'Cultuur';
+
+  @override
+  String get prefIntNature => 'Natuur';
+
+  @override
+  String get prefIntNightlife => 'Nachtleven';
+
+  @override
+  String get prefIntShopping => 'Winkelen';
+
+  @override
+  String get prefIntWellness => 'Wellness';
+
+  @override
+  String get prefSocSolo => 'Solo';
+
+  @override
+  String get prefSocSmallGroup => 'Kleine groep';
+
+  @override
+  String get prefSocMix => 'Mix';
+
+  @override
+  String get prefSocSocial => 'Sociaal';
+
+  @override
+  String get prefTravelRelaxed => 'Ontspannen';
+
+  @override
+  String get prefTravelAdventurous => 'Avontuurlijk';
+
+  @override
+  String get prefTravelCultural => 'Cultureel';
+
+  @override
+  String get prefTravelCityBreak => 'Stedentrip';
+
+  @override
+  String get prefFavHappy => 'Blij';
+
+  @override
+  String get prefFavAdventurous => 'Avontuurlijk';
+
+  @override
+  String get prefFavCalm => 'Rustig';
+
+  @override
+  String get prefFavRomantic => 'Romantisch';
+
+  @override
+  String get prefFavEnergetic => 'Energiek';
+
+  @override
+  String get prefPlanSameDay => 'Zelfde dag planner';
+
+  @override
+  String get prefPlanWeekAhead => 'Week vooruit planner';
+
+  @override
+  String get prefPlanSpontaneous => 'Spontaan';
+
+  @override
+  String get prefSelHappy => 'Blij';
+
+  @override
+  String get prefSelRelaxed => 'Ontspannen';
+
+  @override
+  String get prefSelCultural => 'Cultureel';
+
+  @override
+  String get prefSelRomantic => 'Romantisch';
+
+  @override
+  String get prefSelEnergetic => 'Energiek';
+
+  @override
+  String get prefSelCreative => 'Creatief';
+
+  @override
+  String get profileVibeAdventurousName => 'Avontuurlijk';
+
+  @override
+  String get profileVibeAdventurousDesc =>
+      'Spannende activiteiten & buitenavonturen';
+
+  @override
+  String get profileVibeChillName => 'Chill';
+
+  @override
+  String get profileVibeChillDesc => 'Ontspannen, laid-back ervaringen';
+
+  @override
+  String get profileVibeFoodieName => 'Foodie';
+
+  @override
+  String get profileVibeFoodieDesc => 'Culinaire ervaringen & uit eten';
+
+  @override
+  String get profileVibeSocialName => 'Sociaal';
+
+  @override
+  String get profileVibeSocialDesc => 'Mensen ontmoeten & sociale events';
+
+  @override
+  String get profileVibeCulturalName => 'Cultureel';
+
+  @override
+  String get profileVibeCulturalDesc => 'Musea, kunst & geschiedenis';
+
+  @override
+  String get profileVibeNatureName => 'Natuur';
+
+  @override
+  String get profileVibeNatureDesc => 'Parken, tuinen & buiten';
+
+  @override
+  String get profileVibeRomanticName => 'Romantisch';
+
+  @override
+  String get profileVibeRomanticDesc => 'Date nights & romantische plekken';
+
+  @override
+  String get profileVibeWellnessName => 'Wellness';
+
+  @override
+  String get profileVibeWellnessDesc => 'Spa, yoga & self-care';
+
+  @override
+  String get profileVibeNightlifeName => 'Nachtleven';
+
+  @override
+  String get profileVibeNightlifeDesc => 'Bars, clubs & avondplezier';
+
+  @override
+  String get profileVibeShoppingName => 'Shoppen';
+
+  @override
+  String get profileVibeShoppingDesc => 'Markten, boetieks & malls';
+
+  @override
+  String get profileVibeCreativeName => 'Creatief';
+
+  @override
+  String get profileVibeCreativeDesc => 'Ateliers & creatieve plekken';
+
+  @override
+  String get profileVibeSportyName => 'Sportief';
+
+  @override
+  String get profileVibeSportyDesc => 'Sport & fitness';
+
+  @override
+  String get profileGlobeYourJourney => 'Jouw reis';
+
+  @override
+  String get profileGlobeDemoHint => 'Demo — tik op een pin!';
+
+  @override
+  String profileGlobePlacesVisitedCount(String count) {
+    return '$count bezochte plekken';
+  }
+
+  @override
+  String get profileGlobeBadgeDemo => 'Demo';
+
+  @override
+  String get profileGlobeControlRotate => 'Draaien';
+
+  @override
+  String get profileGlobeControlPause => 'Pauze';
+
+  @override
+  String get profileGlobeControlReset => 'Reset';
+
+  @override
+  String get profileGlobeUnknownMood => 'Onbekend';
 
   @override
   String get shareProfileTitle => 'Profiel delen';
@@ -1808,73 +2047,73 @@ class AppLocalizationsNl extends AppLocalizations {
       'Iedereen met deze link kan je openbare profiel bekijken. Je kunt je privacy-instellingen altijd wijzigen.';
 
   @override
-  String get drawerYourJourney => 'Your Journey';
+  String get drawerYourJourney => 'Jouw reis';
 
   @override
-  String get drawerNavigation => 'Navigation';
+  String get drawerNavigation => 'Navigatie';
 
   @override
-  String get drawerSettings => 'Settings';
+  String get drawerSettings => 'Instellingen';
 
   @override
   String get drawerAccount => 'Account';
 
   @override
-  String get drawerMoodHistory => 'Mood History';
+  String get drawerMoodHistory => 'Mood-geschiedenis';
 
   @override
-  String get drawerSavedPlaces => 'Saved Places';
+  String get drawerSavedPlaces => 'Opgeslagen plekken';
 
   @override
   String get drawerMyAgenda => 'Mijn agenda';
 
   @override
-  String get drawerMyBookings => 'My Bookings';
+  String get drawerMyBookings => 'Mijn boekingen';
 
   @override
-  String get drawerAppSettings => 'App Settings';
+  String get drawerAppSettings => 'App-instellingen';
 
   @override
-  String get drawerNotifications => 'Notifications';
+  String get drawerNotifications => 'Meldingen';
 
   @override
-  String get drawerLanguage => 'Language';
+  String get drawerLanguage => 'Taal';
 
   @override
-  String get drawerHelpSupport => 'Help & Support';
+  String get drawerHelpSupport => 'Help & ondersteuning';
 
   @override
-  String get drawerProfile => 'Profile';
+  String get drawerProfile => 'Profiel';
 
   @override
-  String get drawerLogOut => 'Log Out';
+  String get drawerLogOut => 'Uitloggen';
 
   @override
-  String get drawerErrorLoadingProfile => 'Error loading profile';
+  String get drawerErrorLoadingProfile => 'Fout bij laden van profiel';
 
   @override
   String drawerErrorSigningOut(String error) {
-    return 'Error signing out: $error';
+    return 'Fout bij uitloggen: $error';
   }
 
   @override
-  String get drawerNewExplorer => 'New Explorer';
+  String get drawerNewExplorer => 'Nieuwe ontdekker';
 
   @override
-  String get drawerMasterWanderer => 'Master Wanderer';
+  String get drawerMasterWanderer => 'Meesterzwerver';
 
   @override
-  String get drawerAdventureExpert => 'Adventure Expert';
+  String get drawerAdventureExpert => 'Avontuur-expert';
 
   @override
-  String get drawerSeasonedExplorer => 'Seasoned Explorer';
+  String get drawerSeasonedExplorer => 'Ervaren ontdekker';
 
   @override
-  String get drawerTravelEnthusiast => 'Travel Enthusiast';
+  String get drawerTravelEnthusiast => 'Reisliefhebber';
 
   @override
   String drawerDayStreak(String count) {
-    return '$count Day Streak';
+    return '$count dagen op rij';
   }
 
   @override
@@ -2115,6 +2354,171 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String get activeSessionsNoActiveTitle => 'Geen actieve sessies';
+
+  @override
+  String get activeSessionsNoActiveBody =>
+      'Je bent op geen enkel apparaat ingelogd.';
+
+  @override
+  String activeSessionsCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 's',
+      one: '',
+    );
+    return '$count actieve sessie$_temp0';
+  }
+
+  @override
+  String get activeSessionsSignOutAllOther =>
+      'Uitloggen op alle andere apparaten';
+
+  @override
+  String get activeSessionsUnknownDevice => 'Onbekend apparaat';
+
+  @override
+  String get activeSessionsCurrentBadge => 'Huidig';
+
+  @override
+  String get activeSessionsUnknownLocation => 'Onbekende locatie';
+
+  @override
+  String get activeSessionsSignOutThisDevice => 'Dit apparaat uitloggen';
+
+  @override
+  String get activeSessionsErrorLoading => 'Fout bij laden van sessies';
+
+  @override
+  String get activeSessionsTimeJustNow => 'Zojuist';
+
+  @override
+  String activeSessionsTimeHoursAgo(int count) {
+    return '$count uur geleden';
+  }
+
+  @override
+  String get activeSessionsTimeYesterday => 'Gisteren';
+
+  @override
+  String activeSessionsTimeDaysAgo(int count) {
+    return '$count dagen geleden';
+  }
+
+  @override
+  String activeSessionsTimeWeeksAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'en',
+      one: '',
+    );
+    return '$count week$_temp0 geleden';
+  }
+
+  @override
+  String get activeSessionsDialogSignOutDeviceTitle => 'Apparaat uitloggen';
+
+  @override
+  String activeSessionsDialogSignOutDeviceBody(String device) {
+    return 'Weet je zeker dat je wilt uitloggen op $device?';
+  }
+
+  @override
+  String get activeSessionsDialogCancel => 'Annuleren';
+
+  @override
+  String get activeSessionsDialogSignOut => 'Uitloggen';
+
+  @override
+  String get activeSessionsToastSignedOutDevice =>
+      'Apparaat succesvol uitgelogd';
+
+  @override
+  String activeSessionsToastSignOutDeviceError(String error) {
+    return 'Fout bij uitloggen van apparaat: $error';
+  }
+
+  @override
+  String get activeSessionsDialogSignOutAllTitle =>
+      'Uitloggen op alle andere apparaten';
+
+  @override
+  String get activeSessionsDialogSignOutAllBody =>
+      'Dit logt je uit op alle andere apparaten behalve deze. Weet je het zeker?';
+
+  @override
+  String get activeSessionsDialogSignOutAllCta => 'Alles uitloggen';
+
+  @override
+  String get activeSessionsToastSignedOutAll =>
+      'Alle andere apparaten zijn uitgelogd';
+
+  @override
+  String activeSessionsToastSignOutAllError(String error) {
+    return 'Fout bij uitloggen van apparaten: $error';
+  }
+
+  @override
+  String get twoFactorTitle => 'Twee-factorauthenticatie';
+
+  @override
+  String get twoFactorEnabledTitle => '2FA is ingeschakeld';
+
+  @override
+  String get twoFactorDisabledTitle => 'Schakel twee-factorauthenticatie in';
+
+  @override
+  String get twoFactorEnabledBody =>
+      'Je account is beveiligd met twee-factorauthenticatie.';
+
+  @override
+  String get twoFactorDisabledBody =>
+      'Voeg een extra beveiligingslaag toe door naast je wachtwoord ook een verificatiecode te vereisen.';
+
+  @override
+  String get twoFactorBenefitsTitle => 'Voordelen:';
+
+  @override
+  String get twoFactorBenefitUnauthorized =>
+      'Beschermt tegen ongeautoriseerde toegang';
+
+  @override
+  String get twoFactorBenefitSensitiveOps =>
+      'Vereist voor gevoelige handelingen';
+
+  @override
+  String get twoFactorBenefitLoginAlerts =>
+      'Ontvang meldingen bij inlogpogingen';
+
+  @override
+  String get twoFactorDisableCta => '2FA uitschakelen';
+
+  @override
+  String get twoFactorEnableCta => '2FA inschakelen';
+
+  @override
+  String get twoFactorDisableInfo =>
+      'Om 2FA uit te schakelen moet je je identiteit verifiëren.';
+
+  @override
+  String get twoFactorEnableInfo =>
+      'Je hebt een authenticator-app nodig (zoals Google Authenticator) om 2FA in te stellen.';
+
+  @override
+  String get twoFactorToastSetupStarted =>
+      '2FA-instelling gestart. Rond het instelproces af.';
+
+  @override
+  String get twoFactorToastDisabled => '2FA is uitgeschakeld.';
+
+  @override
+  String twoFactorToastError(String error) {
+    return 'Fout: $error';
+  }
+
+  @override
   String get settingsPrivacyTitle => 'Privacy';
 
   @override
@@ -2340,6 +2744,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get subscriptionFeatureNoAds => 'Geen advertenties';
 
   @override
+  String get subscriptionFeatureEarlyAccess =>
+      'Vroege toegang tot nieuwe functies';
+
+  @override
   String get subscriptionUpgradeCta => 'Upgrade voor €4,99 per maand';
 
   @override
@@ -2441,6 +2849,216 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get helpSupportEmailSubject => 'WanderMood support';
+
+  @override
+  String get helpSupportEmailSupportTitle => 'E-mail support';
+
+  @override
+  String get settingsLocationChangeCta => 'Wijzigen';
+
+  @override
+  String get savedPlacesScreenTitle => 'Opgeslagen plekken';
+
+  @override
+  String get savedPlacesTabAllSaved => 'Alles';
+
+  @override
+  String get savedPlacesTabCollections => 'Collecties';
+
+  @override
+  String get savedPlacesEmptyTitle => 'Nog geen opgeslagen plekken';
+
+  @override
+  String get savedPlacesEmptyBody =>
+      'Tik op het bladwijzer-icoon bij een plek in Ontdekken om die hier te bewaren.';
+
+  @override
+  String get savedPlacesHoldToCollect => 'Lang indrukken om te verzamelen';
+
+  @override
+  String savedPlacesSavedPrefix(String when) {
+    return 'Opgeslagen $when';
+  }
+
+  @override
+  String get savedPlacesTimeJustNow => 'zojuist';
+
+  @override
+  String savedPlacesTimeHoursAgo(int count) {
+    return '$count u geleden';
+  }
+
+  @override
+  String get savedPlacesTimeYesterday => 'gisteren';
+
+  @override
+  String savedPlacesTimeDaysAgo(int count) {
+    return '$count d geleden';
+  }
+
+  @override
+  String savedPlacesPlaceCountOne(int count) {
+    return '$count plek';
+  }
+
+  @override
+  String savedPlacesPlaceCountMany(int count) {
+    return '$count plekken';
+  }
+
+  @override
+  String get savedPlacesNewCollection => 'Nieuwe collectie';
+
+  @override
+  String get savedPlacesNewCollectionSubtitle => 'Groepeer je saves';
+
+  @override
+  String get savedPlacesAddToCollectionTitle => 'Toevoegen aan collectie';
+
+  @override
+  String get savedPlacesNoCollectionsHint =>
+      'Nog geen collecties. Maak er een op het tabblad Collecties.';
+
+  @override
+  String savedPlacesPlacesCount(int count) {
+    return '$count plekken';
+  }
+
+  @override
+  String savedPlacesAddedToCollection(String name) {
+    return 'Toegevoegd aan $name';
+  }
+
+  @override
+  String get savedPlacesActionAddToMyDay => 'Toevoegen aan Mijn dag';
+
+  @override
+  String get savedPlacesActionAddToCollection => 'Toevoegen aan collectie';
+
+  @override
+  String get savedPlacesActionViewDetails => 'Details bekijken';
+
+  @override
+  String get savedPlacesPlanSheetTitle => 'Toevoegen aan Mijn dag';
+
+  @override
+  String get savedPlacesPickDate => 'Kies datum';
+
+  @override
+  String savedPlacesSelectedDate(String date) {
+    return 'Geselecteerd: $date';
+  }
+
+  @override
+  String get locationPickerTitle => 'Locatie kiezen';
+
+  @override
+  String get locationPickerSearchHint => 'Zoek een stad of locatie…';
+
+  @override
+  String get locationPickerEmptyPrompt => 'Begin met typen om te zoeken';
+
+  @override
+  String get locationPickerNoResults => 'Geen locaties gevonden';
+
+  @override
+  String locationPickerToastUpdated(String place) {
+    return 'Locatie bijgewerkt naar $place';
+  }
+
+  @override
+  String locationPickerToastError(String error) {
+    return 'Fout bij opslaan locatie: $error';
+  }
+
+  @override
+  String get settingsPrivacyScreenTitle => 'Privacy';
+
+  @override
+  String get privacyProfileVisibilitySection => 'Profielzichtbaarheid';
+
+  @override
+  String get privacyVisibilityPublic => 'Openbaar';
+
+  @override
+  String get privacyVisibilityPublicSub => 'Iedereen kan je profiel zien';
+
+  @override
+  String get privacyVisibilityFriends => 'Alleen vrienden';
+
+  @override
+  String get privacyVisibilityFriendsSub => 'Alleen je vrienden kunnen zien';
+
+  @override
+  String get privacyVisibilityPrivate => 'Privé';
+
+  @override
+  String get privacyVisibilityPrivateSub => 'Alleen jij kunt zien';
+
+  @override
+  String get privacyWhatOthersSeeSection => 'Wat anderen zien';
+
+  @override
+  String get privacyShowEmailLabel => 'E-mailadres tonen';
+
+  @override
+  String get privacyShowAgeLabel => 'Leeftijd tonen';
+
+  @override
+  String get privacyToastVisibilityUpdated => 'Profielzichtbaarheid bijgewerkt';
+
+  @override
+  String privacyToastError(String error) {
+    return 'Fout: $error';
+  }
+
+  @override
+  String get privacyToastEmailVisible => 'E-mail is zichtbaar voor anderen';
+
+  @override
+  String get privacyToastEmailHidden => 'E-mail is nu verborgen';
+
+  @override
+  String get privacyToastAgeVisible => 'Leeftijd is zichtbaar voor anderen';
+
+  @override
+  String get privacyToastAgeHidden => 'Leeftijd is nu verborgen';
+
+  @override
+  String get languageNameEn => 'Engels';
+
+  @override
+  String get languageNativeEn => 'English';
+
+  @override
+  String get languageNameNl => 'Nederlands';
+
+  @override
+  String get languageNativeNl => 'Nederlands';
+
+  @override
+  String get languageNameEs => 'Spaans';
+
+  @override
+  String get languageNativeEs => 'Español';
+
+  @override
+  String get languageNameFr => 'Frans';
+
+  @override
+  String get languageNativeFr => 'Français';
+
+  @override
+  String get languageNameDe => 'Duits';
+
+  @override
+  String get languageNativeDe => 'Deutsch';
+
+  @override
+  String get languageNameIt => 'Italiaans';
+
+  @override
+  String get languageNativeIt => 'Italiano';
 
   @override
   String get prefCommunicationTitle => 'Hoe wil je dat ik tegen je praat? 💬';
@@ -2618,12 +3236,6 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get prefTravelSubtitleDirect =>
       'Een paar korte vragen om je ervaring persoonlijk te maken';
-
-  @override
-  String get prefSectionSocialVibe => 'Sociale vibe 👥';
-
-  @override
-  String get prefSectionPlanningPace => 'Planningsritme ⏰';
 
   @override
   String get prefSectionTravelStyle => 'Reisstijl 🎯';
@@ -3427,6 +4039,158 @@ class AppLocalizationsNl extends AppLocalizations {
   String get navProfile => 'Profiel';
 
   @override
+  String get navMoody => 'Moody';
+
+  @override
+  String get myDayStatusTitleRightNow => 'Nu bezig';
+
+  @override
+  String get myDayStatusTitleUpNext => 'Straks';
+
+  @override
+  String get myDayStatusTitleAllDone => '✅ Klaar';
+
+  @override
+  String get myDayStatusTitleFreeTime => '📅 VRIJE TIJD';
+
+  @override
+  String get myDayStatusDescActive =>
+      'Je bent er! Tik op Klaar als je klaar bent.';
+
+  @override
+  String get myDayStatusDescUpcomingMorning =>
+      'Gepland voor de ochtend · tik op \"Ik ben er\" als je arriveert';
+
+  @override
+  String get myDayStatusDescUpcomingAfternoon =>
+      'Gepland voor de middag · tik op \"Ik ben er\" als je arriveert';
+
+  @override
+  String get myDayStatusDescUpcomingEvening =>
+      'Gepland voor de avond · tik op \"Ik ben er\" als je arriveert';
+
+  @override
+  String get myDayStatusDescCompleted => 'Mooi! Je hebt alles afgerond.';
+
+  @override
+  String get myDayPeriodMorning => 'Ochtend';
+
+  @override
+  String get myDayPeriodAfternoon => 'Middag';
+
+  @override
+  String get myDayPeriodEvening => 'Avond';
+
+  @override
+  String get myDayFreeTimeSuggestionMorning =>
+      'Perfect om je dag energiek te beginnen';
+
+  @override
+  String get myDayFreeTimeSuggestionAfternoon => 'Tijd om te ontdekken';
+
+  @override
+  String get myDayFreeTimeSuggestionEvening =>
+      'Kom tot rust met iets bijzonders';
+
+  @override
+  String myDayTimelineActivityCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count activiteiten',
+      one: '1 activiteit',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get myDayTimelineAllDone => 'Klaar';
+
+  @override
+  String get myDayTimelineSectionComplete => 'Goed gedaan, deze sectie is af!';
+
+  @override
+  String get myDayTimelineTapForDetails => 'Tik voor details';
+
+  @override
+  String get myDayTimelinePrimaryImHere => 'Ik ben er';
+
+  @override
+  String get myDayTimelinePrimaryDone => 'Klaar';
+
+  @override
+  String get myDayTimelinePrimaryReview => 'Beoordelen';
+
+  @override
+  String get myDayTimelinePrimaryReviewed => 'Beoordeeld';
+
+  @override
+  String get myDayTimelineStatusImHere => 'IK BEN ER';
+
+  @override
+  String get myDayTimelineStatusPlanned => 'GEPLAND';
+
+  @override
+  String get myDayTimelineStatusDone => 'KLAAR';
+
+  @override
+  String get myDayActivityFallbackLabel => 'Activiteit';
+
+  @override
+  String get myDayExecutionHeroYoureHereBadge => 'Je bent er!';
+
+  @override
+  String get myDayExecutionHeroInProgressBadge => 'BEZIG';
+
+  @override
+  String get myDayExecutionHeroActiveHint =>
+      'Geniet je ervan? Tik op Klaar als je verder wilt.';
+
+  @override
+  String myDayExecutionHeroReviewedAt(String time) {
+    return 'Beoordeeld om $time';
+  }
+
+  @override
+  String get myDayExecutionHeroCompletedToday => 'Vandaag afgerond';
+
+  @override
+  String get myDayExecutionHeroBadgeReviewedCaps => 'BEOORDEELD';
+
+  @override
+  String get myDayExecutionHeroBadgeReadyToReviewCaps =>
+      'KLAAR OM TE BEOORDELEN';
+
+  @override
+  String get myDayExecutionHeroReviewCaptureHint =>
+      'Leg vast hoe het voelde terwijl het nog vers is.';
+
+  @override
+  String get myDayExecutionHeroUpNextBadge => 'STRAKS';
+
+  @override
+  String get myDayExecutionHeroTapImHereWhenArrive =>
+      'Tik op \"Ik ben er\" zodra je aankomt.';
+
+  @override
+  String get myDayTimelineSectionMorningTitle => '🌅 Ochtend';
+
+  @override
+  String get myDayTimelineSectionMorningSubtitle => 'Begin je dag goed';
+
+  @override
+  String get myDayTimelineSectionAfternoonTitle => '🌞 Middag';
+
+  @override
+  String get myDayTimelineSectionAfternoonSubtitle => 'Tijd voor avontuur';
+
+  @override
+  String get myDayTimelineSectionEveningTitle => '🌆 Avond';
+
+  @override
+  String get myDayTimelineSectionEveningSubtitle => 'Kom tot rust en geniet';
+
+  @override
   String get myDayWeekendEmptyTitle => 'Je weekend is nog leeg!';
 
   @override
@@ -3485,6 +4249,73 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get gygCodeCopied => 'Code gekopieerd 💚';
+
+  @override
+  String get placeCardSeeActivity => 'Bekijk activiteit';
+
+  @override
+  String get placeCardPriceVaries => 'Prijs varieert';
+
+  @override
+  String gygEdviennePicksInCity(String city) {
+    return '✨ Edvienne\'s Picks in $city';
+  }
+
+  @override
+  String gygMapCompactTitle(String city) {
+    return 'Edvienne\'s Picks — $city';
+  }
+
+  @override
+  String get gygMapCompactSubtitle => 'Tik om GetYourGuide & korting te openen';
+
+  @override
+  String gygPrimaryTitleInCity(String city) {
+    return '✨ Edvienne\'s Picks in $city';
+  }
+
+  @override
+  String get gygTagline48h =>
+      'Dit zou ik zelf boeken als ik hier 48 uur was 🤍';
+
+  @override
+  String get gygOpenInApp => 'Open in GetYourGuide-app (met korting)';
+
+  @override
+  String get gygOpenInWeb => 'Open in browser';
+
+  @override
+  String gygPromoGift(String code) {
+    return '🎁 Klein extraatje van mij: $code';
+  }
+
+  @override
+  String get gygPromoAppOnly => 'Alleen geldig in de GetYourGuide-app.';
+
+  @override
+  String get gygCopy => 'Kopieer';
+
+  @override
+  String get gygPoweredBy => 'Mogelijk gemaakt door GetYourGuide';
+
+  @override
+  String get gygComingSoonBody =>
+      'Ik ben nog aan het ontdekken wat hier hoort 🤍';
+
+  @override
+  String get gygCategoryFoodDrink => '🍴 Eten & drinken';
+
+  @override
+  String get gygCategoryBoatTours => '⛵ Boottochten';
+
+  @override
+  String get gygCategoryCulture => '🎭 Cultuur';
+
+  @override
+  String get gygCategoryAdventure => '🧗 Avontuur';
+
+  @override
+  String get gygCategoryLuxury => '✨ Luxe';
 
   @override
   String get socialNewMessageComingSoon =>
@@ -3878,31 +4709,32 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String agendaChooseActivityForDay(String day) {
-    return 'Choose an activity to add for $day.';
+    return 'Kies een activiteit om toe te voegen voor $day.';
   }
 
   @override
-  String get agendaLoadingActivities => 'Loading activities...';
+  String get agendaLoadingActivities => 'Activiteiten laden...';
 
   @override
-  String get agendaErrorLoadingActivities => 'Error loading activities';
+  String get agendaErrorLoadingActivities => 'Fout bij laden van activiteiten';
 
   @override
-  String get agendaPleaseTryAgainLater => 'Please try again later';
+  String get agendaPleaseTryAgainLater => 'Probeer het later opnieuw';
 
   @override
-  String get agendaNoActivitiesScheduled => 'No activities scheduled';
+  String get agendaNoActivitiesScheduled => 'Geen activiteiten gepland';
 
   @override
   String get agendaNoActivitiesPlannedYet =>
-      'You do not have any planned activities in your agenda yet';
+      'Je hebt nog geen geplande activiteiten in je agenda';
 
   @override
-  String get agendaDeleteMissingId => 'Could not delete activity (missing id).';
+  String get agendaDeleteMissingId =>
+      'Kan activiteit niet verwijderen (ontbrekende id).';
 
   @override
   String agendaRemovedFromPlanner(String title) {
-    return '$title removed from your planner.';
+    return '$title is uit je planner verwijderd.';
   }
 
   @override
@@ -4152,7 +4984,25 @@ class AppLocalizationsNl extends AppLocalizations {
   String get agendaTitle => 'Mijn Agenda';
 
   @override
+  String get agendaStatusDone => 'KLAAR';
+
+  @override
+  String get agendaStatusNow => 'NU';
+
+  @override
+  String get agendaStatusUpcoming => 'KOMT ERAAN';
+
+  @override
   String get agendaStatusCancelled => 'GEANNULEERD';
+
+  @override
+  String get agendaHeaderToday => 'Vandaag';
+
+  @override
+  String get agendaHeaderTomorrow => 'Morgen';
+
+  @override
+  String get agendaHeaderYesterday => 'Gisteren';
 
   @override
   String get agendaTodayEmpty => 'Vandaag is nog leeg';
@@ -4198,6 +5048,17 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get agendaLocationTBD => 'Locatie onbekend';
+
+  @override
+  String agendaDeleteDialogBody(String title) {
+    return '“$title” wordt uit je planner verwijderd.';
+  }
+
+  @override
+  String get agendaDeleteDialogBack => 'Terug';
+
+  @override
+  String get agendaDeleteDialogConfirm => 'Verwijderen';
 
   @override
   String get exploreCategoryAll => 'Alles';
@@ -4339,6 +5200,142 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get exploreFilterMaxDistance => 'Maximale afstand (km)';
+
+  @override
+  String get exploreErrorLocationRequiredTitle => 'Locatie vereist';
+
+  @override
+  String get exploreErrorLoadingPlacesTitle => 'Fout bij laden van plekken';
+
+  @override
+  String get exploreErrorLocationBody =>
+      'Schakel locatievoorzieningen in of stel je locatie in via instellingen om plekken in de buurt te vinden.';
+
+  @override
+  String get exploreErrorEnableLocation => 'Locatie inschakelen';
+
+  @override
+  String get exploreAdvancedFiltersTitle => 'Geavanceerde filters';
+
+  @override
+  String exploreFiltersActiveCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count actieve filters',
+      one: '1 actieve filter',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exploreMoodyHintFiltersActive(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count actieve filters',
+      one: '1 actieve filter',
+    );
+    return 'Nice! $_temp0 — ik onthoud het.';
+  }
+
+  @override
+  String get exploreMoodyHintFiltersIntro =>
+      'Hé! Ik ben Moody. Gebruik filters om precies te vinden wat bij je vibe past — dieet, toegankelijkheid, fotoplekken en meer.';
+
+  @override
+  String get exploreClearAll => 'Alles wissen';
+
+  @override
+  String get exploreSectionQuickSuggestions => 'Snelle suggesties';
+
+  @override
+  String get exploreSectionDietaryPreferences => 'Dieetvoorkeuren';
+
+  @override
+  String get exploreSectionAccessibilityInclusion =>
+      'Toegankelijkheid & inclusie';
+
+  @override
+  String get exploreSectionComfortConvenience => 'Comfort & gemak';
+
+  @override
+  String get exploreSectionPhotoAesthetic => 'Foto & esthetiek';
+
+  @override
+  String exploreSaveFiltersWithCount(int count) {
+    return '$count filters opslaan';
+  }
+
+  @override
+  String get exploreSaveFilters => 'Filters opslaan';
+
+  @override
+  String get exploreQuickFilters => 'Snelle filters';
+
+  @override
+  String get exploreSearchHint => 'Zoek activiteiten, restaurants, musea...';
+
+  @override
+  String get exploreCategoryChipOutdoor => 'Buiten';
+
+  @override
+  String get exploreCategoryChipShopping => 'Winkelen';
+
+  @override
+  String get exploreCategoryChipNightlife => 'Nachtleven';
+
+  @override
+  String get explorePriceLevelBudget => 'Budget';
+
+  @override
+  String get explorePriceLevelModerate => 'Gemiddeld';
+
+  @override
+  String get explorePriceLevelExpensive => 'Duur';
+
+  @override
+  String get explorePriceLevelLuxury => 'Luxe';
+
+  @override
+  String get exploreMoodAdventure => 'Avontuur';
+
+  @override
+  String get exploreMoodCreative => 'Creatief';
+
+  @override
+  String get exploreMoodRelaxed => 'Ontspannen';
+
+  @override
+  String get exploreMoodMindful => 'Mindful';
+
+  @override
+  String get exploreMoodRomantic => 'Romantisch';
+
+  @override
+  String get exploreAddToMyDayDayLabel => 'Dag';
+
+  @override
+  String get exploreAddToMyDayPickDate => 'Kies datum';
+
+  @override
+  String exploreAddToMyDaySelectedDate(String date) {
+    return 'Geselecteerd: $date';
+  }
+
+  @override
+  String get exploreAddToMyDayTimeLabel => 'Tijd';
+
+  @override
+  String get exploreDatePickerHelp => 'Kies een dag';
+
+  @override
+  String get exploreDatePickerConfirm => 'Kies';
+
+  @override
+  String explorePlaceDescriptionFallback(String name) {
+    return 'Ontdek $name';
+  }
 
   @override
   String get chatSheetMoodyName => 'Moody';
@@ -4810,9 +5807,6 @@ class AppLocalizationsNl extends AppLocalizations {
       'Hoeveel tijd heb je gewoonlijk voor activiteiten?';
 
   @override
-  String get prefSectionInterests => 'Jouw interesses';
-
-  @override
   String get prefSectionInterestsSub => 'Selecteer alles wat van toepassing is';
 
   @override
@@ -4967,6 +5961,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get deleteAccountPhotos => 'Alle foto\'s en herinneringen';
 
   @override
+  String get deleteAccountConfirmKeyword => 'DELETE';
+
+  @override
   String get deleteAccountTypeToConfirm => 'Typ \"DELETE\" ter bevestiging';
 
   @override
@@ -4993,6 +5990,104 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get deleteAccountError => 'Fout bij verwijderen account';
+
+  @override
+  String get settingsNotificationsSectionTitle => 'MELDINGEN';
+
+  @override
+  String get settingsNotificationsTripRemindersLabel => 'Tripherinneringen';
+
+  @override
+  String get settingsNotificationsTripRemindersSubtitle =>
+      'Herinneringen voor geplande activiteiten';
+
+  @override
+  String get settingsNotificationsWeatherUpdatesLabel => 'Weer-updates';
+
+  @override
+  String get settingsNotificationsWeatherUpdatesSubtitle =>
+      'Updates over het weer op jouw bestemming';
+
+  @override
+  String get premiumUpgradeScreenTitle => 'Upgrade naar Premium';
+
+  @override
+  String get premiumMonthlyPlanLabel => 'Maandabonnement';
+
+  @override
+  String get premiumMonthlyPriceLabel => '€4,99/maand';
+
+  @override
+  String get premiumBestValueBadge => 'Beste keuze';
+
+  @override
+  String get premiumPaymentMethodTitle => 'Betaalmethode';
+
+  @override
+  String get premiumPaymentMethodCard => 'Credit-/debitcard';
+
+  @override
+  String get premiumPaymentMethodPaypal => 'PayPal';
+
+  @override
+  String get premiumPaymentMethodApplePay => 'Apple Pay';
+
+  @override
+  String get premiumSubscribeCta => 'Abonneren voor €4,99/maand';
+
+  @override
+  String get premiumSecurityNotice =>
+      'Je betaalgegevens zijn versleuteld en veilig';
+
+  @override
+  String get premiumToastActivated => 'Premium-abonnement geactiveerd!';
+
+  @override
+  String premiumToastPaymentFailed(String error) {
+    return 'Betaling mislukt: $error';
+  }
+
+  @override
+  String get premiumCardDetailsTitle => 'Kaartgegevens';
+
+  @override
+  String get premiumCardNumberLabel => 'Kaartnummer';
+
+  @override
+  String get premiumCardNumberHint => '1234 5678 9012 3456';
+
+  @override
+  String get premiumExpiryLabel => 'Vervaldatum (MM/JJ)';
+
+  @override
+  String get premiumExpiryHint => '12/25';
+
+  @override
+  String get premiumCvvLabel => 'CVV';
+
+  @override
+  String get premiumCvvHint => '123';
+
+  @override
+  String get premiumCardholderNameLabel => 'Naam kaarthouder';
+
+  @override
+  String get premiumCardholderNameHint => 'Jan Jansen';
+
+  @override
+  String get premiumValidationRequired => 'Verplicht';
+
+  @override
+  String get premiumValidationCardNumberRequired => 'Kaartnummer is verplicht';
+
+  @override
+  String get premiumValidationInvalidCardNumber => 'Ongeldig kaartnummer';
+
+  @override
+  String get premiumValidationInvalidCvv => 'Ongeldige CVV';
+
+  @override
+  String get premiumValidationNameRequired => 'Naam is verplicht';
 
   @override
   String get placeDetailAboutThisPlace => 'Over deze plek';
@@ -5116,4 +6211,159 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get moodyHubPlanForWhen => 'Voor wanneer plan je?';
+
+  @override
+  String get moodyHubListComma => ', ';
+
+  @override
+  String get moodyHubListAnd => ' en ';
+
+  @override
+  String get moodyReviewTitle => 'Snelle review';
+
+  @override
+  String get moodyReviewHowWasIt => 'Hoe was het?';
+
+  @override
+  String get moodyReviewStarsFeedback5 => '🌟 Geweldig!';
+
+  @override
+  String get moodyReviewStarsFeedback4 => '😊 Heel goed!';
+
+  @override
+  String get moodyReviewStarsFeedback3 => '👍 Best goed!';
+
+  @override
+  String get moodyReviewStarsFeedback2 => '😐 Gaat wel';
+
+  @override
+  String get moodyReviewStarsFeedback1 => '😞 Niet zo leuk';
+
+  @override
+  String get moodyReviewYourVibe => 'Jouw vibe';
+
+  @override
+  String get moodyReviewVibeAmazing => 'Geweldig';
+
+  @override
+  String get moodyReviewVibeGood => 'Goed';
+
+  @override
+  String get moodyReviewVibeOkay => 'Oké';
+
+  @override
+  String get moodyReviewVibeMeh => 'Meh';
+
+  @override
+  String get moodyReviewOptionalNote => 'Nog iets? (optioneel)';
+
+  @override
+  String get moodyReviewNoteHint => 'Wat viel op? Tips voor anderen?';
+
+  @override
+  String get moodyReviewNoteHelper =>
+      '💡 Zo help je anderen topplekken te vinden!';
+
+  @override
+  String get moodyReviewSave => 'Review opslaan';
+
+  @override
+  String get moodyReviewNeedStars => 'Geef sterren om door te gaan';
+
+  @override
+  String get moodyReviewHelpsMoody => 'Jouw feedback helpt Moody leren!';
+
+  @override
+  String get moodyReviewThanksToast => 'Bedankt voor je review! 🚀';
+
+  @override
+  String get getReadyChecklistItemReady => 'Klaar om te gaan!';
+
+  @override
+  String getReadyShareInvite(Object title, Object time) {
+    return 'Zin om mee te gaan naar $title rond $time – gepland met WanderMood.';
+  }
+
+  @override
+  String get getReadyCalendarEventTitleFallback => 'WanderMood-activiteit';
+
+  @override
+  String get getReadyCalendarEventDetailsFallback => 'Gepland met WanderMood';
+
+  @override
+  String get getReadyShareTitleFallback => 'deze plek';
+
+  @override
+  String getReadyCalendarOpenHint(Object label) {
+    return '$label – open in browser of app';
+  }
+
+  @override
+  String getReadyPlaylistSearchQuery(Object theme) {
+    return 'Vrolijke $theme beats';
+  }
+
+  @override
+  String get getReadyPlaylistThemeFoodie => 'Foodie';
+
+  @override
+  String get getReadyPlaylistThemeCultural => 'Cultureel';
+
+  @override
+  String get getReadyPlaylistThemeShopping => 'Shoppen';
+
+  @override
+  String get getReadyPlaylistThemeOutdoor => 'Buiten';
+
+  @override
+  String get getReadyPlaylistThemeAdventure => 'Avontuur';
+
+  @override
+  String get getReadyMoodFragmentAdventure => 'avontuur';
+
+  @override
+  String get getReadyMoodFragmentRelaxed => 'ontspanning';
+
+  @override
+  String get getReadyMoodFragmentEnergetic => 'energie';
+
+  @override
+  String get getReadyMoodFragmentRomantic => 'romantiek';
+
+  @override
+  String get getReadyMoodFragmentCultural => 'cultuur';
+
+  @override
+  String get getReadyMoodFragmentExplorer => 'ontdekking';
+
+  @override
+  String get getReadyMoodFragmentFoodie => 'foodie';
+
+  @override
+  String moodHomeAlreadyPlannedTitle(String dayName) {
+    return '$dayName is al gepland!';
+  }
+
+  @override
+  String moodHomeActivitiesReadyCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count activiteiten staan klaar voor je.',
+      one: '1 activiteit staat klaar voor je.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moodHomeViewPlan => 'Bekijk plan';
+
+  @override
+  String get moodHomePlanAgain => 'Opnieuw plannen';
+
+  @override
+  String get planLoadingRotating2 => 'Je dag wordt samengesteld…';
+
+  @override
+  String get planLoadingRotating3 => 'Bijna klaar — je plan is bijna gereed ✨';
 }

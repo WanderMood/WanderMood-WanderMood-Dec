@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../providers/settings_providers.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class TwoFactorAuthScreen extends ConsumerStatefulWidget {
   const TwoFactorAuthScreen({super.key});
@@ -20,6 +21,7 @@ class _TwoFactorAuthScreenState extends ConsumerState<TwoFactorAuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final accountSecurityAsync = ref.watch(accountSecurityProvider);
 
     final theme = Theme.of(context);
@@ -35,7 +37,7 @@ class _TwoFactorAuthScreenState extends ConsumerState<TwoFactorAuthScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Two-Factor Authentication',
+          l10n.twoFactorTitle,
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -55,6 +57,7 @@ class _TwoFactorAuthScreenState extends ConsumerState<TwoFactorAuthScreen> {
   }
 
   Widget _buildContent(bool isEnabled) {
+    final l10n = AppLocalizations.of(context)!;
     return ListView(
       padding: EdgeInsets.only(
         top: MediaQuery.of(context).padding.top + kToolbarHeight + 24,
@@ -83,7 +86,7 @@ class _TwoFactorAuthScreenState extends ConsumerState<TwoFactorAuthScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                isEnabled ? '2FA is Enabled' : 'Enable Two-Factor Authentication',
+                isEnabled ? l10n.twoFactorEnabledTitle : l10n.twoFactorDisabledTitle,
                 style: GoogleFonts.poppins(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -94,8 +97,8 @@ class _TwoFactorAuthScreenState extends ConsumerState<TwoFactorAuthScreen> {
               const SizedBox(height: 12),
               Text(
                 isEnabled
-                    ? 'Your account is protected with two-factor authentication.'
-                    : 'Add an extra layer of security to your account by requiring a verification code in addition to your password.',
+                    ? l10n.twoFactorEnabledBody
+                    : l10n.twoFactorDisabledBody,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   color: Colors.grey[700],
@@ -110,7 +113,7 @@ class _TwoFactorAuthScreenState extends ConsumerState<TwoFactorAuthScreen> {
         // Benefits
         if (!isEnabled) ...[
           Text(
-            'Benefits:',
+            l10n.twoFactorBenefitsTitle,
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -118,9 +121,9 @@ class _TwoFactorAuthScreenState extends ConsumerState<TwoFactorAuthScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          _buildBenefitItem(Icons.lock, 'Protects against unauthorized access'),
-          _buildBenefitItem(Icons.security, 'Required for sensitive operations'),
-          _buildBenefitItem(Icons.notifications_active, 'Get notified of login attempts'),
+          _buildBenefitItem(Icons.lock, l10n.twoFactorBenefitUnauthorized),
+          _buildBenefitItem(Icons.security, l10n.twoFactorBenefitSensitiveOps),
+          _buildBenefitItem(Icons.notifications_active, l10n.twoFactorBenefitLoginAlerts),
           const SizedBox(height: 32),
         ],
 
@@ -145,7 +148,7 @@ class _TwoFactorAuthScreenState extends ConsumerState<TwoFactorAuthScreen> {
                   ),
                 )
               : Text(
-                  isEnabled ? 'Disable 2FA' : 'Enable 2FA',
+                  isEnabled ? l10n.twoFactorDisableCta : l10n.twoFactorEnableCta,
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -157,8 +160,8 @@ class _TwoFactorAuthScreenState extends ConsumerState<TwoFactorAuthScreen> {
         // Info Text
         Text(
           isEnabled
-              ? 'To disable 2FA, you will need to verify your identity.'
-              : 'You will need an authenticator app (like Google Authenticator) to set up 2FA.',
+              ? l10n.twoFactorDisableInfo
+              : l10n.twoFactorEnableInfo,
           style: GoogleFonts.poppins(
             fontSize: 12,
             color: Colors.grey[600],
@@ -223,11 +226,12 @@ class _TwoFactorAuthScreenState extends ConsumerState<TwoFactorAuthScreen> {
       ref.invalidate(accountSecurityProvider);
 
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         showWanderMoodToast(
           context,
           message: enable
-              ? '2FA setup started. Please complete the setup process.'
-              : '2FA has been disabled.',
+              ? l10n.twoFactorToastSetupStarted
+              : l10n.twoFactorToastDisabled,
         );
         if (!enable) {
           context.pop();
@@ -235,9 +239,10 @@ class _TwoFactorAuthScreenState extends ConsumerState<TwoFactorAuthScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         showWanderMoodToast(
           context,
-          message: 'Error: $e',
+          message: l10n.twoFactorToastError(e.toString()),
           isError: true,
         );
       }

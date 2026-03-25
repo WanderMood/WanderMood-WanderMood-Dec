@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 /// Design tokens — My Day free-time section (v2 spec).
 const Color _wmWhite = Color(0xFFFFFFFF);
@@ -153,7 +154,8 @@ class _FreeTimeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = activity['title'] as String? ?? 'Activity';
+    final l10n = AppLocalizations.of(context)!;
+    final title = activity['title'] as String? ?? l10n.myDayActivityFallbackLabel;
     final description = activity['description'] as String? ?? '';
     final distance = activity['distance'] as String? ?? '';
     final category = (activity['category'] as String?) ?? '';
@@ -288,7 +290,7 @@ class _FreeTimeCard extends StatelessWidget {
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           child: Text(
-                            'Save',
+                            l10n.prefSave,
                             style: GoogleFonts.poppins(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -312,7 +314,7 @@ class _FreeTimeCard extends StatelessWidget {
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           child: Text(
-                            'Directions',
+                            l10n.activityDetailDirections,
                             style: GoogleFonts.poppins(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,

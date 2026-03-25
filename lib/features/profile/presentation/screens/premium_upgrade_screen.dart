@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../providers/settings_providers.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 const Color _puWmCream = Color(0xFFF5F0E8);
 const Color _puWmParchment = Color(0xFFE8E2D8);
@@ -79,17 +80,19 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
       ref.invalidate(subscriptionProvider);
 
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         showWanderMoodToast(
           context,
-          message: 'Premium subscription activated!',
+          message: l10n.premiumToastActivated,
         );
         context.pop();
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         showWanderMoodToast(
           context,
-          message: 'Payment failed: $e',
+          message: l10n.premiumToastPaymentFailed(e.toString()),
           isError: true,
         );
         setState(() => _isProcessing = false);
@@ -99,6 +102,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: _puWmCream,
       appBar: AppBar(
@@ -110,7 +114,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Upgrade to Premium',
+          l10n.premiumUpgradeScreenTitle,
           style: GoogleFonts.poppins(
             fontSize: 17,
             fontWeight: FontWeight.w600,
@@ -149,7 +153,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
                       const Icon(Icons.star, color: Colors.white, size: 32),
                       const SizedBox(width: 12),
                       Text(
-                        'Premium',
+                        l10n.subscriptionUpgradeTitle,
                         style: GoogleFonts.poppins(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
@@ -159,11 +163,11 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  _buildPremiumFeature(Icons.check, 'Unlimited activity suggestions'),
-                  _buildPremiumFeature(Icons.check, 'Advanced mood matching'),
-                  _buildPremiumFeature(Icons.check, 'Priority support'),
-                  _buildPremiumFeature(Icons.check, 'No ads'),
-                  _buildPremiumFeature(Icons.check, 'Early access to new features'),
+                  _buildPremiumFeature(Icons.check, l10n.subscriptionFeatureUnlimitedSuggestions),
+                  _buildPremiumFeature(Icons.check, l10n.subscriptionFeatureAdvancedMoodMatching),
+                  _buildPremiumFeature(Icons.check, l10n.subscriptionFeaturePrioritySupport),
+                  _buildPremiumFeature(Icons.check, l10n.subscriptionFeatureNoAds),
+                  _buildPremiumFeature(Icons.check, l10n.subscriptionFeatureEarlyAccess),
                 ],
               ),
             ),
@@ -184,7 +188,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Monthly Plan',
+                        l10n.premiumMonthlyPlanLabel,
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -193,7 +197,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '€4.99/month',
+                        l10n.premiumMonthlyPriceLabel,
                         style: GoogleFonts.poppins(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -209,7 +213,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      'Best Value',
+                      l10n.premiumBestValueBadge,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -224,7 +228,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
 
             // Payment Method Selection
             Text(
-              'Payment Method',
+              l10n.premiumPaymentMethodTitle,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -232,11 +236,11 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            _buildPaymentMethodOption('card', 'Credit/Debit Card', Icons.credit_card),
+            _buildPaymentMethodOption('card', l10n.premiumPaymentMethodCard, Icons.credit_card),
             const SizedBox(height: 8),
-            _buildPaymentMethodOption('paypal', 'PayPal', Icons.payment),
+            _buildPaymentMethodOption('paypal', l10n.premiumPaymentMethodPaypal, Icons.payment),
             const SizedBox(height: 8),
-            _buildPaymentMethodOption('apple', 'Apple Pay', Icons.phone_iphone),
+            _buildPaymentMethodOption('apple', l10n.premiumPaymentMethodApplePay, Icons.phone_iphone),
             const SizedBox(height: 24),
 
             // Card Form (if card selected)
@@ -271,7 +275,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
                         const Icon(Icons.lock, size: 20),
                         const SizedBox(width: 8),
                         Text(
-                          'Subscribe for €4.99/month',
+                          l10n.premiumSubscribeCta,
                           style: GoogleFonts.poppins(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -296,7 +300,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Your payment information is encrypted and secure',
+                      l10n.premiumSecurityNotice,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: _puWmForest,
@@ -363,6 +367,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
   }
 
   Widget _buildCardForm() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -374,7 +379,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Card Details',
+            l10n.premiumCardDetailsTitle,
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -385,8 +390,8 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
           TextFormField(
             controller: _cardNumberController,
             decoration: InputDecoration(
-              labelText: 'Card Number',
-              hintText: '1234 5678 9012 3456',
+              labelText: l10n.premiumCardNumberLabel,
+              hintText: l10n.premiumCardNumberHint,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -398,10 +403,10 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
             keyboardType: TextInputType.number,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Card number is required';
+                return l10n.premiumValidationCardNumberRequired;
               }
               if (value.replaceAll(' ', '').length < 13) {
-                return 'Invalid card number';
+                return l10n.premiumValidationInvalidCardNumber;
               }
               return null;
             },
@@ -413,8 +418,8 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
                 child: TextFormField(
                   controller: _expiryController,
                   decoration: InputDecoration(
-                    labelText: 'Expiry (MM/YY)',
-                    hintText: '12/25',
+                    labelText: l10n.premiumExpiryLabel,
+                    hintText: l10n.premiumExpiryHint,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -426,7 +431,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
                   keyboardType: TextInputType.number,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Required';
+                      return l10n.premiumValidationRequired;
                     }
                     return null;
                   },
@@ -437,8 +442,8 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
                 child: TextFormField(
                   controller: _cvvController,
                   decoration: InputDecoration(
-                    labelText: 'CVV',
-                    hintText: '123',
+                    labelText: l10n.premiumCvvLabel,
+                    hintText: l10n.premiumCvvHint,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -451,10 +456,10 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
                   obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Required';
+                      return l10n.premiumValidationRequired;
                     }
                     if (value.length < 3) {
-                      return 'Invalid CVV';
+                      return l10n.premiumValidationInvalidCvv;
                     }
                     return null;
                   },
@@ -466,8 +471,8 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
           TextFormField(
             controller: _nameController,
             decoration: InputDecoration(
-              labelText: 'Cardholder Name',
-              hintText: 'John Doe',
+              labelText: l10n.premiumCardholderNameLabel,
+              hintText: l10n.premiumCardholderNameHint,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -478,7 +483,7 @@ class _PremiumUpgradeScreenState extends ConsumerState<PremiumUpgradeScreen> {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Name is required';
+                return l10n.premiumValidationNameRequired;
               }
               return null;
             },

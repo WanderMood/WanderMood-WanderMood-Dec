@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 // WanderMood v2 Explore tokens (SCREEN 6)
 const Color _wmCream = Color(0xFFF5F0E8);
@@ -39,17 +40,16 @@ class ConversationalExploreHeader extends StatefulWidget {
 
 class _ConversationalExploreHeaderState extends State<ConversationalExploreHeader> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedCategory = 'All';
-  
-  // Category filters (ids map to ExploreScreen intent / category)
-  final List<Map<String, dynamic>> _categoryFilters = [
-    {'id': 'all', 'label': 'All', 'emoji': '✨'},
-    {'id': 'food', 'label': 'Food', 'emoji': '🍽️'},
-    {'id': 'culture', 'label': 'Culture', 'emoji': '🎭'},
-    {'id': 'outdoor', 'label': 'Outdoor', 'emoji': '🌳'},
-    {'id': 'shopping', 'label': 'Shopping', 'emoji': '🛍️'},
-    {'id': 'nightlife', 'label': 'Nightlife', 'emoji': '🌙'},
-  ];
+  String _selectedCategory = 'all';
+
+  List<Map<String, dynamic>> _categoryFilters(AppLocalizations l10n) => [
+        {'id': 'all', 'label': l10n.exploreCategoryAll, 'emoji': '✨'},
+        {'id': 'food', 'label': l10n.exploreCategoryFood, 'emoji': '🍽️'},
+        {'id': 'culture', 'label': l10n.exploreCategoryCulture, 'emoji': '🎭'},
+        {'id': 'outdoor', 'label': l10n.exploreCategoryChipOutdoor, 'emoji': '🌳'},
+        {'id': 'shopping', 'label': l10n.exploreCategoryChipShopping, 'emoji': '🛍️'},
+        {'id': 'nightlife', 'label': l10n.exploreCategoryChipNightlife, 'emoji': '🌙'},
+      ];
 
   @override
   void dispose() {
@@ -70,6 +70,8 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final categoryFilters = _categoryFilters(l10n);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       child: Column(
@@ -81,7 +83,7 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
           const SizedBox(height: 12),
           
           // Category filter bubbles
-          _buildCategoryFilters(),
+          _buildCategoryFilters(categoryFilters),
           
           // View toggle (tight to chips so list can sit closer)
           const SizedBox(height: 10),
@@ -92,6 +94,7 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
   }
 
   Widget _buildSearchBar() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       height: 50,
       decoration: BoxDecoration(
@@ -118,7 +121,7 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
                 fontWeight: FontWeight.w400,
               ),
               decoration: InputDecoration(
-                hintText: "Search activities, restaurants, museums...",
+                hintText: l10n.exploreSearchHint,
                 hintStyle: GoogleFonts.poppins(
                   fontSize: 15,
                   color: Colors.grey[500],
@@ -217,15 +220,15 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
     );
   }
 
-  Widget _buildCategoryFilters() {
+  Widget _buildCategoryFilters(List<Map<String, dynamic>> categoryFilters) {
     return SizedBox(
       height: 44,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 4),
-        itemCount: _categoryFilters.length,
+        itemCount: categoryFilters.length,
         itemBuilder: (context, index) {
-          final category = _categoryFilters[index];
+          final category = categoryFilters[index];
           final isSelected = _selectedCategory == category['id'];
           
           return Padding(

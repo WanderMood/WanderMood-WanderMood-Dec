@@ -339,7 +339,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         children: [
                           _buildRegularNavItem(context, ref, selectedIndex, 0, l10n.navMyDay, Icons.calendar_today_outlined, Icons.calendar_today, _navWmForest, _navWmForestTint),
                           _buildRegularNavItem(context, ref, selectedIndex, 1, l10n.navExplore, Icons.explore_outlined, Icons.explore, _navWmForest, _navWmForestTint),
-                          _buildCenterMoodyButton(context, ref, selectedIndex),
+                          _buildCenterMoodyButton(context, ref, selectedIndex, l10n.navMoody),
                           _buildRegularNavItem(context, ref, selectedIndex, 3, l10n.navProfile, Icons.person_outline, Icons.person, _navWmForest, _navWmForestTint),
                         ],
                       ),
@@ -520,7 +520,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     );
   }
 
-  Widget _buildCenterMoodyButton(BuildContext context, WidgetRef ref, int selectedIndex) {
+  Widget _buildCenterMoodyButton(
+    BuildContext context,
+    WidgetRef ref,
+    int selectedIndex,
+    String moodyLabel,
+  ) {
     final isSelected = selectedIndex == 2;
     return Material(
       color: Colors.transparent,
@@ -550,7 +555,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               ),
               const SizedBox(height: 2),
               Text(
-                'Moody',
+                moodyLabel,
                 style: GoogleFonts.poppins(
                   fontSize: 9,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,

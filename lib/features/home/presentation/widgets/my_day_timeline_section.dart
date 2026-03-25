@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/home/presentation/widgets/activity_review_sheet.dart';
 import 'package:wandermood/features/mood/services/activity_rating_service.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 import '../screens/dynamic_my_day_provider.dart';
 import 'travel_time_connector.dart';
@@ -55,6 +56,7 @@ class MyDayTimelineSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final allCompleted = activities.every(
       (activity) => activity.status == ActivityStatus.completed,
     );
@@ -81,7 +83,7 @@ class MyDayTimelineSection extends StatelessWidget {
                   const Spacer(),
                   // Activity count — always on the right
                   Text(
-                    '${activities.length} ${activities.length == 1 ? 'activity' : 'activities'}',
+                    l10n.myDayTimelineActivityCount(activities.length),
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: _kWmStone,
@@ -106,7 +108,7 @@ class MyDayTimelineSection extends StatelessWidget {
                             const Icon(Icons.check_circle, color: _kWmForest, size: 12),
                             const SizedBox(width: 4),
                             Text(
-                              'All Done',
+                              l10n.myDayTimelineAllDone,
                               style: GoogleFonts.poppins(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
@@ -128,7 +130,7 @@ class MyDayTimelineSection extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              allCompleted ? 'Great job completing this section!' : subtitle,
+              allCompleted ? l10n.myDayTimelineSectionComplete : subtitle,
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 color: allCompleted ? _kWmForest : _kWmStone,
@@ -144,6 +146,7 @@ class MyDayTimelineSection extends StatelessWidget {
                   widgets.add(
                     MyDayTimelineActivityCard(
                       activity: activity,
+                      l10n: l10n,
                       onTap: () => onActivityTap(activity),
                       onDirectionsTap: () => onDirectionsTap(activity),
                       onMoreTap: () => onMoreTap(activity),
@@ -184,6 +187,7 @@ class MyDayTimelineSection extends StatelessWidget {
 
 class MyDayTimelineActivityCard extends ConsumerWidget {
   final EnhancedActivityData activity;
+  final AppLocalizations l10n;
   final VoidCallback onTap;
   final VoidCallback onDirectionsTap;
   final VoidCallback onMoreTap;
@@ -195,6 +199,7 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
   const MyDayTimelineActivityCard({
     super.key,
     required this.activity,
+    required this.l10n,
     required this.onTap,
     required this.onDirectionsTap,
     required this.onMoreTap,
@@ -206,7 +211,7 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cardStatus = _buildCardStatus(activity);
+    final cardStatus = _buildCardStatus(activity, l10n);
     final activityId =
         (activity.rawData['id'] as String?) ??
         (activity.rawData['title'] as String? ?? '');
@@ -223,21 +228,21 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
     final String primaryLabel;
     final VoidCallback primaryAction;
     if (activity.status == ActivityStatus.completed) {
-      primaryLabel = hasReview ? 'Reviewed' : 'Review';
+      primaryLabel = hasReview ? l10n.myDayTimelinePrimaryReviewed : l10n.myDayTimelinePrimaryReview;
       primaryAction = hasReview ? () {} : () => showActivityReviewSheet(context, activity);
     } else if (activity.status == ActivityStatus.activeNow) {
-      primaryLabel = 'Done';
+      primaryLabel = l10n.myDayTimelinePrimaryDone;
       primaryAction = () { HapticFeedback.mediumImpact(); onMarkDone(); };
     } else {
-      primaryLabel = 'I\'m Here';
+      primaryLabel = l10n.myDayTimelinePrimaryImHere;
       primaryAction = () { HapticFeedback.mediumImpact(); onCheckIn(); };
     }
 
-    const subtitleText = 'Tap for details';
+    final subtitleText = l10n.myDayTimelineTapForDetails;
 
     // Time-of-day badge (replaces "1:15 PM • 120m" which implied a booking)
     final slotEmoji = _slotEmoji(activity.startTime.hour);
-    final slotLabel = _slotName(activity.startTime.hour);
+    final slotLabel = _slotName(activity.startTime.hour, l10n);
 
     return GestureDetector(
       onTap: () {
@@ -405,7 +410,7 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            _activityLabel(activity.rawData),
+                            _activityLabel(activity.rawData, l10n),
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -428,7 +433,7 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                         // For upcoming activities show "Get Ready" outline before "I'm Here"
                         if (activity.status == ActivityStatus.upcoming) ...[
                           _OutlineActionButton(
-                            label: 'Get Ready',
+                            label: l10n.myDayGetReadyButton,
                             onTap: () {
                               HapticFeedback.lightImpact();
                               onGetReady();
@@ -502,30 +507,30 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
   }
 }
 
-_ActivityCardStatus _buildCardStatus(EnhancedActivityData activity) {
+_ActivityCardStatus _buildCardStatus(EnhancedActivityData activity, AppLocalizations l10n) {
   switch (activity.status) {
     case ActivityStatus.activeNow:
-      return const _ActivityCardStatus(
+      return _ActivityCardStatus(
         color: _kWmSunset,
-        label: "I'M HERE",
+        label: l10n.myDayTimelineStatusImHere,
         icon: Icons.place_rounded,
       );
     case ActivityStatus.upcoming:
-      return const _ActivityCardStatus(
+      return _ActivityCardStatus(
         color: _kWmWarmBronze,
-        label: 'PLANNED',
+        label: l10n.myDayTimelineStatusPlanned,
         icon: Icons.bookmark_rounded,
       );
     case ActivityStatus.completed:
-      return const _ActivityCardStatus(
+      return _ActivityCardStatus(
         color: _kWmForest,
-        label: 'DONE',
+        label: l10n.myDayTimelineStatusDone,
         icon: Icons.check_circle,
       );
     default:
-      return const _ActivityCardStatus(
+      return _ActivityCardStatus(
         color: _kWmStone,
-        label: 'PLANNED',
+        label: l10n.myDayTimelineStatusPlanned,
         icon: Icons.bookmark_rounded,
       );
   }
@@ -570,7 +575,7 @@ class _OutlineActionButton extends StatelessWidget {
 }
 
 /// Returns a meaningful activity label: category first, then type, then a mood-tag fallback.
-String _activityLabel(Map<String, dynamic> data) {
+String _activityLabel(Map<String, dynamic> data, AppLocalizations l10n) {
   final category = data['category'] as String?;
   if (category != null && category.trim().isNotEmpty && category.toLowerCase() != 'activity') {
     return _capitalize(category);
@@ -579,7 +584,7 @@ String _activityLabel(Map<String, dynamic> data) {
   if (type != null && type.trim().isNotEmpty) return _capitalize(type);
   final mood = data['mood'] as String?;
   if (mood != null && mood.trim().isNotEmpty) return _capitalize(mood);
-  return 'Activity';
+  return l10n.myDayActivityFallbackLabel;
 }
 
 String _capitalize(String s) =>
@@ -591,10 +596,10 @@ String _slotEmoji(int hour) {
   return '🌙';
 }
 
-String _slotName(int hour) {
-  if (hour >= 6 && hour < 12) return 'Morning';
-  if (hour >= 12 && hour < 18) return 'Afternoon';
-  return 'Evening';
+String _slotName(int hour, AppLocalizations l10n) {
+  if (hour >= 6 && hour < 12) return l10n.myDayPeriodMorning;
+  if (hour >= 12 && hour < 18) return l10n.myDayPeriodAfternoon;
+  return l10n.myDayPeriodEvening;
 }
 
 class _ActivityCardStatus {

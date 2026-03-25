@@ -14,6 +14,8 @@ class MoodyHubMessageService {
     required List<String> currentMoods,
     required String timeOfDay,
     required int activitiesCount,
+    /// BCP 47 language code from [Localizations.localeOf] (e.g. en, nl). Drives edge / OpenAI language.
+    String? languageCode,
     Map<String, dynamic>? userPreferences,
   }) async {
     try {
@@ -30,6 +32,8 @@ class MoodyHubMessageService {
           'current_moods': currentMoods,
           'time_of_day': timeOfDay,
           'activities_count': activitiesCount,
+          if (languageCode != null && languageCode.isNotEmpty)
+            'language_code': languageCode,
           'user_preferences': userPreferences ?? <String, dynamic>{},
         },
       ).timeout(_timeout);

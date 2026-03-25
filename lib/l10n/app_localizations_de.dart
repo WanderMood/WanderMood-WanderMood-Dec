@@ -1376,7 +1376,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileSavedPlacesEmpty => 'No saved places yet';
 
   @override
-  String get profileEditProfileButton => 'Edit profile';
+  String get profileEditProfileButton => 'Profil bearbeiten';
 
   @override
   String get profileAppSettingsLink => 'App settings';
@@ -1443,6 +1443,15 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get profilePreferencesEditAll => 'Alle bearbeiten';
+
+  @override
+  String get profilePreferencesNoneSet => 'Noch keine Präferenzen festgelegt.';
+
+  @override
+  String get profileSnackLocalModeSaved => 'Lokalmodus gespeichert';
+
+  @override
+  String get profileSnackTravelingModeSaved => 'Reisemodus gespeichert';
 
   @override
   String get profilePreferencesBudgetStyle => 'Budget-Stil';
@@ -1552,6 +1561,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileAgeGroup55Plus => '55+ Abenteurer';
 
   @override
+  String profileAgeGroupGenericSuffix(String ageGroup) {
+    return '$ageGroup Abenteurer';
+  }
+
+  @override
   String get profileBudgetLow => '\$ Budget';
 
   @override
@@ -1576,55 +1590,55 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileSocialSocial => 'Sozial';
 
   @override
-  String get profileEditTitle => 'Edit Profile';
+  String get profileEditTitle => 'Profil bearbeiten';
 
   @override
-  String get profileEditProfilePhoto => 'Profile Photo';
+  String get profileEditProfilePhoto => 'Profilfoto';
 
   @override
-  String get profileEditProfilePhotoTap => 'Tap to change';
+  String get profileEditProfilePhotoTap => 'Tippen zum Ändern';
 
   @override
-  String get profileEditNameLabel => 'Full Name';
+  String get profileEditNameLabel => 'Vollständiger Name';
 
   @override
-  String get profileEditUsernameLabel => 'Username';
+  String get profileEditUsernameLabel => 'Benutzername';
 
   @override
-  String get profileEditEmailLabel => 'Email';
+  String get profileEditEmailLabel => 'E-Mail';
 
   @override
   String get profileEditBioLabel => 'Bio';
 
   @override
-  String get profileEditSelectDate => 'Select date';
+  String get profileEditSelectDate => 'Datum wählen';
 
   @override
-  String get profileEditUsernameHint => 'username';
+  String get profileEditUsernameHint => 'benutzername';
 
   @override
-  String get profileEditEmailHint => 'email@example.com';
+  String get profileEditEmailHint => 'email@beispiel.com';
 
   @override
-  String get profileEditNameHint => 'Enter your name';
+  String get profileEditNameHint => 'Gib deinen Namen ein';
 
   @override
-  String get profileEditBioHint => 'Tell us about yourself...';
+  String get profileEditBioHint => 'Erzähl uns etwas über dich...';
 
   @override
-  String get profileEditLocationLabel => 'Location';
+  String get profileEditLocationLabel => 'Standort';
 
   @override
-  String get profileEditLocationHint => 'City, Country';
+  String get profileEditLocationHint => 'Stadt, Land';
 
   @override
-  String get profileEditBirthdayLabel => 'Birthday';
+  String get profileEditBirthdayLabel => 'Geburtstag';
 
   @override
-  String get profileEditSave => 'Save';
+  String get profileEditSave => 'Speichern';
 
   @override
-  String get profileEditNoChanges => 'No Changes';
+  String get profileEditNoChanges => 'Keine Änderungen';
 
   @override
   String get profileEditFavoriteVibesTitle => 'Lieblings-Vibes';
@@ -1637,13 +1651,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Wähle deine Lieblings-Vibes, um deine Empfehlungen zu personalisieren';
 
   @override
-  String get profileEditPhotoTake => 'Take Photo';
+  String get profileEditPhotoTake => 'Foto aufnehmen';
 
   @override
-  String get profileEditPhotoChoose => 'Choose from Gallery';
+  String get profileEditPhotoChoose => 'Aus Galerie wählen';
 
   @override
-  String get profileEditPhotoRemove => 'Remove Photo';
+  String get profileEditPhotoRemove => 'Foto entfernen';
 
   @override
   String get profileEditVibesTitle => 'Lieblings-Vibes bearbeiten';
@@ -1652,16 +1666,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileEditVibesDone => 'Fertig';
 
   @override
-  String get profileEditUpdated => 'Profile updated successfully';
+  String get profileEditUpdated => 'Profil erfolgreich aktualisiert';
 
   @override
   String profileEditUpdateFailed(String error) {
-    return 'Failed to update profile: $error';
+    return 'Profil konnte nicht aktualisiert werden: $error';
   }
 
   @override
   String profileEditErrorLoading(String error) {
-    return 'Error loading profile: $error';
+    return 'Fehler beim Laden des Profils: $error';
   }
 
   @override
@@ -1698,6 +1712,231 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get profileVibesCurrentTitle => 'DEINE AKTUELLEN VIBES';
+
+  @override
+  String get profileEditPhotoOverlayLabel => 'Ändern';
+
+  @override
+  String get profileEditLocationHintExamples => 'z. B. Berlin, München...';
+
+  @override
+  String get preferencesScreenTitle => 'Präferenzen bearbeiten';
+
+  @override
+  String get prefSectionCommunicationStyle => 'Kommunikationsstil';
+
+  @override
+  String get prefSectionInterests => 'Deine Interessen';
+
+  @override
+  String get prefSectionSocialVibe => 'Soziale Stimmung';
+
+  @override
+  String get prefSectionTravelStyles => 'Reisestile';
+
+  @override
+  String get prefSectionFavoriteMoods => 'Lieblingsstimmungen';
+
+  @override
+  String get prefSectionPlanningPace => 'Planungstempo';
+
+  @override
+  String get prefSectionSelectedMoods => 'Ausgewählte Stimmungen';
+
+  @override
+  String get prefCommFriendly => 'Freundlich';
+
+  @override
+  String get prefCommPlayful => 'Verspielt';
+
+  @override
+  String get prefCommCalm => 'Ruhig';
+
+  @override
+  String get prefCommPractical => 'Praktisch';
+
+  @override
+  String get prefIntFood => 'Essen';
+
+  @override
+  String get prefIntCulture => 'Kultur';
+
+  @override
+  String get prefIntNature => 'Natur';
+
+  @override
+  String get prefIntNightlife => 'Nachtleben';
+
+  @override
+  String get prefIntShopping => 'Shopping';
+
+  @override
+  String get prefIntWellness => 'Wellness';
+
+  @override
+  String get prefSocSolo => 'Solo';
+
+  @override
+  String get prefSocSmallGroup => 'Kleine Gruppe';
+
+  @override
+  String get prefSocMix => 'Mix';
+
+  @override
+  String get prefSocSocial => 'Sozial';
+
+  @override
+  String get prefTravelRelaxed => 'Entspannt';
+
+  @override
+  String get prefTravelAdventurous => 'Abenteuerlich';
+
+  @override
+  String get prefTravelCultural => 'Kulturell';
+
+  @override
+  String get prefTravelCityBreak => 'Städtetrip';
+
+  @override
+  String get prefFavHappy => 'Fröhlich';
+
+  @override
+  String get prefFavAdventurous => 'Abenteuerlich';
+
+  @override
+  String get prefFavCalm => 'Ruhig';
+
+  @override
+  String get prefFavRomantic => 'Romantisch';
+
+  @override
+  String get prefFavEnergetic => 'Energisch';
+
+  @override
+  String get prefPlanSameDay => 'Gleicher Tag Planer';
+
+  @override
+  String get prefPlanWeekAhead => 'Woche im Voraus Planer';
+
+  @override
+  String get prefPlanSpontaneous => 'Spontan';
+
+  @override
+  String get prefSelHappy => 'Fröhlich';
+
+  @override
+  String get prefSelRelaxed => 'Entspannt';
+
+  @override
+  String get prefSelCultural => 'Kulturell';
+
+  @override
+  String get prefSelRomantic => 'Romantisch';
+
+  @override
+  String get prefSelEnergetic => 'Energisch';
+
+  @override
+  String get prefSelCreative => 'Kreativ';
+
+  @override
+  String get profileVibeAdventurousName => 'Abenteuerlich';
+
+  @override
+  String get profileVibeAdventurousDesc =>
+      'Spannende Aktivitäten & Outdoor-Abenteuer';
+
+  @override
+  String get profileVibeChillName => 'Chill';
+
+  @override
+  String get profileVibeChillDesc => 'Entspannte, lockere Erlebnisse';
+
+  @override
+  String get profileVibeFoodieName => 'Foodie';
+
+  @override
+  String get profileVibeFoodieDesc => 'Kulinarik & Restaurants';
+
+  @override
+  String get profileVibeSocialName => 'Sozial';
+
+  @override
+  String get profileVibeSocialDesc => 'Leute treffen & Events';
+
+  @override
+  String get profileVibeCulturalName => 'Kulturell';
+
+  @override
+  String get profileVibeCulturalDesc => 'Museen, Kunst & Geschichte';
+
+  @override
+  String get profileVibeNatureName => 'Natur';
+
+  @override
+  String get profileVibeNatureDesc => 'Parks, Gärten & draußen';
+
+  @override
+  String get profileVibeRomanticName => 'Romantisch';
+
+  @override
+  String get profileVibeRomanticDesc => 'Dates & romantische Orte';
+
+  @override
+  String get profileVibeWellnessName => 'Wellness';
+
+  @override
+  String get profileVibeWellnessDesc => 'Spa, Yoga & Self-Care';
+
+  @override
+  String get profileVibeNightlifeName => 'Nachtleben';
+
+  @override
+  String get profileVibeNightlifeDesc => 'Bars, Clubs & Abendspaß';
+
+  @override
+  String get profileVibeShoppingName => 'Shopping';
+
+  @override
+  String get profileVibeShoppingDesc => 'Märkte, Boutiquen & Malls';
+
+  @override
+  String get profileVibeCreativeName => 'Kreativ';
+
+  @override
+  String get profileVibeCreativeDesc => 'Ateliers & kreative Orte';
+
+  @override
+  String get profileVibeSportyName => 'Sportlich';
+
+  @override
+  String get profileVibeSportyDesc => 'Sport & Fitness';
+
+  @override
+  String get profileGlobeYourJourney => 'Deine Reise';
+
+  @override
+  String get profileGlobeDemoHint => 'Demo — tippe auf einen Pin!';
+
+  @override
+  String profileGlobePlacesVisitedCount(String count) {
+    return '$count besuchte Orte';
+  }
+
+  @override
+  String get profileGlobeBadgeDemo => 'Demo';
+
+  @override
+  String get profileGlobeControlRotate => 'Drehen';
+
+  @override
+  String get profileGlobeControlPause => 'Pause';
+
+  @override
+  String get profileGlobeControlReset => 'Zurücksetzen';
+
+  @override
+  String get profileGlobeUnknownMood => 'Unbekannt';
 
   @override
   String get shareProfileTitle => 'Profil teilen';
@@ -1812,73 +2051,73 @@ class AppLocalizationsDe extends AppLocalizations {
       'Jeder mit diesem Link kann dein öffentliches Profil ansehen. Du kannst deine Privatsphäre-Einstellungen jederzeit ändern.';
 
   @override
-  String get drawerYourJourney => 'Your Journey';
+  String get drawerYourJourney => 'Deine Reise';
 
   @override
   String get drawerNavigation => 'Navigation';
 
   @override
-  String get drawerSettings => 'Settings';
+  String get drawerSettings => 'Einstellungen';
 
   @override
-  String get drawerAccount => 'Account';
+  String get drawerAccount => 'Konto';
 
   @override
-  String get drawerMoodHistory => 'Mood History';
+  String get drawerMoodHistory => 'Stimmungsverlauf';
 
   @override
-  String get drawerSavedPlaces => 'Saved Places';
+  String get drawerSavedPlaces => 'Gespeicherte Orte';
 
   @override
-  String get drawerMyAgenda => 'My Agenda';
+  String get drawerMyAgenda => 'Meine Agenda';
 
   @override
-  String get drawerMyBookings => 'My Bookings';
+  String get drawerMyBookings => 'Meine Buchungen';
 
   @override
-  String get drawerAppSettings => 'App Settings';
+  String get drawerAppSettings => 'App-Einstellungen';
 
   @override
-  String get drawerNotifications => 'Notifications';
+  String get drawerNotifications => 'Benachrichtigungen';
 
   @override
-  String get drawerLanguage => 'Language';
+  String get drawerLanguage => 'Sprache';
 
   @override
-  String get drawerHelpSupport => 'Help & Support';
+  String get drawerHelpSupport => 'Hilfe & Support';
 
   @override
-  String get drawerProfile => 'Profile';
+  String get drawerProfile => 'Profil';
 
   @override
-  String get drawerLogOut => 'Log Out';
+  String get drawerLogOut => 'Abmelden';
 
   @override
-  String get drawerErrorLoadingProfile => 'Error loading profile';
+  String get drawerErrorLoadingProfile => 'Fehler beim Laden des Profils';
 
   @override
   String drawerErrorSigningOut(String error) {
-    return 'Error signing out: $error';
+    return 'Fehler beim Abmelden: $error';
   }
 
   @override
-  String get drawerNewExplorer => 'New Explorer';
+  String get drawerNewExplorer => 'Neuer Entdecker';
 
   @override
-  String get drawerMasterWanderer => 'Master Wanderer';
+  String get drawerMasterWanderer => 'Meister-Wanderer';
 
   @override
-  String get drawerAdventureExpert => 'Adventure Expert';
+  String get drawerAdventureExpert => 'Abenteuer-Experte';
 
   @override
-  String get drawerSeasonedExplorer => 'Seasoned Explorer';
+  String get drawerSeasonedExplorer => 'Erfahrener Entdecker';
 
   @override
-  String get drawerTravelEnthusiast => 'Travel Enthusiast';
+  String get drawerTravelEnthusiast => 'Reise-Enthusiast';
 
   @override
   String drawerDayStreak(String count) {
-    return '$count Day Streak';
+    return '$count Tage in Folge';
   }
 
   @override
@@ -2119,6 +2358,177 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get activeSessionsNoActiveTitle => 'Keine aktiven Sitzungen';
+
+  @override
+  String get activeSessionsNoActiveBody =>
+      'Du bist auf keinem Gerät angemeldet.';
+
+  @override
+  String activeSessionsCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'en',
+      one: '',
+    );
+    return '$count aktive Sitzung$_temp0';
+  }
+
+  @override
+  String get activeSessionsSignOutAllOther =>
+      'Auf allen anderen Geräten abmelden';
+
+  @override
+  String get activeSessionsUnknownDevice => 'Unbekanntes Gerät';
+
+  @override
+  String get activeSessionsCurrentBadge => 'Aktuell';
+
+  @override
+  String get activeSessionsUnknownLocation => 'Unbekannter Standort';
+
+  @override
+  String get activeSessionsSignOutThisDevice => 'Dieses Gerät abmelden';
+
+  @override
+  String get activeSessionsErrorLoading => 'Fehler beim Laden der Sitzungen';
+
+  @override
+  String get activeSessionsTimeJustNow => 'Gerade eben';
+
+  @override
+  String activeSessionsTimeHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'n',
+      one: '',
+    );
+    return 'vor $count Stunde$_temp0';
+  }
+
+  @override
+  String get activeSessionsTimeYesterday => 'Gestern';
+
+  @override
+  String activeSessionsTimeDaysAgo(int count) {
+    return 'vor $count Tagen';
+  }
+
+  @override
+  String activeSessionsTimeWeeksAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'n',
+      one: '',
+    );
+    return 'vor $count Woche$_temp0';
+  }
+
+  @override
+  String get activeSessionsDialogSignOutDeviceTitle => 'Gerät abmelden';
+
+  @override
+  String activeSessionsDialogSignOutDeviceBody(String device) {
+    return 'Möchtest du dich wirklich von $device abmelden?';
+  }
+
+  @override
+  String get activeSessionsDialogCancel => 'Abbrechen';
+
+  @override
+  String get activeSessionsDialogSignOut => 'Abmelden';
+
+  @override
+  String get activeSessionsToastSignedOutDevice =>
+      'Gerät erfolgreich abgemeldet';
+
+  @override
+  String activeSessionsToastSignOutDeviceError(String error) {
+    return 'Fehler beim Abmelden des Geräts: $error';
+  }
+
+  @override
+  String get activeSessionsDialogSignOutAllTitle =>
+      'Auf allen anderen Geräten abmelden';
+
+  @override
+  String get activeSessionsDialogSignOutAllBody =>
+      'Damit wirst du auf allen Geräten außer diesem abgemeldet. Bist du sicher?';
+
+  @override
+  String get activeSessionsDialogSignOutAllCta => 'Alle abmelden';
+
+  @override
+  String get activeSessionsToastSignedOutAll =>
+      'Alle anderen Geräte wurden abgemeldet';
+
+  @override
+  String activeSessionsToastSignOutAllError(String error) {
+    return 'Fehler beim Abmelden der Geräte: $error';
+  }
+
+  @override
+  String get twoFactorTitle => 'Zwei-Faktor-Authentifizierung';
+
+  @override
+  String get twoFactorEnabledTitle => '2FA ist aktiviert';
+
+  @override
+  String get twoFactorDisabledTitle =>
+      'Zwei-Faktor-Authentifizierung aktivieren';
+
+  @override
+  String get twoFactorEnabledBody =>
+      'Dein Konto ist mit Zwei-Faktor-Authentifizierung geschützt.';
+
+  @override
+  String get twoFactorDisabledBody =>
+      'Füge eine zusätzliche Sicherheitsebene hinzu, indem neben deinem Passwort ein Bestätigungscode erforderlich ist.';
+
+  @override
+  String get twoFactorBenefitsTitle => 'Vorteile:';
+
+  @override
+  String get twoFactorBenefitUnauthorized => 'Schützt vor unbefugtem Zugriff';
+
+  @override
+  String get twoFactorBenefitSensitiveOps =>
+      'Erforderlich für sensible Vorgänge';
+
+  @override
+  String get twoFactorBenefitLoginAlerts =>
+      'Erhalte Benachrichtigungen über Anmeldeversuche';
+
+  @override
+  String get twoFactorDisableCta => '2FA deaktivieren';
+
+  @override
+  String get twoFactorEnableCta => '2FA aktivieren';
+
+  @override
+  String get twoFactorDisableInfo =>
+      'Um 2FA zu deaktivieren, musst du deine Identität bestätigen.';
+
+  @override
+  String get twoFactorEnableInfo =>
+      'Du brauchst eine Authenticator-App (z. B. Google Authenticator), um 2FA einzurichten.';
+
+  @override
+  String get twoFactorToastSetupStarted =>
+      '2FA-Einrichtung gestartet. Bitte schließe den Prozess ab.';
+
+  @override
+  String get twoFactorToastDisabled => '2FA wurde deaktiviert.';
+
+  @override
+  String twoFactorToastError(String error) {
+    return 'Fehler: $error';
+  }
+
+  @override
   String get settingsPrivacyTitle => 'Privacy';
 
   @override
@@ -2347,6 +2757,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get subscriptionFeatureNoAds => 'Keine Werbung';
 
   @override
+  String get subscriptionFeatureEarlyAccess =>
+      'Früher Zugriff auf neue Funktionen';
+
+  @override
   String get subscriptionUpgradeCta => 'Upgrade für 4,99 € pro Monat';
 
   @override
@@ -2449,6 +2863,216 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get helpSupportEmailSubject => 'WanderMood Support';
+
+  @override
+  String get helpSupportEmailSupportTitle => 'E-Mail-Support';
+
+  @override
+  String get settingsLocationChangeCta => 'Ändern';
+
+  @override
+  String get savedPlacesScreenTitle => 'Gespeicherte Orte';
+
+  @override
+  String get savedPlacesTabAllSaved => 'Alle';
+
+  @override
+  String get savedPlacesTabCollections => 'Sammlungen';
+
+  @override
+  String get savedPlacesEmptyTitle => 'Noch keine gespeicherten Orte';
+
+  @override
+  String get savedPlacesEmptyBody =>
+      'Tippe auf das Lesezeichen bei einem Ort in Entdecken, um ihn hier zu speichern.';
+
+  @override
+  String get savedPlacesHoldToCollect => 'Halten zum Sammeln';
+
+  @override
+  String savedPlacesSavedPrefix(String when) {
+    return 'Gespeichert $when';
+  }
+
+  @override
+  String get savedPlacesTimeJustNow => 'gerade eben';
+
+  @override
+  String savedPlacesTimeHoursAgo(int count) {
+    return 'vor $count Std.';
+  }
+
+  @override
+  String get savedPlacesTimeYesterday => 'gestern';
+
+  @override
+  String savedPlacesTimeDaysAgo(int count) {
+    return 'vor $count Tg.';
+  }
+
+  @override
+  String savedPlacesPlaceCountOne(int count) {
+    return '$count Ort';
+  }
+
+  @override
+  String savedPlacesPlaceCountMany(int count) {
+    return '$count Orte';
+  }
+
+  @override
+  String get savedPlacesNewCollection => 'Neue Sammlung';
+
+  @override
+  String get savedPlacesNewCollectionSubtitle => 'Gruppiere deine Favoriten';
+
+  @override
+  String get savedPlacesAddToCollectionTitle => 'Zur Sammlung hinzufügen';
+
+  @override
+  String get savedPlacesNoCollectionsHint =>
+      'Noch keine Sammlungen. Lege im Tab Sammlungen eine an.';
+
+  @override
+  String savedPlacesPlacesCount(int count) {
+    return '$count Orte';
+  }
+
+  @override
+  String savedPlacesAddedToCollection(String name) {
+    return 'Hinzugefügt zu $name';
+  }
+
+  @override
+  String get savedPlacesActionAddToMyDay => 'Zu Mein Tag hinzufügen';
+
+  @override
+  String get savedPlacesActionAddToCollection => 'Zur Sammlung hinzufügen';
+
+  @override
+  String get savedPlacesActionViewDetails => 'Details anzeigen';
+
+  @override
+  String get savedPlacesPlanSheetTitle => 'Zu Mein Tag hinzufügen';
+
+  @override
+  String get savedPlacesPickDate => 'Datum wählen';
+
+  @override
+  String savedPlacesSelectedDate(String date) {
+    return 'Ausgewählt: $date';
+  }
+
+  @override
+  String get locationPickerTitle => 'Ort auswählen';
+
+  @override
+  String get locationPickerSearchHint => 'Stadt oder Ort suchen…';
+
+  @override
+  String get locationPickerEmptyPrompt => 'Tippen, um zu suchen';
+
+  @override
+  String get locationPickerNoResults => 'Keine Orte gefunden';
+
+  @override
+  String locationPickerToastUpdated(String place) {
+    return 'Ort aktualisiert: $place';
+  }
+
+  @override
+  String locationPickerToastError(String error) {
+    return 'Fehler beim Speichern: $error';
+  }
+
+  @override
+  String get settingsPrivacyScreenTitle => 'Datenschutz';
+
+  @override
+  String get privacyProfileVisibilitySection => 'Profil-Sichtbarkeit';
+
+  @override
+  String get privacyVisibilityPublic => 'Öffentlich';
+
+  @override
+  String get privacyVisibilityPublicSub => 'Jeder kann dein Profil sehen';
+
+  @override
+  String get privacyVisibilityFriends => 'Nur Freunde';
+
+  @override
+  String get privacyVisibilityFriendsSub => 'Nur Freunde können sehen';
+
+  @override
+  String get privacyVisibilityPrivate => 'Privat';
+
+  @override
+  String get privacyVisibilityPrivateSub => 'Nur du kannst sehen';
+
+  @override
+  String get privacyWhatOthersSeeSection => 'Was andere sehen';
+
+  @override
+  String get privacyShowEmailLabel => 'E-Mail anzeigen';
+
+  @override
+  String get privacyShowAgeLabel => 'Alter anzeigen';
+
+  @override
+  String get privacyToastVisibilityUpdated => 'Sichtbarkeit aktualisiert';
+
+  @override
+  String privacyToastError(String error) {
+    return 'Fehler: $error';
+  }
+
+  @override
+  String get privacyToastEmailVisible => 'E-Mail wird für andere sichtbar';
+
+  @override
+  String get privacyToastEmailHidden => 'E-Mail ist jetzt verborgen';
+
+  @override
+  String get privacyToastAgeVisible => 'Alter wird für andere sichtbar';
+
+  @override
+  String get privacyToastAgeHidden => 'Alter ist jetzt verborgen';
+
+  @override
+  String get languageNameEn => 'Englisch';
+
+  @override
+  String get languageNativeEn => 'English';
+
+  @override
+  String get languageNameNl => 'Niederländisch';
+
+  @override
+  String get languageNativeNl => 'Nederlands';
+
+  @override
+  String get languageNameEs => 'Spanisch';
+
+  @override
+  String get languageNativeEs => 'Español';
+
+  @override
+  String get languageNameFr => 'Französisch';
+
+  @override
+  String get languageNativeFr => 'Français';
+
+  @override
+  String get languageNameDe => 'Deutsch';
+
+  @override
+  String get languageNativeDe => 'Deutsch';
+
+  @override
+  String get languageNameIt => 'Italienisch';
+
+  @override
+  String get languageNativeIt => 'Italiano';
 
   @override
   String get prefCommunicationTitle => 'How should I talk to you? 💬';
@@ -2628,12 +3252,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get prefTravelSubtitleDirect =>
       'A few quick questions to personalize your experience';
-
-  @override
-  String get prefSectionSocialVibe => 'Soziale Stimmung';
-
-  @override
-  String get prefSectionPlanningPace => 'Planning Pace ⏰';
 
   @override
   String get prefSectionTravelStyle => 'Travel Style 🎯';
@@ -3433,6 +4051,158 @@ class AppLocalizationsDe extends AppLocalizations {
   String get navProfile => 'Profil';
 
   @override
+  String get navMoody => 'Moody';
+
+  @override
+  String get myDayStatusTitleRightNow => 'Gerade';
+
+  @override
+  String get myDayStatusTitleUpNext => 'Als Nächstes';
+
+  @override
+  String get myDayStatusTitleAllDone => '✅ Alles erledigt';
+
+  @override
+  String get myDayStatusTitleFreeTime => '📅 FREIE ZEIT';
+
+  @override
+  String get myDayStatusDescActive =>
+      'Du bist da! Tippe auf Fertig, wenn du fertig bist.';
+
+  @override
+  String get myDayStatusDescUpcomingMorning =>
+      'Geplant für den Morgen · tippe bei Ankunft auf \"Ich bin da\"';
+
+  @override
+  String get myDayStatusDescUpcomingAfternoon =>
+      'Geplant für den Nachmittag · tippe bei Ankunft auf \"Ich bin da\"';
+
+  @override
+  String get myDayStatusDescUpcomingEvening =>
+      'Geplant für den Abend · tippe bei Ankunft auf \"Ich bin da\"';
+
+  @override
+  String get myDayStatusDescCompleted => 'Toller Tag! Du hast alles geschafft.';
+
+  @override
+  String get myDayPeriodMorning => 'Morgen';
+
+  @override
+  String get myDayPeriodAfternoon => 'Nachmittag';
+
+  @override
+  String get myDayPeriodEvening => 'Abend';
+
+  @override
+  String get myDayFreeTimeSuggestionMorning =>
+      'Perfekt, um energiegeladen in den Tag zu starten';
+
+  @override
+  String get myDayFreeTimeSuggestionAfternoon => 'Gute Zeit zum Entdecken';
+
+  @override
+  String get myDayFreeTimeSuggestionEvening =>
+      'Komm runter mit etwas Besonderem';
+
+  @override
+  String myDayTimelineActivityCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Aktivitäten',
+      one: '1 Aktivität',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get myDayTimelineAllDone => 'Erledigt';
+
+  @override
+  String get myDayTimelineSectionComplete =>
+      'Super, dieser Abschnitt ist fertig!';
+
+  @override
+  String get myDayTimelineTapForDetails => 'Tippen für Details';
+
+  @override
+  String get myDayTimelinePrimaryImHere => 'Ich bin da';
+
+  @override
+  String get myDayTimelinePrimaryDone => 'Fertig';
+
+  @override
+  String get myDayTimelinePrimaryReview => 'Bewerten';
+
+  @override
+  String get myDayTimelinePrimaryReviewed => 'Bewertet';
+
+  @override
+  String get myDayTimelineStatusImHere => 'ICH BIN DA';
+
+  @override
+  String get myDayTimelineStatusPlanned => 'GEPLANT';
+
+  @override
+  String get myDayTimelineStatusDone => 'FERTIG';
+
+  @override
+  String get myDayActivityFallbackLabel => 'Aktivität';
+
+  @override
+  String get myDayExecutionHeroYoureHereBadge => 'Du bist da!';
+
+  @override
+  String get myDayExecutionHeroInProgressBadge => 'LÄUFT';
+
+  @override
+  String get myDayExecutionHeroActiveHint =>
+      'Gefällt es dir? Tippe auf Fertig, wenn du weiterziehen willst.';
+
+  @override
+  String myDayExecutionHeroReviewedAt(String time) {
+    return 'Bewertet um $time';
+  }
+
+  @override
+  String get myDayExecutionHeroCompletedToday => 'Heute erledigt';
+
+  @override
+  String get myDayExecutionHeroBadgeReviewedCaps => 'BEWERTET';
+
+  @override
+  String get myDayExecutionHeroBadgeReadyToReviewCaps => 'BEREIT ZUR BEWERTUNG';
+
+  @override
+  String get myDayExecutionHeroReviewCaptureHint =>
+      'Halte fest, wie es sich angefühlt hat, solange es noch frisch ist.';
+
+  @override
+  String get myDayExecutionHeroUpNextBadge => 'ALS NÄCHSTES';
+
+  @override
+  String get myDayExecutionHeroTapImHereWhenArrive =>
+      'Tippe auf „Ich bin da“, wenn du angekommen bist.';
+
+  @override
+  String get myDayTimelineSectionMorningTitle => '🌅 Morgen';
+
+  @override
+  String get myDayTimelineSectionMorningSubtitle => 'Starte gut in den Tag';
+
+  @override
+  String get myDayTimelineSectionAfternoonTitle => '🌞 Nachmittag';
+
+  @override
+  String get myDayTimelineSectionAfternoonSubtitle => 'Zeit für Abenteuer';
+
+  @override
+  String get myDayTimelineSectionEveningTitle => '🌆 Abend';
+
+  @override
+  String get myDayTimelineSectionEveningSubtitle => 'Runterkommen und genießen';
+
+  @override
   String get myDayWeekendEmptyTitle => 'Dein Wochenende ist noch leer!';
 
   @override
@@ -3492,6 +4262,74 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get gygCodeCopied => 'Code kopiert 💚';
+
+  @override
+  String get placeCardSeeActivity => 'Aktivität ansehen';
+
+  @override
+  String get placeCardPriceVaries => 'Preis variiert';
+
+  @override
+  String gygEdviennePicksInCity(String city) {
+    return '✨ Edviennes Picks in $city';
+  }
+
+  @override
+  String gygMapCompactTitle(String city) {
+    return 'Edviennes Picks — $city';
+  }
+
+  @override
+  String get gygMapCompactSubtitle =>
+      'Tippen, um GetYourGuide & Rabatt zu öffnen';
+
+  @override
+  String gygPrimaryTitleInCity(String city) {
+    return '✨ Edviennes Picks in $city';
+  }
+
+  @override
+  String get gygTagline48h =>
+      'Was ich buchen würde, wenn ich 48 Stunden hier wäre 🤍';
+
+  @override
+  String get gygOpenInApp => 'In der GetYourGuide-App öffnen (mit Promo)';
+
+  @override
+  String get gygOpenInWeb => 'Im Browser öffnen';
+
+  @override
+  String gygPromoGift(String code) {
+    return '🎁 Ein kleines Extra von mir: $code';
+  }
+
+  @override
+  String get gygPromoAppOnly => 'Nur in der GetYourGuide-App gültig.';
+
+  @override
+  String get gygCopy => 'Kopieren';
+
+  @override
+  String get gygPoweredBy => 'Bereitgestellt von GetYourGuide';
+
+  @override
+  String get gygComingSoonBody =>
+      'Ich stelle noch die besten Tipps für diese Stadt zusammen 🤍';
+
+  @override
+  String get gygCategoryFoodDrink => '🍴 Essen & Trinken';
+
+  @override
+  String get gygCategoryBoatTours => '⛵ Bootstouren';
+
+  @override
+  String get gygCategoryCulture => '🎭 Kultur';
+
+  @override
+  String get gygCategoryAdventure => '🧗 Abenteuer';
+
+  @override
+  String get gygCategoryLuxury => '✨ Luxus';
 
   @override
   String get socialNewMessageComingSoon =>
@@ -3885,31 +4723,33 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String agendaChooseActivityForDay(String day) {
-    return 'Choose an activity to add for $day.';
+    return 'Wähle eine Aktivität, die du für $day hinzufügen möchtest.';
   }
 
   @override
-  String get agendaLoadingActivities => 'Loading activities...';
+  String get agendaLoadingActivities => 'Aktivitäten werden geladen...';
 
   @override
-  String get agendaErrorLoadingActivities => 'Error loading activities';
+  String get agendaErrorLoadingActivities =>
+      'Fehler beim Laden der Aktivitäten';
 
   @override
-  String get agendaPleaseTryAgainLater => 'Please try again later';
+  String get agendaPleaseTryAgainLater => 'Bitte versuche es später erneut';
 
   @override
-  String get agendaNoActivitiesScheduled => 'No activities scheduled';
+  String get agendaNoActivitiesScheduled => 'Keine Aktivitäten geplant';
 
   @override
   String get agendaNoActivitiesPlannedYet =>
-      'You do not have any planned activities in your agenda yet';
+      'Du hast noch keine geplanten Aktivitäten in deiner Agenda';
 
   @override
-  String get agendaDeleteMissingId => 'Could not delete activity (missing id).';
+  String get agendaDeleteMissingId =>
+      'Aktivität konnte nicht gelöscht werden (fehlende ID).';
 
   @override
   String agendaRemovedFromPlanner(String title) {
-    return '$title removed from your planner.';
+    return '$title wurde aus deinem Planer entfernt.';
   }
 
   @override
@@ -4158,7 +4998,25 @@ class AppLocalizationsDe extends AppLocalizations {
   String get agendaTitle => 'Meine Agenda';
 
   @override
+  String get agendaStatusDone => 'FERTIG';
+
+  @override
+  String get agendaStatusNow => 'JETZT';
+
+  @override
+  String get agendaStatusUpcoming => 'BEVORSTEHEND';
+
+  @override
   String get agendaStatusCancelled => 'STORNIERT';
+
+  @override
+  String get agendaHeaderToday => 'Heute';
+
+  @override
+  String get agendaHeaderTomorrow => 'Morgen';
+
+  @override
+  String get agendaHeaderYesterday => 'Gestern';
 
   @override
   String get agendaTodayEmpty => 'Heute ist noch leer';
@@ -4205,6 +5063,17 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get agendaLocationTBD => 'Standort unbekannt';
+
+  @override
+  String agendaDeleteDialogBody(String title) {
+    return '„$title“ wird aus deinem Planer entfernt.';
+  }
+
+  @override
+  String get agendaDeleteDialogBack => 'Zurück';
+
+  @override
+  String get agendaDeleteDialogConfirm => 'Löschen';
 
   @override
   String get exploreCategoryAll => 'Alle';
@@ -4346,6 +5215,142 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get exploreFilterMaxDistance => 'Maximale Entfernung (km)';
+
+  @override
+  String get exploreErrorLocationRequiredTitle => 'Standort erforderlich';
+
+  @override
+  String get exploreErrorLoadingPlacesTitle => 'Fehler beim Laden der Orte';
+
+  @override
+  String get exploreErrorLocationBody =>
+      'Bitte aktiviere die Ortungsdienste oder lege deinen Standort in den Einstellungen fest, um Orte in der Nähe zu finden.';
+
+  @override
+  String get exploreErrorEnableLocation => 'Standort aktivieren';
+
+  @override
+  String get exploreAdvancedFiltersTitle => 'Erweiterte Filter';
+
+  @override
+  String exploreFiltersActiveCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count aktive Filter',
+      one: '1 aktiver Filter',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exploreMoodyHintFiltersActive(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Filter',
+      one: '1 Filter',
+    );
+    return 'Super! $_temp0 aktiv — merke ich mir.';
+  }
+
+  @override
+  String get exploreMoodyHintFiltersIntro =>
+      'Hey! Ich bin Moody. Nutze Filter, um genau das zu finden, was zu dir passt — Ernährung, Barrierefreiheit, Foto-Spots und mehr.';
+
+  @override
+  String get exploreClearAll => 'Alle löschen';
+
+  @override
+  String get exploreSectionQuickSuggestions => 'Schnelle Vorschläge';
+
+  @override
+  String get exploreSectionDietaryPreferences => 'Ernährungspräferenzen';
+
+  @override
+  String get exploreSectionAccessibilityInclusion =>
+      'Barrierefreiheit & Inklusion';
+
+  @override
+  String get exploreSectionComfortConvenience => 'Komfort & Annehmlichkeiten';
+
+  @override
+  String get exploreSectionPhotoAesthetic => 'Foto & Ästhetik';
+
+  @override
+  String exploreSaveFiltersWithCount(int count) {
+    return '$count Filter speichern';
+  }
+
+  @override
+  String get exploreSaveFilters => 'Filter speichern';
+
+  @override
+  String get exploreQuickFilters => 'Schnellfilter';
+
+  @override
+  String get exploreSearchHint => 'Aktivitäten, Restaurants, Museen suchen...';
+
+  @override
+  String get exploreCategoryChipOutdoor => 'Draußen';
+
+  @override
+  String get exploreCategoryChipShopping => 'Shopping';
+
+  @override
+  String get exploreCategoryChipNightlife => 'Nachtleben';
+
+  @override
+  String get explorePriceLevelBudget => 'Budget';
+
+  @override
+  String get explorePriceLevelModerate => 'Mittel';
+
+  @override
+  String get explorePriceLevelExpensive => 'Teuer';
+
+  @override
+  String get explorePriceLevelLuxury => 'Luxus';
+
+  @override
+  String get exploreMoodAdventure => 'Abenteuer';
+
+  @override
+  String get exploreMoodCreative => 'Kreativ';
+
+  @override
+  String get exploreMoodRelaxed => 'Entspannt';
+
+  @override
+  String get exploreMoodMindful => 'Achtsam';
+
+  @override
+  String get exploreMoodRomantic => 'Romantisch';
+
+  @override
+  String get exploreAddToMyDayDayLabel => 'Tag';
+
+  @override
+  String get exploreAddToMyDayPickDate => 'Datum wählen';
+
+  @override
+  String exploreAddToMyDaySelectedDate(String date) {
+    return 'Ausgewählt: $date';
+  }
+
+  @override
+  String get exploreAddToMyDayTimeLabel => 'Zeit';
+
+  @override
+  String get exploreDatePickerHelp => 'Datum wählen';
+
+  @override
+  String get exploreDatePickerConfirm => 'Wählen';
+
+  @override
+  String explorePlaceDescriptionFallback(String name) {
+    return '$name entdecken';
+  }
 
   @override
   String get chatSheetMoodyName => 'Moody';
@@ -4823,9 +5828,6 @@ class AppLocalizationsDe extends AppLocalizations {
       'Wie viel Zeit hast du normalerweise für Aktivitäten?';
 
   @override
-  String get prefSectionInterests => 'Deine Interessen';
-
-  @override
   String get prefSectionInterestsSub => 'Wähle alles Zutreffende aus';
 
   @override
@@ -4980,6 +5982,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get deleteAccountPhotos => 'Alle Fotos und Erinnerungen';
 
   @override
+  String get deleteAccountConfirmKeyword => 'DELETE';
+
+  @override
   String get deleteAccountTypeToConfirm => 'Gib \"DELETE\" zur Bestätigung ein';
 
   @override
@@ -5007,6 +6012,105 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get deleteAccountError => 'Fehler beim Löschen des Kontos';
+
+  @override
+  String get settingsNotificationsSectionTitle => 'BENACHRICHTIGUNGEN';
+
+  @override
+  String get settingsNotificationsTripRemindersLabel => 'Reise-Erinnerungen';
+
+  @override
+  String get settingsNotificationsTripRemindersSubtitle =>
+      'Erinnerungen für geplante Aktivitäten';
+
+  @override
+  String get settingsNotificationsWeatherUpdatesLabel => 'Wetter-Updates';
+
+  @override
+  String get settingsNotificationsWeatherUpdatesSubtitle =>
+      'Updates zum Wetter an deinem Ziel';
+
+  @override
+  String get premiumUpgradeScreenTitle => 'Upgrade auf Premium';
+
+  @override
+  String get premiumMonthlyPlanLabel => 'Monatlicher Plan';
+
+  @override
+  String get premiumMonthlyPriceLabel => '€4,99/Monat';
+
+  @override
+  String get premiumBestValueBadge => 'Bester Wert';
+
+  @override
+  String get premiumPaymentMethodTitle => 'Zahlungsmethode';
+
+  @override
+  String get premiumPaymentMethodCard => 'Kredit-/Debitkarte';
+
+  @override
+  String get premiumPaymentMethodPaypal => 'PayPal';
+
+  @override
+  String get premiumPaymentMethodApplePay => 'Apple Pay';
+
+  @override
+  String get premiumSubscribeCta => 'Abonnieren für €4,99/Monat';
+
+  @override
+  String get premiumSecurityNotice =>
+      'Deine Zahlungsinformationen sind verschlüsselt und sicher';
+
+  @override
+  String get premiumToastActivated => 'Premium-Abonnement aktiviert!';
+
+  @override
+  String premiumToastPaymentFailed(String error) {
+    return 'Zahlung fehlgeschlagen: $error';
+  }
+
+  @override
+  String get premiumCardDetailsTitle => 'Kartendetails';
+
+  @override
+  String get premiumCardNumberLabel => 'Kartennummer';
+
+  @override
+  String get premiumCardNumberHint => '1234 5678 9012 3456';
+
+  @override
+  String get premiumExpiryLabel => 'Ablauf (MM/JJ)';
+
+  @override
+  String get premiumExpiryHint => '12/25';
+
+  @override
+  String get premiumCvvLabel => 'CVV';
+
+  @override
+  String get premiumCvvHint => '123';
+
+  @override
+  String get premiumCardholderNameLabel => 'Name des Karteninhabers';
+
+  @override
+  String get premiumCardholderNameHint => 'Max Mustermann';
+
+  @override
+  String get premiumValidationRequired => 'Erforderlich';
+
+  @override
+  String get premiumValidationCardNumberRequired =>
+      'Kartennummer ist erforderlich';
+
+  @override
+  String get premiumValidationInvalidCardNumber => 'Ungültige Kartennummer';
+
+  @override
+  String get premiumValidationInvalidCvv => 'Ungültige CVV';
+
+  @override
+  String get premiumValidationNameRequired => 'Name ist erforderlich';
 
   @override
   String get placeDetailAboutThisPlace => 'Über diesen Ort';
@@ -5131,4 +6235,159 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get moodyHubPlanForWhen => 'Für wann planst du?';
+
+  @override
+  String get moodyHubListComma => ', ';
+
+  @override
+  String get moodyHubListAnd => ' und ';
+
+  @override
+  String get moodyReviewTitle => 'Kurzes Feedback';
+
+  @override
+  String get moodyReviewHowWasIt => 'Wie war\'s?';
+
+  @override
+  String get moodyReviewStarsFeedback5 => '🌟 Großartig!';
+
+  @override
+  String get moodyReviewStarsFeedback4 => '😊 Sehr gut!';
+
+  @override
+  String get moodyReviewStarsFeedback3 => '👍 Ziemlich gut!';
+
+  @override
+  String get moodyReviewStarsFeedback2 => '😐 Geht so';
+
+  @override
+  String get moodyReviewStarsFeedback1 => '😞 Nicht so toll';
+
+  @override
+  String get moodyReviewYourVibe => 'Deine Stimmung';
+
+  @override
+  String get moodyReviewVibeAmazing => 'Großartig';
+
+  @override
+  String get moodyReviewVibeGood => 'Gut';
+
+  @override
+  String get moodyReviewVibeOkay => 'Okay';
+
+  @override
+  String get moodyReviewVibeMeh => 'Meh';
+
+  @override
+  String get moodyReviewOptionalNote => 'Noch etwas? (optional)';
+
+  @override
+  String get moodyReviewNoteHint => 'Was ist aufgefallen? Tipps für andere?';
+
+  @override
+  String get moodyReviewNoteHelper =>
+      '💡 So helfen andere tolle Orte zu finden!';
+
+  @override
+  String get moodyReviewSave => 'Bewertung speichern';
+
+  @override
+  String get moodyReviewNeedStars => 'Bitte Sterne vergeben, um fortzufahren';
+
+  @override
+  String get moodyReviewHelpsMoody => 'Dein Feedback hilft Moody zu lernen!';
+
+  @override
+  String get moodyReviewThanksToast => 'Danke für deine Bewertung! 🚀';
+
+  @override
+  String get getReadyChecklistItemReady => 'Bereit!';
+
+  @override
+  String getReadyShareInvite(Object title, Object time) {
+    return 'Komm mit zu $title gegen $time – geplant mit WanderMood.';
+  }
+
+  @override
+  String get getReadyCalendarEventTitleFallback => 'WanderMood-Aktivität';
+
+  @override
+  String get getReadyCalendarEventDetailsFallback => 'Geplant mit WanderMood';
+
+  @override
+  String get getReadyShareTitleFallback => 'diesem Ort';
+
+  @override
+  String getReadyCalendarOpenHint(Object label) {
+    return '$label – im Browser oder in der App öffnen';
+  }
+
+  @override
+  String getReadyPlaylistSearchQuery(Object theme) {
+    return 'Happy $theme Beats';
+  }
+
+  @override
+  String get getReadyPlaylistThemeFoodie => 'Foodie';
+
+  @override
+  String get getReadyPlaylistThemeCultural => 'Kultur';
+
+  @override
+  String get getReadyPlaylistThemeShopping => 'Shopping';
+
+  @override
+  String get getReadyPlaylistThemeOutdoor => 'Outdoor';
+
+  @override
+  String get getReadyPlaylistThemeAdventure => 'Abenteuer';
+
+  @override
+  String get getReadyMoodFragmentAdventure => 'Abenteuer';
+
+  @override
+  String get getReadyMoodFragmentRelaxed => 'Entspannung';
+
+  @override
+  String get getReadyMoodFragmentEnergetic => 'Energie';
+
+  @override
+  String get getReadyMoodFragmentRomantic => 'Romantik';
+
+  @override
+  String get getReadyMoodFragmentCultural => 'Kultur';
+
+  @override
+  String get getReadyMoodFragmentExplorer => 'Entdeckung';
+
+  @override
+  String get getReadyMoodFragmentFoodie => 'Foodie';
+
+  @override
+  String moodHomeAlreadyPlannedTitle(String dayName) {
+    return '$dayName ist schon geplant!';
+  }
+
+  @override
+  String moodHomeActivitiesReadyCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Aktivitäten stehen für dich bereit.',
+      one: '1 Aktivität steht für dich bereit.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moodHomeViewPlan => 'Plan ansehen';
+
+  @override
+  String get moodHomePlanAgain => 'Neu planen';
+
+  @override
+  String get planLoadingRotating2 => 'Dein Tag wird zusammengestellt…';
+
+  @override
+  String get planLoadingRotating3 => 'Gleich fertig — dein Plan ist fast da ✨';
 }

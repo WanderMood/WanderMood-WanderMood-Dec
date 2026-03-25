@@ -12,7 +12,8 @@ import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/places/application/places_service.dart';
 import 'package:wandermood/features/places/domain/models/place.dart' show PlaceAutocomplete;
-import '../widgets/edit_favorite_vibes.dart' show allVibes;
+import '../widgets/edit_favorite_vibes.dart'
+    show allVibes, localizedVibeDescription, localizedVibeLabelForStored, localizedVibeName;
 
 // WanderMood v2 — Edit Profile (Screen 12)
 const Color _wmCream = Color(0xFFF5F0E8);
@@ -644,7 +645,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               Expanded(
                                 child: Text(
                                   _dateOfBirth != null
-                                      ? DateFormat('yyyy-MM-dd').format(_dateOfBirth!)
+                                      ? DateFormat.yMd(
+                                          Localizations.localeOf(context).toString(),
+                                        ).format(_dateOfBirth!)
                                       : l10n.profileEditSelectDate,
                                   style: GoogleFonts.poppins(
                                     fontSize: 16,
@@ -749,7 +752,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       const Icon(Icons.camera_alt, color: Colors.white, size: 24),
                       const SizedBox(height: 4),
                       Text(
-                        'Wijzigen',
+                        AppLocalizations.of(context)!.profileEditPhotoOverlayLabel,
                         style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontSize: 11,
@@ -885,7 +888,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               color: const Color(0xFF1E1C18),
             ),
             decoration: InputDecoration(
-              hintText: 'Bijv. Rotterdam, Amsterdam...',
+              hintText: AppLocalizations.of(context)!.profileEditLocationHintExamples,
               hintStyle: GoogleFonts.poppins(color: _wmStone),
               prefixIcon: const Icon(
                 Icons.location_on_outlined,
@@ -1081,7 +1084,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   border: Border.all(color: _wmParchment, width: 0.5),
                 ),
                 child: Text(
-                  vibe,
+                  localizedVibeLabelForStored(AppLocalizations.of(context)!, vibe),
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -1373,11 +1376,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       crossAxisCount: 2,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
-                      childAspectRatio: 0.9,
+                      childAspectRatio: 0.72,
                     ),
                     itemCount: allVibes.length,
                     itemBuilder: (context, index) {
                       final vibe = allVibes[index];
+                      final l10nV = AppLocalizations.of(context)!;
                       final isSelected = _favoriteVibes.any(
                         (v) => v.toLowerCase() == vibe.name.toLowerCase(),
                       );
@@ -1439,13 +1443,27 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                vibe.name,
+                                localizedVibeName(l10nV, vibe.id),
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.grey[800],
                                 ),
                                 textAlign: TextAlign.center,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  localizedVibeDescription(l10nV, vibe.id),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    color: Colors.grey[600],
+                                    height: 1.25,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                               if (isSelected) ...[
                                 const SizedBox(height: 8),

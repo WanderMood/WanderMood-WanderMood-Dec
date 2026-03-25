@@ -360,6 +360,103 @@
       }
     }
   },
+  "activeSessionsNoActiveTitle": "Geen actieve sessies",
+  "activeSessionsNoActiveBody": "Je bent op geen enkel apparaat ingelogd.",
+  "activeSessionsCountLabel": "{count} actieve sessie{count, plural, one{} other{s}}",
+  "@activeSessionsCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activeSessionsSignOutAllOther": "Uitloggen op alle andere apparaten",
+  "activeSessionsUnknownDevice": "Onbekend apparaat",
+  "activeSessionsCurrentBadge": "Huidig",
+  "activeSessionsUnknownLocation": "Onbekende locatie",
+  "activeSessionsSignOutThisDevice": "Dit apparaat uitloggen",
+  "activeSessionsErrorLoading": "Fout bij laden van sessies",
+  "activeSessionsTimeJustNow": "Zojuist",
+  "activeSessionsTimeHoursAgo": "{count} uur geleden",
+  "@activeSessionsTimeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activeSessionsTimeYesterday": "Gisteren",
+  "activeSessionsTimeDaysAgo": "{count} dagen geleden",
+  "@activeSessionsTimeDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activeSessionsTimeWeeksAgo": "{count} week{count, plural, one{} other{en}} geleden",
+  "@activeSessionsTimeWeeksAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activeSessionsDialogSignOutDeviceTitle": "Apparaat uitloggen",
+  "activeSessionsDialogSignOutDeviceBody": "Weet je zeker dat je wilt uitloggen op {device}?",
+  "@activeSessionsDialogSignOutDeviceBody": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "activeSessionsDialogCancel": "Annuleren",
+  "activeSessionsDialogSignOut": "Uitloggen",
+  "activeSessionsToastSignedOutDevice": "Apparaat succesvol uitgelogd",
+  "activeSessionsToastSignOutDeviceError": "Fout bij uitloggen van apparaat: {error}",
+  "@activeSessionsToastSignOutDeviceError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "activeSessionsDialogSignOutAllTitle": "Uitloggen op alle andere apparaten",
+  "activeSessionsDialogSignOutAllBody": "Dit logt je uit op alle andere apparaten behalve deze. Weet je het zeker?",
+  "activeSessionsDialogSignOutAllCta": "Alles uitloggen",
+  "activeSessionsToastSignedOutAll": "Alle andere apparaten zijn uitgelogd",
+  "activeSessionsToastSignOutAllError": "Fout bij uitloggen van apparaten: {error}",
+  "@activeSessionsToastSignOutAllError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "twoFactorTitle": "Twee-factorauthenticatie",
+  "twoFactorEnabledTitle": "2FA is ingeschakeld",
+  "twoFactorDisabledTitle": "Schakel twee-factorauthenticatie in",
+  "twoFactorEnabledBody": "Je account is beveiligd met twee-factorauthenticatie.",
+  "twoFactorDisabledBody": "Voeg een extra beveiligingslaag toe door naast je wachtwoord ook een verificatiecode te vereisen.",
+  "twoFactorBenefitsTitle": "Voordelen:",
+  "twoFactorBenefitUnauthorized": "Beschermt tegen ongeautoriseerde toegang",
+  "twoFactorBenefitSensitiveOps": "Vereist voor gevoelige handelingen",
+  "twoFactorBenefitLoginAlerts": "Ontvang meldingen bij inlogpogingen",
+  "twoFactorDisableCta": "2FA uitschakelen",
+  "twoFactorEnableCta": "2FA inschakelen",
+  "twoFactorDisableInfo": "Om 2FA uit te schakelen moet je je identiteit verifiëren.",
+  "twoFactorEnableInfo": "Je hebt een authenticator-app nodig (zoals Google Authenticator) om 2FA in te stellen.",
+  "twoFactorToastSetupStarted": "2FA-instelling gestart. Rond het instelproces af.",
+  "twoFactorToastDisabled": "2FA is uitgeschakeld.",
+  "twoFactorToastError": "Fout: {error}",
+  "@twoFactorToastError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "profileSnackAvatarUpdated": "Profielafbeelding bijgewerkt!",
   "profileSnackAvatarFailed": "Foto bijwerken mislukt: {error}",
   "profileErrorLoad": "Profiel laden mislukt",
@@ -378,6 +475,44 @@
   "profileEditFavoriteVibesSubtitle": "Kies je favoriete vibes om je aanbevelingen te personaliseren",
   "profileEditVibesTitle": "Favoriete vibes bewerken",
   "profileEditVibesDone": "Klaar",
+  "profileEditProfileButton": "Profiel bewerken",
+  "profileEditTitle": "Profiel bewerken",
+  "profileEditProfilePhoto": "Profielfoto",
+  "profileEditProfilePhotoTap": "Tik om te wijzigen",
+  "profileEditNameLabel": "Volledige naam",
+  "profileEditUsernameLabel": "Gebruikersnaam",
+  "profileEditEmailLabel": "E-mail",
+  "profileEditBioLabel": "Bio",
+  "profileEditSelectDate": "Selecteer datum",
+  "profileEditUsernameHint": "gebruikersnaam",
+  "profileEditEmailHint": "email@voorbeeld.com",
+  "profileEditNameHint": "Voer je naam in",
+  "profileEditBioHint": "Vertel iets over jezelf...",
+  "profileEditLocationLabel": "Locatie",
+  "profileEditLocationHint": "Stad, land",
+  "profileEditBirthdayLabel": "Verjaardag",
+  "profileEditSave": "Opslaan",
+  "profileEditNoChanges": "Geen wijzigingen",
+  "profileEditPhotoTake": "Foto maken",
+  "profileEditPhotoChoose": "Kies uit galerij",
+  "profileEditPhotoRemove": "Foto verwijderen",
+  "profileEditUpdated": "Profiel succesvol bijgewerkt",
+  "profileEditUpdateFailed": "Profiel bijwerken mislukt: {error}",
+  "@profileEditUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "profileEditErrorLoading": "Fout bij laden van profiel: {error}",
+  "@profileEditErrorLoading": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "profileMoodJourneyTitle": "Jouw mood journey",
   "profileMoodJourneySubtitle": "Bekijk je mood history",
   "moodHistoryIntro": "Een rustige tijdlijn van hoe je je voelde.",
@@ -395,6 +530,9 @@
   "profileTravelGlobeSubtitle": "Ontdek je reisverhaal",
   "profilePreferencesTitle": "Jouw voorkeuren",
   "profilePreferencesEditAll": "Alles bewerken",
+  "profilePreferencesNoneSet": "Nog geen voorkeuren ingesteld.",
+  "profileSnackLocalModeSaved": "Lokale modus opgeslagen",
+  "profileSnackTravelingModeSaved": "Reismodus opgeslagen",
   "profilePreferencesBudgetStyle": "Budgetstijl",
   "profilePreferencesSocialVibe": "Sociale vibe",
   "profilePreferencesFoodPreferences": "Voedselvoorkeuren",
@@ -425,6 +563,14 @@
   "profileAgeGroup40s": "40er avonturier",
   "profileAgeGroup50s": "50er avonturier",
   "profileAgeGroup55Plus": "55+ avonturier",
+  "profileAgeGroupGenericSuffix": "{ageGroup} avonturier",
+  "@profileAgeGroupGenericSuffix": {
+    "placeholders": {
+      "ageGroup": {
+        "type": "String"
+      }
+    }
+  },
   "profileBudgetLow": "$ Budget",
   "profileBudgetMid": "$$ Gemiddeld",
   "profileBudgetHigh": "$$$ Luxe",
@@ -478,6 +624,80 @@
   "profileVibesAddMore": "Meer vibes toevoegen",
   "profileVibesSubtitle": "Kies tot 5 vibes die bij jou passen. We gebruiken ze om je aanbevelingen te personaliseren.",
   "profileVibesCurrentTitle": "JE HUIDIGE VIBES",
+  "profileEditPhotoOverlayLabel": "Wijzigen",
+  "profileEditLocationHintExamples": "Bijv. Rotterdam, Amsterdam...",
+  "preferencesScreenTitle": "Voorkeuren bewerken",
+  "prefSectionCommunicationStyle": "Communicatiestijl",
+  "prefSectionInterests": "Interesses",
+  "prefSectionSocialVibe": "Sociale vibe",
+  "prefSectionTravelStyles": "Reisstijlen",
+  "prefSectionFavoriteMoods": "Favoriete moods",
+  "prefSectionPlanningPace": "Planningstempo",
+  "prefSectionSelectedMoods": "Geselecteerde moods",
+  "prefCommFriendly": "Vriendelijk",
+  "prefCommPlayful": "Speels",
+  "prefCommCalm": "Rustig",
+  "prefCommPractical": "Praktisch",
+  "prefIntFood": "Eten",
+  "prefIntCulture": "Cultuur",
+  "prefIntNature": "Natuur",
+  "prefIntNightlife": "Nachtleven",
+  "prefIntShopping": "Winkelen",
+  "prefIntWellness": "Wellness",
+  "prefSocSolo": "Solo",
+  "prefSocSmallGroup": "Kleine groep",
+  "prefSocMix": "Mix",
+  "prefSocSocial": "Sociaal",
+  "prefTravelRelaxed": "Ontspannen",
+  "prefTravelAdventurous": "Avontuurlijk",
+  "prefTravelCultural": "Cultureel",
+  "prefTravelCityBreak": "Stedentrip",
+  "prefFavHappy": "Blij",
+  "prefFavAdventurous": "Avontuurlijk",
+  "prefFavCalm": "Rustig",
+  "prefFavRomantic": "Romantisch",
+  "prefFavEnergetic": "Energiek",
+  "prefPlanSameDay": "Zelfde dag planner",
+  "prefPlanWeekAhead": "Week vooruit planner",
+  "prefPlanSpontaneous": "Spontaan",
+  "prefSelHappy": "Blij",
+  "prefSelRelaxed": "Ontspannen",
+  "prefSelCultural": "Cultureel",
+  "prefSelRomantic": "Romantisch",
+  "prefSelEnergetic": "Energiek",
+  "prefSelCreative": "Creatief",
+  "profileVibeAdventurousName": "Avontuurlijk",
+  "profileVibeAdventurousDesc": "Spannende activiteiten & buitenavonturen",
+  "profileVibeChillName": "Chill",
+  "profileVibeChillDesc": "Ontspannen, laid-back ervaringen",
+  "profileVibeFoodieName": "Foodie",
+  "profileVibeFoodieDesc": "Culinaire ervaringen & uit eten",
+  "profileVibeSocialName": "Sociaal",
+  "profileVibeSocialDesc": "Mensen ontmoeten & sociale events",
+  "profileVibeCulturalName": "Cultureel",
+  "profileVibeCulturalDesc": "Musea, kunst & geschiedenis",
+  "profileVibeNatureName": "Natuur",
+  "profileVibeNatureDesc": "Parken, tuinen & buiten",
+  "profileVibeRomanticName": "Romantisch",
+  "profileVibeRomanticDesc": "Date nights & romantische plekken",
+  "profileVibeWellnessName": "Wellness",
+  "profileVibeWellnessDesc": "Spa, yoga & self-care",
+  "profileVibeNightlifeName": "Nachtleven",
+  "profileVibeNightlifeDesc": "Bars, clubs & avondplezier",
+  "profileVibeShoppingName": "Shoppen",
+  "profileVibeShoppingDesc": "Markten, boetieks & malls",
+  "profileVibeCreativeName": "Creatief",
+  "profileVibeCreativeDesc": "Ateliers & creatieve plekken",
+  "profileVibeSportyName": "Sportief",
+  "profileVibeSportyDesc": "Sport & fitness",
+  "profileGlobeYourJourney": "Jouw reis",
+  "profileGlobeDemoHint": "Demo — tik op een pin!",
+  "profileGlobePlacesVisitedCount": "{count} bezochte plekken",
+  "profileGlobeBadgeDemo": "Demo",
+  "profileGlobeControlRotate": "Draaien",
+  "profileGlobeControlPause": "Pauze",
+  "profileGlobeControlReset": "Reset",
+  "profileGlobeUnknownMood": "Onbekend",
   "shareProfileTitle": "Profiel delen",
   "shareProfileShareTextMy": "Bekijk mijn profiel op WanderMood! 🧳✨\n\n{url}",
   "shareProfileShareTextNamed": "Bekijk het profiel van {name} op WanderMood! 🧳✨\n\n{url}",
@@ -511,6 +731,42 @@
   "shareProfileLinkCopied": "Link gekopieerd!",
   "shareProfileQuickShare": "SNEL DELEN",
   "shareProfileLinkInfo": "Iedereen met deze link kan je openbare profiel bekijken. Je kunt je privacy-instellingen altijd wijzigen.",
+  "drawerYourJourney": "Jouw reis",
+  "drawerNavigation": "Navigatie",
+  "drawerSettings": "Instellingen",
+  "drawerAccount": "Account",
+  "drawerMoodHistory": "Mood-geschiedenis",
+  "drawerSavedPlaces": "Opgeslagen plekken",
+  "drawerMyAgenda": "Mijn agenda",
+  "drawerMyBookings": "Mijn boekingen",
+  "drawerAppSettings": "App-instellingen",
+  "drawerNotifications": "Meldingen",
+  "drawerLanguage": "Taal",
+  "drawerHelpSupport": "Help & ondersteuning",
+  "drawerProfile": "Profiel",
+  "drawerLogOut": "Uitloggen",
+  "drawerErrorLoadingProfile": "Fout bij laden van profiel",
+  "drawerErrorSigningOut": "Fout bij uitloggen: {error}",
+  "@drawerErrorSigningOut": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "drawerNewExplorer": "Nieuwe ontdekker",
+  "drawerMasterWanderer": "Meesterzwerver",
+  "drawerAdventureExpert": "Avontuur-expert",
+  "drawerSeasonedExplorer": "Ervaren ontdekker",
+  "drawerTravelEnthusiast": "Reisliefhebber",
+  "drawerDayStreak": "{count} dagen op rij",
+  "@drawerDayStreak": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "notificationsMethodsTitle": "Meldingsmethoden",
   "notificationsPushTitle": "Pushmeldingen",
   "notificationsPushSubtitle": "Ontvang pushmeldingen op dit apparaat",
@@ -560,6 +816,7 @@
   "subscriptionFeatureAdvancedMoodMatching": "Geavanceerde mood-matching",
   "subscriptionFeaturePrioritySupport": "Prioriteitsondersteuning",
   "subscriptionFeatureNoAds": "Geen advertenties",
+  "subscriptionFeatureEarlyAccess": "Vroege toegang tot nieuwe functies",
   "subscriptionUpgradeCta": "Upgrade voor €4,99 per maand",
   "dataStorageTitle": "Data & opslag",
   "dataStorageStorageUsedLabel": "Gebruikte opslag",
@@ -593,6 +850,145 @@
   "helpSupportTermsSubtitle": "Voorwaarden en regels",
   "helpSupportEmailAddress": "support@wandermood.com",
   "helpSupportEmailSubject": "WanderMood support",
+  "helpSupportEmailSupportTitle": "E-mail support",
+  "settingsLocationChangeCta": "Wijzigen",
+  "savedPlacesScreenTitle": "Opgeslagen plekken",
+  "savedPlacesTabAllSaved": "Alles",
+  "savedPlacesTabCollections": "Collecties",
+  "savedPlacesEmptyTitle": "Nog geen opgeslagen plekken",
+  "savedPlacesEmptyBody": "Tik op het bladwijzer-icoon bij een plek in Ontdekken om die hier te bewaren.",
+  "savedPlacesHoldToCollect": "Lang indrukken om te verzamelen",
+  "savedPlacesSavedPrefix": "Opgeslagen {when}",
+  "@savedPlacesSavedPrefix": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "savedPlacesTimeJustNow": "zojuist",
+  "savedPlacesTimeHoursAgo": "{count} u geleden",
+  "@savedPlacesTimeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "savedPlacesTimeYesterday": "gisteren",
+  "savedPlacesTimeDaysAgo": "{count} d geleden",
+  "@savedPlacesTimeDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "savedPlacesPlaceCountOne": "{count} plek",
+  "@savedPlacesPlaceCountOne": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "savedPlacesPlaceCountMany": "{count} plekken",
+  "@savedPlacesPlaceCountMany": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "savedPlacesNewCollection": "Nieuwe collectie",
+  "savedPlacesNewCollectionSubtitle": "Groepeer je saves",
+  "savedPlacesAddToCollectionTitle": "Toevoegen aan collectie",
+  "savedPlacesNoCollectionsHint": "Nog geen collecties. Maak er een op het tabblad Collecties.",
+  "savedPlacesPlacesCount": "{count} plekken",
+  "@savedPlacesPlacesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "savedPlacesAddedToCollection": "Toegevoegd aan {name}",
+  "@savedPlacesAddedToCollection": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "savedPlacesActionAddToMyDay": "Toevoegen aan Mijn dag",
+  "savedPlacesActionAddToCollection": "Toevoegen aan collectie",
+  "savedPlacesActionViewDetails": "Details bekijken",
+  "savedPlacesPlanSheetTitle": "Toevoegen aan Mijn dag",
+  "savedPlacesPickDate": "Kies datum",
+  "savedPlacesSelectedDate": "Geselecteerd: {date}",
+  "@savedPlacesSelectedDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "locationPickerTitle": "Locatie kiezen",
+  "locationPickerSearchHint": "Zoek een stad of locatie…",
+  "locationPickerEmptyPrompt": "Begin met typen om te zoeken",
+  "locationPickerNoResults": "Geen locaties gevonden",
+  "locationPickerToastUpdated": "Locatie bijgewerkt naar {place}",
+  "@locationPickerToastUpdated": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "locationPickerToastError": "Fout bij opslaan locatie: {error}",
+  "@locationPickerToastError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsPrivacyScreenTitle": "Privacy",
+  "privacyProfileVisibilitySection": "Profielzichtbaarheid",
+  "privacyVisibilityPublic": "Openbaar",
+  "privacyVisibilityPublicSub": "Iedereen kan je profiel zien",
+  "privacyVisibilityFriends": "Alleen vrienden",
+  "privacyVisibilityFriendsSub": "Alleen je vrienden kunnen zien",
+  "privacyVisibilityPrivate": "Privé",
+  "privacyVisibilityPrivateSub": "Alleen jij kunt zien",
+  "privacyWhatOthersSeeSection": "Wat anderen zien",
+  "privacyShowEmailLabel": "E-mailadres tonen",
+  "privacyShowAgeLabel": "Leeftijd tonen",
+  "privacyToastVisibilityUpdated": "Profielzichtbaarheid bijgewerkt",
+  "privacyToastError": "Fout: {error}",
+  "@privacyToastError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "privacyToastEmailVisible": "E-mail is zichtbaar voor anderen",
+  "privacyToastEmailHidden": "E-mail is nu verborgen",
+  "privacyToastAgeVisible": "Leeftijd is zichtbaar voor anderen",
+  "privacyToastAgeHidden": "Leeftijd is nu verborgen",
+  "languageNameEn": "Engels",
+  "languageNativeEn": "English",
+  "languageNameNl": "Nederlands",
+  "languageNativeNl": "Nederlands",
+  "languageNameEs": "Spaans",
+  "languageNativeEs": "Español",
+  "languageNameFr": "Frans",
+  "languageNativeFr": "Français",
+  "languageNameDe": "Duits",
+  "languageNativeDe": "Deutsch",
+  "languageNameIt": "Italiaans",
+  "languageNativeIt": "Italiano",
   "prefCommunicationTitle": "Hoe wil je dat ik tegen je praat? 💬",
   "prefCommunicationIntro": "Om onze reis samen leuker te maken, wil ik graag weten hoe ik het beste met je kan communiceren.",
   "prefCommunicationSubtitle": "Zo kan ik mijn toon en stijl perfect op jouw voorkeuren afstemmen! 🎯",
@@ -1008,11 +1404,68 @@
   "myDayChatWithMoodyTitle": "Chat met Moody",
   "myDayChatWithMoodyComingSoon": "Binnenkort! Moody helpt je met dagplanning en suggesties op basis van je mood en voorkeuren.",
   "myDayHeroActiveSubtitle": "Je bent er nu mee bezig.",
-  "drawerMyAgenda": "Mijn agenda",
   "myDayUnableLoadActivities": "Activiteiten konden niet worden geladen",
   "navMyDay": "Mijn Dag",
   "navExplore": "Ontdek",
   "navProfile": "Profiel",
+  "navMoody": "Moody",
+  "myDayStatusTitleRightNow": "Nu bezig",
+  "myDayStatusTitleUpNext": "Straks",
+  "myDayStatusTitleAllDone": "✅ Klaar",
+  "myDayStatusTitleFreeTime": "📅 VRIJE TIJD",
+  "myDayStatusDescActive": "Je bent er! Tik op Klaar als je klaar bent.",
+  "myDayStatusDescUpcomingMorning": "Gepland voor de ochtend · tik op \"Ik ben er\" als je arriveert",
+  "myDayStatusDescUpcomingAfternoon": "Gepland voor de middag · tik op \"Ik ben er\" als je arriveert",
+  "myDayStatusDescUpcomingEvening": "Gepland voor de avond · tik op \"Ik ben er\" als je arriveert",
+  "myDayStatusDescCompleted": "Mooi! Je hebt alles afgerond.",
+  "myDayPeriodMorning": "Ochtend",
+  "myDayPeriodAfternoon": "Middag",
+  "myDayPeriodEvening": "Avond",
+  "myDayFreeTimeSuggestionMorning": "Perfect om je dag energiek te beginnen",
+  "myDayFreeTimeSuggestionAfternoon": "Tijd om te ontdekken",
+  "myDayFreeTimeSuggestionEvening": "Kom tot rust met iets bijzonders",
+  "myDayTimelineActivityCount": "{count, plural, one{1 activiteit} other{{count} activiteiten}}",
+  "@myDayTimelineActivityCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "myDayTimelineAllDone": "Klaar",
+  "myDayTimelineSectionComplete": "Goed gedaan, deze sectie is af!",
+  "myDayTimelineTapForDetails": "Tik voor details",
+  "myDayTimelinePrimaryImHere": "Ik ben er",
+  "myDayTimelinePrimaryDone": "Klaar",
+  "myDayTimelinePrimaryReview": "Beoordelen",
+  "myDayTimelinePrimaryReviewed": "Beoordeeld",
+  "myDayTimelineStatusImHere": "IK BEN ER",
+  "myDayTimelineStatusPlanned": "GEPLAND",
+  "myDayTimelineStatusDone": "KLAAR",
+  "myDayActivityFallbackLabel": "Activiteit",
+  "myDayExecutionHeroYoureHereBadge": "Je bent er!",
+  "myDayExecutionHeroInProgressBadge": "BEZIG",
+  "myDayExecutionHeroActiveHint": "Geniet je ervan? Tik op Klaar als je verder wilt.",
+  "myDayExecutionHeroReviewedAt": "Beoordeeld om {time}",
+  "@myDayExecutionHeroReviewedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "myDayExecutionHeroCompletedToday": "Vandaag afgerond",
+  "myDayExecutionHeroBadgeReviewedCaps": "BEOORDEELD",
+  "myDayExecutionHeroBadgeReadyToReviewCaps": "KLAAR OM TE BEOORDELEN",
+  "myDayExecutionHeroReviewCaptureHint": "Leg vast hoe het voelde terwijl het nog vers is.",
+  "myDayExecutionHeroUpNextBadge": "STRAKS",
+  "myDayExecutionHeroTapImHereWhenArrive": "Tik op \"Ik ben er\" zodra je aankomt.",
+  "myDayTimelineSectionMorningTitle": "🌅 Ochtend",
+  "myDayTimelineSectionMorningSubtitle": "Begin je dag goed",
+  "myDayTimelineSectionAfternoonTitle": "🌞 Middag",
+  "myDayTimelineSectionAfternoonSubtitle": "Tijd voor avontuur",
+  "myDayTimelineSectionEveningTitle": "🌆 Avond",
+  "myDayTimelineSectionEveningSubtitle": "Kom tot rust en geniet",
   "myDayWeekendEmptyTitle": "Je weekend is nog leeg!",
   "myDayWeekendEmptySubtitle": "Wil je zaterdag of zondag alvast plannen?",
   "myDayWeekendSaturdayShort": "Za {day}",
@@ -1027,6 +1480,53 @@
   "bookingViewAction": "Bekijken",
   "bookingErrorSaving": "Fout bij opslaan boeking: {error}",
   "gygCodeCopied": "Code gekopieerd 💚",
+  "placeCardSeeActivity": "Bekijk activiteit",
+  "placeCardPriceVaries": "Prijs varieert",
+  "gygEdviennePicksInCity": "✨ Edvienne's Picks in {city}",
+  "@gygEdviennePicksInCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "gygMapCompactTitle": "Edvienne's Picks — {city}",
+  "@gygMapCompactTitle": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "gygMapCompactSubtitle": "Tik om GetYourGuide & korting te openen",
+  "gygPrimaryTitleInCity": "✨ Edvienne's Picks in {city}",
+  "@gygPrimaryTitleInCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "gygTagline48h": "Dit zou ik zelf boeken als ik hier 48 uur was 🤍",
+  "gygOpenInApp": "Open in GetYourGuide-app (met korting)",
+  "gygOpenInWeb": "Open in browser",
+  "gygPromoGift": "🎁 Klein extraatje van mij: {code}",
+  "@gygPromoGift": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "gygPromoAppOnly": "Alleen geldig in de GetYourGuide-app.",
+  "gygCopy": "Kopieer",
+  "gygPoweredBy": "Mogelijk gemaakt door GetYourGuide",
+  "gygComingSoonBody": "Ik ben nog aan het ontdekken wat hier hoort 🤍",
+  "gygCategoryFoodDrink": "🍴 Eten & drinken",
+  "gygCategoryBoatTours": "⛵ Boottochten",
+  "gygCategoryCulture": "🎭 Cultuur",
+  "gygCategoryAdventure": "🧗 Avontuur",
+  "gygCategoryLuxury": "✨ Luxe",
   "socialNewMessageComingSoon": "Nieuwe berichtfunctie komt binnenkort!",
   "socialSearchMessagesHint": "Zoek berichten",
   "socialCallComingSoon": "Belfunctie komt binnenkort!",
@@ -1136,11 +1636,11 @@
   "myDayAddSignInRequired": "Sign in to add activities.",
   "myDayAddFailedTryAgain": "Could not add activity. Please try again.",
   "activityOptionsViewAction": "View",
-  "agendaChooseActivityForDay": "Choose an activity to add for {day}.",
-  "agendaLoadingActivities": "Loading activities...",
-  "agendaErrorLoadingActivities": "Error loading activities",
-  "agendaPleaseTryAgainLater": "Please try again later",
-  "agendaNoActivitiesScheduled": "No activities scheduled",
+  "agendaChooseActivityForDay": "Kies een activiteit om toe te voegen voor {day}.",
+  "agendaLoadingActivities": "Activiteiten laden...",
+  "agendaErrorLoadingActivities": "Fout bij laden van activiteiten",
+  "agendaPleaseTryAgainLater": "Probeer het later opnieuw",
+  "agendaNoActivitiesScheduled": "Geen activiteiten gepland",
   "socialGetDirections": "Get directions",
   "socialShare": "Share",
   "socialOpenDirectionsFailed": "Unable to open directions",
@@ -1148,9 +1648,9 @@
   "socialDeleteFailedTryAgain": "Delete failed. Please try again.",
   "socialShareActivityDetailsCopied": "Activity details copied to share",
   "exploreNoPlacesFound": "No places found",
-  "agendaNoActivitiesPlannedYet": "You do not have any planned activities in your agenda yet",
-  "agendaDeleteMissingId": "Could not delete activity (missing id).",
-  "agendaRemovedFromPlanner": "{title} removed from your planner.",
+  "agendaNoActivitiesPlannedYet": "Je hebt nog geen geplande activiteiten in je agenda",
+  "agendaDeleteMissingId": "Kan activiteit niet verwijderen (ontbrekende id).",
+  "agendaRemovedFromPlanner": "{title} is uit je planner verwijderd.",
   "dailyScheduleTitle": "Daily Schedule",
   "dailyScheduleToday": "Today",
   "dailyScheduleTomorrow": "Tomorrow",
@@ -1223,7 +1723,13 @@
   "myDayOpenGoogleMaps": "Google Maps",
   "myDayOpenAppleMaps": "Apple Maps",
   "agendaTitle": "Mijn Agenda",
+  "agendaStatusDone": "KLAAR",
+  "agendaStatusNow": "NU",
+  "agendaStatusUpcoming": "KOMT ERAAN",
   "agendaStatusCancelled": "GEANNULEERD",
+  "agendaHeaderToday": "Vandaag",
+  "agendaHeaderTomorrow": "Morgen",
+  "agendaHeaderYesterday": "Gisteren",
   "agendaTodayEmpty": "Vandaag is nog leeg",
   "agendaTodaySubtitle": "Laat Moody je dag plannen op basis van je stemming",
   "agendaTomorrowEmpty": "Morgen is nog vrij",
@@ -1237,6 +1743,9 @@
   "agendaUntitledActivity": "Naamloze activiteit",
   "agendaNoDescription": "Geen beschrijving beschikbaar",
   "agendaLocationTBD": "Locatie onbekend",
+  "agendaDeleteDialogBody": "“{title}” wordt uit je planner verwijderd.",
+  "agendaDeleteDialogBack": "Terug",
+  "agendaDeleteDialogConfirm": "Verwijderen",
   "exploreCategoryAll": "Alles",
   "exploreCategoryPopular": "Populair",
   "exploreCategoryAccommodations": "Verblijf",
@@ -1284,6 +1793,78 @@
   "exploreFilterBlackOwned": "Black-owned",
   "exploreFilterPriceRange": "Prijsbereik (€)",
   "exploreFilterMaxDistance": "Maximale afstand (km)",
+  "exploreErrorLocationRequiredTitle": "Locatie vereist",
+  "exploreErrorLoadingPlacesTitle": "Fout bij laden van plekken",
+  "exploreErrorLocationBody": "Schakel locatievoorzieningen in of stel je locatie in via instellingen om plekken in de buurt te vinden.",
+  "exploreErrorEnableLocation": "Locatie inschakelen",
+  "exploreAdvancedFiltersTitle": "Geavanceerde filters",
+  "exploreFiltersActiveCount": "{count, plural, one{1 actieve filter} other{{count} actieve filters}}",
+  "@exploreFiltersActiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreMoodyHintFiltersActive": "Nice! {count, plural, one{1 actieve filter} other{{count} actieve filters}} — ik onthoud het.",
+  "@exploreMoodyHintFiltersActive": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreMoodyHintFiltersIntro": "Hé! Ik ben Moody. Gebruik filters om precies te vinden wat bij je vibe past — dieet, toegankelijkheid, fotoplekken en meer.",
+  "exploreClearAll": "Alles wissen",
+  "exploreSectionQuickSuggestions": "Snelle suggesties",
+  "exploreSectionDietaryPreferences": "Dieetvoorkeuren",
+  "exploreSectionAccessibilityInclusion": "Toegankelijkheid & inclusie",
+  "exploreSectionComfortConvenience": "Comfort & gemak",
+  "exploreSectionPhotoAesthetic": "Foto & esthetiek",
+  "exploreSaveFiltersWithCount": "{count} filters opslaan",
+  "@exploreSaveFiltersWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreSaveFilters": "Filters opslaan",
+  "exploreQuickFilters": "Snelle filters",
+  "exploreSearchHint": "Zoek activiteiten, restaurants, musea...",
+  "exploreCategoryChipOutdoor": "Buiten",
+  "exploreCategoryChipShopping": "Winkelen",
+  "exploreCategoryChipNightlife": "Nachtleven",
+  "explorePriceLevelBudget": "Budget",
+  "explorePriceLevelModerate": "Gemiddeld",
+  "explorePriceLevelExpensive": "Duur",
+  "explorePriceLevelLuxury": "Luxe",
+  "exploreMoodAdventure": "Avontuur",
+  "exploreMoodCreative": "Creatief",
+  "exploreMoodRelaxed": "Ontspannen",
+  "exploreMoodMindful": "Mindful",
+  "exploreMoodRomantic": "Romantisch",
+  "exploreAddToMyDayDayLabel": "Dag",
+  "exploreAddToMyDayPickDate": "Kies datum",
+  "exploreAddToMyDaySelectedDate": "Geselecteerd: {date}",
+  "@exploreAddToMyDaySelectedDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreAddToMyDayTimeLabel": "Tijd",
+  "exploreDatePickerHelp": "Kies een dag",
+  "exploreDatePickerConfirm": "Kies",
+  "explorePlaceDescriptionFallback": "Ontdek {name}",
+  "@explorePlaceDescriptionFallback": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "chatSheetMoodyName": "Moody",
   "chatSheetErrorMessage": "Oeps! Ik heb momenteel verbindingsproblemen. Kun je het opnieuw proberen? 🤔",
   "chatSheetEmptyStateBody": "Ik ken de stad als mijn broekzak! Vertel me je stemming en ik maak de perfecte dag voor je. Of je je avontuurlijk voelt, romantisch, of gewoon wilt chilllen - ik heb je! 🎯",
@@ -1486,6 +2067,7 @@
   "deleteAccountActivities": "Alle opgeslagen activiteiten",
   "deleteAccountAchievements": "Jouw prestaties en voortgang",
   "deleteAccountPhotos": "Alle foto's en herinneringen",
+  "deleteAccountConfirmKeyword": "DELETE",
   "deleteAccountTypeToConfirm": "Typ \"DELETE\" ter bevestiging",
   "deleteAccountTypeIncorrect": "Typ DELETE ter bevestiging",
   "deleteAccountFinalTitle": "Definitieve bevestiging",
@@ -1495,6 +2077,44 @@
   "deleteAccountDeleteButton": "Mijn account permanent verwijderen",
   "deleteAccountSuccess": "Account succesvol verwijderd",
   "deleteAccountError": "Fout bij verwijderen account",
+  "settingsNotificationsSectionTitle": "MELDINGEN",
+  "settingsNotificationsTripRemindersLabel": "Tripherinneringen",
+  "settingsNotificationsTripRemindersSubtitle": "Herinneringen voor geplande activiteiten",
+  "settingsNotificationsWeatherUpdatesLabel": "Weer-updates",
+  "settingsNotificationsWeatherUpdatesSubtitle": "Updates over het weer op jouw bestemming",
+  "premiumUpgradeScreenTitle": "Upgrade naar Premium",
+  "premiumMonthlyPlanLabel": "Maandabonnement",
+  "premiumMonthlyPriceLabel": "€4,99/maand",
+  "premiumBestValueBadge": "Beste keuze",
+  "premiumPaymentMethodTitle": "Betaalmethode",
+  "premiumPaymentMethodCard": "Credit-/debitcard",
+  "premiumPaymentMethodPaypal": "PayPal",
+  "premiumPaymentMethodApplePay": "Apple Pay",
+  "premiumSubscribeCta": "Abonneren voor €4,99/maand",
+  "premiumSecurityNotice": "Je betaalgegevens zijn versleuteld en veilig",
+  "premiumToastActivated": "Premium-abonnement geactiveerd!",
+  "premiumToastPaymentFailed": "Betaling mislukt: {error}",
+  "@premiumToastPaymentFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "premiumCardDetailsTitle": "Kaartgegevens",
+  "premiumCardNumberLabel": "Kaartnummer",
+  "premiumCardNumberHint": "1234 5678 9012 3456",
+  "premiumExpiryLabel": "Vervaldatum (MM/JJ)",
+  "premiumExpiryHint": "12/25",
+  "premiumCvvLabel": "CVV",
+  "premiumCvvHint": "123",
+  "premiumCardholderNameLabel": "Naam kaarthouder",
+  "premiumCardholderNameHint": "Jan Jansen",
+  "premiumValidationRequired": "Verplicht",
+  "premiumValidationCardNumberRequired": "Kaartnummer is verplicht",
+  "premiumValidationInvalidCardNumber": "Ongeldig kaartnummer",
+  "premiumValidationInvalidCvv": "Ongeldige CVV",
+  "premiumValidationNameRequired": "Naam is verplicht",
   "placeDetailAboutThisPlace": "Over deze plek",
   "placeDetailGoodToKnow": "Goed om te weten",
   "placeDetailDurationLabel": "Duur",
@@ -1535,5 +2155,81 @@
   "moodyHubFallbackAiMessage": "Jouw dag is klaar, Moody is er voor je 🌟",
   "moodyHubActivitySingular": "activiteit",
   "moodyHubActivityPlural": "activiteiten",
-  "moodyHubPlanForWhen": "Voor wanneer plan je?"
+  "moodyHubPlanForWhen": "Voor wanneer plan je?",
+  "moodyHubListComma": ", ",
+  "moodyHubListAnd": " en ",
+  "moodyReviewTitle": "Snelle review",
+  "moodyReviewHowWasIt": "Hoe was het?",
+  "moodyReviewStarsFeedback5": "🌟 Geweldig!",
+  "moodyReviewStarsFeedback4": "😊 Heel goed!",
+  "moodyReviewStarsFeedback3": "👍 Best goed!",
+  "moodyReviewStarsFeedback2": "😐 Gaat wel",
+  "moodyReviewStarsFeedback1": "😞 Niet zo leuk",
+  "moodyReviewYourVibe": "Jouw vibe",
+  "moodyReviewVibeAmazing": "Geweldig",
+  "moodyReviewVibeGood": "Goed",
+  "moodyReviewVibeOkay": "Oké",
+  "moodyReviewVibeMeh": "Meh",
+  "moodyReviewOptionalNote": "Nog iets? (optioneel)",
+  "moodyReviewNoteHint": "Wat viel op? Tips voor anderen?",
+  "moodyReviewNoteHelper": "💡 Zo help je anderen topplekken te vinden!",
+  "moodyReviewSave": "Review opslaan",
+  "moodyReviewNeedStars": "Geef sterren om door te gaan",
+  "moodyReviewHelpsMoody": "Jouw feedback helpt Moody leren!",
+  "moodyReviewThanksToast": "Bedankt voor je review! 🚀",
+  "getReadyChecklistItemReady": "Klaar om te gaan!",
+  "getReadyShareInvite": "Zin om mee te gaan naar {title} rond {time} – gepland met WanderMood.",
+  "@getReadyShareInvite": {
+    "placeholders": {
+      "title": {},
+      "time": {}
+    }
+  },
+  "getReadyCalendarEventTitleFallback": "WanderMood-activiteit",
+  "getReadyCalendarEventDetailsFallback": "Gepland met WanderMood",
+  "getReadyShareTitleFallback": "deze plek",
+  "getReadyCalendarOpenHint": "{label} – open in browser of app",
+  "@getReadyCalendarOpenHint": {
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "getReadyPlaylistSearchQuery": "Vrolijke {theme} beats",
+  "@getReadyPlaylistSearchQuery": {
+    "placeholders": {
+      "theme": {}
+    }
+  },
+  "getReadyPlaylistThemeFoodie": "Foodie",
+  "getReadyPlaylistThemeCultural": "Cultureel",
+  "getReadyPlaylistThemeShopping": "Shoppen",
+  "getReadyPlaylistThemeOutdoor": "Buiten",
+  "getReadyPlaylistThemeAdventure": "Avontuur",
+  "getReadyMoodFragmentAdventure": "avontuur",
+  "getReadyMoodFragmentRelaxed": "ontspanning",
+  "getReadyMoodFragmentEnergetic": "energie",
+  "getReadyMoodFragmentRomantic": "romantiek",
+  "getReadyMoodFragmentCultural": "cultuur",
+  "getReadyMoodFragmentExplorer": "ontdekking",
+  "getReadyMoodFragmentFoodie": "foodie",
+  "moodHomeAlreadyPlannedTitle": "{dayName} is al gepland!",
+  "@moodHomeAlreadyPlannedTitle": {
+    "placeholders": {
+      "dayName": {
+        "type": "String"
+      }
+    }
+  },
+  "moodHomeActivitiesReadyCount": "{count, plural, one{1 activiteit staat klaar voor je.} other{{count} activiteiten staan klaar voor je.}}",
+  "@moodHomeActivitiesReadyCount": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "moodHomeViewPlan": "Bekijk plan",
+  "moodHomePlanAgain": "Opnieuw plannen",
+  "planLoadingRotating2": "Je dag wordt samengesteld…",
+  "planLoadingRotating3": "Bijna klaar — je plan is bijna gereed ✨"
 }

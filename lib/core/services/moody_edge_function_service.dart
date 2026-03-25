@@ -219,6 +219,7 @@ class MoodyEdgeFunctionService {
     required double latitude,
     required double longitude,
     Map<String, dynamic>? filters,
+    String? languageCode,
   }) async {
     await AuthHelper.ensureValidSession();
     await _waitForSessionReady();
@@ -247,6 +248,8 @@ class MoodyEdgeFunctionService {
         'is_local': isLocal,
         'coordinates': {'lat': latitude, 'lng': longitude},
         'filters': filters ?? <String, dynamic>{},
+        if (languageCode != null && languageCode.isNotEmpty)
+          'language_code': languageCode,
       },
       options: Options(
         headers: {

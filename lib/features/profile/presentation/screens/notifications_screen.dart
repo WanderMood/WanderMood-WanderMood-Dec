@@ -87,7 +87,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'MELDINGEN'.toUpperCase(),
+                  l10n.settingsNotificationsSectionTitle.toUpperCase(),
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
@@ -97,8 +97,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 ),
                 const SizedBox(height: 12),
                 _buildToggleOption(
-                  label: 'Trip reminders',
-                  subtitle: 'Herinneringen voor geplande activiteiten',
+                  label: l10n.settingsNotificationsTripRemindersLabel,
+                  subtitle: l10n.settingsNotificationsTripRemindersSubtitle,
                   checked: _tripReminders,
                   onChange: () async {
                     final next = !_tripReminders;
@@ -111,8 +111,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 ),
                 const SizedBox(height: 12),
                 _buildToggleOption(
-                  label: 'Weer-updates',
-                  subtitle: 'Updates over het weer op jouw bestemming',
+                  label: l10n.settingsNotificationsWeatherUpdatesLabel,
+                  subtitle: l10n.settingsNotificationsWeatherUpdatesSubtitle,
                   checked: _weatherUpdates,
                   onChange: () async {
                     final next = !_weatherUpdates;

@@ -36,13 +36,13 @@ class _AgendaCardStatus {
 _AgendaCardStatus _agendaCardStatusFor(String? status, AppLocalizations l10n) {
   switch (status) {
     case 'completed':
-      return const _AgendaCardStatus(_wmForest, 'DONE', Icons.check_circle_rounded);
+      return _AgendaCardStatus(_wmForest, l10n.agendaStatusDone, Icons.check_circle_rounded);
     case 'cancelled':
       return _AgendaCardStatus(const Color(0xFFC62828), l10n.agendaStatusCancelled, Icons.cancel_outlined);
     case 'active':
-      return const _AgendaCardStatus(_wmSunset, 'NOW', Icons.play_circle_filled_rounded);
+      return _AgendaCardStatus(_wmSunset, l10n.agendaStatusNow, Icons.play_circle_filled_rounded);
     default:
-      return const _AgendaCardStatus(_wmSkyDeep, 'UPCOMING', Icons.schedule_rounded);
+      return _AgendaCardStatus(_wmSkyDeep, l10n.agendaStatusUpcoming, Icons.schedule_rounded);
   }
 }
 
@@ -184,6 +184,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
             boxShadow: const [],
           ),
           child: TableCalendar<Map<String, dynamic>>(
+            locale: Localizations.localeOf(context).toString(),
             firstDay: DateTime.utc(2020, 1, 1),
             lastDay: DateTime.utc(2030, 12, 31),
             focusedDay: _focusedDay,
@@ -1325,22 +1326,33 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   }
   
   String _formatDateHeader(DateTime date) {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final tomorrow = DateTime(now.year, now.month, now.day + 1);
     final yesterday = DateTime(now.year, now.month, now.day - 1);
     
     if (isSameDay(date, now)) {
-      return 'Today';
+      return l10n.agendaHeaderToday;
     } else if (isSameDay(date, tomorrow)) {
-      return 'Tomorrow';
+      return l10n.agendaHeaderTomorrow;
     } else if (isSameDay(date, yesterday)) {
-      return 'Yesterday';
+      return l10n.agendaHeaderYesterday;
     } else {
-      const months = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      final shortMonths = [
+        l10n.monthJan,
+        l10n.monthFeb,
+        l10n.monthMar,
+        l10n.monthApr,
+        l10n.monthMay,
+        l10n.monthJun,
+        l10n.monthJul,
+        l10n.monthAug,
+        l10n.monthSep,
+        l10n.monthOct,
+        l10n.monthNov,
+        l10n.monthDec,
       ];
-      return '${months[date.month - 1]} ${date.day}';
+      return '${shortMonths[date.month - 1]} ${date.day}';
     }
   }
 
@@ -1370,20 +1382,22 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       if (availableMaps.isNotEmpty && hasCoords) {
         await availableMaps.first.showMarker(
           coords: Coords(lat, lng),
-          title: activity['title']?.toString() ?? 'Activity',
+          title: activity['title']?.toString() ?? AppLocalizations.of(context)!.agendaUntitledActivity,
           description: activity['description']?.toString() ?? '',
         );
         return;
       }
 
-      final query = hasCoords ? '$lat,$lng' : (activity['title'] ?? 'Activity').toString();
+      final query = hasCoords
+          ? '$lat,$lng'
+          : (activity['title'] ?? AppLocalizations.of(context)!.agendaUntitledActivity).toString();
       final url = Uri.parse(
         'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(query)}',
       );
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
-        throw Exception('Could not open maps');
+        throw Exception(AppLocalizations.of(context)!.socialOpenDirectionsFailed);
       }
     } catch (_) {
       if (!mounted) return;
@@ -1410,14 +1424,14 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
           ),
         ),
         content: Text(
-          '“$title” wordt uit je planner gehaald.',
+          AppLocalizations.of(context)!.agendaDeleteDialogBody(title),
           style: GoogleFonts.poppins(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(
-              'Terug',
+              AppLocalizations.of(context)!.agendaDeleteDialogBack,
               style: GoogleFonts.poppins(color: Colors.grey[600]),
             ),
           ),
@@ -1471,7 +1485,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
               ),
             ),
             child: Text(
-              'Verwijderen',
+              AppLocalizations.of(context)!.agendaDeleteDialogConfirm,
               style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,

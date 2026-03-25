@@ -25,15 +25,6 @@ const Set<String> _allowedCategoryTypes = {
   'adventure',
 };
 
-/// Type-to-display mapping for GYG link pills.
-const Map<String, String> _typeLabels = {
-  'food': '🍴 Food & drink',
-  'boat': '⛵ Boat tours',
-  'culture': '🎭 Culture',
-  'adventure': '🧗 Adventure',
-  'luxury': '✨ Luxury',
-};
-
 /// Curated "Edvienne's Picks" section with GetYourGuide links for booking activities.
 /// Renders below category chips on the Explore screen.
 class BookWithGygSection extends StatelessWidget {
@@ -52,6 +43,7 @@ class BookWithGygSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final displayCity = _capitalizeCity(cityName);
     final allLink = links.where((l) => l.type == 'all').firstOrNull;
     final categoryLinks =
@@ -60,7 +52,7 @@ class BookWithGygSection extends StatelessWidget {
     if (compactForMap) {
       return Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-        child: _buildMapCompactBar(context, displayCity),
+        child: _buildMapCompactBar(context, l10n, displayCity),
       );
     }
 
@@ -71,23 +63,27 @@ class BookWithGygSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (links.isEmpty) ...[
-            _buildComingSoonCard(context, displayCity),
+            _buildComingSoonCard(context, l10n, displayCity),
           ] else ...[
             if (allLink != null)
-              _buildPrimaryCard(context, displayCity, allLink),
+              _buildPrimaryCard(context, l10n, displayCity, allLink),
             if (categoryLinks.isNotEmpty) ...[
               const SizedBox(height: 12),
-              _buildCategoryChips(context, categoryLinks),
+              _buildCategoryChips(context, l10n, categoryLinks),
             ],
           ],
           const SizedBox(height: 8),
-          _buildPoweredByLabel(context),
+          _buildPoweredByLabel(context, l10n),
         ],
       ),
     );
   }
 
-  Widget _buildMapCompactBar(BuildContext context, String displayCity) {
+  Widget _buildMapCompactBar(
+    BuildContext context,
+    AppLocalizations l10n,
+    String displayCity,
+  ) {
     void openSheet() {
       showModalBottomSheet<void>(
         context: context,
@@ -158,7 +154,7 @@ class BookWithGygSection extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Edvienne\'s Picks — $displayCity',
+                    l10n.gygMapCompactTitle(displayCity),
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -211,7 +207,7 @@ class BookWithGygSection extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Edvienne\'s Picks in $displayCity',
+                      l10n.gygEdviennePicksInCity(displayCity),
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -219,7 +215,7 @@ class BookWithGygSection extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Tik om GYG & korting te openen',
+                      l10n.gygMapCompactSubtitle,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Colors.white.withOpacity(0.85),
@@ -243,7 +239,11 @@ class BookWithGygSection extends StatelessWidget {
     return city[0].toUpperCase() + city.substring(1).toLowerCase();
   }
 
-  Widget _buildComingSoonCard(BuildContext context, String displayCity) {
+  Widget _buildComingSoonCard(
+    BuildContext context,
+    AppLocalizations l10n,
+    String displayCity,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -263,7 +263,7 @@ class BookWithGygSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '✨ Edvienne\'s Picks in $displayCity',
+            l10n.gygEdviennePicksInCity(displayCity),
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -272,7 +272,7 @@ class BookWithGygSection extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Ik ben nog aan het ontdekken wat hier moet 🤍',
+            l10n.gygComingSoonBody,
             style: GoogleFonts.poppins(
               fontSize: 13,
               color: Colors.grey[500],
@@ -285,6 +285,7 @@ class BookWithGygSection extends StatelessWidget {
 
   Widget _buildPrimaryCard(
     BuildContext context,
+    AppLocalizations l10n,
     String displayCity,
     GygLink allLink,
   ) {
@@ -355,7 +356,7 @@ class BookWithGygSection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '✨ Edvienne\'s Picks in $displayCity',
+                    l10n.gygPrimaryTitleInCity(displayCity),
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -364,7 +365,7 @@ class BookWithGygSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Dit zou ik zelf boeken als ik hier 48 uur was 🤍',
+                    l10n.gygTagline48h,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: Colors.white.withOpacity(0.9),
@@ -383,7 +384,7 @@ class BookWithGygSection extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        'Open in GYG app (met korting)',
+                        l10n.gygOpenInApp,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           fontSize: 15,
@@ -406,7 +407,7 @@ class BookWithGygSection extends StatelessWidget {
                         border: Border.all(color: Colors.white, width: 1.5),
                       ),
                       child: Text(
-                        'Open in web',
+                        l10n.gygOpenInWeb,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           fontSize: 15,
@@ -432,7 +433,7 @@ class BookWithGygSection extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '🎁 Klein extraatje van mij: $_promoCode',
+                                l10n.gygPromoGift(_promoCode),
                                 style: GoogleFonts.poppins(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
@@ -441,7 +442,7 @@ class BookWithGygSection extends StatelessWidget {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Alleen geldig in de GetYourGuide app.',
+                                l10n.gygPromoAppOnly,
                                 style: GoogleFonts.poppins(
                                   fontSize: 11,
                                   color: Colors.white.withOpacity(0.8),
@@ -467,7 +468,7 @@ class BookWithGygSection extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              'Kopieer',
+                              l10n.gygCopy,
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -488,12 +489,16 @@ class BookWithGygSection extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryChips(BuildContext context, List<GygLink> links) {
+  Widget _buildCategoryChips(
+    BuildContext context,
+    AppLocalizations l10n,
+    List<GygLink> links,
+  ) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: links.map((link) {
-        final label = _typeLabels[link.type] ?? link.type;
+        final label = _localizedGygCategory(l10n, link.type);
         return GestureDetector(
           onTap: () => _launchUrl(link.url),
           child: Container(
@@ -525,13 +530,13 @@ class BookWithGygSection extends StatelessWidget {
     );
   }
 
-  Widget _buildPoweredByLabel(BuildContext context) {
+  Widget _buildPoweredByLabel(BuildContext context, AppLocalizations l10n) {
     // v2: discrete caption footer (Explore SCREEN 6)
     const wmStone = Color(0xFF8C8780);
     return Align(
       alignment: Alignment.centerLeft,
       child: Text(
-        'Powered by GetYourGuide',
+        l10n.gygPoweredBy,
         style: GoogleFonts.poppins(
           fontSize: 11,
           height: 1.3,
@@ -541,6 +546,23 @@ class BookWithGygSection extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _localizedGygCategory(AppLocalizations l10n, String type) {
+    switch (type) {
+      case 'food':
+        return l10n.gygCategoryFoodDrink;
+      case 'boat':
+        return l10n.gygCategoryBoatTours;
+      case 'culture':
+        return l10n.gygCategoryCulture;
+      case 'adventure':
+        return l10n.gygCategoryAdventure;
+      case 'luxury':
+        return l10n.gygCategoryLuxury;
+      default:
+        return type;
+    }
   }
 
   Future<void> _launchUrl(String url) async {

@@ -17,6 +17,7 @@ import '../widgets/travel_mode_toggle.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import '../widgets/profile_stats_cards.dart';
+import '../utils/preference_chip_localization.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
@@ -179,9 +180,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   Future<void> _updateTravelMode(bool isLocal) async {
     await ref.read(currentUserProfileProvider.notifier).updateTravelMode(isLocal);
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
     showWanderMoodToast(
       context,
-      message: isLocal ? 'Lokale modus opgeslagen' : 'Traveling modus opgeslagen',
+      message:
+          isLocal ? l10n.profileSnackLocalModeSaved : l10n.profileSnackTravelingModeSaved,
     );
   }
 
@@ -940,6 +943,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   }
 
   Widget _buildPreferencesCard(BuildContext context, CurrentUserProfile profile) {
+    final l10n = AppLocalizations.of(context)!;
     final chips = <String>[
       if (_communicationStyle != null && _communicationStyle!.trim().isNotEmpty)
         _communicationStyle!,
@@ -965,7 +969,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Jouw voorkeuren',
+                l10n.profilePreferencesTitle,
                 style: GoogleFonts.poppins(
                   color: _wmCharcoal,
                   fontSize: 16,
@@ -980,7 +984,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   ref.read(currentUserProfileProvider.notifier).refresh();
                 },
                 child: Text(
-                  'Bewerk alles',
+                  l10n.profilePreferencesEditAll,
                   style: GoogleFonts.poppins(
                     color: _wmForest,
                     fontSize: 14,
@@ -1002,7 +1006,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             )
           else if (chips.isEmpty)
             Text(
-              'Nog geen voorkeuren ingesteld.',
+              l10n.profilePreferencesNoneSet,
               style: GoogleFonts.poppins(color: _wmStone, fontSize: 13),
             )
           else
@@ -1019,7 +1023,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         border: Border.all(color: _wmParchment, width: 0.8),
                       ),
                       child: Text(
-                        chip,
+                        localizedPreferenceChip(l10n, chip),
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -1098,8 +1102,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       return ageGroup;
     }
     
-    // Default: add "Adventurer" suffix
-    return '$ageGroup Adventurer';
+    // Default: localized suffix for unknown age-group strings
+    return l10n.profileAgeGroupGenericSuffix(ageGroup);
   }
 
   String _formatBudget(AppLocalizations l10n, String? budget) {

@@ -29,6 +29,7 @@ import 'package:wandermood/features/home/presentation/widgets/moody_character.da
 import 'package:wandermood/features/home/presentation/widgets/planner_activity_detail_sheet.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import '../widgets/travel_time_connector.dart';
+import 'package:wandermood/features/home/presentation/utils/my_day_status_l10n.dart';
 
 class DynamicMyDayScreen extends ConsumerStatefulWidget {
   const DynamicMyDayScreen({super.key});
@@ -651,7 +652,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         // Title (wmTitle — design system)
         Expanded(
           child: Text(
-            'My Day',
+            AppLocalizations.of(context)!.navMyDay,
             style: GoogleFonts.poppins(
               fontSize: 26,
               fontWeight: FontWeight.w700,
@@ -1166,6 +1167,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
   Widget _buildEnhancedStatusCard(Map<String, dynamic> status) {
     final l10n = AppLocalizations.of(context)!;
+    final type = status['type'] as String?;
+    final titleText = myDayStatusTitleForType(l10n, type);
+    final descriptionText = myDayStatusDescriptionForMap(l10n, status);
+    final subtitleText = type == 'free_time'
+        ? myDayPeriodShortLabel(l10n, status['period'] as String?)
+        : (status['subtitle'] as String? ?? '');
     Color primaryColor;
     Color backgroundColor;
     IconData statusIcon;
@@ -1231,7 +1238,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        status['title'],
+                        titleText,
                         style: GoogleFonts.museoModerno(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -1240,7 +1247,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        status['subtitle'],
+                        subtitleText,
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -1249,7 +1256,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        status['description'],
+                        descriptionText,
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           color: Colors.grey[600],
@@ -1278,7 +1285,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(24),
-                      onTap: () => _handleStatusAction(status['action2'], status),
+                      onTap: () => _handleStatusAction(status['action2'] as String, status),
                       child: Center(
                         child: Text(
                           isUpcoming ? l10n.myDayGetReadyButton : status['action2'],
@@ -1308,10 +1315,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(24),
-                              onTap: () => _handleStatusAction(status['action1'], status),
+                              onTap: () => _handleStatusAction(status['action1'] as String, status),
                               child: Center(
                                 child: Text(
-                                  status['action1'],
+                                  myDayActionButtonLabel(l10n, status['action1'] as String),
                                   style: GoogleFonts.poppins(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
@@ -1339,10 +1346,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(24),
-                              onTap: () => _handleStatusAction(status['action2'], status),
+                              onTap: () => _handleStatusAction(status['action2'] as String, status),
                               child: Center(
                                 child: Text(
-                                  status['action2'],
+                                  myDayActionButtonLabel(l10n, status['action2'] as String),
                                   style: GoogleFonts.poppins(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
@@ -1540,7 +1547,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            status['description'],
+                            l10n.myDayStatusDescActive,
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               color: Colors.white.withOpacity(0.9),
@@ -1669,6 +1676,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   List<Widget> _buildTimelineView(Map<String, List<EnhancedActivityData>> activities) {
+    final l10n = AppLocalizations.of(context)!;
     final hasMorning = activities['morning']?.isNotEmpty == true;
     final hasAfternoon = activities['afternoon']?.isNotEmpty == true;
     final hasEvening = activities['evening']?.isNotEmpty == true;
@@ -1681,14 +1689,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 ? 'evening'
                 : null;
 
-    // Build ordered list of populated sections for cross-section connectors.
-    final sections = [
-      if (hasMorning) activities['morning']!,
-      if (hasAfternoon) activities['afternoon']!,
-      if (hasEvening) activities['evening']!,
-    ];
-
-    Widget? _crossSectionConnector(List<EnhancedActivityData> from, List<EnhancedActivityData> to) {
+    Widget? crossSectionConnector(List<EnhancedActivityData> from, List<EnhancedActivityData> to) {
       final fromLoc = parseTravelLocation(from.last.rawData);
       final toLoc = parseTravelLocation(to.first.rawData);
       if (fromLoc == null || toLoc == null) return null;
@@ -1709,32 +1710,41 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
     if (hasMorning) {
       widgets.add(_buildTimelineSection(
-        '🌅 Morning', 'Start your day right', activities['morning']!,
+        'morning',
+        l10n.myDayTimelineSectionMorningTitle,
+        l10n.myDayTimelineSectionMorningSubtitle,
+        activities['morning']!,
         isFirstSection: firstVisibleSection == 'morning',
       ));
       if (hasAfternoon) {
-        final c = _crossSectionConnector(activities['morning']!, activities['afternoon']!);
+        final c = crossSectionConnector(activities['morning']!, activities['afternoon']!);
         if (c != null) widgets.add(c);
       } else if (hasEvening) {
-        final c = _crossSectionConnector(activities['morning']!, activities['evening']!);
+        final c = crossSectionConnector(activities['morning']!, activities['evening']!);
         if (c != null) widgets.add(c);
       }
     }
 
     if (hasAfternoon) {
       widgets.add(_buildTimelineSection(
-        '🌞 Afternoon', 'Peak adventure time', activities['afternoon']!,
+        'afternoon',
+        l10n.myDayTimelineSectionAfternoonTitle,
+        l10n.myDayTimelineSectionAfternoonSubtitle,
+        activities['afternoon']!,
         isFirstSection: firstVisibleSection == 'afternoon',
       ));
       if (hasEvening) {
-        final c = _crossSectionConnector(activities['afternoon']!, activities['evening']!);
+        final c = crossSectionConnector(activities['afternoon']!, activities['evening']!);
         if (c != null) widgets.add(c);
       }
     }
 
     if (hasEvening) {
       widgets.add(_buildTimelineSection(
-        '🌆 Evening', 'Wind down and enjoy', activities['evening']!,
+        'evening',
+        l10n.myDayTimelineSectionEveningTitle,
+        l10n.myDayTimelineSectionEveningSubtitle,
+        activities['evening']!,
         isFirstSection: firstVisibleSection == 'evening',
       ));
     }
@@ -1747,6 +1757,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   List<Widget> _buildListView(Map<String, List<EnhancedActivityData>> activities) {
+    final l10n = AppLocalizations.of(context)!;
     final allActivities = [
       ...activities['active'] ?? [],
       ...activities['awaiting'] ?? [],
@@ -1766,6 +1777,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           padding: const EdgeInsets.only(bottom: 0),
           child: MyDayTimelineActivityCard(
             activity: activity,
+            l10n: l10n,
             onTap: () => _showActivityDetails(activity.rawData),
             onDirectionsTap: () => _handleTimelinePrimaryAction(activity),
             onMoreTap: () => _showActivityOptions(activity),
@@ -1813,18 +1825,13 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   Widget _buildTimelineSection(
+    String sectionId,
     String title,
     String subtitle,
     List<EnhancedActivityData> activities, {
     bool isFirstSection = false,
   }) {
-    final sectionKey = title
-        .toLowerCase()
-        .replaceAll(' ', '_')
-        .replaceAll('🌅', '')
-        .replaceAll('🌞', '')
-        .replaceAll('🌆', '')
-        .trim();
+    final sectionKey = sectionId;
 
     return MyDayTimelineSection(
       title: title,
@@ -2261,8 +2268,16 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     // Provide immediate feedback for button press
     HapticFeedback.lightImpact();
     
-    // Handle different status card actions
+    // Handle different status card actions (stable keys from provider + legacy English)
     switch (action) {
+      case 'explore_nearby':
+      case 'Explore Nearby':
+        _navigateToTab(1);
+        break;
+      case 'ask_moody':
+      case 'Ask Moody':
+        _navigateToTab(2);
+        break;
       case 'View Details':
         _showActivityDetails(status['activity']);
         break;
@@ -2279,14 +2294,6 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         break;
       case 'Rate Experience':
         // TODO: Open rating dialog
-        break;
-      case 'Explore Nearby':
-        debugPrint('🎯 Explore Nearby button pressed');
-        _navigateToTab(1);
-        break;
-      case 'Ask Moody':
-        debugPrint('🎯 Ask Moody button pressed');
-        _navigateToTab(2);
         break;
     }
   }
@@ -2573,10 +2580,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     
     // Show brief visual feedback
     if (mounted) {
+      final l10n = AppLocalizations.of(context)!;
       showWanderMoodToast(
         context,
-        message: AppLocalizations.of(context)!
-            .myDayTabActivated(tabIndex == 1 ? 'Explore' : 'Moody'),
+        message: l10n.myDayTabActivated(
+          tabIndex == 1 ? l10n.navExplore : l10n.navMoody,
+        ),
         duration: const Duration(milliseconds: 600),
       );
     }

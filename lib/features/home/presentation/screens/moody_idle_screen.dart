@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/services/moody_idle_message_service.dart';
 import 'package:wandermood/core/utils/moody_idle_checker.dart';
@@ -189,6 +190,8 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
 
   Future<void> _onMoodyTap() async {
     if (_woken) return;
+    // Haptic on first tap only — same path for all 6 [MoodyIdleState] buckets.
+    HapticFeedback.mediumImpact();
     setState(() => _woken = true);
     _breathController.stop();
 

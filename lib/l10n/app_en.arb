@@ -535,6 +535,9 @@
   "profileTravelGlobeSubtitle": "Explore your travel journey",
   "profilePreferencesTitle": "Your Preferences",
   "profilePreferencesEditAll": "Edit All",
+  "profilePreferencesNoneSet": "No preferences set yet.",
+  "profileSnackLocalModeSaved": "Local mode saved",
+  "profileSnackTravelingModeSaved": "Travel mode saved",
   "profilePreferencesBudgetStyle": "Budget Style",
   "profilePreferencesSocialVibe": "Social Vibe",
   "profilePreferencesFoodPreferences": "Food Preferences",
@@ -565,6 +568,14 @@
   "profileAgeGroup40s": "40s Adventurer",
   "profileAgeGroup50s": "50s Adventurer",
   "profileAgeGroup55Plus": "55+ Adventurer",
+  "profileAgeGroupGenericSuffix": "{ageGroup} Adventurer",
+  "@profileAgeGroupGenericSuffix": {
+    "placeholders": {
+      "ageGroup": {
+        "type": "String"
+      }
+    }
+  },
   "profileBudgetLow": "$ Budget",
   "profileBudgetMid": "$$ Moderate",
   "profileBudgetHigh": "$$$ Luxury",
@@ -639,6 +650,87 @@
   "profileVibesAddMore": "Add More Vibes",
   "profileVibesSubtitle": "Select up to 5 vibes that match your personality. We'll use these to personalize your recommendations!",
   "profileVibesCurrentTitle": "YOUR CURRENT VIBES",
+  "profileEditPhotoOverlayLabel": "Change",
+  "profileEditLocationHintExamples": "e.g. Rotterdam, Amsterdam...",
+  "preferencesScreenTitle": "Edit preferences",
+  "prefSectionCommunicationStyle": "Communication style",
+  "prefSectionInterests": "Interests",
+  "prefSectionSocialVibe": "Social vibe",
+  "prefSectionTravelStyles": "Travel styles",
+  "prefSectionFavoriteMoods": "Favorite moods",
+  "prefSectionPlanningPace": "Planning pace",
+  "prefSectionSelectedMoods": "Selected moods",
+  "prefCommFriendly": "Friendly",
+  "prefCommPlayful": "Playful",
+  "prefCommCalm": "Calm",
+  "prefCommPractical": "Practical",
+  "prefIntFood": "Food",
+  "prefIntCulture": "Culture",
+  "prefIntNature": "Nature",
+  "prefIntNightlife": "Nightlife",
+  "prefIntShopping": "Shopping",
+  "prefIntWellness": "Wellness",
+  "prefSocSolo": "Solo",
+  "prefSocSmallGroup": "Small-group",
+  "prefSocMix": "Mix",
+  "prefSocSocial": "Social",
+  "prefTravelRelaxed": "Relaxed",
+  "prefTravelAdventurous": "Adventurous",
+  "prefTravelCultural": "Cultural",
+  "prefTravelCityBreak": "City-break",
+  "prefFavHappy": "Happy",
+  "prefFavAdventurous": "Adventurous",
+  "prefFavCalm": "Calm",
+  "prefFavRomantic": "Romantic",
+  "prefFavEnergetic": "Energetic",
+  "prefPlanSameDay": "Same Day Planner",
+  "prefPlanWeekAhead": "Week Ahead Planner",
+  "prefPlanSpontaneous": "Spontaneous",
+  "prefSelHappy": "Happy",
+  "prefSelRelaxed": "Relaxed",
+  "prefSelCultural": "Cultural",
+  "prefSelRomantic": "Romantic",
+  "prefSelEnergetic": "Energetic",
+  "prefSelCreative": "Creative",
+  "profileVibeAdventurousName": "Adventurous",
+  "profileVibeAdventurousDesc": "Thrilling activities & outdoor adventures",
+  "profileVibeChillName": "Chill",
+  "profileVibeChillDesc": "Relaxed, laid-back experiences",
+  "profileVibeFoodieName": "Foodie",
+  "profileVibeFoodieDesc": "Culinary experiences & dining",
+  "profileVibeSocialName": "Social",
+  "profileVibeSocialDesc": "Meeting people & social events",
+  "profileVibeCulturalName": "Cultural",
+  "profileVibeCulturalDesc": "Museums, art & history",
+  "profileVibeNatureName": "Nature",
+  "profileVibeNatureDesc": "Parks, gardens & outdoors",
+  "profileVibeRomanticName": "Romantic",
+  "profileVibeRomanticDesc": "Date nights & romantic spots",
+  "profileVibeWellnessName": "Wellness",
+  "profileVibeWellnessDesc": "Spas, yoga & self-care",
+  "profileVibeNightlifeName": "Nightlife",
+  "profileVibeNightlifeDesc": "Bars, clubs & evening fun",
+  "profileVibeShoppingName": "Shopping",
+  "profileVibeShoppingDesc": "Markets, boutiques & malls",
+  "profileVibeCreativeName": "Creative",
+  "profileVibeCreativeDesc": "Art studios & creative spaces",
+  "profileVibeSportyName": "Sporty",
+  "profileVibeSportyDesc": "Sports & fitness activities",
+  "profileGlobeYourJourney": "Your Journey",
+  "profileGlobeDemoHint": "Demo — tap a marker!",
+  "profileGlobePlacesVisitedCount": "{count} places visited",
+  "@profileGlobePlacesVisitedCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "profileGlobeBadgeDemo": "Demo",
+  "profileGlobeControlRotate": "Rotate",
+  "profileGlobeControlPause": "Pause",
+  "profileGlobeControlReset": "Reset",
+  "profileGlobeUnknownMood": "Unknown",
   "shareProfileTitle": "Share Profile",
   "shareProfileShareTextMy": "Check out my profile on WanderMood! 🧳✨\n\n{url}",
   "@shareProfileShareTextMy": {
@@ -834,6 +926,103 @@
       }
     }
   },
+  "activeSessionsNoActiveTitle": "No active sessions",
+  "activeSessionsNoActiveBody": "You are not signed in on any devices.",
+  "activeSessionsCountLabel": "{count} Active Session{count, plural, one{} other{s}}",
+  "@activeSessionsCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activeSessionsSignOutAllOther": "Sign Out All Other Devices",
+  "activeSessionsUnknownDevice": "Unknown Device",
+  "activeSessionsCurrentBadge": "Current",
+  "activeSessionsUnknownLocation": "Unknown location",
+  "activeSessionsSignOutThisDevice": "Sign out this device",
+  "activeSessionsErrorLoading": "Error loading sessions",
+  "activeSessionsTimeJustNow": "Just now",
+  "activeSessionsTimeHoursAgo": "{count} hour{count, plural, one{} other{s}} ago",
+  "@activeSessionsTimeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activeSessionsTimeYesterday": "Yesterday",
+  "activeSessionsTimeDaysAgo": "{count} days ago",
+  "@activeSessionsTimeDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activeSessionsTimeWeeksAgo": "{count} week{count, plural, one{} other{s}} ago",
+  "@activeSessionsTimeWeeksAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activeSessionsDialogSignOutDeviceTitle": "Sign Out Device",
+  "activeSessionsDialogSignOutDeviceBody": "Are you sure you want to sign out from {device}?",
+  "@activeSessionsDialogSignOutDeviceBody": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "activeSessionsDialogCancel": "Cancel",
+  "activeSessionsDialogSignOut": "Sign Out",
+  "activeSessionsToastSignedOutDevice": "Device signed out successfully",
+  "activeSessionsToastSignOutDeviceError": "Error signing out device: {error}",
+  "@activeSessionsToastSignOutDeviceError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "activeSessionsDialogSignOutAllTitle": "Sign Out All Other Devices",
+  "activeSessionsDialogSignOutAllBody": "This will sign you out from all devices except this one. Are you sure?",
+  "activeSessionsDialogSignOutAllCta": "Sign Out All",
+  "activeSessionsToastSignedOutAll": "All other devices signed out successfully",
+  "activeSessionsToastSignOutAllError": "Error signing out devices: {error}",
+  "@activeSessionsToastSignOutAllError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "twoFactorTitle": "Two-Factor Authentication",
+  "twoFactorEnabledTitle": "2FA is Enabled",
+  "twoFactorDisabledTitle": "Enable Two-Factor Authentication",
+  "twoFactorEnabledBody": "Your account is protected with two-factor authentication.",
+  "twoFactorDisabledBody": "Add an extra layer of security to your account by requiring a verification code in addition to your password.",
+  "twoFactorBenefitsTitle": "Benefits:",
+  "twoFactorBenefitUnauthorized": "Protects against unauthorized access",
+  "twoFactorBenefitSensitiveOps": "Required for sensitive operations",
+  "twoFactorBenefitLoginAlerts": "Get notified of login attempts",
+  "twoFactorDisableCta": "Disable 2FA",
+  "twoFactorEnableCta": "Enable 2FA",
+  "twoFactorDisableInfo": "To disable 2FA, you will need to verify your identity.",
+  "twoFactorEnableInfo": "You will need an authenticator app (like Google Authenticator) to set up 2FA.",
+  "twoFactorToastSetupStarted": "2FA setup started. Please complete the setup process.",
+  "twoFactorToastDisabled": "2FA has been disabled.",
+  "twoFactorToastError": "Error: {error}",
+  "@twoFactorToastError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "settingsPrivacyTitle": "Privacy",
   "settingsPrivacySubtitle": "Profile visibility, data",
   "settingsHubNotificationsSubtitle": "Push, email, in-app",
@@ -937,6 +1126,7 @@
   "subscriptionFeatureAdvancedMoodMatching": "Advanced mood matching",
   "subscriptionFeaturePrioritySupport": "Priority support",
   "subscriptionFeatureNoAds": "No ads",
+  "subscriptionFeatureEarlyAccess": "Early access to new features",
   "subscriptionUpgradeCta": "Upgrade for €4.99/month",
   "dataStorageTitle": "Data & Storage",
   "dataStorageStorageUsedLabel": "Storage Used",
@@ -984,6 +1174,145 @@
   "helpSupportTermsSubtitle": "Terms and conditions",
   "helpSupportEmailAddress": "support@wandermood.com",
   "helpSupportEmailSubject": "WanderMood Support",
+  "helpSupportEmailSupportTitle": "Email support",
+  "settingsLocationChangeCta": "Change",
+  "savedPlacesScreenTitle": "Saved places",
+  "savedPlacesTabAllSaved": "All saved",
+  "savedPlacesTabCollections": "Collections",
+  "savedPlacesEmptyTitle": "No saved places yet",
+  "savedPlacesEmptyBody": "Tap the bookmark icon on any place in Explore to save it here.",
+  "savedPlacesHoldToCollect": "Hold to collect",
+  "savedPlacesSavedPrefix": "Saved {when}",
+  "@savedPlacesSavedPrefix": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "savedPlacesTimeJustNow": "just now",
+  "savedPlacesTimeHoursAgo": "{count}h ago",
+  "@savedPlacesTimeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "savedPlacesTimeYesterday": "yesterday",
+  "savedPlacesTimeDaysAgo": "{count}d ago",
+  "@savedPlacesTimeDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "savedPlacesPlaceCountOne": "{count} place",
+  "@savedPlacesPlaceCountOne": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "savedPlacesPlaceCountMany": "{count} places",
+  "@savedPlacesPlaceCountMany": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "savedPlacesNewCollection": "New collection",
+  "savedPlacesNewCollectionSubtitle": "Group your saves",
+  "savedPlacesAddToCollectionTitle": "Add to collection",
+  "savedPlacesNoCollectionsHint": "No collections yet. Create one in the Collections tab.",
+  "savedPlacesPlacesCount": "{count} places",
+  "@savedPlacesPlacesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "savedPlacesAddedToCollection": "Added to {name}",
+  "@savedPlacesAddedToCollection": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "savedPlacesActionAddToMyDay": "Add to My Day",
+  "savedPlacesActionAddToCollection": "Add to collection",
+  "savedPlacesActionViewDetails": "View details",
+  "savedPlacesPlanSheetTitle": "Add to My Day",
+  "savedPlacesPickDate": "Pick date",
+  "savedPlacesSelectedDate": "Selected: {date}",
+  "@savedPlacesSelectedDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "locationPickerTitle": "Select location",
+  "locationPickerSearchHint": "Search for a city or location…",
+  "locationPickerEmptyPrompt": "Start typing to search for a location",
+  "locationPickerNoResults": "No locations found",
+  "locationPickerToastUpdated": "Location updated to {place}",
+  "@locationPickerToastUpdated": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "locationPickerToastError": "Error saving location: {error}",
+  "@locationPickerToastError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsPrivacyScreenTitle": "Privacy",
+  "privacyProfileVisibilitySection": "Profile visibility",
+  "privacyVisibilityPublic": "Public",
+  "privacyVisibilityPublicSub": "Anyone can see your profile",
+  "privacyVisibilityFriends": "Friends only",
+  "privacyVisibilityFriendsSub": "Only your friends can see",
+  "privacyVisibilityPrivate": "Private",
+  "privacyVisibilityPrivateSub": "Only you can see",
+  "privacyWhatOthersSeeSection": "What others can see",
+  "privacyShowEmailLabel": "Show email address",
+  "privacyShowAgeLabel": "Show age",
+  "privacyToastVisibilityUpdated": "Profile visibility updated",
+  "privacyToastError": "Error: {error}",
+  "@privacyToastError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "privacyToastEmailVisible": "Email will be visible to others",
+  "privacyToastEmailHidden": "Email is now hidden",
+  "privacyToastAgeVisible": "Age will be visible to others",
+  "privacyToastAgeHidden": "Age is now hidden",
+  "languageNameEn": "English",
+  "languageNativeEn": "English",
+  "languageNameNl": "Dutch",
+  "languageNativeNl": "Nederlands",
+  "languageNameEs": "Spanish",
+  "languageNativeEs": "Español",
+  "languageNameFr": "French",
+  "languageNativeFr": "Français",
+  "languageNameDe": "German",
+  "languageNativeDe": "Deutsch",
+  "languageNameIt": "Italian",
+  "languageNativeIt": "Italiano",
   "prefCommunicationTitle": "How should I talk to you? 💬",
   "prefCommunicationIntro": "To make our journey together more enjoyable, I'd love to know how you prefer me to communicate with you.",
   "prefCommunicationSubtitle": "This helps me adjust my tone and style to match your preferences perfectly! 🎯",
@@ -1496,6 +1825,64 @@
   "navMyDay": "My Day",
   "navExplore": "Explore",
   "navProfile": "Profile",
+  "navMoody": "Moody",
+  "myDayStatusTitleRightNow": "Right Now",
+  "myDayStatusTitleUpNext": "Up Next",
+  "myDayStatusTitleAllDone": "✅ All Done",
+  "myDayStatusTitleFreeTime": "📅 FREE TIME",
+  "myDayStatusDescActive": "You're here! Tap Done when you're finished.",
+  "myDayStatusDescUpcomingMorning": "Planned for the morning · tap \"I'm Here\" when you arrive",
+  "myDayStatusDescUpcomingAfternoon": "Planned for the afternoon · tap \"I'm Here\" when you arrive",
+  "myDayStatusDescUpcomingEvening": "Planned for the evening · tap \"I'm Here\" when you arrive",
+  "myDayStatusDescCompleted": "Great day! You've completed everything.",
+  "myDayPeriodMorning": "Morning",
+  "myDayPeriodAfternoon": "Afternoon",
+  "myDayPeriodEvening": "Evening",
+  "myDayFreeTimeSuggestionMorning": "Perfect time to start your day with energy",
+  "myDayFreeTimeSuggestionAfternoon": "Great time to explore and discover",
+  "myDayFreeTimeSuggestionEvening": "Wind down with something special",
+  "myDayTimelineActivityCount": "{count, plural, one{1 activity} other{{count} activities}}",
+  "@myDayTimelineActivityCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "myDayTimelineAllDone": "All Done",
+  "myDayTimelineSectionComplete": "Great job completing this section!",
+  "myDayTimelineTapForDetails": "Tap for details",
+  "myDayTimelinePrimaryImHere": "I'm Here",
+  "myDayTimelinePrimaryDone": "Done",
+  "myDayTimelinePrimaryReview": "Review",
+  "myDayTimelinePrimaryReviewed": "Reviewed",
+  "myDayTimelineStatusImHere": "I'M HERE",
+  "myDayTimelineStatusPlanned": "PLANNED",
+  "myDayTimelineStatusDone": "DONE",
+  "myDayActivityFallbackLabel": "Activity",
+  "myDayExecutionHeroYoureHereBadge": "You're here!",
+  "myDayExecutionHeroInProgressBadge": "IN PROGRESS",
+  "myDayExecutionHeroActiveHint": "Enjoying it? Tap Done when you're ready to move on.",
+  "myDayExecutionHeroReviewedAt": "Reviewed at {time}",
+  "@myDayExecutionHeroReviewedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "myDayExecutionHeroCompletedToday": "Completed today",
+  "myDayExecutionHeroBadgeReviewedCaps": "REVIEWED",
+  "myDayExecutionHeroBadgeReadyToReviewCaps": "READY TO REVIEW",
+  "myDayExecutionHeroReviewCaptureHint": "Capture how it felt while the experience is still fresh.",
+  "myDayExecutionHeroUpNextBadge": "UP NEXT",
+  "myDayExecutionHeroTapImHereWhenArrive": "Tap \"I'm Here\" when you arrive.",
+  "myDayTimelineSectionMorningTitle": "🌅 Morning",
+  "myDayTimelineSectionMorningSubtitle": "Start your day right",
+  "myDayTimelineSectionAfternoonTitle": "🌞 Afternoon",
+  "myDayTimelineSectionAfternoonSubtitle": "Peak adventure time",
+  "myDayTimelineSectionEveningTitle": "🌆 Evening",
+  "myDayTimelineSectionEveningSubtitle": "Wind down and enjoy",
   "myDayWeekendEmptyTitle": "Your weekend is still empty!",
   "myDayWeekendEmptySubtitle": "Want to plan Saturday or Sunday in advance?",
   "myDayWeekendSaturdayShort": "Sa {day}",
@@ -1524,6 +1911,53 @@
   "bookingViewAction": "View",
   "bookingErrorSaving": "Error saving booking: {error}",
   "gygCodeCopied": "Code copied 💚",
+  "placeCardSeeActivity": "See activity",
+  "placeCardPriceVaries": "Price varies",
+  "gygEdviennePicksInCity": "✨ Edvienne's Picks in {city}",
+  "@gygEdviennePicksInCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "gygMapCompactTitle": "Edvienne's Picks — {city}",
+  "@gygMapCompactTitle": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "gygMapCompactSubtitle": "Tap to open GetYourGuide & your discount",
+  "gygPrimaryTitleInCity": "✨ Edvienne's Picks in {city}",
+  "@gygPrimaryTitleInCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "gygTagline48h": "What I'd book if I had 48 hours here 🤍",
+  "gygOpenInApp": "Open in GetYourGuide app (with promo)",
+  "gygOpenInWeb": "Open in browser",
+  "gygPromoGift": "🎁 A little extra from me: {code}",
+  "@gygPromoGift": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "gygPromoAppOnly": "Valid only in the GetYourGuide app.",
+  "gygCopy": "Copy",
+  "gygPoweredBy": "Powered by GetYourGuide",
+  "gygComingSoonBody": "I'm still curating the best picks for this city 🤍",
+  "gygCategoryFoodDrink": "🍴 Food & drink",
+  "gygCategoryBoatTours": "⛵ Boat tours",
+  "gygCategoryCulture": "🎭 Culture",
+  "gygCategoryAdventure": "🧗 Adventure",
+  "gygCategoryLuxury": "✨ Luxury",
   "@placeCardFailedToShare": {
     "placeholders": {
       "error": {
@@ -1902,6 +2336,13 @@
       }
     }
   },
+  "@agendaDeleteDialogBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "@dailyScheduleActivitiesPlanned": {
     "placeholders": {
       "count": {
@@ -2004,7 +2445,13 @@
   "myDayOpenAppleMaps": "Apple Maps",
 
   "agendaTitle": "My Agenda",
+  "agendaStatusDone": "DONE",
+  "agendaStatusNow": "NOW",
+  "agendaStatusUpcoming": "UPCOMING",
   "agendaStatusCancelled": "CANCELLED",
+  "agendaHeaderToday": "Today",
+  "agendaHeaderTomorrow": "Tomorrow",
+  "agendaHeaderYesterday": "Yesterday",
   "agendaTodayEmpty": "Today is still empty",
   "agendaTodaySubtitle": "Let Moody plan your day based on your mood",
   "agendaTomorrowEmpty": "Tomorrow is still free",
@@ -2024,6 +2471,9 @@
   "agendaUntitledActivity": "Untitled Activity",
   "agendaNoDescription": "No description available",
   "agendaLocationTBD": "Location TBD",
+  "agendaDeleteDialogBody": "“{title}” will be removed from your planner.",
+  "agendaDeleteDialogBack": "Back",
+  "agendaDeleteDialogConfirm": "Delete",
 
   "exploreCategoryAll": "All",
   "exploreCategoryPopular": "Popular",
@@ -2073,6 +2523,78 @@
   "exploreFilterBlackOwned": "Black-owned",
   "exploreFilterPriceRange": "Price Range (€)",
   "exploreFilterMaxDistance": "Maximum Distance (km)",
+  "exploreErrorLocationRequiredTitle": "Location required",
+  "exploreErrorLoadingPlacesTitle": "Error loading places",
+  "exploreErrorLocationBody": "Please enable location services or set your location in settings to discover places near you.",
+  "exploreErrorEnableLocation": "Enable location",
+  "exploreAdvancedFiltersTitle": "Advanced Filters",
+  "exploreFiltersActiveCount": "{count, plural, one{1 filter active} other{{count} filters active}}",
+  "@exploreFiltersActiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreMoodyHintFiltersActive": "Nice! {count, plural, one{1 filter} other{{count} filters}} active — I'll keep that in mind.",
+  "@exploreMoodyHintFiltersActive": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreMoodyHintFiltersIntro": "Hey! I'm Moody. Use filters to find exactly what fits your vibe — dietary, accessibility, photo spots, and more.",
+  "exploreClearAll": "Clear all",
+  "exploreSectionQuickSuggestions": "Quick suggestions",
+  "exploreSectionDietaryPreferences": "Dietary preferences",
+  "exploreSectionAccessibilityInclusion": "Accessibility & inclusion",
+  "exploreSectionComfortConvenience": "Comfort & convenience",
+  "exploreSectionPhotoAesthetic": "Photo & aesthetic",
+  "exploreSaveFiltersWithCount": "Save {count} filters",
+  "@exploreSaveFiltersWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreSaveFilters": "Save filters",
+  "exploreQuickFilters": "Quick filters",
+  "exploreSearchHint": "Search activities, restaurants, museums...",
+  "exploreCategoryChipOutdoor": "Outdoor",
+  "exploreCategoryChipShopping": "Shopping",
+  "exploreCategoryChipNightlife": "Nightlife",
+  "explorePriceLevelBudget": "Budget",
+  "explorePriceLevelModerate": "Moderate",
+  "explorePriceLevelExpensive": "Expensive",
+  "explorePriceLevelLuxury": "Luxury",
+  "exploreMoodAdventure": "Adventure",
+  "exploreMoodCreative": "Creative",
+  "exploreMoodRelaxed": "Relaxed",
+  "exploreMoodMindful": "Mindful",
+  "exploreMoodRomantic": "Romantic",
+  "exploreAddToMyDayDayLabel": "Day",
+  "exploreAddToMyDayPickDate": "Pick date",
+  "exploreAddToMyDaySelectedDate": "Selected: {date}",
+  "@exploreAddToMyDaySelectedDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreAddToMyDayTimeLabel": "Time",
+  "exploreDatePickerHelp": "Choose a date",
+  "exploreDatePickerConfirm": "Choose",
+  "explorePlaceDescriptionFallback": "Explore {name}",
+  "@explorePlaceDescriptionFallback": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
 
   "chatSheetMoodyName": "Moody",
   "chatSheetErrorMessage": "Oops! I'm having trouble connecting right now. Can you try again? 🤔",
@@ -2320,6 +2842,7 @@
   "deleteAccountActivities": "All saved activities",
   "deleteAccountAchievements": "Your achievements and progress",
   "deleteAccountPhotos": "All photos and memories",
+  "deleteAccountConfirmKeyword": "DELETE",
   "deleteAccountTypeToConfirm": "Type \"DELETE\" to confirm",
   "deleteAccountTypeIncorrect": "Please type DELETE to confirm",
   "deleteAccountFinalTitle": "Final Confirmation",
@@ -2329,6 +2852,46 @@
   "deleteAccountDeleteButton": "Delete My Account Forever",
   "deleteAccountSuccess": "Account deleted successfully",
   "deleteAccountError": "Error deleting account",
+
+  "settingsNotificationsSectionTitle": "NOTIFICATIONS",
+  "settingsNotificationsTripRemindersLabel": "Trip reminders",
+  "settingsNotificationsTripRemindersSubtitle": "Reminders for planned activities",
+  "settingsNotificationsWeatherUpdatesLabel": "Weather updates",
+  "settingsNotificationsWeatherUpdatesSubtitle": "Updates about the weather at your destination",
+
+  "premiumUpgradeScreenTitle": "Upgrade to Premium",
+  "premiumMonthlyPlanLabel": "Monthly Plan",
+  "premiumMonthlyPriceLabel": "€4.99/month",
+  "premiumBestValueBadge": "Best Value",
+  "premiumPaymentMethodTitle": "Payment Method",
+  "premiumPaymentMethodCard": "Credit/Debit Card",
+  "premiumPaymentMethodPaypal": "PayPal",
+  "premiumPaymentMethodApplePay": "Apple Pay",
+  "premiumSubscribeCta": "Subscribe for €4.99/month",
+  "premiumSecurityNotice": "Your payment information is encrypted and secure",
+  "premiumToastActivated": "Premium subscription activated!",
+  "premiumToastPaymentFailed": "Payment failed: {error}",
+  "@premiumToastPaymentFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "premiumCardDetailsTitle": "Card Details",
+  "premiumCardNumberLabel": "Card Number",
+  "premiumCardNumberHint": "1234 5678 9012 3456",
+  "premiumExpiryLabel": "Expiry (MM/YY)",
+  "premiumExpiryHint": "12/25",
+  "premiumCvvLabel": "CVV",
+  "premiumCvvHint": "123",
+  "premiumCardholderNameLabel": "Cardholder Name",
+  "premiumCardholderNameHint": "John Doe",
+  "premiumValidationRequired": "Required",
+  "premiumValidationCardNumberRequired": "Card number is required",
+  "premiumValidationInvalidCardNumber": "Invalid card number",
+  "premiumValidationInvalidCvv": "Invalid CVV",
+  "premiumValidationNameRequired": "Name is required",
 
   "placeDetailAboutThisPlace": "About this place",
   "placeDetailGoodToKnow": "Good to know",
@@ -2370,5 +2933,81 @@
   "moodyHubFallbackAiMessage": "Your day is set — Moody's here for you 🌟",
   "moodyHubActivitySingular": "activity",
   "moodyHubActivityPlural": "activities",
-  "moodyHubPlanForWhen": "When are you planning for?"
+  "moodyHubPlanForWhen": "When are you planning for?",
+  "moodyHubListComma": ", ",
+  "moodyHubListAnd": " & ",
+  "moodyReviewTitle": "Quick Review",
+  "moodyReviewHowWasIt": "How was it?",
+  "moodyReviewStarsFeedback5": "🌟 Amazing!",
+  "moodyReviewStarsFeedback4": "😊 Really good!",
+  "moodyReviewStarsFeedback3": "👍 Pretty good!",
+  "moodyReviewStarsFeedback2": "😐 It was okay",
+  "moodyReviewStarsFeedback1": "😞 Not great",
+  "moodyReviewYourVibe": "Your vibe",
+  "moodyReviewVibeAmazing": "Amazing",
+  "moodyReviewVibeGood": "Good",
+  "moodyReviewVibeOkay": "Okay",
+  "moodyReviewVibeMeh": "Meh",
+  "moodyReviewOptionalNote": "Any thoughts? (optional)",
+  "moodyReviewNoteHint": "What stood out? Any tips for others?",
+  "moodyReviewNoteHelper": "💡 This helps others discover great spots!",
+  "moodyReviewSave": "Save Review",
+  "moodyReviewNeedStars": "Please add a star rating to continue",
+  "moodyReviewHelpsMoody": "Your feedback helps Moody learn!",
+  "moodyReviewThanksToast": "Thanks for your review! 🚀",
+  "getReadyChecklistItemReady": "Ready to go!",
+  "getReadyShareInvite": "Join me at {title} around {time} – planned with WanderMood.",
+  "@getReadyShareInvite": {
+    "placeholders": {
+      "title": {},
+      "time": {}
+    }
+  },
+  "getReadyCalendarEventTitleFallback": "WanderMood activity",
+  "getReadyCalendarEventDetailsFallback": "Planned with WanderMood",
+  "getReadyShareTitleFallback": "this place",
+  "getReadyCalendarOpenHint": "{label} – open in browser or app",
+  "@getReadyCalendarOpenHint": {
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "getReadyPlaylistSearchQuery": "Happy {theme} Beats",
+  "@getReadyPlaylistSearchQuery": {
+    "placeholders": {
+      "theme": {}
+    }
+  },
+  "getReadyPlaylistThemeFoodie": "Foodie",
+  "getReadyPlaylistThemeCultural": "Cultural",
+  "getReadyPlaylistThemeShopping": "Shopping",
+  "getReadyPlaylistThemeOutdoor": "Outdoor",
+  "getReadyPlaylistThemeAdventure": "Adventure",
+  "getReadyMoodFragmentAdventure": "adventure",
+  "getReadyMoodFragmentRelaxed": "relaxation",
+  "getReadyMoodFragmentEnergetic": "energy",
+  "getReadyMoodFragmentRomantic": "romance",
+  "getReadyMoodFragmentCultural": "culture",
+  "getReadyMoodFragmentExplorer": "exploration",
+  "getReadyMoodFragmentFoodie": "foodie",
+  "moodHomeAlreadyPlannedTitle": "{dayName} is already planned!",
+  "@moodHomeAlreadyPlannedTitle": {
+    "placeholders": {
+      "dayName": {
+        "type": "String"
+      }
+    }
+  },
+  "moodHomeActivitiesReadyCount": "{count, plural, one{1 activity is ready for you.} other{{count} activities are ready for you.}}",
+  "@moodHomeActivitiesReadyCount": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "moodHomeViewPlan": "View plan",
+  "moodHomePlanAgain": "Plan again",
+  "planLoadingRotating2": "Putting your day together…",
+  "planLoadingRotating3": "Almost there — your plan is almost ready ✨"
 }

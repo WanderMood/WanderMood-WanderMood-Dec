@@ -172,6 +172,22 @@ function getMoodyPersonalityInstructions(communicationStyle: string): string {
   }
 }
 
+/** Hub one-liner: match app [language_code] so English UI does not get Dutch output. */
+function getMoodyPersonalityForHubMessage(communicationStyle: string, lang: 'nl' | 'en'): string {
+  if (lang === 'nl') return getMoodyPersonalityInstructions(communicationStyle)
+  switch (communicationStyle.toLowerCase()) {
+    case 'energetic':
+      return `You are Moody in ENERGETIC mode. Talk like an enthusiastic best friend. Informal, playful, high energy. Tone: "YO! This is exactly what you need 🔥". Use exclamation marks. Max 2 emojis. Always write in English.`
+    case 'professional':
+      return `You are Moody in PROFESSIONAL mode. Clear, efficient, to-the-point. No fluff. Businesslike but warm. No exclamation marks. No emojis. Always write in English.`
+    case 'direct':
+      return `You are Moody in DIRECT mode. One sentence. No explanation unless asked. Just the answer. No emojis. Max 10 words. Always write in English.`
+    case 'friendly':
+    default:
+      return `You are Moody in FRIENDLY mode. Talk like a warm, attentive friend. Use "you". Personal and caring. Tone: "Hey! I found something fun for you 😊". Max 1–2 emojis. Always write in English.`
+  }
+}
+
 // ============================================
 // CHAT HANDLER
 // ============================================
@@ -262,18 +278,26 @@ function getFallbackChatResponse(style: string): string {
 // MOODY HUB ONE-LINER (Flutter: MoodyHubMessageService)
 // ============================================
 
+/** Flutter sends `language_code` (BCP 47). `nl` → Dutch user-facing strings; otherwise English (de/es/fr use English until expanded). */
+function clientOutputLang(params: Record<string, unknown>): 'nl' | 'en' {
+  const raw = params.language_code ?? params.locale
+  if (typeof raw === 'string' && raw.trim().toLowerCase().split('-')[0] === 'nl') return 'nl'
+  return 'en'
+}
+
 async function handleGenerateHubMessage(
   supabase: any,
   userId: string,
   params: Record<string, unknown>
 ): Promise<Response> {
+  const lang = clientOutputLang(params)
   const moods = Array.isArray(params.current_moods)
     ? (params.current_moods as unknown[]).filter((m): m is string => typeof m === 'string')
     : []
   const timeOfDay =
     typeof params.time_of_day === 'string' && params.time_of_day.trim() !== ''
       ? params.time_of_day.trim()
-      : 'dag'
+      : lang === 'nl' ? 'dag' : 'day'
   let activitiesCount = 0
   const ac = params.activities_count
   if (typeof ac === 'number' && Number.isFinite(ac)) {
@@ -285,9 +309,9 @@ async function handleGenerateHubMessage(
 
   const userContext = await fetchUserContext(supabase, userId)
   const style = String(userContext.communicationStyle || 'friendly').toLowerCase()
-  const moodStr = moods.length > 0 ? moods.join(' & ') : 'jouw vibe'
+  const moodStr = moods.length > 0 ? moods.join(' & ') : (lang === 'nl' ? 'jouw vibe' : 'your vibe')
 
-  const fallbacks: Record<string, string> = {
+  const fallbacksNl: Record<string, string> = {
     energetic: activitiesCount > 0
       ? `YO! ${activitiesCount} item${activitiesCount === 1 ? '' : 's'} vandaag — ${moodStr} modus aan! 🔥`
       : `Nog niks gepland? Tijd om ${moodStr} te gaan ontdekken! 🔥`,
@@ -299,6 +323,19 @@ async function handleGenerateHubMessage(
       ? `Hey! Je hebt ${activitiesCount} ding${activitiesCount === 1 ? '' : 'en'} klaar — lekker die ${moodStr} energie 😊`
       : `Nog rustig vandaag? Misschien iets ${moodStr} voor je 😊`,
   }
+  const fallbacksEn: Record<string, string> = {
+    energetic: activitiesCount > 0
+      ? `YO! ${activitiesCount} thing${activitiesCount === 1 ? '' : 's'} on tap today — ${moodStr} mode on! 🔥`
+      : `Nothing planned yet? Time to explore your ${moodStr}! 🔥`,
+    professional: activitiesCount > 0
+      ? `You have ${activitiesCount} activit${activitiesCount === 1 ? 'y' : 'ies'} lined up, tuned to ${moodStr}.`
+      : `No plans today; consider something in a ${moodStr} style.`,
+    direct: activitiesCount > 0 ? `${activitiesCount} planned. ${moodStr}.` : `No plans. ${moodStr}.`,
+    friendly: activitiesCount > 0
+      ? `Hey! You've got ${activitiesCount} fun activit${activitiesCount === 1 ? 'y' : 'ies'} lined up this ${timeOfDay} to boost those ${moodStr} vibes! 😊`
+      : `Quiet day? Maybe something ${moodStr} for you 😊`,
+  }
+  const fallbacks = lang === 'nl' ? fallbacksNl : fallbacksEn
   const fallbackMessage = fallbacks[style] || fallbacks.friendly
 
   const openaiKey = Deno.env.get('OPENAI_API_KEY')
@@ -309,16 +346,24 @@ async function handleGenerateHubMessage(
     })
   }
 
-  const personality = getMoodyPersonalityInstructions(userContext.communicationStyle)
-  const systemPrompt = `${personality}
+  const personality = getMoodyPersonalityForHubMessage(userContext.communicationStyle, lang)
+  const systemPromptNl = `${personality}
 
 Schrijf precies één korte regel voor het Moody Hub startscherm (max 140 tekens). Vermeld kort: aantal activiteiten (${activitiesCount}), stemmingen (${moodStr}), dagdeel (${timeOfDay}). Max 1 emoji. Geen aanhalingstekens, geen lijstjes.`
+  const systemPromptEn = `${personality}
+
+Write exactly one short line for the Moody Hub home screen (max 140 characters). Briefly mention: number of activities (${activitiesCount}), moods (${moodStr}), time of day (${timeOfDay}). Max 1 emoji. No quotation marks, no bullet lists.`
+  const systemPrompt = lang === 'nl' ? systemPromptNl : systemPromptEn
 
   const userPayload = JSON.stringify({
     current_moods: moods,
     time_of_day: timeOfDay,
     activities_count: activitiesCount,
   })
+
+  const userMsgNl = `Schrijf de hub-regel. Context: ${userPayload}`
+  const userMsgEn = `Write the hub line. Context: ${userPayload}`
+  const userMsg = lang === 'nl' ? userMsgNl : userMsgEn
 
   try {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -328,7 +373,7 @@ Schrijf precies één korte regel voor het Moody Hub startscherm (max 140 tekens
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Schrijf de hub-regel. Context: ${userPayload}` },
+          { role: 'user', content: userMsg },
         ],
         max_tokens: 100,
         temperature: style === 'energetic' ? 0.85 : style === 'direct' ? 0.35 : 0.75,
@@ -375,10 +420,11 @@ async function handleCreateDayPlan(supabase: any, userId: string, params: any): 
     const location = params.location.trim()
     const coordinates = params.coordinates
     const userContext = await fetchUserContext(supabase, userId)
+    const lang = clientOutputLang(params)
 
-    console.log(`🎯 create_day_plan: moods=${moods.join(', ')}, location=${location}, local=${userContext.isLocalMode}`)
+    console.log(`🎯 create_day_plan: moods=${moods.join(', ')}, location=${location}, local=${userContext.isLocalMode}, lang=${lang}`)
 
-    const moodyQueries = await getMoodySearchQueries(moods, location, userContext)
+    const moodyQueries = await getMoodySearchQueries(moods, location, userContext, lang)
     let places = await fetchPlacesFromGoogle(location, coordinates, moods[0], params.filters || {}, moodyQueries)
     places = await enrichAndFilterPlaces(places, { minRating: 3.8, minReviews: 8 })
 
@@ -387,13 +433,13 @@ async function handleCreateDayPlan(supabase: any, userId: string, params: any): 
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    const activities = convertPlacesToActivities(places, moods, location, coordinates)
+    const activities = convertPlacesToActivities(places, moods, location, coordinates, lang)
     if (activities.length === 0) {
       return new Response(JSON.stringify({ success: false, activities: [], location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: 0, error: 'No activities generated' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    const { moodyMessage, reasoning } = await getMoodyPersonalityResponse(moods, activities, location, userContext)
+    const { moodyMessage, reasoning } = await getMoodyPersonalityResponse(moods, activities, location, userContext, lang)
     const response: DayPlanResponse = {
       success: true, activities, location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng },
       total_found: activities.length, moodyMessage, reasoning,
@@ -746,14 +792,22 @@ async function cachePlaces(supabase: any, cacheKey: string, places: PlaceCard[],
 // OPENAI HELPERS
 // ============================================
 
-async function getMoodySearchQueries(moods: string[], location: string, userContext: any): Promise<string[] | null> {
+async function getMoodySearchQueries(moods: string[], location: string, userContext: any, lang: 'nl' | 'en'): Promise<string[] | null> {
   const openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey?.trim()) return null
 
   const isLocal = userContext.isLocalMode
-  const localMode = isLocal
+  const localModeNl = isLocal
     ? `BELANGRIJK: Gebruiker is LOCAL. Vermijd toeristische dingen. Geef hidden gems, nieuwe openingen, buurtplekken die locals kennen.`
     : `BELANGRIJK: Gebruiker is OP REIS. Mix bekende bezienswaardigheden met lokale geheimen.`
+  const localModeEn = isLocal
+    ? `IMPORTANT: User is a LOCAL. Avoid tourist clichés. Prefer hidden gems, new openings, neighborhood spots locals actually use.`
+    : `IMPORTANT: User is TRAVELING. Mix well-known sights with local secrets.`
+
+  const systemNl = `Je bent Moody, de WanderMood reisassistent. ${localModeNl} Geef 5-7 korte Google Places zoektermen als JSON: {"queries": ["term1", "term2"]}. Geen markdown.`
+  const systemEn = `You are Moody, the WanderMood travel assistant. ${localModeEn} Return 5-7 short Google Places search query strings as JSON: {"queries": ["term1", "term2"]}. No markdown. Queries should work well in English for the Places API.`
+  const userNl = `Moods: ${moods.join(', ')}. Locatie: ${location}. Interesses: ${JSON.stringify(userContext.travelInterests)}.`
+  const userEn = `Moods: ${moods.join(', ')}. Location: ${location}. Interests: ${JSON.stringify(userContext.travelInterests)}.`
 
   try {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -762,8 +816,8 @@ async function getMoodySearchQueries(moods: string[], location: string, userCont
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: `Je bent Moody, de WanderMood reisassistent. ${localMode} Geef 5-7 korte Google Places zoektermen als JSON: {"queries": ["term1", "term2"]}. Geen markdown.` },
-          { role: 'user', content: `Moods: ${moods.join(', ')}. Locatie: ${location}. Interesses: ${JSON.stringify(userContext.travelInterests)}.` },
+          { role: 'system', content: lang === 'nl' ? systemNl : systemEn },
+          { role: 'user', content: lang === 'nl' ? userNl : userEn },
         ],
         max_tokens: 200, temperature: 0.5, response_format: { type: 'json_object' },
       }),
@@ -778,17 +832,29 @@ async function getMoodySearchQueries(moods: string[], location: string, userCont
   } catch (e) { console.error('getMoodySearchQueries error:', e); return null }
 }
 
-async function getMoodyPersonalityResponse(moods: string[], activities: Activity[], location: string, userContext: any): Promise<{ moodyMessage: string; reasoning: string }> {
-  const style = userContext?.communicationStyle || 'friendly'
-  const fallbacks: Record<string, any> = {
+async function getMoodyPersonalityResponse(moods: string[], activities: Activity[], location: string, userContext: any, lang: 'nl' | 'en'): Promise<{ moodyMessage: string; reasoning: string }> {
+  const style = String(userContext?.communicationStyle || 'friendly')
+  const fallbacksNl: Record<string, any> = {
     energetic: { moodyMessage: `YO! ${activities.length} epic activiteiten voor je ${moods.join(' & ')} dag! 🔥`, reasoning: `Perfecte energie-mix voor jou.` },
     professional: { moodyMessage: `${activities.length} activiteiten geselecteerd voor ${location} op basis van je ${moods.join(' en ')} stemming.`, reasoning: `Geselecteerd op beoordeling en beschikbaarheid.` },
     direct: { moodyMessage: `${activities.length} activiteiten. ${location}. Klaar.`, reasoning: `Match met stemming.` },
     friendly: { moodyMessage: `Hey! ${activities.length} leuke activiteiten voor je ${moods.join(' & ')} dag in ${location} 😊`, reasoning: `Mooie mix die bij je stemming past.` },
   }
+  const fallbacksEn: Record<string, any> = {
+    energetic: { moodyMessage: `YO! ${activities.length} epic activities for your ${moods.join(' & ')} day! 🔥`, reasoning: `High-energy picks for you.` },
+    professional: { moodyMessage: `${activities.length} activities selected for ${location} based on your ${moods.join(' & ')} mood.`, reasoning: `Chosen for ratings and fit.` },
+    direct: { moodyMessage: `${activities.length} activities. ${location}. Done.`, reasoning: `Mood match.` },
+    friendly: { moodyMessage: `Hey! ${activities.length} fun activities for your ${moods.join(' & ')} day in ${location} 😊`, reasoning: `A nice mix for your vibe.` },
+  }
+  const fallbacks = lang === 'nl' ? fallbacksNl : fallbacksEn
   const fallback = fallbacks[style] || fallbacks.friendly
   const openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey?.trim()) return fallback
+  const jsonSuffixNl = ` Geef ALLEEN JSON: {"moodyMessage": "<max 120 tekens>", "reasoning": "<max 80 tekens>"}`
+  const jsonSuffixEn = ` Reply with JSON only: {"moodyMessage": "<max 120 characters>", "reasoning": "<max 80 characters>"}`
+  const systemContent = `${getMoodyPersonalityForHubMessage(style, lang)}${lang === 'nl' ? jsonSuffixNl : jsonSuffixEn}`
+  const userNl = `Stemming: ${moods.join(', ')}. Locatie: ${location}. ${activities.length} activiteiten gevonden waaronder: ${activities.slice(0, 3).map(a => a.name).join(', ')}.`
+  const userEn = `Moods: ${moods.join(', ')}. Location: ${location}. ${activities.length} activities found including: ${activities.slice(0, 3).map(a => a.name).join(', ')}.`
   try {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -796,8 +862,8 @@ async function getMoodyPersonalityResponse(moods: string[], activities: Activity
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: `${getMoodyPersonalityInstructions(style)} Geef ALLEEN JSON: {"moodyMessage": "<max 120 tekens>", "reasoning": "<max 80 tekens>"}` },
-          { role: 'user', content: `Stemming: ${moods.join(', ')}. Locatie: ${location}. ${activities.length} activiteiten gevonden waaronder: ${activities.slice(0,3).map(a=>a.name).join(', ')}.` },
+          { role: 'system', content: systemContent },
+          { role: 'user', content: lang === 'nl' ? userNl : userEn },
         ],
         max_tokens: 200, temperature: style === 'energetic' ? 0.9 : style === 'direct' ? 0.3 : 0.7,
         response_format: { type: 'json_object' },
@@ -828,7 +894,7 @@ function getMoodQueries(mood: string): string[] {
 // DAY PLAN CONVERSION
 // ============================================
 
-function convertPlacesToActivities(places: PlaceCard[], moods: string[], location: string, coordinates: { lat: number; lng: number }): Activity[] {
+function convertPlacesToActivities(places: PlaceCard[], moods: string[], location: string, coordinates: { lat: number; lng: number }, lang: 'nl' | 'en'): Activity[] {
   const activities: Activity[] = []
   const usedPlaceIds = new Set<string>()
   const shuffled = [...places].sort(() => Math.random() - 0.5)
@@ -852,7 +918,7 @@ function convertPlacesToActivities(places: PlaceCard[], moods: string[], locatio
       const startTime = new Date(today.getTime())
       startTime.setHours(hour, minute, 0, 0)
       if (now.getHours() >= pastHour) startTime.setDate(startTime.getDate() + 1)
-      activities.push(createActivityFromPlace(place, slot, startTime, moods))
+      activities.push(createActivityFromPlace(place, slot, startTime, moods, lang))
     }
   }
   addActivities(morning, 'morning', 7, 10, 3, 11)
@@ -872,19 +938,19 @@ function getTimeSlotsForPlace(place: PlaceCard): string[] {
   return slots
 }
 
-function createActivityFromPlace(place: PlaceCard, timeSlot: string, startTime: Date, moods: string[]): Activity {
+function createActivityFromPlace(place: PlaceCard, timeSlot: string, startTime: Date, moods: string[], lang: 'nl' | 'en'): Activity {
   const placeId = place.id.startsWith('google_') ? place.id.substring(7) : place.id
   return {
     id: `activity_${Date.now()}_${place.id}`,
     name: place.name,
-    description: generateDescription(place, moods),
+    description: generateDescription(place, moods, lang),
     timeSlot,
     duration: estimateDuration(place.types),
     location: { latitude: place.location.lat, longitude: place.location.lng },
     paymentType: determinePaymentType(place.types, place.price_level),
     imageUrl: place.photo_url || '',
     rating: place.rating,
-    tags: generateTags(place.types, moods),
+    tags: generateTags(place.types, moods, lang),
     startTime: startTime.toISOString(),
     priceLevel: place.price_level ? getPriceLevelText(place.price_level) : undefined,
     placeId,
@@ -913,28 +979,40 @@ function getPriceLevelText(priceLevel: number): string {
   return ['', '€', '€€', '€€€', '€€€€'][priceLevel] || '€€'
 }
 
-function generateDescription(place: PlaceCard, moods: string[]): string {
-  const moodText = moods.join(' and ').toLowerCase()
+function generateDescription(place: PlaceCard, moods: string[], lang: 'nl' | 'en'): string {
+  const moodJoin = lang === 'nl' ? ' en ' : ' and '
+  const moodText = moods.join(moodJoin).toLowerCase()
   const rating = place.rating.toFixed(1)
-  if (place.types.includes('restaurant')) return `${place.name} serveert heerlijke gerechten perfect voor een ${moodText} dag. Gewaardeerd met ${rating} sterren.`
-  if (place.types.includes('cafe')) return `${place.name} is de perfecte koffieplek voor je ${moodText} dag. Gewaardeerd met ${rating} sterren.`
-  if (place.types.includes('museum') || place.types.includes('art_gallery')) return `Ontdek cultuur bij ${place.name}. Inspirerende ervaringen voor je ${moodText} stemming. Gewaardeerd ${rating} sterren.`
-  if (place.types.includes('park')) return `${place.name} biedt een prachtige groene omgeving voor je ${moodText} dag. Gewaardeerd ${rating} sterren.`
-  return `${place.name} is een topadres voor je ${moodText} ervaring. Gewaardeerd ${rating} sterren.`
+  if (lang === 'nl') {
+    if (place.types.includes('restaurant')) return `${place.name} serveert heerlijke gerechten perfect voor een ${moodText} dag. Gewaardeerd met ${rating} sterren.`
+    if (place.types.includes('cafe')) return `${place.name} is de perfecte koffieplek voor je ${moodText} dag. Gewaardeerd met ${rating} sterren.`
+    if (place.types.includes('museum') || place.types.includes('art_gallery')) return `Ontdek cultuur bij ${place.name}. Inspirerende ervaringen voor je ${moodText} stemming. Gewaardeerd ${rating} sterren.`
+    if (place.types.includes('park')) return `${place.name} biedt een prachtige groene omgeving voor je ${moodText} dag. Gewaardeerd ${rating} sterren.`
+    return `${place.name} is een topadres voor je ${moodText} ervaring. Gewaardeerd ${rating} sterren.`
+  }
+  if (place.types.includes('restaurant')) return `${place.name} serves great food — a strong pick for a ${moodText} day. Rated ${rating} stars.`
+  if (place.types.includes('cafe')) return `${place.name} is a great coffee stop for your ${moodText} day. Rated ${rating} stars.`
+  if (place.types.includes('museum') || place.types.includes('art_gallery')) return `Explore culture at ${place.name}. An inspiring fit for your ${moodText} mood. Rated ${rating} stars.`
+  if (place.types.includes('park')) return `${place.name} offers a beautiful green space for your ${moodText} day. Rated ${rating} stars.`
+  return `${place.name} is a top spot for your ${moodText} experience. Rated ${rating} stars.`
 }
 
-function generateTags(types: string[], moods: string[]): string[] {
+function generateTags(types: string[], moods: string[], lang: 'nl' | 'en'): string[] {
   const tags: string[] = []
+  const culture = lang === 'nl' ? 'Cultuur' : 'Culture'
+  const outdoors = lang === 'nl' ? 'Buiten' : 'Outdoors'
+  const romantic = lang === 'nl' ? 'Romantisch' : 'Romantic'
+  const creative = lang === 'nl' ? 'Creatief' : 'Creative'
   if (types.includes('restaurant') || types.includes('food')) tags.push('Food')
   if (types.includes('spa') || types.includes('beauty_salon')) tags.push('Wellness')
-  if (types.includes('museum') || types.includes('art_gallery')) tags.push('Cultuur')
-  if (types.includes('park') || types.includes('natural_feature')) tags.push('Buiten')
+  if (types.includes('museum') || types.includes('art_gallery')) tags.push(culture)
+  if (types.includes('park') || types.includes('natural_feature')) tags.push(outdoors)
   if (types.includes('bar') || types.includes('night_club')) tags.push('Nightlife')
   if (types.includes('cafe') || types.includes('bakery')) tags.push('Cafe')
   for (const mood of moods) {
     const m = mood.toLowerCase()
-    if (m === 'romantic' && (types.includes('restaurant') || types.includes('bar'))) tags.push('Romantisch')
-    if (m === 'creative' && types.includes('museum')) tags.push('Creatief')
+    if (m === 'romantic' && (types.includes('restaurant') || types.includes('bar'))) tags.push(romantic)
+    if (m === 'creative' && types.includes('museum')) tags.push(creative)
   }
   return tags.slice(0, 2)
 }

@@ -254,9 +254,9 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
                             TextSpan(text: l10n.moodyHubJourneyPrefix),
                             for (var i = 0; i < moods.length; i++) ...[
                               if (i > 0 && i == moods.length - 1)
-                                const TextSpan(text: ' & '),
+                                TextSpan(text: l10n.moodyHubListAnd),
                               if (i > 0 && i < moods.length - 1)
-                                const TextSpan(text: ', '),
+                                TextSpan(text: l10n.moodyHubListComma),
                               TextSpan(
                                 text: _moodDisplayLabel(moods[i]),
                                 style: TextStyle(
@@ -296,6 +296,7 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
             moods: moods,
             activitiesCount: activities.length,
             timeOfDay: _apiTimeOfDay(),
+            languageCode: Localizations.localeOf(context).languageCode,
           ),
           const SizedBox(height: 24),
           _MoodyHubMoodCard(
@@ -398,11 +399,13 @@ class _MoodyHubAiMessageLine extends ConsumerStatefulWidget {
     required this.moods,
     required this.activitiesCount,
     required this.timeOfDay,
+    required this.languageCode,
   });
 
   final List<String> moods;
   final int activitiesCount;
   final String timeOfDay;
+  final String languageCode;
 
   @override
   ConsumerState<_MoodyHubAiMessageLine> createState() =>
@@ -440,6 +443,7 @@ class _MoodyHubAiMessageLineState extends ConsumerState<_MoodyHubAiMessageLine>
       currentMoods: widget.moods.isEmpty ? ['explorer'] : widget.moods,
       timeOfDay: widget.timeOfDay,
       activitiesCount: widget.activitiesCount,
+      languageCode: widget.languageCode,
       userPreferences: prefsMap,
     );
     if (!mounted) return;
@@ -1097,12 +1101,29 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
   String? _selectedEmoji;
   final TextEditingController _noteController = TextEditingController();
 
-  final List<_EmojiOption> _emojiOptions = const [
-    _EmojiOption('🤩', 'Amazing'),
-    _EmojiOption('😊', 'Good'),
-    _EmojiOption('😐', 'Okay'),
-    _EmojiOption('😞', 'Meh'),
-  ];
+  List<_EmojiOption> _emojiOptions(AppLocalizations l10n) => [
+        _EmojiOption('🤩', l10n.moodyReviewVibeAmazing),
+        _EmojiOption('😊', l10n.moodyReviewVibeGood),
+        _EmojiOption('😐', l10n.moodyReviewVibeOkay),
+        _EmojiOption('😞', l10n.moodyReviewVibeMeh),
+      ];
+
+  String _ratingFeedbackText(AppLocalizations l10n) {
+    switch (_rating) {
+      case 5:
+        return l10n.moodyReviewStarsFeedback5;
+      case 4:
+        return l10n.moodyReviewStarsFeedback4;
+      case 3:
+        return l10n.moodyReviewStarsFeedback3;
+      case 2:
+        return l10n.moodyReviewStarsFeedback2;
+      case 1:
+        return l10n.moodyReviewStarsFeedback1;
+      default:
+        return '';
+    }
+  }
 
   @override
   void dispose() {
@@ -1112,7 +1133,9 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final title = widget.activity.rawData['title'] as String? ?? 'Activity';
+    final l10n = AppLocalizations.of(context)!;
+    final title =
+        widget.activity.rawData['title'] as String? ?? l10n.dayPlanCardActivity;
     final timeStr =
         '${_formatTime(widget.activity.startTime)} – ${_formatTime(widget.activity.endTime)}';
 
@@ -1145,7 +1168,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Quick Review',
+                  l10n.moodyReviewTitle,
                   style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
@@ -1221,7 +1244,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                   const SizedBox(height: 20),
                   // Star rating
                   Text(
-                    'How was it?',
+                    l10n.moodyReviewHowWasIt,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -1253,15 +1276,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                     const SizedBox(height: 6),
                     Center(
                       child: Text(
-                        _rating == 5
-                            ? '🌟 Amazing!'
-                            : _rating == 4
-                                ? '😊 Really good!'
-                                : _rating == 3
-                                    ? '👍 Pretty good!'
-                                    : _rating == 2
-                                        ? '😐 It was okay'
-                                        : '😞 Not great',
+                        _ratingFeedbackText(l10n),
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -1273,7 +1288,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                   const SizedBox(height: 20),
                   // Emoji vibe
                   Text(
-                    'Your vibe',
+                    l10n.moodyReviewYourVibe,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -1291,9 +1306,9 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                       mainAxisSpacing: 10,
                       childAspectRatio: 0.8,
                     ),
-                    itemCount: _emojiOptions.length,
+                    itemCount: _emojiOptions(l10n).length,
                     itemBuilder: (context, index) {
-                      final option = _emojiOptions[index];
+                      final option = _emojiOptions(l10n)[index];
                       final selected = option.emoji == _selectedEmoji;
                       return GestureDetector(
                         onTap: () {
@@ -1360,7 +1375,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                   const SizedBox(height: 20),
                   // Optional note
                   Text(
-                    'Any thoughts? (optional)',
+                    l10n.moodyReviewOptionalNote,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -1372,7 +1387,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                     controller: _noteController,
                     maxLines: 4,
                     decoration: InputDecoration(
-                      hintText: 'What stood out? Any tips for others?',
+                      hintText: l10n.moodyReviewNoteHint,
                       hintStyle: GoogleFonts.poppins(
                         fontSize: 13,
                         color: Colors.grey.shade400,
@@ -1395,7 +1410,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '💡 This helps others discover great spots!',
+                    l10n.moodyReviewNoteHelper,
                     style: GoogleFonts.poppins(
                       fontSize: 11,
                       color: Colors.grey.shade500,
@@ -1427,8 +1442,8 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                             final raw = widget.activity.rawData;
                             final activityId = (raw['id'] as String?) ??
                                 (raw['title'] as String? ?? '');
-                            final activityName =
-                                raw['title'] as String? ?? 'Activity';
+                            final activityName = raw['title'] as String? ??
+                                l10n.dayPlanCardActivity;
                             final placeName = raw['placeName'] as String?;
                             final moodRaw = raw['mood'] as String?;
                             final mood = _selectedEmoji != null
@@ -1477,7 +1492,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                             Navigator.of(context).pop();
                             showWanderMoodToast(
                               context,
-                              message: 'Thanks for your review! 🚀',
+                              message: l10n.moodyReviewThanksToast,
                             );
                           },
                     style: ElevatedButton.styleFrom(
@@ -1496,7 +1511,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                         const Icon(Icons.check_rounded),
                         const SizedBox(width: 8),
                         Text(
-                          'Save Review',
+                          l10n.moodyReviewSave,
                           style: GoogleFonts.poppins(
                             fontSize: 15,
                             fontWeight: FontWeight.w800,
@@ -1509,8 +1524,8 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                 const SizedBox(height: 6),
                 Text(
                   _rating == 0
-                      ? 'Please add a star rating to continue'
-                      : 'Your feedback helps Moody learn!',
+                      ? l10n.moodyReviewNeedStars
+                      : l10n.moodyReviewHelpsMoody,
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     color: Colors.grey.shade500,
@@ -1687,7 +1702,7 @@ class _ExcitingGetReadySheetContentState
     final rawMood = widget.activity.rawData['mood'] as String?;
     final moodTag =
         (rawMood != null && rawMood.trim().isNotEmpty) ? rawMood : 'adventure';
-    final themeLabel = _playlistThemeFromActivity(widget.activity.rawData);
+    final themeKey = _playlistThemeKeyFromActivity(widget.activity.rawData);
 
     final reminderTime =
         widget.leaveByTime.subtract(const Duration(minutes: 10));
@@ -1734,7 +1749,7 @@ class _ExcitingGetReadySheetContentState
                   _buildChecklist(l10n),
                   const SizedBox(height: 16),
                   // Vibe Playlist
-                  _buildVibePlaylist(l10n, moodTag, themeLabel),
+                  _buildVibePlaylist(l10n, moodTag, themeKey),
                   const SizedBox(height: 16),
                   // Reminder
                   _buildReminder(l10n, reminderTime),
@@ -2052,7 +2067,7 @@ class _ExcitingGetReadySheetContentState
                             Padding(
                               padding: const EdgeInsets.only(top: 2),
                               child: Text(
-                                'Ready to go!',
+                                l10n.getReadyChecklistItemReady,
                                 style: GoogleFonts.poppins(
                                     fontSize: 12,
                                     color: const Color(0xFF2A6049),
@@ -2081,20 +2096,73 @@ class _ExcitingGetReadySheetContentState
     );
   }
 
-  String _playlistThemeFromActivity(Map<String, dynamic> raw) {
+  String _playlistThemeKeyFromActivity(Map<String, dynamic> raw) {
     final title = (raw['title'] as String? ?? '').toLowerCase();
     final cat = (raw['category'] as String? ?? '').toLowerCase();
     if (cat.contains('food') ||
         title.contains('restaurant') ||
-        title.contains('dinner')) return 'Foodie';
-    if (cat.contains('culture') || title.contains('museum')) return 'Cultural';
-    if (cat.contains('shop') || title.contains('shopping')) return 'Shopping';
-    if (cat.contains('outdoor') || title.contains('park')) return 'Outdoor';
-    return 'Adventure';
+        title.contains('dinner')) {
+      return 'foodie';
+    }
+    if (cat.contains('culture') || title.contains('museum')) {
+      return 'cultural';
+    }
+    if (cat.contains('shop') || title.contains('shopping')) {
+      return 'shopping';
+    }
+    if (cat.contains('outdoor') || title.contains('park')) {
+      return 'outdoor';
+    }
+    return 'adventure';
+  }
+
+  String _localizedPlaylistTheme(AppLocalizations l10n, String key) {
+    switch (key) {
+      case 'foodie':
+        return l10n.getReadyPlaylistThemeFoodie;
+      case 'cultural':
+        return l10n.getReadyPlaylistThemeCultural;
+      case 'shopping':
+        return l10n.getReadyPlaylistThemeShopping;
+      case 'outdoor':
+        return l10n.getReadyPlaylistThemeOutdoor;
+      case 'adventure':
+      default:
+        return l10n.getReadyPlaylistThemeAdventure;
+    }
+  }
+
+  String _localizedMoodFragment(AppLocalizations l10n, String raw) {
+    final m = raw.toLowerCase().trim();
+    switch (m) {
+      case 'adventure':
+      case 'adventurous':
+        return l10n.getReadyMoodFragmentAdventure;
+      case 'relaxed':
+        return l10n.getReadyMoodFragmentRelaxed;
+      case 'energetic':
+        return l10n.getReadyMoodFragmentEnergetic;
+      case 'romantic':
+        return l10n.getReadyMoodFragmentRomantic;
+      case 'cultural':
+      case 'culture':
+      case 'cultureel':
+        return l10n.getReadyMoodFragmentCultural;
+      case 'explorer':
+      case 'explore':
+        return l10n.getReadyMoodFragmentExplorer;
+      case 'foodie':
+      case 'food':
+        return l10n.getReadyMoodFragmentFoodie;
+      default:
+        if (raw.isEmpty) return l10n.getReadyMoodFragmentAdventure;
+        return raw[0].toUpperCase() +
+            (raw.length > 1 ? raw.substring(1).toLowerCase() : '');
+    }
   }
 
   Widget _buildVibePlaylist(
-      AppLocalizations l10n, String mood, String themeLabel) {
+      AppLocalizations l10n, String moodTag, String themeKey) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -2130,13 +2198,15 @@ class _ExcitingGetReadySheetContentState
                       color: const Color(0xFF6B21A8)),
                 ),
                 Text(
-                  l10n.getReadyGetInMood(mood),
+                  l10n.getReadyGetInMood(
+                      _localizedMoodFragment(l10n, moodTag)),
                   style: GoogleFonts.poppins(
                       fontSize: 11, color: const Color(0xFF7C3AED)),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  l10n.getReadyPlaylistLabel(themeLabel),
+                  l10n.getReadyPlaylistLabel(
+                      _localizedPlaylistTheme(l10n, themeKey)),
                   style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -2149,7 +2219,7 @@ class _ExcitingGetReadySheetContentState
             color: const Color(0xFF9333EA),
             borderRadius: BorderRadius.circular(12),
             child: InkWell(
-              onTap: () => _onPlaylistTap(themeLabel),
+              onTap: () => _onPlaylistTap(themeKey),
               borderRadius: BorderRadius.circular(12),
               child: Padding(
                 padding:
@@ -2249,21 +2319,24 @@ class _ExcitingGetReadySheetContentState
   }
 
   void _onShareTap() {
-    final title = widget.activity.rawData['title'] as String? ?? 'this place';
+    final l10n = AppLocalizations.of(context)!;
+    final title = widget.activity.rawData['title'] as String? ??
+        l10n.getReadyShareTitleFallback;
     final time = widget.formatTime(widget.activity.startTime);
-    final message = 'Join me at $title around $time – planned with WanderMood.';
+    final message = l10n.getReadyShareInvite(title, time);
     Share.share(message);
   }
 
   Future<void> _onCalendarTap() async {
-    final title =
-        widget.activity.rawData['title'] as String? ?? 'WanderMood activity';
+    final l10n = AppLocalizations.of(context)!;
+    final title = widget.activity.rawData['title'] as String? ??
+        l10n.getReadyCalendarEventTitleFallback;
     final start = widget.activity.startTime.toUtc();
     final end = widget.activity.endTime.toUtc();
     final startStr = _formatIso8601Utc(start);
     final endStr = _formatIso8601Utc(end);
     final details = widget.activity.rawData['description'] as String? ??
-        'Planned with WanderMood';
+        l10n.getReadyCalendarEventDetailsFallback;
     final location = widget.activity.rawData['address'] as String? ??
         widget.activity.rawData['location'] as String? ??
         '';
@@ -2301,7 +2374,7 @@ class _ExcitingGetReadySheetContentState
     final l10n = AppLocalizations.of(context)!;
     showWanderMoodToast(
       context,
-      message: '${l10n.getReadyQuickCalendar} – open in browser or app',
+      message: l10n.getReadyCalendarOpenHint(l10n.getReadyQuickCalendar),
     );
   }
 
@@ -2331,9 +2404,10 @@ class _ExcitingGetReadySheetContentState
     await launchUrl(url, mode: LaunchMode.externalApplication);
   }
 
-  Future<void> _onPlaylistTap(String themeLabel) async {
-    // Open Spotify search for theme-based mood music (app or web)
-    final query = 'Happy $themeLabel Beats';
+  Future<void> _onPlaylistTap(String themeKey) async {
+    final l10n = AppLocalizations.of(context)!;
+    final themeWord = _localizedPlaylistTheme(l10n, themeKey);
+    final query = l10n.getReadyPlaylistSearchQuery(themeWord);
     final uri = Uri.parse(
       'https://open.spotify.com/search/${Uri.encodeComponent(query)}',
     );

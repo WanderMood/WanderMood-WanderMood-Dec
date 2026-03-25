@@ -17,7 +17,6 @@ import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_pro
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/core/utils/auth_helper.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
-import 'dart:convert';
 import 'dart:async';
 
 class PlanLoadingScreen extends ConsumerStatefulWidget {
@@ -77,7 +76,8 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
       setState(() => _messageOpacity = 0.0);
       Future.delayed(const Duration(milliseconds: 300), () {
         if (!mounted) return;
-        final messages = _getMessages();
+        final l10n = AppLocalizations.of(context)!;
+        final messages = _getMessages(l10n);
         setState(() {
           _messageIndex = (_messageIndex + 1) % messages.length;
           _messageOpacity = 1.0;
@@ -121,6 +121,15 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
 
   Future<void> _generateActivitiesWithProperLoading() async {
     debugPrint('🚀 Starting activity generation using Supabase Edge Function for moods: ${widget.selectedMoods}');
+
+    // Capture before any await. Prefer Flutter locale; fallback to platform (e.g. first frame).
+    final languageCode = (() {
+      try {
+        return Localizations.localeOf(context).languageCode;
+      } catch (_) {
+        return WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+      }
+    })();
       
     // Keep loading visible long enough for the progress bar behavior.
     final minimumLoadingDuration = const Duration(seconds: 6);
@@ -198,6 +207,7 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
           'moods': widget.selectedMoods,
           'location': location.trim(),
           'is_local': isLocal,
+          'language_code': languageCode,
           'coordinates': {
             'lat': position.latitude,
             'lng': position.longitude,
@@ -391,81 +401,11 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
     });
   }
 
-  static const Map<String, List<String>> _loadingMessages = {
-    'blij': [
-      'Moody zoekt de zonnigste plekken voor je...',
-      'Goede vibes worden geladen...',
-      'Bijna klaar — jouw perfecte dag staat klaar ✨',
-    ],
-    'avontuurlijk': [
-      'Moody jaagt op jouw volgende avontuur...',
-      'Een epische route door de stad wordt uitgestippeld...',
-      'Wacht even — iets wilds is onderweg 🔥',
-    ],
-    'ontspannen': [
-      'Moody zoekt jouw perfecte rustige plek...',
-      'Een vredige dag wordt samengesteld...',
-      'Rustig aan — jouw kalme plan is bijna klaar 🌿',
-    ],
-    'energiek': [
-      'Moody laadt energie voor je op...',
-      'De beste actieve plekken worden gevonden...',
-      'Vol energie — jouw dag staat bijna klaar ⚡',
-    ],
-    'romantisch': [
-      'Moody vindt de meest romantische plekken...',
-      'Speciale momenten worden gevonden...',
-      'Bijna klaar — een magische dag staat klaar 💕',
-    ],
-    'sociaal': [
-      'Moody zoekt de gezelligste plekken...',
-      'Leuke activiteiten met anderen worden gevonden...',
-      'Bijna klaar — een sociale dag staat klaar 👥',
-    ],
-    'foodie': [
-      'Moody snuffelt de lekkerste plekken op...',
-      'De beste eetadressen in Rotterdam worden gevonden...',
-      'Bijna klaar — een heerlijke dag staat klaar 🍽',
-    ],
-    'cultureel': [
-      'Moody duikt in de culturele scene...',
-      'Kunst, muziek en cultuur worden opgezocht...',
-      'Bijna klaar — een inspirerende dag staat klaar 🎭',
-    ],
-    'gezellig': [
-      'Moody zoekt de gezelligste hoekjes...',
-      'Warme, comfortabele plekken worden gevonden...',
-      'Bijna klaar — een gezellige dag staat klaar ☕',
-    ],
-    'opgewonden': [
-      'Moody zoekt de meest opwindende plekken...',
-      'Bijzondere ervaringen worden gevonden...',
-      'Bijna klaar — een spannende dag staat klaar 🤩',
-    ],
-    'nieuwsgierig': [
-      'Moody ontdekt verborgen plekken voor je...',
-      'Unieke ervaringen worden gevonden...',
-      'Bijna klaar — een ontdekkingstocht staat klaar 🔍',
-    ],
-    'verrassing': [
-      'Moody kiest iets verrassends voor je...',
-      'Een onverwachte dag wordt samengesteld...',
-      'Bijna klaar — een verrassende dag staat klaar 😮',
-    ],
-  };
-
-  static const List<String> _fallbackMessages = [
-    'Moody denkt na...',
-    'Jouw dag wordt samengesteld...',
-    'Bijna klaar — jouw perfecte plan staat klaar ✨',
-  ];
-
-  List<String> _getMessages() {
-    final mood = widget.selectedMoods.isNotEmpty
-        ? widget.selectedMoods.first.toLowerCase().trim()
-        : '';
-    return _loadingMessages[mood] ?? _fallbackMessages;
-  }
+  List<String> _getMessages(AppLocalizations l10n) => [
+        l10n.moodHubMoodyThinking,
+        l10n.planLoadingRotating2,
+        l10n.planLoadingRotating3,
+      ];
 
   String _getErrorMessage(BuildContext context, dynamic error) {
     final l10n = AppLocalizations.of(context)!;
@@ -546,7 +486,8 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
 
   @override
   Widget build(BuildContext context) {
-    final messages = _getMessages();
+    final l10n = AppLocalizations.of(context)!;
+    final messages = _getMessages(l10n);
     return PopScope(
       canPop: false,
       child: Scaffold(

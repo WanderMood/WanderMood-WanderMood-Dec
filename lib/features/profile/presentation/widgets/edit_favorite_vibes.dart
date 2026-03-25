@@ -151,6 +151,76 @@ VibeData? _resolveVibe(String raw) {
   return null;
 }
 
+/// Localized display name (DB still stores English [VibeData.name]).
+String localizedVibeName(AppLocalizations l10n, String id) {
+  switch (id) {
+    case 'adventurous':
+      return l10n.profileVibeAdventurousName;
+    case 'chill':
+      return l10n.profileVibeChillName;
+    case 'foodie':
+      return l10n.profileVibeFoodieName;
+    case 'social':
+      return l10n.profileVibeSocialName;
+    case 'cultural':
+      return l10n.profileVibeCulturalName;
+    case 'nature':
+      return l10n.profileVibeNatureName;
+    case 'romantic':
+      return l10n.profileVibeRomanticName;
+    case 'wellness':
+      return l10n.profileVibeWellnessName;
+    case 'nightlife':
+      return l10n.profileVibeNightlifeName;
+    case 'shopping':
+      return l10n.profileVibeShoppingName;
+    case 'creative':
+      return l10n.profileVibeCreativeName;
+    case 'sporty':
+      return l10n.profileVibeSportyName;
+    default:
+      return id;
+  }
+}
+
+String localizedVibeDescription(AppLocalizations l10n, String id) {
+  switch (id) {
+    case 'adventurous':
+      return l10n.profileVibeAdventurousDesc;
+    case 'chill':
+      return l10n.profileVibeChillDesc;
+    case 'foodie':
+      return l10n.profileVibeFoodieDesc;
+    case 'social':
+      return l10n.profileVibeSocialDesc;
+    case 'cultural':
+      return l10n.profileVibeCulturalDesc;
+    case 'nature':
+      return l10n.profileVibeNatureDesc;
+    case 'romantic':
+      return l10n.profileVibeRomanticDesc;
+    case 'wellness':
+      return l10n.profileVibeWellnessDesc;
+    case 'nightlife':
+      return l10n.profileVibeNightlifeDesc;
+    case 'shopping':
+      return l10n.profileVibeShoppingDesc;
+    case 'creative':
+      return l10n.profileVibeCreativeDesc;
+    case 'sporty':
+      return l10n.profileVibeSportyDesc;
+    default:
+      return '';
+  }
+}
+
+/// English stored value from profile → localized chip title.
+String localizedVibeLabelForStored(AppLocalizations l10n, String storedEnglish) {
+  final v = _resolveVibe(storedEnglish);
+  if (v == null) return storedEnglish;
+  return localizedVibeName(l10n, v.id);
+}
+
 /// Favorite Vibes Card for Profile Screen
 class FavoriteVibesCard extends StatelessWidget {
   final List<String> selectedVibes;
@@ -334,7 +404,7 @@ class FavoriteVibesCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          vibeData.name,
+                          localizedVibeName(l10n, vibeData.id),
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -746,7 +816,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                       Text(vibe.emoji, style: const TextStyle(fontSize: 16)),
                       const SizedBox(width: 8),
                       Text(
-                        vibe.name,
+                        localizedVibeName(AppLocalizations.of(context)!, vibe.id),
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w600,
                           color: _fvWmForest,
@@ -778,6 +848,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
       itemCount: allVibes.length,
       itemBuilder: (context, index) {
         final vibe = allVibes[index];
+        final l10nGrid = AppLocalizations.of(context)!;
         final isSelected = _selectedVibes.any(
           (v) => v.toLowerCase() == vibe.name.toLowerCase(),
         );
@@ -835,7 +906,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      vibe.name,
+                      localizedVibeName(l10nGrid, vibe.id),
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -845,7 +916,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                     const SizedBox(height: 4),
                     Expanded(
                       child: Text(
-                        vibe.description,
+                        localizedVibeDescription(l10nGrid, vibe.id),
                         style: GoogleFonts.poppins(
                           fontSize: 11,
                           color: isSelected

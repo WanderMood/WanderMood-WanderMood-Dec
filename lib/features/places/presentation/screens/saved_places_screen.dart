@@ -3,6 +3,7 @@ import 'dart:ui' show ImageFilter;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -60,6 +61,7 @@ class _SavedPlacesScreenState extends ConsumerState<SavedPlacesScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: _wmCream,
       body: NestedScrollView(
@@ -70,7 +72,7 @@ class _SavedPlacesScreenState extends ConsumerState<SavedPlacesScreen>
             elevation: 0,
             iconTheme: const IconThemeData(color: Color(0xFF1A202C)),
             title: Text(
-              'Saved Places',
+              l10n.savedPlacesScreenTitle,
               style: GoogleFonts.poppins(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -97,9 +99,9 @@ class _SavedPlacesScreenState extends ConsumerState<SavedPlacesScreen>
               unselectedLabelColor: _wmStone,
               indicatorColor: _wmForest,
               indicatorWeight: 2.5,
-              tabs: const [
-                Tab(text: 'All Saved'),
-                Tab(text: 'Collections'),
+              tabs: [
+                Tab(text: l10n.savedPlacesTabAllSaved),
+                Tab(text: l10n.savedPlacesTabCollections),
               ],
             ),
           ),
@@ -139,6 +141,7 @@ class _AllSavedTab extends ConsumerWidget {
   }
 
   Widget _emptyState(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -156,13 +159,13 @@ class _AllSavedTab extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'No saved places yet',
+              l10n.savedPlacesEmptyTitle,
               style: GoogleFonts.poppins(
                   fontSize: 20, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             Text(
-              'Tap the bookmark icon on any place\nin Explore to save it here.',
+              l10n.savedPlacesEmptyBody,
               style: GoogleFonts.poppins(fontSize: 14, color: _wmStone),
               textAlign: TextAlign.center,
             ),
@@ -232,6 +235,7 @@ class _SavedPlaceCardState extends ConsumerState<_SavedPlaceCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final place = widget.savedPlace.place;
     final grad = _gradient(widget.savedPlace.hashCode);
     final hasPhoto =
@@ -379,7 +383,7 @@ class _SavedPlaceCardState extends ConsumerState<_SavedPlaceCard> {
                                   size: 12, color: Colors.white),
                               const SizedBox(width: 4),
                               Text(
-                                'Hold to collect',
+                                l10n.savedPlacesHoldToCollect,
                                 style: GoogleFonts.poppins(
                                   fontSize: 10,
                                   color: Colors.white,
@@ -424,7 +428,9 @@ class _SavedPlaceCardState extends ConsumerState<_SavedPlaceCard> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Saved ${_timeAgo(widget.savedPlace.savedAt)}',
+                              l10n.savedPlacesSavedPrefix(
+                                _timeAgo(context, widget.savedPlace.savedAt),
+                              ),
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
@@ -584,17 +590,19 @@ class _SavedPlaceCardState extends ConsumerState<_SavedPlaceCard> {
     );
   }
 
-  String _timeAgo(DateTime dt) {
+  String _timeAgo(BuildContext context, DateTime dt) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toString();
     final diff = DateTime.now().difference(dt);
     if (diff.inDays == 0) {
-      if (diff.inHours == 0) return 'just now';
-      return '${diff.inHours}h ago';
+      if (diff.inHours == 0) return l10n.savedPlacesTimeJustNow;
+      return l10n.savedPlacesTimeHoursAgo(diff.inHours);
     } else if (diff.inDays == 1) {
-      return 'yesterday';
+      return l10n.savedPlacesTimeYesterday;
     } else if (diff.inDays < 7) {
-      return '${diff.inDays}d ago';
+      return l10n.savedPlacesTimeDaysAgo(diff.inDays);
     }
-    return '${dt.day}/${dt.month}/${dt.year}';
+    return DateFormat.yMMMd(locale).format(dt);
   }
 
   String _emojiForTypes(List<String> types) {
@@ -668,6 +676,7 @@ class _CollectionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -748,8 +757,9 @@ class _CollectionCard extends ConsumerWidget {
                         size: 14, color: _wmStone),
                     const SizedBox(width: 4),
                     Text(
-                      '${collection.placeCount} '
-                      '${collection.placeCount == 1 ? 'place' : 'places'}',
+                      collection.placeCount == 1
+                          ? l10n.savedPlacesPlaceCountOne(collection.placeCount)
+                          : l10n.savedPlacesPlaceCountMany(collection.placeCount),
                       style: GoogleFonts.poppins(
                           fontSize: 12, color: _wmStone),
                     ),
@@ -776,6 +786,7 @@ class _CollectionCard extends ConsumerWidget {
 class _NewCollectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: () => showModalBottomSheet(
         context: context,
@@ -813,7 +824,7 @@ class _NewCollectionCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'New Collection',
+              l10n.savedPlacesNewCollection,
               style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -822,7 +833,7 @@ class _NewCollectionCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Group your saves',
+              l10n.savedPlacesNewCollectionSubtitle,
               style: GoogleFonts.poppins(fontSize: 11, color: _wmStone),
             ),
           ],
@@ -870,6 +881,7 @@ class _CreateCollectionSheetState extends ConsumerState<_CreateCollectionSheet> 
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
@@ -894,7 +906,7 @@ class _CreateCollectionSheetState extends ConsumerState<_CreateCollectionSheet> 
               ),
             ),
             Text(
-              'New Collection',
+              l10n.savedPlacesNewCollection,
               style: GoogleFonts.poppins(
                   fontSize: 18, fontWeight: FontWeight.w700),
             ),
@@ -993,6 +1005,7 @@ class _AddToCollectionSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final collectionsAsync = ref.watch(tripCollectionsProvider);
 
     return Container(
@@ -1017,7 +1030,7 @@ class _AddToCollectionSheet extends ConsumerWidget {
             ),
           ),
           Text(
-            'Add to collection',
+            l10n.savedPlacesAddToCollectionTitle,
             style: GoogleFonts.poppins(
                 fontSize: 18, fontWeight: FontWeight.w700),
           ),
@@ -1032,7 +1045,7 @@ class _AddToCollectionSheet extends ConsumerWidget {
                 ? Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Text(
-                      'No collections yet. Create one in the Collections tab.',
+                      l10n.savedPlacesNoCollectionsHint,
                       style: GoogleFonts.poppins(
                           fontSize: 14, color: _wmStone),
                     ),
@@ -1067,7 +1080,7 @@ class _AddToCollectionSheet extends ConsumerWidget {
                                 fontWeight: FontWeight.w600, fontSize: 14),
                           ),
                           subtitle: Text(
-                            '${col.placeCount} places',
+                            l10n.savedPlacesPlacesCount(col.placeCount),
                             style: GoogleFonts.poppins(
                                 fontSize: 12, color: _wmStone),
                           ),
@@ -1087,7 +1100,7 @@ class _AddToCollectionSheet extends ConsumerWidget {
                               showWanderMoodToast(
                                 context,
                                 message:
-                                    'Added to ${col.name}',
+                                    l10n.savedPlacesAddedToCollection(col.name),
                                 duration: const Duration(seconds: 2),
                                 leading: Text(col.emoji,
                                     style: const TextStyle(fontSize: 18)),
@@ -1127,6 +1140,7 @@ class _SavedPlaceActionsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
       decoration: const BoxDecoration(
@@ -1155,9 +1169,9 @@ class _SavedPlaceActionsSheet extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 12),
-          _actionTile(Icons.event_available_outlined, 'Add to My Day', onAddToMyDay),
-          _actionTile(Icons.collections_bookmark_outlined, 'Add to Collection', onAddToCollection),
-          _actionTile(Icons.info_outline, 'View Details', onViewDetails),
+          _actionTile(Icons.event_available_outlined, l10n.savedPlacesActionAddToMyDay, onAddToMyDay),
+          _actionTile(Icons.collections_bookmark_outlined, l10n.savedPlacesActionAddToCollection, onAddToCollection),
+          _actionTile(Icons.info_outline, l10n.savedPlacesActionViewDetails, onViewDetails),
         ],
       ),
     );
@@ -1217,21 +1231,8 @@ class _PlanSavedPlaceSheetState extends ConsumerState<_PlanSavedPlaceSheet> {
       a.year == b.year && a.month == b.month && a.day == b.day;
 
   String _formatDate(DateTime date) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${date.day} ${months[date.month - 1]}';
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat('d MMM', locale).format(date);
   }
 
   Future<void> _pickCustomDate() async {
@@ -1413,7 +1414,7 @@ class _PlanSavedPlaceSheetState extends ConsumerState<_PlanSavedPlaceSheet> {
             ),
           ),
           Text(
-            'Add to My Day',
+            l10n.savedPlacesPlanSheetTitle,
             style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 6),
@@ -1441,7 +1442,7 @@ class _PlanSavedPlaceSheetState extends ConsumerState<_PlanSavedPlaceSheet> {
               ),
               const SizedBox(width: 8),
               chip(
-                label: isToday || isTomorrow ? 'Pick date' : _formatDate(_selectedDate),
+                label: isToday || isTomorrow ? l10n.savedPlacesPickDate : _formatDate(_selectedDate),
                 selected: !isToday && !isTomorrow,
                 onTap: _pickCustomDate,
               ),
@@ -1449,7 +1450,10 @@ class _PlanSavedPlaceSheetState extends ConsumerState<_PlanSavedPlaceSheet> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Selected: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+            l10n.savedPlacesSelectedDate(
+              DateFormat.yMd(Localizations.localeOf(context).toString())
+                  .format(_selectedDate),
+            ),
             style: GoogleFonts.poppins(fontSize: 11, color: _wmStone),
           ),
           const SizedBox(height: 14),

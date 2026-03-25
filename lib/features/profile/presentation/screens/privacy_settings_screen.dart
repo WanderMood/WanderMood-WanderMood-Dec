@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import '../../domain/providers/profile_provider.dart';
 import '../widgets/settings_screen_template.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
@@ -41,6 +42,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
   }
 
   Future<void> _updateVisibility(String value) async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _selectedVisibility = value);
     try {
       await ref.read(profileProvider.notifier).updateProfile(
@@ -49,14 +51,14 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: 'Profile visibility updated',
+          message: l10n.privacyToastVisibilityUpdated,
         );
       }
     } catch (e) {
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: 'Error: $e',
+          message: l10n.privacyToastError(e.toString()),
           isError: true,
         );
       }
@@ -64,13 +66,14 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
   }
 
   Future<void> _updateShowEmail(bool value) async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _showEmail = value);
     try {
       await ref.read(profileProvider.notifier).updateProfile(showEmail: value);
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: value ? 'Email will be visible to others' : 'Email is now hidden',
+          message: value ? l10n.privacyToastEmailVisible : l10n.privacyToastEmailHidden,
           duration: const Duration(seconds: 2),
         );
       }
@@ -79,7 +82,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
         setState(() => _showEmail = !value);
         showWanderMoodToast(
           context,
-          message: 'Error: $e',
+          message: l10n.privacyToastError(e.toString()),
           isError: true,
         );
       }
@@ -87,13 +90,14 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
   }
 
   Future<void> _updateShowAge(bool value) async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _showAge = value);
     try {
       await ref.read(profileProvider.notifier).updateProfile(showAge: value);
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: value ? 'Age will be visible to others' : 'Age is now hidden',
+          message: value ? l10n.privacyToastAgeVisible : l10n.privacyToastAgeHidden,
           duration: const Duration(seconds: 2),
         );
       }
@@ -102,7 +106,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
         setState(() => _showAge = !value);
         showWanderMoodToast(
           context,
-          message: 'Error: $e',
+          message: l10n.privacyToastError(e.toString()),
           isError: true,
         );
       }
@@ -111,15 +115,16 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SettingsScreenTemplate(
-      title: 'Privacy',
+      title: l10n.settingsPrivacyScreenTitle,
       onBack: () => context.pop(),
       wanderMoodV2Chrome: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Profile Visibility',
+            l10n.privacyProfileVisibilitySection,
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -128,31 +133,31 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
           ),
           const SizedBox(height: 12),
           _buildRadioOption(
-            label: 'Public',
-            subtitle: 'Anyone can see your profile',
+            label: l10n.privacyVisibilityPublic,
+            subtitle: l10n.privacyVisibilityPublicSub,
             value: 'public',
             selected: _selectedVisibility == 'public',
             onTap: () => _updateVisibility('public'),
           ),
           const SizedBox(height: 8),
           _buildRadioOption(
-            label: 'Friends Only',
-            subtitle: 'Only your friends can see',
+            label: l10n.privacyVisibilityFriends,
+            subtitle: l10n.privacyVisibilityFriendsSub,
             value: 'friends',
             selected: _selectedVisibility == 'friends',
             onTap: () => _updateVisibility('friends'),
           ),
           const SizedBox(height: 8),
           _buildRadioOption(
-            label: 'Private',
-            subtitle: 'Only you can see',
+            label: l10n.privacyVisibilityPrivate,
+            subtitle: l10n.privacyVisibilityPrivateSub,
             value: 'private',
             selected: _selectedVisibility == 'private',
             onTap: () => _updateVisibility('private'),
           ),
           const SizedBox(height: 24),
           Text(
-            'What Others Can See',
+            l10n.privacyWhatOthersSeeSection,
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -161,13 +166,13 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
           ),
           const SizedBox(height: 12),
           _buildToggleOption(
-            label: 'Show Email Address',
+            label: l10n.privacyShowEmailLabel,
             checked: _showEmail,
             onChange: () => _updateShowEmail(!_showEmail),
           ),
           const SizedBox(height: 12),
           _buildToggleOption(
-            label: 'Show Age',
+            label: l10n.privacyShowAgeLabel,
             checked: _showAge,
             onChange: () => _updateShowAge(!_showAge),
           ),

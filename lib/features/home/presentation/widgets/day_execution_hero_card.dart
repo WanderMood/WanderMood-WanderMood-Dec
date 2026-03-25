@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/features/mood/models/activity_rating.dart';
 import 'package:wandermood/features/mood/services/activity_rating_service.dart';
 import 'package:wandermood/features/home/presentation/widgets/activity_review_sheet.dart';
@@ -140,7 +142,8 @@ class _ActiveExecutionHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = activity.rawData['title'] as String? ?? 'Activity';
+    final l10n = AppLocalizations.of(context)!;
+    final title = _heroActivityTitle(context, activity.rawData);
     final slot = _slotEmoji(activity.startTime.hour);
 
     return Container(
@@ -169,7 +172,7 @@ class _ActiveExecutionHero extends StatelessWidget {
                     Text(slot, style: const TextStyle(fontSize: 14)),
                     const SizedBox(width: 6),
                     Text(
-                      'You\'re here!',
+                      l10n.myDayExecutionHeroYoureHereBadge,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -186,7 +189,7 @@ class _ActiveExecutionHero extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'IN PROGRESS',
+                  l10n.myDayExecutionHeroInProgressBadge,
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
@@ -209,7 +212,7 @@ class _ActiveExecutionHero extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Enjoying it? Tap Done when you\'re ready to move on.',
+            l10n.myDayExecutionHeroActiveHint,
             style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w400,
@@ -222,7 +225,7 @@ class _ActiveExecutionHero extends StatelessWidget {
             children: [
               Expanded(
                 child: _HeroButton(
-                  label: 'Directions',
+                  label: l10n.activityDetailDirections,
                   icon: Icons.navigation_rounded,
                   filled: false,
                   onTap: onDirections,
@@ -231,7 +234,7 @@ class _ActiveExecutionHero extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _HeroButton(
-                  label: 'Done',
+                  label: l10n.myDayTimelinePrimaryDone,
                   icon: Icons.check_rounded,
                   filled: true,
                   onTap: onMarkDone,
@@ -260,7 +263,8 @@ class _CompletedExecutionHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = activity.rawData['title'] as String? ?? 'Activity';
+    final l10n = AppLocalizations.of(context)!;
+    final title = _heroActivityTitle(context, activity.rawData);
     final hasReview = rating != null;
 
     return Container(
@@ -280,7 +284,7 @@ class _CompletedExecutionHero extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.25),
+                  color: Colors.white.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -294,8 +298,10 @@ class _CompletedExecutionHero extends StatelessWidget {
                     const SizedBox(width: 6),
                     Text(
                       hasReview
-                          ? 'Reviewed at ${_formatTime(rating!.completedAt)}'
-                          : 'Completed today',
+                          ? l10n.myDayExecutionHeroReviewedAt(
+                              _formatTime(context, rating!.completedAt),
+                            )
+                          : l10n.myDayExecutionHeroCompletedToday,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -308,11 +314,13 @@ class _CompletedExecutionHero extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.25),
+                  color: Colors.white.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  hasReview ? 'REVIEWED' : 'READY TO REVIEW',
+                  hasReview
+                      ? l10n.myDayExecutionHeroBadgeReviewedCaps
+                      : l10n.myDayExecutionHeroBadgeReadyToReviewCaps,
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
@@ -365,7 +373,7 @@ class _CompletedExecutionHero extends StatelessWidget {
             ),
           ] else
             Text(
-              'Capture how it felt while the experience is still fresh.',
+              l10n.myDayExecutionHeroReviewCaptureHint,
               style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
@@ -378,7 +386,7 @@ class _CompletedExecutionHero extends StatelessWidget {
             children: [
               Expanded(
                 child: _HeroButton(
-                  label: 'Directions',
+                  label: l10n.activityDetailDirections,
                   icon: Icons.navigation_rounded,
                   filled: false,
                   onColoredCard: true,
@@ -388,9 +396,12 @@ class _CompletedExecutionHero extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: hasReview
-                    ? _DimmedButton(label: 'Reviewed', icon: Icons.check_rounded)
+                    ? _DimmedButton(
+                        label: l10n.myDayTimelinePrimaryReviewed,
+                        icon: Icons.check_rounded,
+                      )
                     : _HeroButton(
-                        label: 'Review',
+                        label: l10n.myDayTimelinePrimaryReview,
                         icon: Icons.star_outline_rounded,
                         filled: true,
                         primaryOnForestCard: true,
@@ -418,9 +429,10 @@ class _UpcomingExecutionHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = activity.rawData['title'] as String? ?? 'Activity';
+    final l10n = AppLocalizations.of(context)!;
+    final title = _heroActivityTitle(context, activity.rawData);
     final slotEmoji = _slotEmoji(activity.startTime.hour);
-    final slotName = _slotName(activity.startTime.hour);
+    final slotName = _slotName(context, activity.startTime.hour);
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -476,7 +488,7 @@ class _UpcomingExecutionHero extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'UP NEXT',
+                  l10n.myDayExecutionHeroUpNextBadge,
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
@@ -499,7 +511,7 @@ class _UpcomingExecutionHero extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Tap "I\'m Here" when you arrive.',
+            l10n.myDayExecutionHeroTapImHereWhenArrive,
             style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w400,
@@ -512,7 +524,7 @@ class _UpcomingExecutionHero extends StatelessWidget {
             children: [
               Expanded(
                 child: _HeroButton(
-                  label: 'Directions',
+                  label: l10n.activityDetailDirections,
                   icon: Icons.navigation_rounded,
                   filled: false,
                   onColoredCard: true,
@@ -522,7 +534,7 @@ class _UpcomingExecutionHero extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _HeroButton(
-                  label: 'I\'m Here',
+                  label: l10n.myDayTimelinePrimaryImHere,
                   icon: Icons.place_rounded,
                   filled: true,
                   primaryOnForestCard: true,
@@ -651,15 +663,21 @@ String _slotEmoji(int hour) {
   return '🌙';
 }
 
-String _slotName(int hour) {
-  if (hour >= 6 && hour < 12) return 'Morning';
-  if (hour >= 12 && hour < 18) return 'Afternoon';
-  return 'Evening';
+String _heroActivityTitle(BuildContext context, Map<String, dynamic> rawData) {
+  final l10n = AppLocalizations.of(context)!;
+  final t = rawData['title'] as String?;
+  if (t != null && t.trim().isNotEmpty) return t;
+  return l10n.myDayActivityFallbackLabel;
 }
 
-String _formatTime(DateTime time) {
-  final hour = time.hour == 0 ? 12 : (time.hour > 12 ? time.hour - 12 : time.hour);
-  final minute = time.minute.toString().padLeft(2, '0');
-  final period = time.hour >= 12 ? 'PM' : 'AM';
-  return '$hour:$minute $period';
+String _slotName(BuildContext context, int hour) {
+  final l10n = AppLocalizations.of(context)!;
+  if (hour >= 6 && hour < 12) return l10n.timeLabelMorning;
+  if (hour >= 12 && hour < 18) return l10n.timeLabelAfternoon;
+  return l10n.timeLabelEvening;
+}
+
+String _formatTime(BuildContext context, DateTime time) {
+  final locale = Localizations.localeOf(context).toString();
+  return DateFormat.jm(locale).format(time);
 }

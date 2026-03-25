@@ -2678,6 +2678,24 @@ abstract class AppLocalizations {
   /// **'Edit All'**
   String get profilePreferencesEditAll;
 
+  /// No description provided for @profilePreferencesNoneSet.
+  ///
+  /// In en, this message translates to:
+  /// **'No preferences set yet.'**
+  String get profilePreferencesNoneSet;
+
+  /// No description provided for @profileSnackLocalModeSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Local mode saved'**
+  String get profileSnackLocalModeSaved;
+
+  /// No description provided for @profileSnackTravelingModeSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel mode saved'**
+  String get profileSnackTravelingModeSaved;
+
   /// No description provided for @profilePreferencesBudgetStyle.
   ///
   /// In en, this message translates to:
@@ -2857,6 +2875,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'55+ Adventurer'**
   String get profileAgeGroup55Plus;
+
+  /// No description provided for @profileAgeGroupGenericSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'{ageGroup} Adventurer'**
+  String profileAgeGroupGenericSuffix(String ageGroup);
 
   /// No description provided for @profileBudgetLow.
   ///
@@ -3133,6 +3157,450 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'YOUR CURRENT VIBES'**
   String get profileVibesCurrentTitle;
+
+  /// No description provided for @profileEditPhotoOverlayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get profileEditPhotoOverlayLabel;
+
+  /// No description provided for @profileEditLocationHintExamples.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Rotterdam, Amsterdam...'**
+  String get profileEditLocationHintExamples;
+
+  /// No description provided for @preferencesScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit preferences'**
+  String get preferencesScreenTitle;
+
+  /// No description provided for @prefSectionCommunicationStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Communication style'**
+  String get prefSectionCommunicationStyle;
+
+  /// No description provided for @prefSectionInterests.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Interests'**
+  String get prefSectionInterests;
+
+  /// No description provided for @prefSectionSocialVibe.
+  ///
+  /// In en, this message translates to:
+  /// **'Social Vibe'**
+  String get prefSectionSocialVibe;
+
+  /// No description provided for @prefSectionTravelStyles.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel styles'**
+  String get prefSectionTravelStyles;
+
+  /// No description provided for @prefSectionFavoriteMoods.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite moods'**
+  String get prefSectionFavoriteMoods;
+
+  /// No description provided for @prefSectionPlanningPace.
+  ///
+  /// In en, this message translates to:
+  /// **'Planning Pace ⏰'**
+  String get prefSectionPlanningPace;
+
+  /// No description provided for @prefSectionSelectedMoods.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected moods'**
+  String get prefSectionSelectedMoods;
+
+  /// No description provided for @prefCommFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Friendly'**
+  String get prefCommFriendly;
+
+  /// No description provided for @prefCommPlayful.
+  ///
+  /// In en, this message translates to:
+  /// **'Playful'**
+  String get prefCommPlayful;
+
+  /// No description provided for @prefCommCalm.
+  ///
+  /// In en, this message translates to:
+  /// **'Calm'**
+  String get prefCommCalm;
+
+  /// No description provided for @prefCommPractical.
+  ///
+  /// In en, this message translates to:
+  /// **'Practical'**
+  String get prefCommPractical;
+
+  /// No description provided for @prefIntFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Food'**
+  String get prefIntFood;
+
+  /// No description provided for @prefIntCulture.
+  ///
+  /// In en, this message translates to:
+  /// **'Culture'**
+  String get prefIntCulture;
+
+  /// No description provided for @prefIntNature.
+  ///
+  /// In en, this message translates to:
+  /// **'Nature'**
+  String get prefIntNature;
+
+  /// No description provided for @prefIntNightlife.
+  ///
+  /// In en, this message translates to:
+  /// **'Nightlife'**
+  String get prefIntNightlife;
+
+  /// No description provided for @prefIntShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping'**
+  String get prefIntShopping;
+
+  /// No description provided for @prefIntWellness.
+  ///
+  /// In en, this message translates to:
+  /// **'Wellness'**
+  String get prefIntWellness;
+
+  /// No description provided for @prefSocSolo.
+  ///
+  /// In en, this message translates to:
+  /// **'Solo'**
+  String get prefSocSolo;
+
+  /// No description provided for @prefSocSmallGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Small-group'**
+  String get prefSocSmallGroup;
+
+  /// No description provided for @prefSocMix.
+  ///
+  /// In en, this message translates to:
+  /// **'Mix'**
+  String get prefSocMix;
+
+  /// No description provided for @prefSocSocial.
+  ///
+  /// In en, this message translates to:
+  /// **'Social'**
+  String get prefSocSocial;
+
+  /// No description provided for @prefTravelRelaxed.
+  ///
+  /// In en, this message translates to:
+  /// **'Relaxed'**
+  String get prefTravelRelaxed;
+
+  /// No description provided for @prefTravelAdventurous.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventurous'**
+  String get prefTravelAdventurous;
+
+  /// No description provided for @prefTravelCultural.
+  ///
+  /// In en, this message translates to:
+  /// **'Cultural'**
+  String get prefTravelCultural;
+
+  /// No description provided for @prefTravelCityBreak.
+  ///
+  /// In en, this message translates to:
+  /// **'City-break'**
+  String get prefTravelCityBreak;
+
+  /// No description provided for @prefFavHappy.
+  ///
+  /// In en, this message translates to:
+  /// **'Happy'**
+  String get prefFavHappy;
+
+  /// No description provided for @prefFavAdventurous.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventurous'**
+  String get prefFavAdventurous;
+
+  /// No description provided for @prefFavCalm.
+  ///
+  /// In en, this message translates to:
+  /// **'Calm'**
+  String get prefFavCalm;
+
+  /// No description provided for @prefFavRomantic.
+  ///
+  /// In en, this message translates to:
+  /// **'Romantic'**
+  String get prefFavRomantic;
+
+  /// No description provided for @prefFavEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Energetic'**
+  String get prefFavEnergetic;
+
+  /// No description provided for @prefPlanSameDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Same Day Planner'**
+  String get prefPlanSameDay;
+
+  /// No description provided for @prefPlanWeekAhead.
+  ///
+  /// In en, this message translates to:
+  /// **'Week Ahead Planner'**
+  String get prefPlanWeekAhead;
+
+  /// No description provided for @prefPlanSpontaneous.
+  ///
+  /// In en, this message translates to:
+  /// **'Spontaneous'**
+  String get prefPlanSpontaneous;
+
+  /// No description provided for @prefSelHappy.
+  ///
+  /// In en, this message translates to:
+  /// **'Happy'**
+  String get prefSelHappy;
+
+  /// No description provided for @prefSelRelaxed.
+  ///
+  /// In en, this message translates to:
+  /// **'Relaxed'**
+  String get prefSelRelaxed;
+
+  /// No description provided for @prefSelCultural.
+  ///
+  /// In en, this message translates to:
+  /// **'Cultural'**
+  String get prefSelCultural;
+
+  /// No description provided for @prefSelRomantic.
+  ///
+  /// In en, this message translates to:
+  /// **'Romantic'**
+  String get prefSelRomantic;
+
+  /// No description provided for @prefSelEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Energetic'**
+  String get prefSelEnergetic;
+
+  /// No description provided for @prefSelCreative.
+  ///
+  /// In en, this message translates to:
+  /// **'Creative'**
+  String get prefSelCreative;
+
+  /// No description provided for @profileVibeAdventurousName.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventurous'**
+  String get profileVibeAdventurousName;
+
+  /// No description provided for @profileVibeAdventurousDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Thrilling activities & outdoor adventures'**
+  String get profileVibeAdventurousDesc;
+
+  /// No description provided for @profileVibeChillName.
+  ///
+  /// In en, this message translates to:
+  /// **'Chill'**
+  String get profileVibeChillName;
+
+  /// No description provided for @profileVibeChillDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Relaxed, laid-back experiences'**
+  String get profileVibeChillDesc;
+
+  /// No description provided for @profileVibeFoodieName.
+  ///
+  /// In en, this message translates to:
+  /// **'Foodie'**
+  String get profileVibeFoodieName;
+
+  /// No description provided for @profileVibeFoodieDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Culinary experiences & dining'**
+  String get profileVibeFoodieDesc;
+
+  /// No description provided for @profileVibeSocialName.
+  ///
+  /// In en, this message translates to:
+  /// **'Social'**
+  String get profileVibeSocialName;
+
+  /// No description provided for @profileVibeSocialDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting people & social events'**
+  String get profileVibeSocialDesc;
+
+  /// No description provided for @profileVibeCulturalName.
+  ///
+  /// In en, this message translates to:
+  /// **'Cultural'**
+  String get profileVibeCulturalName;
+
+  /// No description provided for @profileVibeCulturalDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Museums, art & history'**
+  String get profileVibeCulturalDesc;
+
+  /// No description provided for @profileVibeNatureName.
+  ///
+  /// In en, this message translates to:
+  /// **'Nature'**
+  String get profileVibeNatureName;
+
+  /// No description provided for @profileVibeNatureDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Parks, gardens & outdoors'**
+  String get profileVibeNatureDesc;
+
+  /// No description provided for @profileVibeRomanticName.
+  ///
+  /// In en, this message translates to:
+  /// **'Romantic'**
+  String get profileVibeRomanticName;
+
+  /// No description provided for @profileVibeRomanticDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Date nights & romantic spots'**
+  String get profileVibeRomanticDesc;
+
+  /// No description provided for @profileVibeWellnessName.
+  ///
+  /// In en, this message translates to:
+  /// **'Wellness'**
+  String get profileVibeWellnessName;
+
+  /// No description provided for @profileVibeWellnessDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Spas, yoga & self-care'**
+  String get profileVibeWellnessDesc;
+
+  /// No description provided for @profileVibeNightlifeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Nightlife'**
+  String get profileVibeNightlifeName;
+
+  /// No description provided for @profileVibeNightlifeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Bars, clubs & evening fun'**
+  String get profileVibeNightlifeDesc;
+
+  /// No description provided for @profileVibeShoppingName.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping'**
+  String get profileVibeShoppingName;
+
+  /// No description provided for @profileVibeShoppingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Markets, boutiques & malls'**
+  String get profileVibeShoppingDesc;
+
+  /// No description provided for @profileVibeCreativeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Creative'**
+  String get profileVibeCreativeName;
+
+  /// No description provided for @profileVibeCreativeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Art studios & creative spaces'**
+  String get profileVibeCreativeDesc;
+
+  /// No description provided for @profileVibeSportyName.
+  ///
+  /// In en, this message translates to:
+  /// **'Sporty'**
+  String get profileVibeSportyName;
+
+  /// No description provided for @profileVibeSportyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Sports & fitness activities'**
+  String get profileVibeSportyDesc;
+
+  /// No description provided for @profileGlobeYourJourney.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Journey'**
+  String get profileGlobeYourJourney;
+
+  /// No description provided for @profileGlobeDemoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo — tap a marker!'**
+  String get profileGlobeDemoHint;
+
+  /// No description provided for @profileGlobePlacesVisitedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} places visited'**
+  String profileGlobePlacesVisitedCount(String count);
+
+  /// No description provided for @profileGlobeBadgeDemo.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo'**
+  String get profileGlobeBadgeDemo;
+
+  /// No description provided for @profileGlobeControlRotate.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate'**
+  String get profileGlobeControlRotate;
+
+  /// No description provided for @profileGlobeControlPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get profileGlobeControlPause;
+
+  /// No description provided for @profileGlobeControlReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get profileGlobeControlReset;
+
+  /// No description provided for @profileGlobeUnknownMood.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get profileGlobeUnknownMood;
 
   /// No description provided for @shareProfileTitle.
   ///
@@ -3908,6 +4376,252 @@ abstract class AppLocalizations {
   /// **'{count} devices'**
   String settingsActiveSessionsSubtitle(String count);
 
+  /// No description provided for @activeSessionsNoActiveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No active sessions'**
+  String get activeSessionsNoActiveTitle;
+
+  /// No description provided for @activeSessionsNoActiveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You are not signed in on any devices.'**
+  String get activeSessionsNoActiveBody;
+
+  /// No description provided for @activeSessionsCountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Active Session{count, plural, one{} other{s}}'**
+  String activeSessionsCountLabel(int count);
+
+  /// No description provided for @activeSessionsSignOutAllOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out All Other Devices'**
+  String get activeSessionsSignOutAllOther;
+
+  /// No description provided for @activeSessionsUnknownDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Device'**
+  String get activeSessionsUnknownDevice;
+
+  /// No description provided for @activeSessionsCurrentBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get activeSessionsCurrentBadge;
+
+  /// No description provided for @activeSessionsUnknownLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown location'**
+  String get activeSessionsUnknownLocation;
+
+  /// No description provided for @activeSessionsSignOutThisDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out this device'**
+  String get activeSessionsSignOutThisDevice;
+
+  /// No description provided for @activeSessionsErrorLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading sessions'**
+  String get activeSessionsErrorLoading;
+
+  /// No description provided for @activeSessionsTimeJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get activeSessionsTimeJustNow;
+
+  /// No description provided for @activeSessionsTimeHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} hour{count, plural, one{} other{s}} ago'**
+  String activeSessionsTimeHoursAgo(int count);
+
+  /// No description provided for @activeSessionsTimeYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get activeSessionsTimeYesterday;
+
+  /// No description provided for @activeSessionsTimeDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days ago'**
+  String activeSessionsTimeDaysAgo(int count);
+
+  /// No description provided for @activeSessionsTimeWeeksAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} week{count, plural, one{} other{s}} ago'**
+  String activeSessionsTimeWeeksAgo(int count);
+
+  /// No description provided for @activeSessionsDialogSignOutDeviceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out Device'**
+  String get activeSessionsDialogSignOutDeviceTitle;
+
+  /// No description provided for @activeSessionsDialogSignOutDeviceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to sign out from {device}?'**
+  String activeSessionsDialogSignOutDeviceBody(String device);
+
+  /// No description provided for @activeSessionsDialogCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get activeSessionsDialogCancel;
+
+  /// No description provided for @activeSessionsDialogSignOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get activeSessionsDialogSignOut;
+
+  /// No description provided for @activeSessionsToastSignedOutDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Device signed out successfully'**
+  String get activeSessionsToastSignedOutDevice;
+
+  /// No description provided for @activeSessionsToastSignOutDeviceError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error signing out device: {error}'**
+  String activeSessionsToastSignOutDeviceError(String error);
+
+  /// No description provided for @activeSessionsDialogSignOutAllTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out All Other Devices'**
+  String get activeSessionsDialogSignOutAllTitle;
+
+  /// No description provided for @activeSessionsDialogSignOutAllBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will sign you out from all devices except this one. Are you sure?'**
+  String get activeSessionsDialogSignOutAllBody;
+
+  /// No description provided for @activeSessionsDialogSignOutAllCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out All'**
+  String get activeSessionsDialogSignOutAllCta;
+
+  /// No description provided for @activeSessionsToastSignedOutAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All other devices signed out successfully'**
+  String get activeSessionsToastSignedOutAll;
+
+  /// No description provided for @activeSessionsToastSignOutAllError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error signing out devices: {error}'**
+  String activeSessionsToastSignOutAllError(String error);
+
+  /// No description provided for @twoFactorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Two-Factor Authentication'**
+  String get twoFactorTitle;
+
+  /// No description provided for @twoFactorEnabledTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'2FA is Enabled'**
+  String get twoFactorEnabledTitle;
+
+  /// No description provided for @twoFactorDisabledTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Two-Factor Authentication'**
+  String get twoFactorDisabledTitle;
+
+  /// No description provided for @twoFactorEnabledBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is protected with two-factor authentication.'**
+  String get twoFactorEnabledBody;
+
+  /// No description provided for @twoFactorDisabledBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an extra layer of security to your account by requiring a verification code in addition to your password.'**
+  String get twoFactorDisabledBody;
+
+  /// No description provided for @twoFactorBenefitsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Benefits:'**
+  String get twoFactorBenefitsTitle;
+
+  /// No description provided for @twoFactorBenefitUnauthorized.
+  ///
+  /// In en, this message translates to:
+  /// **'Protects against unauthorized access'**
+  String get twoFactorBenefitUnauthorized;
+
+  /// No description provided for @twoFactorBenefitSensitiveOps.
+  ///
+  /// In en, this message translates to:
+  /// **'Required for sensitive operations'**
+  String get twoFactorBenefitSensitiveOps;
+
+  /// No description provided for @twoFactorBenefitLoginAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified of login attempts'**
+  String get twoFactorBenefitLoginAlerts;
+
+  /// No description provided for @twoFactorDisableCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable 2FA'**
+  String get twoFactorDisableCta;
+
+  /// No description provided for @twoFactorEnableCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable 2FA'**
+  String get twoFactorEnableCta;
+
+  /// No description provided for @twoFactorDisableInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'To disable 2FA, you will need to verify your identity.'**
+  String get twoFactorDisableInfo;
+
+  /// No description provided for @twoFactorEnableInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'You will need an authenticator app (like Google Authenticator) to set up 2FA.'**
+  String get twoFactorEnableInfo;
+
+  /// No description provided for @twoFactorToastSetupStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'2FA setup started. Please complete the setup process.'**
+  String get twoFactorToastSetupStarted;
+
+  /// No description provided for @twoFactorToastDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'2FA has been disabled.'**
+  String get twoFactorToastDisabled;
+
+  /// No description provided for @twoFactorToastError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String twoFactorToastError(String error);
+
   /// No description provided for @settingsPrivacyTitle.
   ///
   /// In en, this message translates to:
@@ -4316,6 +5030,12 @@ abstract class AppLocalizations {
   /// **'No ads'**
   String get subscriptionFeatureNoAds;
 
+  /// No description provided for @subscriptionFeatureEarlyAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Early access to new features'**
+  String get subscriptionFeatureEarlyAccess;
+
   /// No description provided for @subscriptionUpgradeCta.
   ///
   /// In en, this message translates to:
@@ -4513,6 +5233,378 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'WanderMood Support'**
   String get helpSupportEmailSubject;
+
+  /// No description provided for @helpSupportEmailSupportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Email support'**
+  String get helpSupportEmailSupportTitle;
+
+  /// No description provided for @settingsLocationChangeCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get settingsLocationChangeCta;
+
+  /// No description provided for @savedPlacesScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved places'**
+  String get savedPlacesScreenTitle;
+
+  /// No description provided for @savedPlacesTabAllSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'All saved'**
+  String get savedPlacesTabAllSaved;
+
+  /// No description provided for @savedPlacesTabCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Collections'**
+  String get savedPlacesTabCollections;
+
+  /// No description provided for @savedPlacesEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved places yet'**
+  String get savedPlacesEmptyTitle;
+
+  /// No description provided for @savedPlacesEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the bookmark icon on any place in Explore to save it here.'**
+  String get savedPlacesEmptyBody;
+
+  /// No description provided for @savedPlacesHoldToCollect.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold to collect'**
+  String get savedPlacesHoldToCollect;
+
+  /// No description provided for @savedPlacesSavedPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved {when}'**
+  String savedPlacesSavedPrefix(String when);
+
+  /// No description provided for @savedPlacesTimeJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get savedPlacesTimeJustNow;
+
+  /// No description provided for @savedPlacesTimeHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}h ago'**
+  String savedPlacesTimeHoursAgo(int count);
+
+  /// No description provided for @savedPlacesTimeYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'yesterday'**
+  String get savedPlacesTimeYesterday;
+
+  /// No description provided for @savedPlacesTimeDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}d ago'**
+  String savedPlacesTimeDaysAgo(int count);
+
+  /// No description provided for @savedPlacesPlaceCountOne.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} place'**
+  String savedPlacesPlaceCountOne(int count);
+
+  /// No description provided for @savedPlacesPlaceCountMany.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} places'**
+  String savedPlacesPlaceCountMany(int count);
+
+  /// No description provided for @savedPlacesNewCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'New collection'**
+  String get savedPlacesNewCollection;
+
+  /// No description provided for @savedPlacesNewCollectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Group your saves'**
+  String get savedPlacesNewCollectionSubtitle;
+
+  /// No description provided for @savedPlacesAddToCollectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to collection'**
+  String get savedPlacesAddToCollectionTitle;
+
+  /// No description provided for @savedPlacesNoCollectionsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No collections yet. Create one in the Collections tab.'**
+  String get savedPlacesNoCollectionsHint;
+
+  /// No description provided for @savedPlacesPlacesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} places'**
+  String savedPlacesPlacesCount(int count);
+
+  /// No description provided for @savedPlacesAddedToCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to {name}'**
+  String savedPlacesAddedToCollection(String name);
+
+  /// No description provided for @savedPlacesActionAddToMyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to My Day'**
+  String get savedPlacesActionAddToMyDay;
+
+  /// No description provided for @savedPlacesActionAddToCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to collection'**
+  String get savedPlacesActionAddToCollection;
+
+  /// No description provided for @savedPlacesActionViewDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'View details'**
+  String get savedPlacesActionViewDetails;
+
+  /// No description provided for @savedPlacesPlanSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to My Day'**
+  String get savedPlacesPlanSheetTitle;
+
+  /// No description provided for @savedPlacesPickDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick date'**
+  String get savedPlacesPickDate;
+
+  /// No description provided for @savedPlacesSelectedDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected: {date}'**
+  String savedPlacesSelectedDate(String date);
+
+  /// No description provided for @locationPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select location'**
+  String get locationPickerTitle;
+
+  /// No description provided for @locationPickerSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for a city or location…'**
+  String get locationPickerSearchHint;
+
+  /// No description provided for @locationPickerEmptyPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Start typing to search for a location'**
+  String get locationPickerEmptyPrompt;
+
+  /// No description provided for @locationPickerNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No locations found'**
+  String get locationPickerNoResults;
+
+  /// No description provided for @locationPickerToastUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Location updated to {place}'**
+  String locationPickerToastUpdated(String place);
+
+  /// No description provided for @locationPickerToastError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error saving location: {error}'**
+  String locationPickerToastError(String error);
+
+  /// No description provided for @settingsPrivacyScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get settingsPrivacyScreenTitle;
+
+  /// No description provided for @privacyProfileVisibilitySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile visibility'**
+  String get privacyProfileVisibilitySection;
+
+  /// No description provided for @privacyVisibilityPublic.
+  ///
+  /// In en, this message translates to:
+  /// **'Public'**
+  String get privacyVisibilityPublic;
+
+  /// No description provided for @privacyVisibilityPublicSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Anyone can see your profile'**
+  String get privacyVisibilityPublicSub;
+
+  /// No description provided for @privacyVisibilityFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends only'**
+  String get privacyVisibilityFriends;
+
+  /// No description provided for @privacyVisibilityFriendsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Only your friends can see'**
+  String get privacyVisibilityFriendsSub;
+
+  /// No description provided for @privacyVisibilityPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Private'**
+  String get privacyVisibilityPrivate;
+
+  /// No description provided for @privacyVisibilityPrivateSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Only you can see'**
+  String get privacyVisibilityPrivateSub;
+
+  /// No description provided for @privacyWhatOthersSeeSection.
+  ///
+  /// In en, this message translates to:
+  /// **'What others can see'**
+  String get privacyWhatOthersSeeSection;
+
+  /// No description provided for @privacyShowEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Show email address'**
+  String get privacyShowEmailLabel;
+
+  /// No description provided for @privacyShowAgeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Show age'**
+  String get privacyShowAgeLabel;
+
+  /// No description provided for @privacyToastVisibilityUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile visibility updated'**
+  String get privacyToastVisibilityUpdated;
+
+  /// No description provided for @privacyToastError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String privacyToastError(String error);
+
+  /// No description provided for @privacyToastEmailVisible.
+  ///
+  /// In en, this message translates to:
+  /// **'Email will be visible to others'**
+  String get privacyToastEmailVisible;
+
+  /// No description provided for @privacyToastEmailHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Email is now hidden'**
+  String get privacyToastEmailHidden;
+
+  /// No description provided for @privacyToastAgeVisible.
+  ///
+  /// In en, this message translates to:
+  /// **'Age will be visible to others'**
+  String get privacyToastAgeVisible;
+
+  /// No description provided for @privacyToastAgeHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Age is now hidden'**
+  String get privacyToastAgeHidden;
+
+  /// No description provided for @languageNameEn.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageNameEn;
+
+  /// No description provided for @languageNativeEn.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageNativeEn;
+
+  /// No description provided for @languageNameNl.
+  ///
+  /// In en, this message translates to:
+  /// **'Dutch'**
+  String get languageNameNl;
+
+  /// No description provided for @languageNativeNl.
+  ///
+  /// In en, this message translates to:
+  /// **'Nederlands'**
+  String get languageNativeNl;
+
+  /// No description provided for @languageNameEs.
+  ///
+  /// In en, this message translates to:
+  /// **'Spanish'**
+  String get languageNameEs;
+
+  /// No description provided for @languageNativeEs.
+  ///
+  /// In en, this message translates to:
+  /// **'Español'**
+  String get languageNativeEs;
+
+  /// No description provided for @languageNameFr.
+  ///
+  /// In en, this message translates to:
+  /// **'French'**
+  String get languageNameFr;
+
+  /// No description provided for @languageNativeFr.
+  ///
+  /// In en, this message translates to:
+  /// **'Français'**
+  String get languageNativeFr;
+
+  /// No description provided for @languageNameDe.
+  ///
+  /// In en, this message translates to:
+  /// **'German'**
+  String get languageNameDe;
+
+  /// No description provided for @languageNativeDe.
+  ///
+  /// In en, this message translates to:
+  /// **'Deutsch'**
+  String get languageNativeDe;
+
+  /// No description provided for @languageNameIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Italian'**
+  String get languageNameIt;
+
+  /// No description provided for @languageNativeIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Italiano'**
+  String get languageNativeIt;
 
   /// No description provided for @prefCommunicationTitle.
   ///
@@ -4843,18 +5935,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A few quick questions to personalize your experience'**
   String get prefTravelSubtitleDirect;
-
-  /// No description provided for @prefSectionSocialVibe.
-  ///
-  /// In en, this message translates to:
-  /// **'Social Vibe'**
-  String get prefSectionSocialVibe;
-
-  /// No description provided for @prefSectionPlanningPace.
-  ///
-  /// In en, this message translates to:
-  /// **'Planning Pace ⏰'**
-  String get prefSectionPlanningPace;
 
   /// No description provided for @prefSectionTravelStyle.
   ///
@@ -6272,6 +7352,270 @@ abstract class AppLocalizations {
   /// **'Profile'**
   String get navProfile;
 
+  /// No description provided for @navMoody.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody'**
+  String get navMoody;
+
+  /// No description provided for @myDayStatusTitleRightNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Right Now'**
+  String get myDayStatusTitleRightNow;
+
+  /// No description provided for @myDayStatusTitleUpNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Up Next'**
+  String get myDayStatusTitleUpNext;
+
+  /// No description provided for @myDayStatusTitleAllDone.
+  ///
+  /// In en, this message translates to:
+  /// **'✅ All Done'**
+  String get myDayStatusTitleAllDone;
+
+  /// No description provided for @myDayStatusTitleFreeTime.
+  ///
+  /// In en, this message translates to:
+  /// **'📅 FREE TIME'**
+  String get myDayStatusTitleFreeTime;
+
+  /// No description provided for @myDayStatusDescActive.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re here! Tap Done when you\'re finished.'**
+  String get myDayStatusDescActive;
+
+  /// No description provided for @myDayStatusDescUpcomingMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned for the morning · tap \"I\'m Here\" when you arrive'**
+  String get myDayStatusDescUpcomingMorning;
+
+  /// No description provided for @myDayStatusDescUpcomingAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned for the afternoon · tap \"I\'m Here\" when you arrive'**
+  String get myDayStatusDescUpcomingAfternoon;
+
+  /// No description provided for @myDayStatusDescUpcomingEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned for the evening · tap \"I\'m Here\" when you arrive'**
+  String get myDayStatusDescUpcomingEvening;
+
+  /// No description provided for @myDayStatusDescCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Great day! You\'ve completed everything.'**
+  String get myDayStatusDescCompleted;
+
+  /// No description provided for @myDayPeriodMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning'**
+  String get myDayPeriodMorning;
+
+  /// No description provided for @myDayPeriodAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon'**
+  String get myDayPeriodAfternoon;
+
+  /// No description provided for @myDayPeriodEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening'**
+  String get myDayPeriodEvening;
+
+  /// No description provided for @myDayFreeTimeSuggestionMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfect time to start your day with energy'**
+  String get myDayFreeTimeSuggestionMorning;
+
+  /// No description provided for @myDayFreeTimeSuggestionAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Great time to explore and discover'**
+  String get myDayFreeTimeSuggestionAfternoon;
+
+  /// No description provided for @myDayFreeTimeSuggestionEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind down with something special'**
+  String get myDayFreeTimeSuggestionEvening;
+
+  /// No description provided for @myDayTimelineActivityCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 activity} other{{count} activities}}'**
+  String myDayTimelineActivityCount(int count);
+
+  /// No description provided for @myDayTimelineAllDone.
+  ///
+  /// In en, this message translates to:
+  /// **'All Done'**
+  String get myDayTimelineAllDone;
+
+  /// No description provided for @myDayTimelineSectionComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Great job completing this section!'**
+  String get myDayTimelineSectionComplete;
+
+  /// No description provided for @myDayTimelineTapForDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap for details'**
+  String get myDayTimelineTapForDetails;
+
+  /// No description provided for @myDayTimelinePrimaryImHere.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m Here'**
+  String get myDayTimelinePrimaryImHere;
+
+  /// No description provided for @myDayTimelinePrimaryDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get myDayTimelinePrimaryDone;
+
+  /// No description provided for @myDayTimelinePrimaryReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get myDayTimelinePrimaryReview;
+
+  /// No description provided for @myDayTimelinePrimaryReviewed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed'**
+  String get myDayTimelinePrimaryReviewed;
+
+  /// No description provided for @myDayTimelineStatusImHere.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'M HERE'**
+  String get myDayTimelineStatusImHere;
+
+  /// No description provided for @myDayTimelineStatusPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'PLANNED'**
+  String get myDayTimelineStatusPlanned;
+
+  /// No description provided for @myDayTimelineStatusDone.
+  ///
+  /// In en, this message translates to:
+  /// **'DONE'**
+  String get myDayTimelineStatusDone;
+
+  /// No description provided for @myDayActivityFallbackLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get myDayActivityFallbackLabel;
+
+  /// No description provided for @myDayExecutionHeroYoureHereBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re here!'**
+  String get myDayExecutionHeroYoureHereBadge;
+
+  /// No description provided for @myDayExecutionHeroInProgressBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'IN PROGRESS'**
+  String get myDayExecutionHeroInProgressBadge;
+
+  /// No description provided for @myDayExecutionHeroActiveHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enjoying it? Tap Done when you\'re ready to move on.'**
+  String get myDayExecutionHeroActiveHint;
+
+  /// No description provided for @myDayExecutionHeroReviewedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed at {time}'**
+  String myDayExecutionHeroReviewedAt(String time);
+
+  /// No description provided for @myDayExecutionHeroCompletedToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed today'**
+  String get myDayExecutionHeroCompletedToday;
+
+  /// No description provided for @myDayExecutionHeroBadgeReviewedCaps.
+  ///
+  /// In en, this message translates to:
+  /// **'REVIEWED'**
+  String get myDayExecutionHeroBadgeReviewedCaps;
+
+  /// No description provided for @myDayExecutionHeroBadgeReadyToReviewCaps.
+  ///
+  /// In en, this message translates to:
+  /// **'READY TO REVIEW'**
+  String get myDayExecutionHeroBadgeReadyToReviewCaps;
+
+  /// No description provided for @myDayExecutionHeroReviewCaptureHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture how it felt while the experience is still fresh.'**
+  String get myDayExecutionHeroReviewCaptureHint;
+
+  /// No description provided for @myDayExecutionHeroUpNextBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'UP NEXT'**
+  String get myDayExecutionHeroUpNextBadge;
+
+  /// No description provided for @myDayExecutionHeroTapImHereWhenArrive.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap \"I\'m Here\" when you arrive.'**
+  String get myDayExecutionHeroTapImHereWhenArrive;
+
+  /// No description provided for @myDayTimelineSectionMorningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'🌅 Morning'**
+  String get myDayTimelineSectionMorningTitle;
+
+  /// No description provided for @myDayTimelineSectionMorningSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start your day right'**
+  String get myDayTimelineSectionMorningSubtitle;
+
+  /// No description provided for @myDayTimelineSectionAfternoonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'🌞 Afternoon'**
+  String get myDayTimelineSectionAfternoonTitle;
+
+  /// No description provided for @myDayTimelineSectionAfternoonSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Peak adventure time'**
+  String get myDayTimelineSectionAfternoonSubtitle;
+
+  /// No description provided for @myDayTimelineSectionEveningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'🌆 Evening'**
+  String get myDayTimelineSectionEveningTitle;
+
+  /// No description provided for @myDayTimelineSectionEveningSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind down and enjoy'**
+  String get myDayTimelineSectionEveningSubtitle;
+
   /// No description provided for @myDayWeekendEmptyTitle.
   ///
   /// In en, this message translates to:
@@ -6355,6 +7699,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Code copied 💚'**
   String get gygCodeCopied;
+
+  /// No description provided for @placeCardSeeActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'See activity'**
+  String get placeCardSeeActivity;
+
+  /// No description provided for @placeCardPriceVaries.
+  ///
+  /// In en, this message translates to:
+  /// **'Price varies'**
+  String get placeCardPriceVaries;
+
+  /// No description provided for @gygEdviennePicksInCity.
+  ///
+  /// In en, this message translates to:
+  /// **'✨ Edvienne\'s Picks in {city}'**
+  String gygEdviennePicksInCity(String city);
+
+  /// No description provided for @gygMapCompactTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edvienne\'s Picks — {city}'**
+  String gygMapCompactTitle(String city);
+
+  /// No description provided for @gygMapCompactSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to open GetYourGuide & your discount'**
+  String get gygMapCompactSubtitle;
+
+  /// No description provided for @gygPrimaryTitleInCity.
+  ///
+  /// In en, this message translates to:
+  /// **'✨ Edvienne\'s Picks in {city}'**
+  String gygPrimaryTitleInCity(String city);
+
+  /// No description provided for @gygTagline48h.
+  ///
+  /// In en, this message translates to:
+  /// **'What I\'d book if I had 48 hours here 🤍'**
+  String get gygTagline48h;
+
+  /// No description provided for @gygOpenInApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in GetYourGuide app (with promo)'**
+  String get gygOpenInApp;
+
+  /// No description provided for @gygOpenInWeb.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in browser'**
+  String get gygOpenInWeb;
+
+  /// No description provided for @gygPromoGift.
+  ///
+  /// In en, this message translates to:
+  /// **'🎁 A little extra from me: {code}'**
+  String gygPromoGift(String code);
+
+  /// No description provided for @gygPromoAppOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid only in the GetYourGuide app.'**
+  String get gygPromoAppOnly;
+
+  /// No description provided for @gygCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get gygCopy;
+
+  /// No description provided for @gygPoweredBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Powered by GetYourGuide'**
+  String get gygPoweredBy;
+
+  /// No description provided for @gygComingSoonBody.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m still curating the best picks for this city 🤍'**
+  String get gygComingSoonBody;
+
+  /// No description provided for @gygCategoryFoodDrink.
+  ///
+  /// In en, this message translates to:
+  /// **'🍴 Food & drink'**
+  String get gygCategoryFoodDrink;
+
+  /// No description provided for @gygCategoryBoatTours.
+  ///
+  /// In en, this message translates to:
+  /// **'⛵ Boat tours'**
+  String get gygCategoryBoatTours;
+
+  /// No description provided for @gygCategoryCulture.
+  ///
+  /// In en, this message translates to:
+  /// **'🎭 Culture'**
+  String get gygCategoryCulture;
+
+  /// No description provided for @gygCategoryAdventure.
+  ///
+  /// In en, this message translates to:
+  /// **'🧗 Adventure'**
+  String get gygCategoryAdventure;
+
+  /// No description provided for @gygCategoryLuxury.
+  ///
+  /// In en, this message translates to:
+  /// **'✨ Luxury'**
+  String get gygCategoryLuxury;
 
   /// No description provided for @socialNewMessageComingSoon.
   ///
@@ -7532,11 +8990,47 @@ abstract class AppLocalizations {
   /// **'My Agenda'**
   String get agendaTitle;
 
+  /// No description provided for @agendaStatusDone.
+  ///
+  /// In en, this message translates to:
+  /// **'DONE'**
+  String get agendaStatusDone;
+
+  /// No description provided for @agendaStatusNow.
+  ///
+  /// In en, this message translates to:
+  /// **'NOW'**
+  String get agendaStatusNow;
+
+  /// No description provided for @agendaStatusUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'UPCOMING'**
+  String get agendaStatusUpcoming;
+
   /// No description provided for @agendaStatusCancelled.
   ///
   /// In en, this message translates to:
   /// **'CANCELLED'**
   String get agendaStatusCancelled;
+
+  /// No description provided for @agendaHeaderToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get agendaHeaderToday;
+
+  /// No description provided for @agendaHeaderTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get agendaHeaderTomorrow;
+
+  /// No description provided for @agendaHeaderYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get agendaHeaderYesterday;
 
   /// No description provided for @agendaTodayEmpty.
   ///
@@ -7615,6 +9109,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Location TBD'**
   String get agendaLocationTBD;
+
+  /// No description provided for @agendaDeleteDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'“{title}” will be removed from your planner.'**
+  String agendaDeleteDialogBody(String title);
+
+  /// No description provided for @agendaDeleteDialogBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get agendaDeleteDialogBack;
+
+  /// No description provided for @agendaDeleteDialogConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get agendaDeleteDialogConfirm;
 
   /// No description provided for @exploreCategoryAll.
   ///
@@ -7897,6 +9409,228 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Maximum Distance (km)'**
   String get exploreFilterMaxDistance;
+
+  /// No description provided for @exploreErrorLocationRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location required'**
+  String get exploreErrorLocationRequiredTitle;
+
+  /// No description provided for @exploreErrorLoadingPlacesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading places'**
+  String get exploreErrorLoadingPlacesTitle;
+
+  /// No description provided for @exploreErrorLocationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enable location services or set your location in settings to discover places near you.'**
+  String get exploreErrorLocationBody;
+
+  /// No description provided for @exploreErrorEnableLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable location'**
+  String get exploreErrorEnableLocation;
+
+  /// No description provided for @exploreAdvancedFiltersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced Filters'**
+  String get exploreAdvancedFiltersTitle;
+
+  /// No description provided for @exploreFiltersActiveCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 filter active} other{{count} filters active}}'**
+  String exploreFiltersActiveCount(int count);
+
+  /// No description provided for @exploreMoodyHintFiltersActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Nice! {count, plural, one{1 filter} other{{count} filters}} active — I\'ll keep that in mind.'**
+  String exploreMoodyHintFiltersActive(int count);
+
+  /// No description provided for @exploreMoodyHintFiltersIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Hey! I\'m Moody. Use filters to find exactly what fits your vibe — dietary, accessibility, photo spots, and more.'**
+  String get exploreMoodyHintFiltersIntro;
+
+  /// No description provided for @exploreClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get exploreClearAll;
+
+  /// No description provided for @exploreSectionQuickSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick suggestions'**
+  String get exploreSectionQuickSuggestions;
+
+  /// No description provided for @exploreSectionDietaryPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Dietary preferences'**
+  String get exploreSectionDietaryPreferences;
+
+  /// No description provided for @exploreSectionAccessibilityInclusion.
+  ///
+  /// In en, this message translates to:
+  /// **'Accessibility & inclusion'**
+  String get exploreSectionAccessibilityInclusion;
+
+  /// No description provided for @exploreSectionComfortConvenience.
+  ///
+  /// In en, this message translates to:
+  /// **'Comfort & convenience'**
+  String get exploreSectionComfortConvenience;
+
+  /// No description provided for @exploreSectionPhotoAesthetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo & aesthetic'**
+  String get exploreSectionPhotoAesthetic;
+
+  /// No description provided for @exploreSaveFiltersWithCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Save {count} filters'**
+  String exploreSaveFiltersWithCount(int count);
+
+  /// No description provided for @exploreSaveFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Save filters'**
+  String get exploreSaveFilters;
+
+  /// No description provided for @exploreQuickFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick filters'**
+  String get exploreQuickFilters;
+
+  /// No description provided for @exploreSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search activities, restaurants, museums...'**
+  String get exploreSearchHint;
+
+  /// No description provided for @exploreCategoryChipOutdoor.
+  ///
+  /// In en, this message translates to:
+  /// **'Outdoor'**
+  String get exploreCategoryChipOutdoor;
+
+  /// No description provided for @exploreCategoryChipShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping'**
+  String get exploreCategoryChipShopping;
+
+  /// No description provided for @exploreCategoryChipNightlife.
+  ///
+  /// In en, this message translates to:
+  /// **'Nightlife'**
+  String get exploreCategoryChipNightlife;
+
+  /// No description provided for @explorePriceLevelBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget'**
+  String get explorePriceLevelBudget;
+
+  /// No description provided for @explorePriceLevelModerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate'**
+  String get explorePriceLevelModerate;
+
+  /// No description provided for @explorePriceLevelExpensive.
+  ///
+  /// In en, this message translates to:
+  /// **'Expensive'**
+  String get explorePriceLevelExpensive;
+
+  /// No description provided for @explorePriceLevelLuxury.
+  ///
+  /// In en, this message translates to:
+  /// **'Luxury'**
+  String get explorePriceLevelLuxury;
+
+  /// No description provided for @exploreMoodAdventure.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventure'**
+  String get exploreMoodAdventure;
+
+  /// No description provided for @exploreMoodCreative.
+  ///
+  /// In en, this message translates to:
+  /// **'Creative'**
+  String get exploreMoodCreative;
+
+  /// No description provided for @exploreMoodRelaxed.
+  ///
+  /// In en, this message translates to:
+  /// **'Relaxed'**
+  String get exploreMoodRelaxed;
+
+  /// No description provided for @exploreMoodMindful.
+  ///
+  /// In en, this message translates to:
+  /// **'Mindful'**
+  String get exploreMoodMindful;
+
+  /// No description provided for @exploreMoodRomantic.
+  ///
+  /// In en, this message translates to:
+  /// **'Romantic'**
+  String get exploreMoodRomantic;
+
+  /// No description provided for @exploreAddToMyDayDayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get exploreAddToMyDayDayLabel;
+
+  /// No description provided for @exploreAddToMyDayPickDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick date'**
+  String get exploreAddToMyDayPickDate;
+
+  /// No description provided for @exploreAddToMyDaySelectedDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected: {date}'**
+  String exploreAddToMyDaySelectedDate(String date);
+
+  /// No description provided for @exploreAddToMyDayTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get exploreAddToMyDayTimeLabel;
+
+  /// No description provided for @exploreDatePickerHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a date'**
+  String get exploreDatePickerHelp;
+
+  /// No description provided for @exploreDatePickerConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose'**
+  String get exploreDatePickerConfirm;
+
+  /// No description provided for @explorePlaceDescriptionFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore {name}'**
+  String explorePlaceDescriptionFallback(String name);
 
   /// No description provided for @chatSheetMoodyName.
   ///
@@ -8786,12 +10520,6 @@ abstract class AppLocalizations {
   /// **'How much time do you usually have for activities?'**
   String get prefSectionTimeAvailableSub;
 
-  /// No description provided for @prefSectionInterests.
-  ///
-  /// In en, this message translates to:
-  /// **'Your Interests'**
-  String get prefSectionInterests;
-
   /// No description provided for @prefSectionInterestsSub.
   ///
   /// In en, this message translates to:
@@ -9098,6 +10826,12 @@ abstract class AppLocalizations {
   /// **'All photos and memories'**
   String get deleteAccountPhotos;
 
+  /// No description provided for @deleteAccountConfirmKeyword.
+  ///
+  /// In en, this message translates to:
+  /// **'DELETE'**
+  String get deleteAccountConfirmKeyword;
+
   /// No description provided for @deleteAccountTypeToConfirm.
   ///
   /// In en, this message translates to:
@@ -9151,6 +10885,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error deleting account'**
   String get deleteAccountError;
+
+  /// No description provided for @settingsNotificationsSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'NOTIFICATIONS'**
+  String get settingsNotificationsSectionTitle;
+
+  /// No description provided for @settingsNotificationsTripRemindersLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip reminders'**
+  String get settingsNotificationsTripRemindersLabel;
+
+  /// No description provided for @settingsNotificationsTripRemindersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders for planned activities'**
+  String get settingsNotificationsTripRemindersSubtitle;
+
+  /// No description provided for @settingsNotificationsWeatherUpdatesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather updates'**
+  String get settingsNotificationsWeatherUpdatesLabel;
+
+  /// No description provided for @settingsNotificationsWeatherUpdatesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Updates about the weather at your destination'**
+  String get settingsNotificationsWeatherUpdatesSubtitle;
+
+  /// No description provided for @premiumUpgradeScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade to Premium'**
+  String get premiumUpgradeScreenTitle;
+
+  /// No description provided for @premiumMonthlyPlanLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Plan'**
+  String get premiumMonthlyPlanLabel;
+
+  /// No description provided for @premiumMonthlyPriceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'€4.99/month'**
+  String get premiumMonthlyPriceLabel;
+
+  /// No description provided for @premiumBestValueBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Best Value'**
+  String get premiumBestValueBadge;
+
+  /// No description provided for @premiumPaymentMethodTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Method'**
+  String get premiumPaymentMethodTitle;
+
+  /// No description provided for @premiumPaymentMethodCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit/Debit Card'**
+  String get premiumPaymentMethodCard;
+
+  /// No description provided for @premiumPaymentMethodPaypal.
+  ///
+  /// In en, this message translates to:
+  /// **'PayPal'**
+  String get premiumPaymentMethodPaypal;
+
+  /// No description provided for @premiumPaymentMethodApplePay.
+  ///
+  /// In en, this message translates to:
+  /// **'Apple Pay'**
+  String get premiumPaymentMethodApplePay;
+
+  /// No description provided for @premiumSubscribeCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe for €4.99/month'**
+  String get premiumSubscribeCta;
+
+  /// No description provided for @premiumSecurityNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Your payment information is encrypted and secure'**
+  String get premiumSecurityNotice;
+
+  /// No description provided for @premiumToastActivated.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium subscription activated!'**
+  String get premiumToastActivated;
+
+  /// No description provided for @premiumToastPaymentFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment failed: {error}'**
+  String premiumToastPaymentFailed(String error);
+
+  /// No description provided for @premiumCardDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Card Details'**
+  String get premiumCardDetailsTitle;
+
+  /// No description provided for @premiumCardNumberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Card Number'**
+  String get premiumCardNumberLabel;
+
+  /// No description provided for @premiumCardNumberHint.
+  ///
+  /// In en, this message translates to:
+  /// **'1234 5678 9012 3456'**
+  String get premiumCardNumberHint;
+
+  /// No description provided for @premiumExpiryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Expiry (MM/YY)'**
+  String get premiumExpiryLabel;
+
+  /// No description provided for @premiumExpiryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'12/25'**
+  String get premiumExpiryHint;
+
+  /// No description provided for @premiumCvvLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'CVV'**
+  String get premiumCvvLabel;
+
+  /// No description provided for @premiumCvvHint.
+  ///
+  /// In en, this message translates to:
+  /// **'123'**
+  String get premiumCvvHint;
+
+  /// No description provided for @premiumCardholderNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cardholder Name'**
+  String get premiumCardholderNameLabel;
+
+  /// No description provided for @premiumCardholderNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'John Doe'**
+  String get premiumCardholderNameHint;
+
+  /// No description provided for @premiumValidationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get premiumValidationRequired;
+
+  /// No description provided for @premiumValidationCardNumberRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Card number is required'**
+  String get premiumValidationCardNumberRequired;
+
+  /// No description provided for @premiumValidationInvalidCardNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid card number'**
+  String get premiumValidationInvalidCardNumber;
+
+  /// No description provided for @premiumValidationInvalidCvv.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid CVV'**
+  String get premiumValidationInvalidCvv;
+
+  /// No description provided for @premiumValidationNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Name is required'**
+  String get premiumValidationNameRequired;
 
   /// No description provided for @placeDetailAboutThisPlace.
   ///
@@ -9391,6 +11311,282 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'When are you planning for?'**
   String get moodyHubPlanForWhen;
+
+  /// No description provided for @moodyHubListComma.
+  ///
+  /// In en, this message translates to:
+  /// **', '**
+  String get moodyHubListComma;
+
+  /// No description provided for @moodyHubListAnd.
+  ///
+  /// In en, this message translates to:
+  /// **' & '**
+  String get moodyHubListAnd;
+
+  /// No description provided for @moodyReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Review'**
+  String get moodyReviewTitle;
+
+  /// No description provided for @moodyReviewHowWasIt.
+  ///
+  /// In en, this message translates to:
+  /// **'How was it?'**
+  String get moodyReviewHowWasIt;
+
+  /// No description provided for @moodyReviewStarsFeedback5.
+  ///
+  /// In en, this message translates to:
+  /// **'🌟 Amazing!'**
+  String get moodyReviewStarsFeedback5;
+
+  /// No description provided for @moodyReviewStarsFeedback4.
+  ///
+  /// In en, this message translates to:
+  /// **'😊 Really good!'**
+  String get moodyReviewStarsFeedback4;
+
+  /// No description provided for @moodyReviewStarsFeedback3.
+  ///
+  /// In en, this message translates to:
+  /// **'👍 Pretty good!'**
+  String get moodyReviewStarsFeedback3;
+
+  /// No description provided for @moodyReviewStarsFeedback2.
+  ///
+  /// In en, this message translates to:
+  /// **'😐 It was okay'**
+  String get moodyReviewStarsFeedback2;
+
+  /// No description provided for @moodyReviewStarsFeedback1.
+  ///
+  /// In en, this message translates to:
+  /// **'😞 Not great'**
+  String get moodyReviewStarsFeedback1;
+
+  /// No description provided for @moodyReviewYourVibe.
+  ///
+  /// In en, this message translates to:
+  /// **'Your vibe'**
+  String get moodyReviewYourVibe;
+
+  /// No description provided for @moodyReviewVibeAmazing.
+  ///
+  /// In en, this message translates to:
+  /// **'Amazing'**
+  String get moodyReviewVibeAmazing;
+
+  /// No description provided for @moodyReviewVibeGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get moodyReviewVibeGood;
+
+  /// No description provided for @moodyReviewVibeOkay.
+  ///
+  /// In en, this message translates to:
+  /// **'Okay'**
+  String get moodyReviewVibeOkay;
+
+  /// No description provided for @moodyReviewVibeMeh.
+  ///
+  /// In en, this message translates to:
+  /// **'Meh'**
+  String get moodyReviewVibeMeh;
+
+  /// No description provided for @moodyReviewOptionalNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Any thoughts? (optional)'**
+  String get moodyReviewOptionalNote;
+
+  /// No description provided for @moodyReviewNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What stood out? Any tips for others?'**
+  String get moodyReviewNoteHint;
+
+  /// No description provided for @moodyReviewNoteHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'💡 This helps others discover great spots!'**
+  String get moodyReviewNoteHelper;
+
+  /// No description provided for @moodyReviewSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Review'**
+  String get moodyReviewSave;
+
+  /// No description provided for @moodyReviewNeedStars.
+  ///
+  /// In en, this message translates to:
+  /// **'Please add a star rating to continue'**
+  String get moodyReviewNeedStars;
+
+  /// No description provided for @moodyReviewHelpsMoody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your feedback helps Moody learn!'**
+  String get moodyReviewHelpsMoody;
+
+  /// No description provided for @moodyReviewThanksToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks for your review! 🚀'**
+  String get moodyReviewThanksToast;
+
+  /// No description provided for @getReadyChecklistItemReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to go!'**
+  String get getReadyChecklistItemReady;
+
+  /// No description provided for @getReadyShareInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Join me at {title} around {time} – planned with WanderMood.'**
+  String getReadyShareInvite(Object title, Object time);
+
+  /// No description provided for @getReadyCalendarEventTitleFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'WanderMood activity'**
+  String get getReadyCalendarEventTitleFallback;
+
+  /// No description provided for @getReadyCalendarEventDetailsFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned with WanderMood'**
+  String get getReadyCalendarEventDetailsFallback;
+
+  /// No description provided for @getReadyShareTitleFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'this place'**
+  String get getReadyShareTitleFallback;
+
+  /// No description provided for @getReadyCalendarOpenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} – open in browser or app'**
+  String getReadyCalendarOpenHint(Object label);
+
+  /// No description provided for @getReadyPlaylistSearchQuery.
+  ///
+  /// In en, this message translates to:
+  /// **'Happy {theme} Beats'**
+  String getReadyPlaylistSearchQuery(Object theme);
+
+  /// No description provided for @getReadyPlaylistThemeFoodie.
+  ///
+  /// In en, this message translates to:
+  /// **'Foodie'**
+  String get getReadyPlaylistThemeFoodie;
+
+  /// No description provided for @getReadyPlaylistThemeCultural.
+  ///
+  /// In en, this message translates to:
+  /// **'Cultural'**
+  String get getReadyPlaylistThemeCultural;
+
+  /// No description provided for @getReadyPlaylistThemeShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping'**
+  String get getReadyPlaylistThemeShopping;
+
+  /// No description provided for @getReadyPlaylistThemeOutdoor.
+  ///
+  /// In en, this message translates to:
+  /// **'Outdoor'**
+  String get getReadyPlaylistThemeOutdoor;
+
+  /// No description provided for @getReadyPlaylistThemeAdventure.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventure'**
+  String get getReadyPlaylistThemeAdventure;
+
+  /// No description provided for @getReadyMoodFragmentAdventure.
+  ///
+  /// In en, this message translates to:
+  /// **'adventure'**
+  String get getReadyMoodFragmentAdventure;
+
+  /// No description provided for @getReadyMoodFragmentRelaxed.
+  ///
+  /// In en, this message translates to:
+  /// **'relaxation'**
+  String get getReadyMoodFragmentRelaxed;
+
+  /// No description provided for @getReadyMoodFragmentEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'energy'**
+  String get getReadyMoodFragmentEnergetic;
+
+  /// No description provided for @getReadyMoodFragmentRomantic.
+  ///
+  /// In en, this message translates to:
+  /// **'romance'**
+  String get getReadyMoodFragmentRomantic;
+
+  /// No description provided for @getReadyMoodFragmentCultural.
+  ///
+  /// In en, this message translates to:
+  /// **'culture'**
+  String get getReadyMoodFragmentCultural;
+
+  /// No description provided for @getReadyMoodFragmentExplorer.
+  ///
+  /// In en, this message translates to:
+  /// **'exploration'**
+  String get getReadyMoodFragmentExplorer;
+
+  /// No description provided for @getReadyMoodFragmentFoodie.
+  ///
+  /// In en, this message translates to:
+  /// **'foodie'**
+  String get getReadyMoodFragmentFoodie;
+
+  /// No description provided for @moodHomeAlreadyPlannedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{dayName} is already planned!'**
+  String moodHomeAlreadyPlannedTitle(String dayName);
+
+  /// No description provided for @moodHomeActivitiesReadyCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 activity is ready for you.} other{{count} activities are ready for you.}}'**
+  String moodHomeActivitiesReadyCount(num count);
+
+  /// No description provided for @moodHomeViewPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'View plan'**
+  String get moodHomeViewPlan;
+
+  /// No description provided for @moodHomePlanAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan again'**
+  String get moodHomePlanAgain;
+
+  /// No description provided for @planLoadingRotating2.
+  ///
+  /// In en, this message translates to:
+  /// **'Putting your day together…'**
+  String get planLoadingRotating2;
+
+  /// No description provided for @planLoadingRotating3.
+  ///
+  /// In en, this message translates to:
+  /// **'Almost there — your plan is almost ready ✨'**
+  String get planLoadingRotating3;
 }
 
 class _AppLocalizationsDelegate

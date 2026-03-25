@@ -59,15 +59,8 @@ class HelpSupportScreen extends ConsumerWidget {
           const SizedBox(height: 8),
           _buildSettingCard(
             icon: Icons.email_outlined,
-            title: 'E-mail support',
-            subtitle: 'info@wandermood.com',
-            onTap: () => _sendEmail(context),
-          ),
-          const SizedBox(height: 8),
-          _buildSettingCard(
-            icon: Icons.mail,
-            title: l10n.helpSupportContactTitle,
-            subtitle: l10n.helpSupportContactSubtitle,
+            title: l10n.helpSupportEmailSupportTitle,
+            subtitle: l10n.helpSupportEmailAddress,
             onTap: () => _sendEmail(context),
           ),
           const SizedBox(height: 24),
@@ -178,8 +171,11 @@ class HelpSupportScreen extends ConsumerWidget {
   }
 
   Future<void> _sendEmail(BuildContext context) async {
-    final uri = Uri.parse(
-      'mailto:info@wandermood.com?subject=${Uri.encodeComponent('WanderMood Support')}',
+    final l10n = AppLocalizations.of(context)!;
+    final uri = Uri(
+      scheme: 'mailto',
+      path: l10n.helpSupportEmailAddress,
+      queryParameters: {'subject': l10n.helpSupportEmailSubject},
     );
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
@@ -187,7 +183,10 @@ class HelpSupportScreen extends ConsumerWidget {
   }
 
   Future<void> _openPrivacyPolicy(BuildContext context) async {
-    final uri = Uri.parse('https://wandermood.com/nl/privacy');
+    final code = Localizations.localeOf(context).languageCode;
+    const supported = {'en', 'nl', 'es', 'fr', 'de', 'it'};
+    final seg = supported.contains(code) ? code : 'en';
+    final uri = Uri.parse('https://wandermood.com/$seg/privacy');
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 }
