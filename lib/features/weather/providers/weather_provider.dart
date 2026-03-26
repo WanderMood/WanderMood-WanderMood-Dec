@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
+import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:wandermood/core/constants/api_keys.dart';
 import 'package:flutter/foundation.dart';
 
@@ -95,7 +96,10 @@ WeatherData getMockWeatherData(String location) {
 // Weather provider that depends on location
 final weatherProvider = FutureProvider.autoDispose<WeatherData?>((ref) async {
   final locationState = await ref.watch(locationNotifierProvider.future);
-  if (locationState == null) return null;
+  final gpsPosition = await ref.watch(userLocationProvider.future);
+  final locationLabel = (locationState == null || locationState.trim().isEmpty)
+      ? 'Current location'
+      : locationState.trim();
   
   // Get API key from ApiKeys (--dart-define or compile-time default for release).
   String apiKey = '';
@@ -105,12 +109,14 @@ final weatherProvider = FutureProvider.autoDispose<WeatherData?>((ref) async {
     apiKey = '';
   }
   debugPrint('🌤️ Weather API Key: ${apiKey.isEmpty ? 'EMPTY' : 'EXISTS (${apiKey.length} chars)'}');
-  debugPrint('🌤️ Weather location: $locationState');
+  debugPrint('🌤️ Weather location label: $locationLabel');
   
   // Use real API if key is available
   if (apiKey.isNotEmpty) {
     try {
-      final url = 'https://api.openweathermap.org/data/2.5/weather?q=$locationState&appid=$apiKey&units=metric';
+      final url = gpsPosition != null
+          ? 'https://api.openweathermap.org/data/2.5/weather?lat=${gpsPosition.latitude}&lon=${gpsPosition.longitude}&appid=$apiKey&units=metric'
+          : 'https://api.openweathermap.org/data/2.5/weather?q=$locationLabel&appid=$apiKey&units=metric';
       debugPrint('🌤️ Weather URL: $url');
       
       final response = await http.get(Uri.parse(url));
@@ -119,19 +125,20 @@ final weatherProvider = FutureProvider.autoDispose<WeatherData?>((ref) async {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         debugPrint('🌤️ Weather API response: ${response.body.substring(0, response.body.length > 100 ? 100 : response.body.length)}...');
-        return WeatherData.fromOpenWeatherMap(data, locationState);
+        final resolvedLocation = (data['name'] as String?)?.trim().isNotEmpty == true
+            ? (data['name'] as String).trim()
+            : locationLabel;
+        return WeatherData.fromOpenWeatherMap(data, resolvedLocation);
       } else {
         debugPrint('🌤️ Weather API error: ${response.body}');
         throw Exception('Failed to load weather data: ${response.statusCode}');
       }
     } catch (e) {
-      // Return mock data if API fails
       debugPrint('🌤️ Weather API exception: $e');
-      return getMockWeatherData(locationState);
+      return null;
     }
   } else {
-    // Use mock data if no valid API key
     debugPrint('🌤️ Using mock data: No valid API key');
-    return getMockWeatherData(locationState);
+    return null;
   }
 }); 

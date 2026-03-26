@@ -506,7 +506,8 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
 
     const isDevMode = Deno.env.get('DEV_MODE') === 'true'
     // Keep key aligned with Flutter PlacesCacheUtils.standardExploreCacheKey.
-    const cacheKey = `explore_${mood}_${location.toLowerCase().trim()}`
+    const cacheSchemaVersion = 'v3_quality'
+    const cacheKey = `explore_${cacheSchemaVersion}_${mood}_${location.toLowerCase().trim()}`
     const cachedResult = await checkCache(supabase, cacheKey, userId)
 
     if (cachedResult && cachedResult.cards.length > 0) {
@@ -1071,12 +1072,12 @@ async function checkCache(supabase: any, cacheKey: string, userId: string): Prom
 async function cachePlaces(supabase: any, cacheKey: string, places: PlaceCard[], userId: string, location: string): Promise<void> {
   try {
     const expiresAt = new Date()
-    expiresAt.setDate(expiresAt.getDate() + 30)
+    expiresAt.setDate(expiresAt.getDate() + 7)
     await supabase.from('places_cache').upsert({
       cache_key: cacheKey, data: { cards: places }, place_id: null,
       user_id: userId, request_type: 'explore', expires_at: expiresAt.toISOString(),
     }, { onConflict: 'cache_key' })
-    console.log(`💾 Cached ${places.length} places for 30 days`)
+    console.log(`💾 Cached ${places.length} places for 7 days`)
   } catch (e) { console.error('❌ Cache error:', e) }
 }
 
