@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/providers/communication_style_provider.dart';
+import '../../../../core/providers/preferences_provider.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 
 /// WanderMood design tokens — onboarding communicatiestijl
@@ -83,6 +84,7 @@ class _CommunicationPreferenceScreenState
     HapticFeedback.selectionClick();
     setState(() => _selectedStyle = key);
     ref.read(communicationStyleProvider.notifier).setCommunicationStyle(key);
+    ref.read(preferencesProvider.notifier).updateCommunicationStyle(key);
   }
 
   void _onBack() {

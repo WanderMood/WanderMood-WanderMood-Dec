@@ -442,6 +442,82 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
       _activeFiltersCount = 0;
     });
+    ref.read(moodyExploreBackendFiltersProvider.notifier).state =
+        <String, dynamic>{};
+    ref.invalidate(moodyExploreAutoProvider);
+  }
+
+  Map<String, dynamic> _buildMoodyBackendFilters() {
+    final filters = <String, dynamic>{};
+
+    if (_quickFilterRating45) {
+      filters['rating'] = 4.5;
+    }
+    if (_openNow) {
+      filters['openNow'] = true;
+    }
+    if (_maxDistance != 25.0) {
+      filters['radius'] = (_maxDistance * 1000).clamp(1000, 50000).round();
+    }
+    if (_priceRange.end < 100) {
+      final end = _priceRange.end;
+      final maxPriceLevel = end <= 15
+          ? 1
+          : end <= 30
+              ? 2
+              : end <= 50
+                  ? 3
+                  : 4;
+      filters['priceLevel'] = maxPriceLevel;
+    }
+
+    final includeTypes = <String>[];
+    final excludeTypes = <String>[];
+
+    if (_outdoorOnly) {
+      includeTypes.addAll(['park', 'tourist_attraction', 'natural_feature']);
+    }
+    if (_indoorOnly) {
+      excludeTypes.addAll(['park', 'campground', 'zoo']);
+    }
+    if ((_selectedMood ?? '').toLowerCase() == 'relaxed') {
+      excludeTypes.addAll(['gym', 'fitness_center']);
+    }
+    if (includeTypes.isNotEmpty) {
+      filters['types'] = includeTypes;
+    }
+    if (excludeTypes.isNotEmpty) {
+      filters['excludeTypes'] = excludeTypes;
+    }
+
+    final requiredKeywords = <String>[];
+    if (_vegan) requiredKeywords.add('vegan');
+    if (_vegetarian) requiredKeywords.add('vegetarian');
+    if (_halal) requiredKeywords.add('halal');
+    if (_glutenFree) requiredKeywords.add('gluten');
+    if (_wheelchairAccessible) requiredKeywords.add('wheelchair');
+    if (_lgbtqFriendly) requiredKeywords.add('lgbt');
+    if (_seniorFriendly) requiredKeywords.add('senior');
+    if (_babyFriendly) requiredKeywords.add('family');
+    if (_blackOwned) requiredKeywords.add('black owned');
+    if (_wifiAvailable) requiredKeywords.add('wifi');
+    if (_chargingPoints) requiredKeywords.add('charging');
+    if (_parkingAvailable) requiredKeywords.add('parking');
+    if (_creditCards) requiredKeywords.add('card payment');
+    if (_instagrammable) requiredKeywords.add('instagrammable');
+    if (_artisticDesign) requiredKeywords.add('design');
+    if (_aestheticSpaces) requiredKeywords.add('aesthetic');
+    if (_scenicViews) requiredKeywords.add('scenic');
+    if (_bestAtSunset) requiredKeywords.add('sunset');
+    if (_bestAtNight) requiredKeywords.add('night');
+    if (_romanticVibe) requiredKeywords.add('romantic');
+    if (_weatherSafe) requiredKeywords.add('indoor');
+
+    if (requiredKeywords.isNotEmpty) {
+      filters['requiredKeywords'] = requiredKeywords;
+    }
+
+    return filters;
   }
 
   void _showAdvancedFilters() {
@@ -1596,6 +1672,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         child: ElevatedButton(
                           onPressed: () {
                             Navigator.pop(context);
+                            final backendFilters = _buildMoodyBackendFilters();
+                            ref
+                                .read(moodyExploreBackendFiltersProvider.notifier)
+                                .state = backendFilters;
+                            ref.invalidate(moodyExploreAutoProvider);
                             // Force a rebuild to apply filters
                             setState(() {
                               // Update active filters count

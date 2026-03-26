@@ -159,12 +159,19 @@ async function fetchUserContext(supabase: any, userId: string): Promise<any> {
 // ============================================
 
 function getMoodyPersonalityInstructions(communicationStyle: string): string {
-  switch (communicationStyle.toLowerCase()) {
+  const style = communicationStyle.toLowerCase()
+  switch (style) {
     case 'energetic':
+    case 'playful':
+    case 'cheeky':
       return `Je bent Moody in ENERGIEK mode. Praat als een enthousiaste beste vriend. Gebruik informele taal, grappige opmerkingen, en veel energie. Toon: "YO! Dit is precies wat jij nodig hebt 🔥". Gebruik uitroeptekens. Max 2 emojis. Altijd in het Nederlands.`
+    case 'calm':
+    case 'minimal':
+      return `Je bent Moody in KALM mode. Korte, rustige zinnen. Geen hype, geen lange uitleg. Max 1 emoji. Stel precies één duidelijke vraag tegelijk en stuur de gebruiker naar een keuze. Altijd in het Nederlands.`
     case 'professional':
       return `Je bent Moody in PROFESSIONEEL mode. Praat helder, efficiënt en to-the-point. Geen fluff. Zakelijke toon maar niet koud. Toon: "Ik heb 3 activiteiten geselecteerd die aansluiten bij je voorkeur.". Geen uitroeptekens. Geen emojis. Altijd in het Nederlands.`
     case 'direct':
+    case 'direct_practical':
       return `Je bent Moody in DIRECT mode. Één zin. Geen uitleg tenzij gevraagd. Gewoon het antwoord. Toon: "Fenix Food Factory. 0.4km. Gaat goed.". Geen emojis. Maximaal 10 woorden. Altijd in het Nederlands.`
     case 'friendly':
     default:
@@ -175,12 +182,19 @@ function getMoodyPersonalityInstructions(communicationStyle: string): string {
 /** Hub one-liner: match app [language_code] so English UI does not get Dutch output. */
 function getMoodyPersonalityForHubMessage(communicationStyle: string, lang: 'nl' | 'en'): string {
   if (lang === 'nl') return getMoodyPersonalityInstructions(communicationStyle)
-  switch (communicationStyle.toLowerCase()) {
+  const style = communicationStyle.toLowerCase()
+  switch (style) {
     case 'energetic':
+    case 'playful':
+    case 'cheeky':
       return `You are Moody in ENERGETIC mode. Talk like an enthusiastic best friend. Informal, playful, high energy. Tone: "YO! This is exactly what you need 🔥". Use exclamation marks. Max 2 emojis. Always write in English.`
+    case 'calm':
+    case 'minimal':
+      return `You are Moody in CALM mode. Use short, grounded sentences. No hype. Max one emoji. Ask exactly one focused question and guide toward a clear choice. Always write in English.`
     case 'professional':
       return `You are Moody in PROFESSIONAL mode. Clear, efficient, to-the-point. No fluff. Businesslike but warm. No exclamation marks. No emojis. Always write in English.`
     case 'direct':
+    case 'direct_practical':
       return `You are Moody in DIRECT mode. One sentence. No explanation unless asked. Just the answer. No emojis. Max 10 words. Always write in English.`
     case 'friendly':
     default:
@@ -216,9 +230,13 @@ Gebruiker interesses: ${JSON.stringify(userContext.travelInterests)}
 Favoriete stemmingen: ${JSON.stringify(userContext.favoriteMoods)}
 Recente stemmingen: ${userContext.recentMoods.slice(0, 3).join(', ') || 'onbekend'}
 
-Houd antwoorden kort en praktisch (max 150 woorden tenzij gevraagd om meer detail).
+Houd antwoorden kort en praktisch: 2-4 zinnen max.
+Stel hooguit 1 vraag per bericht.
+Geef bij suggesties maximaal 2 concrete opties.
+Als de gebruiker twijfelt, geef een duidelijke aanbeveling in plaats van meer open vragen.
 Altijd in het Nederlands tenzij de gebruiker een andere taal gebruikt.
-Nooit meer dan 2 emojis per bericht.`
+Nooit meer dan 2 emojis per bericht.
+Nooit plekken/ratings/prijzen verzinnen: gebruik alleen bekende data of zeg dat data ontbreekt.`
 
   const openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey) {
@@ -433,7 +451,18 @@ async function handleCreateDayPlan(supabase: any, userId: string, params: any): 
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    const activities = convertPlacesToActivities(places, moods, location, coordinates, lang)
+    const rankedForPlan = rankPlacesByPreferences(
+      places,
+      userContext.profile,
+      moods[0] || 'adventurous',
+      params.filters || {},
+      {
+        isLocalMode: !!userContext.isLocalMode,
+        travelInterests: userContext.travelInterests || [],
+      },
+    )
+
+    const activities = convertPlacesToActivities(rankedForPlan, moods, location, coordinates, lang)
     if (activities.length === 0) {
       return new Response(JSON.stringify({ success: false, activities: [], location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: 0, error: 'No activities generated' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -493,7 +522,7 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     }
 
     console.log('🔄 Cache miss — fetching from Google Places')
-    let places = await fetchPlacesFromGoogle(location, coordinates, mood, {})
+    let places = await fetchPlacesFromGoogle(location, coordinates, mood, filters)
 
     // FIX: reduced from 50/5 to 15/2 to prevent timeout
     let fetchAttempts = 0
@@ -523,7 +552,16 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     places = qualifiedPlaces
     console.log(`✅ Total places after quality gating: ${places.length}`)
 
-    const rankedPlaces = rankPlacesByPreferences(places, userContext.profile, mood, {})
+    const rankedPlaces = rankPlacesByPreferences(
+      places,
+      userContext.profile,
+      mood,
+      {},
+      {
+        isLocalMode: !!userContext.isLocalMode,
+        travelInterests: userContext.travelInterests || [],
+      },
+    )
     await cachePlaces(supabase, cacheKey, rankedPlaces, userId, location)
 
     const filteredCards = applyFilters(rankedPlaces, filters)
@@ -740,12 +778,256 @@ function generatePlaceDescription(place: any, moods: string[] = []): string {
   return `${name} is a highly-rated destination perfect for ${moodText} experiences. Rated ${rating} stars.`
 }
 
-function rankPlacesByPreferences(places: PlaceCard[], profile: any, mood: string, filters: any): PlaceCard[] {
-  return places.sort((a, b) => {
-    if (b.rating !== a.rating) return b.rating - a.rating
-    if (a.price_level && b.price_level) return a.price_level - b.price_level
-    return 0
+type PlaceBucket =
+  | 'cafe_bakery'
+  | 'food'
+  | 'scenic_calm'
+  | 'culture'
+  | 'wellness'
+  | 'fitness'
+  | 'nightlife'
+  | 'shopping'
+  | 'tourist'
+  | 'misc'
+
+function classifyPlaceBucket(place: PlaceCard): PlaceBucket {
+  const types = (place.types || []).map((t) => t.toLowerCase())
+  const name = (place.name || '').toLowerCase()
+
+  if (types.some((t) => ['cafe', 'bakery', 'coffee_shop'].includes(t)) || name.includes('cafe') || name.includes('bakery') || name.includes('coffee')) {
+    return 'cafe_bakery'
+  }
+  if (types.some((t) => ['spa', 'beauty_salon', 'massage', 'sauna'].includes(t)) || name.includes('spa') || name.includes('massage') || name.includes('sauna')) {
+    return 'wellness'
+  }
+  if (types.some((t) => ['gym', 'fitness_center'].includes(t)) || name.includes('gym') || name.includes('fitness')) {
+    return 'fitness'
+  }
+  if (types.some((t) => ['park', 'natural_feature', 'botanical_garden'].includes(t)) || name.includes('park') || name.includes('garden') || name.includes('viewpoint')) {
+    return 'scenic_calm'
+  }
+  if (types.some((t) => ['museum', 'art_gallery', 'library'].includes(t))) {
+    return 'culture'
+  }
+  if (types.some((t) => ['bar', 'night_club'].includes(t))) {
+    return 'nightlife'
+  }
+  if (types.some((t) => ['shopping_mall', 'store', 'book_store'].includes(t))) {
+    return 'shopping'
+  }
+  if (types.some((t) => ['restaurant', 'meal_takeaway', 'food'].includes(t))) {
+    return 'food'
+  }
+  if (types.some((t) => ['tourist_attraction', 'point_of_interest'].includes(t))) {
+    return 'tourist'
+  }
+  return 'misc'
+}
+
+function clamp(n: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, n))
+}
+
+function qualityScore(place: PlaceCard): number {
+  const rating = clamp(place.rating || 0, 0, 5)
+  const reviews = Math.max(0, place.user_ratings_total || 0)
+  const reviewScore = clamp(Math.log10(reviews + 1) / 3, 0, 1.1)
+  const photoBonus = place.photo_url?.trim() ? 0.35 : 0
+  const addressBonus = (place.address || place.vicinity || '').trim() ? 0.2 : 0
+  return rating * 1.7 + reviewScore * 2 + photoBonus + addressBonus
+}
+
+function moodBucketWeight(mood: string, bucket: PlaceBucket): number {
+  const m = (mood || '').toLowerCase()
+  if (m === 'relaxed') {
+    const table: Record<PlaceBucket, number> = {
+      cafe_bakery: 2.2,
+      scenic_calm: 1.8,
+      food: 1.2,
+      culture: 1.0,
+      wellness: 0.8, // keep some wellness, avoid spa-only feed
+      fitness: -2.2, // suppress generic gym results for relaxed
+      nightlife: -0.2,
+      shopping: 0.5,
+      tourist: 0.3,
+      misc: 0.1,
+    }
+    return table[bucket]
+  }
+  if (m === 'energetic') {
+    const table: Record<PlaceBucket, number> = {
+      cafe_bakery: 0.2,
+      scenic_calm: 0.1,
+      food: 0.7,
+      culture: 0.6,
+      wellness: -0.4,
+      fitness: 1.6,
+      nightlife: 1.2,
+      shopping: 0.2,
+      tourist: 0.8,
+      misc: 0.1,
+    }
+    return table[bucket]
+  }
+  if (m === 'foodie') {
+    const table: Record<PlaceBucket, number> = {
+      cafe_bakery: 1.7,
+      scenic_calm: 0.3,
+      food: 2.1,
+      culture: 0.2,
+      wellness: -0.5,
+      fitness: -1.0,
+      nightlife: 0.8,
+      shopping: 0.2,
+      tourist: 0.2,
+      misc: 0.0,
+    }
+    return table[bucket]
+  }
+  return 0
+}
+
+function localTravelWeight(bucket: PlaceBucket, isLocalMode: boolean): number {
+  if (isLocalMode) {
+    const local: Record<PlaceBucket, number> = {
+      cafe_bakery: 1.2,
+      food: 0.8,
+      scenic_calm: 0.7,
+      culture: 0.7,
+      wellness: 0.3,
+      fitness: 0.0,
+      nightlife: 0.5,
+      shopping: 0.3,
+      tourist: -1.0,
+      misc: 0.0,
+    }
+    return local[bucket]
+  }
+  const travel: Record<PlaceBucket, number> = {
+    cafe_bakery: 0.4,
+    food: 0.5,
+    scenic_calm: 0.9,
+    culture: 0.9,
+    wellness: 0.2,
+    fitness: 0.1,
+    nightlife: 0.5,
+    shopping: 0.2,
+    tourist: 1.0,
+    misc: 0.0,
+  }
+  return travel[bucket]
+}
+
+function diversifyRanked(scored: Array<{ place: PlaceCard; score: number; bucket: PlaceBucket }>, mood: string): PlaceCard[] {
+  const m = (mood || '').toLowerCase()
+  const sorted = [...scored].sort((a, b) => b.score - a.score)
+  if (sorted.length <= 8) return sorted.map((x) => x.place)
+
+  if (m !== 'relaxed') {
+    const genericCap = 3
+    const counts = new Map<PlaceBucket, number>()
+    const out: Array<{ place: PlaceCard; score: number; bucket: PlaceBucket }> = []
+    for (const item of sorted) {
+      const c = counts.get(item.bucket) || 0
+      if (c >= genericCap) continue
+      counts.set(item.bucket, c + 1)
+      out.push(item)
+    }
+    return out.map((x) => x.place)
+  }
+
+  // Relaxed specific mix targets to avoid "all spa/massage".
+  const targetRatio: Record<PlaceBucket, number> = {
+    cafe_bakery: 0.35,
+    scenic_calm: 0.25,
+    wellness: 0.20,
+    food: 0.20,
+    culture: 0.20,
+    fitness: 0.00,
+    nightlife: 0.08,
+    shopping: 0.10,
+    tourist: 0.12,
+    misc: 0.12,
+  }
+  const targetTotal = Math.min(18, sorted.length)
+  const selected: Array<{ place: PlaceCard; score: number; bucket: PlaceBucket }> = []
+  const counts = new Map<PlaceBucket, number>()
+  const used = new Set<string>()
+
+  const byBucket = new Map<PlaceBucket, Array<{ place: PlaceCard; score: number; bucket: PlaceBucket }>>()
+  for (const s of sorted) {
+    const arr = byBucket.get(s.bucket) || []
+    arr.push(s)
+    byBucket.set(s.bucket, arr)
+  }
+
+  // Phase 1: satisfy target bucket presence with top-quality entries.
+  const priorityBuckets: PlaceBucket[] = ['cafe_bakery', 'scenic_calm', 'food', 'culture', 'wellness']
+  for (const bucket of priorityBuckets) {
+    const desired = Math.max(1, Math.floor(targetTotal * (targetRatio[bucket] || 0)))
+    const pool = byBucket.get(bucket) || []
+    for (const item of pool) {
+      if (selected.length >= targetTotal) break
+      if (used.has(item.place.id)) continue
+      const c = counts.get(bucket) || 0
+      if (c >= desired) break
+      used.add(item.place.id)
+      counts.set(bucket, c + 1)
+      selected.push(item)
+    }
+  }
+
+  // Phase 2: fill remaining with global order, while capping bucket dominance.
+  for (const item of sorted) {
+    if (selected.length >= targetTotal) break
+    if (used.has(item.place.id)) continue
+    const bucket = item.bucket
+    const cap = bucket === 'wellness' ? 3 : 5
+    const c = counts.get(bucket) || 0
+    if (c >= cap) continue
+    if (bucket === 'fitness') continue
+    used.add(item.place.id)
+    counts.set(bucket, c + 1)
+    selected.push(item)
+  }
+
+  // Append any leftover sorted entries not selected, preserving quality order.
+  const remainder = sorted.filter((s) => !used.has(s.place.id))
+  return [...selected, ...remainder].map((x) => x.place)
+}
+
+function rankPlacesByPreferences(
+  places: PlaceCard[],
+  profile: any,
+  mood: string,
+  filters: any,
+  context?: { isLocalMode?: boolean; travelInterests?: string[] },
+): PlaceCard[] {
+  const isLocalMode = context?.isLocalMode ?? true
+  const interests = (context?.travelInterests || []).map((i) => String(i).toLowerCase())
+
+  const scored = places.map((place) => {
+    const bucket = classifyPlaceBucket(place)
+    let score = qualityScore(place)
+    score += moodBucketWeight(mood, bucket)
+    score += localTravelWeight(bucket, isLocalMode)
+
+    if (interests.length > 0) {
+      const typeText = (place.types || []).join(' ').toLowerCase()
+      const nameText = (place.name || '').toLowerCase()
+      for (const i of interests) {
+        if (i && (typeText.includes(i) || nameText.includes(i))) {
+          score += 0.35
+        }
+      }
+    }
+
+    // Soft penalty for expensive places in local mode.
+    if (isLocalMode && (place.price_level || 0) >= 4) score -= 0.25
+    return { place, score, bucket }
   })
+
+  return diversifyRanked(scored, mood)
 }
 
 function applyFilters(places: PlaceCard[], filters: any): PlaceCard[] {
@@ -756,6 +1038,16 @@ function applyFilters(places: PlaceCard[], filters: any): PlaceCard[] {
     if (filters.types?.length > 0) {
       const hasType = place.types.some(t => filters.types.some((ft: string) => t.toLowerCase().includes(ft.toLowerCase())))
       if (!hasType) return false
+    }
+    if (filters.excludeTypes?.length > 0) {
+      const hasExcluded = place.types.some(t => filters.excludeTypes.some((ft: string) => t.toLowerCase().includes(ft.toLowerCase())))
+      if (hasExcluded) return false
+    }
+    if (filters.openNow === true && place.opening_hours?.open_now !== true) return false
+    if (filters.requiredKeywords?.length > 0) {
+      const text = `${place.name || ''} ${place.description || ''} ${place.address || place.vicinity || ''} ${(place.types || []).join(' ')}`.toLowerCase()
+      const hasKeyword = (filters.requiredKeywords as string[]).some((kw: string) => text.includes(String(kw).toLowerCase()))
+      if (!hasKeyword) return false
     }
     if (filters.minReviews && (place.user_ratings_total || 0) < filters.minReviews) return false
     return true
@@ -879,7 +1171,15 @@ async function getMoodyPersonalityResponse(moods: string[], activities: Activity
 function getMoodQueries(mood: string): string[] {
   const moodMap: Record<string, string[]> = {
     adventurous: ['adventure activities', 'outdoor activities', 'adventure tours', 'extreme sports', 'hiking'],
-    relaxed: ['spa', 'parks', 'cafes', 'relaxation', 'wellness'],
+    relaxed: [
+      'cozy cafes',
+      'artisan bakery',
+      'brunch spots',
+      'quiet park walk',
+      'scenic viewpoint',
+      'bookstore cafe',
+      'spa wellness',
+    ],
     cultural: ['museums', 'art galleries', 'historical sites', 'cultural centers', 'monuments'],
     romantic: ['romantic restaurants', 'scenic spots', 'sunset views', 'romantic cafes'],
     social: ['bars', 'nightlife', 'social clubs', 'entertainment'],

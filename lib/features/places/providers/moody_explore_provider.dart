@@ -55,6 +55,10 @@ final moodyEdgeFunctionServiceProvider = Provider<MoodyEdgeFunctionService>((ref
   return MoodyEdgeFunctionService(Supabase.instance.client);
 });
 
+/// Backend-ready Explore filters selected from the Explore Advanced Filters modal.
+final moodyExploreBackendFiltersProvider =
+    StateProvider<Map<String, dynamic>>((ref) => <String, dynamic>{});
+
 /// Provider that gets explore places from Moody Edge Function
 /// 
 /// Automatically uses current mood from dailyMoodState and current location
@@ -114,8 +118,8 @@ final moodyExploreAutoProvider = FutureProvider<List<Place>>((ref) async {
     // Still allow it for now, but log a warning
   }
   
-  // Build filters (can be extended later)
-  final filters = <String, dynamic>{};
+  // Advanced filters from Explore UI (kept in provider state).
+  final filters = ref.watch(moodyExploreBackendFiltersProvider);
   
   // Create params with validated location and coordinates
   final params = ExploreParams(

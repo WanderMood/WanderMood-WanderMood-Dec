@@ -410,7 +410,7 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
                   const Icon(Icons.location_on, size: 16, color: Colors.white),
                   const SizedBox(width: 6),
                   Text(
-                    'Rotterdam (edit)',
+                    'Locating...',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,

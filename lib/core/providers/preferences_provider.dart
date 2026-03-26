@@ -156,9 +156,18 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
       // Create preferences object that matches the database schema (no budget fields since no budget screen)
       final prefsData = {
         'user_id': user.id,
+        'communication_style': state.communicationStyle,
         'moods': state.selectedMoods,
+        'selected_moods': state.selectedMoods,
         'interests': state.travelInterests,
+        'travel_interests': state.travelInterests,
+        'social_vibe': state.socialVibe,
+        'planning_pace': state.planningPace,
         'travel_styles': state.travelStyles,
+        'favorite_moods': state.favoriteMoods,
+        'language_preference': state.languagePreference,
+        'has_completed_preferences': state.hasCompletedPreferences,
+        'has_completed_onboarding': state.hasCompletedOnboarding,
         'updated_at': DateTime.now().toIso8601String(),
       };
 
@@ -179,9 +188,18 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
           if (user != null) {
             final prefsData = {
               'user_id': user.id,
+              'communication_style': state.communicationStyle,
               'moods': state.selectedMoods,
+              'selected_moods': state.selectedMoods,
               'interests': state.travelInterests,
+              'travel_interests': state.travelInterests,
+              'social_vibe': state.socialVibe,
+              'planning_pace': state.planningPace,
               'travel_styles': state.travelStyles,
+              'favorite_moods': state.favoriteMoods,
+              'language_preference': state.languagePreference,
+              'has_completed_preferences': state.hasCompletedPreferences,
+              'has_completed_onboarding': state.hasCompletedOnboarding,
               'updated_at': DateTime.now().toIso8601String(),
             };
             

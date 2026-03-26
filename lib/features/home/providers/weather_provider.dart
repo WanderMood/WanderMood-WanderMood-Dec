@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:wandermood/features/location/services/location_service.dart';
@@ -13,8 +14,22 @@ Future<WeatherLocation?> _resolveWeatherLocation(Ref ref) async {
   final city = ref.watch(locationNotifierProvider).asData?.value?.trim();
 
   if (pos != null) {
-    final label =
-        (city != null && city.isNotEmpty) ? city : 'Rotterdam';
+    String label = (city != null && city.isNotEmpty) ? city : '';
+    if (label.isEmpty || label.toLowerCase() == 'rotterdam') {
+      try {
+        final marks = await placemarkFromCoordinates(pos.latitude, pos.longitude);
+        final detected = marks.isNotEmpty
+            ? (marks.first.locality ??
+                marks.first.subAdministrativeArea ??
+                marks.first.administrativeArea ??
+                '')
+            : '';
+        if (detected.trim().isNotEmpty) {
+          label = detected.trim();
+        }
+      } catch (_) {}
+    }
+    if (label.isEmpty) label = 'Current location';
     return WeatherLocation(
       id:
           '${pos.latitude.toStringAsFixed(4)}_${pos.longitude.toStringAsFixed(4)}',

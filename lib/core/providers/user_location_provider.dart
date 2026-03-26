@@ -30,7 +30,7 @@ class UserLocation extends _$UserLocation {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         debugPrint('🚫 Location services are disabled');
-        return _getFallbackPosition();
+        return null;
       }
 
       // Check location permissions
@@ -39,13 +39,13 @@ class UserLocation extends _$UserLocation {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           debugPrint('🚫 Location permissions are denied');
-          return _getFallbackPosition();
+          return null;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
         debugPrint('🚫 Location permissions are permanently denied');
-        return _getFallbackPosition();
+        return null;
       }
 
       // Get current position with MUCH shorter timeout and lower accuracy for better success rate
@@ -68,17 +68,17 @@ class UserLocation extends _$UserLocation {
             debugPrint('📍 Got last known position: ${position.latitude}, ${position.longitude}');
           } else {
             debugPrint('❌ No last known position available');
-            return _getFallbackPosition();
+            return null;
           }
         } catch (e2) {
           debugPrint('❌ Last known position also failed: $e2');
-          return _getFallbackPosition();
+          return null;
         }
       }
 
       if (position == null) {
-        debugPrint('❌ No position available, using fallback');
-        return _getFallbackPosition();
+        debugPrint('❌ No position available');
+        return null;
       }
 
       _cachedPosition = position;
@@ -89,31 +89,8 @@ class UserLocation extends _$UserLocation {
       
     } catch (e) {
       debugPrint('❌ Error getting location: $e');
-      return _getFallbackPosition(); // Always return fallback instead of null
+      return null;
     }
-  }
-
-  /// Create a fallback position for Rotterdam when GPS fails
-  Position _getFallbackPosition() {
-    debugPrint('🏭 Using Rotterdam fallback position');
-    final fallbackPosition = Position(
-      latitude: 51.9225, // Rotterdam coordinates
-      longitude: 4.4792,
-      timestamp: DateTime.now(),
-      accuracy: 1000, // 1km accuracy to indicate this is estimated
-      altitude: 0,
-      altitudeAccuracy: 0,
-      heading: 0,
-      headingAccuracy: 0,
-      speed: 0,
-      speedAccuracy: 0,
-      isMocked: true, // Mark as mocked so app knows it's fallback
-    );
-    
-    _cachedPosition = fallbackPosition;
-    _lastUpdate = DateTime.now();
-    
-    return fallbackPosition;
   }
 
   /// Force refresh location
