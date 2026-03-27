@@ -131,28 +131,101 @@ Deno.serve(async (req) => {
 // USER CONTEXT
 // ============================================
 
+function deriveAgeGroup(dateOfBirth: string | null | undefined): string | null {
+  if (!dateOfBirth) return null
+  try {
+    const birth = new Date(dateOfBirth)
+    const today = new Date()
+    const age = today.getFullYear() - birth.getFullYear() -
+      (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate()) ? 1 : 0)
+    if (age < 18) return 'under-18'
+    if (age <= 24) return '18-24'
+    if (age <= 34) return '25-34'
+    if (age <= 44) return '35-44'
+    if (age <= 54) return '45-54'
+    if (age <= 64) return '55-64'
+    return '65+'
+  } catch { return null }
+}
+
 async function fetchUserContext(supabase: any, userId: string): Promise<any> {
   try {
     const [profileResult, prefsResult, checkInsResult] = await Promise.all([
-      supabase.from('profiles').select('favorite_mood, travel_style, travel_vibes, currently_exploring').eq('id', userId).maybeSingle(),
-      supabase.from('user_preferences').select('communication_style, travel_interests, selected_moods, social_vibe, planning_pace, favorite_moods').eq('user_id', userId).maybeSingle(),
-      supabase.from('user_check_ins').select('mood, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
+      supabase.from('profiles').select(
+        'favorite_mood, travel_style, travel_vibes, currently_exploring, date_of_birth, language_preference'
+      ).eq('id', userId).maybeSingle(),
+      supabase.from('user_preferences').select(
+        'communication_style, travel_interests, selected_moods, social_vibe, planning_pace, favorite_moods, ' +
+        'budget_level, dietary_restrictions, travel_styles, language_preference'
+      ).eq('user_id', userId).maybeSingle(),
+      supabase.from('user_check_ins').select('mood, created_at').eq('user_id', userId)
+        .order('created_at', { ascending: false }).limit(5),
     ])
+
+    const p = profileResult.data
+    const q = prefsResult.data
+
+    // Merge selected_moods + favorite_moods → allFavoriteMoods (deduplicated)
+    const rawSelectedMoods: string[] = Array.isArray(q?.selected_moods) ? q.selected_moods : []
+    const rawFavoriteMoods: string[] = Array.isArray(q?.favorite_moods) ? q.favorite_moods : []
+    const allFavoriteMoods = [...new Set([...rawSelectedMoods, ...rawFavoriteMoods])]
+
+    // Merge travel_vibes (profiles) + travel_interests (prefs) → allInterests (deduplicated)
+    const rawTravelVibes: string[] = Array.isArray(p?.travel_vibes) ? p.travel_vibes : []
+    const rawTravelInterests: string[] = Array.isArray(q?.travel_interests) ? q.travel_interests : []
+    const allInterests = [...new Set([...rawTravelVibes, ...rawTravelInterests])]
+
+    // Dietary restrictions
+    const dietaryRestrictions: string[] = Array.isArray(q?.dietary_restrictions) ? q.dietary_restrictions : []
+
+    // Travel styles
+    const travelStyles: string[] = Array.isArray(q?.travel_styles) ? q.travel_styles : []
+
+    // Language — prefs overrides profile
+    const languagePreference: string = q?.language_preference || p?.language_preference || 'en'
+
+    // Budget
+    const budgetLevel: string = q?.budget_level || 'Mid-Range'
+
+    // Age group derived silently from DOB
+    const ageGroup: string | null = deriveAgeGroup(p?.date_of_birth)
+
     return {
-      communicationStyle: prefsResult.data?.communication_style || 'friendly',
+      communicationStyle: q?.communication_style || 'friendly',
       // If never set (null), default to traveling mode so new users see broader city-wide results.
-      isLocalMode: profileResult.data?.currently_exploring === 'local',
-      travelInterests: prefsResult.data?.travel_interests || [],
-      socialVibe: prefsResult.data?.social_vibe || [],
-      planningPace: prefsResult.data?.planning_pace || 'Same Day',
-      favoriteMoods: prefsResult.data?.favorite_moods || [],
-      travelStyle: profileResult.data?.travel_style || 'adventurous',
+      isLocalMode: p?.currently_exploring === 'local',
+      travelInterests: allInterests,
+      allInterests,
+      socialVibe: Array.isArray(q?.social_vibe) ? q.social_vibe : [],
+      planningPace: q?.planning_pace || 'Same Day',
+      favoriteMoods: allFavoriteMoods,
+      allFavoriteMoods,
+      travelStyle: p?.travel_style || 'adventurous',
+      travelStyles,
       recentMoods: (checkInsResult.data || []).map((c: any) => c.mood),
-      profile: profileResult.data,
+      budgetLevel,
+      dietaryRestrictions,
+      languagePreference,
+      ageGroup,
+      profile: p,
     }
   } catch (e) {
     console.warn('⚠️ Could not fetch user context:', e)
-    return { communicationStyle: 'friendly', isLocalMode: true, travelInterests: [], travelStyle: 'adventurous', recentMoods: [] }
+    return {
+      communicationStyle: 'friendly',
+      isLocalMode: false,
+      travelInterests: [],
+      allInterests: [],
+      travelStyle: 'adventurous',
+      travelStyles: [],
+      recentMoods: [],
+      favoriteMoods: [],
+      allFavoriteMoods: [],
+      budgetLevel: 'Mid-Range',
+      dietaryRestrictions: [],
+      languagePreference: 'en',
+      ageGroup: null,
+    }
   }
 }
 
@@ -231,14 +304,27 @@ async function handleChat(supabase: any, userId: string, params: any): Promise<R
     ? `The user is a LOCAL — avoid tourist clichés. Give recommendations locals actually use: hidden gems, new openings, neighbourhood spots.`
     : `The user is TRAVELING — help them discover the best of ${userCity || 'the city'}. Mix well-known highlights with local secrets.`
 
+  const dietLine = userContext.dietaryRestrictions?.length
+    ? `Dietary restrictions: ${userContext.dietaryRestrictions.join(', ')}.`
+    : ''
+  const budgetLine = userContext.budgetLevel
+    ? `Budget preference: ${userContext.budgetLevel}.`
+    : ''
+  const ageGroupLine = userContext.ageGroup
+    ? `User age group: ${userContext.ageGroup}.`
+    : ''
+
   const systemPrompt = `${personalityInstructions}
 
 ${locationLine}
 ${localContext}
 
-User interests: ${JSON.stringify(userContext.travelInterests)}
-Favourite moods: ${JSON.stringify(userContext.favoriteMoods)}
+User interests: ${JSON.stringify(userContext.allInterests || userContext.travelInterests)}
+Favourite moods: ${JSON.stringify(userContext.allFavoriteMoods || userContext.favoriteMoods)}
 Recent moods: ${userContext.recentMoods.slice(0, 3).join(', ') || 'unknown'}
+${budgetLine}
+${dietLine}
+${ageGroupLine}
 
 Max 4 sentences per reply. Ask max 1 question.
 Max 2 concrete options when suggesting places.
@@ -520,7 +606,7 @@ async function handleCreateDayPlan(supabase: any, userId: string, params: any): 
       params.filters || {},
       {
         isLocalMode: !!userContext.isLocalMode,
-        travelInterests: userContext.travelInterests || [],
+        travelInterests: userContext.allInterests || userContext.travelInterests || [],
       },
     )
 
@@ -632,7 +718,7 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
       {},
       {
         isLocalMode: !!userContext.isLocalMode,
-        travelInterests: userContext.travelInterests || [],
+        travelInterests: userContext.allInterests || userContext.travelInterests || [],
       },
     )
     await cachePlaces(supabase, cacheKey, rankedPlaces, userId, location)
@@ -1197,7 +1283,10 @@ async function getMoodySearchQueries(moods: string[], location: string, userCont
   const systemEn = `You are Moody, the WanderMood travel assistant. ${localModeEn}
 Generate 5-7 short Google Places search query strings as JSON: {"queries": ["term1", "term2"]}.
 Build on the base queries above and add mood-specific variants. No markdown. Queries should work well in English for the Places API.`
-  const userEn = `Moods: ${moods.join(', ')}. Location: ${location}. Interests: ${JSON.stringify(userContext.travelInterests)}.`
+  const allInterests = userContext.allInterests || userContext.travelInterests || []
+  const budgetHint = userContext.budgetLevel ? ` Budget: ${userContext.budgetLevel}.` : ''
+  const dietHint = userContext.dietaryRestrictions?.length ? ` Dietary: ${userContext.dietaryRestrictions.join(', ')}.` : ''
+  const userEn = `Moods: ${moods.join(', ')}. Location: ${location}. Interests: ${JSON.stringify(allInterests)}.${budgetHint}${dietHint}`
 
   try {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
