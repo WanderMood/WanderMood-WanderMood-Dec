@@ -46,23 +46,9 @@ class MoodyEdgeFunctionService {
     }
   }
 
+  /// Same rule as moody `fetchUserContext`: local only when `currently_exploring == 'local'`.
   Future<bool> _readIsLocalMode() async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return true;
-    try {
-      final profile = await _supabase
-          .from('profiles')
-          .select('currently_exploring')
-          .eq('id', userId)
-          .maybeSingle();
-      final mode = (profile?['currently_exploring'] as String?)
-              ?.toLowerCase()
-              .trim() ??
-          'local';
-      return mode != 'traveling';
-    } catch (_) {
-      return true;
-    }
+    return PlacesCacheUtils.readExploreIsLocalMode(_supabase);
   }
 
   /// Get explore places from Edge Function
@@ -104,10 +90,16 @@ class MoodyEdgeFunctionService {
       if (user == null || session == null || token == null) {
         throw Exception('Session not ready. Please wait a moment and try again.');
       }
-      
-      // Cache-first: shared `places_cache` aggregate row (same key as moody Edge Function).
-      final cachedPlaces =
-          await PlacesCacheUtils.tryLoadExplorePlaces(_supabase, mood, location);
+
+      final isLocal = await _readIsLocalMode();
+
+      // Cache-first: same aggregate key as moody `handleGetExplore` (`explore_v6_{local|travel}_…`).
+      final cachedPlaces = await PlacesCacheUtils.tryLoadExplorePlaces(
+        _supabase,
+        mood,
+        location,
+        isLocalMode: isLocal,
+      );
       if (cachedPlaces != null) {
         return cachedPlaces;
       }
@@ -122,7 +114,6 @@ class MoodyEdgeFunctionService {
       final supabaseUrl = SupabaseConfig.url;
       final functionUrl = '$supabaseUrl/functions/v1/moody';
 
-      final isLocal = await _readIsLocalMode();
       final response = await dio.post(
         functionUrl,
         data: {

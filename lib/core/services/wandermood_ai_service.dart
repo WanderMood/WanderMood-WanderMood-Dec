@@ -128,18 +128,17 @@ class WanderMoodAIService {
           moods.isNotEmpty ? moods.first : 'adventurous';
 
       final userId = _supabase.auth.currentUser?.id;
-      bool isLocal = true;
+      var isLocal = false;
       if (userId != null) {
         final profile = await _supabase
             .from('profiles')
             .select('currently_exploring')
             .eq('id', userId)
             .maybeSingle();
-        isLocal = ((profile?['currently_exploring'] as String?)
-                        ?.toLowerCase()
-                        .trim() ??
-                    'local') !=
-                'traveling';
+        final v = (profile?['currently_exploring'] as String?)
+            ?.toLowerCase()
+            .trim();
+        isLocal = v == 'local';
       }
 
       final requestBody = <String, dynamic>{

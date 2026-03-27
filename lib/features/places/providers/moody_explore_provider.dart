@@ -7,7 +7,6 @@ import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dar
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:geolocator/geolocator.dart';
 
 /// Parameters for the moody explore provider
 class ExploreParams {
