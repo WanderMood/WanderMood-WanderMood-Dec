@@ -258,6 +258,13 @@ class WanderMoodAIService {
           'message': message,
           'history': history,
           'conversationId': convId,
+          // Location context so Moody knows where the user is
+          if (city != null && city.isNotEmpty) 'location': city,
+          if (latitude != null && longitude != null) 'coordinates': {
+            'lat': latitude,
+            'lng': longitude,
+          },
+          'language_code': 'en',
         },
       );
 

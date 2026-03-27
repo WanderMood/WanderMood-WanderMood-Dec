@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
 import { corsHeaders } from './_shared/cors.ts'
 
 interface MoodyRequest {
-  action: 'get_explore' | 'create_day_plan' | 'chat' | 'generate_hub_message'
+  action: 'get_explore' | 'create_day_plan' | 'chat' | 'generate_hub_message' | 'search'
   mood?: string
   location?: string
   coordinates?: { lat: number; lng: number }
@@ -115,6 +115,7 @@ Deno.serve(async (req) => {
       case 'create_day_plan': return await handleCreateDayPlan(supabaseWithAuth, authUser.id, params)
       case 'chat': return await handleChat(supabaseWithAuth, authUser.id, params)
       case 'generate_hub_message': return await handleGenerateHubMessage(supabaseWithAuth, authUser.id, params)
+      case 'search': return await handleSearch(supabaseWithAuth, authUser.id, params)
       default:
         return new Response(JSON.stringify({ error: `Invalid action: ${action}` }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
@@ -139,7 +140,8 @@ async function fetchUserContext(supabase: any, userId: string): Promise<any> {
     ])
     return {
       communicationStyle: prefsResult.data?.communication_style || 'friendly',
-      isLocalMode: (profileResult.data?.currently_exploring || 'local') === 'local',
+      // If never set (null), default to traveling mode so new users see broader city-wide results.
+      isLocalMode: profileResult.data?.currently_exploring === 'local',
       travelInterests: prefsResult.data?.travel_interests || [],
       socialVibe: prefsResult.data?.social_vibe || [],
       planningPace: prefsResult.data?.planning_pace || 'Same Day',
@@ -217,26 +219,33 @@ async function handleChat(supabase: any, userId: string, params: any): Promise<R
   const userContext = await fetchUserContext(supabase, userId)
   const personalityInstructions = getMoodyPersonalityInstructions(userContext.communicationStyle)
 
+  const userCity = (params.location && typeof params.location === 'string' && params.location.trim())
+    ? params.location.trim()
+    : null
+
+  const locationLine = userCity
+    ? `You are a local expert in cities worldwide, currently helping a user in ${userCity}.`
+    : `You are a local expert in cities worldwide.`
+
   const localContext = userContext.isLocalMode
-    ? 'De gebruiker is een LOCAL — vermijd toeristische clichés. Geef aanbevelingen die locals écht doen: hidden gems, nieuwe openingen, buurtplekken.'
-    : 'De gebruiker is OP REIS — help ze het beste van de stad te ontdekken. Mix bekende plekken met lokale geheimen.'
+    ? `The user is a LOCAL — avoid tourist clichés. Give recommendations locals actually use: hidden gems, new openings, neighbourhood spots.`
+    : `The user is TRAVELING — help them discover the best of ${userCity || 'the city'}. Mix well-known highlights with local secrets.`
 
   const systemPrompt = `${personalityInstructions}
 
-Je bent een lokale expert in steden wereldwijd, met specialisatie in Rotterdam.
+${locationLine}
 ${localContext}
 
-Gebruiker interesses: ${JSON.stringify(userContext.travelInterests)}
-Favoriete stemmingen: ${JSON.stringify(userContext.favoriteMoods)}
-Recente stemmingen: ${userContext.recentMoods.slice(0, 3).join(', ') || 'onbekend'}
+User interests: ${JSON.stringify(userContext.travelInterests)}
+Favourite moods: ${JSON.stringify(userContext.favoriteMoods)}
+Recent moods: ${userContext.recentMoods.slice(0, 3).join(', ') || 'unknown'}
 
-Houd antwoorden kort en praktisch: 2-4 zinnen max.
-Stel hooguit 1 vraag per bericht.
-Geef bij suggesties maximaal 2 concrete opties.
-Als de gebruiker twijfelt, geef een duidelijke aanbeveling in plaats van meer open vragen.
-Altijd in het Nederlands tenzij de gebruiker een andere taal gebruikt.
-Nooit meer dan 2 emojis per bericht.
-Nooit plekken/ratings/prijzen verzinnen: gebruik alleen bekende data of zeg dat data ontbreekt.`
+Max 4 sentences per reply. Ask max 1 question.
+Max 2 concrete options when suggesting places.
+NEVER invent place names, ratings, or prices.
+Only suggest real places in ${userCity || "the user's city"}.
+Never more than 2 emojis per message.
+Reply in the same language the user writes in.`
 
   const openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey) {
@@ -289,6 +298,59 @@ function getFallbackChatResponse(style: string): string {
     case 'professional': return 'Momenteel niet beschikbaar. Probeer het later opnieuw.'
     case 'direct': return 'Even wachten.'
     default: return 'Hey! Ik ben even niet beschikbaar. Probeer het zo nog eens 😊'
+  }
+}
+
+// ============================================
+// SEARCH HANDLER
+// ============================================
+
+async function handleSearch(supabase: any, userId: string, params: any): Promise<Response> {
+  const query = (params.query || '').trim()
+  const location = (params.location || '').trim()
+  const coordinates = params.coordinates
+
+  if (!query) {
+    return new Response(JSON.stringify({ error: 'Query required' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  }
+  if (!location || !coordinates?.lat || !coordinates?.lng) {
+    return new Response(JSON.stringify({ error: 'Location and coordinates required' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  }
+
+  const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY')
+  if (!apiKey?.trim()) {
+    return new Response(JSON.stringify({ error: 'API key not configured' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  }
+
+  console.log(`🔎 search: query="${query}", location=${location}`)
+
+  try {
+    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json` +
+      `?query=${encodeURIComponent(query + ' in ' + location)}` +
+      `&location=${coordinates.lat},${coordinates.lng}` +
+      `&radius=20000&key=${apiKey}`
+
+    const response = await fetch(url)
+    const data = await response.json()
+
+    if (data.status !== 'OK' || !data.results?.length) {
+      return new Response(JSON.stringify({ cards: [], total_found: 0 }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    // Transform results with relaxed thresholds — user is searching for something specific
+    let places: PlaceCard[] = data.results.map((p: any) => transformPlace(p, []))
+    places = await enrichAndFilterPlaces(places, { minRating: 3.5, minReviews: 5 })
+
+    return new Response(JSON.stringify({ cards: places, total_found: places.length }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  } catch (error) {
+    console.error('❌ handleSearch:', error)
+    return new Response(JSON.stringify({ cards: [], total_found: 0 }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   }
 }
 
@@ -496,18 +558,20 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    const mood = params.mood || 'adventurous'
+    const mood = params.mood || 'all'
+    const isBroadFeed = !params.mood || params.mood === 'all' || params.mood === 'discover'
     const location = params.location.trim()
     const coordinates = params.coordinates
     const filters = params.filters || {}
     const userContext = await fetchUserContext(supabase, userId)
+    const modeKey = userContext.isLocalMode ? 'local' : 'travel'
 
-    console.log(`🔍 get_explore: mood=${mood}, location=${location}`)
+    console.log(`🔍 get_explore: mood=${mood}, location=${location}, mode=${modeKey}`)
 
     const isDevMode = Deno.env.get('DEV_MODE') === 'true'
-    // Keep key aligned with Flutter PlacesCacheUtils.standardExploreCacheKey.
-    const cacheSchemaVersion = 'v3_quality'
-    const cacheKey = `explore_${cacheSchemaVersion}_${mood}_${location.toLowerCase().trim()}`
+    // Cache key includes mode so local vs travel get different cached feeds
+    const cacheSchemaVersion = 'v6'
+    const cacheKey = `explore_${cacheSchemaVersion}_${modeKey}_${mood}_${location.toLowerCase().trim()}`
     const cachedResult = await checkCache(supabase, cacheKey, userId)
 
     if (cachedResult && cachedResult.cards.length > 0) {
@@ -523,7 +587,15 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     }
 
     console.log('🔄 Cache miss — fetching from Google Places')
-    let places = await fetchPlacesFromGoogle(location, coordinates, mood, filters)
+
+    // For broad feed: use wide variety of queries based on mode
+    // For mood-filtered: use mood-specific queries
+    const lang = clientOutputLang(params)
+    const exploreQueriesOverride = isBroadFeed
+      ? getBroadExploreQueries(userContext.isLocalMode)
+      : (await getMoodySearchQueries([mood], location, userContext, lang) ?? getMoodQueries(mood))
+
+    let places = await fetchPlacesFromGoogle(location, coordinates, mood, filters, exploreQueriesOverride)
 
     // FIX: reduced from 50/5 to 15/2 to prevent timeout
     let fetchAttempts = 0
@@ -1085,21 +1157,46 @@ async function cachePlaces(supabase: any, cacheKey: string, places: PlaceCard[],
 // OPENAI HELPERS
 // ============================================
 
+// Base queries for local vs travel mode — used as a starting point before AI adds mood-specific ones
+function getBaseQueriesByMode(isLocalMode: boolean): string[] {
+  if (isLocalMode) {
+    // Local mode — neighbourhood hidden gems, everyday spots locals use
+    return [
+      'neighbourhood restaurant',
+      'local hidden gem cafe',
+      'new opening restaurant',
+      'local market',
+      'afterwork bar',
+      'cozy neighbourhood spot',
+      'local bakery',
+    ]
+  }
+  // Travel mode — best of city, iconic, worth visiting
+  return [
+    'best restaurant city',
+    'must visit attraction',
+    'rooftop view',
+    'iconic cafe',
+    'local food experience',
+    'cultural landmark',
+    'scenic viewpoint',
+    'famous market',
+  ]
+}
+
 async function getMoodySearchQueries(moods: string[], location: string, userContext: any, lang: 'nl' | 'en'): Promise<string[] | null> {
   const openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey?.trim()) return null
 
   const isLocal = userContext.isLocalMode
-  const localModeNl = isLocal
-    ? `BELANGRIJK: Gebruiker is LOCAL. Vermijd toeristische dingen. Geef hidden gems, nieuwe openingen, buurtplekken die locals kennen.`
-    : `BELANGRIJK: Gebruiker is OP REIS. Mix bekende bezienswaardigheden met lokale geheimen.`
+  const baseQueries = getBaseQueriesByMode(isLocal)
   const localModeEn = isLocal
-    ? `IMPORTANT: User is a LOCAL. Avoid tourist clichés. Prefer hidden gems, new openings, neighborhood spots locals actually use.`
-    : `IMPORTANT: User is TRAVELING. Mix well-known sights with local secrets.`
+    ? `IMPORTANT: User is a LOCAL. Avoid tourist clichés. Prefer hidden gems, new openings, neighborhood spots locals actually use. Base queries: ${JSON.stringify(baseQueries)}`
+    : `IMPORTANT: User is TRAVELING. Focus on best-of-city highlights, must-see attractions, and iconic spots. Base queries: ${JSON.stringify(baseQueries)}`
 
-  const systemNl = `Je bent Moody, de WanderMood reisassistent. ${localModeNl} Geef 5-7 korte Google Places zoektermen als JSON: {"queries": ["term1", "term2"]}. Geen markdown.`
-  const systemEn = `You are Moody, the WanderMood travel assistant. ${localModeEn} Return 5-7 short Google Places search query strings as JSON: {"queries": ["term1", "term2"]}. No markdown. Queries should work well in English for the Places API.`
-  const userNl = `Moods: ${moods.join(', ')}. Locatie: ${location}. Interesses: ${JSON.stringify(userContext.travelInterests)}.`
+  const systemEn = `You are Moody, the WanderMood travel assistant. ${localModeEn}
+Generate 5-7 short Google Places search query strings as JSON: {"queries": ["term1", "term2"]}.
+Build on the base queries above and add mood-specific variants. No markdown. Queries should work well in English for the Places API.`
   const userEn = `Moods: ${moods.join(', ')}. Location: ${location}. Interests: ${JSON.stringify(userContext.travelInterests)}.`
 
   try {
@@ -1109,8 +1206,8 @@ async function getMoodySearchQueries(moods: string[], location: string, userCont
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: lang === 'nl' ? systemNl : systemEn },
-          { role: 'user', content: lang === 'nl' ? userNl : userEn },
+          { role: 'system', content: systemEn },
+          { role: 'user', content: userEn },
         ],
         max_tokens: 200, temperature: 0.5, response_format: { type: 'json_object' },
       }),
@@ -1123,6 +1220,37 @@ async function getMoodySearchQueries(moods: string[], location: string, userCont
     console.log('🤖 Moody queries:', queries)
     return queries
   } catch (e) { console.error('getMoodySearchQueries error:', e); return null }
+}
+
+// Broad explore queries when no specific mood is requested
+function getBroadExploreQueries(isLocalMode: boolean): string[] {
+  if (isLocalMode) {
+    return [
+      'neighbourhood restaurant',
+      'local cafe',
+      'hidden gem bar',
+      'local market',
+      'cozy bistro',
+      'neighbourhood park',
+      'local bakery',
+      'afterwork drinks',
+      'wine bar',
+      'cultural center',
+    ]
+  }
+  // Travel mode — best of city
+  return [
+    'best restaurant',
+    'rooftop bar',
+    'scenic viewpoint',
+    'art museum',
+    'street food market',
+    'iconic cafe',
+    'cultural attraction',
+    'cocktail bar',
+    'local market',
+    'waterfront restaurant',
+  ]
 }
 
 async function getMoodyPersonalityResponse(moods: string[], activities: Activity[], location: string, userContext: any, lang: 'nl' | 'en'): Promise<{ moodyMessage: string; reasoning: string }> {

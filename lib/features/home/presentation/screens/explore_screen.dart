@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
@@ -30,6 +31,7 @@ import 'package:wandermood/features/home/presentation/widgets/moody_character.da
 import '../../application/intent_processor.dart';
 import '../../providers/smart_context_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/core/utils/places_cache_utils.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
@@ -64,6 +66,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   String _searchFilter = 'All';
   bool _isSearching = false;
   String _searchQuery = '';
+
+  // Backend search results — null means show normal explore feed
+  List<Place>? _searchResults;
+  Timer? _searchDebounce;
 
   // Scroll detection for content
   bool _isScrolling = false;
@@ -178,6 +184,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _scrollController.dispose();
@@ -241,42 +248,90 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       _isSearching = query.isNotEmpty;
     });
 
-    if (query.isNotEmpty) {
-      // Get smart context for enhanced search
-      final smartContext = ref.read(smartContextProvider);
+    _searchDebounce?.cancel();
 
-      // Process natural language query with context
-      // NEW: Use Moody Edge Function
-      final explorePlacesAsync = ref.read(moodyExploreAutoProvider);
-      // OLD: ref.read(explorePlacesProvider(city: ref.read(locationNotifierProvider).value ?? 'Rotterdam'))
-      explorePlacesAsync.whenData((places) {
-        final result = IntentProcessor.processNaturalLanguage(query, places,
-            context: smartContext);
-        final sortedPlaces = IntentProcessor.sortByPriority(
-            result['filteredPlaces'], result['priority']);
-
+    if (query.trim().length < 3) {
+      // Clear search — restore normal explore feed
+      if (mounted) {
         setState(() {
-          _intentFilteredPlaces = sortedPlaces;
-          _currentExplanation = result['explanation'];
-          _selectedIntent = ''; // Clear intent when searching
+          _searchResults = null;
+          _intentFilteredPlaces = [];
+          _currentExplanation = '';
+          _selectedIntent = '';
         });
+      }
+      return;
+    }
+
+    _searchDebounce = Timer(const Duration(milliseconds: 600), () {
+      _performBackendSearch(query.trim());
+    });
+  }
+
+  Future<void> _performBackendSearch(String query) async {
+    final locationAsync = ref.read(locationNotifierProvider);
+    final city = locationAsync.value ?? '';
+    if (city.isEmpty) return;
+
+    final positionAsync = ref.read(userLocationProvider);
+    final position = positionAsync.value;
+    if (position == null) return;
+
+    final supabase = Supabase.instance.client;
+
+    if (!mounted) return;
+    setState(() => _isSearching = true);
+
+    try {
+      final response = await supabase.functions.invoke('moody', body: {
+        'action': 'search',
+        'query': query,
+        'location': city,
+        'coordinates': {
+          'lat': position.latitude,
+          'lng': position.longitude,
+        },
       });
-    } else {
-      // Clear search
-      setState(() {
-        _intentFilteredPlaces = [];
-        _currentExplanation = '';
-        _selectedIntent = '';
-      });
+
+      if (!mounted) return;
+
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        final cards = (data['cards'] as List<dynamic>?) ?? [];
+        final places = cards.map((c) {
+          final m = c is Map<String, dynamic>
+              ? c
+              : Map<String, dynamic>.from(c as Map);
+          return PlacesCacheUtils.placeFromMoodyExploreCard(m);
+        }).toList();
+        setState(() {
+          _searchResults = places;
+          _isSearching = false;
+          _intentFilteredPlaces = [];
+          _currentExplanation = '';
+        });
+      } else {
+        setState(() {
+          _searchResults = [];
+          _isSearching = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('🔍 Search error: $e');
+      if (mounted) setState(() => _isSearching = false);
     }
   }
 
   void _clearSearch() {
+    _searchDebounce?.cancel();
     _searchController.clear();
     setState(() {
       _searchQuery = '';
       _isSearching = false;
       _searchFilter = 'All'; // Reset search filter when clearing
+      _searchResults = null;
+      _intentFilteredPlaces = [];
+      _currentExplanation = '';
     });
   }
 
@@ -1162,9 +1217,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final userLocation = userLocationAsync.value;
 
     List<Place> filteredPlaces;
-    if (_intentFilteredPlaces.isNotEmpty ||
-        _selectedIntent.isNotEmpty ||
-        _searchQuery.isNotEmpty) {
+    if (_searchResults != null) {
+      // Backend search results take priority
+      filteredPlaces = _searchResults!;
+    } else if (_intentFilteredPlaces.isNotEmpty ||
+        _selectedIntent.isNotEmpty) {
       filteredPlaces = _intentFilteredPlaces;
     } else {
       filteredPlaces = allPlaces;
@@ -1217,9 +1274,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final userLocation = userLocationAsync.value;
 
     List<Place> filteredPlaces;
-    if (_intentFilteredPlaces.isNotEmpty ||
-        _selectedIntent.isNotEmpty ||
-        _searchQuery.isNotEmpty) {
+    if (_searchResults != null) {
+      // Backend search results take priority
+      filteredPlaces = _searchResults!;
+    } else if (_intentFilteredPlaces.isNotEmpty ||
+        _selectedIntent.isNotEmpty) {
       filteredPlaces = _intentFilteredPlaces;
     } else {
       filteredPlaces = allPlaces;
@@ -1368,7 +1427,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           body: _buildExploreErrorBody(error, stack),
         ),
         data: (allPlaces) {
-          final activitiesCount = _filterPlaces(allPlaces).length;
+          final activitiesCount = _searchResults != null
+              ? _searchResults!.length
+              : _filterPlaces(allPlaces).length;
           if (_isMapView) {
             return _buildExploreMapModeBody(allPlaces, activitiesCount);
           }
