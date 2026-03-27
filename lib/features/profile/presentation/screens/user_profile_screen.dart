@@ -20,6 +20,7 @@ import '../widgets/profile_stats_cards.dart';
 import '../utils/preference_chip_localization.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:wandermood/features/places/models/place.dart';
+import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
 
 /// v2 profile — design tokens
@@ -179,6 +180,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
   Future<void> _updateTravelMode(bool isLocal) async {
     await ref.read(currentUserProfileProvider.notifier).updateTravelMode(isLocal);
+    // Invalidate explore cache so next visit fetches results for new mode
+    ref.invalidate(moodyExploreAutoProvider);
     if (!mounted) return;
     final l10n = AppLocalizations.of(context)!;
     showWanderMoodToast(

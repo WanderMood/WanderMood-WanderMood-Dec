@@ -37,7 +37,9 @@ class CurrentUserProfile {
   final dynamic interests;
 
   bool get isLocalMode {
-    if (homeBase == null) return true;
+    // If homeBase is null (never set), default to traveling mode so new users
+    // see the broader city-wide results rather than local-only.
+    if (homeBase == null) return false;
     final normalized = homeBase!.toLowerCase().trim();
     return normalized != 'traveling' && normalized != 'traveler';
   }
