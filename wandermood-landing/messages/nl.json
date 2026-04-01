@@ -105,5 +105,61 @@
     "foodie": "Foodie",
     "cultural": "Cultureel",
     "nightOut": "Uitgaan"
+  },
+  "legal": {
+    "common": {
+      "brand": "WanderMood",
+      "privacyNav": "Privacy",
+      "termsNav": "Voorwaarden",
+      "accountDeletionNav": "Account verwijderen",
+      "contactEmail": "hello@wandermood.com"
+    },
+    "privacy": {
+      "metaTitle": "Privacybeleid | WanderMood",
+      "metaDescription": "Hoe WanderMood met je gegevens omgaat en hoe je je account verwijdert.",
+      "title": "Privacybeleid",
+      "updated": "Laatst bijgewerkt: maart 2026",
+      "p1": "WanderMood (“wij”) respecteert je privacy. We verzamelen alleen gegevens die nodig zijn om de app te laten werken, je dagplannen te personaliseren en je account te beveiligen.",
+      "p2": "We verkopen je persoonsgegevens niet aan derden. Gegevens worden versleuteld verstuurd (HTTPS/TLS) tussen de app en onze diensten.",
+      "p3": "Je kunt op elk moment verwijdering van je account en bijbehorende persoonsgegevens aanvragen. Zie onze pagina",
+      "p3Link": "Account verwijderen",
+      "p3After": "voor een stapsgewijze uitleg, wat we verwijderen en hoe je contact opneemt als je de app niet kunt gebruiken.",
+      "questions": "Vragen? Mail ons op"
+    },
+    "terms": {
+      "metaTitle": "Gebruiksvoorwaarden | WanderMood",
+      "metaDescription": "Voorwaarden voor het gebruik van de WanderMood-app en gerelateerde diensten.",
+      "title": "Gebruiksvoorwaarden",
+      "updated": "Laatst bijgewerkt: maart 2026",
+      "p1": "Door WanderMood te downloaden of te gebruiken, ga je akkoord met deze voorwaarden en ons privacybeleid. Gebruik de app niet als je niet akkoord gaat.",
+      "p2": "WanderMood biedt mood-gebaseerde dagplanning, plekken ontdekken en sociale functies. Jij bent verantwoordelijk voor je account en voor inhoud die je plaatst. Misbruik van de dienst, ongeoorloofde toegang tot gegevens van anderen of gebruik in strijd met de wet is niet toegestaan.",
+      "p3": "De app en inhoud worden aangeboden zoals beschikbaar. We kunnen functies wijzigen, opschorten of beëindigen, of deze voorwaarden bijwerken; belangrijke wijzigingen tonen we op deze pagina waar nodig.",
+      "p4": "Vragen over deze voorwaarden? Mail ons op",
+      "backPrivacy": "Privacybeleid"
+    },
+    "accountDeletion": {
+      "metaTitle": "Account verwijderen | WanderMood",
+      "metaDescription": "Hoe je je WanderMood-account en gegevens definitief verwijdert (Google Play).",
+      "title": "Je WanderMood-account verwijderen",
+      "subtitle": "Hoe je permanent je account en persoonsgegevens verwijdert in de WanderMood-app (Android en iOS).",
+      "sectionAppTitle": "Optie 1 — Verwijderen in de app (aanbevolen)",
+      "sectionAppIntro": "Als je WanderMood op je telefoon of tablet kunt openen:",
+      "step1": "Log in met het account dat je wilt verwijderen.",
+      "step2": "Open het tabblad Meer (⋯) onderaan, ga daarna naar Instellingen (of je profiel / instellingen).",
+      "step3": "Scroll naar het gedeelte voor gevaarlijke acties en tik op Account verwijderen.",
+      "step4": "Typ DELETE wanneer daarom wordt gevraagd, bevestig in het dialoogvenster en wacht tot de app bevestigt dat je account is verwijderd.",
+      "sectionEmailTitle": "Optie 2 — Verzoek per e-mail",
+      "sectionEmailBody": "Als je de app niet kunt gebruiken (bijvoorbeeld geen toegang meer tot je toestel), mail ons vanaf het adres dat aan je WanderMood-account gekoppeld is:",
+      "sectionEmailAfter": "Gebruik als onderwerp “Account verwijderen” en vermeld het e-mailadres waarmee je je hebt geregistreerd. We kunnen aanvullende gegevens vragen om te controleren dat het verzoek van jou komt.",
+      "sectionDataTitle": "Wat we verwijderen",
+      "sectionDataIntro": "Na verwijdering in de app worden je login en bijbehorende app-gegevens gewist, waaronder onder meer:",
+      "dataItem1": "Je profiel en voorkeuren",
+      "dataItem2": "Opgeslagen activiteiten, mood-invoer, reisplannen en opgeslagen plekken",
+      "dataItem3": "Sociale gegevens die aan jou gekoppeld zijn (zoals likes, reacties, vriendschappen en dagboekberichten die jij hebt gemaakt)",
+      "dataItem4": "Prestaties, meldingsinstellingen, sessies en andere account-gerelateerde records in onze backend",
+      "sectionRetainTitle": "Wat we mogelijk bewaren",
+      "sectionRetainBody": "We kunnen bepaalde informatie beperkt bewaren als de wet dat vereist, voor beveiliging of fraudepreventie, of in versleutelde back-ups tot ze verlopen. We gebruiken bewaarde gegevens na verwijdering niet om je te benaderen voor marketing.",
+      "backToPrivacy": "Privacybeleid"
+    }
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:wandermood/core/utils/legal_url_launcher.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/domain/models/user_preferences.dart';
 import 'package:wandermood/features/settings/presentation/providers/user_preferences_provider.dart';
@@ -335,18 +335,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _openPrivacyPolicy() async {
     final l10n = AppLocalizations.of(context)!;
     try {
-      final url = LegalUrls.privacyPolicy;
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        if (mounted) {
-          showWanderMoodToast(
-            context,
-            message: l10n.settingsOpenPrivacyNetworkError,
-            isError: true,
-            duration: const Duration(seconds: 3),
-          );
-        }
+      final code = Localizations.localeOf(context).languageCode;
+      final url = LegalUrls.privacyForLanguageCode(code);
+      final ok = await launchExternalLegalUrl(url);
+      if (!ok && mounted) {
+        showWanderMoodToast(
+          context,
+          message: l10n.settingsOpenPrivacyNetworkError,
+          isError: true,
+          duration: const Duration(seconds: 3),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -364,18 +362,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _openTermsOfService() async {
     final l10n = AppLocalizations.of(context)!;
     try {
-      final url = LegalUrls.termsOfService;
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        if (mounted) {
-          showWanderMoodToast(
-            context,
-            message: l10n.settingsOpenTermsNetworkError,
-            isError: true,
-            duration: const Duration(seconds: 3),
-          );
-        }
+      final code = Localizations.localeOf(context).languageCode;
+      final url = LegalUrls.termsForLanguageCode(code);
+      final ok = await launchExternalLegalUrl(url);
+      if (!ok && mounted) {
+        showWanderMoodToast(
+          context,
+          message: l10n.settingsOpenTermsNetworkError,
+          isError: true,
+          duration: const Duration(seconds: 3),
+        );
       }
     } catch (e) {
       if (mounted) {

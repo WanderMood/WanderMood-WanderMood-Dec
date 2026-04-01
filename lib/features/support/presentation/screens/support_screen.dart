@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:wandermood/core/utils/legal_url_launcher.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/core/constants/legal_urls.dart';
@@ -389,19 +389,17 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
   /// Open Privacy Policy in external browser
   Future<void> _openPrivacyPolicy() async {
     try {
-      final url = LegalUrls.privacyPolicy;
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        if (mounted) {
-          showWanderMoodToast(
-            context,
-            message:
-                'Unable to open Privacy Policy. Please check your internet connection.',
-            isError: true,
-            duration: const Duration(seconds: 3),
-          );
-        }
+      final code = Localizations.localeOf(context).languageCode;
+      final url = LegalUrls.privacyForLanguageCode(code);
+      final ok = await launchExternalLegalUrl(url);
+      if (!ok && mounted) {
+        showWanderMoodToast(
+          context,
+          message:
+              'Unable to open Privacy Policy. Please check your internet connection.',
+          isError: true,
+          duration: const Duration(seconds: 3),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -418,19 +416,17 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
   /// Open Terms of Service in external browser
   Future<void> _openTermsOfService() async {
     try {
-      final url = LegalUrls.termsOfService;
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        if (mounted) {
-          showWanderMoodToast(
-            context,
-            message:
-                'Unable to open Terms of Service. Please check your internet connection.',
-            isError: true,
-            duration: const Duration(seconds: 3),
-          );
-        }
+      final code = Localizations.localeOf(context).languageCode;
+      final url = LegalUrls.termsForLanguageCode(code);
+      final ok = await launchExternalLegalUrl(url);
+      if (!ok && mounted) {
+        showWanderMoodToast(
+          context,
+          message:
+              'Unable to open Terms of Service. Please check your internet connection.',
+          isError: true,
+          duration: const Duration(seconds: 3),
+        );
       }
     } catch (e) {
       if (mounted) {

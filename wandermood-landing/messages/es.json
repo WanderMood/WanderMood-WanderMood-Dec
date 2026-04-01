@@ -105,5 +105,61 @@
     "foodie": "Foodie",
     "cultural": "Cultural",
     "nightOut": "Salir de noche"
+  },
+  "legal": {
+    "common": {
+      "brand": "WanderMood",
+      "privacyNav": "Privacidad",
+      "termsNav": "Términos",
+      "accountDeletionNav": "Eliminar cuenta",
+      "contactEmail": "hello@wandermood.com"
+    },
+    "privacy": {
+      "metaTitle": "Política de privacidad | WanderMood",
+      "metaDescription": "Cómo WanderMood trata tus datos y cómo eliminar tu cuenta.",
+      "title": "Política de privacidad",
+      "updated": "Última actualización: marzo de 2026",
+      "p1": "WanderMood («nosotros») respeta tu privacidad. Solo recopilamos la información necesaria para operar la app, personalizar tus planes del día y proteger tu cuenta.",
+      "p2": "No vendemos tu información personal a terceros. Los datos se envían cifrados (HTTPS/TLS) entre la app y nuestros servicios.",
+      "p3": "Puedes solicitar la eliminación de tu cuenta y datos personales asociados en cualquier momento. Consulta la página de",
+      "p3Link": "eliminación de cuenta",
+      "p3After": "para los pasos, qué eliminamos y cómo contactarnos si no puedes usar la app.",
+      "questions": "¿Preguntas? Escríbenos a"
+    },
+    "terms": {
+      "metaTitle": "Términos del servicio | WanderMood",
+      "metaDescription": "Términos de uso de la app WanderMood y servicios relacionados.",
+      "title": "Términos del servicio",
+      "updated": "Última actualización: marzo de 2026",
+      "p1": "Al descargar o usar WanderMood, aceptas estos términos y nuestra Política de privacidad. Si no estás de acuerdo, no uses la app.",
+      "p2": "WanderMood ofrece planificación del día según el estado de ánimo, descubrimiento de lugares y funciones sociales. Eres responsable de tu cuenta y del contenido que publicas. No debes hacer un uso indebido del servicio, acceder sin permiso a datos de otros ni usar la app de forma ilícita.",
+      "p3": "La app y su contenido se ofrecen «tal como estén disponibles». Podemos modificar, suspender o dejar funciones o actualizar estos términos; los cambios importantes se reflejarán en esta página cuando proceda.",
+      "p4": "¿Dudas sobre estos términos? Escríbenos a",
+      "backPrivacy": "Política de privacidad"
+    },
+    "accountDeletion": {
+      "metaTitle": "Eliminar tu cuenta | WanderMood",
+      "metaDescription": "Cómo eliminar permanentemente tu cuenta y datos de WanderMood (Google Play).",
+      "title": "Eliminar tu cuenta de WanderMood",
+      "subtitle": "Cómo eliminar de forma permanente tu cuenta y datos personales en la app WanderMood (Android e iOS).",
+      "sectionAppTitle": "Opción 1 — Eliminar en la app (recomendado)",
+      "sectionAppIntro": "Si puedes abrir WanderMood en tu teléfono o tablet:",
+      "step1": "Inicia sesión con la cuenta que quieres eliminar.",
+      "step2": "Abre la pestaña Más (⋯) en la barra inferior y entra en Ajustes (o tu perfil / ajustes).",
+      "step3": "Desplázate hasta la zona de acciones sensibles y pulsa Eliminar cuenta.",
+      "step4": "Escribe DELETE cuando se te pida, confirma en el cuadro de diálogo y espera a que la app confirme la eliminación.",
+      "sectionEmailTitle": "Opción 2 — Solicitud por correo",
+      "sectionEmailBody": "Si no puedes usar la app (por ejemplo, sin acceso al dispositivo), escríbenos desde el correo vinculado a tu cuenta de WanderMood:",
+      "sectionEmailAfter": "Asunto: «Eliminación de cuenta» e incluye el correo con el que te registraste. Podemos pedir datos razonables para verificar que la solicitud es tuya.",
+      "sectionDataTitle": "Qué eliminamos",
+      "sectionDataIntro": "Al completar la eliminación en la app, se borran tu acceso y los datos asociados, por ejemplo:",
+      "dataItem1": "Tu perfil y preferencias",
+      "dataItem2": "Actividades guardadas, registros de estado de ánimo, planes de viaje y lugares guardados",
+      "dataItem3": "Datos sociales vinculados a ti (me gusta, comentarios, amistades, entradas de diario que creaste)",
+      "dataItem4": "Logros, ajustes de notificaciones, sesiones y otros registros de cuenta en nuestro backend",
+      "sectionRetainTitle": "Qué podemos conservar",
+      "sectionRetainBody": "Podemos conservar cierta información un tiempo limitado si la ley lo exige, por seguridad o prevención de fraude, o en copias de seguridad cifradas hasta que expiren. Tras la eliminación no la usamos para marketing.",
+      "backToPrivacy": "Política de privacidad"
+    }
   }
 }

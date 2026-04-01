@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/legal_urls.dart';
+import '../../../../core/utils/legal_url_launcher.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
@@ -82,9 +83,9 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
 
   Future<void> _openPrivacyPolicyExternal() async {
     try {
-      if (await canLaunchUrl(LegalUrls.privacyPolicy)) {
-        await launchUrl(LegalUrls.privacyPolicy, mode: LaunchMode.externalApplication);
-      }
+      final code = Localizations.localeOf(context).languageCode;
+      final uri = LegalUrls.privacyForLanguageCode(code);
+      await launchExternalLegalUrl(uri);
     } catch (_) {}
   }
 

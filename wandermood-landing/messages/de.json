@@ -105,5 +105,61 @@
     "foodie": "Foodie",
     "cultural": "Kulturell",
     "nightOut": "Nacht unterwegs"
+  },
+  "legal": {
+    "common": {
+      "brand": "WanderMood",
+      "privacyNav": "Datenschutz",
+      "termsNav": "AGB",
+      "accountDeletionNav": "Konto löschen",
+      "contactEmail": "hello@wandermood.com"
+    },
+    "privacy": {
+      "metaTitle": "Datenschutz | WanderMood",
+      "metaDescription": "Wie WanderMood mit deinen Daten umgeht und wie du dein Konto löschst.",
+      "title": "Datenschutz",
+      "updated": "Stand: März 2026",
+      "p1": "WanderMood („wir“) respektiert deine Privatsphäre. Wir erheben nur Daten, die nötig sind, um die App zu betreiben, deine Tagespläne zu personalisieren und dein Konto zu schützen.",
+      "p2": "Wir verkaufen deine personenbezogenen Daten nicht an Dritte. Daten werden verschlüsselt über HTTPS/TLS zwischen der App und unseren Diensten übertragen.",
+      "p3": "Du kannst jederzeit die Löschung deines Kontos und der zugehörigen Daten beantragen. Siehe die Seite",
+      "p3Link": "Konto löschen",
+      "p3After": "für Schritt-für-Schritt-Anleitung, welche Daten entfernt werden und wie du uns erreichst, falls du die App nicht nutzen kannst.",
+      "questions": "Fragen? Schreibe uns an"
+    },
+    "terms": {
+      "metaTitle": "Nutzungsbedingungen | WanderMood",
+      "metaDescription": "Bedingungen für die Nutzung der WanderMood-App und zugehöriger Dienste.",
+      "title": "Nutzungsbedingungen",
+      "updated": "Stand: März 2026",
+      "p1": "Mit dem Herunterladen oder der Nutzung von WanderMood stimmst du diesen Bedingungen und unserer Datenschutzerklärung zu. Nutze die App nicht, wenn du nicht einverstanden bist.",
+      "p2": "WanderMood bietet stimmungsbasierte Tagesplanung, Ortserkundung und soziale Funktionen. Du bist für dein Konto und von dir veröffentlichte Inhalte verantwortlich. Missbrauch, unbefugter Zugriff auf fremde Daten oder rechtswidrige Nutzung sind untersagt.",
+      "p3": "Die App und Inhalte werden „wie verfügbar“ bereitgestellt. Wir können Funktionen ändern, aussetzen oder beenden oder diese Bedingungen aktualisieren; wesentliche Änderungen weisen wir hier aus, soweit erforderlich.",
+      "p4": "Fragen zu diesen Bedingungen? Schreibe uns an",
+      "backPrivacy": "Datenschutz"
+    },
+    "accountDeletion": {
+      "metaTitle": "Konto löschen | WanderMood",
+      "metaDescription": "So löschst du dein WanderMood-Konto und deine Daten dauerhaft (Google Play).",
+      "title": "Dein WanderMood-Konto löschen",
+      "subtitle": "So löschst du dauerhaft dein Konto und personenbezogene Daten in der WanderMood-App (Android und iOS).",
+      "sectionAppTitle": "Option 1 — In der App löschen (empfohlen)",
+      "sectionAppIntro": "Wenn du WanderMood auf dem Smartphone oder Tablet öffnen kannst:",
+      "step1": "Melde dich mit dem Konto an, das du entfernen möchtest.",
+      "step2": "Öffne den Tab „Mehr“ (⋯) in der unteren Leiste und gehe zu Einstellungen (oder Profil / Einstellungen).",
+      "step3": "Scrolle zum Bereich für sensible Aktionen und tippe auf „Konto löschen“.",
+      "step4": "Gib DELETE ein, wenn du dazu aufgefordert wirst, bestätige im Dialog und warte, bis die App die Löschung bestätigt.",
+      "sectionEmailTitle": "Option 2 — Anfrage per E-Mail",
+      "sectionEmailBody": "Wenn du die App nicht nutzen kannst (z. B. kein Zugriff auf dein Gerät), schreibe uns von der E-Mail-Adresse, die mit deinem WanderMood-Konto verknüpft ist:",
+      "sectionEmailAfter": "Betreff: „Konto löschen“ und die E-Mail-Adresse deiner Registrierung angeben. Wir können zusätzliche Angaben zur Identitätsprüfung benötigen.",
+      "sectionDataTitle": "Was wir löschen",
+      "sectionDataIntro": "Bei Löschung in der App werden dein Login und zugehörige App-Daten entfernt, unter anderem:",
+      "dataItem1": "Profil und Einstellungen",
+      "dataItem2": "Gespeicherte Aktivitäten, Mood-Einträge, Reisepläne und gespeicherte Orte",
+      "dataItem3": "Soziale Daten, die mit dir verknüpft sind (z. B. Likes, Kommentare, Freundschaften, von dir erstellte Tagebucheinträge)",
+      "dataItem4": "Erfolge, Benachrichtigungseinstellungen, Sitzungen und andere kontobezogene Einträge in unserem Backend",
+      "sectionRetainTitle": "Was wir ggf. aufbewahren",
+      "sectionRetainBody": "Bestimmte Informationen können wir gesetzlich vorgeschrieben, zu Sicherheit oder Betrugsprävention oder in verschlüsselten Backups begrenzt aufbewahren, bis sie auslaufen. Nach der Löschung nutzen wir sie nicht für Marketing.",
+      "backToPrivacy": "Datenschutz"
+    }
   }
 }

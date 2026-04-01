@@ -5225,7 +5225,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpSupportEmailAddress.
   ///
   /// In en, this message translates to:
-  /// **'support@wandermood.com'**
+  /// **'info@wandermood.com'**
   String get helpSupportEmailAddress;
 
   /// No description provided for @helpSupportEmailSubject.

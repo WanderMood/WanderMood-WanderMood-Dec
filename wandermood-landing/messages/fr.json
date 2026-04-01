@@ -105,5 +105,61 @@
     "foodie": "Foodie",
     "cultural": "Culturel",
     "nightOut": "Sortie nocturne"
+  },
+  "legal": {
+    "common": {
+      "brand": "WanderMood",
+      "privacyNav": "Confidentialité",
+      "termsNav": "Conditions",
+      "accountDeletionNav": "Supprimer le compte",
+      "contactEmail": "hello@wandermood.com"
+    },
+    "privacy": {
+      "metaTitle": "Politique de confidentialité | WanderMood",
+      "metaDescription": "Comment WanderMood traite tes données et comment supprimer ton compte.",
+      "title": "Politique de confidentialité",
+      "updated": "Dernière mise à jour : mars 2026",
+      "p1": "WanderMood (« nous ») respecte ta vie privée. Nous collectons uniquement les informations nécessaires au fonctionnement de l’app, à la personnalisation de tes journées et à la sécurité de ton compte.",
+      "p2": "Nous ne vendons pas tes données personnelles à des tiers. Les données sont transmises de façon chiffrée (HTTPS/TLS) entre l’app et nos services.",
+      "p3": "Tu peux demander la suppression de ton compte et des données associées à tout moment. Voir la page",
+      "p3Link": "suppression de compte",
+      "p3After": "pour les étapes, ce que nous supprimons et comment nous contacter si tu ne peux pas utiliser l’app.",
+      "questions": "Des questions ? Écris-nous à"
+    },
+    "terms": {
+      "metaTitle": "Conditions d’utilisation | WanderMood",
+      "metaDescription": "Conditions régissant l’utilisation de l’app WanderMood et des services associés.",
+      "title": "Conditions d’utilisation",
+      "updated": "Dernière mise à jour : mars 2026",
+      "p1": "En téléchargeant ou en utilisant WanderMood, tu acceptes ces conditions et notre Politique de confidentialité. N’utilise pas l’app si tu n’acceptes pas.",
+      "p2": "WanderMood propose une planification de journée selon l’humeur, la découverte de lieux et des fonctions sociales. Tu es responsable de ton compte et des contenus que tu publies. Il est interdit d’abuser du service, d’accéder sans autorisation aux données d’autrui ou d’utiliser l’app de manière illégale.",
+      "p3": "L’app et son contenu sont fournis « tels quels ». Nous pouvons modifier, suspendre ou arrêter des fonctionnalités ou mettre à jour ces conditions ; les changements importants seront indiqués sur cette page le cas échéant.",
+      "p4": "Questions sur ces conditions ? Écris-nous à",
+      "backPrivacy": "Politique de confidentialité"
+    },
+    "accountDeletion": {
+      "metaTitle": "Supprimer ton compte | WanderMood",
+      "metaDescription": "Comment supprimer définitivement ton compte et tes données WanderMood (Google Play).",
+      "title": "Supprimer ton compte WanderMood",
+      "subtitle": "Comment supprimer définitivement ton compte et tes données personnelles dans l’app WanderMood (Android et iOS).",
+      "sectionAppTitle": "Option 1 — Supprimer dans l’app (recommandé)",
+      "sectionAppIntro": "Si tu peux ouvrir WanderMood sur ton téléphone ou ta tablette :",
+      "step1": "Connecte-toi avec le compte à supprimer.",
+      "step2": "Ouvre l’onglet Plus (⋯) en bas, puis Réglages (ou profil / réglages).",
+      "step3": "Fais défiler jusqu’à la zone sensible et appuie sur Supprimer le compte.",
+      "step4": "Saisis DELETE lorsque c’est demandé, confirme dans la boîte de dialogue et attends la confirmation de l’app.",
+      "sectionEmailTitle": "Option 2 — Demande par e-mail",
+      "sectionEmailBody": "Si tu ne peux pas utiliser l’app (par exemple sans accès à l’appareil), écris-nous depuis l’adresse liée à ton compte WanderMood :",
+      "sectionEmailAfter": "Objet : « Suppression de compte » et indique l’e-mail utilisé à l’inscription. Nous pouvons demander des informations pour vérifier ton identité.",
+      "sectionDataTitle": "Ce que nous supprimons",
+      "sectionDataIntro": "Après suppression dans l’app, ta connexion et les données associées sont effacées, notamment :",
+      "dataItem1": "Ton profil et tes préférences",
+      "dataItem2": "Activités enregistrées, entrées d’humeur, itinéraires et lieux enregistrés",
+      "dataItem3": "Données sociales liées à toi (j’aime, commentaires, amitiés, entrées de journal que tu as créées)",
+      "dataItem4": "Succès, paramètres de notification, sessions et autres enregistrements liés au compte dans notre backend",
+      "sectionRetainTitle": "Ce que nous pouvons conserver",
+      "sectionRetainBody": "Certaines informations peuvent être conservées brièvement si la loi l’exige, pour la sécurité ou la prévention de la fraude, ou dans des sauvegardes chiffrées jusqu’à expiration. Après suppression, nous ne les utilisons pas à des fins marketing.",
+      "backToPrivacy": "Politique de confidentialité"
+    }
   }
 }

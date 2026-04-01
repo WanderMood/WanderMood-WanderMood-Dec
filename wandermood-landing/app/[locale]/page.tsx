@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
-import { useRouter, usePathname } from "@/i18n/navigation";
+import { Link, useRouter, usePathname } from "@/i18n/navigation";
 
 const BRAND_GREEN = "#16a34a";
 
@@ -234,8 +234,12 @@ export default function Home() {
               {tNav("brand")}
             </span>
             <nav className="flex items-center gap-6 text-zinc-500">
-              <a href="#" className="hover:text-zinc-800">{tFooter("privacy")}</a>
-              <a href="#" className="hover:text-zinc-800">{tFooter("contact")}</a>
+              <Link href="/privacy" className="hover:text-zinc-800">
+                {tFooter("privacy")}
+              </Link>
+              <a href="mailto:hello@wandermood.com" className="hover:text-zinc-800">
+                {tFooter("contact")}
+              </a>
             </nav>
             <span className="text-zinc-400">© {new Date().getFullYear()}</span>
           </div>

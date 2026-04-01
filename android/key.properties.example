@@ -1,0 +1,7 @@
+# Copy to key.properties and fill in. Never commit key.properties or *.jks.
+# See https://docs.flutter.dev/deployment/android#sign-the-app
+
+storePassword=<password from keytool>
+keyPassword=<password from keytool>
+keyAlias=upload
+storeFile=upload-keystore.jks

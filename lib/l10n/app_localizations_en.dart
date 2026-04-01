@@ -2833,7 +2833,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get helpSupportTermsSubtitle => 'Terms and conditions';
 
   @override
-  String get helpSupportEmailAddress => 'support@wandermood.com';
+  String get helpSupportEmailAddress => 'info@wandermood.com';
 
   @override
   String get helpSupportEmailSubject => 'WanderMood Support';

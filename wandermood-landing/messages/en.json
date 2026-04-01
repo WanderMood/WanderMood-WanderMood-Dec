@@ -105,5 +105,61 @@
     "foodie": "Foodie",
     "cultural": "Cultural",
     "nightOut": "Night Out"
+  },
+  "legal": {
+    "common": {
+      "brand": "WanderMood",
+      "privacyNav": "Privacy",
+      "termsNav": "Terms",
+      "accountDeletionNav": "Delete account",
+      "contactEmail": "hello@wandermood.com"
+    },
+    "privacy": {
+      "metaTitle": "Privacy policy | WanderMood",
+      "metaDescription": "How WanderMood handles your data and how to delete your account.",
+      "title": "Privacy policy",
+      "updated": "Last updated: March 2026",
+      "p1": "WanderMood (“we”) respects your privacy. We collect only the information needed to run the app, personalize your day plans, and keep your account secure.",
+      "p2": "We do not sell your personal information to third parties. Data is sent over encrypted connections (HTTPS/TLS) between the app and our services.",
+      "p3": "You can request deletion of your account and associated personal data at any time. See the",
+      "p3Link": "account deletion",
+      "p3After": "page for step-by-step instructions, what we remove, and how to contact us if you cannot use the app.",
+      "questions": "Questions? Email us at"
+    },
+    "terms": {
+      "metaTitle": "Terms of service | WanderMood",
+      "metaDescription": "Terms governing use of the WanderMood mobile app and related services.",
+      "title": "Terms of service",
+      "updated": "Last updated: March 2026",
+      "p1": "By downloading or using WanderMood, you agree to these terms and to our Privacy policy. If you do not agree, do not use the app.",
+      "p2": "WanderMood provides mood-based day planning, place discovery, and related social features. You are responsible for safeguarding your account and for content you post. You must not misuse the service, attempt to access others’ data without permission, or use the app in violation of applicable law.",
+      "p3": "The app and its content are provided “as available.” We may modify, suspend, or discontinue features, or update these terms, and will reflect material changes on this page where required.",
+      "p4": "Questions about these terms? Email us at",
+      "backPrivacy": "Privacy policy"
+    },
+    "accountDeletion": {
+      "metaTitle": "Delete your account | WanderMood",
+      "metaDescription": "How to delete your WanderMood account and associated data, in line with Google Play requirements.",
+      "title": "Delete your WanderMood account",
+      "subtitle": "This page explains how to permanently delete your account and personal data for the WanderMood mobile app (Android & iOS).",
+      "sectionAppTitle": "Option 1 — Delete in the app (recommended)",
+      "sectionAppIntro": "If you can open WanderMood on your phone or tablet:",
+      "step1": "Sign in with the account you want to remove.",
+      "step2": "Open the More tab (⋯) in the bottom navigation, then open Settings (or your profile / settings area).",
+      "step3": "Scroll to the danger zone and tap Delete account.",
+      "step4": "Type DELETE when asked, confirm in the dialog, and wait until the app confirms your account was deleted.",
+      "sectionEmailTitle": "Option 2 — Email request",
+      "sectionEmailBody": "If you cannot use the app (for example you lost access to your device), email us from the address linked to your WanderMood account:",
+      "sectionEmailAfter": "Use the subject line “Account deletion” and include the email address you used to register. We may ask for reasonable information to verify that the request is yours before we delete the account.",
+      "sectionDataTitle": "What we delete",
+      "sectionDataIntro": "When you complete in-app deletion, WanderMood removes your login and associated app data, including for example:",
+      "dataItem1": "Your profile and preferences",
+      "dataItem2": "Saved activities, mood entries, travel plans, and saved places",
+      "dataItem3": "Social data tied to you (such as likes, comments, friendships, and diary entries you created)",
+      "dataItem4": "Achievements, notification settings, sessions, and other account-related records stored in our backend",
+      "sectionRetainTitle": "What we may keep",
+      "sectionRetainBody": "We may retain certain information for a limited time where required by law, for security or fraud prevention, or in encrypted backups until they expire. We do not use retained data to market to you after deletion.",
+      "backToPrivacy": "Privacy policy"
+    }
   }
 }

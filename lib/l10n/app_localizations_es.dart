@@ -2870,7 +2870,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get helpSupportTermsSubtitle => 'Condiciones generales';
 
   @override
-  String get helpSupportEmailAddress => 'support@wandermood.com';
+  String get helpSupportEmailAddress => 'info@wandermood.com';
 
   @override
   String get helpSupportEmailSubject => 'Soporte WanderMood';

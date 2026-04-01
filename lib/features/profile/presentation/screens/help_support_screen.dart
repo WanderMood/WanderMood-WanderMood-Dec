@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:wandermood/core/constants/legal_urls.dart';
+import 'package:wandermood/core/utils/legal_url_launcher.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import '../widgets/settings_screen_template.dart';
 
@@ -184,9 +186,7 @@ class HelpSupportScreen extends ConsumerWidget {
 
   Future<void> _openPrivacyPolicy(BuildContext context) async {
     final code = Localizations.localeOf(context).languageCode;
-    const supported = {'en', 'nl', 'es', 'fr', 'de', 'it'};
-    final seg = supported.contains(code) ? code : 'en';
-    final uri = Uri.parse('https://wandermood.com/$seg/privacy');
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+    final uri = LegalUrls.privacyForLanguageCode(code);
+    await launchExternalLegalUrl(uri);
   }
 }
