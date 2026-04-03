@@ -36,7 +36,15 @@ The Next.js app lives in a subfolder, so Vercel must build from that folder:
 - **Output Directory:** leave default (Next.js handles it)
 - **Install Command:** `npm install` (default)
 
-No environment variables are required for the current landing page. Add any later under **Settings → Environment Variables** if you add analytics or other services.
+### Environment variables (optional)
+
+- **Public site only:** none required.
+- **`/admin` dashboard** (user & usage stats from Supabase): add under **Settings → Environment Variables**:
+  - `WANDERMOOD_ADMIN_SECRET` — long random string; you enter it on `https://wandermood.com/admin` to load stats.
+  - `SUPABASE_URL` — same project URL as the Flutter app.
+  - `SUPABASE_SERVICE_ROLE_KEY` — **server only**; never put in the Flutter app or client code. Only Vercel serverless reads this.
+
+After saving env vars, **redeploy** the project.
 
 ---
 

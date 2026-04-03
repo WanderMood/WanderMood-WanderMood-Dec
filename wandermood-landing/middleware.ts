@@ -4,5 +4,6 @@ import { routing } from "./i18n/routing";
 export default createMiddleware(routing);
 
 export const config = {
-  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
+  // Exclude /admin and /api from locale routing (wandermood.com/admin)
+  matcher: ["/((?!admin|api|_next|_vercel|.*\\..*).*)"],
 };
