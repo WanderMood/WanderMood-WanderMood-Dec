@@ -985,104 +985,112 @@ class PlaceCard extends ConsumerWidget {
                     ),
                   ],
                   
-                  // Description
-                  if (place.description != null && place.description!.trim().isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    Text(
-                      place.description!,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        height: 1.5,
-                        color: _wmDusk,
+                  // Description — editorial summary preferred, localized type-based fallback otherwise
+                  Builder(builder: (ctx) {
+                    final displayDesc = _getDisplayDescription(ctx, place);
+                    if (displayDesc == null) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Text(
+                        displayDesc,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          height: 1.5,
+                          color: _wmDusk,
+                        ),
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                    );
+                  }),
 
-                  // Bottom metadata row: price pill + distance pill + Mijn Dag CTA
+                  // Bottom metadata: pills row + full-width CTA (no overflow)
                   Builder(
                     builder: (context) {
                       final distance = _calculateDistance();
                       final hasPricePill = _shouldShowPriceBadge();
                       final hasDistancePill = distance != null;
-                      if (!hasPricePill && !hasDistancePill && !showAddToMyDayButton) {
-                        return const SizedBox(height: 4);
-                      }
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 14),
-                        child: Row(
-                          children: [
-                            // Price pill
-                            if (hasPricePill) ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: _getPriceBadgeColor().withValues(alpha: 0.10),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: _getPriceBadgeColor().withValues(alpha: 0.55),
-                                    width: 1.25,
+                      final showAnything = hasPricePill || hasDistancePill || showAddToMyDayButton;
+                      if (!showAnything) return const SizedBox(height: 4);
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Pills row
+                          if (hasPricePill || hasDistancePill) ...[
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                if (hasPricePill) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: _getPriceBadgeColor().withValues(alpha: 0.10),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: _getPriceBadgeColor().withValues(alpha: 0.55),
+                                        width: 1.25,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(_getCurrencyIcon(), color: _getPriceBadgeColor(), size: 13),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          _getPriceBadgeText(l10n),
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12,
+                                            color: _getPriceBadgeColor(),
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(_getCurrencyIcon(), color: _getPriceBadgeColor(), size: 13),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      _getPriceBadgeText(l10n),
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 12,
-                                        color: _getPriceBadgeColor(),
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                  const SizedBox(width: 8),
+                                ],
+                                if (hasDistancePill)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: _wmForestTint,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(color: _wmParchment, width: 1),
                                     ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                            ],
-                            // Distance pill
-                            if (hasDistancePill) ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: _wmForestTint,
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: _wmParchment, width: 1),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.directions_walk_rounded, color: _wmForest, size: 13),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      distance,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 12,
-                                        color: _wmForest,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.directions_walk_rounded, color: _wmForest, size: 13),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          distance!,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12,
+                                            color: _wmForest,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                            const Spacer(),
-                            // Mijn Dag CTA
-                            if (showAddToMyDayButton)
-                              Material(
+                                  ),
+                              ],
+                            ),
+                          ],
+                          // Full-width CTA (no overflow risk)
+                          if (showAddToMyDayButton) ...[
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 44,
+                              child: Material(
                                 color: Colors.transparent,
                                 child: InkWell(
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(22),
                                   onTap: onAddToMyDayTap ?? () => _addToMyDay(context, ref),
-                                  child: Container(
-                                    height: 40,
-                                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  child: Ink(
                                     decoration: BoxDecoration(
                                       color: _wmForest,
-                                      borderRadius: BorderRadius.circular(20),
+                                      borderRadius: BorderRadius.circular(22),
                                       boxShadow: [
                                         BoxShadow(
                                           color: _wmForest.withValues(alpha: 0.22),
@@ -1092,7 +1100,7 @@ class PlaceCard extends ConsumerWidget {
                                       ],
                                     ),
                                     child: Row(
-                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         const Icon(Icons.add_rounded, color: Colors.white, size: 16),
                                         const SizedBox(width: 6),
@@ -1109,8 +1117,9 @@ class PlaceCard extends ConsumerWidget {
                                   ),
                                 ),
                               ),
+                            ),
                           ],
-                        ),
+                        ],
                       );
                     },
                   ),
@@ -1245,6 +1254,76 @@ class PlaceCard extends ConsumerWidget {
       default:
         return Icons.euro_symbol;
     }
+  }
+
+  /// Returns the description to display in the card.
+  /// Filters out AI-generated English descriptions, returning null so the
+  /// localized type-based fallback is shown instead.
+  String? _getDisplayDescription(BuildContext context, Place place) {
+    final l10n = AppLocalizations.of(context)!;
+    final raw = place.description?.trim();
+
+    // No description at all → use type-based fallback
+    if (raw == null || raw.isEmpty) {
+      return _buildTypeFallbackDescription(place, l10n);
+    }
+
+    // Looks like an AI-generated English string → use type-based fallback
+    final lower = raw.toLowerCase();
+    if (lower.contains('rated ') && lower.contains(' stars') ||
+        lower.contains('offers ') && lower.contains(' cuisine') ||
+        lower.contains('perfect for your') ||
+        lower.contains('perfect for happy') ||
+        lower.contains('is a highly-rated')) {
+      return _buildTypeFallbackDescription(place, l10n);
+    }
+
+    // Looks like just an address (starts with digit) → show localized fallback
+    if (RegExp(r'^\d').hasMatch(raw)) {
+      return _buildTypeFallbackDescription(place, l10n);
+    }
+
+    // Genuine description (editorial summary from Google etc.) → use as-is
+    return raw;
+  }
+
+  /// Build a localized description from place types when no editorial summary is available.
+  String _buildTypeFallbackDescription(Place place, AppLocalizations l10n) {
+    final types = place.types.map((t) => t.toLowerCase()).toList();
+    final name = place.name;
+    final rating = place.rating > 0 ? place.rating.toStringAsFixed(1) : null;
+    final reviewCount = place.reviewCount > 0 ? place.reviewCount : null;
+
+    if (types.any((t) => t == 'restaurant' || t == 'food')) {
+      return reviewCount != null && rating != null
+          ? l10n.placeDescFoodWithReviews(name, rating, reviewCount.toString())
+          : l10n.placeDescFood(name);
+    }
+    if (types.any((t) => t == 'cafe' || t == 'coffee_shop')) {
+      return rating != null
+          ? l10n.placeDescCafeWithRating(name, rating)
+          : l10n.placeDescCafe(name);
+    }
+    if (types.any((t) => t == 'bar' || t == 'night_club')) {
+      return l10n.placeDescBar(name);
+    }
+    if (types.any((t) => t == 'museum' || t == 'art_gallery')) {
+      return l10n.placeDescMuseum(name);
+    }
+    if (types.any((t) => t == 'park' || t == 'natural_feature')) {
+      return l10n.placeDescPark(name);
+    }
+    if (types.any((t) => t == 'tourist_attraction')) {
+      return rating != null
+          ? l10n.placeDescAttractionWithRating(name, rating)
+          : l10n.placeDescAttraction(name);
+    }
+    if (types.any((t) => t == 'spa' || t == 'beauty_salon')) {
+      return l10n.placeDescSpa(name);
+    }
+    return rating != null
+        ? l10n.placeDescGenericWithRating(name, rating)
+        : l10n.placeDescGeneric(name);
   }
 
   // Pricing helper methods

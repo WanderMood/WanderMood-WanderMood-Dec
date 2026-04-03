@@ -59,6 +59,8 @@
 	<string>WanderMood uses the microphone to capture voice</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>WanderMood uses the microphone to capture voice input when interacting with the AI travel assistant.</string>
+	<key>GMSApiKey</key>
+	<string>$(GOOGLE_MAPS_API_KEY)</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

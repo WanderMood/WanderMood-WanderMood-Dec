@@ -45,6 +45,10 @@ post_install do |installer|
       if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 14.0
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
       end
+      # Let the host app re-sign embedded pod frameworks on export (avoids
+      # codesign "replacing existing signature" / errSecInternalComponent during
+      # Distribute App with use_frameworks!).
+      config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
     end
   end
 end

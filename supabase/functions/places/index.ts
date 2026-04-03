@@ -86,7 +86,7 @@ serve(async (req) => {
       case 'details':
         if (!placeId) throw new Error('Place ID required for details')
         
-        const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${GOOGLE_PLACES_API_KEY}&language=${language}&fields=place_id,name,formatted_address,geometry,photos,rating,user_ratings_total,price_level,opening_hours,website,formatted_phone_number,reviews,types,vicinity`
+        const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${GOOGLE_PLACES_API_KEY}&language=${language}&fields=place_id,name,formatted_address,geometry,photos,rating,user_ratings_total,price_level,opening_hours,website,formatted_phone_number,reviews,types,vicinity,editorial_summary`
         response = await fetch(detailsUrl)
         data = await response.json()
         {

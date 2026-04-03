@@ -623,7 +623,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                     ),
                     const SizedBox(height: 16),
                   ],
-                  const SizedBox(height: 100),
+                  const SizedBox(height: 110),
                 ],
               );
             },
@@ -880,8 +880,11 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
   }
 
   void _openActivityDetail(Activity activity, {String? distanceKm}) {
-    final placeId = activity.placeId?.trim();
-    if (placeId != null && placeId.isNotEmpty) {
+    final rawId = activity.placeId?.trim();
+    if (rawId != null && rawId.isNotEmpty) {
+      // Ensure the ID has the google_ prefix that getPlaceById() requires
+      // for live API lookups. AI-generated activities carry raw Google Place IDs.
+      final placeId = rawId.startsWith('google_') ? rawId : 'google_$rawId';
       Navigator.push(
         context,
         MaterialPageRoute(

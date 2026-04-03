@@ -8,6 +8,7 @@ import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/features/plans/utils/activity_place_adapter.dart';
 import 'package:wandermood/features/plans/presentation/providers/place_photo_url_provider.dart';
+import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/features/places/services/sharing_service.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
@@ -59,6 +60,41 @@ class DayPlanActivityCard extends ConsumerStatefulWidget {
 class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
   bool _isAdding = false;
   bool _isAdded = false;
+  final PageController _imagePageController = PageController();
+  int _currentImageIndex = 0;
+  // Static cache so we don't re-fetch photos on every rebuild
+  static final Map<String, Future<List<String>>> _photoListCache = {};
+
+  @override
+  void dispose() {
+    _imagePageController.dispose();
+    super.dispose();
+  }
+
+  /// Returns a list of photo URLs for the activity.
+  /// Uses imageUrl as first photo, then tries to load more from Places API (cached).
+  Future<List<String>> _resolvePhotos() async {
+    final placeId = widget.activity.placeId?.trim();
+    final imageUrl = widget.activity.imageUrl;
+
+    // If we have a placeId we can try to load multiple photos
+    if (placeId != null && placeId.isNotEmpty) {
+      final cacheKey = placeId.startsWith('google_') ? placeId : 'google_$placeId';
+      return _photoListCache.putIfAbsent(cacheKey, () async {
+        try {
+          final service = ref.read(placesServiceProvider.notifier);
+          final place = await service.getPlaceById(cacheKey);
+          if (place != null && place.photos.isNotEmpty) {
+            return place.photos;
+          }
+        } catch (_) {}
+        return imageUrl.isNotEmpty ? [imageUrl] : [];
+      });
+    }
+
+    if (imageUrl.isNotEmpty) return [imageUrl];
+    return [];
+  }
 
   String get _durationText {
     if (widget.activity.duration >= 60) {
@@ -83,37 +119,92 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
     }
   }
 
-  /// Image for the card: use activity.imageUrl if set; otherwise fetch from Places API (same key as Explore).
+  /// Swipeable photo carousel for the card image section.
   Widget _buildCardImage(WidgetRef ref) {
-    final hasImageUrl = widget.activity.imageUrl.isNotEmpty;
-    if (hasImageUrl) {
-      return CachedNetworkImage(
-        imageUrl: widget.activity.imageUrl,
-        fit: BoxFit.cover,
-        placeholder: (_, __) => _imagePlaceholder(),
-        errorWidget: (_, __, ___) => _imagePlaceholder(),
-      );
-    }
-    final placeId = widget.activity.placeId;
-    if (placeId != null && placeId.isNotEmpty) {
-      final photoAsync = ref.watch(placePhotoUrlProvider(placeId));
-      return photoAsync.when(
-        data: (url) {
-          if (url != null && url.isNotEmpty) {
-            return CachedNetworkImage(
-              imageUrl: url,
-              fit: BoxFit.cover,
-              placeholder: (_, __) => _imagePlaceholder(),
-              errorWidget: (_, __, ___) => _imagePlaceholder(),
-            );
-          }
-          return _imagePlaceholder();
-        },
-        loading: () => _imagePlaceholder(),
-        error: (_, __) => _imagePlaceholder(),
-      );
-    }
-    return _imagePlaceholder();
+    // Provide a single-image initial state while the full list loads
+    final initialPhotos = widget.activity.imageUrl.isNotEmpty
+        ? [widget.activity.imageUrl]
+        : <String>[];
+
+    return FutureBuilder<List<String>>(
+      future: _resolvePhotos(),
+      initialData: initialPhotos,
+      builder: (context, snapshot) {
+        final photos = snapshot.data ?? initialPhotos;
+        if (photos.isEmpty) return _imagePlaceholder();
+        if (photos.length == 1) {
+          return CachedNetworkImage(
+            imageUrl: photos[0],
+            fit: BoxFit.cover,
+            placeholder: (_, __) => _imagePlaceholder(),
+            errorWidget: (_, __, ___) => _imagePlaceholder(),
+          );
+        }
+        // Multi-photo swipeable carousel
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onHorizontalDragEnd: (details) {
+            final v = details.primaryVelocity ?? 0;
+            if (v < -200 && _currentImageIndex < photos.length - 1) {
+              _imagePageController.nextPage(
+                  duration: const Duration(milliseconds: 280),
+                  curve: Curves.easeInOut);
+            } else if (v > 200 && _currentImageIndex > 0) {
+              _imagePageController.previousPage(
+                  duration: const Duration(milliseconds: 280),
+                  curve: Curves.easeInOut);
+            }
+          },
+          child: Stack(
+            children: [
+              PageView.builder(
+                controller: _imagePageController,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: photos.length,
+                onPageChanged: (i) => setState(() => _currentImageIndex = i),
+                itemBuilder: (_, i) => CachedNetworkImage(
+                  imageUrl: photos[i],
+                  fit: BoxFit.cover,
+                  placeholder: (_, __) => _imagePlaceholder(),
+                  errorWidget: (_, __, ___) => _imagePlaceholder(),
+                ),
+              ),
+              // Dot indicators
+              Positioned(
+                bottom: 40,
+                left: 0,
+                right: 0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(photos.length > 10 ? 10 : photos.length, (i) {
+                    final active = i == _currentImageIndex;
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: active ? 14 : 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: active
+                            ? Colors.white.withOpacity(0.95)
+                            : Colors.white.withOpacity(0.55),
+                        borderRadius: BorderRadius.circular(999),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.20),
+                            blurRadius: 3,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Widget _imagePlaceholder() {

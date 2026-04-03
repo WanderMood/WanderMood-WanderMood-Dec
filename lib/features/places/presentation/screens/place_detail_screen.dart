@@ -165,11 +165,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     }
   }
 
-  /// Book when bookable; otherwise primary directions CTA (v2 SCREEN 8).
+  /// Primary directions CTA (v2 SCREEN 8). Booking removed — no booking system.
   Widget _buildBottomActionBar(Place place) {
-    if (_isPlaceBookable(place)) {
-      return _buildBookingButton(place);
-    }
     return _buildDirectionsBar(place);
   }
 
@@ -329,10 +326,25 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       );
     }
 
-    return Stack(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onHorizontalDragEnd: (d) {
+        final velocity = d.primaryVelocity ?? 0;
+        if (velocity < -200 && _currentPhotoIndex < place.photos.length - 1) {
+          _photoController.nextPage(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut);
+        } else if (velocity > 200 && _currentPhotoIndex > 0) {
+          _photoController.previousPage(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut);
+        }
+      },
+      child: Stack(
       children: [
         PageView.builder(
           controller: _photoController,
+          physics: const NeverScrollableScrollPhysics(),
           onPageChanged: (index) => setState(() => _currentPhotoIndex = index),
           itemCount: place.photos.length,
           itemBuilder: (context, index) {
@@ -486,7 +498,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           ),
         ],
       ],
-    );
+      ), // end Stack
+    ); // end GestureDetector
   }
 
   Widget _buildImageFallback() {
@@ -593,18 +606,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           // MOVED: Moody says section appears HERE (right after title)
           _buildMoodyTips(place),
           const SizedBox(height: 16),
-          // Description
-          Text(
-            place.description ?? 
-                    '✨ A wonderful place to visit with great atmosphere and excellent vibes! 🎉 '
-                    '🎯 Perfect for ${place.activities.isNotEmpty ? place.activities.join(', ').toLowerCase() + ' and creating amazing memories! 📸' : 'spending quality time and making unforgettable moments! 💫'}',
-            style: GoogleFonts.poppins(
-                  fontSize: 15,
-              height: 1.6,
-                  color: _pdWmCharcoal.withValues(alpha: 0.86),
-                  fontWeight: FontWeight.w400,
-            ),
-          ),
+          // Rich place info card
+          _buildPlaceInfoCard(place),
           const SizedBox(height: 24),
           if (place.openingHours != null) ...[
             Container(
@@ -647,7 +650,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                       ),
                       const SizedBox(width: 12),
             Text(
-                        'Opening Hours',
+                        l10n.placeDetailOpeningHours,
               style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
@@ -1779,6 +1782,183 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       debugPrint('❌ Error fetching additional photos: $e');
       return [];
     }
+  }
+
+  /// Rich info card shown between Moody tips and Opening Hours.
+  /// Shows: category chips, editorial description, and address.
+  Widget _buildPlaceInfoCard(Place place) {
+    final l10n = AppLocalizations.of(context)!;
+
+    // Derive human-readable category labels from place.types
+    final categoryChips = <String>[];
+    for (final t in place.types.take(6)) {
+      final label = _typeToCategoryLabel(t, l10n);
+      if (label != null && !categoryChips.contains(label)) {
+        categoryChips.add(label);
+        if (categoryChips.length >= 3) break;
+      }
+    }
+
+    // Description: editorial summary or type-based fallback (never the raw address)
+    final hasRealDescription = place.description != null &&
+        place.description!.trim().isNotEmpty &&
+        !RegExp(r'^\d').hasMatch(place.description!.trim()); // skip if starts with digit (address)
+    final descriptionText = hasRealDescription
+        ? place.description!
+        : _buildTypeFallbackDescription(place, l10n);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _pdWmCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _pdWmCardBorder, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Category chips
+          if (categoryChips.isNotEmpty) ...[
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: categoryChips.map((chip) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: _pdWmForestTint,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: _pdWmParchment, width: 0.5),
+                  ),
+                  child: Text(
+                    chip,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: _pdWmForest,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 12),
+          ],
+          // Description text
+          Text(
+            descriptionText,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              height: 1.6,
+              color: _pdWmCharcoal.withValues(alpha: 0.85),
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          // Address with pin icon
+          if (place.address.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.location_on_outlined,
+                    size: 16, color: _pdWmForest),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    place.address,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: _pdWmCharcoal.withValues(alpha: 0.65),
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Map a Google place type string to a localised label. Returns null for generic/useless types.
+  String? _typeToCategoryLabel(String type, AppLocalizations l10n) {
+    switch (type.toLowerCase()) {
+      case 'restaurant': return l10n.placeTypeRestaurant;
+      case 'cafe': case 'coffee_shop': return l10n.placeTypeCafe;
+      case 'bar': return l10n.placeTypeBar;
+      case 'night_club': return l10n.placeTypeNightclub;
+      case 'museum': return l10n.placeTypeMuseum;
+      case 'art_gallery': return l10n.placeTypeArtGallery;
+      case 'park': case 'national_park': return l10n.placeTypePark;
+      case 'tourist_attraction': return l10n.placeTypeTouristAttraction;
+      case 'bakery': return l10n.placeTypeBakery;
+      case 'shopping_mall': return l10n.placeTypeShoppingMall;
+      case 'spa': return l10n.placeTypeSpa;
+      case 'gym': case 'health': return l10n.placeTypeGym;
+      case 'movie_theater': return l10n.placeTypeMovieTheater;
+      case 'library': return l10n.placeTypeLibrary;
+      case 'church': case 'place_of_worship': return l10n.placeTypeChurch;
+      case 'amusement_park': return l10n.placeTypeAmusementPark;
+      case 'zoo': return l10n.placeTypeZoo;
+      case 'aquarium': return l10n.placeTypeAquarium;
+      case 'bowling_alley': return l10n.placeTypeBowling;
+      case 'stadium': return l10n.placeTypeStadium;
+      default: return null;
+    }
+  }
+
+  /// Generate a meaningful description when no editorial summary is available.
+  String _buildTypeFallbackDescription(Place place, AppLocalizations l10n) {
+    final types = place.types.map((t) => t.toLowerCase()).toList();
+    final name = place.name;
+    final rating = place.rating > 0 ? place.rating.toStringAsFixed(1) : null;
+    final reviewCount = place.reviewCount > 0 ? place.reviewCount : null;
+
+    // Restaurant / food
+    if (types.any((t) => t == 'restaurant' || t == 'food')) {
+      return reviewCount != null && rating != null
+          ? l10n.placeDescFoodWithReviews(name, rating, reviewCount.toString())
+          : l10n.placeDescFood(name);
+    }
+    // Café
+    if (types.any((t) => t == 'cafe' || t == 'coffee_shop')) {
+      return rating != null
+          ? l10n.placeDescCafeWithRating(name, rating)
+          : l10n.placeDescCafe(name);
+    }
+    // Bar / nightclub
+    if (types.any((t) => t == 'bar' || t == 'night_club')) {
+      return l10n.placeDescBar(name);
+    }
+    // Museum / gallery
+    if (types.any((t) => t == 'museum' || t == 'art_gallery')) {
+      return l10n.placeDescMuseum(name);
+    }
+    // Park / nature
+    if (types.any((t) => t == 'park' || t == 'natural_feature')) {
+      return l10n.placeDescPark(name);
+    }
+    // Tourist attraction
+    if (types.any((t) => t == 'tourist_attraction')) {
+      return rating != null
+          ? l10n.placeDescAttractionWithRating(name, rating)
+          : l10n.placeDescAttraction(name);
+    }
+    // Spa / wellness
+    if (types.any((t) => t == 'spa' || t == 'beauty_salon')) {
+      return l10n.placeDescSpa(name);
+    }
+    // Generic fallback
+    return rating != null
+        ? l10n.placeDescGenericWithRating(name, rating)
+        : l10n.placeDescGeneric(name);
   }
 
   Widget _buildMoodyTips(Place place) {

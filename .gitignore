@@ -197,3 +197,6 @@ push.log
 
 # Release/TestFlight dart-defines (copy from release_defines.json.example)
 release_defines.json
+
+# iOS native build secrets (GOOGLE_MAPS_API_KEY for AppDelegate / Info.plist)
+ios/Flutter/Secrets.xcconfig

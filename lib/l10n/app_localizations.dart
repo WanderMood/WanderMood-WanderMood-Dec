@@ -11605,6 +11605,205 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reopen Local vs Travel guide'**
   String get settingsTravelModeHelpSubtitle;
+
+  /// No description provided for @placeDetailOpeningHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening Hours'**
+  String get placeDetailOpeningHours;
+
+  /// No description provided for @placeTypeRestaurant.
+  ///
+  /// In en, this message translates to:
+  /// **'Restaurant'**
+  String get placeTypeRestaurant;
+
+  /// No description provided for @placeTypeCafe.
+  ///
+  /// In en, this message translates to:
+  /// **'Café'**
+  String get placeTypeCafe;
+
+  /// No description provided for @placeTypeBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Bar'**
+  String get placeTypeBar;
+
+  /// No description provided for @placeTypeNightclub.
+  ///
+  /// In en, this message translates to:
+  /// **'Nightclub'**
+  String get placeTypeNightclub;
+
+  /// No description provided for @placeTypeMuseum.
+  ///
+  /// In en, this message translates to:
+  /// **'Museum'**
+  String get placeTypeMuseum;
+
+  /// No description provided for @placeTypeArtGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Art Gallery'**
+  String get placeTypeArtGallery;
+
+  /// No description provided for @placeTypePark.
+  ///
+  /// In en, this message translates to:
+  /// **'Park'**
+  String get placeTypePark;
+
+  /// No description provided for @placeTypeTouristAttraction.
+  ///
+  /// In en, this message translates to:
+  /// **'Tourist Attraction'**
+  String get placeTypeTouristAttraction;
+
+  /// No description provided for @placeTypeBakery.
+  ///
+  /// In en, this message translates to:
+  /// **'Bakery'**
+  String get placeTypeBakery;
+
+  /// No description provided for @placeTypeShoppingMall.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping Mall'**
+  String get placeTypeShoppingMall;
+
+  /// No description provided for @placeTypeSpa.
+  ///
+  /// In en, this message translates to:
+  /// **'Spa'**
+  String get placeTypeSpa;
+
+  /// No description provided for @placeTypeGym.
+  ///
+  /// In en, this message translates to:
+  /// **'Gym'**
+  String get placeTypeGym;
+
+  /// No description provided for @placeTypeMovieTheater.
+  ///
+  /// In en, this message translates to:
+  /// **'Cinema'**
+  String get placeTypeMovieTheater;
+
+  /// No description provided for @placeTypeLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get placeTypeLibrary;
+
+  /// No description provided for @placeTypeChurch.
+  ///
+  /// In en, this message translates to:
+  /// **'Church'**
+  String get placeTypeChurch;
+
+  /// No description provided for @placeTypeAmusementPark.
+  ///
+  /// In en, this message translates to:
+  /// **'Amusement Park'**
+  String get placeTypeAmusementPark;
+
+  /// No description provided for @placeTypeZoo.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoo'**
+  String get placeTypeZoo;
+
+  /// No description provided for @placeTypeAquarium.
+  ///
+  /// In en, this message translates to:
+  /// **'Aquarium'**
+  String get placeTypeAquarium;
+
+  /// No description provided for @placeTypeBowling.
+  ///
+  /// In en, this message translates to:
+  /// **'Bowling'**
+  String get placeTypeBowling;
+
+  /// No description provided for @placeTypeStadium.
+  ///
+  /// In en, this message translates to:
+  /// **'Stadium'**
+  String get placeTypeStadium;
+
+  /// No description provided for @placeDescFood.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is a great spot for food lovers looking for a quality meal in the area.'**
+  String placeDescFood(String name);
+
+  /// No description provided for @placeDescFoodWithReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is a popular restaurant with {reviewCount} reviews and a rating of {rating}. A great choice for a quality meal.'**
+  String placeDescFoodWithReviews(
+      String name, String rating, String reviewCount);
+
+  /// No description provided for @placeDescCafe.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is a cozy café perfect for a coffee break or a light bite in a relaxed atmosphere.'**
+  String placeDescCafe(String name);
+
+  /// No description provided for @placeDescCafeWithRating.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is a highly regarded café with a {rating}-star rating, perfect for coffee and a relaxing break.'**
+  String placeDescCafeWithRating(String name, String rating);
+
+  /// No description provided for @placeDescBar.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is a great bar for enjoying drinks and a lively atmosphere with friends.'**
+  String placeDescBar(String name);
+
+  /// No description provided for @placeDescMuseum.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} offers an enriching cultural experience with fascinating exhibits and inspiring collections.'**
+  String placeDescMuseum(String name);
+
+  /// No description provided for @placeDescPark.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is a beautiful green space ideal for a walk, relaxation, or outdoor activities.'**
+  String placeDescPark(String name);
+
+  /// No description provided for @placeDescAttraction.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is a must-visit destination with unique experiences and memorable moments.'**
+  String placeDescAttraction(String name);
+
+  /// No description provided for @placeDescAttractionWithRating.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is a top-rated attraction with {rating} stars, offering unique and memorable experiences.'**
+  String placeDescAttractionWithRating(String name, String rating);
+
+  /// No description provided for @placeDescSpa.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is a premium wellness destination offering relaxing treatments and rejuvenating experiences.'**
+  String placeDescSpa(String name);
+
+  /// No description provided for @placeDescGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is a wonderful place to discover, with great atmosphere and excellent vibes.'**
+  String placeDescGeneric(String name);
+
+  /// No description provided for @placeDescGenericWithRating.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is a highly-rated local gem with {rating} stars, offering a unique experience worth exploring.'**
+  String placeDescGenericWithRating(String name, String rating);
 }
 
 class _AppLocalizationsDelegate

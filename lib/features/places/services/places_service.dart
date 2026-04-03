@@ -1,9 +1,11 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_google_maps_webservices/places.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/api_keys.dart';
+import '../../../core/presentation/providers/language_provider.dart';
 import '../models/place.dart';
 import 'opening_hours_service.dart';
 
@@ -91,10 +93,12 @@ class PlacesService extends _$PlacesService {
       debugPrint('🔍 Smart search for places with query: $query');
       
       // Add a timeout to prevent long-running API calls
+      final lang = ref.read(localeProvider)?.languageCode ??
+          ui.PlatformDispatcher.instance.locale.languageCode;
       final response = await _places.searchByText(
         query,
         type: 'tourist_attraction',
-        language: 'en',
+        language: lang,
       ).timeout(const Duration(seconds: 5), onTimeout: () {
         debugPrint('⏱️ API call timed out for query: $query');
         throw TimeoutException('API call timed out');
@@ -132,12 +136,14 @@ class PlacesService extends _$PlacesService {
 
     try {
       final supabase = Supabase.instance.client;
+      final lang = ref.read(localeProvider)?.languageCode ??
+          ui.PlatformDispatcher.instance.locale.languageCode;
       final fnResponse = await supabase.functions.invoke(
         'places',
         body: {
           'type': 'details',
           'placeId': placeId,
-          'language': 'en',
+          'language': lang,
         },
       );
 
@@ -203,9 +209,15 @@ class PlacesService extends _$PlacesService {
       final openingHours = result['opening_hours'] as Map<String, dynamic>?;
       final openNow = openingHours?['open_now'] as bool? ?? false;
 
+      // editorial_summary gives a short human-readable overview in the requested language
+      final editorialSummary = result['editorial_summary'] as Map<String, dynamic>?;
+      final description = editorialSummary?['overview'] as String? ??
+          result['vicinity'] as String? ?? '';
+
       final details = {
         'name': result['name'] as String? ?? '',
         'address': result['formatted_address'] as String? ?? '',
+        'description': description,
         'rating': result['rating'] as num?,
         'user_ratings_total': reviews.length,
         'reviews': reviews,
@@ -263,6 +275,7 @@ class PlacesService extends _$PlacesService {
         }
         
         final address = details['address'] as String? ?? 'No address available';
+        final description = details['description'] as String? ?? '';
         final rating = (details['rating'] as num?)?.toDouble() ?? 0.0;
         final placeTypes = (details['types'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
         final priceLevel = details['priceLevel'] as int?;
@@ -303,7 +316,7 @@ class PlacesService extends _$PlacesService {
         // Get photos and convert to URLs
         final photoReferences = (details['photos'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
         final photoUrls = <String>[];
-        for (final ref in photoReferences.take(3)) {
+        for (final ref in photoReferences.take(10)) {
           if (ref.isNotEmpty) {
             try {
               final photoUrl = getPhotoUrl(ref);
@@ -321,6 +334,7 @@ class PlacesService extends _$PlacesService {
           id: placeId,
           name: name,
           address: address,
+          description: description.isNotEmpty ? description : null,
           rating: rating,
           photos: photoUrls,
           types: placeTypes,

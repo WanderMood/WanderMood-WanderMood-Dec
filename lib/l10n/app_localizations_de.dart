@@ -6401,4 +6401,128 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get settingsTravelModeHelpSubtitle =>
       'Leitfaden Lokal vs Reisen erneut öffnen';
+
+  @override
+  String get placeDetailOpeningHours => 'Öffnungszeiten';
+
+  @override
+  String get placeTypeRestaurant => 'Restaurant';
+
+  @override
+  String get placeTypeCafe => 'Café';
+
+  @override
+  String get placeTypeBar => 'Bar';
+
+  @override
+  String get placeTypeNightclub => 'Nachtclub';
+
+  @override
+  String get placeTypeMuseum => 'Museum';
+
+  @override
+  String get placeTypeArtGallery => 'Kunstgalerie';
+
+  @override
+  String get placeTypePark => 'Park';
+
+  @override
+  String get placeTypeTouristAttraction => 'Touristenattraktion';
+
+  @override
+  String get placeTypeBakery => 'Bäckerei';
+
+  @override
+  String get placeTypeShoppingMall => 'Einkaufszentrum';
+
+  @override
+  String get placeTypeSpa => 'Spa';
+
+  @override
+  String get placeTypeGym => 'Fitnessstudio';
+
+  @override
+  String get placeTypeMovieTheater => 'Kino';
+
+  @override
+  String get placeTypeLibrary => 'Bibliothek';
+
+  @override
+  String get placeTypeChurch => 'Kirche';
+
+  @override
+  String get placeTypeAmusementPark => 'Vergnügungspark';
+
+  @override
+  String get placeTypeZoo => 'Zoo';
+
+  @override
+  String get placeTypeAquarium => 'Aquarium';
+
+  @override
+  String get placeTypeBowling => 'Bowling';
+
+  @override
+  String get placeTypeStadium => 'Stadion';
+
+  @override
+  String placeDescFood(String name) {
+    return '$name ist ein großartiger Ort für Feinschmecker auf der Suche nach einer guten Mahlzeit.';
+  }
+
+  @override
+  String placeDescFoodWithReviews(
+      String name, String rating, String reviewCount) {
+    return '$name ist ein beliebtes Restaurant mit $reviewCount Bewertungen und einer Wertung von $rating Sternen.';
+  }
+
+  @override
+  String placeDescCafe(String name) {
+    return '$name ist ein gemütliches Café, ideal für eine Kaffeepause oder einen kleinen Snack.';
+  }
+
+  @override
+  String placeDescCafeWithRating(String name, String rating) {
+    return '$name ist ein hochbewertetes Café mit $rating Sternen, perfekt für Kaffee und Entspannung.';
+  }
+
+  @override
+  String placeDescBar(String name) {
+    return '$name ist eine tolle Bar, um Getränke und eine lebhafte Atmosphäre mit Freunden zu genießen.';
+  }
+
+  @override
+  String placeDescMuseum(String name) {
+    return '$name bietet ein bereicherndes kulturelles Erlebnis mit faszinierenden Ausstellungen.';
+  }
+
+  @override
+  String placeDescPark(String name) {
+    return '$name ist ein wunderschöner Grünraum, ideal für Spaziergänge und Erholung.';
+  }
+
+  @override
+  String placeDescAttraction(String name) {
+    return '$name ist ein Muss mit einzigartigen Erlebnissen und unvergesslichen Momenten.';
+  }
+
+  @override
+  String placeDescAttractionWithRating(String name, String rating) {
+    return '$name ist eine Top-Attraktion mit $rating Sternen und einzigartigen Erlebnissen.';
+  }
+
+  @override
+  String placeDescSpa(String name) {
+    return '$name ist ein Premium-Wellnessziel mit entspannenden Behandlungen.';
+  }
+
+  @override
+  String placeDescGeneric(String name) {
+    return '$name ist ein wunderbarer Ort mit toller Atmosphäre und ausgezeichneter Stimmung.';
+  }
+
+  @override
+  String placeDescGenericWithRating(String name, String rating) {
+    return '$name ist ein hochbewertetes lokales Juwel mit $rating Sternen.';
+  }
 }
