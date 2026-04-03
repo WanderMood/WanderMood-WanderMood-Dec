@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:wandermood/core/presentation/widgets/moody_avatar_compact.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -25,6 +26,7 @@ import 'package:wandermood/core/utils/places_cache_utils.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 /// WanderMood v2 — Place detail (SCREEN 8)
 const Color _pdWmWhite = Color(0xFFFFFFFF);
@@ -64,6 +66,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   Future<List<String>>? _cachedMoodyTipsFuture; // Cache AI tips Future
   String? _cachedPlaceIdForTips; // Track which place the tips are for
   bool _isInitialized = false; // Track if widget has been initialized to prevent rebuild loops
+  /// One enrichment pass per place id (post-frame + rebuilds would otherwise re-invoke).
+  final Set<String> _heroPhotoEnrichAttempted = {};
 
   @override
   void initState() {
@@ -162,6 +166,42 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       _cachedPlace = place;
       _hasAttemptedReviewFetch = false;
       _realReviews = [];
+      _heroPhotoEnrichAttempted.clear();
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _cachedPlace == null) return;
+      _maybeEnrichHeroPhotos(_cachedPlace!);
+    });
+  }
+
+  List<String> _mergeUniquePhotoUrls(List<String> primary, List<String> extra) {
+    final seen = <String>{};
+    final out = <String>[];
+    for (final u in [...primary, ...extra]) {
+      if (u.isEmpty || seen.contains(u)) continue;
+      seen.add(u);
+      out.add(u);
+    }
+    return out;
+  }
+
+  Future<void> _maybeEnrichHeroPhotos(Place place) async {
+    if (!place.id.startsWith('google_')) return;
+    if (place.photos.length >= 8) return;
+    if (_heroPhotoEnrichAttempted.contains(place.id)) return;
+    _heroPhotoEnrichAttempted.add(place.id);
+    try {
+      final urls = await ref.read(placesServiceProvider.notifier).fetchPhotoUrlsForGooglePlace(place.id);
+      if (!mounted || _cachedPlace?.id != place.id) return;
+      final merged = _mergeUniquePhotoUrls(place.photos, urls);
+      if (merged.length > place.photos.length) {
+        setState(() {
+          _cachedPlace = _cachedPlace!.copyWith(photos: merged);
+          _currentPlace = _cachedPlace;
+        });
+      }
+    } catch (_) {
+      // keep existing photos
     }
   }
 
@@ -309,6 +349,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
+        // Default stretch/zoom competes with horizontal PageView drags on the hero.
+        stretchModes: const [],
         background: ClipRect(
           child: _buildPhotoCarousel(place),
         ),
@@ -328,19 +370,24 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onHorizontalDragEnd: (d) {
-        final velocity = d.primaryVelocity ?? 0;
-        if (velocity < -200 && _currentPhotoIndex < place.photos.length - 1) {
-          _photoController.nextPage(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut);
-        } else if (velocity > 200 && _currentPhotoIndex > 0) {
-          _photoController.previousPage(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut);
-        }
-      },
+      onHorizontalDragEnd: place.photos.length < 2
+          ? null
+          : (details) {
+              final v = details.primaryVelocity ?? 0;
+              if (v < -280 && _currentPhotoIndex < place.photos.length - 1) {
+                _photoController.nextPage(
+                  duration: const Duration(milliseconds: 280),
+                  curve: Curves.easeOutCubic,
+                );
+              } else if (v > 280 && _currentPhotoIndex > 0) {
+                _photoController.previousPage(
+                  duration: const Duration(milliseconds: 280),
+                  curve: Curves.easeOutCubic,
+                );
+              }
+            },
       child: Stack(
+      key: ValueKey<int>(place.photos.length),
       children: [
         PageView.builder(
           controller: _photoController,
@@ -354,30 +401,32 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => _buildImageFallback(),
                   )
-                : Image.network(
+                : WmNetworkImage(
                     place.photos[index],
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => _buildImageFallback(),
                   );
           },
         ),
-        // Dark gradient overlay for better text readability
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.black.withOpacity(0.2),
-                Colors.transparent,
-                Colors.transparent,
-                Colors.black.withOpacity(0.8),
-              ],
+        // Pass touches through to PageView (these layers sit above it in the Stack).
+        IgnorePointer(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.2),
+                  Colors.transparent,
+                  Colors.transparent,
+                  Colors.black.withOpacity(0.8),
+                ],
+              ),
             ),
           ),
         ),
-        // Place name and details overlay (bottom right)
-        Positioned(
+        IgnorePointer(
+          child: Positioned(
           bottom: 24,
           right: 24,
           left: 24,
@@ -398,7 +447,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         border: Border.all(color: _pdWmParchment, width: 0.5),
                       ),
                       child: Text(
-                        activity,
+                        _localizedPlaceActivityLabel(context, activity),
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -472,10 +521,11 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               // Removed address from image overlay as requested
             ],
           ),
+          ),
         ),
-        // Page indicators for multiple photos
         if (place.photos.length > 1) ...[
-          Positioned(
+          IgnorePointer(
+            child: Positioned(
             bottom: 80,
             left: 0,
             right: 0,
@@ -495,11 +545,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 );
               }),
             ),
+            ),
           ),
         ],
       ],
-      ), // end Stack
-    ); // end GestureDetector
+    ),
+    );
   }
 
   Widget _buildImageFallback() {
@@ -603,7 +654,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             ],
           ),
           const SizedBox(height: 16),
-          // MOVED: Moody says section appears HERE (right after title)
+          // Moody tip card (localized label + SVG) appears here (right after title)
           _buildMoodyTips(place),
           const SizedBox(height: 16),
           // Rich place info card
@@ -798,6 +849,22 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     );
   }
 
+  /// Localize common English activity chips on the hero (Explore cache often ships English labels).
+  String _localizedPlaceActivityLabel(BuildContext context, String activity) {
+    final l10n = AppLocalizations.of(context)!;
+    final t = activity.toLowerCase();
+    if (t.contains('food tour') || t.contains('tasting')) return l10n.placeCategoryFood;
+    if (t.contains('shopping')) return l10n.placeCategoryShopping;
+    if (t.contains('museum') || t.contains('gallery')) return l10n.placeCategoryMuseum;
+    if (t.contains('park') || t.contains('walk') || t.contains('nature')) return l10n.placeCategoryNature;
+    if (t.contains('night') || t.contains('bar ') || t.contains('club')) return l10n.placeCategoryNightlife;
+    if (t.contains('coffee') || t.contains('café') || t.contains('cafe')) return l10n.placeCategoryCafe;
+    if (t.contains('restaurant') || t.contains('dining')) return l10n.placeCategoryRestaurant;
+    if (t.contains('adventure') || t.contains('hiking')) return l10n.placeCategoryAdventure;
+    if (t.contains('culture') || t.contains('historic')) return l10n.placeCategoryCulture;
+    return activity;
+  }
+
   // Helper method to clean activity name by removing location info
   String _getCleanActivityName(String name) {
     // Remove common location patterns like "Rotterdam, The Netherlands", "Rotterdam", etc.
@@ -827,7 +894,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           child: _buildStandaloneInfoTile(
             icon: Icons.schedule,
             label: l10n.placeDetailDurationLabel,
-            value: _getDurationText(place),
+            value: _getDurationText(place, l10n),
           ),
         ),
         const SizedBox(width: 10),
@@ -945,7 +1012,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     final bestTime = _getBestTimeForPlace(place, hour, l10n);
     final goodWith = _getGoodWithContext(place, l10n);
     final energyLevel = place.energyLevel;
-    final timeNeeded = _getTimeNeeded(place);
+    final timeNeeded = _getTimeNeeded(place, l10n);
     final moodAwareLabel = _getMoodAwareLabel(place, hour, l10n);
     
     return Container(
@@ -1112,7 +1179,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     } else if (types.any((t) => t.contains('cafe') || t.contains('breakfast'))) {
       return l10n.placeDetailMorning;
     } else if (types.any((t) => t.contains('restaurant'))) {
-      return 'Lunch/Dinner';
+      return l10n.placeDetailBestTimeLunchDinner;
     }
     
     // Fallback to energy level
@@ -1152,18 +1219,17 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
   
   /// Get estimated time needed
-  String _getTimeNeeded(Place place) {
-    // Based on place type and energy level
-    if (place.types.any((t) => 
-      t.contains('museum') || t.contains('art_gallery') || t.contains('zoo'))) {
-      return '2-3 hours';
-    } else if (place.types.any((t) => 
-      t.contains('cafe') || t.contains('bar') || t.contains('restaurant'))) {
-      return '1-2 hours';
+  String _getTimeNeeded(Place place, AppLocalizations l10n) {
+    if (place.types.any((t) =>
+        t.contains('museum') || t.contains('art_gallery') || t.contains('zoo'))) {
+      return l10n.placeDetailDurationTwoToThree;
+    } else if (place.types.any((t) =>
+        t.contains('cafe') || t.contains('bar') || t.contains('restaurant'))) {
+      return l10n.placeDetailDurationOneToTwo;
     } else if (place.energyLevel.toLowerCase() == 'high') {
-      return '2-4 hours';
+      return l10n.placeDetailDurationTwoToFour;
     } else {
-      return '~1 hour';
+      return l10n.placeDetailDurationAboutOneHour;
     }
   }
   
@@ -1354,81 +1420,82 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return l10n.placeDetailCheckLocally;
   }
 
-  String _getDurationText(Place place) {
+  String _getDurationText(Place place, AppLocalizations l10n) {
     final placeName = place.name.toLowerCase();
     final activities = place.activities.join(' ').toLowerCase();
-    
-    // Specific place-based duration estimates
+
     if (placeName.contains('museum') || placeName.contains('gallery')) {
-      return '1.5-3 hours';
+      return l10n.placeDetailDurationOneHalfToThree;
     }
-    
+
     if (placeName.contains('market') || placeName.contains('markt')) {
-      return '45 mins - 1.5 hours';
+      return l10n.placeDetailDurationFortyFiveToNinety;
     }
-    
+
     if (placeName.contains('restaurant') || placeName.contains('cafe')) {
       if (placeName.contains('quick') || placeName.contains('fast')) {
-        return '30-45 minutes';
+        return l10n.placeDetailDurationThirtyToFortyFive;
       }
-      return '1-2 hours';
+      return l10n.placeDetailDurationOneToTwo;
     }
-    
+
     if (placeName.contains('park') || placeName.contains('garden')) {
       if (activities.contains('walk') || activities.contains('stroll')) {
-        return '1-3 hours';
+        return l10n.placeDetailDurationOneToThree;
       }
-      return '2-4 hours';
+      return l10n.placeDetailDurationTwoToFour;
     }
-    
+
     if (placeName.contains('mall') || placeName.contains('shopping')) {
-      return '1-3 hours';
+      return l10n.placeDetailDurationOneToThree;
     }
-    
+
     if (placeName.contains('church') || placeName.contains('cathedral')) {
-      return '30-60 minutes';
+      return l10n.placeDetailDurationThirtyToSixty;
     }
-    
-    if (placeName.contains('tower') || placeName.contains('observation') || placeName.contains('viewpoint')) {
-      return '45 mins - 1.5 hours';
+
+    if (placeName.contains('tower') ||
+        placeName.contains('observation') ||
+        placeName.contains('viewpoint')) {
+      return l10n.placeDetailDurationFortyFiveToNinety;
     }
-    
-    if (placeName.contains('harbor') || placeName.contains('haven') || placeName.contains('waterfront')) {
-      return '1-2 hours';
+
+    if (placeName.contains('harbor') ||
+        placeName.contains('haven') ||
+        placeName.contains('waterfront')) {
+      return l10n.placeDetailDurationOneToTwo;
     }
-    
-    // Check activities for duration hints
+
     if (activities.contains('quick tour') || activities.contains('short visit')) {
-      return '30-60 minutes';
+      return l10n.placeDetailDurationThirtyToSixty;
     }
-    
+
     if (activities.contains('dining') || activities.contains('meal')) {
-      return '1-2 hours';
+      return l10n.placeDetailDurationOneToTwo;
     }
-    
+
     if (activities.contains('shopping')) {
-      return '1-3 hours';
+      return l10n.placeDetailDurationOneToThree;
     }
-    
-    // Fallback to place types
+
     for (final type in place.types) {
       switch (type.toLowerCase()) {
         case 'restaurant':
         case 'cafe':
-          return '1-2 hours';
+          return l10n.placeDetailDurationOneToTwo;
         case 'museum':
         case 'tourist_attraction':
-          return '1-2.5 hours';
+          return l10n.placeDetailDurationOneToTwoPointFive;
         case 'park':
-          return '1-4 hours';
+          return l10n.placeDetailDurationOneToFour;
         case 'shopping_mall':
-          return '1-3 hours';
+          return l10n.placeDetailDurationOneToThree;
         default:
           continue;
       }
     }
-    
-    return 'Allow 1-2 hours';
+
+    return l10n.placeDetailDurationAllowOneToTwo;
   }
 
   String _getAccessibilityText(Place place) {
@@ -1702,7 +1769,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                                       height: 120,
                               errorBuilder: (_, __, ___) => _buildImageFallback(),
                             )
-                          : Image.network(
+                          : WmNetworkImage(
                                       allImages[index],
                               fit: BoxFit.cover,
                                       width: 150,
@@ -1962,6 +2029,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
 
   Widget _buildMoodyTips(Place place) {
+    final l10n = AppLocalizations.of(context)!;
     // Cache the Future to avoid creating new ones on every rebuild
     if (_cachedMoodyTipsFuture == null || _cachedPlaceIdForTips != place.id) {
       _cachedMoodyTipsFuture = _generateAIMoodyTips(place);
@@ -1987,23 +2055,10 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       children: [
         Row(
           children: [
-            Container(
-                width: 28,
-                height: 28,
-              decoration: BoxDecoration(
-                color: const Color(0xFF2A6049),
-                  borderRadius: BorderRadius.circular(14),
-              ),
-                child: const Center(
-                  child: Text(
-                    '😎',
-                    style: TextStyle(fontSize: 16),
-                  ),
-              ),
-            ),
+            const MoodyAvatarCompact(size: 30, glowOpacityScale: 0.18),
               const SizedBox(width: 8),
             Text(
-                'Moody says...',
+                l10n.placeDetailMoodyName,
               style: GoogleFonts.poppins(
                   fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -2032,23 +2087,25 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                           ),
                         ),
                       const SizedBox(width: 8),
-                      Text(
-                        'Lemme check this place out... 🤔',
+                      Expanded(
+                        child: Text(
+                          l10n.placeDetailMoodyLoadingTips,
                             style: GoogleFonts.poppins(
                           fontSize: 13,
                               fontStyle: FontStyle.italic,
                           color: const Color(0xFF2A6049),
                           ),
                         ),
+                      ),
                       ],
                     ),
                 );
               }
               
               final moodyTips = snapshot.data ?? [
-                'Check those opening hours first! 🕐',
-                'Stay hydrated out there! 💧',
-                'Download maps just in case! 📱',
+                l10n.placeDetailMoodyFallbackTipA,
+                l10n.placeDetailMoodyFallbackTipB,
+                l10n.placeDetailMoodyFallbackTipC,
               ];
               
               // Combine all tips into one conversational message
@@ -2504,7 +2561,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => _buildImageFallback(),
                   )
-                : Image.network(
+                : WmNetworkImage(
                     place.photos[index],
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => _buildImageFallback(),
@@ -3259,7 +3316,7 @@ class _FullScreenPhotoViewState extends State<FullScreenPhotoView> {
                       widget.photos[index],
                       fit: BoxFit.contain,
                     )
-                  : Image.network(
+                  : WmNetworkImage(
                       widget.photos[index],
                       fit: BoxFit.contain,
                       errorBuilder: (_, __, ___) => const Icon(

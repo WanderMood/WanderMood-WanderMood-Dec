@@ -36,6 +36,11 @@ supabase/migrations/
 
 These migrations are versioned and run automatically by Supabase.
 
+### `scripts/` (one-off maintenance)
+
+- `scripts/reset_places_cache_and_backfill.sql` — reset/backfill places cache (run manually when needed)
+- `scripts/apply_user_preferences_migration.sql` — user preferences migration helper (run manually when needed)
+
 ## Usage
 
 ⚠️ **Do not run these scripts directly on production!**

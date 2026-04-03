@@ -7,6 +7,7 @@ import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/social/domain/models/social_post.dart';
 import 'package:wandermood/features/social/domain/providers/social_providers.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 // Provider for mock conversations
 final mockConversationsProvider = Provider<List<Map<String, dynamic>>>((ref) {
@@ -178,7 +179,7 @@ class _MessageHubScreenState extends ConsumerState<MessageHubScreen> {
                             children: [
                               CircleAvatar(
                                 radius: 28,
-                                backgroundImage: NetworkImage(profile.avatar),
+                                backgroundImage: wmCachedNetworkImageProvider(profile.avatar),
                               ),
                               if (isUnread)
                                 Positioned(
@@ -404,7 +405,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           children: [
             CircleAvatar(
               radius: 20,
-              backgroundImage: NetworkImage(widget.profile.avatar),
+              backgroundImage: wmCachedNetworkImageProvider(widget.profile.avatar),
             ),
             const SizedBox(width: 12),
             Column(

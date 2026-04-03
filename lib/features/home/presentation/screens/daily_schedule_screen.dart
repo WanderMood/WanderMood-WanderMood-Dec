@@ -7,6 +7,7 @@ import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/widgets/activity_detail_screen.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 class DailyScheduleScreen extends ConsumerStatefulWidget {
   const DailyScheduleScreen({Key? key}) : super(key: key);
@@ -471,7 +472,7 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
               topLeft: Radius.circular(16),
               bottomLeft: Radius.circular(16),
             ),
-            child: Image.network(
+            child: WmNetworkImage(
               activity.imageUrl,
               width: 100,
               height: 120,

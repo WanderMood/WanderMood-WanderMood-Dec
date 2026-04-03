@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import '../../domain/models/travel_recommendation.dart';
 
 class RecommendationCard extends StatelessWidget {
@@ -26,7 +27,7 @@ class RecommendationCard extends StatelessWidget {
           children: [
             Stack(
               children: [
-                Image.network(
+                WmNetworkImage(
                   recommendation.imageUrl,
                   height: 200,
                   width: double.infinity,

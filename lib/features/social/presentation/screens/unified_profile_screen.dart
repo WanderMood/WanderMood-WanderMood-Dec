@@ -9,6 +9,7 @@ import 'package:wandermood/features/social/domain/providers/social_providers.dar
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 class UnifiedProfileScreen extends ConsumerStatefulWidget {
   final String? userId;
@@ -287,7 +288,7 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
                   ),
                 ],
                 image: DecorationImage(
-                  image: NetworkImage(profileData.avatar),
+                  image: wmCachedNetworkImageProvider(profileData.avatar),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -637,9 +638,9 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
                           borderRadius: BorderRadius.circular(8),
                           image: DecorationImage(
                             fit: BoxFit.cover,
-                            image: NetworkImage(post.images.isNotEmpty 
-                              ? post.images.first 
-                              : 'https://via.placeholder.com/300'),
+                            image: wmCachedNetworkImageProvider(post.images.isNotEmpty
+                                ? post.images.first
+                                : 'https://via.placeholder.com/300'),
                           ),
                         ),
                       ),

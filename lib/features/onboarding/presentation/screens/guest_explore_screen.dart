@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:wandermood/core/presentation/widgets/moody_avatar_compact.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
@@ -524,6 +526,7 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
                     height: 120,
                     width: double.infinity,
                     child: CachedNetworkImage(
+                      cacheManager: WanderMoodImageCacheManager.instance,
                       imageUrl: (place.imageUrl.trim().isEmpty
                               ? _kFallbackDemoImageUrl
                               : place.imageUrl),
@@ -536,6 +539,7 @@ class _GuestExploreScreenState extends ConsumerState<GuestExploreScreen> {
                         ),
                       ),
                       errorWidget: (context, url, error) => CachedNetworkImage(
+                        cacheManager: WanderMoodImageCacheManager.instance,
                         imageUrl: _kFallbackDemoImageUrl,
                         fit: BoxFit.cover,
                         placeholder: (context, u) => Container(
@@ -690,6 +694,7 @@ class _PlacePreviewSheet extends StatelessWidget {
                       height: 160,
                       width: double.infinity,
                       child: CachedNetworkImage(
+                        cacheManager: WanderMoodImageCacheManager.instance,
                         imageUrl: (place.imageUrl.trim().isEmpty
                                 ? _kFallbackDemoImageUrl
                                 : place.imageUrl),
@@ -702,6 +707,7 @@ class _PlacePreviewSheet extends StatelessWidget {
                           ),
                         ),
                         errorWidget: (context, url, error) => CachedNetworkImage(
+                          cacheManager: WanderMoodImageCacheManager.instance,
                           imageUrl: _kFallbackDemoImageUrl,
                           fit: BoxFit.cover,
                           placeholder: (context, u) => Container(
@@ -840,7 +846,7 @@ class _PlacePreviewSheet extends StatelessWidget {
                   ],
                   const SizedBox(height: 20),
                   
-                  // Moody says
+                  // Moody tip
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -849,14 +855,14 @@ class _PlacePreviewSheet extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        const Text('🌟', style: TextStyle(fontSize: 24)),
+                        const MoodyAvatarCompact(size: 28, glowOpacityScale: 0.2),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                AppLocalizations.of(context)!.guestMoodySays,
+                                AppLocalizations.of(context)!.placeDetailMoodyName,
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,

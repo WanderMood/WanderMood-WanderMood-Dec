@@ -6,6 +6,7 @@ import 'package:wandermood/features/profile/domain/providers/current_user_profil
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 /// WanderMood v2 design tokens — side drawer
 const Color _wmWhite = Color(0xFFFFFFFF);
@@ -258,7 +259,7 @@ class _DrawerForestHeader extends StatelessWidget {
                     radius: 28,
                     backgroundColor: _wmWhite,
                     backgroundImage: (avatarUrl ?? '').isNotEmpty
-                        ? NetworkImage(avatarUrl!)
+                        ? wmCachedNetworkImageProvider(avatarUrl!)
                         : null,
                     child: (avatarUrl ?? '').isEmpty
                         ? Text(

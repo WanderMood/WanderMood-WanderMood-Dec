@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/core/services/google_places_service.dart';
@@ -51,6 +52,7 @@ class PlaceImage extends ConsumerWidget {
       return ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
         child: CachedNetworkImage(
+          cacheManager: WanderMoodImageCacheManager.instance,
           imageUrl: photoReference!,
           width: width,
           height: height,
@@ -69,6 +71,7 @@ class PlaceImage extends ConsumerWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
       child: CachedNetworkImage(
+        cacheManager: WanderMoodImageCacheManager.instance,
         imageUrl: photoUrl,
         width: width,
         height: height,

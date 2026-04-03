@@ -1,21 +1,7 @@
-import UIKit
 import Flutter
+import UIKit
 
-@available(iOS 13.0, *)
-class SceneDelegate: UIResponder, UIWindowSceneDelegate {
-  var window: UIWindow?
-
-  func scene(
-    _ scene: UIScene,
-    willConnectTo session: UISceneSession,
-    options connectionOptions: UIScene.ConnectionOptions
-  ) {
-    guard let windowScene = scene as? UIWindowScene else { return }
-
-    let flutterViewController = FlutterViewController()
-
-    self.window = UIWindow(windowScene: windowScene)
-    self.window?.rootViewController = flutterViewController
-    self.window?.makeKeyAndVisible()
-  }
+/// Subclass of FlutterSceneDelegate so deep links and plugin scene callbacks are forwarded correctly.
+/// See: https://docs.flutter.dev/release/breaking-changes/uiscenedelegate
+class SceneDelegate: FlutterSceneDelegate {
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 class PlanSummarySheet extends StatelessWidget {
   final List<Activity> selectedActivities;
@@ -189,7 +190,7 @@ class PlanSummarySheet extends StatelessWidget {
           // Activity image
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
+            child: WmNetworkImage(
               activity.imageUrl,
               width: 60,
               height: 60,

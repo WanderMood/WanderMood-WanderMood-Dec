@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -128,6 +129,7 @@ class _CollectionDetailScreenState
                 fit: StackFit.expand,
                 children: [
                   CachedNetworkImage(
+                    cacheManager: WanderMoodImageCacheManager.instance,
                     imageUrl: coverUrl,
                     fit: BoxFit.cover,
                     errorWidget: (_, __, ___) => Container(color: _wmForest),
@@ -301,6 +303,7 @@ class _CollectionDetailScreenState
                 children: [
                   if (place.photos.isNotEmpty && place.photos.first.isNotEmpty)
                     CachedNetworkImage(
+                      cacheManager: WanderMoodImageCacheManager.instance,
                       imageUrl: place.photos.first,
                       fit: BoxFit.cover,
                       placeholder: (_, __) =>

@@ -19,6 +19,8 @@ import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import '../widgets/profile_stats_cards.dart';
 import '../utils/preference_chip_localization.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
@@ -352,7 +354,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                       ),
                       child: ClipOval(
                         child: (avatarUrl != null && avatarUrl.isNotEmpty)
-                            ? Image.network(
+                            ? WmNetworkImage(
                                 avatarUrl,
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, __, ___) =>
@@ -634,6 +636,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           children: [
             if (hasPhoto)
               CachedNetworkImage(
+                cacheManager: WanderMoodImageCacheManager.instance,
                 imageUrl: img,
                 fit: BoxFit.cover,
                 placeholder: (_, __) => Container(

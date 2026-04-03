@@ -33,6 +33,7 @@ import 'package:wandermood/features/home/presentation/widgets/moody_chat_header_
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 // WanderMood v2 — Moody chat modal (Screen 9), aligned with moody_chat_sheet.dart
 const Color _mcSkyTint = Color(0xFFEDF5F9);
@@ -1718,7 +1719,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                   return Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Image.network(
+                                      WmNetworkImage(
                                         weather.iconUrl,
                                         width: 20,
                                         height: 20,

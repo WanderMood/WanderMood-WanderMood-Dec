@@ -239,6 +239,30 @@ class PlacesService extends _$PlacesService {
     }
   }
 
+  /// Photo URLs for a Google-backed place (bypasses in-memory place cache so cards/hero get full galleries).
+  Future<List<String>> fetchPhotoUrlsForGooglePlace(String placeId) async {
+    if (!_isInitialized) {
+      await build();
+    }
+    final raw = placeId.startsWith('google_') ? placeId.substring('google_'.length) : placeId;
+    if (raw.isEmpty) return [];
+    try {
+      final details = await getPlaceDetails(raw);
+      final refs = (details['photos'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+      final urls = <String>[];
+      for (final ref in refs.take(10)) {
+        if (ref.isEmpty) continue;
+        try {
+          urls.add(getPhotoUrl(ref));
+        } catch (_) {}
+      }
+      return urls;
+    } catch (e) {
+      debugPrint('❌ fetchPhotoUrlsForGooglePlace failed: $e');
+      return [];
+    }
+  }
+
   /// Get place by ID (can be either a place ID or an index for hardcoded places)
   Future<Place> getPlaceById(String placeId) async {
     if (!_isInitialized) {

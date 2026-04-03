@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -319,6 +320,7 @@ class BookWithGygSection extends StatelessWidget {
                   BlendMode.multiply,
                 ),
                 child: CachedNetworkImage(
+                  cacheManager: WanderMoodImageCacheManager.instance,
                   imageUrl: _cardBackgroundImageUrl,
                   fit: BoxFit.cover,
                   placeholder: (_, __) => Image.asset(

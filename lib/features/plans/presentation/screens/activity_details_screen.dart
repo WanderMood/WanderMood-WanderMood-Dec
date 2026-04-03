@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
+
 class ActivityDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> activity;
   final Function(String) onAddToPlanner;
@@ -71,7 +73,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                   child: Center(
                     child: Hero(
                       tag: 'gallery_image_$index',
-                      child: Image.network(
+                      child: WmNetworkImage(
                         '${galleryImages[index]}?auto=format&fit=crop&w=2000&q=90',
                         fit: BoxFit.contain,
                       ),
@@ -142,19 +144,15 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                     tag: 'gallery_image_$index',
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
+                      child: WmNetworkImage(
                         '${galleryImages[index]}?auto=format&fit=crop&w=300&h=200&q=80',
                         fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
+                        progressIndicatorBuilder: (context, url, progress) {
                           return Container(
                             color: Colors.grey[200],
                             child: Center(
                               child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                    : null,
+                                value: progress.progress,
                                 valueColor: AlwaysStoppedAnimation<Color>(
                                   Colors.grey[400]!,
                                 ),
@@ -233,7 +231,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                       fit: StackFit.expand,
                       children: [
                         // Hero image
-                        Image.network(
+                        WmNetworkImage(
                           '${activity['image']}?auto=format&fit=crop&w=1000&q=80',
                           fit: BoxFit.cover,
                         ),

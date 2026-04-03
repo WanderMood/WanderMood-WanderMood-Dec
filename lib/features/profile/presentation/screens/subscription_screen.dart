@@ -141,10 +141,20 @@ class SubscriptionScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
+                Text(
+                  l10n.subscriptionUpgradeFootnote,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    height: 1.35,
+                    color: Colors.white.withValues(alpha: 0.88),
+                  ),
+                ),
+                const SizedBox(height: 14),
                 _buildFeature(l10n.subscriptionFeatureUnlimitedSuggestions),
                 _buildFeature(l10n.subscriptionFeatureAdvancedMoodMatching),
                 _buildFeature(l10n.subscriptionFeaturePrioritySupport),
                 _buildFeature(l10n.subscriptionFeatureNoAds),
+                _buildFeature(l10n.subscriptionFeatureEarlyAccess),
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,

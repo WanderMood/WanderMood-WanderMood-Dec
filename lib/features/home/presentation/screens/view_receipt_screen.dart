@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
@@ -179,6 +180,7 @@ class ViewReceiptScreen extends StatelessWidget {
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(16),
                                         child: CachedNetworkImage(
+                                          cacheManager: WanderMoodImageCacheManager.instance,
                                           imageUrl: activity['imageUrl'] ?? '',
                                           fit: BoxFit.cover,
                                           placeholder: (context, url) => Container(

@@ -810,14 +810,15 @@
   "subscriptionCurrentPlanLabel": "Huidig abonnement",
   "subscriptionPlanFree": "Gratis",
   "subscriptionPlanPremium": "Premium",
-  "subscriptionUpgradeHeading": "Upgrade naar",
+  "subscriptionUpgradeHeading": "Binnenkort",
   "subscriptionUpgradeTitle": "Premium",
   "subscriptionFeatureUnlimitedSuggestions": "Onbeperkte activiteitenvoorstellen",
   "subscriptionFeatureAdvancedMoodMatching": "Geavanceerde mood-matching",
   "subscriptionFeaturePrioritySupport": "Prioriteitsondersteuning",
   "subscriptionFeatureNoAds": "Geen advertenties",
   "subscriptionFeatureEarlyAccess": "Vroege toegang tot nieuwe functies",
-  "subscriptionUpgradeCta": "Upgrade voor €4,99 per maand",
+  "subscriptionUpgradeCta": "Meer info",
+  "subscriptionUpgradeFootnote": "Betaalde plannen gebruiken straks Apple In-App Purchase. Deze versie is gratis — er wordt geen betaling in de app geïnd.",
   "dataStorageTitle": "Data & opslag",
   "dataStorageStorageUsedLabel": "Gebruikte opslag",
   "dataStorageExportTitle": "Mijn data exporteren",
@@ -1479,6 +1480,16 @@
   "bookingSavedViewMyBookings": "Boeking opgeslagen! Bekijk in Mijn Boekingen",
   "bookingViewAction": "Bekijken",
   "bookingErrorSaving": "Fout bij opslaan boeking: {error}",
+  "bookingReviewTitle": "Boeking controleren",
+  "bookingNoPaymentInAppBody": "WanderMood incasseert geen betalingen voor locaties in deze app. Wat je opslaat, is voor je reisplan. Neem rechtstreeks contact op met de locatie om te reserveren of te betalen.",
+  "bookingSaveToPlanCta": "Opslaan in mijn plan",
+  "bookingEstimatedTotalLabel": "Geschat totaal (niet in app afgerekend)",
+  "bookingPlanSavedHeader": "Plan opgeslagen",
+  "bookingAddedToPlanTitle": "Toegevoegd aan je plan!",
+  "bookingAddedToPlanBody": "{placeName} staat in Mijn boekingen en je agenda. Definitieve reservering en betaling regel je rechtstreeks bij de locatie — niet via deze app.",
+  "bookingReferenceLine": "Referentie: {reference}",
+  "bookingSectionTotalEstimate": "Geschat totaal",
+  "bookingGuestsSummary": "{count, plural, one{1 gast} other{{count} gasten}}",
   "gygCodeCopied": "Code gekopieerd 💚",
   "placeCardSeeActivity": "Bekijk activiteit",
   "placeCardPriceVaries": "Prijs varieert",
@@ -2090,7 +2101,11 @@
   "settingsNotificationsTripRemindersSubtitle": "Herinneringen voor geplande activiteiten",
   "settingsNotificationsWeatherUpdatesLabel": "Weer-updates",
   "settingsNotificationsWeatherUpdatesSubtitle": "Updates over het weer op jouw bestemming",
-  "premiumUpgradeScreenTitle": "Upgrade naar Premium",
+  "premiumComingSoonTitle": "Premium — binnenkort",
+  "premiumComingSoonBody": "Abonnementen worden later aangeboden via Apple In-App Purchase. WanderMood is in deze versie gratis te gebruiken.",
+  "premiumComingSoonFootnote": "We verzamelen in deze build geen kaartgegevens, Apple Pay of andere betalingen.",
+  "premiumComingSoonCta": "OK",
+  "premiumUpgradeScreenTitle": "Premium",
   "premiumMonthlyPlanLabel": "Maandabonnement",
   "premiumMonthlyPriceLabel": "€4,99/maand",
   "premiumBestValueBadge": "Beste keuze",
@@ -2154,6 +2169,73 @@
   "placeDetailSoloFriends": "Solo / Vrienden",
   "placeDetailAnonymous": "Anoniem",
   "placeDetailRecently": "Onlangs",
+  "placeDetailMoodyName": "Moody",
+  "placeDetailMoodyLoadingTips": "Deze plek bekijken…",
+  "placeDetailMoodyFallbackTipA": "Check de openingstijden voordat je gaat.",
+  "placeDetailMoodyFallbackTipB": "Blijf gehydrateerd.",
+  "placeDetailMoodyFallbackTipC": "Bewaar kaarten offline als het kan.",
+  "placeDetailBestTimeLunchDinner": "Lunch / diner",
+  "placeDetailDurationAllowOneToTwo": "Reken op 1–2 uur",
+  "placeDetailDurationOneToTwo": "1–2 uur",
+  "placeDetailDurationOneToTwoPointFive": "1–2,5 uur",
+  "placeDetailDurationOneHalfToThree": "1,5–3 uur",
+  "placeDetailDurationThirtyToSixty": "30–60 minuten",
+  "placeDetailDurationThirtyToFortyFive": "30–45 minuten",
+  "placeDetailDurationFortyFiveToNinety": "45 min – 1,5 uur",
+  "placeDetailDurationOneToThree": "1–3 uur",
+  "placeDetailDurationTwoToFour": "2–4 uur",
+  "placeDetailDurationOneToFour": "1–4 uur",
+  "placeDetailDurationTwoToThree": "2–3 uur",
+  "placeDetailDurationAboutOneHour": "~1 uur",
+  "placeCategoryFood": "Eten",
+  "placeCategoryRestaurant": "Restaurant",
+  "placeCategoryCafe": "Café",
+  "placeCategoryBar": "Bar",
+  "placeCategoryMuseum": "Museum",
+  "placeCategoryPark": "Park",
+  "placeCategoryShopping": "Winkelen",
+  "placeCategoryCulture": "Cultuur",
+  "placeCategoryNature": "Natuur",
+  "placeCategoryNightlife": "Nachtleven",
+  "placeCategoryAdventure": "Avontuur",
+  "placeCategorySpot": "Plek",
+  "dayPlanDurationHoursOnly": "{hours} u",
+  "@dayPlanDurationHoursOnly": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "dayPlanDurationHoursMinutes": "{hours} u {minutes} min",
+  "@dayPlanDurationHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "dayPlanDurationMinutesOnly": "{minutes} min",
+  "@dayPlanDurationMinutesOnly": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "plannerSheetScheduledPrefix": "Gepland {when}",
+  "@plannerSheetScheduledPrefix": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "plannerSheetAbout": "Over",
+  "plannerSheetNoDescription": "Nog geen beschrijving voor deze activiteit.",
 
   "moodyHubYourDayToday": "Jouw dag vandaag",
   "moodyHubChangeMood": "Verander stemming",

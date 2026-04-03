@@ -9,6 +9,7 @@ import 'package:wandermood/features/auth/providers/user_provider.dart';
 import 'package:wandermood/features/social/presentation/screens/create_post_screen.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 // Current user provider - in a real app this would get the authenticated user
 final currentUserIdProvider = Provider<String>((ref) => 'user1');
@@ -179,7 +180,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> with Sing
                           ),
                         ],
                         image: DecorationImage(
-                          image: NetworkImage(profileData.avatar),
+                          image: wmCachedNetworkImageProvider(profileData.avatar),
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -406,7 +407,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> with Sing
                                 child: Container(
                                   decoration: BoxDecoration(
                                     image: DecorationImage(
-                                      image: NetworkImage(post.images.first),
+                                      image: wmCachedNetworkImageProvider(post.images.first),
                                       fit: BoxFit.cover,
                                     ),
                                   ),

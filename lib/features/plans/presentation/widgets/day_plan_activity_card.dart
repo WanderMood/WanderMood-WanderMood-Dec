@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,7 +8,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/features/plans/utils/activity_place_adapter.dart';
-import 'package:wandermood/features/plans/presentation/providers/place_photo_url_provider.dart';
 import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/features/places/services/sharing_service.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
@@ -71,22 +71,21 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
     super.dispose();
   }
 
-  /// Returns a list of photo URLs for the activity.
-  /// Uses imageUrl as first photo, then tries to load more from Places API (cached).
+  /// Returns a list of photo URLs for the activity (full gallery via edge `places` details, not cached single-image place).
   Future<List<String>> _resolvePhotos() async {
     final placeId = widget.activity.placeId?.trim();
     final imageUrl = widget.activity.imageUrl;
 
-    // If we have a placeId we can try to load multiple photos
     if (placeId != null && placeId.isNotEmpty) {
       final cacheKey = placeId.startsWith('google_') ? placeId : 'google_$placeId';
       return _photoListCache.putIfAbsent(cacheKey, () async {
         try {
           final service = ref.read(placesServiceProvider.notifier);
-          final place = await service.getPlaceById(cacheKey);
-          if (place != null && place.photos.isNotEmpty) {
-            return place.photos;
+          var urls = await service.fetchPhotoUrlsForGooglePlace(cacheKey);
+          if (imageUrl.isNotEmpty) {
+            urls = [imageUrl, ...urls.where((u) => u != imageUrl)];
           }
+          if (urls.isNotEmpty) return urls;
         } catch (_) {}
         return imageUrl.isNotEmpty ? [imageUrl] : [];
       });
@@ -96,14 +95,35 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
     return [];
   }
 
-  String get _durationText {
-    if (widget.activity.duration >= 60) {
-      final h = widget.activity.duration ~/ 60;
-      final m = widget.activity.duration % 60;
-      if (m == 0) return '${h}h';
-      return '${h}h ${m}min';
+  String _durationText(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final d = widget.activity.duration;
+    if (d >= 60) {
+      final h = d ~/ 60;
+      final m = d % 60;
+      if (m == 0) return l10n.dayPlanDurationHoursOnly(h);
+      return l10n.dayPlanDurationHoursMinutes(h, m);
     }
-    return '${widget.activity.duration} min';
+    return l10n.dayPlanDurationMinutesOnly(d);
+  }
+
+  String _localizedTagLabel(BuildContext context, String tag) {
+    final l10n = AppLocalizations.of(context)!;
+    final t = tag.toLowerCase().trim();
+    if (t.isEmpty) return tag;
+    if (t.contains('foody') || t.contains('foodie')) return l10n.moodFoody;
+    if (t.contains('food')) return l10n.placeCategoryFood;
+    if (t.contains('restaurant')) return l10n.placeCategoryRestaurant;
+    if (t.contains('cafe') || t.contains('coffee')) return l10n.placeCategoryCafe;
+    if (t.contains('bar') || t.contains('pub') || t.contains('night')) return l10n.placeCategoryBar;
+    if (t.contains('museum') || t.contains('gallery')) return l10n.placeCategoryMuseum;
+    if (t.contains('park') || t.contains('garden') || t.contains('nature')) return l10n.placeCategoryPark;
+    if (t.contains('shop') || t.contains('mall') || t.contains('store')) return l10n.placeCategoryShopping;
+    if (t.contains('culture') || t.contains('historic')) return l10n.placeCategoryCulture;
+    if (t.contains('hiking') || t.contains('outdoor') || t.contains('trail')) return l10n.placeCategoryNature;
+    if (t.contains('club') || t.contains('nightlife')) return l10n.placeCategoryNightlife;
+    if (t.contains('adventure')) return l10n.placeCategoryAdventure;
+    return l10n.placeCategorySpot;
   }
 
   String _priceText(BuildContext context) {
@@ -134,74 +154,59 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
         if (photos.isEmpty) return _imagePlaceholder();
         if (photos.length == 1) {
           return CachedNetworkImage(
+            cacheManager: WanderMoodImageCacheManager.instance,
             imageUrl: photos[0],
             fit: BoxFit.cover,
             placeholder: (_, __) => _imagePlaceholder(),
             errorWidget: (_, __, ___) => _imagePlaceholder(),
           );
         }
-        // Multi-photo swipeable carousel
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onHorizontalDragEnd: (details) {
-            final v = details.primaryVelocity ?? 0;
-            if (v < -200 && _currentImageIndex < photos.length - 1) {
-              _imagePageController.nextPage(
-                  duration: const Duration(milliseconds: 280),
-                  curve: Curves.easeInOut);
-            } else if (v > 200 && _currentImageIndex > 0) {
-              _imagePageController.previousPage(
-                  duration: const Duration(milliseconds: 280),
-                  curve: Curves.easeInOut);
-            }
-          },
-          child: Stack(
-            children: [
-              PageView.builder(
-                controller: _imagePageController,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: photos.length,
-                onPageChanged: (i) => setState(() => _currentImageIndex = i),
-                itemBuilder: (_, i) => CachedNetworkImage(
-                  imageUrl: photos[i],
-                  fit: BoxFit.cover,
-                  placeholder: (_, __) => _imagePlaceholder(),
-                  errorWidget: (_, __, ___) => _imagePlaceholder(),
-                ),
+        return Stack(
+          key: ValueKey<String>(photos.join('|')),
+          children: [
+            PageView.builder(
+              controller: _imagePageController,
+              itemCount: photos.length,
+              onPageChanged: (i) => setState(() => _currentImageIndex = i),
+              itemBuilder: (_, i) => CachedNetworkImage(
+                cacheManager: WanderMoodImageCacheManager.instance,
+                imageUrl: photos[i],
+                fit: BoxFit.cover,
+                placeholder: (_, __) => _imagePlaceholder(),
+                errorWidget: (_, __, ___) => _imagePlaceholder(),
               ),
-              // Dot indicators
-              Positioned(
-                bottom: 40,
-                left: 0,
-                right: 0,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(photos.length > 10 ? 10 : photos.length, (i) {
-                    final active = i == _currentImageIndex;
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      width: active ? 14 : 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: active
-                            ? Colors.white.withOpacity(0.95)
-                            : Colors.white.withOpacity(0.55),
-                        borderRadius: BorderRadius.circular(999),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.20),
-                            blurRadius: 3,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                ),
+            ),
+            Positioned(
+              bottom: 40,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(photos.length > 10 ? 10 : photos.length, (i) {
+                  final active = i == _currentImageIndex;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: active ? 14 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: active
+                          ? Colors.white.withOpacity(0.95)
+                          : Colors.white.withOpacity(0.55),
+                      borderRadius: BorderRadius.circular(999),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.20),
+                          blurRadius: 3,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
@@ -362,28 +367,28 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
 
     return Material(
       color: Colors.transparent,
-      child: InkWell(
-        onTap: () => widget.onTap(widget.activity, distanceKm: widget.distanceKm),
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          decoration: BoxDecoration(
-            color: _wmWhite,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _wmParchment, width: 0.5),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Accent bar — wmForest (v2)
-              Container(
-                height: 4,
-                width: double.infinity,
-                color: _wmForest,
-              ),
-              // Image section: use activity.imageUrl, or fetch from Places API (same as Explore) when empty
-              SizedBox(
+      child: Container(
+        decoration: BoxDecoration(
+          color: _wmWhite,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _wmParchment, width: 0.5),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Accent bar — wmForest (v2)
+            Container(
+              height: 4,
+              width: double.infinity,
+              color: _wmForest,
+            ),
+            // Image: swipeable PageView — outside InkWell so horizontal drags are not eaten.
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => widget.onTap(widget.activity, distanceKm: widget.distanceKm),
+              child: SizedBox(
                 height: 192,
                 width: double.infinity,
                 child: Stack(
@@ -459,8 +464,11 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                   ],
                 ),
               ),
-              // Content section
-              Padding(
+            ),
+            // Content section
+            InkWell(
+              onTap: () => widget.onTap(widget.activity, distanceKm: widget.distanceKm),
+              child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -482,9 +490,7 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                       spacing: 6,
                       runSpacing: 6,
                       children: widget.activity.tags.take(5).map((tag) {
-                        final label = tag.length > 2
-                            ? '${tag[0].toUpperCase()}${tag.substring(1)}'
-                            : tag.toUpperCase();
+                        final label = _localizedTagLabel(context, tag);
                         return Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
@@ -546,7 +552,7 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                       children: [
                         _flatMetaPill(
                           icon: Icons.schedule,
-                          label: _durationText,
+                          label: _durationText(context),
                         ),
                         _flatMetaPill(
                           icon: Icons.euro,
@@ -683,8 +689,8 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

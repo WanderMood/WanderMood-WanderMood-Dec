@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 class ActivityTimeline extends StatelessWidget {
   final List<Activity> activities;
@@ -115,7 +116,7 @@ class TimelineItem extends StatelessWidget {
                   if (activity.imageUrl != null)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
+                      child: WmNetworkImage(
                         activity.imageUrl!,
                         width: double.infinity,
                         height: 80,

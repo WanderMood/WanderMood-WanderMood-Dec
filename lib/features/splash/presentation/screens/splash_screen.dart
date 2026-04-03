@@ -58,9 +58,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _exitWithFade(VoidCallback navigate) async {
-    await _fadeOutController.forward();
-    if (!mounted) return;
-    navigate();
+    try {
+      await _fadeOutController.forward();
+      if (!mounted) return;
+      navigate();
+    } catch (e, st) {
+      debugPrint('⚠️ Splash fade/navigation failed: $e\n$st');
+      if (mounted) {
+        await _fadeOutController.reverse();
+      }
+    }
   }
 
   Future<void> _initializeApp() async {

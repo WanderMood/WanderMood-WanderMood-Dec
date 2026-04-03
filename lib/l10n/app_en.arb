@@ -1120,14 +1120,15 @@
   "subscriptionCurrentPlanLabel": "Current Plan",
   "subscriptionPlanFree": "Free",
   "subscriptionPlanPremium": "Premium",
-  "subscriptionUpgradeHeading": "Upgrade to",
+  "subscriptionUpgradeHeading": "Coming soon",
   "subscriptionUpgradeTitle": "Premium",
   "subscriptionFeatureUnlimitedSuggestions": "Unlimited activity suggestions",
   "subscriptionFeatureAdvancedMoodMatching": "Advanced mood matching",
   "subscriptionFeaturePrioritySupport": "Priority support",
   "subscriptionFeatureNoAds": "No ads",
   "subscriptionFeatureEarlyAccess": "Early access to new features",
-  "subscriptionUpgradeCta": "Upgrade for €4.99/month",
+  "subscriptionUpgradeCta": "Learn more",
+  "subscriptionUpgradeFootnote": "Paid plans will use Apple In-App Purchase when available. This version is free — no payment is collected in the app.",
   "dataStorageTitle": "Data & Storage",
   "dataStorageStorageUsedLabel": "Storage Used",
   "dataStorageExportTitle": "Export My Data",
@@ -1918,6 +1919,16 @@
   "bookingSavedViewMyBookings": "Booking saved! View in My Bookings",
   "bookingViewAction": "View",
   "bookingErrorSaving": "Error saving booking: {error}",
+  "bookingReviewTitle": "Review booking",
+  "bookingNoPaymentInAppBody": "WanderMood does not collect payment for venues in this app. What you save here is for your trip plan. Contact the place directly to reserve or pay.",
+  "bookingSaveToPlanCta": "Save to my plan",
+  "bookingEstimatedTotalLabel": "Estimated total (not charged in app)",
+  "bookingPlanSavedHeader": "Plan saved",
+  "bookingAddedToPlanTitle": "Added to your plan!",
+  "bookingAddedToPlanBody": "{placeName} is saved in My Bookings and your agenda. Final booking and payment are arranged with the venue — not through this app.",
+  "bookingReferenceLine": "Reference: {reference}",
+  "bookingSectionTotalEstimate": "Estimated total",
+  "bookingGuestsSummary": "{count, plural, one{1 guest} other{{count} guests}}",
   "gygCodeCopied": "Code copied 💚",
   "placeCardSeeActivity": "See activity",
   "placeCardPriceVaries": "Price varies",
@@ -2005,6 +2016,27 @@
     "placeholders": {
       "error": {
         "type": "String"
+      }
+    }
+  },
+  "@bookingAddedToPlanBody": {
+    "placeholders": {
+      "placeName": {
+        "type": "String"
+      }
+    }
+  },
+  "@bookingReferenceLine": {
+    "placeholders": {
+      "reference": {
+        "type": "String"
+      }
+    }
+  },
+  "@bookingGuestsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
       }
     }
   },
@@ -2867,7 +2899,11 @@
   "settingsNotificationsWeatherUpdatesLabel": "Weather updates",
   "settingsNotificationsWeatherUpdatesSubtitle": "Updates about the weather at your destination",
 
-  "premiumUpgradeScreenTitle": "Upgrade to Premium",
+  "premiumComingSoonTitle": "Premium — coming soon",
+  "premiumComingSoonBody": "Subscriptions will be offered with Apple In-App Purchase in a future update. WanderMood is free to use in this version.",
+  "premiumComingSoonFootnote": "We do not collect card details, Apple Pay, or other payments in this build.",
+  "premiumComingSoonCta": "OK",
+  "premiumUpgradeScreenTitle": "Premium",
   "premiumMonthlyPlanLabel": "Monthly Plan",
   "premiumMonthlyPriceLabel": "€4.99/month",
   "premiumBestValueBadge": "Best Value",
@@ -2932,6 +2968,73 @@
   "placeDetailSoloFriends": "Solo / Friends",
   "placeDetailAnonymous": "Anonymous",
   "placeDetailRecently": "Recently",
+  "placeDetailMoodyName": "Moody",
+  "placeDetailMoodyLoadingTips": "Checking this place…",
+  "placeDetailMoodyFallbackTipA": "Check opening hours before you go.",
+  "placeDetailMoodyFallbackTipB": "Stay hydrated.",
+  "placeDetailMoodyFallbackTipC": "Save maps offline if you can.",
+  "placeDetailBestTimeLunchDinner": "Lunch / dinner",
+  "placeDetailDurationAllowOneToTwo": "Allow 1–2 hours",
+  "placeDetailDurationOneToTwo": "1–2 hours",
+  "placeDetailDurationOneToTwoPointFive": "1–2.5 hours",
+  "placeDetailDurationOneHalfToThree": "1.5–3 hours",
+  "placeDetailDurationThirtyToSixty": "30–60 minutes",
+  "placeDetailDurationThirtyToFortyFive": "30–45 minutes",
+  "placeDetailDurationFortyFiveToNinety": "45 min – 1.5 hours",
+  "placeDetailDurationOneToThree": "1–3 hours",
+  "placeDetailDurationTwoToFour": "2–4 hours",
+  "placeDetailDurationOneToFour": "1–4 hours",
+  "placeDetailDurationTwoToThree": "2–3 hours",
+  "placeDetailDurationAboutOneHour": "~1 hour",
+  "placeCategoryFood": "Food",
+  "placeCategoryRestaurant": "Restaurant",
+  "placeCategoryCafe": "Café",
+  "placeCategoryBar": "Bar",
+  "placeCategoryMuseum": "Museum",
+  "placeCategoryPark": "Park",
+  "placeCategoryShopping": "Shopping",
+  "placeCategoryCulture": "Culture",
+  "placeCategoryNature": "Nature",
+  "placeCategoryNightlife": "Nightlife",
+  "placeCategoryAdventure": "Adventure",
+  "placeCategorySpot": "Spot",
+  "dayPlanDurationHoursOnly": "{hours} h",
+  "@dayPlanDurationHoursOnly": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "dayPlanDurationHoursMinutes": "{hours} h {minutes} min",
+  "@dayPlanDurationHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "dayPlanDurationMinutesOnly": "{minutes} min",
+  "@dayPlanDurationMinutesOnly": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "plannerSheetScheduledPrefix": "Scheduled {when}",
+  "@plannerSheetScheduledPrefix": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "plannerSheetAbout": "About",
+  "plannerSheetNoDescription": "No description available for this activity yet.",
 
   "moodyHubYourDayToday": "Your day today",
   "moodyHubChangeMood": "Change mood",

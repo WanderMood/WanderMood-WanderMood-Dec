@@ -9,6 +9,7 @@ import 'package:wandermood/features/social/domain/models/social_post.dart';
 import 'package:wandermood/features/social/domain/providers/social_providers.dart';
 import 'package:wandermood/features/social/presentation/screens/user_profile_screen.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 class EditSocialProfileScreen extends ConsumerStatefulWidget {
   const EditSocialProfileScreen({super.key});
@@ -185,7 +186,7 @@ class _EditSocialProfileScreenState extends ConsumerState<EditSocialProfileScree
                                       fit: BoxFit.cover,
                                     )
                                   : DecorationImage(
-                                      image: NetworkImage(userAvatar),
+                                      image: wmCachedNetworkImageProvider(userAvatar),
                                       fit: BoxFit.cover,
                                     ),
                             ),

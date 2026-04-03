@@ -1,6 +1,7 @@
 import 'dart:ui' show ImageFilter;
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -279,6 +280,7 @@ class _SavedPlaceCardState extends ConsumerState<_SavedPlaceCard> {
                 children: [
                   if (hasPhoto)
                     CachedNetworkImage(
+                      cacheManager: WanderMoodImageCacheManager.instance,
                       imageUrl: place.photos.first,
                       fit: BoxFit.cover,
                       placeholder: (_, __) => Container(
@@ -709,6 +711,7 @@ class _CollectionCard extends ConsumerWidget {
                     if (collection.coverPhotoUrl != null &&
                         collection.coverPhotoUrl!.isNotEmpty)
                       CachedNetworkImage(
+                        cacheManager: WanderMoodImageCacheManager.instance,
                         imageUrl: collection.coverPhotoUrl!,
                         fit: BoxFit.cover,
                         errorWidget: (_, __, ___) =>

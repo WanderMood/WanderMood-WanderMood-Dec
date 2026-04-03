@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:go_router/go_router.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -889,6 +890,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                   children: [
                     Positioned.fill(
                       child: CachedNetworkImage(
+                        cacheManager: WanderMoodImageCacheManager.instance,
                         imageUrl: activity['imageUrl'] ?? _getDefaultImageUrl(activity),
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(

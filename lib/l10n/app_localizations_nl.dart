@@ -2724,7 +2724,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get subscriptionPlanPremium => 'Premium';
 
   @override
-  String get subscriptionUpgradeHeading => 'Upgrade naar';
+  String get subscriptionUpgradeHeading => 'Binnenkort';
 
   @override
   String get subscriptionUpgradeTitle => 'Premium';
@@ -2748,7 +2748,11 @@ class AppLocalizationsNl extends AppLocalizations {
       'Vroege toegang tot nieuwe functies';
 
   @override
-  String get subscriptionUpgradeCta => 'Upgrade voor €4,99 per maand';
+  String get subscriptionUpgradeCta => 'Meer info';
+
+  @override
+  String get subscriptionUpgradeFootnote =>
+      'Betaalde plannen gebruiken straks Apple In-App Purchase. Deze versie is gratis — er wordt geen betaling in de app geïnd.';
 
   @override
   String get dataStorageTitle => 'Data & opslag';
@@ -4250,6 +4254,50 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String bookingErrorSaving(String error) {
     return 'Fout bij opslaan boeking: $error';
+  }
+
+  @override
+  String get bookingReviewTitle => 'Boeking controleren';
+
+  @override
+  String get bookingNoPaymentInAppBody =>
+      'WanderMood incasseert geen betalingen voor locaties in deze app. Wat je opslaat, is voor je reisplan. Neem rechtstreeks contact op met de locatie om te reserveren of te betalen.';
+
+  @override
+  String get bookingSaveToPlanCta => 'Opslaan in mijn plan';
+
+  @override
+  String get bookingEstimatedTotalLabel =>
+      'Geschat totaal (niet in app afgerekend)';
+
+  @override
+  String get bookingPlanSavedHeader => 'Plan opgeslagen';
+
+  @override
+  String get bookingAddedToPlanTitle => 'Toegevoegd aan je plan!';
+
+  @override
+  String bookingAddedToPlanBody(String placeName) {
+    return '$placeName staat in Mijn boekingen en je agenda. Definitieve reservering en betaling regel je rechtstreeks bij de locatie — niet via deze app.';
+  }
+
+  @override
+  String bookingReferenceLine(String reference) {
+    return 'Referentie: $reference';
+  }
+
+  @override
+  String get bookingSectionTotalEstimate => 'Geschat totaal';
+
+  @override
+  String bookingGuestsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count gasten',
+      one: '1 gast',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -6014,7 +6062,21 @@ class AppLocalizationsNl extends AppLocalizations {
       'Updates over het weer op jouw bestemming';
 
   @override
-  String get premiumUpgradeScreenTitle => 'Upgrade naar Premium';
+  String get premiumComingSoonTitle => 'Premium — binnenkort';
+
+  @override
+  String get premiumComingSoonBody =>
+      'Abonnementen worden later aangeboden via Apple In-App Purchase. WanderMood is in deze versie gratis te gebruiken.';
+
+  @override
+  String get premiumComingSoonFootnote =>
+      'We verzamelen in deze build geen kaartgegevens, Apple Pay of andere betalingen.';
+
+  @override
+  String get premiumComingSoonCta => 'OK';
+
+  @override
+  String get premiumUpgradeScreenTitle => 'Premium';
 
   @override
   String get premiumMonthlyPlanLabel => 'Maandabonnement';
@@ -6188,6 +6250,125 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get placeDetailRecently => 'Onlangs';
+
+  @override
+  String get placeDetailMoodyName => 'Moody';
+
+  @override
+  String get placeDetailMoodyLoadingTips => 'Deze plek bekijken…';
+
+  @override
+  String get placeDetailMoodyFallbackTipA =>
+      'Check de openingstijden voordat je gaat.';
+
+  @override
+  String get placeDetailMoodyFallbackTipB => 'Blijf gehydrateerd.';
+
+  @override
+  String get placeDetailMoodyFallbackTipC =>
+      'Bewaar kaarten offline als het kan.';
+
+  @override
+  String get placeDetailBestTimeLunchDinner => 'Lunch / diner';
+
+  @override
+  String get placeDetailDurationAllowOneToTwo => 'Reken op 1–2 uur';
+
+  @override
+  String get placeDetailDurationOneToTwo => '1–2 uur';
+
+  @override
+  String get placeDetailDurationOneToTwoPointFive => '1–2,5 uur';
+
+  @override
+  String get placeDetailDurationOneHalfToThree => '1,5–3 uur';
+
+  @override
+  String get placeDetailDurationThirtyToSixty => '30–60 minuten';
+
+  @override
+  String get placeDetailDurationThirtyToFortyFive => '30–45 minuten';
+
+  @override
+  String get placeDetailDurationFortyFiveToNinety => '45 min – 1,5 uur';
+
+  @override
+  String get placeDetailDurationOneToThree => '1–3 uur';
+
+  @override
+  String get placeDetailDurationTwoToFour => '2–4 uur';
+
+  @override
+  String get placeDetailDurationOneToFour => '1–4 uur';
+
+  @override
+  String get placeDetailDurationTwoToThree => '2–3 uur';
+
+  @override
+  String get placeDetailDurationAboutOneHour => '~1 uur';
+
+  @override
+  String get placeCategoryFood => 'Eten';
+
+  @override
+  String get placeCategoryRestaurant => 'Restaurant';
+
+  @override
+  String get placeCategoryCafe => 'Café';
+
+  @override
+  String get placeCategoryBar => 'Bar';
+
+  @override
+  String get placeCategoryMuseum => 'Museum';
+
+  @override
+  String get placeCategoryPark => 'Park';
+
+  @override
+  String get placeCategoryShopping => 'Winkelen';
+
+  @override
+  String get placeCategoryCulture => 'Cultuur';
+
+  @override
+  String get placeCategoryNature => 'Natuur';
+
+  @override
+  String get placeCategoryNightlife => 'Nachtleven';
+
+  @override
+  String get placeCategoryAdventure => 'Avontuur';
+
+  @override
+  String get placeCategorySpot => 'Plek';
+
+  @override
+  String dayPlanDurationHoursOnly(int hours) {
+    return '$hours u';
+  }
+
+  @override
+  String dayPlanDurationHoursMinutes(int hours, int minutes) {
+    return '$hours u $minutes min';
+  }
+
+  @override
+  String dayPlanDurationMinutesOnly(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String plannerSheetScheduledPrefix(String when) {
+    return 'Gepland $when';
+  }
+
+  @override
+  String get plannerSheetAbout => 'Over';
+
+  @override
+  String get plannerSheetNoDescription =>
+      'Nog geen beschrijving voor deze activiteit.';
 
   @override
   String get moodyHubYourDayToday => 'Jouw dag vandaag';

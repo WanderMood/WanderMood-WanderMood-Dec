@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import '../../domain/models/weather_forecast.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 class WeatherForecastCard extends StatelessWidget {
   final WeatherForecast forecast;
@@ -43,7 +44,7 @@ class WeatherForecastCard extends StatelessWidget {
                     ],
                   ),
                   if (forecast.icon != null)
-                    Image.network(
+                    WmNetworkImage(
                       'https://openweathermap.org/img/wn/${forecast.icon}@2x.png',
                       width: 48,
                       height: 48,

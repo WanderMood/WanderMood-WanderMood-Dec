@@ -4997,7 +4997,7 @@ abstract class AppLocalizations {
   /// No description provided for @subscriptionUpgradeHeading.
   ///
   /// In en, this message translates to:
-  /// **'Upgrade to'**
+  /// **'Coming soon'**
   String get subscriptionUpgradeHeading;
 
   /// No description provided for @subscriptionUpgradeTitle.
@@ -5039,8 +5039,14 @@ abstract class AppLocalizations {
   /// No description provided for @subscriptionUpgradeCta.
   ///
   /// In en, this message translates to:
-  /// **'Upgrade for €4.99/month'**
+  /// **'Learn more'**
   String get subscriptionUpgradeCta;
+
+  /// No description provided for @subscriptionUpgradeFootnote.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid plans will use Apple In-App Purchase when available. This version is free — no payment is collected in the app.'**
+  String get subscriptionUpgradeFootnote;
 
   /// No description provided for @dataStorageTitle.
   ///
@@ -7699,6 +7705,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error saving booking: {error}'**
   String bookingErrorSaving(String error);
+
+  /// No description provided for @bookingReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review booking'**
+  String get bookingReviewTitle;
+
+  /// No description provided for @bookingNoPaymentInAppBody.
+  ///
+  /// In en, this message translates to:
+  /// **'WanderMood does not collect payment for venues in this app. What you save here is for your trip plan. Contact the place directly to reserve or pay.'**
+  String get bookingNoPaymentInAppBody;
+
+  /// No description provided for @bookingSaveToPlanCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to my plan'**
+  String get bookingSaveToPlanCta;
+
+  /// No description provided for @bookingEstimatedTotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated total (not charged in app)'**
+  String get bookingEstimatedTotalLabel;
+
+  /// No description provided for @bookingPlanSavedHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan saved'**
+  String get bookingPlanSavedHeader;
+
+  /// No description provided for @bookingAddedToPlanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to your plan!'**
+  String get bookingAddedToPlanTitle;
+
+  /// No description provided for @bookingAddedToPlanBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{placeName} is saved in My Bookings and your agenda. Final booking and payment are arranged with the venue — not through this app.'**
+  String bookingAddedToPlanBody(String placeName);
+
+  /// No description provided for @bookingReferenceLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference: {reference}'**
+  String bookingReferenceLine(String reference);
+
+  /// No description provided for @bookingSectionTotalEstimate.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated total'**
+  String get bookingSectionTotalEstimate;
+
+  /// No description provided for @bookingGuestsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 guest} other{{count} guests}}'**
+  String bookingGuestsSummary(int count);
 
   /// No description provided for @gygCodeCopied.
   ///
@@ -10922,10 +10988,34 @@ abstract class AppLocalizations {
   /// **'Updates about the weather at your destination'**
   String get settingsNotificationsWeatherUpdatesSubtitle;
 
+  /// No description provided for @premiumComingSoonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium — coming soon'**
+  String get premiumComingSoonTitle;
+
+  /// No description provided for @premiumComingSoonBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscriptions will be offered with Apple In-App Purchase in a future update. WanderMood is free to use in this version.'**
+  String get premiumComingSoonBody;
+
+  /// No description provided for @premiumComingSoonFootnote.
+  ///
+  /// In en, this message translates to:
+  /// **'We do not collect card details, Apple Pay, or other payments in this build.'**
+  String get premiumComingSoonFootnote;
+
+  /// No description provided for @premiumComingSoonCta.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get premiumComingSoonCta;
+
   /// No description provided for @premiumUpgradeScreenTitle.
   ///
   /// In en, this message translates to:
-  /// **'Upgrade to Premium'**
+  /// **'Premium'**
   String get premiumUpgradeScreenTitle;
 
   /// No description provided for @premiumMonthlyPlanLabel.
@@ -11263,6 +11353,222 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Recently'**
   String get placeDetailRecently;
+
+  /// No description provided for @placeDetailMoodyName.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody'**
+  String get placeDetailMoodyName;
+
+  /// No description provided for @placeDetailMoodyLoadingTips.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking this place…'**
+  String get placeDetailMoodyLoadingTips;
+
+  /// No description provided for @placeDetailMoodyFallbackTipA.
+  ///
+  /// In en, this message translates to:
+  /// **'Check opening hours before you go.'**
+  String get placeDetailMoodyFallbackTipA;
+
+  /// No description provided for @placeDetailMoodyFallbackTipB.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay hydrated.'**
+  String get placeDetailMoodyFallbackTipB;
+
+  /// No description provided for @placeDetailMoodyFallbackTipC.
+  ///
+  /// In en, this message translates to:
+  /// **'Save maps offline if you can.'**
+  String get placeDetailMoodyFallbackTipC;
+
+  /// No description provided for @placeDetailBestTimeLunchDinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch / dinner'**
+  String get placeDetailBestTimeLunchDinner;
+
+  /// No description provided for @placeDetailDurationAllowOneToTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow 1–2 hours'**
+  String get placeDetailDurationAllowOneToTwo;
+
+  /// No description provided for @placeDetailDurationOneToTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'1–2 hours'**
+  String get placeDetailDurationOneToTwo;
+
+  /// No description provided for @placeDetailDurationOneToTwoPointFive.
+  ///
+  /// In en, this message translates to:
+  /// **'1–2.5 hours'**
+  String get placeDetailDurationOneToTwoPointFive;
+
+  /// No description provided for @placeDetailDurationOneHalfToThree.
+  ///
+  /// In en, this message translates to:
+  /// **'1.5–3 hours'**
+  String get placeDetailDurationOneHalfToThree;
+
+  /// No description provided for @placeDetailDurationThirtyToSixty.
+  ///
+  /// In en, this message translates to:
+  /// **'30–60 minutes'**
+  String get placeDetailDurationThirtyToSixty;
+
+  /// No description provided for @placeDetailDurationThirtyToFortyFive.
+  ///
+  /// In en, this message translates to:
+  /// **'30–45 minutes'**
+  String get placeDetailDurationThirtyToFortyFive;
+
+  /// No description provided for @placeDetailDurationFortyFiveToNinety.
+  ///
+  /// In en, this message translates to:
+  /// **'45 min – 1.5 hours'**
+  String get placeDetailDurationFortyFiveToNinety;
+
+  /// No description provided for @placeDetailDurationOneToThree.
+  ///
+  /// In en, this message translates to:
+  /// **'1–3 hours'**
+  String get placeDetailDurationOneToThree;
+
+  /// No description provided for @placeDetailDurationTwoToFour.
+  ///
+  /// In en, this message translates to:
+  /// **'2–4 hours'**
+  String get placeDetailDurationTwoToFour;
+
+  /// No description provided for @placeDetailDurationOneToFour.
+  ///
+  /// In en, this message translates to:
+  /// **'1–4 hours'**
+  String get placeDetailDurationOneToFour;
+
+  /// No description provided for @placeDetailDurationTwoToThree.
+  ///
+  /// In en, this message translates to:
+  /// **'2–3 hours'**
+  String get placeDetailDurationTwoToThree;
+
+  /// No description provided for @placeDetailDurationAboutOneHour.
+  ///
+  /// In en, this message translates to:
+  /// **'~1 hour'**
+  String get placeDetailDurationAboutOneHour;
+
+  /// No description provided for @placeCategoryFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Food'**
+  String get placeCategoryFood;
+
+  /// No description provided for @placeCategoryRestaurant.
+  ///
+  /// In en, this message translates to:
+  /// **'Restaurant'**
+  String get placeCategoryRestaurant;
+
+  /// No description provided for @placeCategoryCafe.
+  ///
+  /// In en, this message translates to:
+  /// **'Café'**
+  String get placeCategoryCafe;
+
+  /// No description provided for @placeCategoryBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Bar'**
+  String get placeCategoryBar;
+
+  /// No description provided for @placeCategoryMuseum.
+  ///
+  /// In en, this message translates to:
+  /// **'Museum'**
+  String get placeCategoryMuseum;
+
+  /// No description provided for @placeCategoryPark.
+  ///
+  /// In en, this message translates to:
+  /// **'Park'**
+  String get placeCategoryPark;
+
+  /// No description provided for @placeCategoryShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping'**
+  String get placeCategoryShopping;
+
+  /// No description provided for @placeCategoryCulture.
+  ///
+  /// In en, this message translates to:
+  /// **'Culture'**
+  String get placeCategoryCulture;
+
+  /// No description provided for @placeCategoryNature.
+  ///
+  /// In en, this message translates to:
+  /// **'Nature'**
+  String get placeCategoryNature;
+
+  /// No description provided for @placeCategoryNightlife.
+  ///
+  /// In en, this message translates to:
+  /// **'Nightlife'**
+  String get placeCategoryNightlife;
+
+  /// No description provided for @placeCategoryAdventure.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventure'**
+  String get placeCategoryAdventure;
+
+  /// No description provided for @placeCategorySpot.
+  ///
+  /// In en, this message translates to:
+  /// **'Spot'**
+  String get placeCategorySpot;
+
+  /// No description provided for @dayPlanDurationHoursOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} h'**
+  String dayPlanDurationHoursOnly(int hours);
+
+  /// No description provided for @dayPlanDurationHoursMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} h {minutes} min'**
+  String dayPlanDurationHoursMinutes(int hours, int minutes);
+
+  /// No description provided for @dayPlanDurationMinutesOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String dayPlanDurationMinutesOnly(int minutes);
+
+  /// No description provided for @plannerSheetScheduledPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled {when}'**
+  String plannerSheetScheduledPrefix(String when);
+
+  /// No description provided for @plannerSheetAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get plannerSheetAbout;
+
+  /// No description provided for @plannerSheetNoDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'No description available for this activity yet.'**
+  String get plannerSheetNoDescription;
 
   /// No description provided for @moodyHubYourDayToday.
   ///

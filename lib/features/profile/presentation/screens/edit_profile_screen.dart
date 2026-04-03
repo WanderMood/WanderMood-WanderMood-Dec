@@ -14,6 +14,7 @@ import 'package:wandermood/features/places/application/places_service.dart';
 import 'package:wandermood/features/places/domain/models/place.dart' show PlaceAutocomplete;
 import '../widgets/edit_favorite_vibes.dart'
     show allVibes, localizedVibeDescription, localizedVibeLabelForStored, localizedVibeName;
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 // WanderMood v2 — Edit Profile (Screen 12)
 const Color _wmCream = Color(0xFFF5F0E8);
@@ -687,9 +688,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget _buildProfilePhotoCard() {
-    final displayImage = _selectedImagePath != null
+    final ImageProvider? displayImage = _selectedImagePath != null
         ? FileImage(File(_selectedImagePath!))
-        : (_profileImageUrl != null ? NetworkImage(_profileImageUrl!) : null) as ImageProvider?;
+        : (_profileImageUrl != null
+            ? wmCachedNetworkImageProvider(_profileImageUrl!) as ImageProvider
+            : null);
     
     final initial = _nameController.text.isNotEmpty
         ? _nameController.text[0].toUpperCase()
@@ -1167,7 +1170,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             )
                           : (_profileImageUrl != null
                               ? DecorationImage(
-                                  image: NetworkImage(_profileImageUrl!),
+                                  image: wmCachedNetworkImageProvider(_profileImageUrl!),
                                   fit: BoxFit.cover,
                                 )
                               : null),

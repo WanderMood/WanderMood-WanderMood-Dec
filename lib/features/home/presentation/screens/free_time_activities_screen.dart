@@ -12,6 +12,7 @@ import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:math';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 // Mock data for friends and social features
 final mockFriends = [
@@ -431,15 +432,14 @@ class _FreeTimeActivitiesScreenState extends ConsumerState<FreeTimeActivitiesScr
                   child: Container(
                     height: 120,
                     width: double.infinity,
-                    child: Image.network(
-                      place.photos.isNotEmpty 
-                          ? place.photos.first 
+                    child: WmNetworkImage(
+                      place.photos.isNotEmpty
+                          ? place.photos.first
                           : _getFallbackImage(place),
                       width: double.infinity,
                       height: 120,
                       fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
+                      progressIndicatorBuilder: (context, url, progress) {
                         return Container(
                           height: 120,
                           width: double.infinity,
@@ -453,9 +453,7 @@ class _FreeTimeActivitiesScreenState extends ConsumerState<FreeTimeActivitiesScr
                           ),
                           child: Center(
                             child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                  : null,
+                              value: progress.progress,
                               valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           ),

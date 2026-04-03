@@ -2713,7 +2713,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get subscriptionPlanPremium => 'Premium';
 
   @override
-  String get subscriptionUpgradeHeading => 'Upgrade to';
+  String get subscriptionUpgradeHeading => 'Coming soon';
 
   @override
   String get subscriptionUpgradeTitle => 'Premium';
@@ -2736,7 +2736,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get subscriptionFeatureEarlyAccess => 'Early access to new features';
 
   @override
-  String get subscriptionUpgradeCta => 'Upgrade for €4.99/month';
+  String get subscriptionUpgradeCta => 'Learn more';
+
+  @override
+  String get subscriptionUpgradeFootnote =>
+      'Paid plans will use Apple In-App Purchase when available. This version is free — no payment is collected in the app.';
 
   @override
   String get dataStorageTitle => 'Data & Storage';
@@ -4235,6 +4239,50 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String bookingErrorSaving(String error) {
     return 'Error saving booking: $error';
+  }
+
+  @override
+  String get bookingReviewTitle => 'Review booking';
+
+  @override
+  String get bookingNoPaymentInAppBody =>
+      'WanderMood does not collect payment for venues in this app. What you save here is for your trip plan. Contact the place directly to reserve or pay.';
+
+  @override
+  String get bookingSaveToPlanCta => 'Save to my plan';
+
+  @override
+  String get bookingEstimatedTotalLabel =>
+      'Estimated total (not charged in app)';
+
+  @override
+  String get bookingPlanSavedHeader => 'Plan saved';
+
+  @override
+  String get bookingAddedToPlanTitle => 'Added to your plan!';
+
+  @override
+  String bookingAddedToPlanBody(String placeName) {
+    return '$placeName is saved in My Bookings and your agenda. Final booking and payment are arranged with the venue — not through this app.';
+  }
+
+  @override
+  String bookingReferenceLine(String reference) {
+    return 'Reference: $reference';
+  }
+
+  @override
+  String get bookingSectionTotalEstimate => 'Estimated total';
+
+  @override
+  String bookingGuestsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count guests',
+      one: '1 guest',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -5999,7 +6047,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'Updates about the weather at your destination';
 
   @override
-  String get premiumUpgradeScreenTitle => 'Upgrade to Premium';
+  String get premiumComingSoonTitle => 'Premium — coming soon';
+
+  @override
+  String get premiumComingSoonBody =>
+      'Subscriptions will be offered with Apple In-App Purchase in a future update. WanderMood is free to use in this version.';
+
+  @override
+  String get premiumComingSoonFootnote =>
+      'We do not collect card details, Apple Pay, or other payments in this build.';
+
+  @override
+  String get premiumComingSoonCta => 'OK';
+
+  @override
+  String get premiumUpgradeScreenTitle => 'Premium';
 
   @override
   String get premiumMonthlyPlanLabel => 'Monthly Plan';
@@ -6173,6 +6235,124 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get placeDetailRecently => 'Recently';
+
+  @override
+  String get placeDetailMoodyName => 'Moody';
+
+  @override
+  String get placeDetailMoodyLoadingTips => 'Checking this place…';
+
+  @override
+  String get placeDetailMoodyFallbackTipA =>
+      'Check opening hours before you go.';
+
+  @override
+  String get placeDetailMoodyFallbackTipB => 'Stay hydrated.';
+
+  @override
+  String get placeDetailMoodyFallbackTipC => 'Save maps offline if you can.';
+
+  @override
+  String get placeDetailBestTimeLunchDinner => 'Lunch / dinner';
+
+  @override
+  String get placeDetailDurationAllowOneToTwo => 'Allow 1–2 hours';
+
+  @override
+  String get placeDetailDurationOneToTwo => '1–2 hours';
+
+  @override
+  String get placeDetailDurationOneToTwoPointFive => '1–2.5 hours';
+
+  @override
+  String get placeDetailDurationOneHalfToThree => '1.5–3 hours';
+
+  @override
+  String get placeDetailDurationThirtyToSixty => '30–60 minutes';
+
+  @override
+  String get placeDetailDurationThirtyToFortyFive => '30–45 minutes';
+
+  @override
+  String get placeDetailDurationFortyFiveToNinety => '45 min – 1.5 hours';
+
+  @override
+  String get placeDetailDurationOneToThree => '1–3 hours';
+
+  @override
+  String get placeDetailDurationTwoToFour => '2–4 hours';
+
+  @override
+  String get placeDetailDurationOneToFour => '1–4 hours';
+
+  @override
+  String get placeDetailDurationTwoToThree => '2–3 hours';
+
+  @override
+  String get placeDetailDurationAboutOneHour => '~1 hour';
+
+  @override
+  String get placeCategoryFood => 'Food';
+
+  @override
+  String get placeCategoryRestaurant => 'Restaurant';
+
+  @override
+  String get placeCategoryCafe => 'Café';
+
+  @override
+  String get placeCategoryBar => 'Bar';
+
+  @override
+  String get placeCategoryMuseum => 'Museum';
+
+  @override
+  String get placeCategoryPark => 'Park';
+
+  @override
+  String get placeCategoryShopping => 'Shopping';
+
+  @override
+  String get placeCategoryCulture => 'Culture';
+
+  @override
+  String get placeCategoryNature => 'Nature';
+
+  @override
+  String get placeCategoryNightlife => 'Nightlife';
+
+  @override
+  String get placeCategoryAdventure => 'Adventure';
+
+  @override
+  String get placeCategorySpot => 'Spot';
+
+  @override
+  String dayPlanDurationHoursOnly(int hours) {
+    return '$hours h';
+  }
+
+  @override
+  String dayPlanDurationHoursMinutes(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String dayPlanDurationMinutesOnly(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String plannerSheetScheduledPrefix(String when) {
+    return 'Scheduled $when';
+  }
+
+  @override
+  String get plannerSheetAbout => 'About';
+
+  @override
+  String get plannerSheetNoDescription =>
+      'No description available for this activity yet.';
 
   @override
   String get moodyHubYourDayToday => 'Your day today';

@@ -623,7 +623,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                     ),
                     const SizedBox(height: 16),
                   ],
-                  const SizedBox(height: 110),
+                  const SizedBox(height: 100),
                 ],
               );
             },
@@ -638,7 +638,8 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
             left: 0,
             right: 0,
             child: Container(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              // Bottom inset comes from SafeArea only — extra padding here duplicated the home-indicator gap.
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
               decoration: BoxDecoration(
                 color: Colors.white,
                 border: Border(top: BorderSide(color: wmParchment.withValues(alpha: 0.8), width: 0.5)),
@@ -646,6 +647,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
               ),
               child: SafeArea(
                 top: false,
+                minimum: EdgeInsets.zero,
                 child: Builder(builder: (context) {
                   final l10n = AppLocalizations.of(context)!;
                   final remaining = _activities.length - _addedCount;
@@ -670,7 +672,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: wmForest,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(50),
                               ),
@@ -678,11 +680,16 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
                         TextButton(
                           onPressed: _activities.isEmpty
                               ? null
                               : () => _addPlanToMyDay(ref),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
                           child: Text(
                             l10n.dayPlanAddAllSuggestions(
                               _activities.length.toString(),
@@ -714,7 +721,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: wmForest,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50),
                         ),

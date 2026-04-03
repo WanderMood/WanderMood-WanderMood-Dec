@@ -110,7 +110,10 @@ enabled = true
 site_url = "http://127.0.0.1:3000"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
 additional_redirect_urls = ["https://127.0.0.1:3000"]
-# How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
+# Access token (JWT) lifetime in seconds — NOT the same as “how long the user stays logged in”.
+# Keep this modest (default 1h); supabase_flutter refreshes automatically using the refresh token.
+# Do not try to set this to 180 days: Supabase discourages long JWTs; local CLI max is 604_800 (1 week).
+# Hosted: Dashboard → Project Settings → JWT Keys (Legacy) → JWT expiry — leave ~3600 unless you have a rare reason to change it.
 jwt_expiry = 3600
 # If disabled, the refresh token will never expire.
 enable_refresh_token_rotation = true
@@ -197,12 +200,13 @@ max_frequency = "5s"
 # [auth.sms.test_otp]
 # 4152127777 = "123456"
 
-# Configure logged in session timeouts.
-# [auth.sessions]
-# Force log out after the specified duration.
-# timebox = "24h"
-# Force log out if the user has been inactive longer than the specified duration.
-# inactivity_timeout = "8h"
+# Session lifetime (refresh-based). Aligns with WanderMood “~180 days unless logout / uninstall”.
+# - Omit timebox so active users are not kicked on a fixed calendar clock.
+# - inactivity_timeout: end session if it is not refreshed for this long (each successful refresh resets it).
+# Hosted (Pro+): Dashboard → Authentication → Sessions → set the same Inactivity timeout.
+# Free tier: these dashboard controls may be unavailable; refresh sessions still persist until sign-out.
+[auth.sessions]
+inactivity_timeout = "4320h"
 
 # This hook runs before a new user is created and allows developers to reject the request based on the incoming user object.
 # [auth.hook.before_user_created]

@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -278,6 +279,7 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                   children: [
                     Positioned.fill(
                       child: CachedNetworkImage(
+                        cacheManager: WanderMoodImageCacheManager.instance,
                         imageUrl: activity.rawData['imageUrl'] ?? '',
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(

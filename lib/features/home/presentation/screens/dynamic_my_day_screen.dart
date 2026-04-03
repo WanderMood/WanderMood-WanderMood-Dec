@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -855,7 +857,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             radius: 20,
             backgroundColor: isImmersive ? Colors.transparent : Colors.white,
             backgroundImage: profile?.imageUrl != null
-                ? NetworkImage(profile!.imageUrl!)
+                ? wmCachedNetworkImageProvider(profile!.imageUrl!)
                 : null,
             child: profile?.imageUrl == null
                 ? Text(
@@ -1414,6 +1416,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               // Background Image
               Positioned.fill(
                 child: CachedNetworkImage(
+                  cacheManager: WanderMoodImageCacheManager.instance,
                   imageUrl: status['imageUrl'] ?? 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80',
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
@@ -2127,6 +2130,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             children: [
               Positioned.fill(
                 child: CachedNetworkImage(
+                  cacheManager: WanderMoodImageCacheManager.instance,
                   imageUrl: imageUrl,
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(color: Colors.grey.shade200),

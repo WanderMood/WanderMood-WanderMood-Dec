@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -182,6 +183,7 @@ class _FreeTimeCard extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   CachedNetworkImage(
+                    cacheManager: WanderMoodImageCacheManager.instance,
                     imageUrl: activity['imageUrl'] ??
                         'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80',
                     fit: BoxFit.cover,

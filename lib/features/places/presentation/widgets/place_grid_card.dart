@@ -8,6 +8,7 @@ import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:wandermood/core/services/distance_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 const Color _wmWhite = Color(0xFFFFFFFF);
 const Color _wmParchment = Color(0xFFE8E2D8);
@@ -64,7 +65,7 @@ class PlaceGridCard extends ConsumerWidget {
   Widget _buildPlaceImage() {
     // Use photo URL if available
     if (place.photos.isNotEmpty) {
-      return Image.network(
+      return WmNetworkImage(
         place.photos.first,
         height: 120,
         width: double.infinity,

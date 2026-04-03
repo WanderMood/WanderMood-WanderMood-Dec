@@ -1,6 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:wandermood/core/presentation/widgets/moody_avatar_compact.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 const Color _wmForest = Color(0xFF2A6049);
 const Color _wmCream = Color(0xFFF5F0E8);
@@ -283,9 +286,10 @@ class _DetailsPane extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final duration = activity['duration'] as int? ?? 60;
     final category = _capitalizeFirst(
-      (activity['category'] ?? 'Activity').toString(),
+      (activity['category'] ?? l10n.dayPlanCardActivity).toString(),
     );
     final price = (activity['price'] as num?)?.toDouble() ?? 0.0;
     final payment = (activity['paymentStatus'] ?? 'free').toString();
@@ -299,6 +303,7 @@ class _DetailsPane extends StatelessWidget {
             height: 200,
             width: double.infinity,
             child: CachedNetworkImage(
+              cacheManager: WanderMoodImageCacheManager.instance,
               imageUrl: activity['imageUrl']?.toString() ??
                   'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80',
               fit: BoxFit.cover,
@@ -312,7 +317,7 @@ class _DetailsPane extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          activity['title']?.toString() ?? 'Activity',
+          activity['title']?.toString() ?? l10n.dayPlanCardActivity,
           style: GoogleFonts.museoModerno(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -325,7 +330,7 @@ class _DetailsPane extends StatelessWidget {
             Expanded(
               child: _QuickChip(
                 icon: Icons.schedule_rounded,
-                label: '$duration min',
+                label: l10n.dayPlanDurationMinutesOnly(duration),
               ),
             ),
             const SizedBox(width: 8),
@@ -333,7 +338,7 @@ class _DetailsPane extends StatelessWidget {
               child: _QuickChip(
                 icon: Icons.payments_outlined,
                 label: price <= 0 || payment == 'free'
-                    ? 'Free'
+                    ? l10n.dayPlanCardFree
                     : '€${price.toStringAsFixed(2)}',
               ),
             ),
@@ -352,7 +357,7 @@ class _DetailsPane extends StatelessWidget {
           const SizedBox(height: 12),
           _InfoLine(
             icon: Icons.event_available_outlined,
-            text: 'Scheduled $scheduledTimeLabel',
+            text: l10n.plannerSheetScheduledPrefix(scheduledTimeLabel!),
           ),
         ],
         const SizedBox(height: 16),
@@ -368,8 +373,10 @@ class _DetailsPane extends StatelessWidget {
             children: [
               Row(
                 children: [
+                  const MoodyAvatarCompact(size: 26, glowOpacityScale: 0.2),
+                  const SizedBox(width: 8),
                   Text(
-                    '😎 Moody says…',
+                    l10n.placeDetailMoodyName,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -401,7 +408,7 @@ class _DetailsPane extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          'About',
+          l10n.plannerSheetAbout,
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -410,8 +417,7 @@ class _DetailsPane extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          activity['description']?.toString() ??
-              'No description available for this activity yet.',
+          activity['description']?.toString() ?? l10n.plannerSheetNoDescription,
           style: GoogleFonts.poppins(
             fontSize: 14,
             height: 1.5,
@@ -519,6 +525,7 @@ class _PhotosPane extends StatelessWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: CachedNetworkImage(
+              cacheManager: WanderMoodImageCacheManager.instance,
               imageUrl: urls[i],
               fit: BoxFit.cover,
               width: double.infinity,

@@ -9,6 +9,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/legal_urls.dart';
+import '../../../../core/services/cached_magic_link_email_service.dart';
+import '../../../../features/settings/presentation/providers/user_preferences_provider.dart';
 import '../../../../core/utils/legal_url_launcher.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -79,6 +81,14 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
       };
 
     _emailController.addListener(() => setState(() {}));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final prefs = ref.read(sharedPreferencesProvider);
+      final cached = CachedMagicLinkEmailService(prefs).getValidEmail();
+      if (cached != null && mounted) {
+        _emailController.text = cached;
+      }
+    });
   }
 
   Future<void> _openPrivacyPolicyExternal() async {
@@ -113,7 +123,10 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
         email: email,
         emailRedirectTo: 'io.supabase.wandermood://auth-callback',
       );
-      
+
+      await CachedMagicLinkEmailService(ref.read(sharedPreferencesProvider))
+          .remember(email);
+
       if (mounted) {
         setState(() {
           _isLoading = false;

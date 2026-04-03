@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 class PlaceImage extends StatelessWidget {
   final String imageUrl;
@@ -36,7 +37,7 @@ class PlaceImage extends StatelessWidget {
                   return _buildPlaceholder();
                 },
               )
-            : Image.network(
+            : WmNetworkImage(
                 imageUrl,
                 width: width,
                 height: height,

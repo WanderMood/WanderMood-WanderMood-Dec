@@ -20,6 +20,7 @@ import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dar
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 class BookingConfirmationScreen extends ConsumerStatefulWidget {
   final Place place;
@@ -346,7 +347,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
           ),
           Expanded(
             child: Text(
-              'Booking Confirmed',
+              AppLocalizations.of(context)!.bookingPlanSavedHeader,
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 18,
@@ -410,10 +411,12 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
   }
 
   Widget _buildConfirmationMessage() {
+    final l10n = AppLocalizations.of(context)!;
+    final refText = _bookingReference ?? '…';
     return Column(
       children: [
         Text(
-          'Booking Confirmed!',
+          l10n.bookingAddedToPlanTitle,
           style: GoogleFonts.poppins(
             fontSize: 28,
             fontWeight: FontWeight.bold,
@@ -422,7 +425,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
         ).animate().fadeIn(delay: 300.ms),
         const SizedBox(height: 8),
         Text(
-          'Your visit to ${widget.place.name} has been successfully booked.',
+          l10n.bookingAddedToPlanBody(widget.place.name),
           textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
             fontSize: 16,
@@ -441,7 +444,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
             ),
           ),
           child: Text(
-            'Reference: $_bookingReference',
+            l10n.bookingReferenceLine(refText),
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -515,7 +518,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Total Amount',
+                  AppLocalizations.of(context)!.bookingSectionTotalEstimate,
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -627,7 +630,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => _buildImageFallback(),
                             )
-                          : Image.network(
+                          : WmNetworkImage(
                               widget.place.photos.first,
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => _buildImageFallback(),

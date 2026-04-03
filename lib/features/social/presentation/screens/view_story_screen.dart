@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/features/social/domain/models/social_post.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 class ViewStoryScreen extends ConsumerStatefulWidget {
   final List<SocialProfile> profiles;
@@ -138,7 +139,7 @@ class _ViewStoryScreenState extends ConsumerState<ViewStoryScreen> with SingleTi
                     fit: StackFit.expand,
                     children: [
                       // Story image
-                      Image.network(
+                      WmNetworkImage(
                         storyImage,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
@@ -151,8 +152,7 @@ class _ViewStoryScreenState extends ConsumerState<ViewStoryScreen> with SingleTi
                             ),
                           ),
                         ),
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
+                        progressIndicatorBuilder: (context, url, progress) {
                           return Container(
                             color: Colors.grey[900],
                             child: const Center(
@@ -187,7 +187,7 @@ class _ViewStoryScreenState extends ConsumerState<ViewStoryScreen> with SingleTi
                           children: [
                             CircleAvatar(
                               radius: 20,
-                              backgroundImage: NetworkImage(profile.avatar),
+                              backgroundImage: wmCachedNetworkImageProvider(profile.avatar),
                             ),
                             const SizedBox(width: 12),
                             Column(

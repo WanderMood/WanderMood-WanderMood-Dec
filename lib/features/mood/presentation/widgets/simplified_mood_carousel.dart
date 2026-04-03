@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import '../../../places/models/place.dart';
 import '../../../places/services/saved_places_service.dart';
 import '../../../../core/extensions/string_extensions.dart';
@@ -263,6 +264,7 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
     
     if (imageUrl != null && imageUrl.isNotEmpty) {
       return CachedNetworkImage(
+        cacheManager: WanderMoodImageCacheManager.instance,
         imageUrl: imageUrl,
         fit: BoxFit.cover,
         placeholder: (context, url) => Container(

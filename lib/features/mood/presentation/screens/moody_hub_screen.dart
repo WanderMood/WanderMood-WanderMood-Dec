@@ -41,6 +41,7 @@ import '../../../../core/presentation/widgets/swirl_background.dart';
 import '../../../../core/presentation/widgets/wm_toast.dart';
 import '../../../profile/domain/providers/profile_provider.dart';
 import 'dart:ui';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 // Day hero state for Moody Hub hero card (My Day)
 enum _DayHeroState {
@@ -589,7 +590,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           if (activity.imageUrl.isNotEmpty)
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
+              child: WmNetworkImage(
                 activity.imageUrl,
                 width: 60,
                 height: 60,
@@ -786,7 +787,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                     if (imageUrl != null && imageUrl.isNotEmpty) {
                       return ClipRRect(
                         borderRadius: BorderRadius.circular(18),
-                        child: Image.network(
+                        child: WmNetworkImage(
                           imageUrl,
                           width: 36,
                           height: 36,
@@ -2469,7 +2470,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             children: [
               // Background image
               if (adventure.imageUrl.isNotEmpty)
-                Image.network(
+                WmNetworkImage(
                   adventure.imageUrl,
                   width: double.infinity,
                   height: 200,
@@ -4860,7 +4861,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                       top: Radius.circular(16),
                     ),
                     child: activity.imageUrl.isNotEmpty
-                        ? Image.network(
+                        ? WmNetworkImage(
                             activity.imageUrl,
                             width: double.infinity,
                             height: 120,

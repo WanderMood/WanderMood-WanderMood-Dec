@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'dart:math' as math;
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 class EnhancedMoodCarousel extends ConsumerStatefulWidget {
   final List<Place> places;
@@ -244,7 +245,7 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
 
   Widget _buildImage(Place place, List<Color> gradientColors) {
     return place.photos.isNotEmpty
-        ? Image.network(
+        ? WmNetworkImage(
             place.photos.first,
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) =>

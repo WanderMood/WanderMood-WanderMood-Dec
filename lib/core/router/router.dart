@@ -71,7 +71,7 @@ import '../../features/onboarding/presentation/screens/app_intro_screen.dart';
 import '../../features/onboarding/presentation/screens/moody_demo_screen.dart';
 import '../../features/onboarding/presentation/screens/guest_explore_screen.dart';
 import '../../features/dev/reset_onboarding_screen.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, ValueNotifier;
 // import '../../admin/admin_screen.dart'; // Removed - debug only
 
 part 'router.g.dart';
@@ -264,9 +264,18 @@ Future<bool> _checkAuthenticationState() async {
 
 @riverpod
 GoRouter router(RouterRef ref) {
+  // Re-run [redirect] when auth resolves; otherwise splash can navigate to /main
+  // while the stream is still loading and redirects never fire again → wrong route / blank UI.
+  final authRefresh = ValueNotifier<int>(0);
+  ref.onDispose(authRefresh.dispose);
+  ref.listen(authStateProvider, (_, __) {
+    authRefresh.value++;
+  });
+
   return GoRouter(
     initialLocation: '/',
     debugLogDiagnostics: true,
+    refreshListenable: authRefresh,
     routes: [
       // Splash and Onboarding
       GoRoute(

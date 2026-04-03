@@ -16,6 +16,7 @@ import 'features/plans/data/services/schema_helper.dart';
 import 'services/daily_cleanup_service.dart';
 import 'core/providers/supabase_provider.dart';
 import 'features/settings/presentation/providers/user_preferences_provider.dart';
+import 'core/services/cached_magic_link_email_service.dart';
 import 'features/gamification/providers/gamification_provider.dart' as gamification;
 import 'package:geolocator/geolocator.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
@@ -198,17 +199,27 @@ Future<void> main() async {
     // Initialize Supabase with loaded environment variables
     await SupabaseConfig.initialize();
     
-    // Handle deep links for email verification
-    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      final event = data.event;
-      if (event == AuthChangeEvent.signedIn) {
-        debugPrint('✅ User signed in via email verification');
-      }
-    });
-    
     // Initialize SharedPreferences
     final prefs = await SharedPreferences.getInstance();
-    
+    final magicLinkEmailCache = CachedMagicLinkEmailService(prefs);
+
+    // Magic-link email cache: extend TTL while session is active; clear on sign-out.
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
+      final event = data.event;
+      if (event == AuthChangeEvent.signedIn ||
+          event == AuthChangeEvent.tokenRefreshed) {
+        final email = data.session?.user.email;
+        if (email != null && email.isNotEmpty) {
+          if (event == AuthChangeEvent.signedIn) {
+            debugPrint('✅ User signed in — magic-link email cache extended');
+          }
+          await magicLinkEmailCache.remember(email);
+        }
+      } else if (event == AuthChangeEvent.signedOut) {
+        await magicLinkEmailCache.clear();
+      }
+    });
+
     debugPrint('App initialized with Rotterdam as default location: ${LocationService.defaultLocation}');
     
     runApp(

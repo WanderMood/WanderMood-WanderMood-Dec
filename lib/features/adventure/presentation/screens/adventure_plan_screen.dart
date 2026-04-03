@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../application/adventure_service.dart';
 import '../../domain/models/adventure.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 class AdventurePlanScreen extends ConsumerWidget {
   const AdventurePlanScreen({Key? key}) : super(key: key);
@@ -135,7 +136,7 @@ class AdventurePlanScreen extends ConsumerWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             image: DecorationImage(
-              image: NetworkImage(adventure.imageUrl),
+              image: wmCachedNetworkImageProvider(adventure.imageUrl),
               fit: BoxFit.cover,
             ),
           ),

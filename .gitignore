@@ -37,6 +37,10 @@ migrate_working_dir/
 .fvm/
 
 # Web related
+wandermood-landing/node_modules/
+
+# Erroneous / local Flutter tool output at repo root (not ios/Flutter)
+Flutter/ephemeral/
 
 # Symbolication related
 app.*.symbols

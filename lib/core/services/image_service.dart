@@ -3,16 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../constants/api_constants.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'dart:io';
 import 'dart:math';
 
 final imageServiceProvider = Provider<ImageService>((ref) => ImageService());
 
 class ImageService {
-  final _cache = DefaultCacheManager();
-  
   // Predefined fallback images for different place types - using real images
   final Map<String, String> _fallbackImages = {
     'restaurant': 'assets/images/tom-podmore-3mEK924ZuTs-unsplash.jpg',
@@ -43,7 +41,7 @@ class ImageService {
   }
 
   Future<void> clearCache() async {
-    await _cache.emptyCache();
+    await WanderMoodImageCacheManager.instance.emptyCache();
     debugPrint('🧹 Image cache cleared');
   }
 } 

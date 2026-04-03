@@ -572,7 +572,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
     // Close the bottom sheet
     Navigator.pop(context);
     
-    // Navigate to payment screen
+    // Review step (no in-app payment); then confirmation saves to plan
     final totalPrice = _bookingTypes[_selectedBookingType]! * _selectedGuests;
     
     Navigator.of(context).push(

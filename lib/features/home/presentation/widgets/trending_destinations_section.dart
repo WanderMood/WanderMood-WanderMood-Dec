@@ -9,6 +9,7 @@ import 'package:wandermood/core/services/distance_service.dart';
 import 'package:wandermood/features/home/presentation/screens/all_trending_destinations_screen.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/providers/trending_destinations_provider.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 class TrendingDestinationsSection extends ConsumerWidget {
   final List<Place> destinations;
@@ -158,7 +159,7 @@ class TrendingDestinationsSection extends ConsumerWidget {
             fit: StackFit.expand,
             children: [
               if (destination.photos.isNotEmpty)
-                Image.network(
+                WmNetworkImage(
                   destination.photos.first,
                   fit: BoxFit.cover,
                 ),

@@ -8,6 +8,7 @@ import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/social/domain/models/social_post.dart';
 import 'package:wandermood/features/social/domain/providers/social_providers.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   final String postId;
@@ -235,7 +236,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             onTap: () => context.push('/social/profile/${post.userId}'),
                             child: CircleAvatar(
                               radius: 24,
-                              backgroundImage: NetworkImage(post.userAvatar),
+                              backgroundImage: wmCachedNetworkImageProvider(post.userAvatar),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -291,7 +292,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         child: PageView.builder(
                           itemCount: post.images.length,
                           itemBuilder: (context, index) {
-                            return Image.network(
+                            return WmNetworkImage(
                               post.images[index],
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) => Container(
@@ -446,7 +447,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         children: [
                           CircleAvatar(
                             radius: 18,
-                            backgroundImage: NetworkImage(comment.userAvatar),
+                            backgroundImage: wmCachedNetworkImageProvider(comment.userAvatar),
                           ),
                           const SizedBox(width: 12),
                           Expanded(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/features/mood/presentation/widgets/activity_rating_sheet.dart';
 import 'dart:math' as math;
@@ -522,6 +523,7 @@ class _PeriodActivitiesBottomSheetState extends ConsumerState<PeriodActivitiesBo
                     fit: StackFit.expand,
                     children: [
                       CachedNetworkImage(
+                        cacheManager: WanderMoodImageCacheManager.instance,
                         imageUrl: imageUrl,
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(

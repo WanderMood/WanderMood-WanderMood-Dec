@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/places/models/place.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 /// Full list for "See all" trending — uses cached explore [Place]s only (photos are URLs).
 class AllTrendingDestinationsScreen extends StatelessWidget {
@@ -33,7 +34,7 @@ class AllTrendingDestinationsScreen extends StatelessWidget {
             leading: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: url != null
-                  ? Image.network(
+                  ? WmNetworkImage(
                       url,
                       width: 56,
                       height: 56,

@@ -16,6 +16,7 @@ import '../../../home/presentation/screens/main_screen.dart';
 import '../../../places/services/saved_places_service.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 class MoodBasedCarousel extends ConsumerWidget {
   final List<Place> places;
@@ -111,7 +112,7 @@ class MoodBasedCarousel extends ConsumerWidget {
                       children: [
                         // Place image or gradient placeholder
                         place.photos.isNotEmpty
-                            ? Image.network(
+                            ? WmNetworkImage(
                                 place.photos.first,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) =>

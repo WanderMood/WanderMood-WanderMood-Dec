@@ -810,14 +810,15 @@
   "subscriptionCurrentPlanLabel": "Plan actual",
   "subscriptionPlanFree": "Gratis",
   "subscriptionPlanPremium": "Premium",
-  "subscriptionUpgradeHeading": "Subir a",
+  "subscriptionUpgradeHeading": "Próximamente",
   "subscriptionUpgradeTitle": "Premium",
   "subscriptionFeatureUnlimitedSuggestions": "Sugerencias de actividades ilimitadas",
   "subscriptionFeatureAdvancedMoodMatching": "Matching de estado de ánimo avanzado",
   "subscriptionFeaturePrioritySupport": "Soporte prioritario",
   "subscriptionFeatureNoAds": "Sin anuncios",
   "subscriptionFeatureEarlyAccess": "Acceso anticipado a nuevas funciones",
-  "subscriptionUpgradeCta": "Subir por 4,99 € al mes",
+  "subscriptionUpgradeCta": "Más información",
+  "subscriptionUpgradeFootnote": "Los planes de pago usarán In-App Purchase de Apple cuando estén disponibles. Esta versión es gratuita: no se cobra en la app.",
   "dataStorageTitle": "Datos y almacenamiento",
   "dataStorageStorageUsedLabel": "Almacenamiento usado",
   "dataStorageExportTitle": "Exportar mis datos",
@@ -1394,6 +1395,16 @@
   "bookingSavedViewMyBookings": "¡Reserva guardada! Ver en Mis Reservas",
   "bookingViewAction": "Ver",
   "bookingErrorSaving": "Error al guardar la reserva: {error}",
+  "bookingReviewTitle": "Revisar reserva",
+  "bookingNoPaymentInAppBody": "WanderMood no cobra en esta app por los locales. Lo que guardas es para tu plan de viaje. Contacta directamente con el lugar para reservar o pagar.",
+  "bookingSaveToPlanCta": "Guardar en mi plan",
+  "bookingEstimatedTotalLabel": "Total estimado (no se cobra en la app)",
+  "bookingPlanSavedHeader": "Plan guardado",
+  "bookingAddedToPlanTitle": "¡Añadido a tu plan!",
+  "bookingAddedToPlanBody": "{placeName} está en Mis reservas y tu agenda. La reserva y el pago definitivos se gestionan con el local, no a través de esta app.",
+  "bookingReferenceLine": "Referencia: {reference}",
+  "bookingSectionTotalEstimate": "Total estimado",
+  "bookingGuestsSummary": "{count, plural, one{1 comensal} other{{count} comensales}}",
   "gygCodeCopied": "Código copiado 💚",
   "placeCardSeeActivity": "Ver actividad",
   "placeCardPriceVaries": "Precio variable",
@@ -2008,7 +2019,11 @@
   "settingsNotificationsTripRemindersSubtitle": "Recordatorios de actividades planificadas",
   "settingsNotificationsWeatherUpdatesLabel": "Actualizaciones del tiempo",
   "settingsNotificationsWeatherUpdatesSubtitle": "Actualizaciones del tiempo en tu destino",
-  "premiumUpgradeScreenTitle": "Mejorar a Premium",
+  "premiumComingSoonTitle": "Premium — próximamente",
+  "premiumComingSoonBody": "Las suscripciones se ofrecerán con Apple In-App Purchase en una actualización futura. WanderMood es gratis en esta versión.",
+  "premiumComingSoonFootnote": "En esta compilación no recopilamos datos de tarjeta, Apple Pay ni otros pagos.",
+  "premiumComingSoonCta": "OK",
+  "premiumUpgradeScreenTitle": "Premium",
   "premiumMonthlyPlanLabel": "Plan mensual",
   "premiumMonthlyPriceLabel": "€4.99/mes",
   "premiumBestValueBadge": "Mejor valor",
@@ -2072,6 +2087,73 @@
   "placeDetailSoloFriends": "Solo / Amigos",
   "placeDetailAnonymous": "Anónimo",
   "placeDetailRecently": "Recientemente",
+  "placeDetailMoodyName": "Moody",
+  "placeDetailMoodyLoadingTips": "Revisando este lugar…",
+  "placeDetailMoodyFallbackTipA": "Comprueba el horario antes de ir.",
+  "placeDetailMoodyFallbackTipB": "Mantente hidratado.",
+  "placeDetailMoodyFallbackTipC": "Guarda mapas sin conexión si puedes.",
+  "placeDetailBestTimeLunchDinner": "Almuerzo / cena",
+  "placeDetailDurationAllowOneToTwo": "Reserva 1–2 horas",
+  "placeDetailDurationOneToTwo": "1–2 horas",
+  "placeDetailDurationOneToTwoPointFive": "1–2,5 horas",
+  "placeDetailDurationOneHalfToThree": "1,5–3 horas",
+  "placeDetailDurationThirtyToSixty": "30–60 minutos",
+  "placeDetailDurationThirtyToFortyFive": "30–45 minutos",
+  "placeDetailDurationFortyFiveToNinety": "45 min – 1,5 h",
+  "placeDetailDurationOneToThree": "1–3 horas",
+  "placeDetailDurationTwoToFour": "2–4 horas",
+  "placeDetailDurationOneToFour": "1–4 horas",
+  "placeDetailDurationTwoToThree": "2–3 horas",
+  "placeDetailDurationAboutOneHour": "~1 hora",
+  "placeCategoryFood": "Comida",
+  "placeCategoryRestaurant": "Restaurante",
+  "placeCategoryCafe": "Café",
+  "placeCategoryBar": "Bar",
+  "placeCategoryMuseum": "Museo",
+  "placeCategoryPark": "Parque",
+  "placeCategoryShopping": "Compras",
+  "placeCategoryCulture": "Cultura",
+  "placeCategoryNature": "Naturaleza",
+  "placeCategoryNightlife": "Vida nocturna",
+  "placeCategoryAdventure": "Aventura",
+  "placeCategorySpot": "Lugar",
+  "dayPlanDurationHoursOnly": "{hours} h",
+  "@dayPlanDurationHoursOnly": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "dayPlanDurationHoursMinutes": "{hours} h {minutes} min",
+  "@dayPlanDurationHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "dayPlanDurationMinutesOnly": "{minutes} min",
+  "@dayPlanDurationMinutesOnly": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "plannerSheetScheduledPrefix": "Programado {when}",
+  "@plannerSheetScheduledPrefix": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "plannerSheetAbout": "Acerca de",
+  "plannerSheetNoDescription": "Aún no hay descripción para esta actividad.",
 
   "moodyHubYourDayToday": "Tu día hoy",
   "moodyHubChangeMood": "Cambiar estado de ánimo",

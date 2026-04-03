@@ -8,6 +8,7 @@ import 'package:wandermood/features/home/presentation/widgets/moody_character.da
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/plans/providers/selected_activities_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 class ActivityDetailScreen extends ConsumerStatefulWidget {
   final Activity activity;
@@ -120,7 +121,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
         background: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(
+            WmNetworkImage(
               widget.activity.imageUrl,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Container(color: Colors.grey[300], child: const Icon(Icons.place, size: 80, color: Colors.grey)),
@@ -1319,7 +1320,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
           borderRadius: BorderRadius.circular(16),
           child: Stack(
             children: [
-              Image.network(
+              WmNetworkImage(
                 imageUrl,
                 fit: BoxFit.cover,
                 width: double.infinity,
@@ -1381,7 +1382,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
         child: Stack(
           children: [
             Center(
-              child: Image.network(
+              child: WmNetworkImage(
                 imageUrl,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {

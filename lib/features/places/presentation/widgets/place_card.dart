@@ -20,6 +20,7 @@ import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_pro
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 // WM v2 tokens (aligned with My Day cards)
 const Color _wmWhite = Color(0xFFFFFFFF);
@@ -534,7 +535,7 @@ class PlaceCard extends ConsumerWidget {
           },
         );
       }
-      return Image.network(
+      return WmNetworkImage(
         photo,
         height: 200,
         width: double.infinity,
@@ -543,18 +544,14 @@ class PlaceCard extends ConsumerWidget {
           debugPrint('Error loading network image: $error');
           return _buildFallbackImage();
         },
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
+        progressIndicatorBuilder: (context, url, progress) {
           return Container(
             height: 200,
             width: double.infinity,
             color: Colors.grey[200],
             child: Center(
               child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
-                    : null,
+                value: progress.progress,
                 color: const Color(0xFF2A6049),
               ),
             ),
