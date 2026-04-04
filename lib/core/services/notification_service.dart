@@ -1,146 +1,225 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
-import 'package:wandermood/core/config/supabase_config.dart';
+import 'package:timezone/data/latest_all.dart' as tz_data;
+import 'package:timezone/timezone.dart' as tz;
 
-/// Service that handles notifications and respects user preferences
+import '../notifications/notification_copy.dart';
+
+/// Low-level wrapper around flutter_local_notifications.
+///
+/// Responsibilities:
+///   • Initialize the plugin once on app start.
+///   • Request OS permission (Android 13+, iOS).
+///   • Show immediate, one-shot, and recurring notifications.
+///   • Cancel individual or all notifications.
+///
+/// Do NOT add business logic here — keep it in [NotificationScheduler] /
+/// [NotificationTriggers].
 class NotificationService {
-  final SupabaseConfig _supabase = SupabaseConfig.client;
+  NotificationService._();
 
-  /// Check if a specific notification type is enabled for the user
-  Future<bool> isNotificationEnabled(String notificationType) async {
-    try {
-      final user = _supabase.auth.currentUser;
-      if (user == null) return false;
+  static final NotificationService instance = NotificationService._();
 
-      // Get user profile to check notification preferences
-      final response = await _supabase
-          .from('profiles')
-          .select('notification_preferences')
-          .eq('id', user.id)
-          .maybeSingle();
+  final _plugin = FlutterLocalNotificationsPlugin();
 
-      if (response == null) return true; // Default to enabled
+  bool _initialized = false;
 
-      final prefs = response['notification_preferences'] as Map<String, dynamic>?;
-      if (prefs == null) return true; // Default to enabled
+  // ────────────────────────────────────────────────────────────────
+  // Initialization
+  // ────────────────────────────────────────────────────────────────
 
-      // Map notification types to preference keys
-      final typeMap = {
-        'activity_reminders': 'activityReminders',
-        'mood_tracking': 'moodTracking',
-        'weather_alerts': 'weatherAlerts',
-        'travel_tips': 'travelTips',
-        'local_events': 'localEvents',
-        'friend_activity': 'friendActivity',
-        'special_offers': 'specialOffers',
-        'push': 'push',
-        'email': 'email',
-      };
+  Future<void> initialize() async {
+    if (_initialized) return;
 
-      final key = typeMap[notificationType] ?? notificationType;
-      return prefs[key] as bool? ?? true; // Default to enabled
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('⚠️ Error checking notification preference: $e');
-      }
-      return true; // Default to enabled on error
-    }
+    // Timezone database is required for TZDateTime scheduling.
+    tz_data.initializeTimeZones();
+
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
+
+    const iosSettings = DarwinInitializationSettings(
+      requestAlertPermission: false, // We request explicitly below.
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
+
+    const settings = InitializationSettings(
+      android: androidSettings,
+      iOS: iosSettings,
+    );
+
+    await _plugin.initialize(settings);
+    _initialized = true;
+
+    if (kDebugMode) debugPrint('✅ NotificationService initialized');
   }
 
-  /// Send a notification if the user has it enabled
-  /// This is a placeholder - actual implementation would integrate with FCM/push service
-  Future<bool> sendNotification({
-    required String userId,
-    required String type,
-    required String title,
-    required String message,
-    Map<String, dynamic>? data,
-  }) async {
-    try {
-      // Check if this notification type is enabled
-      final isEnabled = await isNotificationEnabled(type);
-      if (!isEnabled) {
-        if (kDebugMode) {
-          debugPrint('🔕 Notification $type is disabled for user $userId');
-        }
-        return false;
-      }
+  // ────────────────────────────────────────────────────────────────
+  // Permission
+  // ────────────────────────────────────────────────────────────────
 
-      // Check if push notifications are enabled
-      final pushEnabled = await isNotificationEnabled('push');
-      if (!pushEnabled) {
-        if (kDebugMode) {
-          debugPrint('🔕 Push notifications are disabled for user $userId');
-        }
-        return false;
-      }
-
-      // TODO: Integrate with actual push notification service (FCM, OneSignal, etc.)
-      // For now, we'll just log that a notification would be sent
-      if (kDebugMode) {
-        debugPrint('📲 Would send notification: $title - $message (type: $type)');
-      }
-
-      // In the future, this would:
-      // 1. Get FCM token from user's device
-      // 2. Send push notification via FCM API
-      // 3. Optionally send email notification if email notifications are enabled
-
-      return true;
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ Error sending notification: $e');
-      }
-      return false;
+  Future<bool> requestPermission() async {
+    if (Platform.isIOS) {
+      final granted = await _plugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(alert: true, badge: true, sound: true);
+      return granted ?? false;
     }
+
+    if (Platform.isAndroid) {
+      final granted = await _plugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
+      return granted ?? false;
+    }
+
+    return false;
   }
 
-  /// Send email notification if enabled
-  /// This would integrate with an email service (SendGrid, Mailgun, Supabase Edge Function, etc.)
-  Future<bool> sendEmailNotification({
-    required String userId,
-    required String type,
-    required String subject,
-    required String body,
+  // ────────────────────────────────────────────────────────────────
+  // Show helpers
+  // ────────────────────────────────────────────────────────────────
+
+  /// Show an immediate notification.
+  Future<void> show(int id, NotificationCopy copy) async {
+    await _plugin.show(
+      id,
+      copy.title,
+      copy.body,
+      _details(),
+    );
+  }
+
+  /// Schedule a one-shot notification at [scheduledDate] (local time).
+  Future<void> scheduleAt(
+    int id,
+    NotificationCopy copy,
+    DateTime scheduledDate,
+  ) async {
+    final tzDate = tz.TZDateTime.from(scheduledDate, tz.local);
+    await _plugin.zonedSchedule(
+      id,
+      copy.title,
+      copy.body,
+      tzDate,
+      _details(),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+    );
+  }
+
+  /// Schedule a notification that repeats daily at [hour]:[minute] (local time).
+  Future<void> scheduleDailyAt(
+    int id,
+    NotificationCopy copy, {
+    required int hour,
+    required int minute,
   }) async {
-    try {
-      // Check if email notifications are enabled
-      final emailEnabled = await isNotificationEnabled('email');
-      if (!emailEnabled) {
-        if (kDebugMode) {
-          debugPrint('🔕 Email notifications are disabled for user $userId');
-        }
-        return false;
-      }
-
-      // Check if this specific notification type is enabled
-      final typeEnabled = await isNotificationEnabled(type);
-      if (!typeEnabled) {
-        if (kDebugMode) {
-          debugPrint('🔕 Notification type $type is disabled for user $userId');
-        }
-        return false;
-      }
-
-      // TODO: Integrate with email service
-      // This would typically call a Supabase Edge Function that sends emails
-      if (kDebugMode) {
-        debugPrint('📧 Would send email: $subject (type: $type)');
-      }
-
-      return true;
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ Error sending email notification: $e');
-      }
-      return false;
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduled = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
+    if (scheduled.isBefore(now)) {
+      scheduled = scheduled.add(const Duration(days: 1));
     }
+
+    await _plugin.zonedSchedule(
+      id,
+      copy.title,
+      copy.body,
+      scheduled,
+      _details(),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
+  }
+
+  /// Schedule a notification that fires once a week on [weekday] at [hour]:[minute].
+  /// [weekday] follows Dart's DateTime convention: 1 = Monday … 7 = Sunday.
+  Future<void> scheduleWeeklyAt(
+    int id,
+    NotificationCopy copy, {
+    required int weekday,
+    required int hour,
+    required int minute,
+  }) async {
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduled = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
+    // Advance to the correct weekday.
+    while (scheduled.weekday != weekday || scheduled.isBefore(now)) {
+      scheduled = scheduled.add(const Duration(days: 1));
+    }
+
+    await _plugin.zonedSchedule(
+      id,
+      copy.title,
+      copy.body,
+      scheduled,
+      _details(),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+    );
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  // Cancel
+  // ────────────────────────────────────────────────────────────────
+
+  Future<void> cancel(int id) => _plugin.cancel(id);
+
+  Future<void> cancelAll() => _plugin.cancelAll();
+
+  // ────────────────────────────────────────────────────────────────
+  // Internal
+  // ────────────────────────────────────────────────────────────────
+
+  NotificationDetails _details() {
+    const android = AndroidNotificationDetails(
+      'wandermood_main',
+      'WanderMood',
+      channelDescription: 'WanderMood notifications',
+      importance: Importance.high,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    const ios = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    return const NotificationDetails(android: android, iOS: ios);
   }
 }
 
-/// Provider for NotificationService
-final notificationServiceProvider = Provider<NotificationService>((ref) {
-  return NotificationService();
-});
+// ──────────────────────────────────────────────────────────────────────────────
+// Riverpod provider
+// ──────────────────────────────────────────────────────────────────────────────
 
+final notificationServiceProvider = Provider<NotificationService>((ref) {
+  return NotificationService.instance;
+});

@@ -20,6 +20,8 @@ import 'features/gamification/providers/gamification_provider.dart' as gamificat
 import 'package:geolocator/geolocator.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/providers/language_provider.dart';
+import 'package:wandermood/core/services/notification_service.dart';
+import 'package:wandermood/core/providers/notification_provider.dart';
 
 // Provider to initialize app data on startup
 final appInitializerProvider = FutureProvider<bool>((ref) async {
@@ -59,7 +61,21 @@ final appInitializerProvider = FutureProvider<bool>((ref) async {
   } catch (e) {
     debugPrint('Error recording app visit: $e');
   }
-  
+
+  // Initialize local notifications + schedule recurring notifications.
+  // We do this after auth sync so we can check if a user is logged in.
+  try {
+    await NotificationService.instance.initialize();
+    await NotificationService.instance.requestPermission();
+    if (Supabase.instance.client.auth.currentUser != null) {
+      await ref.read(notificationSchedulerProvider).rescheduleAll();
+    }
+    // Activate gamification bridge (listens for streak/achievement events).
+    ref.read(notificationBridgeProvider);
+  } catch (e) {
+    debugPrint('Error initializing notifications: $e');
+  }
+
   return true;
 });
 
