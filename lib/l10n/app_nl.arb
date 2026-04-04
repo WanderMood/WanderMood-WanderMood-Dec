@@ -2357,5 +2357,690 @@
   "placeDescAttractionWithRating": "{name} is een topattractie met {rating} sterren en biedt unieke en onvergetelijke ervaringen.",
   "placeDescSpa": "{name} is een premium wellnessbestemming met ontspannende behandelingen en verjongende ervaringen.",
   "placeDescGeneric": "{name} is een geweldige plek om te ontdekken, met een fijne sfeer en geweldige vibes.",
-  "placeDescGenericWithRating": "{name} is een hoog aangeschreven lokale parel met {rating} sterren, de moeite waard om te verkennen."
+  "placeDescGenericWithRating": "{name} is een hoog aangeschreven lokale parel met {rating} sterren, de moeite waard om te verkennen.",
+
+  "notifReEngagementEnergeticV0Title": "Moody mist je! 😢",
+  "notifReEngagementEnergeticV0Body": "Kom terug en ontdek wat er op je wacht. Jouw volgende avontuur begint hier.",
+  "notifReEngagementEnergeticV1Title": "Hé! Waar ben je? 🌍",
+  "notifReEngagementEnergeticV1Body": "Moody heeft nieuwe ideeën voor je. Kom ze ontdekken!",
+  "notifReEngagementEnergeticV2Title": "WanderMood roept je! 🚀",
+  "notifReEngagementEnergeticV2Body": "Je hebt al een tijdje niet gereisd. Tijd voor wat inspiratie?",
+  "notifReEngagementFriendlyV0Title": "We denken aan je 💙",
+  "notifReEngagementFriendlyV0Body": "Moody is er voor je wanneer je klaar bent om te ontdekken.",
+  "notifReEngagementFriendlyV1Title": "Welkom terug, avonturier!",
+  "notifReEngagementFriendlyV1Body": "Het is een tijdje geleden. Laten we samen nieuwe plekken verkennen.",
+  "notifReEngagementFriendlyV2Title": "Je reisgezel wacht op je",
+  "notifReEngagementFriendlyV2Body": "Moody heeft een paar ideeën bewaard voor wanneer je terugkomt.",
+  "notifReEngagementProfessionalV0Title": "Klaar voor je volgende bestemming?",
+  "notifReEngagementProfessionalV0Body": "Ontdek op maat gemaakte reisaanbevelingen.",
+  "notifReEngagementProfessionalV1Title": "Nieuwe aanbevelingen beschikbaar",
+  "notifReEngagementProfessionalV1Body": "Open de app om gepersonaliseerde reisideeën te bekijken.",
+  "notifReEngagementProfessionalV2Title": "Je reisprofiel wacht",
+  "notifReEngagementProfessionalV2Body": "Ga terug en ontdek wat er op je wacht.",
+  "notifReEngagementDirectV0Title": "Open WanderMood",
+  "notifReEngagementDirectV0Body": "Je hebt de app al een tijdje niet gebruikt. Tik om door te gaan.",
+  "notifReEngagementDirectV1Title": "Nieuwe plekken beschikbaar",
+  "notifReEngagementDirectV1Body": "Tik hier om je aanbevelingen te bekijken.",
+  "notifReEngagementDirectV2Title": "Ga verder waar je gebleven was",
+  "notifReEngagementDirectV2Body": "Jouw reisplannen wachten op je.",
+
+  "notifDailyMoodCheckInEnergeticV0Title": "Hoe voel je je vandaag? 🎉",
+  "notifDailyMoodCheckInEnergeticV0Body": "Vertel Moody je stemming en ontdek de perfecte plek!",
+  "notifDailyMoodCheckInEnergeticV1Title": "Dagelijkse mood check! 🌟",
+  "notifDailyMoodCheckInEnergeticV1Body": "Even inchecken — hoe is je energie vandaag?",
+  "notifDailyMoodCheckInEnergeticV2Title": "Moody wil het weten! 😄",
+  "notifDailyMoodCheckInEnergeticV2Body": "Jouw stemming van vandaag = jouw avontuur van vandaag. Check in!",
+  "notifDailyMoodCheckInFriendlyV0Title": "Hoe gaat het met je? 💛",
+  "notifDailyMoodCheckInFriendlyV0Body": "Deel je stemming en laat Moody de perfecte dag voor je samenstellen.",
+  "notifDailyMoodCheckInFriendlyV1Title": "Goedemorgen! Hoe voel je je?",
+  "notifDailyMoodCheckInFriendlyV1Body": "Een kleine check-in helpt Moody je dag te personaliseren.",
+  "notifDailyMoodCheckInFriendlyV2Title": "Even inchecken 🌸",
+  "notifDailyMoodCheckInFriendlyV2Body": "Vertel hoe je je voelt — Moody heeft geweldige ideeën voor je.",
+  "notifDailyMoodCheckInProfessionalV0Title": "Dagelijkse stemming bijhouden",
+  "notifDailyMoodCheckInProfessionalV0Body": "Log je huidige stemming voor gepersonaliseerde aanbevelingen.",
+  "notifDailyMoodCheckInProfessionalV1Title": "Moodcheck beschikbaar",
+  "notifDailyMoodCheckInProfessionalV1Body": "Neem even de tijd om je stemming van vandaag te registreren.",
+  "notifDailyMoodCheckInProfessionalV2Title": "Persoonlijke aanbevelingen wachten",
+  "notifDailyMoodCheckInProfessionalV2Body": "Voer je stemming in voor op maat gemaakte reissuggesties.",
+  "notifDailyMoodCheckInDirectV0Title": "Hoe voel je je?",
+  "notifDailyMoodCheckInDirectV0Body": "Tik om je stemming in te voeren.",
+  "notifDailyMoodCheckInDirectV1Title": "Check je mood in",
+  "notifDailyMoodCheckInDirectV1Body": "Snel inchecken voor de beste aanbevelingen.",
+  "notifDailyMoodCheckInDirectV2Title": "Stemmingsregistratie",
+  "notifDailyMoodCheckInDirectV2Body": "Log je stemming nu.",
+
+  "notifGenerateMyDayEnergeticV0Title": "Genereer je dag! 🚀",
+  "notifGenerateMyDayEnergeticV0Body": "Laat Moody een episch dagplan voor je maken. Ben jij er klaar voor?",
+  "notifGenerateMyDayEnergeticV1Title": "Jouw perfecte dag begint hier! ✨",
+  "notifGenerateMyDayEnergeticV1Body": "Moody staat klaar om iets geweldigs voor je samen te stellen!",
+  "notifGenerateMyDayEnergeticV2Title": "Dag vol avontuur? Ja graag! 🎯",
+  "notifGenerateMyDayEnergeticV2Body": "Druk op genereer en laat de magie beginnen.",
+  "notifGenerateMyDayFriendlyV0Title": "Laat Moody je dag plannen 💙",
+  "notifGenerateMyDayFriendlyV0Body": "We maken een dag op maat voor jou — vol plekken die bij je passen.",
+  "notifGenerateMyDayFriendlyV1Title": "Je persoonlijke dagplan wacht",
+  "notifGenerateMyDayFriendlyV1Body": "Moody heeft ideeën voor een geweldige dag. Wil je ze zien?",
+  "notifGenerateMyDayFriendlyV2Title": "Genereer een dag op maat 🌟",
+  "notifGenerateMyDayFriendlyV2Body": "Vertel Moody je stemming en laat de rest aan ons over.",
+  "notifGenerateMyDayProfessionalV0Title": "Dagplan beschikbaar",
+  "notifGenerateMyDayProfessionalV0Body": "Genereer een gepersonaliseerd activiteitenprogramma voor vandaag.",
+  "notifGenerateMyDayProfessionalV1Title": "Maak je agenda voor vandaag",
+  "notifGenerateMyDayProfessionalV1Body": "Laat de app een op maat gemaakt dagplan samenstellen.",
+  "notifGenerateMyDayProfessionalV2Title": "Persoonlijk reisschema",
+  "notifGenerateMyDayProfessionalV2Body": "Tik om een dagplan te genereren op basis van je voorkeuren.",
+  "notifGenerateMyDayDirectV0Title": "Genereer je dag",
+  "notifGenerateMyDayDirectV0Body": "Tik om een dagplan te maken.",
+  "notifGenerateMyDayDirectV1Title": "Dag plannen",
+  "notifGenerateMyDayDirectV1Body": "Laat Moody je dag organiseren.",
+  "notifGenerateMyDayDirectV2Title": "Maak een dagplan",
+  "notifGenerateMyDayDirectV2Body": "Snel een schema voor vandaag.",
+
+  "notifWeatherNudgeEnergeticV0Title": "Perfect weer voor een avontuur! ☀️",
+  "notifWeatherNudgeEnergeticV0Body": "Het weer is geweldig — Moody heeft de ideale activiteiten klaar!",
+  "notifWeatherNudgeEnergeticV1Title": "Het weer is magisch! 🌤️",
+  "notifWeatherNudgeEnergeticV1Body": "Gebruik dit mooie weer en ontdek geweldige plekken vlakbij!",
+  "notifWeatherNudgeEnergeticV2Title": "Zonnige kansen wachten! 🌞",
+  "notifWeatherNudgeEnergeticV2Body": "Moody ziet perfecte reisweersomstandigheden. Ga eropuit!",
+  "notifWeatherNudgeFriendlyV0Title": "Het weer ziet er geweldig uit 🌈",
+  "notifWeatherNudgeFriendlyV0Body": "Wat een mooie dag om iets nieuws te ontdekken!",
+  "notifWeatherNudgeFriendlyV1Title": "Geniet van het mooie weer",
+  "notifWeatherNudgeFriendlyV1Body": "Moody heeft ideeën die perfect passen bij het huidige weer.",
+  "notifWeatherNudgeFriendlyV2Title": "Buiten is het heerlijk! ☁️",
+  "notifWeatherNudgeFriendlyV2Body": "Een mooie dag vraagt om een mooi avontuur. Moody helpt je.",
+  "notifWeatherNudgeProfessionalV0Title": "Weersgebaseerde aanbevelingen",
+  "notifWeatherNudgeProfessionalV0Body": "Huidige weersomstandigheden zijn ideaal voor buitenactiviteiten.",
+  "notifWeatherNudgeProfessionalV1Title": "Optimale reisomstandigheden",
+  "notifWeatherNudgeProfessionalV1Body": "Het weer is gunstig — bekijk activiteiten voor buiten.",
+  "notifWeatherNudgeProfessionalV2Title": "Weersupdate beschikbaar",
+  "notifWeatherNudgeProfessionalV2Body": "Ontdek aanbevelingen die zijn afgestemd op het huidige weer.",
+  "notifWeatherNudgeDirectV0Title": "Mooi weer vandaag",
+  "notifWeatherNudgeDirectV0Body": "Tik voor activiteiten die bij het weer passen.",
+  "notifWeatherNudgeDirectV1Title": "Goed reerweer",
+  "notifWeatherNudgeDirectV1Body": "Bekijk outdoor-activiteiten voor nu.",
+  "notifWeatherNudgeDirectV2Title": "Weersaanbevelingen klaar",
+  "notifWeatherNudgeDirectV2Body": "Tik om te bekijken.",
+
+  "notifLocationDiscoveryEnergeticV0Title": "Verborgen parel vlakbij! 💎",
+  "notifLocationDiscoveryEnergeticV0Body": "Moody heeft een geweldige plek vlak om de hoek gevonden. Ga eropuit!",
+  "notifLocationDiscoveryEnergeticV1Title": "Avontuur op loopafstand! 🗺️",
+  "notifLocationDiscoveryEnergeticV1Body": "Er is iets geweldigs vlakbij. Moody laat je zien wat!",
+  "notifLocationDiscoveryEnergeticV2Title": "Ontdek wat er om de hoek is! 🔍",
+  "notifLocationDiscoveryEnergeticV2Body": "Jij + interessante plek vlakbij = perfecte combinatie. Tik!",
+  "notifLocationDiscoveryFriendlyV0Title": "Er is iets leuks vlakbij 📍",
+  "notifLocationDiscoveryFriendlyV0Body": "Moody heeft een geweldige plek in jouw buurt gevonden.",
+  "notifLocationDiscoveryFriendlyV1Title": "Ontdek je omgeving",
+  "notifLocationDiscoveryFriendlyV1Body": "Er is een mooie plek vlakbij die misschien bij je past.",
+  "notifLocationDiscoveryFriendlyV2Title": "Leuke plek gevonden! 🌟",
+  "notifLocationDiscoveryFriendlyV2Body": "Moody denkt dat je dit misschien leuk vindt — even kijken?",
+  "notifLocationDiscoveryProfessionalV0Title": "Locatieaanbeveling beschikbaar",
+  "notifLocationDiscoveryProfessionalV0Body": "Er is een relevante bestemming vlakbij jouw huidige locatie.",
+  "notifLocationDiscoveryProfessionalV1Title": "Bestemming vlakbij gevonden",
+  "notifLocationDiscoveryProfessionalV1Body": "Bekijk een aanbeveling op basis van je locatie.",
+  "notifLocationDiscoveryProfessionalV2Title": "Locatiegebaseerde suggestie",
+  "notifLocationDiscoveryProfessionalV2Body": "Er is iets interessants in je directe omgeving.",
+  "notifLocationDiscoveryDirectV0Title": "Plek vlakbij gevonden",
+  "notifLocationDiscoveryDirectV0Body": "Tik om te bekijken.",
+  "notifLocationDiscoveryDirectV1Title": "Iets vlakbij",
+  "notifLocationDiscoveryDirectV1Body": "Bekijk de locatie.",
+  "notifLocationDiscoveryDirectV2Title": "Locatieaanbeveling",
+  "notifLocationDiscoveryDirectV2Body": "Plek in de buurt wacht op je.",
+
+  "notifSavedActivityReminderEnergeticV0Title": "Je opgeslagen activiteiten wachten! 📋",
+  "notifSavedActivityReminderEnergeticV0Body": "Tijd om die geweldige plekken die je hebt bewaard eindelijk te bezoeken!",
+  "notifSavedActivityReminderEnergeticV1Title": "Vergeet je lijstje niet! ⭐",
+  "notifSavedActivityReminderEnergeticV1Body": "Je hebt coole plekken opgeslagen — wanneer ga je ze bezoeken?",
+  "notifSavedActivityReminderEnergeticV2Title": "Jouw bucket list roept! 🎯",
+  "notifSavedActivityReminderEnergeticV2Body": "Moody herinnert je aan je opgeslagen avonturen. Ga ervoor!",
+  "notifSavedActivityReminderFriendlyV0Title": "Je hebt plekken bewaard 💛",
+  "notifSavedActivityReminderFriendlyV0Body": "Weet je nog die plekken die je wilde bezoeken? Ze staan nog op je lijst!",
+  "notifSavedActivityReminderFriendlyV1Title": "Herinnering: je lijstje",
+  "notifSavedActivityReminderFriendlyV1Body": "Je hebt een paar geweldige plekken opgeslagen. Wanneer ga je?",
+  "notifSavedActivityReminderFriendlyV2Title": "Je opgeslagen avonturen",
+  "notifSavedActivityReminderFriendlyV2Body": "Moody herinnert je eraan dat er mooie plekken op je wachten.",
+  "notifSavedActivityReminderProfessionalV0Title": "Opgeslagen activiteiten beschikbaar",
+  "notifSavedActivityReminderProfessionalV0Body": "Bekijk je lijst met bewaarde bestemmingen en plan je volgende bezoek.",
+  "notifSavedActivityReminderProfessionalV1Title": "Activiteitenherinnering",
+  "notifSavedActivityReminderProfessionalV1Body": "Je hebt bestemmingen opgeslagen die nog niet zijn bezocht.",
+  "notifSavedActivityReminderProfessionalV2Title": "Bewaarde locaties wachten",
+  "notifSavedActivityReminderProfessionalV2Body": "Plan een bezoek aan een van je opgeslagen bestemmingen.",
+  "notifSavedActivityReminderDirectV0Title": "Opgeslagen plekken bekijken",
+  "notifSavedActivityReminderDirectV0Body": "Je hebt activiteiten bewaard. Tik om te plannen.",
+  "notifSavedActivityReminderDirectV1Title": "Je lijstje",
+  "notifSavedActivityReminderDirectV1Body": "Bekijk je opgeslagen activiteiten.",
+  "notifSavedActivityReminderDirectV2Title": "Bewaarde activiteiten",
+  "notifSavedActivityReminderDirectV2Body": "Tik om je lijst te zien.",
+
+  "notifFestivalEventEnergeticV0Title": "Feest in de buurt! 🎊",
+  "notifFestivalEventEnergeticV0Body": "Er is een evenement vlakbij dat perfect bij je past. Ga eropuit!",
+  "notifFestivalEventEnergeticV1Title": "Event alert! 🎉",
+  "notifFestivalEventEnergeticV1Body": "Moody heeft een geweldig festival of evenement voor je gevonden!",
+  "notifFestivalEventEnergeticV2Title": "Mis dit niet! 🎶",
+  "notifFestivalEventEnergeticV2Body": "Er is iets episch aan de gang in jouw stad. Check het uit!",
+  "notifFestivalEventFriendlyV0Title": "Leuk evenement in de buurt 🎈",
+  "notifFestivalEventFriendlyV0Body": "Er is een evenement dat misschien perfect bij je past. Kijk even!",
+  "notifFestivalEventFriendlyV1Title": "Festival of event vlakbij",
+  "notifFestivalEventFriendlyV1Body": "Moody denkt dat je dit leuk zou vinden — een evenement vlakbij.",
+  "notifFestivalEventFriendlyV2Title": "Activiteit in jouw stad",
+  "notifFestivalEventFriendlyV2Body": "Er gebeurt iets leuks. Wil je meer weten?",
+  "notifFestivalEventProfessionalV0Title": "Evenementaanbeveling",
+  "notifFestivalEventProfessionalV0Body": "Er is een relevant evenement in jouw omgeving dat aansluit bij je interesses.",
+  "notifFestivalEventProfessionalV1Title": "Lokaal evenement gevonden",
+  "notifFestivalEventProfessionalV1Body": "Bekijk een evenement dat is afgestemd op jouw profiel.",
+  "notifFestivalEventProfessionalV2Title": "Festival of evenement beschikbaar",
+  "notifFestivalEventProfessionalV2Body": "Er is een aankomend evenement in jouw regio.",
+  "notifFestivalEventDirectV0Title": "Evenement vlakbij",
+  "notifFestivalEventDirectV0Body": "Tik om te bekijken.",
+  "notifFestivalEventDirectV1Title": "Festival in de buurt",
+  "notifFestivalEventDirectV1Body": "Bekijk het evenement.",
+  "notifFestivalEventDirectV2Title": "Event beschikbaar",
+  "notifFestivalEventDirectV2Body": "Tik voor details.",
+
+  "notifCompanionCheckInMorningEnergeticV0Title": "Goedemorgen! ☀️ Moody is er!",
+  "notifCompanionCheckInMorningEnergeticV0Body": "Klaar voor een geweldige dag? Vertel me hoe je je voelt!",
+  "notifCompanionCheckInMorningEnergeticV1Title": "Wakey wakey! 🌅",
+  "notifCompanionCheckInMorningEnergeticV1Body": "Moody is er om je dag geweldig te maken. Hoe voel je je?",
+  "notifCompanionCheckInMorningEnergeticV2Title": "Nieuwe dag, nieuw avontuur! 🚀",
+  "notifCompanionCheckInMorningEnergeticV2Body": "Moody staat klaar. Hoe begin jij je dag?",
+  "notifCompanionCheckInMorningFriendlyV0Title": "Goedemorgen! 🌸",
+  "notifCompanionCheckInMorningFriendlyV0Body": "Moody wenst je een mooie dag. Hoe voel je je vanmorgen?",
+  "notifCompanionCheckInMorningFriendlyV1Title": "Hallo! Mooie morgen 💛",
+  "notifCompanionCheckInMorningFriendlyV1Body": "Even inchecken — hoe start jij je dag?",
+  "notifCompanionCheckInMorningFriendlyV2Title": "Ochtendgroet van Moody",
+  "notifCompanionCheckInMorningFriendlyV2Body": "We hopen dat je een geweldige dag voor je hebt. Hoe gaat het?",
+  "notifCompanionCheckInMorningProfessionalV0Title": "Ochtendcheck-in",
+  "notifCompanionCheckInMorningProfessionalV0Body": "Registreer je ochtendsstemming voor gepersonaliseerde dagaanbevelingen.",
+  "notifCompanionCheckInMorningProfessionalV1Title": "Dag starten",
+  "notifCompanionCheckInMorningProfessionalV1Body": "Log je stemming om de dag optimaal te beginnen.",
+  "notifCompanionCheckInMorningProfessionalV2Title": "Ochtendoverzicht beschikbaar",
+  "notifCompanionCheckInMorningProfessionalV2Body": "Check je aanbevelingen voor vandaag.",
+  "notifCompanionCheckInMorningDirectV0Title": "Goedemorgen",
+  "notifCompanionCheckInMorningDirectV0Body": "Hoe voel je je? Tik om in te checken.",
+  "notifCompanionCheckInMorningDirectV1Title": "Ochtend check-in",
+  "notifCompanionCheckInMorningDirectV1Body": "Log je stemming voor vandaag.",
+  "notifCompanionCheckInMorningDirectV2Title": "Start je dag",
+  "notifCompanionCheckInMorningDirectV2Body": "Vertel Moody hoe je je voelt.",
+
+  "notifCompanionCheckInAfternoonEnergeticV0Title": "Hoe gaat de dag? ⚡",
+  "notifCompanionCheckInAfternoonEnergeticV0Body": "Moody checkt in — is er iets geweldigs gebeurd vandaag?",
+  "notifCompanionCheckInAfternoonEnergeticV1Title": "Middagcheck! 🌞",
+  "notifCompanionCheckInAfternoonEnergeticV1Body": "Halverwege de dag — hoe voel je je nu?",
+  "notifCompanionCheckInAfternoonEnergeticV2Title": "Even bijkomen? 💪",
+  "notifCompanionCheckInAfternoonEnergeticV2Body": "Moody wil weten hoe jouw middag verloopt!",
+  "notifCompanionCheckInAfternoonFriendlyV0Title": "Halverwege de dag 💙",
+  "notifCompanionCheckInAfternoonFriendlyV0Body": "Hoe gaat het nu? Moody is er voor je.",
+  "notifCompanionCheckInAfternoonFriendlyV1Title": "Middag check-in",
+  "notifCompanionCheckInAfternoonFriendlyV1Body": "Even inchecken — hoe verloopt je dag tot nu toe?",
+  "notifCompanionCheckInAfternoonFriendlyV2Title": "Hoe gaat het? 🌤️",
+  "notifCompanionCheckInAfternoonFriendlyV2Body": "Moody denkt aan je. Alles goed?",
+  "notifCompanionCheckInAfternoonProfessionalV0Title": "Middagstemming bijhouden",
+  "notifCompanionCheckInAfternoonProfessionalV0Body": "Log je huidige stemming voor bijgewerkte aanbevelingen.",
+  "notifCompanionCheckInAfternoonProfessionalV1Title": "Middag check-in beschikbaar",
+  "notifCompanionCheckInAfternoonProfessionalV1Body": "Registreer je stemming halverwege de dag.",
+  "notifCompanionCheckInAfternoonProfessionalV2Title": "Stemmingsupdate",
+  "notifCompanionCheckInAfternoonProfessionalV2Body": "Hoe voel je je nu? Update je profiel.",
+  "notifCompanionCheckInAfternoonDirectV0Title": "Middag check-in",
+  "notifCompanionCheckInAfternoonDirectV0Body": "Hoe gaat het? Tik om in te loggen.",
+  "notifCompanionCheckInAfternoonDirectV1Title": "Stemming bijwerken",
+  "notifCompanionCheckInAfternoonDirectV1Body": "Update je stemming voor betere aanbevelingen.",
+  "notifCompanionCheckInAfternoonDirectV2Title": "Check-in",
+  "notifCompanionCheckInAfternoonDirectV2Body": "Tik om je middag stemming te loggen.",
+
+  "notifCompanionCheckInEveningEnergeticV0Title": "Avond check-in! 🌙",
+  "notifCompanionCheckInEveningEnergeticV0Body": "Hoe was je dag? Vertel Moody alles!",
+  "notifCompanionCheckInEveningEnergeticV1Title": "Avondreflectie tijd! ⭐",
+  "notifCompanionCheckInEveningEnergeticV1Body": "De dag is bijna voorbij — hoe voel je je nu?",
+  "notifCompanionCheckInEveningEnergeticV2Title": "Goedenavond van Moody! 🌆",
+  "notifCompanionCheckInEveningEnergeticV2Body": "Even de dag afsluiten. Hoe was het vandaag?",
+  "notifCompanionCheckInEveningFriendlyV0Title": "Goedenavond! 🌙",
+  "notifCompanionCheckInEveningFriendlyV0Body": "Hoe was je dag? Moody luistert graag.",
+  "notifCompanionCheckInEveningFriendlyV1Title": "Avond check-in 💛",
+  "notifCompanionCheckInEveningFriendlyV1Body": "Even terugkijken op de dag — hoe voel je je nu?",
+  "notifCompanionCheckInEveningFriendlyV2Title": "Tijd voor rust 🌸",
+  "notifCompanionCheckInEveningFriendlyV2Body": "De dag is bijna voorbij. Hoe ging het?",
+  "notifCompanionCheckInEveningProfessionalV0Title": "Avond check-in",
+  "notifCompanionCheckInEveningProfessionalV0Body": "Registreer je avondsstemming voor dagelijkse trends.",
+  "notifCompanionCheckInEveningProfessionalV1Title": "Dagafsluiting",
+  "notifCompanionCheckInEveningProfessionalV1Body": "Log je stemming aan het einde van de dag.",
+  "notifCompanionCheckInEveningProfessionalV2Title": "Avondoverzicht",
+  "notifCompanionCheckInEveningProfessionalV2Body": "Update je stemming om je wekelijkse overzicht bij te houden.",
+  "notifCompanionCheckInEveningDirectV0Title": "Goedenavond",
+  "notifCompanionCheckInEveningDirectV0Body": "Hoe was je dag? Tik om in te loggen.",
+  "notifCompanionCheckInEveningDirectV1Title": "Avond check-in",
+  "notifCompanionCheckInEveningDirectV1Body": "Log je avondsstemming.",
+  "notifCompanionCheckInEveningDirectV2Title": "Dag afsluiten",
+  "notifCompanionCheckInEveningDirectV2Body": "Update je stemming voor vandaag.",
+
+  "notifStreakMilestoneEnergeticV0Title": "{days} dagen op rij — Moody is ONDER DE INDRUK! 🔥",
+  "@notifStreakMilestoneEnergeticV0Title": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneEnergeticV0Body": "Jij bent een echte WanderMood legende. Ga zo door!",
+  "notifStreakMilestoneEnergeticV1Title": "🎉 {days} daagse streak! Je bent GEWELDIG!",
+  "@notifStreakMilestoneEnergeticV1Title": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneEnergeticV1Body": "Zo'n consistentie! Moody is trots op je.",
+  "notifStreakMilestoneEnergeticV2Title": "{days} dagen? Jij bent niet te stoppen! 🚀",
+  "@notifStreakMilestoneEnergeticV2Title": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneEnergeticV2Body": "Jouw toewijding inspireert zelfs Moody. Blijf doorgaan!",
+  "notifStreakMilestoneFriendlyV0Title": "Wauw, {days} dagen op rij! 💛",
+  "@notifStreakMilestoneFriendlyV0Title": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneFriendlyV0Body": "Wat een geweldige prestatie. Je bent zo consistent!",
+  "notifStreakMilestoneFriendlyV1Title": "{days} daagse streak 🎊",
+  "@notifStreakMilestoneFriendlyV1Title": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneFriendlyV1Body": "Zo trots op je. Je hebt {days} dagen lang geweldige dingen gedaan!",
+  "@notifStreakMilestoneFriendlyV1Body": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneFriendlyV2Title": "Jij volhoudt maar! {days} dagen 🌸",
+  "@notifStreakMilestoneFriendlyV2Title": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneFriendlyV2Body": "Jouw constante inzet maakt Moody blij. Ga door!",
+  "notifStreakMilestoneProfessionalV0Title": "{days} daagse streak bereikt",
+  "@notifStreakMilestoneProfessionalV0Title": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneProfessionalV0Body": "Je hebt {days} dagen lang consequent ingecheckt. Goed gedaan.",
+  "@notifStreakMilestoneProfessionalV0Body": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneProfessionalV1Title": "Streak milestone: {days} dagen",
+  "@notifStreakMilestoneProfessionalV1Title": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneProfessionalV1Body": "Consistente tracking gedurende {days} dagen.",
+  "@notifStreakMilestoneProfessionalV1Body": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneProfessionalV2Title": "{days} dagen bijgehouden",
+  "@notifStreakMilestoneProfessionalV2Title": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneProfessionalV2Body": "Jouw toewijding heeft een {days}-daagse streak opgeleverd.",
+  "@notifStreakMilestoneProfessionalV2Body": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneDirectV0Title": "{days} daagse streak!",
+  "@notifStreakMilestoneDirectV0Title": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneDirectV0Body": "Je bent {days} dagen op rij actief. Ga door.",
+  "@notifStreakMilestoneDirectV0Body": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneDirectV1Title": "Streak: {days} dagen",
+  "@notifStreakMilestoneDirectV1Title": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneDirectV1Body": "Goed gedaan — {days} dagen op rij.",
+  "@notifStreakMilestoneDirectV1Body": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneDirectV2Title": "{days} dagen op rij",
+  "@notifStreakMilestoneDirectV2Title": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+  "notifStreakMilestoneDirectV2Body": "Tik om je voortgang te bekijken.",
+
+  "notifAchievementUnlockedEnergeticV0Title": "🏆 JE HEBT '{achievementTitle}' VERDIEND!",
+  "@notifAchievementUnlockedEnergeticV0Title": {
+    "placeholders": {
+      "achievementTitle": { "type": "String" }
+    }
+  },
+  "notifAchievementUnlockedEnergeticV0Body": "WAUW! Je hebt zojuist een geweldige prestatie ontgrendeld!",
+  "notifAchievementUnlockedEnergeticV1Title": "Prestatie ontgrendeld: '{achievementTitle}' 🎉",
+  "@notifAchievementUnlockedEnergeticV1Title": {
+    "placeholders": {
+      "achievementTitle": { "type": "String" }
+    }
+  },
+  "notifAchievementUnlockedEnergeticV1Body": "Je bent GEWELDIG! Nieuwe badge verdiend!",
+  "notifAchievementUnlockedEnergeticV2Title": "'{achievementTitle}' is van jou! 🚀",
+  "@notifAchievementUnlockedEnergeticV2Title": {
+    "placeholders": {
+      "achievementTitle": { "type": "String" }
+    }
+  },
+  "notifAchievementUnlockedEnergeticV2Body": "Moody is onder de indruk. Je hebt dit helemaal verdiend!",
+  "notifAchievementUnlockedFriendlyV0Title": "Je hebt '{achievementTitle}' verdiend! 🌟",
+  "@notifAchievementUnlockedFriendlyV0Title": {
+    "placeholders": {
+      "achievementTitle": { "type": "String" }
+    }
+  },
+  "notifAchievementUnlockedFriendlyV0Body": "Wat een mooie prestatie. Je bent geweldig!",
+  "notifAchievementUnlockedFriendlyV1Title": "Nieuwe badge: '{achievementTitle}' 💛",
+  "@notifAchievementUnlockedFriendlyV1Title": {
+    "placeholders": {
+      "achievementTitle": { "type": "String" }
+    }
+  },
+  "notifAchievementUnlockedFriendlyV1Body": "Je hebt hard gewerkt voor deze. Gefeliciteerd!",
+  "notifAchievementUnlockedFriendlyV2Title": "'{achievementTitle}' ontgrendeld 🎊",
+  "@notifAchievementUnlockedFriendlyV2Title": {
+    "placeholders": {
+      "achievementTitle": { "type": "String" }
+    }
+  },
+  "notifAchievementUnlockedFriendlyV2Body": "Moody is zo trots op je. Je verdient dit helemaal!",
+  "notifAchievementUnlockedProfessionalV0Title": "Prestatie ontgrendeld: '{achievementTitle}'",
+  "@notifAchievementUnlockedProfessionalV0Title": {
+    "placeholders": {
+      "achievementTitle": { "type": "String" }
+    }
+  },
+  "notifAchievementUnlockedProfessionalV0Body": "Je hebt een nieuwe mijlpaal bereikt in de app.",
+  "notifAchievementUnlockedProfessionalV1Title": "Nieuwe badge verdiend: '{achievementTitle}'",
+  "@notifAchievementUnlockedProfessionalV1Title": {
+    "placeholders": {
+      "achievementTitle": { "type": "String" }
+    }
+  },
+  "notifAchievementUnlockedProfessionalV1Body": "Goed gedaan. Je hebt een prestatie ontgrendeld.",
+  "notifAchievementUnlockedProfessionalV2Title": "'{achievementTitle}' toegevoegd aan je profiel",
+  "@notifAchievementUnlockedProfessionalV2Title": {
+    "placeholders": {
+      "achievementTitle": { "type": "String" }
+    }
+  },
+  "notifAchievementUnlockedProfessionalV2Body": "Bekijk je nieuwe prestatie in je profiel.",
+  "notifAchievementUnlockedDirectV0Title": "Prestatie: '{achievementTitle}'",
+  "@notifAchievementUnlockedDirectV0Title": {
+    "placeholders": {
+      "achievementTitle": { "type": "String" }
+    }
+  },
+  "notifAchievementUnlockedDirectV0Body": "Ontgrendeld. Tik om te bekijken.",
+  "notifAchievementUnlockedDirectV1Title": "'{achievementTitle}' verdiend",
+  "@notifAchievementUnlockedDirectV1Title": {
+    "placeholders": {
+      "achievementTitle": { "type": "String" }
+    }
+  },
+  "notifAchievementUnlockedDirectV1Body": "Nieuwe badge. Tik voor details.",
+  "notifAchievementUnlockedDirectV2Title": "Badge verdiend",
+  "notifAchievementUnlockedDirectV2Body": "'{achievementTitle}' is toegevoegd aan je account.",
+  "@notifAchievementUnlockedDirectV2Body": {
+    "placeholders": {
+      "achievementTitle": { "type": "String" }
+    }
+  },
+
+  "notifWeeklyMoodRecapEnergeticV0Title": "Jouw weekoverzicht is klaar! 📊",
+  "notifWeeklyMoodRecapEnergeticV0Body": "Wat een week was dat! Bekijk hoe jouw stemming varieerde.",
+  "notifWeeklyMoodRecapEnergeticV1Title": "Weekrapport beschikbaar! 🎉",
+  "notifWeeklyMoodRecapEnergeticV1Body": "Moody heeft jouw week geanalyseerd. Benieuwd naar de resultaten?",
+  "notifWeeklyMoodRecapEnergeticV2Title": "Wekelijks moodrapport! 🌟",
+  "notifWeeklyMoodRecapEnergeticV2Body": "Zie hoe jouw stemming deze week was en wat dat betekent.",
+  "notifWeeklyMoodRecapFriendlyV0Title": "Je weekoverzicht is er 💙",
+  "notifWeeklyMoodRecapFriendlyV0Body": "Bekijk hoe je deze week hebt gevoeld. Moody heeft het samengevat.",
+  "notifWeeklyMoodRecapFriendlyV1Title": "Wekelijks overzicht klaar",
+  "notifWeeklyMoodRecapFriendlyV1Body": "Even terugkijken op de week? Moody heeft alles voor je samengesteld.",
+  "notifWeeklyMoodRecapFriendlyV2Title": "Jouw moodweek 🌸",
+  "notifWeeklyMoodRecapFriendlyV2Body": "Hoe was jouw stemming deze week? Bekijk je overzicht.",
+  "notifWeeklyMoodRecapProfessionalV0Title": "Wekelijks moodoverzicht beschikbaar",
+  "notifWeeklyMoodRecapProfessionalV0Body": "Bekijk je stemmingsanalyse van de afgelopen week.",
+  "notifWeeklyMoodRecapProfessionalV1Title": "Weekrapport gegenereerd",
+  "notifWeeklyMoodRecapProfessionalV1Body": "Je wekelijkse moodoverzicht is beschikbaar voor review.",
+  "notifWeeklyMoodRecapProfessionalV2Title": "Wekelijkse moodtrends",
+  "notifWeeklyMoodRecapProfessionalV2Body": "Analyseer jouw stemmingpatronen van de afgelopen 7 dagen.",
+  "notifWeeklyMoodRecapDirectV0Title": "Weekoverzicht klaar",
+  "notifWeeklyMoodRecapDirectV0Body": "Tik om je moodoverzicht te bekijken.",
+  "notifWeeklyMoodRecapDirectV1Title": "Wekelijks rapport",
+  "notifWeeklyMoodRecapDirectV1Body": "Je moodrapport staat klaar.",
+  "notifWeeklyMoodRecapDirectV2Title": "Moodoverzicht deze week",
+  "notifWeeklyMoodRecapDirectV2Body": "Tik om te zien hoe je je voelde.",
+
+  "notifPostTripReflectionEnergeticV0Title": "Hoe was het avontuur?! 🌍",
+  "notifPostTripReflectionEnergeticV0Body": "Je trip is voorbij — vertel Moody alles! Wat was het hoogtepunt?",
+  "notifPostTripReflectionEnergeticV1Title": "Reflectietijd! ✈️",
+  "notifPostTripReflectionEnergeticV1Body": "Welke herinneringen heb je meegenomen? Deel je reiservaring!",
+  "notifPostTripReflectionEnergeticV2Title": "De reis is voorbij... maar de herinneringen niet! 📸",
+  "notifPostTripReflectionEnergeticV2Body": "Vertel hoe het was en help Moody nog beter voor je te worden!",
+  "notifPostTripReflectionFriendlyV0Title": "Hoe was je reis? 💛",
+  "notifPostTripReflectionFriendlyV0Body": "We zijn benieuwd hoe je reis was. Deel je ervaringen met Moody.",
+  "notifPostTripReflectionFriendlyV1Title": "Terugkijken op je trip",
+  "notifPostTripReflectionFriendlyV1Body": "Je avontuur is achter de rug. Hoe was het?",
+  "notifPostTripReflectionFriendlyV2Title": "Deel je reiservaring 🌸",
+  "notifPostTripReflectionFriendlyV2Body": "Moody luistert graag naar hoe je reis was verlopen.",
+  "notifPostTripReflectionProfessionalV0Title": "Reisreflectie beschikbaar",
+  "notifPostTripReflectionProfessionalV0Body": "Deel je reiservaring voor verbeterde toekomstige aanbevelingen.",
+  "notifPostTripReflectionProfessionalV1Title": "Post-trip feedback",
+  "notifPostTripReflectionProfessionalV1Body": "Beoordeel je recent voltooide reis.",
+  "notifPostTripReflectionProfessionalV2Title": "Reis afgerond — reflecteer",
+  "notifPostTripReflectionProfessionalV2Body": "Voeg je ervaringen toe om je reisprofiel te verbeteren.",
+  "notifPostTripReflectionDirectV0Title": "Hoe was je reis?",
+  "notifPostTripReflectionDirectV0Body": "Tik om te reflecteren.",
+  "notifPostTripReflectionDirectV1Title": "Reiservaring delen",
+  "notifPostTripReflectionDirectV1Body": "Beoordeel je trip.",
+  "notifPostTripReflectionDirectV2Title": "Trip afgerond",
+  "notifPostTripReflectionDirectV2Body": "Voeg een reflectie toe.",
+
+  "notifMoodFollowUpEnergeticV0Title": "Nog steeds {moodType}? 💡",
+  "@notifMoodFollowUpEnergeticV0Title": {
+    "placeholders": {
+      "moodType": { "type": "String" }
+    }
+  },
+  "notifMoodFollowUpEnergeticV0Body": "Moody heeft activiteiten gevonden die perfect bij jouw stemming passen!",
+  "notifMoodFollowUpEnergeticV1Title": "Jij en je {moodType} energie ⚡",
+  "@notifMoodFollowUpEnergeticV1Title": {
+    "placeholders": {
+      "moodType": { "type": "String" }
+    }
+  },
+  "notifMoodFollowUpEnergeticV1Body": "Laat die stemming niet verloren gaan — check deze geweldige ideeën!",
+  "notifMoodFollowUpEnergeticV2Title": "{moodType} vibes? Moody heeft de oplossing! 🎯",
+  "@notifMoodFollowUpEnergeticV2Title": {
+    "placeholders": {
+      "moodType": { "type": "String" }
+    }
+  },
+  "notifMoodFollowUpEnergeticV2Body": "Geweldige activiteiten die bij jouw huidige stemming passen wachten op je!",
+  "notifMoodFollowUpFriendlyV0Title": "Hoe voel je je nu? 💛",
+  "notifMoodFollowUpFriendlyV0Body": "Je was {moodType} — heeft die stemming nieuwe ideeën geïnspireerd?",
+  "@notifMoodFollowUpFriendlyV0Body": {
+    "placeholders": {
+      "moodType": { "type": "String" }
+    }
+  },
+  "notifMoodFollowUpFriendlyV1Title": "Even inchecken na je {moodType} stemming",
+  "@notifMoodFollowUpFriendlyV1Title": {
+    "placeholders": {
+      "moodType": { "type": "String" }
+    }
+  },
+  "notifMoodFollowUpFriendlyV1Body": "Moody hoopt dat je je goed voelt. Zin in iets leuks?",
+  "notifMoodFollowUpFriendlyV2Title": "Aansluitend op je {moodType} gevoel",
+  "@notifMoodFollowUpFriendlyV2Title": {
+    "placeholders": {
+      "moodType": { "type": "String" }
+    }
+  },
+  "notifMoodFollowUpFriendlyV2Body": "We hebben activiteiten gevonden die bij jou passen.",
+  "notifMoodFollowUpProfessionalV0Title": "Follow-up op stemming: {moodType}",
+  "@notifMoodFollowUpProfessionalV0Title": {
+    "placeholders": {
+      "moodType": { "type": "String" }
+    }
+  },
+  "notifMoodFollowUpProfessionalV0Body": "Activiteiten op basis van je eerder geregistreerde stemming zijn beschikbaar.",
+  "notifMoodFollowUpProfessionalV1Title": "Stemminggebaseerde aanbevelingen",
+  "notifMoodFollowUpProfessionalV1Body": "Bekijk activiteiten die passen bij je {moodType} stemming.",
+  "@notifMoodFollowUpProfessionalV1Body": {
+    "placeholders": {
+      "moodType": { "type": "String" }
+    }
+  },
+  "notifMoodFollowUpProfessionalV2Title": "Aanbevelingen voor {moodType}",
+  "@notifMoodFollowUpProfessionalV2Title": {
+    "placeholders": {
+      "moodType": { "type": "String" }
+    }
+  },
+  "notifMoodFollowUpProfessionalV2Body": "Op maat gemaakte suggesties op basis van je stemming.",
+  "notifMoodFollowUpDirectV0Title": "Stemming follow-up",
+  "notifMoodFollowUpDirectV0Body": "Activiteiten voor jouw {moodType} gevoel wachten.",
+  "@notifMoodFollowUpDirectV0Body": {
+    "placeholders": {
+      "moodType": { "type": "String" }
+    }
+  },
+  "notifMoodFollowUpDirectV1Title": "Aanbevelingen voor {moodType}",
+  "@notifMoodFollowUpDirectV1Title": {
+    "placeholders": {
+      "moodType": { "type": "String" }
+    }
+  },
+  "notifMoodFollowUpDirectV1Body": "Tik om te bekijken.",
+  "notifMoodFollowUpDirectV2Title": "Activiteiten voor je stemming",
+  "notifMoodFollowUpDirectV2Body": "Op basis van {moodType}. Tik om te zien.",
+  "@notifMoodFollowUpDirectV2Body": {
+    "placeholders": {
+      "moodType": { "type": "String" }
+    }
+  },
+
+  "notifSocialEngagementEnergeticV0Title": "Deel je avontuur! 📣",
+  "notifSocialEngagementEnergeticV0Body": "Je ervaringen verdienen een publiek. Deel ze met vrienden!",
+  "notifSocialEngagementEnergeticV1Title": "Laat anderen weten wat je doet! 🌍",
+  "notifSocialEngagementEnergeticV1Body": "Deel je reis en inspireer anderen met Moody!",
+  "notifSocialEngagementEnergeticV2Title": "Social time! 🎉",
+  "notifSocialEngagementEnergeticV2Body": "Deel je ontdekkingen en maak vrienden jaloers!",
+  "notifSocialEngagementFriendlyV0Title": "Deel je ervaringen 💙",
+  "notifSocialEngagementFriendlyV0Body": "Je vrienden willen vast weten waar je bent geweest!",
+  "notifSocialEngagementFriendlyV1Title": "Inspireer anderen",
+  "notifSocialEngagementFriendlyV1Body": "Deel je reiservaringen en help anderen geweldige plekken te ontdekken.",
+  "notifSocialEngagementFriendlyV2Title": "Verbind met anderen 🌸",
+  "notifSocialEngagementFriendlyV2Body": "Deel je avonturen en ontdek die van anderen.",
+  "notifSocialEngagementProfessionalV0Title": "Sociale functies beschikbaar",
+  "notifSocialEngagementProfessionalV0Body": "Deel je reiservaringen met je netwerk.",
+  "notifSocialEngagementProfessionalV1Title": "Activiteit delen",
+  "notifSocialEngagementProfessionalV1Body": "Deel je laatste ontdekking met je contacten.",
+  "notifSocialEngagementProfessionalV2Title": "Community betrokkenheid",
+  "notifSocialEngagementProfessionalV2Body": "Draag bij aan de WanderMood community door je ervaringen te delen.",
+  "notifSocialEngagementDirectV0Title": "Deel je ervaring",
+  "notifSocialEngagementDirectV0Body": "Tik om te delen.",
+  "notifSocialEngagementDirectV1Title": "Activiteit delen",
+  "notifSocialEngagementDirectV1Body": "Deel met vrienden.",
+  "notifSocialEngagementDirectV2Title": "Sociale functie",
+  "notifSocialEngagementDirectV2Body": "Tik om te verbinden.",
+
+  "notifFriendActivityEnergeticV0Title": "Je vriend is aan het adventuren! 👀",
+  "notifFriendActivityEnergeticV0Body": "Kijk wat ze hebben ontdekt — misschien wil jij ook mee!",
+  "notifFriendActivityEnergeticV1Title": "Vriend alert! 🎉",
+  "notifFriendActivityEnergeticV1Body": "Je vriend heeft iets geweldigs gedaan. Laat je inspireren!",
+  "notifFriendActivityEnergeticV2Title": "Activiteit van een vriend! 🌍",
+  "notifFriendActivityEnergeticV2Body": "Zie wat je vriend heeft ontdekt en plan je eigen avontuur!",
+  "notifFriendActivityFriendlyV0Title": "Je vriend heeft iets gedeeld 💛",
+  "notifFriendActivityFriendlyV0Body": "Kijk wat je vriend heeft ontdekt. Misschien word je geïnspireerd!",
+  "notifFriendActivityFriendlyV1Title": "Nieuws van een vriend",
+  "notifFriendActivityFriendlyV1Body": "Je vriend heeft een activiteit gedeeld. Wil je het zien?",
+  "notifFriendActivityFriendlyV2Title": "Vriend is aan het reizen 🌸",
+  "notifFriendActivityFriendlyV2Body": "Moody laat je weten dat een vriend iets leuks heeft gedaan.",
+  "notifFriendActivityProfessionalV0Title": "Vriendactiviteit beschikbaar",
+  "notifFriendActivityProfessionalV0Body": "Een contactpersoon heeft een reisactiviteit gedeeld.",
+  "notifFriendActivityProfessionalV1Title": "Activiteit gedeeld door vriend",
+  "notifFriendActivityProfessionalV1Body": "Bekijk wat een van je contacten heeft ontdekt.",
+  "notifFriendActivityProfessionalV2Title": "Sociale update",
+  "notifFriendActivityProfessionalV2Body": "Een vriend heeft een activiteit gedeeld in de community.",
+  "notifFriendActivityDirectV0Title": "Vriend deelde activiteit",
+  "notifFriendActivityDirectV0Body": "Tik om te bekijken.",
+  "notifFriendActivityDirectV1Title": "Activiteit van vriend",
+  "notifFriendActivityDirectV1Body": "Bekijk de gedeelde activiteit.",
+  "notifFriendActivityDirectV2Title": "Sociale update",
+  "notifFriendActivityDirectV2Body": "Tik voor details.",
+
+  "notifWeekendPlanningNudgeEnergeticV0Title": "Het weekend nadert! 🎉",
+  "notifWeekendPlanningNudgeEnergeticV0Body": "Moody staat klaar om je weekendplan samen te stellen. Laten we gaan!",
+  "notifWeekendPlanningNudgeEnergeticV1Title": "Weekend is bijna hier! 🚀",
+  "notifWeekendPlanningNudgeEnergeticV1Body": "Maak van dit weekend een episch avontuur met Moody!",
+  "notifWeekendPlanningNudgeEnergeticV2Title": "Weekendplanner is actief! 📅",
+  "notifWeekendPlanningNudgeEnergeticV2Body": "Tijd om je weekend vol avonturen te plannen!",
+  "notifWeekendPlanningNudgeFriendlyV0Title": "Het weekend komt eraan 💛",
+  "notifWeekendPlanningNudgeFriendlyV0Body": "Laat Moody je helpen het beste weekend ooit te plannen.",
+  "notifWeekendPlanningNudgeFriendlyV1Title": "Plan je weekend 🌸",
+  "notifWeekendPlanningNudgeFriendlyV1Body": "Moody heeft ideeën voor een geweldig weekend. Wil je ze zien?",
+  "notifWeekendPlanningNudgeFriendlyV2Title": "Weekendplannen maken",
+  "notifWeekendPlanningNudgeFriendlyV2Body": "Een fijn weekend begint met goede planning. Moody helpt je.",
+  "notifWeekendPlanningNudgeProfessionalV0Title": "Weekendplanning beschikbaar",
+  "notifWeekendPlanningNudgeProfessionalV0Body": "Bekijk aanbevelingen voor activiteiten dit weekend.",
+  "notifWeekendPlanningNudgeProfessionalV1Title": "Weekend aanbevelingen",
+  "notifWeekendPlanningNudgeProfessionalV1Body": "Gepersonaliseerde weekendactiviteiten zijn beschikbaar.",
+  "notifWeekendPlanningNudgeProfessionalV2Title": "Plan je weekend",
+  "notifWeekendPlanningNudgeProfessionalV2Body": "Bekijk suggesties voor het komende weekend.",
+  "notifWeekendPlanningNudgeDirectV0Title": "Weekend plannen",
+  "notifWeekendPlanningNudgeDirectV0Body": "Tik om activiteiten voor dit weekend te bekijken.",
+  "notifWeekendPlanningNudgeDirectV1Title": "Weekendaanbevelingen klaar",
+  "notifWeekendPlanningNudgeDirectV1Body": "Tik om te plannen.",
+  "notifWeekendPlanningNudgeDirectV2Title": "Plan het weekend",
+  "notifWeekendPlanningNudgeDirectV2Body": "Aanbevelingen beschikbaar.",
+
+  "notifTrendingInYourCityEnergeticV0Title": "Trending in jouw stad! 🔥",
+  "notifTrendingInYourCityEnergeticV0Body": "Dit zijn de populairste plekken nu. Mis je dit niet!",
+  "notifTrendingInYourCityEnergeticV1Title": "Hot spots vlakbij! 🌟",
+  "notifTrendingInYourCityEnergeticV1Body": "Moody ziet wat er trending is in jouw stad. Ga eropuit!",
+  "notifTrendingInYourCityEnergeticV2Title": "Dit is nu populair! 📈",
+  "notifTrendingInYourCityEnergeticV2Body": "De meest bezochte plekken in jouw stad wachten op je!",
+  "notifTrendingInYourCityFriendlyV0Title": "Populair in jouw stad 💙",
+  "notifTrendingInYourCityFriendlyV0Body": "Dit zijn de plekken waar iedereen nu over praat. Kijk even!",
+  "notifTrendingInYourCityFriendlyV1Title": "Trending plekken vlakbij",
+  "notifTrendingInYourCityFriendlyV1Body": "Moody heeft de populairste bestemmingen in jouw stad gevonden.",
+  "notifTrendingInYourCityFriendlyV2Title": "Dit is nu hip! 🌸",
+  "notifTrendingInYourCityFriendlyV2Body": "Ontdek wat trending is in jouw stad met hulp van Moody.",
+  "notifTrendingInYourCityProfessionalV0Title": "Trending bestemmingen beschikbaar",
+  "notifTrendingInYourCityProfessionalV0Body": "Bekijk de meest populaire locaties in jouw stad.",
+  "notifTrendingInYourCityProfessionalV1Title": "Populaire locaties",
+  "notifTrendingInYourCityProfessionalV1Body": "Trending bestemmingen in jouw omgeving zijn beschikbaar.",
+  "notifTrendingInYourCityProfessionalV2Title": "Stedelijke trends",
+  "notifTrendingInYourCityProfessionalV2Body": "Ontdek populaire bestemmingen in jouw stad.",
+  "notifTrendingInYourCityDirectV0Title": "Trending in jouw stad",
+  "notifTrendingInYourCityDirectV0Body": "Tik om te bekijken.",
+  "notifTrendingInYourCityDirectV1Title": "Populaire plekken",
+  "notifTrendingInYourCityDirectV1Body": "Bekijk trending locaties.",
+  "notifTrendingInYourCityDirectV2Title": "Trending nu",
+  "notifTrendingInYourCityDirectV2Body": "Tik voor populaire bestemmingen."
 }

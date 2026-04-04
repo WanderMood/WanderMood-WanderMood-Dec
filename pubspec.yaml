@@ -84,6 +84,10 @@ dependencies:
   flutter_tts: ^4.2.2
   just_audio: ^0.10.1
   
+  # Notifications
+  flutter_local_notifications: ^18.0.0
+  timezone: ^0.9.4
+
   # Phase 4C Dependencies
   connectivity_plus: ^6.0.5
   shimmer: ^3.0.0

@@ -5,6 +5,7 @@ import 'package:wandermood/features/mood/domain/models/activity.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../domain/models/mood_data.dart';
+import 'package:wandermood/core/providers/notification_provider.dart';
 
 part 'mood_service.g.dart';
 
@@ -92,6 +93,12 @@ class MoodService extends _$MoodService {
     try {
       await _client.from('moods').insert(mood.toJson());
       ref.invalidateSelf();
+      // Schedule mood follow-up notification 4 h after mood is logged.
+      try {
+        await ref
+            .read(notificationTriggersProvider)
+            .onMoodLogged(mood.moodType);
+      } catch (_) {}
     } catch (e) {
       print('Error saving mood: $e');
       rethrow;
@@ -149,6 +156,12 @@ class MoodService extends _$MoodService {
   Future<MoodData> saveMood(MoodData mood) async {
     final result = await _repository.saveMood(mood);
     ref.invalidateSelf();
+    // Schedule mood follow-up notification 4 h after mood is logged.
+    try {
+      await ref
+          .read(notificationTriggersProvider)
+          .onMoodLogged(mood.moodType);
+    } catch (_) {}
     return result;
   }
 
