@@ -3,7 +3,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/core/utils/places_cache_utils.dart';
-import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import '../models/place.dart';
 
 part 'trending_destinations_provider.g.dart';
@@ -18,13 +17,10 @@ class TrendingDestinations extends _$TrendingDestinations {
         .trim();
     if (cityName.isEmpty) return [];
 
-    final mood =
-        ref.watch(dailyMoodStateNotifierProvider).currentMood ?? 'adventurous';
-
     try {
       final places = await PlacesCacheUtils.tryLoadExplorePlaces(
         Supabase.instance.client,
-        mood.toLowerCase().trim(),
+        'trending',
         cityName,
       );
       if (places == null || places.isEmpty) return [];

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
+
+import 'achievement_titles.dart';
 
 enum AchievementCategory {
   exploration,
@@ -21,7 +24,7 @@ class Achievement {
   final bool unlocked;
   final DateTime? unlockedAt;
   final String reward; // Description of the reward
-  
+
   Achievement({
     required this.id,
     required this.title,
@@ -35,9 +38,9 @@ class Achievement {
     this.unlockedAt,
     this.reward = '',
   });
-  
+
   double get progress => currentValue / requiredValue;
-  
+
   Achievement copyWith({
     String? id,
     String? title,
@@ -67,58 +70,60 @@ class Achievement {
   }
 }
 
-// Predefined achievements
+// Predefined achievements — titles from ARB via [achievementTitleForId] (English for JSON seed).
 class AchievementPresets {
+  static final AppLocalizations _en = lookupAppLocalizations(const Locale('en'));
+
   static Achievement explorer = Achievement(
     id: 'explorer',
-    title: 'Explorer',
+    title: achievementTitleForId('explorer', _en),
     description: 'Visit 5 different locations',
     icon: 'explore',
     color: Colors.blue,
     category: AchievementCategory.exploration,
     requiredValue: 5,
   );
-  
+
   static Achievement earlyBird = Achievement(
     id: 'early_bird',
-    title: 'Early Bird',
+    title: achievementTitleForId('early_bird', _en),
     description: 'Complete 3 morning activities',
     icon: 'wb_sunny',
     color: Colors.amber,
     category: AchievementCategory.activity,
     requiredValue: 3,
   );
-  
+
   static Achievement streakMaster = Achievement(
     id: 'streak_master',
-    title: 'Streak Master',
+    title: achievementTitleForId('streak_master', _en),
     description: 'Maintain a 7-day activity streak',
     icon: 'local_fire_department',
     color: Colors.deepOrange,
     category: AchievementCategory.streak,
     requiredValue: 7,
   );
-  
+
   static Achievement moodTracker = Achievement(
     id: 'mood_tracker',
-    title: 'Mood Tracker',
+    title: achievementTitleForId('mood_tracker', _en),
     description: 'Log your mood for 5 consecutive days',
     icon: 'emoji_emotions',
     color: Colors.purple,
     category: AchievementCategory.mood,
     requiredValue: 5,
   );
-  
+
   static Achievement adventurer = Achievement(
     id: 'adventurer',
-    title: 'Adventurer',
+    title: achievementTitleForId('adventurer', _en),
     description: 'Try 3 different types of activities',
     icon: 'hiking',
     color: Colors.green,
     category: AchievementCategory.activity,
     requiredValue: 3,
   );
-  
+
   static List<Achievement> getDefaultAchievements() {
     return [
       explorer,
@@ -128,7 +133,4 @@ class AchievementPresets {
       adventurer,
     ];
   }
-} 
- 
- 
- 
+}

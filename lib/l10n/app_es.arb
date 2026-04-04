@@ -1220,6 +1220,10 @@
   "moodRomantic": "Romántico",
   "moodEnergetic": "Enérgico",
   "moodCurious": "Curioso",
+  "moodHappy": "Feliz",
+  "moodFoodie": "Foodie",
+  "moodExcited": "Emocionado",
+  "moodSurprise": "Sorpresa",
   "dayPlanFoundNewOption": "✨ Nueva opción encontrada: {name}. ({remaining} cambios más disponibles)",
   "activityDetailMatch": "{percent}% de coincidencia",
   "@activityDetailMatch": {
@@ -1840,6 +1844,32 @@
   "exploreAddToMyDayTimeLabel": "Hora",
   "exploreDatePickerHelp": "Elige una fecha",
   "exploreDatePickerConfirm": "Elegir",
+  "exploreTimeGreetingMorning": "Buenos días ☀️",
+  "exploreTimeGreetingAfternoon": "Buenas tardes 🌤",
+  "exploreTimeGreetingEvening": "Buenas noches 🌙",
+  "exploreTimeGreetingLateNight": "Madrugada 🌙",
+  "exploreSectionBecauseFood": "Porque te encanta la comida 🍜",
+  "exploreSectionBecauseCulture": "Porque te encanta la cultura 🏛️",
+  "exploreSectionBecauseNightlife": "Porque te encanta la vida nocturna 🌙",
+  "exploreSectionBecauseOutdoor": "Porque te encanta el aire libre 🌿",
+  "exploreSectionBecauseCoffee": "Porque te encanta el café ☕",
+  "exploreSectionTrendingInCity": "Tendencias en {city} 🔥",
+  "@exploreSectionTrendingInCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreSectionPerfectVibe": "Ideal para tu vibe ✨",
+  "exploreSectionPerfectSolo": "Ideal para días en solitario ✨",
+  "exploreSectionPerfectGroups": "Ideal para grupos 👥",
+  "exploreSectionSomethingDifferent": "Algo distinto 🎲",
+  "exploreSeeAll": "Ver todo",
+  "exploreLoadMore": "Cargar más →",
+  "exploreSectionErrorRetry": "No se pudieron cargar lugares — toca para reintentar",
+  "exploreOfflineShowingCached": "Sin conexión — mostrando resultados en caché",
+  "exploreOfflineEmptyBody": "Conéctate a internet\npara descubrir lugares",
   "explorePlaceDescriptionFallback": "Explora {name}",
   "@explorePlaceDescriptionFallback": {
     "placeholders": {
@@ -1994,6 +2024,13 @@
   "gamificationCategoryMood": "Estado de ánimo",
   "gamificationCategorySpecial": "Especial",
   "gamificationCategoryOther": "Otros",
+
+  "achievementExplorer": "Explorador",
+  "achievementEarlyBird": "Madrugador",
+  "achievementStreakMaster": "Maestro de rachas",
+  "achievementMoodTracker": "Registro del ánimo",
+  "achievementAdventurer": "Aventurero",
+
   "prefScreenTitle": "Tus preferencias",
   "prefSave": "Guardar",
   "prefSavedSuccess": "Preferencias guardadas",

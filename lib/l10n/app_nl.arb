@@ -1303,6 +1303,10 @@
   "moodRomantic": "Romantisch",
   "moodEnergetic": "Energiek",
   "moodCurious": "Nieuwsgierig",
+  "moodHappy": "Blij",
+  "moodFoodie": "Foodie",
+  "moodExcited": "Enthousiast",
+  "moodSurprise": "Verrassing",
   "dayPlanFoundNewOption": "✨ Nieuwe optie gevonden: {name}! (Nog {remaining} wijzigingen beschikbaar)",
   "activityDetailMatch": "{percent}% Match",
   "@activityDetailMatch": {
@@ -1896,6 +1900,32 @@
   "exploreAddToMyDayTimeLabel": "Tijd",
   "exploreDatePickerHelp": "Kies een dag",
   "exploreDatePickerConfirm": "Kies",
+  "exploreTimeGreetingMorning": "Goedemorgen ☀️",
+  "exploreTimeGreetingAfternoon": "Goedemiddag 🌤",
+  "exploreTimeGreetingEvening": "Goedenavond 🌙",
+  "exploreTimeGreetingLateNight": "Late avond 🌙",
+  "exploreSectionBecauseFood": "Omdat jij van eten houdt 🍜",
+  "exploreSectionBecauseCulture": "Omdat jij van cultuur houdt 🏛️",
+  "exploreSectionBecauseNightlife": "Omdat jij van nachtleven houdt 🌙",
+  "exploreSectionBecauseOutdoor": "Omdat jij van buiten houdt 🌿",
+  "exploreSectionBecauseCoffee": "Omdat jij van koffie houdt ☕",
+  "exploreSectionTrendingInCity": "Trending in {city} 🔥",
+  "@exploreSectionTrendingInCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreSectionPerfectVibe": "Perfect voor jouw vibe ✨",
+  "exploreSectionPerfectSolo": "Perfect voor solo-dagen ✨",
+  "exploreSectionPerfectGroups": "Perfect voor groepen 👥",
+  "exploreSectionSomethingDifferent": "Iets anders 🎲",
+  "exploreSeeAll": "Alles tonen",
+  "exploreLoadMore": "Meer laden →",
+  "exploreSectionErrorRetry": "Kon plekken niet laden — tik om opnieuw te proberen",
+  "exploreOfflineShowingCached": "Offline — gecachte resultaten",
+  "exploreOfflineEmptyBody": "Maak verbinding met het internet\nom plekken te ontdekken",
   "explorePlaceDescriptionFallback": "Ontdek {name}",
   "@explorePlaceDescriptionFallback": {
     "placeholders": {
@@ -2050,6 +2080,13 @@
   "gamificationCategoryMood": "Stemming",
   "gamificationCategorySpecial": "Speciaal",
   "gamificationCategoryOther": "Overig",
+
+  "achievementExplorer": "Ontdekker",
+  "achievementEarlyBird": "Vroege vogel",
+  "achievementStreakMaster": "Streak-meester",
+  "achievementMoodTracker": "Stemming bijhouden",
+  "achievementAdventurer": "Avonturier",
+
   "prefScreenTitle": "Jouw voorkeuren",
   "prefSave": "Opslaan",
   "prefSavedSuccess": "Voorkeuren opgeslagen",

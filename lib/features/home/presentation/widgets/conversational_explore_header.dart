@@ -4,52 +4,41 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
 // WanderMood v2 Explore tokens (SCREEN 6)
-const Color _wmCream = Color(0xFFF5F0E8);
 const Color _wmParchment = Color(0xFFE8E2D8);
 const Color _wmForest = Color(0xFF2A6049);
 const Color _wmForestTint = Color(0xFFEBF3EE);
-const Color _wmStone = Color(0xFF8C8780);
 
 class ConversationalExploreHeader extends StatefulWidget {
-  final Function(String) onIntentSelected;
   final Function(String) onSearchChanged;
-  final String selectedIntent;
   final VoidCallback? onFilterTap;
   final int activeFiltersCount;
-  final int activitiesCount;
   final bool isGridView;
   final bool isMapView;
   final Function(bool, bool) onViewToggle;
 
   const ConversationalExploreHeader({
     Key? key,
-    required this.onIntentSelected,
     required this.onSearchChanged,
-    required this.selectedIntent,
     this.onFilterTap,
     this.activeFiltersCount = 0,
-    this.activitiesCount = 0,
     this.isGridView = false,
     this.isMapView = false,
     required this.onViewToggle,
   }) : super(key: key);
 
   @override
-  State<ConversationalExploreHeader> createState() => _ConversationalExploreHeaderState();
+  State<ConversationalExploreHeader> createState() =>
+      _ConversationalExploreHeaderState();
 }
 
 class _ConversationalExploreHeaderState extends State<ConversationalExploreHeader> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedCategory = 'all';
 
-  List<Map<String, dynamic>> _categoryFilters(AppLocalizations l10n) => [
-        {'id': 'all', 'label': l10n.exploreCategoryAll, 'emoji': '✨'},
-        {'id': 'food', 'label': l10n.exploreCategoryFood, 'emoji': '🍽️'},
-        {'id': 'culture', 'label': l10n.exploreCategoryCulture, 'emoji': '🎭'},
-        {'id': 'outdoor', 'label': l10n.exploreCategoryChipOutdoor, 'emoji': '🌳'},
-        {'id': 'shopping', 'label': l10n.exploreCategoryChipShopping, 'emoji': '🛍️'},
-        {'id': 'nightlife', 'label': l10n.exploreCategoryChipNightlife, 'emoji': '🌙'},
-      ];
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() => setState(() {}));
+  }
 
   @override
   void dispose() {
@@ -58,34 +47,14 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
   }
 
   @override
-  void didUpdateWidget(ConversationalExploreHeader oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.selectedIntent != oldWidget.selectedIntent) {
-      final chipId = widget.selectedIntent.isEmpty ? 'all' : widget.selectedIntent;
-      if (chipId != _selectedCategory) {
-        setState(() => _selectedCategory = chipId);
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final categoryFilters = _categoryFilters(l10n);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Search bar at the top
           _buildSearchBar(),
-          const SizedBox(height: 12),
-          
-          // Category filter bubbles
-          _buildCategoryFilters(categoryFilters),
-          
-          // View toggle (tight to chips so list can sit closer)
           const SizedBox(height: 10),
           _buildActivitiesHeader(),
         ],
@@ -136,15 +105,15 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
                   ),
                 ),
                 suffixIcon: _searchController.text.isNotEmpty
-                  ? IconButton(
-                      icon: Icon(Icons.clear, color: Colors.grey[400], size: 20),
-                      padding: EdgeInsets.zero,
-                      onPressed: () {
-                        _searchController.clear();
-                        widget.onSearchChanged('');
-                      },
-                    )
-                  : null,
+                    ? IconButton(
+                        icon: Icon(Icons.clear, color: Colors.grey[400], size: 20),
+                        padding: EdgeInsets.zero,
+                        onPressed: () {
+                          _searchController.clear();
+                          widget.onSearchChanged('');
+                        },
+                      )
+                    : null,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(25),
                   borderSide: BorderSide.none,
@@ -165,7 +134,6 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
               ),
             ),
           ),
-          // Filter icon with badge
           if (widget.onFilterTap != null)
             Container(
               margin: const EdgeInsets.only(right: 8),
@@ -215,76 +183,15 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
         ],
       ),
     ).animate().fadeIn(duration: 600.ms).scale(
-      begin: const Offset(0.95, 0.95),
-      end: const Offset(1.0, 1.0),
-    );
+          begin: const Offset(0.95, 0.95),
+          end: const Offset(1.0, 1.0),
+        );
   }
 
-  Widget _buildCategoryFilters(List<Map<String, dynamic>> categoryFilters) {
-    return SizedBox(
-      height: 44,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        itemCount: categoryFilters.length,
-        itemBuilder: (context, index) {
-          final category = categoryFilters[index];
-          final isSelected = _selectedCategory == category['id'];
-          
-          return Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedCategory = category['id'];
-                });
-                widget.onIntentSelected(category['id']);
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: isSelected ? _wmForestTint : _wmCream,
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(
-                    color: isSelected ? _wmForest : _wmParchment,
-                    width: isSelected ? 1.5 : 0.5,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      category['emoji'],
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      category['label'],
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: isSelected ? _wmForest : _wmStone,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ).animate().fadeIn(
-              duration: 400.ms,
-              delay: Duration(milliseconds: 50 * index),
-            ),
-          );
-        },
-      ),
-    );
-  }
-  
   Widget _buildActivitiesHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        // View toggle buttons
         Container(
           height: 40,
           decoration: BoxDecoration(
@@ -295,7 +202,6 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // List view button — unselected segment uses wmParchment bg (SCREEN 6)
               InkWell(
                 onTap: () {
                   widget.onViewToggle(false, false);
@@ -310,11 +216,10 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
                   child: Icon(
                     Icons.view_list,
                     size: 20,
-                    color: (!widget.isGridView && !widget.isMapView) ? Colors.white : _wmStone,
+                    color: (!widget.isGridView && !widget.isMapView) ? Colors.white : const Color(0xFF8C8780),
                   ),
                 ),
               ),
-              // Grid view button
               InkWell(
                 onTap: () {
                   widget.onViewToggle(true, false);
@@ -328,11 +233,10 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
                   child: Icon(
                     Icons.grid_view,
                     size: 20,
-                    color: widget.isGridView ? Colors.white : _wmStone,
+                    color: widget.isGridView ? Colors.white : const Color(0xFF8C8780),
                   ),
                 ),
               ),
-              // Map view button
               InkWell(
                 onTap: () {
                   widget.onViewToggle(false, true);
@@ -347,7 +251,7 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
                   child: Icon(
                     Icons.map,
                     size: 20,
-                    color: widget.isMapView ? Colors.white : _wmStone,
+                    color: widget.isMapView ? Colors.white : const Color(0xFF8C8780),
                   ),
                 ),
               ),
@@ -357,4 +261,4 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
       ],
     );
   }
-} 
+}

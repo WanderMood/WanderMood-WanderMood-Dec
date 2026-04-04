@@ -3800,6 +3800,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get moodCurious => 'Neugierig';
 
   @override
+  String get moodHappy => 'Glücklich';
+
+  @override
+  String get moodFoodie => 'Foodie';
+
+  @override
+  String get moodExcited => 'Aufgeregt';
+
+  @override
+  String get moodSurprise => 'Überraschung';
+
+  @override
   String dayPlanFoundNewOption(String name, String remaining) {
     return '✨ Neue Option gefunden: $name! (Noch $remaining Änderungen möglich)';
   }
@@ -5520,6 +5532,68 @@ class AppLocalizationsDe extends AppLocalizations {
   String get exploreDatePickerConfirm => 'Wählen';
 
   @override
+  String get exploreTimeGreetingMorning => 'Guten Morgen ☀️';
+
+  @override
+  String get exploreTimeGreetingAfternoon => 'Guten Tag 🌤';
+
+  @override
+  String get exploreTimeGreetingEvening => 'Guten Abend 🌙';
+
+  @override
+  String get exploreTimeGreetingLateNight => 'Späte Stunden 🌙';
+
+  @override
+  String get exploreSectionBecauseFood => 'Weil du Essen liebst 🍜';
+
+  @override
+  String get exploreSectionBecauseCulture => 'Weil du Kultur liebst 🏛️';
+
+  @override
+  String get exploreSectionBecauseNightlife => 'Weil du Nachtleben magst 🌙';
+
+  @override
+  String get exploreSectionBecauseOutdoor => 'Weil du die Natur liebst 🌿';
+
+  @override
+  String get exploreSectionBecauseCoffee => 'Weil du Kaffee liebst ☕';
+
+  @override
+  String exploreSectionTrendingInCity(String city) {
+    return 'Trending in $city 🔥';
+  }
+
+  @override
+  String get exploreSectionPerfectVibe => 'Perfekt für deine Stimmung ✨';
+
+  @override
+  String get exploreSectionPerfectSolo => 'Perfekt für Solo-Tage ✨';
+
+  @override
+  String get exploreSectionPerfectGroups => 'Perfekt für Gruppen 👥';
+
+  @override
+  String get exploreSectionSomethingDifferent => 'Etwas anderes 🎲';
+
+  @override
+  String get exploreSeeAll => 'Alle anzeigen';
+
+  @override
+  String get exploreLoadMore => 'Mehr laden →';
+
+  @override
+  String get exploreSectionErrorRetry =>
+      'Orte konnten nicht geladen werden — tippen zum Wiederholen';
+
+  @override
+  String get exploreOfflineShowingCached =>
+      'Offline — zwischengespeicherte Ergebnisse';
+
+  @override
+  String get exploreOfflineEmptyBody =>
+      'Mit dem Internet verbinden,\num Orte zu entdecken';
+
+  @override
   String explorePlaceDescriptionFallback(String name) {
     return '$name entdecken';
   }
@@ -5953,6 +6027,21 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get gamificationCategoryOther => 'Sonstiges';
+
+  @override
+  String get achievementExplorer => 'Entdecker';
+
+  @override
+  String get achievementEarlyBird => 'Frühaufsteher';
+
+  @override
+  String get achievementStreakMaster => 'Streak-Meister';
+
+  @override
+  String get achievementMoodTracker => 'Stimmungs-Tracker';
+
+  @override
+  String get achievementAdventurer => 'Abenteurer';
 
   @override
   String get prefScreenTitle => 'Deine Einstellungen';

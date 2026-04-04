@@ -1220,6 +1220,10 @@
   "moodRomantic": "Romantisch",
   "moodEnergetic": "Energetisch",
   "moodCurious": "Neugierig",
+  "moodHappy": "Glücklich",
+  "moodFoodie": "Foodie",
+  "moodExcited": "Aufgeregt",
+  "moodSurprise": "Überraschung",
   "dayPlanFoundNewOption": "✨ Neue Option gefunden: {name}! (Noch {remaining} Änderungen möglich)",
   "activityDetailMatch": "{percent}% Match",
   "@activityDetailMatch": {
@@ -1840,6 +1844,32 @@
   "exploreAddToMyDayTimeLabel": "Zeit",
   "exploreDatePickerHelp": "Datum wählen",
   "exploreDatePickerConfirm": "Wählen",
+  "exploreTimeGreetingMorning": "Guten Morgen ☀️",
+  "exploreTimeGreetingAfternoon": "Guten Tag 🌤",
+  "exploreTimeGreetingEvening": "Guten Abend 🌙",
+  "exploreTimeGreetingLateNight": "Späte Stunden 🌙",
+  "exploreSectionBecauseFood": "Weil du Essen liebst 🍜",
+  "exploreSectionBecauseCulture": "Weil du Kultur liebst 🏛️",
+  "exploreSectionBecauseNightlife": "Weil du Nachtleben magst 🌙",
+  "exploreSectionBecauseOutdoor": "Weil du die Natur liebst 🌿",
+  "exploreSectionBecauseCoffee": "Weil du Kaffee liebst ☕",
+  "exploreSectionTrendingInCity": "Trending in {city} 🔥",
+  "@exploreSectionTrendingInCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreSectionPerfectVibe": "Perfekt für deine Stimmung ✨",
+  "exploreSectionPerfectSolo": "Perfekt für Solo-Tage ✨",
+  "exploreSectionPerfectGroups": "Perfekt für Gruppen 👥",
+  "exploreSectionSomethingDifferent": "Etwas anderes 🎲",
+  "exploreSeeAll": "Alle anzeigen",
+  "exploreLoadMore": "Mehr laden →",
+  "exploreSectionErrorRetry": "Orte konnten nicht geladen werden — tippen zum Wiederholen",
+  "exploreOfflineShowingCached": "Offline — zwischengespeicherte Ergebnisse",
+  "exploreOfflineEmptyBody": "Mit dem Internet verbinden,\num Orte zu entdecken",
   "explorePlaceDescriptionFallback": "{name} entdecken",
   "@explorePlaceDescriptionFallback": {
     "placeholders": {
@@ -1994,6 +2024,13 @@
   "gamificationCategoryMood": "Stimmung",
   "gamificationCategorySpecial": "Besonders",
   "gamificationCategoryOther": "Sonstiges",
+
+  "achievementExplorer": "Entdecker",
+  "achievementEarlyBird": "Frühaufsteher",
+  "achievementStreakMaster": "Streak-Meister",
+  "achievementMoodTracker": "Stimmungs-Tracker",
+  "achievementAdventurer": "Abenteurer",
+
   "prefScreenTitle": "Deine Einstellungen",
   "prefSave": "Speichern",
   "prefSavedSuccess": "Einstellungen gespeichert",

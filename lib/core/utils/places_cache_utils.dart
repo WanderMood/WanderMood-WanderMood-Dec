@@ -9,8 +9,17 @@ import 'package:wandermood/features/places/models/place.dart';
 class PlacesCacheUtils {
   PlacesCacheUtils._();
 
-  /// Same as `cacheSchemaVersion` in `moody/index.ts` → `handleGetExplore`.
-  static const String exploreCacheSchemaVersion = 'v6';
+  /// Same as aggregate explore cache prefix in `moody` (`explore_v7_…`).
+  static const String exploreCacheSchemaVersion = 'v7';
+
+  /// Section ids for `get_explore` (`section` param) + broad `discovery` aggregate.
+  static const List<String> exploreV7SectionIds = [
+    'discovery',
+    'food',
+    'trending',
+    'solo',
+    'different',
+  ];
 
   /// Matches `fetchUserContext` in moody: `isLocalMode: currently_exploring === 'local'`.
   static Future<bool> readExploreIsLocalMode(SupabaseClient client) async {
@@ -29,72 +38,84 @@ class PlacesCacheUtils {
     }
   }
 
-  /// Canonical aggregate key — same as moody: `explore_v6_{local|travel}_{mood}_{city}`.
+  /// Canonical aggregate key — moody v7: `explore_v7_{local|travel}_{section}_{city}`.
   static String exploreAggregateCacheKey(
     bool isLocalMode,
-    String mood,
+    String section,
     String location,
   ) {
     final modeKey = isLocalMode ? 'local' : 'travel';
     final loc = location.toLowerCase().trim();
-    return 'explore_${exploreCacheSchemaVersion}_${modeKey}_${mood}_$loc';
+    final sec = section.toLowerCase().trim();
+    return 'explore_${exploreCacheSchemaVersion}_${modeKey}_${sec}_$loc';
   }
 
-  /// Ordered fallbacks for older rows still in `places_cache` (pre–v6 / legacy client keys).
+  /// v7 primary key, then v6 mood-based rows, then older keys (pre–sections Explore).
   static List<String> exploreAggregateCacheKeyCandidates(
     bool isLocalMode,
-    String mood,
+    String section,
     String location,
   ) {
+    final modeKey = isLocalMode ? 'local' : 'travel';
     final loc = location.toLowerCase().trim();
     return [
-      exploreAggregateCacheKey(isLocalMode, mood, location),
-      'explore_v3_quality_${mood}_$loc',
-      'explore_${mood}_$loc',
+      exploreAggregateCacheKey(isLocalMode, section, location),
+      'explore_v6_${modeKey}_adventurous_$loc',
+      'explore_v6_${modeKey}_relaxed_$loc',
+      'explore_v6_${modeKey}_cultural_$loc',
+      'explore_v3_quality_adventurous_$loc',
+      'explore_adventurous_$loc',
     ];
   }
 
   /// Canonical cache key for list-style Explore responses (Edge + `places_cache` aggregate row).
-  static String standardExploreCacheKey(bool isLocalMode, String mood, String city) =>
-      exploreAggregateCacheKey(isLocalMode, mood, city);
+  static String standardExploreCacheKey(bool isLocalMode, String section, String city) =>
+      exploreAggregateCacheKey(isLocalMode, section, city);
 
   /// Per-place row `cache_key` suffix (when used): `${aggregate}_${placeId}`.
   static String explorePerPlaceCacheKey(
     bool isLocalMode,
-    String mood,
+    String section,
     String location,
     String placeId,
   ) {
     final trimmed = placeId.trim();
     final raw = trimmed.startsWith('google_') ? trimmed.substring(7) : trimmed;
-    return '${exploreAggregateCacheKey(isLocalMode, mood, location)}_$raw';
+    return '${exploreAggregateCacheKey(isLocalMode, section, location)}_$raw';
   }
 
   static List<String> explorePerPlaceCacheKeyCandidates(
     bool isLocalMode,
-    String mood,
+    String section,
     String location,
     String placeId,
   ) {
     final trimmed = placeId.trim();
     final raw = trimmed.startsWith('google_') ? trimmed.substring(7) : trimmed;
-    return exploreAggregateCacheKeyCandidates(isLocalMode, mood, location)
+    return exploreAggregateCacheKeyCandidates(isLocalMode, section, location)
         .map((k) => '${k}_$raw')
         .toList();
   }
 
   /// Raw JSON for a single cached explore card (when moody wrote a per-place row).
+  ///
+  /// When [section] is null, tries all [exploreV7SectionIds] in order.
   static Future<Map<String, dynamic>?> tryLoadExplorePlaceData(
     SupabaseClient client,
-    String mood,
     String location,
     String placeId, {
+    String? section,
     bool? isLocalMode,
   }) async {
     final local = isLocalMode ?? await readExploreIsLocalMode(client);
-    for (final key in explorePerPlaceCacheKeyCandidates(local, mood, location, placeId)) {
-      final row = await _trySelectPlacesCacheRow(client, key);
-      if (row != null) return row;
+    final secs = section != null && section.trim().isNotEmpty
+        ? [section.toLowerCase().trim()]
+        : exploreV7SectionIds;
+    for (final sec in secs) {
+      for (final key in explorePerPlaceCacheKeyCandidates(local, sec, location, placeId)) {
+        final row = await _trySelectPlacesCacheRow(client, key);
+        if (row != null) return row;
+      }
     }
     return null;
   }
@@ -128,16 +149,16 @@ class PlacesCacheUtils {
 
   static Future<String?> tryExplorePlacePhotoUrl(
     SupabaseClient client, {
-    required String mood,
     required String location,
     required String placeId,
+    String? section,
     bool? isLocalMode,
   }) async {
     final data = await tryLoadExplorePlaceData(
       client,
-      mood,
       location,
       placeId,
+      section: section,
       isLocalMode: isLocalMode,
     );
     final u = data?['photo_url'] as String?;
@@ -151,12 +172,12 @@ class PlacesCacheUtils {
   /// When null, reads from `profiles` for the signed-in user (travel when unknown / guest).
   static Future<List<Place>?> tryLoadExplorePlaces(
     SupabaseClient client,
-    String mood,
+    String section,
     String location, {
     bool? isLocalMode,
   }) async {
     final local = isLocalMode ?? await readExploreIsLocalMode(client);
-    final keys = exploreAggregateCacheKeyCandidates(local, mood, location);
+    final keys = exploreAggregateCacheKeyCandidates(local, section, location);
 
     for (final cacheKey in keys) {
       try {
@@ -232,6 +253,11 @@ class PlacesCacheUtils {
 
     final types = (card['types'] as List<dynamic>?)?.cast<String>() ?? <String>[];
 
+    final editorial = (card['editorial_summary'] as String?)?.trim();
+    final description = (editorial != null && editorial.isNotEmpty)
+        ? editorial
+        : card['description'] as String?;
+
     final openingRaw = card['opening_hours'] as Map<String, dynamic>?;
     PlaceOpeningHours? openingHours;
     if (openingRaw != null && openingRaw.isNotEmpty) {
@@ -256,7 +282,7 @@ class PlacesCacheUtils {
         lat: (locationData['lat'] as num?)?.toDouble() ?? 0.0,
         lng: (locationData['lng'] as num?)?.toDouble() ?? 0.0,
       ),
-      description: card['description'] as String?,
+      description: description,
       priceLevel: card['price_level'] as int?,
       isFree: card['price_level'] == null || card['price_level'] == 0,
       reviewCount: (card['user_ratings_total'] as num?)?.toInt() ?? 0,

@@ -3768,6 +3768,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moodCurious => 'Curious';
 
   @override
+  String get moodHappy => 'Happy';
+
+  @override
+  String get moodFoodie => 'Foodie';
+
+  @override
+  String get moodExcited => 'Excited';
+
+  @override
+  String get moodSurprise => 'Surprise';
+
+  @override
   String dayPlanFoundNewOption(String name, String remaining) {
     return '✨ Found a new option: $name! ($remaining more changes available)';
   }
@@ -5479,6 +5491,66 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exploreDatePickerConfirm => 'Choose';
 
   @override
+  String get exploreTimeGreetingMorning => 'Good morning ☀️';
+
+  @override
+  String get exploreTimeGreetingAfternoon => 'Good afternoon 🌤';
+
+  @override
+  String get exploreTimeGreetingEvening => 'Good evening 🌙';
+
+  @override
+  String get exploreTimeGreetingLateNight => 'Late night vibes 🌙';
+
+  @override
+  String get exploreSectionBecauseFood => 'Because you love food 🍜';
+
+  @override
+  String get exploreSectionBecauseCulture => 'Because you love culture 🏛️';
+
+  @override
+  String get exploreSectionBecauseNightlife => 'Because you love nightlife 🌙';
+
+  @override
+  String get exploreSectionBecauseOutdoor => 'Because you love the outdoors 🌿';
+
+  @override
+  String get exploreSectionBecauseCoffee => 'Because you love coffee ☕';
+
+  @override
+  String exploreSectionTrendingInCity(String city) {
+    return 'Trending in $city 🔥';
+  }
+
+  @override
+  String get exploreSectionPerfectVibe => 'Perfect for your vibe ✨';
+
+  @override
+  String get exploreSectionPerfectSolo => 'Perfect for solo days ✨';
+
+  @override
+  String get exploreSectionPerfectGroups => 'Perfect for groups 👥';
+
+  @override
+  String get exploreSectionSomethingDifferent => 'Something different 🎲';
+
+  @override
+  String get exploreSeeAll => 'See all';
+
+  @override
+  String get exploreLoadMore => 'Load more →';
+
+  @override
+  String get exploreSectionErrorRetry => 'Could not load places — tap to retry';
+
+  @override
+  String get exploreOfflineShowingCached => 'Offline — showing cached results';
+
+  @override
+  String get exploreOfflineEmptyBody =>
+      'Connect to the internet\nto discover places';
+
+  @override
   String explorePlaceDescriptionFallback(String name) {
     return 'Explore $name';
   }
@@ -5910,6 +5982,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gamificationCategoryOther => 'Other';
+
+  @override
+  String get achievementExplorer => 'Explorer';
+
+  @override
+  String get achievementEarlyBird => 'Early Bird';
+
+  @override
+  String get achievementStreakMaster => 'Streak Master';
+
+  @override
+  String get achievementMoodTracker => 'Mood Tracker';
+
+  @override
+  String get achievementAdventurer => 'Adventurer';
 
   @override
   String get prefScreenTitle => 'Your Preferences';

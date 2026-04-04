@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
+
 import '../../domain/models/achievement.dart';
+import '../../domain/models/achievement_titles.dart';
 
 class AchievementBadge extends StatelessWidget {
   final Achievement achievement;
@@ -19,6 +22,7 @@ class AchievementBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final icon = achievement.icon;
     final IconData iconData = _getIconData(icon);
     
@@ -68,7 +72,7 @@ class AchievementBadge extends StatelessWidget {
           
           // Achievement name
           Text(
-            achievement.title,
+            achievementTitleForId(achievement.id, l10n),
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w600,

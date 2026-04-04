@@ -3,6 +3,7 @@ import 'package:wandermood/l10n/app_localizations.dart';
 
 import 'package:wandermood/core/providers/communication_style_provider.dart';
 import 'package:wandermood/core/services/notification_service.dart';
+import 'localised_mood_name.dart';
 import 'notification_category.dart';
 import 'notification_copy_provider.dart';
 import 'notification_ids.dart';
@@ -85,7 +86,7 @@ class NotificationTriggers {
         _style,
         _prefs,
         _l10n,
-        params: {'moodType': moodType},
+        params: {'moodType': localisedMoodName(moodType, _l10n)},
       );
       final fireAt = DateTime.now().add(const Duration(hours: 4));
       await _svc.scheduleAt(NotificationIds.moodFollowUp, copy, fireAt);

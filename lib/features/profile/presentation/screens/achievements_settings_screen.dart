@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../gamification/providers/gamification_provider.dart';
 import '../../../gamification/domain/models/achievement.dart';
+import '../../../gamification/domain/models/achievement_titles.dart';
 import '../widgets/settings_screen_template.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
@@ -86,6 +87,7 @@ class AchievementsSettingsScreen extends ConsumerWidget {
             ...unlockedAchievements.map((achievement) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _buildAchievementCard(
+                    context: context,
                     achievement: achievement,
                     unlocked: true,
                   ),
@@ -109,6 +111,7 @@ class AchievementsSettingsScreen extends ConsumerWidget {
                     .map((achievement) => Padding(
                           padding: const EdgeInsets.only(bottom: 12),
                           child: _buildAchievementCard(
+                            context: context,
                             achievement: achievement,
                             unlocked: false,
                           ),
@@ -123,9 +126,11 @@ class AchievementsSettingsScreen extends ConsumerWidget {
   }
 
   Widget _buildAchievementCard({
+    required BuildContext context,
     required Achievement achievement,
     required bool unlocked,
   }) {
+    final cardL10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -157,7 +162,7 @@ class AchievementsSettingsScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    achievement.title,
+                    achievementTitleForId(achievement.id, cardL10n),
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w600,
                       fontSize: 16,

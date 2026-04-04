@@ -1221,6 +1221,10 @@
   "moodRomantic": "Romantique",
   "moodEnergetic": "Énergique",
   "moodCurious": "Curieux",
+  "moodHappy": "Heureux",
+  "moodFoodie": "Foodie",
+  "moodExcited": "Excité",
+  "moodSurprise": "Surprise",
   "dayPlanFoundNewOption": "✨ Nouvelle option trouvée : {name} ! (Encore {remaining} changements disponibles)",
   "activityDetailMatch": "{percent}% de correspondance",
   "@activityDetailMatch": {
@@ -1841,6 +1845,32 @@
   "exploreAddToMyDayTimeLabel": "Heure",
   "exploreDatePickerHelp": "Choisir une date",
   "exploreDatePickerConfirm": "Choisir",
+  "exploreTimeGreetingMorning": "Bonjour ☀️",
+  "exploreTimeGreetingAfternoon": "Bon après-midi 🌤",
+  "exploreTimeGreetingEvening": "Bonsoir 🌙",
+  "exploreTimeGreetingLateNight": "Fin de nuit 🌙",
+  "exploreSectionBecauseFood": "Parce que tu adores la bouffe 🍜",
+  "exploreSectionBecauseCulture": "Parce que tu adores la culture 🏛️",
+  "exploreSectionBecauseNightlife": "Parce que tu adores la vie nocturne 🌙",
+  "exploreSectionBecauseOutdoor": "Parce que tu adores le grand air 🌿",
+  "exploreSectionBecauseCoffee": "Parce que tu adores le café ☕",
+  "exploreSectionTrendingInCity": "Tendances à {city} 🔥",
+  "@exploreSectionTrendingInCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreSectionPerfectVibe": "Parfait pour ton vibe ✨",
+  "exploreSectionPerfectSolo": "Parfait pour les journées solo ✨",
+  "exploreSectionPerfectGroups": "Parfait pour les groupes 👥",
+  "exploreSectionSomethingDifferent": "Quelque chose de différent 🎲",
+  "exploreSeeAll": "Tout voir",
+  "exploreLoadMore": "Charger plus →",
+  "exploreSectionErrorRetry": "Impossible de charger les lieux — touchez pour réessayer",
+  "exploreOfflineShowingCached": "Hors ligne — résultats en cache",
+  "exploreOfflineEmptyBody": "Connecte-toi à internet\npour découvrir des lieux",
   "explorePlaceDescriptionFallback": "Explorer {name}",
   "@explorePlaceDescriptionFallback": {
     "placeholders": {
@@ -1995,6 +2025,13 @@
   "gamificationCategoryMood": "Humeur",
   "gamificationCategorySpecial": "Spécial",
   "gamificationCategoryOther": "Autre",
+
+  "achievementExplorer": "Explorateur",
+  "achievementEarlyBird": "Lève-tôt",
+  "achievementStreakMaster": "Maître des séries",
+  "achievementMoodTracker": "Suivi d'humeur",
+  "achievementAdventurer": "Aventurier",
+
   "prefScreenTitle": "Tes préférences",
   "prefSave": "Enregistrer",
   "prefSavedSuccess": "Préférences enregistrées",

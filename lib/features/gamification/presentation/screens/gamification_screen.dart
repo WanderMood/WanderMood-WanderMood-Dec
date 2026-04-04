@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
 import '../../domain/models/achievement.dart';
+import '../../domain/models/achievement_titles.dart';
 import '../../domain/models/streak.dart';
 import '../../providers/gamification_provider.dart';
 import '../widgets/achievement_badge.dart';
@@ -251,6 +252,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen> {
   }
   
   Widget _buildAchievementDetailModal(Achievement achievement) {
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -288,7 +290,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen> {
                 
                 // Title
                 Text(
-                  achievement.title,
+                  achievementTitleForId(achievement.id, l10n),
                   style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,

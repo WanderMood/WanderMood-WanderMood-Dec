@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/config/supabase_config.dart';
+import 'package:wandermood/core/errors/explore_location_exception.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
@@ -169,14 +170,15 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
       
       // CRITICAL: Validate location exists - no defaults allowed
       if (location == null || location.isEmpty || location.trim().isEmpty) {
-        throw Exception('Location is required. Please enable location services or set your location in settings.');
+        throw const ExploreLocationException(ExploreLocationReason.missingCity);
       }
-      
+
       // CRITICAL: Get GPS coordinates - use .future to get the Future directly
       final position = await ref.read(userLocationProvider.future);
-      
+
       if (position == null) {
-        throw Exception('GPS coordinates are required. Please enable location services.');
+        throw const ExploreLocationException(
+            ExploreLocationReason.missingCoordinates);
       }
       
       debugPrint('📍 Using location: $location at (${position.latitude}, ${position.longitude})');
@@ -418,6 +420,9 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
 
   String _getErrorMessage(BuildContext context, dynamic error) {
     final l10n = AppLocalizations.of(context)!;
+    if (error is ExploreLocationException) {
+      return l10n.planLoadingErrorLocation;
+    }
     final errorString = error.toString().toLowerCase();
     if (errorString.contains('api key') || errorString.contains('invalid key') || errorString.contains('unauthorized')) {
       return l10n.planLoadingErrorApiKey;

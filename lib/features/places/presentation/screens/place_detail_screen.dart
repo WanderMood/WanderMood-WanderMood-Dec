@@ -3309,13 +3309,10 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   /// Per-place `places_cache` row (if moody wrote one), then Google Places API.
   Future<Place> _fetchPlaceDirectly(String placeId) async {
     try {
-      final dailyState = ref.read(dailyMoodStateNotifierProvider);
-      final mood = dailyState.currentMood ?? 'adventurous';
       final location = ref.read(locationNotifierProvider).valueOrNull;
       if (location != null && location.trim().isNotEmpty) {
         final raw = await PlacesCacheUtils.tryLoadExplorePlaceData(
           Supabase.instance.client,
-          mood,
           location,
           placeId,
         );

@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/core/utils/places_cache_utils.dart';
-import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 
 /// First photo URL from `places_cache` per-place explore row (no Google Details).
 final placePhotoUrlProvider =
@@ -11,11 +10,8 @@ final placePhotoUrlProvider =
   try {
     final city = ref.watch(locationNotifierProvider).asData?.value?.trim();
     if (city == null || city.isEmpty) return null;
-    final mood =
-        ref.watch(dailyMoodStateNotifierProvider).currentMood ?? 'adventurous';
     return PlacesCacheUtils.tryExplorePlacePhotoUrl(
       Supabase.instance.client,
-      mood: mood.toLowerCase().trim(),
       location: city,
       placeId: placeId,
     );

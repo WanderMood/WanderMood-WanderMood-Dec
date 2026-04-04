@@ -38,7 +38,7 @@ class MoodyIdleScreen extends StatefulWidget {
   /// Drives afternoon floating props per spec (outdoor / food / culture / social).
   final String? afternoonInterestCategory;
 
-  /// Passed to `idle_message` edge action (optional).
+  /// Passed through to `generate_hub_message` as `user_preferences` (optional).
   final Map<String, dynamic>? userPreferences;
 
   /// e.g. first entry from `user_preference_patterns.top_rated_activities`.

@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
-import 'package:wandermood/core/notifications/notification_category.dart';
 import 'package:wandermood/core/notifications/notification_copy_provider.dart';
 import 'package:wandermood/core/notifications/notification_scheduler.dart';
 import 'package:wandermood/core/notifications/notification_triggers.dart';
 import 'package:wandermood/core/providers/communication_style_provider.dart';
 import 'package:wandermood/core/presentation/providers/language_provider.dart';
 import 'package:wandermood/core/services/notification_service.dart';
+import 'package:wandermood/features/gamification/domain/models/achievement_titles.dart';
 import 'package:wandermood/features/gamification/providers/gamification_provider.dart'
     hide sharedPreferencesProvider;
 import 'package:wandermood/features/settings/presentation/providers/user_preferences_provider.dart';
@@ -108,12 +108,8 @@ final notificationBridgeProvider = Provider<void>((ref) {
     final nextId = next.lastUnlockedAchievementId;
 
     if (nextId != null && nextId != prevId) {
-      // Look up the achievement title from the list.
-      final achievement = next.achievements
-          .where((a) => a.id == nextId)
-          .firstOrNull;
-
-      final title = achievement?.title ?? nextId;
+      final l10n = ref.read(notificationL10nProvider);
+      final title = achievementTitleForId(nextId, l10n);
       final index = next.achievements.indexWhere((a) => a.id == nextId);
 
       triggers.onAchievementUnlocked(title, index: index.clamp(0, 49));

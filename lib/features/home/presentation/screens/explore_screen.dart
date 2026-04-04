@@ -7,7 +7,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/features/location/presentation/widgets/location_dropdown.dart';
 import 'package:wandermood/features/places/models/place.dart';
 // OLD - Replaced by moody_explore_provider. Keep for 24-48h rollback safety.
@@ -16,10 +15,10 @@ import 'package:wandermood/features/places/presentation/widgets/place_card.dart'
 import 'package:wandermood/features/places/presentation/widgets/place_grid_card.dart';
 import 'package:wandermood/features/places/presentation/widgets/book_with_gyg_section.dart';
 import 'package:wandermood/features/places/providers/gyg_links_provider.dart';
+import 'package:wandermood/core/errors/explore_location_exception.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:wandermood/core/constants/api_keys.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 
 import 'package:geolocator/geolocator.dart';
@@ -28,8 +27,6 @@ import 'package:wandermood/core/services/user_preferences_service.dart';
 
 import '../widgets/conversational_explore_header.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
-import '../../application/intent_processor.dart';
-import '../../providers/smart_context_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/utils/places_cache_utils.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
@@ -41,6 +38,18 @@ import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
+import 'package:wandermood/core/providers/preferences_provider.dart';
+import 'package:wandermood/features/home/presentation/screens/explore_see_all_screen.dart';
+
+class _ExploreSectionData {
+  _ExploreSectionData({required this.id, List<Place>? cards})
+      : cards = cards ?? [];
+
+  final String id;
+  List<Place> cards;
+  bool isLoading = false;
+  bool hasError = false;
+}
 
 /// WanderMood v2 — Advanced Filters modal (SCREEN 7)
 const Color _afWmWhite = Color(0xFFFFFFFF);
@@ -53,20 +62,6 @@ const Color _afWmStone = Color(0xFF8C8780);
 
 /// Clears MainScreen floating pill nav + typical home indicator ([MainScreen] `extendBody`).
 const double _kExploreFloatingNavClearance = 88;
-
-/// Inclusion / vibe chips — keys must match Moody `get_explore` `namedFilters` (v59+).
-const List<Map<String, dynamic>> kExploreInclusionFilters = [
-  {'key': 'halal', 'label': 'Halal', 'icon': '🥩'},
-  {'key': 'lgbtq_friendly', 'label': 'LGBTQ+ Friendly', 'icon': '🏳️‍🌈'},
-  {'key': 'black_owned', 'label': 'Black-Owned', 'icon': '✊🏾'},
-  {'key': 'family_friendly', 'label': 'Family-Friendly', 'icon': '👨‍👩‍👧'},
-  {'key': 'kids_friendly', 'label': 'Kids-Friendly', 'icon': '🧒'},
-  {'key': 'vegan', 'label': 'Vegan', 'icon': '🌱'},
-  {'key': 'instagrammable', 'label': 'Instagrammable', 'icon': '📸'},
-  {'key': 'romantic', 'label': 'Romantic', 'icon': '💑'},
-  {'key': 'trendy', 'label': 'Trending', 'icon': '🔥'},
-  {'key': 'outdoor', 'label': 'Outdoor', 'icon': '🌿'},
-];
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({Key? key}) : super(key: key);
@@ -90,23 +85,19 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   // Scroll detection for content
   bool _isScrolling = false;
   double _lastScrollOffset = 0.0;
+  bool _showScrollToTop = false;
 
   // View mode toggle - grid, list or map
   bool _isGridView = false;
   bool _isMapView = false;
   GoogleMapController? _mapController;
 
-  // Conversational interface state
-  String _selectedIntent = '';
-  String _currentExplanation = '';
-  List<Place> _intentFilteredPlaces = [];
-
-  /// Active `namedFilters` chip keys; empty = use normal [moodyExploreAutoProvider] feed.
-  final Set<String> _inclusionNamedFilterKeys = {};
-
-  /// Places from last `get_explore` + namedFilters call; null = use provider list.
-  List<Place>? _inclusionNamedFilterPlaces;
-  bool _inclusionNamedFilterLoading = false;
+  late final List<_ExploreSectionData> _sections = [
+    _ExploreSectionData(id: 'food'),
+    _ExploreSectionData(id: 'trending'),
+    _ExploreSectionData(id: 'solo'),
+    _ExploreSectionData(id: 'different'),
+  ];
 
   // Advanced filter settings - New Structure
   int _activeFiltersCount = 0;
@@ -196,12 +187,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   @override
   void initState() {
     super.initState();
+    for (final s in _sections) {
+      s.isLoading = true;
+    }
     _searchController.addListener(_onSearchChanged);
     _scrollController.addListener(_onScrollChanged);
 
     // Refresh location; keep Supabase/SharedPreferences explore caches (cache-first).
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       ref.read(locationNotifierProvider.notifier).getCurrentLocation();
+      _scheduleLoadSectionsIfReady();
     });
   }
 
@@ -230,79 +225,357 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       return;
     }
     ref.invalidate(moodyExploreAutoProvider);
+    await _loadAllSections();
   }
 
-  void _clearInclusionNamedFilters() {
-    _inclusionNamedFilterKeys.clear();
-    _inclusionNamedFilterPlaces = null;
-    _inclusionNamedFilterLoading = false;
-  }
-
-  Future<void> _onInclusionFilterTapped(String filterKey) async {
-    final connected = await ref.read(connectivityServiceProvider).isConnected;
+  void _scheduleLoadSectionsIfReady() {
     if (!mounted) return;
+    final city = ref.read(locationNotifierProvider).value?.trim();
+    final pos = ref.read(userLocationProvider).value;
+    if (city != null && city.isNotEmpty && pos != null) {
+      unawaited(_loadAllSections());
+    }
+  }
+
+  List<Place> _mergePlaces(List<Place> existing, List<Place> incoming) {
+    final seen = <String>{};
+    final out = <Place>[];
+    for (final p in [...existing, ...incoming]) {
+      if (p.id.isEmpty) continue;
+      if (seen.add(p.id)) out.add(p);
+    }
+    return out;
+  }
+
+  Future<void> _loadAllSections() async {
+    if (!mounted) return;
+    final connected = await ref.read(connectivityServiceProvider).isConnected;
     if (!connected) {
-      showOfflineSnackBar(context);
+      await _loadAllSectionsOffline();
       return;
     }
 
     setState(() {
-      if (_inclusionNamedFilterKeys.contains(filterKey)) {
-        _inclusionNamedFilterKeys.remove(filterKey);
-      } else {
-        _inclusionNamedFilterKeys.add(filterKey);
-      }
-      if (_inclusionNamedFilterKeys.isEmpty) {
-        _inclusionNamedFilterPlaces = null;
+      for (final s in _sections) {
+        s.isLoading = true;
+        s.hasError = false;
       }
     });
+    await Future.wait(_sections.map((s) => _loadSection(s)));
+  }
 
-    if (_inclusionNamedFilterKeys.isEmpty) {
-      ref.invalidate(moodyExploreAutoProvider);
+  Future<void> _loadAllSectionsOffline() async {
+    final city = ref.read(locationNotifierProvider).value?.trim() ?? '';
+    if (city.isEmpty || !mounted) return;
+    final client = Supabase.instance.client;
+    setState(() {
+      for (final s in _sections) {
+        s.isLoading = true;
+        s.hasError = false;
+      }
+    });
+    for (final s in _sections) {
+      final cached = await PlacesCacheUtils.tryLoadExplorePlaces(
+        client,
+        s.id,
+        city,
+      );
+      if (!mounted) return;
+      setState(() {
+        s.cards = cached ?? [];
+        s.isLoading = false;
+        s.hasError = cached == null || cached.isEmpty;
+      });
+    }
+  }
+
+  Future<void> _loadSection(
+    _ExploreSectionData section, {
+    bool append = false,
+  }) async {
+    if (!mounted) return;
+    final city = ref.read(locationNotifierProvider).value?.trim() ?? '';
+    final position = ref.read(userLocationProvider).value;
+    if (city.isEmpty || position == null) {
+      setState(() {
+        section.isLoading = false;
+        section.hasError = true;
+      });
       return;
     }
 
-    setState(() => _inclusionNamedFilterLoading = true);
-
-    try {
-      final location = ref.read(locationNotifierProvider).value?.trim() ?? '';
-      final position = await ref.read(userLocationProvider.future);
+    final connected = await ref.read(connectivityServiceProvider).isConnected;
+    if (!connected) {
+      final cached = await PlacesCacheUtils.tryLoadExplorePlaces(
+        Supabase.instance.client,
+        section.id,
+        city,
+      );
       if (!mounted) return;
-      if (location.isEmpty || position == null) {
-        setState(() => _inclusionNamedFilterLoading = false);
-        return;
-      }
+      setState(() {
+        final list = cached ?? [];
+        section.cards =
+            append ? _mergePlaces(section.cards, list) : List<Place>.from(list);
+        section.isLoading = false;
+        section.hasError = list.isEmpty;
+      });
+      return;
+    }
 
-      final service = ref.read(moodyEdgeFunctionServiceProvider);
+    setState(() {
+      section.isLoading = true;
+      section.hasError = false;
+      if (!append) section.cards = [];
+    });
+
+    final filters = ref.read(moodyExploreBackendFiltersProvider);
+    final service = ref.read(moodyEdgeFunctionServiceProvider);
+    try {
       final places = await service.getExplore(
-        mood: 'all',
-        location: location,
+        location: city,
         latitude: position.latitude,
         longitude: position.longitude,
-        filters: const <String, dynamic>{},
-        namedFilters: _inclusionNamedFilterKeys.toList(),
+        section: section.id,
+        filters: filters.isEmpty ? null : filters,
       );
-
       if (!mounted) return;
       setState(() {
-        _inclusionNamedFilterPlaces = places;
-        _inclusionNamedFilterLoading = false;
+        section.cards = append
+            ? _mergePlaces(section.cards, places)
+            : List<Place>.from(places);
+        section.isLoading = false;
       });
     } catch (e, st) {
-      debugPrint('Inclusion namedFilters fetch error: $e\n$st');
+      debugPrint('Explore section ${section.id} error: $e\n$st');
+      final cached = await PlacesCacheUtils.tryLoadExplorePlaces(
+        Supabase.instance.client,
+        section.id,
+        city,
+      );
       if (!mounted) return;
       setState(() {
-        _inclusionNamedFilterPlaces = [];
-        _inclusionNamedFilterLoading = false;
+        final list = cached ?? [];
+        section.cards =
+            append ? _mergePlaces(section.cards, list) : List<Place>.from(list);
+        section.isLoading = false;
+        section.hasError = list.isEmpty;
       });
     }
+  }
+
+  String _timeGreeting(AppLocalizations l10n) {
+    final hour = DateTime.now().hour;
+    if (hour >= 6 && hour < 12) return l10n.exploreTimeGreetingMorning;
+    if (hour >= 12 && hour < 17) return l10n.exploreTimeGreetingAfternoon;
+    if (hour >= 17 && hour < 21) return l10n.exploreTimeGreetingEvening;
+    return l10n.exploreTimeGreetingLateNight;
+  }
+
+  String _sectionTitle(AppLocalizations l10n, _ExploreSectionData section, String city) {
+    if (section.id == 'food') {
+      final interests = ref.read(preferencesProvider).travelInterests;
+      if (interests.isNotEmpty) {
+        final top = interests.first.toLowerCase();
+        if (top.contains('culture')) return l10n.exploreSectionBecauseCulture;
+        if (top.contains('nightlife')) return l10n.exploreSectionBecauseNightlife;
+        if (top.contains('outdoor')) return l10n.exploreSectionBecauseOutdoor;
+        if (top.contains('coffee')) return l10n.exploreSectionBecauseCoffee;
+      }
+      return l10n.exploreSectionBecauseFood;
+    }
+    if (section.id == 'trending') {
+      return l10n.exploreSectionTrendingInCity(city);
+    }
+    if (section.id == 'solo') {
+      final vibe = ref.read(preferencesProvider).socialVibe;
+      if (vibe.any((v) => v.toLowerCase().contains('solo'))) {
+        return l10n.exploreSectionPerfectSolo;
+      }
+      if (vibe.any((v) => v.toLowerCase().contains('group'))) {
+        return l10n.exploreSectionPerfectGroups;
+      }
+      return l10n.exploreSectionPerfectVibe;
+    }
+    if (section.id == 'different') {
+      return l10n.exploreSectionSomethingDifferent;
+    }
+    return section.id;
+  }
+
+  List<Place> get _allCards {
+    final seen = <String>{};
+    final all = <Place>[];
+    for (final section in _sections) {
+      for (final card in section.cards) {
+        if (card.id.isEmpty) continue;
+        if (seen.add(card.id)) all.add(card);
+      }
+    }
+    return all;
+  }
+
+  void _openSeeAll(_ExploreSectionData section, String city) {
+    final l10n = AppLocalizations.of(context)!;
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => ExploreSeeAllScreen(
+          title: _sectionTitle(l10n, section, city),
+          initialCards: List<Place>.from(section.cards),
+          onLoadMore: () async {
+            await _loadSection(section, append: true);
+            return List<Place>.from(section.cards);
+          },
+          onAddToMyDay: _showAddToMyDaySheet,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCardSkeleton() {
+    return Container(
+      width: 200,
+      height: 220,
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8E2D8),
+        borderRadius: BorderRadius.circular(16),
+      ),
+    );
+  }
+
+  Widget _buildSectionRow(_ExploreSectionData section, String city) {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  _sectionTitle(l10n, section, city),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1E1C18),
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => _openSeeAll(section, city),
+                child: Text(
+                  l10n.exploreSeeAll,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF2A6049),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        if (section.isLoading && section.cards.isEmpty)
+          SizedBox(
+            height: 200,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: 3,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (_, __) => _buildCardSkeleton(),
+            ),
+          )
+        else if (section.cards.isEmpty && !section.isLoading)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: section.hasError
+                ? GestureDetector(
+                    onTap: () => unawaited(_loadSection(section)),
+                    child: Text(
+                      l10n.exploreSectionErrorRetry,
+                      style:
+                          const TextStyle(fontSize: 13, color: Color(0xFF8C8780)),
+                    ),
+                  )
+                : Text(
+                    l10n.exploreNoPlacesFound,
+                    style: const TextStyle(fontSize: 13, color: Color(0xFF8C8780)),
+                  ),
+          )
+        else
+          SizedBox(
+            height: 230,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: section.cards.length + 1,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                if (index == section.cards.length) {
+                  return _buildLoadMoreChip(section);
+                }
+                final place = section.cards[index];
+                final ul = ref.read(userLocationProvider).value;
+                return SizedBox(
+                  width: MediaQuery.sizeOf(context).width * 0.72,
+                  child: PlaceCard(
+                    place: place,
+                    userLocation: ul,
+                    cityName: city,
+                    cardMargin: EdgeInsets.zero,
+                    showAddToMyDayButton: true,
+                    onAddToMyDayTap: () => _showAddToMyDaySheet(place),
+                    onTap: () => context.push('/place/${place.id}'),
+                  ),
+                );
+              },
+            ),
+          ),
+        const SizedBox(height: 8),
+        const Divider(
+          height: 1,
+          color: Color(0xFFE8E2D8),
+          indent: 20,
+          endIndent: 20,
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget _buildLoadMoreChip(_ExploreSectionData section) {
+    final l10n = AppLocalizations.of(context)!;
+    return Center(
+      child: TextButton(
+        onPressed: section.isLoading
+            ? null
+            : () => unawaited(_loadSection(section, append: true)),
+        child: Text(
+          l10n.exploreLoadMore,
+          style: const TextStyle(
+            color: Color(0xFF2A6049),
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+        ),
+      ),
+    );
   }
 
   void _onScrollChanged() {
     final currentScrollOffset = _scrollController.offset;
     final scrollDelta = currentScrollOffset - _lastScrollOffset;
 
-    // Track scrolling state for any future use
+    final shouldShow = currentScrollOffset > 400;
+    if (shouldShow != _showScrollToTop) {
+      setState(() => _showScrollToTop = shouldShow);
+    }
+
     if (scrollDelta > 10 && !_isScrolling) {
       setState(() {
         _isScrolling = true;
@@ -314,32 +587,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     }
 
     _lastScrollOffset = currentScrollOffset;
-  }
-
-  void _onIntentSelected(String intent) {
-    setState(() {
-      _selectedIntent = intent;
-    });
-
-    // Get smart context for enhanced processing
-    final smartContext = ref.read(smartContextProvider);
-
-    // Process intent with current places and context
-    // NEW: Use Moody Edge Function
-    final explorePlacesAsync = ref.read(moodyExploreAutoProvider);
-    // OLD: ref.read(explorePlacesProvider(city: ref.read(locationNotifierProvider).value ?? 'Rotterdam'))
-    explorePlacesAsync.whenData((places) {
-      final base = _inclusionNamedFilterPlaces ?? places;
-      final result =
-          IntentProcessor.processIntent(intent, base, context: smartContext);
-      final sortedPlaces = IntentProcessor.sortByPriority(
-          result['filteredPlaces'], result['priority']);
-
-      setState(() {
-        _intentFilteredPlaces = sortedPlaces;
-        _currentExplanation = result['explanation'];
-      });
-    });
   }
 
   void _onConversationalSearchChanged(String query) {
@@ -355,9 +602,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       if (mounted) {
         setState(() {
           _searchResults = null;
-          _intentFilteredPlaces = [];
-          _currentExplanation = '';
-          _selectedIntent = '';
         });
       }
       return;
@@ -413,8 +657,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         setState(() {
           _searchResults = places;
           _isSearching = false;
-          _intentFilteredPlaces = [];
-          _currentExplanation = '';
         });
       } else {
         setState(() {
@@ -436,8 +678,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       _isSearching = false;
       _searchFilter = 'All'; // Reset search filter when clearing
       _searchResults = null;
-      _intentFilteredPlaces = [];
-      _currentExplanation = '';
     });
   }
 
@@ -602,7 +842,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       _bestAtSunset = false;
 
       _activeFiltersCount = 0;
-      _clearInclusionNamedFilters();
     });
     ref.read(moodyExploreBackendFiltersProvider.notifier).state =
         <String, dynamic>{};
@@ -1180,94 +1419,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     }
   }
 
-  Widget _buildInclusionFilterChipsRow() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          height: 44,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: kExploreInclusionFilters.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
-            itemBuilder: (context, i) {
-              final filter = kExploreInclusionFilters[i];
-              final key = filter['key']! as String;
-              final isActive = _inclusionNamedFilterKeys.contains(key);
-              return GestureDetector(
-                onTap: _inclusionNamedFilterLoading
-                    ? null
-                    : () => unawaited(_onInclusionFilterTapped(key)),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color:
-                        isActive ? const Color(0xFF2A6049) : Colors.white,
-                    border: Border.all(
-                      color: isActive
-                          ? const Color(0xFF2A6049)
-                          : const Color(0xFFE8E2D8),
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: isActive
-                        ? []
-                        : [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 4,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        filter['icon']! as String,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        filter['label']! as String,
-                        style: TextStyle(
-                          color: isActive
-                              ? Colors.white
-                              : const Color(0xFF1E1C18),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        if (_inclusionNamedFilterLoading)
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 6, 16, 2),
-            child: Center(
-              child: SizedBox(
-                width: 120,
-                height: 3,
-                child: LinearProgressIndicator(),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
   Widget _buildExploreHeaderColumn(
     int activitiesCount, {
     bool showOfflineCachedHint = false,
   }) {
     final l10n = AppLocalizations.of(context)!;
+    final city =
+        ref.watch(locationNotifierProvider).value?.trim() ?? 'Rotterdam';
     return SafeArea(
       bottom: false,
       child: Align(
@@ -1278,29 +1436,43 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           children: [
           Padding(
             padding:
-                const EdgeInsets.fromLTRB(16, 8, 16, 10),
-            child: Row(
+                const EdgeInsets.fromLTRB(16, 8, 16, 6),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  l10n.navExplore,
+                  _timeGreeting(l10n),
                   style: GoogleFonts.poppins(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.grey[900],
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF8C8780),
                   ),
                 ),
-                const Spacer(),
-                const LocationDropdown(),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        city,
+                        style: GoogleFonts.poppins(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.grey[900],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const LocationDropdown(),
+                  ],
+                ),
               ],
             ),
           ),
           ConversationalExploreHeader(
-            onIntentSelected: _onIntentSelected,
             onSearchChanged: _onConversationalSearchChanged,
-            selectedIntent: _selectedIntent,
             onFilterTap: _showAdvancedFilters,
             activeFiltersCount: _activeFiltersCount,
-            activitiesCount: activitiesCount,
             isGridView: _isGridView,
             isMapView: _isMapView,
             onViewToggle: (isGrid, isMap) {
@@ -1311,11 +1483,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             },
           ),
           if (showOfflineCachedHint)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Text(
-                'Offline — showing cached results',
-                style: TextStyle(color: Color(0xFF8C8780), fontSize: 12),
+                l10n.exploreOfflineShowingCached,
+                style: const TextStyle(color: Color(0xFF8C8780), fontSize: 12),
               ),
             ),
         ],
@@ -1325,16 +1497,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   Widget _buildExploreOfflineEmptyBody() {
-    return const Center(
+    final l10n = AppLocalizations.of(context)!;
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.wifi_off, size: 48, color: Color(0xFF8C8780)),
-          SizedBox(height: 16),
+          const Icon(Icons.wifi_off, size: 48, color: Color(0xFF8C8780)),
+          const SizedBox(height: 16),
           Text(
-            'Connect to the internet\nto discover places',
+            l10n.exploreOfflineEmptyBody,
             textAlign: TextAlign.center,
-            style: TextStyle(color: Color(0xFF4A4640), fontSize: 16),
+            style: const TextStyle(color: Color(0xFF4A4640), fontSize: 16),
           ),
         ],
       ),
@@ -1349,7 +1522,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       floating: true,
       pinned: true,
       snap: false,
-      expandedHeight: 350,
+      expandedHeight: 300,
       backgroundColor: Colors.transparent,
       elevation: 0,
       automaticallyImplyLeading: false,
@@ -1372,8 +1545,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   Widget _buildExploreErrorBody(Object error, StackTrace? stack) {
     final l10n = AppLocalizations.of(context)!;
     final errorMessage = error.toString();
-    final isLocationError = errorMessage.contains('Location is required') ||
+    final isLocationError = error is ExploreLocationException ||
+        errorMessage.contains('Location is required') ||
         errorMessage.contains('GPS coordinates') ||
+        errorMessage.contains('Coordinates are required') ||
+        errorMessage.contains('valid city name') ||
         errorMessage.contains('location services') ||
         errorMessage.contains('Locatie') ||
         errorMessage.contains('Standort') ||
@@ -1422,6 +1598,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 return;
               }
               ref.invalidate(moodyExploreAutoProvider);
+              await _loadAllSections();
               if (isLocationError) {
                 ref
                     .read(locationNotifierProvider.notifier)
@@ -1453,11 +1630,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
     List<Place> filteredPlaces;
     if (_searchResults != null) {
-      // Backend search results take priority
       filteredPlaces = _searchResults!;
-    } else if (_intentFilteredPlaces.isNotEmpty ||
-        _selectedIntent.isNotEmpty) {
-      filteredPlaces = _intentFilteredPlaces;
     } else {
       filteredPlaces = allPlaces;
       if (_selectedCategory != 'All') {
@@ -1513,11 +1686,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
     List<Place> filteredPlaces;
     if (_searchResults != null) {
-      // Backend search results take priority
       filteredPlaces = _searchResults!;
-    } else if (_intentFilteredPlaces.isNotEmpty ||
-        _selectedIntent.isNotEmpty) {
-      filteredPlaces = _intentFilteredPlaces;
     } else {
       filteredPlaces = allPlaces;
       if (_selectedCategory != 'All') {
@@ -1682,72 +1851,173 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
+  Widget _buildSectionedExploreBody(String city) {
+    final gygLinks = ref.watch(gygLinksProvider(city)).valueOrNull ?? [];
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final s in _sections) _buildSectionRow(s, city),
+            ],
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: BookWithGygSection(cityName: city, links: gygLinks),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 100)),
+      ],
+    );
+  }
+
+  Widget _wrapExploreStack(Widget child) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        child,
+        if (_showScrollToTop && !_isMapView)
+          Positioned(
+            bottom: 24,
+            right: 16,
+            child: AnimatedOpacity(
+              opacity: _showScrollToTop ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: FloatingActionButton.small(
+                heroTag: 'explore_scroll_top',
+                backgroundColor: const Color(0xFF2A6049),
+                onPressed: () => _scrollController.animateTo(
+                  0,
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOut,
+                ),
+                child: const Icon(Icons.arrow_upward, color: Colors.white, size: 18),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final explorePlacesAsync = ref.watch(moodyExploreAutoProvider);
+    ref.watch(preferencesProvider);
+    ref.listen(locationNotifierProvider, (prev, next) {
+      final a = prev?.value?.trim();
+      final b = next.value?.trim();
+      if (b != null && b.isNotEmpty && a != b) {
+        _scheduleLoadSectionsIfReady();
+      }
+    });
+    ref.listen(userLocationProvider, (prev, next) {
+      if (prev?.valueOrNull != next.valueOrNull) {
+        _scheduleLoadSectionsIfReady();
+      }
+    });
+
+    final city = ref.watch(locationNotifierProvider).value?.trim();
+    final online = ref.watch(isConnectedProvider).valueOrNull ?? true;
+    final userLocAsync = ref.watch(userLocationProvider);
+    final combined = _allCards;
+    final sectionsStillLoading =
+        _sections.any((s) => s.isLoading && s.cards.isEmpty);
+
+    if (city == null || city.isEmpty) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF5F0E8),
+        body: _wrapExploreStack(
+          NestedScrollView(
+            controller: _scrollController,
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              _buildExploreSliverAppBar(0),
+            ],
+            body: _buildExploreErrorBody(
+              const ExploreLocationException(ExploreLocationReason.missingCity),
+              null,
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F0E8),
-      body: explorePlacesAsync.when(
-        loading: () {
-          final online = ref.watch(isConnectedProvider).valueOrNull ?? true;
-          if (!online) {
-            return NestedScrollView(
-              controller: _scrollController,
-              headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                _buildExploreSliverAppBar(0),
-              ],
-              body: _buildExploreOfflineEmptyBody(),
-            );
-          }
-          return NestedScrollView(
+      body: userLocAsync.when(
+        loading: () => _wrapExploreStack(
+          NestedScrollView(
             controller: _scrollController,
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
               _buildExploreSliverAppBar(0),
             ],
             body: const Center(child: CircularProgressIndicator()),
-          );
-        },
-        error: (error, stack) => NestedScrollView(
-          controller: _scrollController,
-          headerSliverBuilder: (context, innerBoxIsScrolled) => [
-            _buildExploreSliverAppBar(0),
-          ],
-          body: _buildExploreErrorBody(error, stack),
+          ),
         ),
-        data: (allPlaces) {
-          final online = ref.watch(isConnectedProvider).valueOrNull ?? true;
-          final effectivePlaces =
-              _inclusionNamedFilterPlaces ?? allPlaces;
-          final offlineCached = !online && effectivePlaces.isNotEmpty;
-          if (!online && effectivePlaces.isEmpty) {
-            return NestedScrollView(
-              controller: _scrollController,
-              headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                _buildExploreSliverAppBar(0),
-              ],
-              body: _buildExploreOfflineEmptyBody(),
+        error: (e, st) => _wrapExploreStack(
+          NestedScrollView(
+            controller: _scrollController,
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              _buildExploreSliverAppBar(0),
+            ],
+            body: _buildExploreErrorBody(e, st),
+          ),
+        ),
+        data: (pos) {
+          if (pos == null) {
+            return _wrapExploreStack(
+              NestedScrollView(
+                controller: _scrollController,
+                headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                  _buildExploreSliverAppBar(0),
+                ],
+                body: _buildExploreErrorBody(
+                  const ExploreLocationException(
+                      ExploreLocationReason.missingCoordinates),
+                  null,
+                ),
+              ),
             );
           }
+
+          if (!online && combined.isEmpty && !sectionsStillLoading) {
+            return _wrapExploreStack(
+              NestedScrollView(
+                controller: _scrollController,
+                headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                  _buildExploreSliverAppBar(0),
+                ],
+                body: _buildExploreOfflineEmptyBody(),
+              ),
+            );
+          }
+
+          final offlineCached = !online && combined.isNotEmpty;
           final activitiesCount = _searchResults != null
               ? _searchResults!.length
-              : _filterPlaces(effectivePlaces).length;
+              : _filterPlaces(combined).length;
+
           if (_isMapView) {
             return _buildExploreMapModeBody(
-              effectivePlaces,
+              _allCards,
               activitiesCount,
               showOfflineCachedHint: offlineCached,
             );
           }
-          return NestedScrollView(
-            controller: _scrollController,
-            headerSliverBuilder: (context, innerBoxIsScrolled) => [
-              _buildExploreSliverAppBar(
-                activitiesCount,
-                showOfflineCachedHint: offlineCached,
-              ),
-            ],
-            body: _buildExploreListGridBody(effectivePlaces),
+
+          final inner = _isGridView || _searchResults != null
+              ? _buildExploreListGridBody(_allCards)
+              : _buildSectionedExploreBody(city);
+
+          return _wrapExploreStack(
+            NestedScrollView(
+              controller: _scrollController,
+              headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                _buildExploreSliverAppBar(
+                  activitiesCount,
+                  showOfflineCachedHint: offlineCached,
+                ),
+              ],
+              body: inner,
+            ),
           );
         },
       ),
@@ -2050,12 +2320,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               return;
                             }
                             Navigator.pop(context);
-                            _clearInclusionNamedFilters();
                             final backendFilters = _buildMoodyBackendFilters();
                             ref
                                 .read(moodyExploreBackendFiltersProvider.notifier)
                                 .state = backendFilters;
                             ref.invalidate(moodyExploreAutoProvider);
+                            unawaited(_loadAllSections());
                             // Force a rebuild to apply filters
                             setState(() {
                               // Update active filters count

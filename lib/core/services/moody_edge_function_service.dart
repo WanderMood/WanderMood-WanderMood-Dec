@@ -4,6 +4,7 @@ import 'package:wandermood/core/utils/auth_helper.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:dio/dio.dart';
 import 'package:wandermood/core/config/supabase_config.dart';
+import 'package:wandermood/core/errors/explore_location_exception.dart';
 import 'package:wandermood/core/utils/places_cache_utils.dart';
 
 /// Service to call the `moody` Edge Function
@@ -52,17 +53,17 @@ class MoodyEdgeFunctionService {
   }
 
   /// Get explore places from Edge Function
-  /// 
-  /// Returns 60-80 places based on mood, location, and filters
-  /// 
+  ///
   /// CRITICAL: Location and coordinates are REQUIRED - no defaults
+  ///
+  /// [section] — `food` | `trending` | `solo` | `different` | null (broad discovery).
+  /// When non-empty, [namedFilters] skips Flutter cache read — backend fetches fresh.
   Future<List<Place>> getExplore({
-    required String mood,
     required String location,
     required double latitude,
     required double longitude,
+    String? section,
     Map<String, dynamic>? filters,
-    /// When non-empty, skips Flutter cache read — backend fetches fresh (named filter paths are not cached server-side).
     List<String>? namedFilters,
   }) async {
     try {
@@ -75,12 +76,13 @@ class MoodyEdgeFunctionService {
       
       // CRITICAL: Validate location before calling Edge Function
       if (location.isEmpty || location.trim().isEmpty) {
-        throw Exception('Location is required. Please provide a valid city name.');
+        throw const ExploreLocationException(ExploreLocationReason.missingCity);
       }
 
       // CRITICAL: Validate coordinates
       if (latitude == 0.0 && longitude == 0.0) {
-        throw Exception('Coordinates are required. Please provide valid latitude and longitude.');
+        throw const ExploreLocationException(
+            ExploreLocationReason.invalidCoordinates);
       }
 
       // FIX #1: Get token explicitly and verify it exists
@@ -100,9 +102,10 @@ class MoodyEdgeFunctionService {
 
       // Cache-first for standard explore only — named filter combinations are not cached (backend always refreshes).
       if (!hasNamedFilters) {
+        final cacheSection = section ?? 'discovery';
         final cachedPlaces = await PlacesCacheUtils.tryLoadExplorePlaces(
           _supabase,
-          mood,
+          cacheSection,
           location,
           isLocalMode: isLocal,
         );
@@ -113,7 +116,7 @@ class MoodyEdgeFunctionService {
       if (kDebugMode) {
         debugPrint('🔴 moody get_explore via network');
         debugPrint(
-            '   mood: $mood | location: $location | filters: $filters | namedFilters: $namedFilters');
+            '   section: $section | location: $location | filters: $filters | namedFilters: $namedFilters');
         debugPrint('   🔑 Token preview: ${token.substring(0, 20)}...');
       }
 
@@ -124,15 +127,19 @@ class MoodyEdgeFunctionService {
 
       final payload = <String, dynamic>{
         'action': 'get_explore',
-        'mood': mood,
         'location': location,
         'is_local': isLocal,
         'coordinates': {
           'lat': latitude,
           'lng': longitude,
         },
-        'filters': filters ?? {},
       };
+      if (section != null && section.isNotEmpty) {
+        payload['section'] = section;
+      }
+      if (filters != null && filters.isNotEmpty) {
+        payload['filters'] = filters;
+      }
       if (hasNamedFilters) {
         payload['namedFilters'] = namedFilters;
       }
@@ -229,7 +236,7 @@ class MoodyEdgeFunctionService {
     await _waitForSessionReady();
 
     if (location.trim().isEmpty) {
-      throw Exception('Location is required. Please provide a valid city name.');
+      throw const ExploreLocationException(ExploreLocationReason.missingCity);
     }
 
     final session = _supabase.auth.currentSession;

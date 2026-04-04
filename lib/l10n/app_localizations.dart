@@ -6890,6 +6890,30 @@ abstract class AppLocalizations {
   /// **'Curious'**
   String get moodCurious;
 
+  /// No description provided for @moodHappy.
+  ///
+  /// In en, this message translates to:
+  /// **'Happy'**
+  String get moodHappy;
+
+  /// No description provided for @moodFoodie.
+  ///
+  /// In en, this message translates to:
+  /// **'Foodie'**
+  String get moodFoodie;
+
+  /// No description provided for @moodExcited.
+  ///
+  /// In en, this message translates to:
+  /// **'Excited'**
+  String get moodExcited;
+
+  /// No description provided for @moodSurprise.
+  ///
+  /// In en, this message translates to:
+  /// **'Surprise'**
+  String get moodSurprise;
+
   /// No description provided for @dayPlanFoundNewOption.
   ///
   /// In en, this message translates to:
@@ -9884,6 +9908,120 @@ abstract class AppLocalizations {
   /// **'Choose'**
   String get exploreDatePickerConfirm;
 
+  /// No description provided for @exploreTimeGreetingMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning ☀️'**
+  String get exploreTimeGreetingMorning;
+
+  /// No description provided for @exploreTimeGreetingAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon 🌤'**
+  String get exploreTimeGreetingAfternoon;
+
+  /// No description provided for @exploreTimeGreetingEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening 🌙'**
+  String get exploreTimeGreetingEvening;
+
+  /// No description provided for @exploreTimeGreetingLateNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Late night vibes 🌙'**
+  String get exploreTimeGreetingLateNight;
+
+  /// No description provided for @exploreSectionBecauseFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Because you love food 🍜'**
+  String get exploreSectionBecauseFood;
+
+  /// No description provided for @exploreSectionBecauseCulture.
+  ///
+  /// In en, this message translates to:
+  /// **'Because you love culture 🏛️'**
+  String get exploreSectionBecauseCulture;
+
+  /// No description provided for @exploreSectionBecauseNightlife.
+  ///
+  /// In en, this message translates to:
+  /// **'Because you love nightlife 🌙'**
+  String get exploreSectionBecauseNightlife;
+
+  /// No description provided for @exploreSectionBecauseOutdoor.
+  ///
+  /// In en, this message translates to:
+  /// **'Because you love the outdoors 🌿'**
+  String get exploreSectionBecauseOutdoor;
+
+  /// No description provided for @exploreSectionBecauseCoffee.
+  ///
+  /// In en, this message translates to:
+  /// **'Because you love coffee ☕'**
+  String get exploreSectionBecauseCoffee;
+
+  /// No description provided for @exploreSectionTrendingInCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending in {city} 🔥'**
+  String exploreSectionTrendingInCity(String city);
+
+  /// No description provided for @exploreSectionPerfectVibe.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfect for your vibe ✨'**
+  String get exploreSectionPerfectVibe;
+
+  /// No description provided for @exploreSectionPerfectSolo.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfect for solo days ✨'**
+  String get exploreSectionPerfectSolo;
+
+  /// No description provided for @exploreSectionPerfectGroups.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfect for groups 👥'**
+  String get exploreSectionPerfectGroups;
+
+  /// No description provided for @exploreSectionSomethingDifferent.
+  ///
+  /// In en, this message translates to:
+  /// **'Something different 🎲'**
+  String get exploreSectionSomethingDifferent;
+
+  /// No description provided for @exploreSeeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get exploreSeeAll;
+
+  /// No description provided for @exploreLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more →'**
+  String get exploreLoadMore;
+
+  /// No description provided for @exploreSectionErrorRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load places — tap to retry'**
+  String get exploreSectionErrorRetry;
+
+  /// No description provided for @exploreOfflineShowingCached.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline — showing cached results'**
+  String get exploreOfflineShowingCached;
+
+  /// No description provided for @exploreOfflineEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to the internet\nto discover places'**
+  String get exploreOfflineEmptyBody;
+
   /// No description provided for @explorePlaceDescriptionFallback.
   ///
   /// In en, this message translates to:
@@ -10699,6 +10837,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other'**
   String get gamificationCategoryOther;
+
+  /// No description provided for @achievementExplorer.
+  ///
+  /// In en, this message translates to:
+  /// **'Explorer'**
+  String get achievementExplorer;
+
+  /// No description provided for @achievementEarlyBird.
+  ///
+  /// In en, this message translates to:
+  /// **'Early Bird'**
+  String get achievementEarlyBird;
+
+  /// No description provided for @achievementStreakMaster.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak Master'**
+  String get achievementStreakMaster;
+
+  /// No description provided for @achievementMoodTracker.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood Tracker'**
+  String get achievementMoodTracker;
+
+  /// No description provided for @achievementAdventurer.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventurer'**
+  String get achievementAdventurer;
 
   /// No description provided for @prefScreenTitle.
   ///

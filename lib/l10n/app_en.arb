@@ -1647,6 +1647,10 @@
   "moodRomantic": "Romantic",
   "moodEnergetic": "Energetic",
   "moodCurious": "Curious",
+  "moodHappy": "Happy",
+  "moodFoodie": "Foodie",
+  "moodExcited": "Excited",
+  "moodSurprise": "Surprise",
   "dayPlanFoundNewOption": "✨ Found a new option: {name}! ({remaining} more changes available)",
   "activityDetailMatch": "{percent}% Match",
   "@activityDetailMatch": {
@@ -2694,6 +2698,32 @@
   "exploreAddToMyDayTimeLabel": "Time",
   "exploreDatePickerHelp": "Choose a date",
   "exploreDatePickerConfirm": "Choose",
+  "exploreTimeGreetingMorning": "Good morning ☀️",
+  "exploreTimeGreetingAfternoon": "Good afternoon 🌤",
+  "exploreTimeGreetingEvening": "Good evening 🌙",
+  "exploreTimeGreetingLateNight": "Late night vibes 🌙",
+  "exploreSectionBecauseFood": "Because you love food 🍜",
+  "exploreSectionBecauseCulture": "Because you love culture 🏛️",
+  "exploreSectionBecauseNightlife": "Because you love nightlife 🌙",
+  "exploreSectionBecauseOutdoor": "Because you love the outdoors 🌿",
+  "exploreSectionBecauseCoffee": "Because you love coffee ☕",
+  "exploreSectionTrendingInCity": "Trending in {city} 🔥",
+  "@exploreSectionTrendingInCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreSectionPerfectVibe": "Perfect for your vibe ✨",
+  "exploreSectionPerfectSolo": "Perfect for solo days ✨",
+  "exploreSectionPerfectGroups": "Perfect for groups 👥",
+  "exploreSectionSomethingDifferent": "Something different 🎲",
+  "exploreSeeAll": "See all",
+  "exploreLoadMore": "Load more →",
+  "exploreSectionErrorRetry": "Could not load places — tap to retry",
+  "exploreOfflineShowingCached": "Offline — showing cached results",
+  "exploreOfflineEmptyBody": "Connect to the internet\nto discover places",
   "explorePlaceDescriptionFallback": "Explore {name}",
   "@explorePlaceDescriptionFallback": {
     "placeholders": {
@@ -2879,6 +2909,12 @@
   "gamificationCategoryMood": "Mood",
   "gamificationCategorySpecial": "Special",
   "gamificationCategoryOther": "Other",
+
+  "achievementExplorer": "Explorer",
+  "achievementEarlyBird": "Early Bird",
+  "achievementStreakMaster": "Streak Master",
+  "achievementMoodTracker": "Mood Tracker",
+  "achievementAdventurer": "Adventurer",
 
   "prefScreenTitle": "Your Preferences",
   "prefSave": "Save",

@@ -3783,6 +3783,18 @@ class AppLocalizationsNl extends AppLocalizations {
   String get moodCurious => 'Nieuwsgierig';
 
   @override
+  String get moodHappy => 'Blij';
+
+  @override
+  String get moodFoodie => 'Foodie';
+
+  @override
+  String get moodExcited => 'Enthousiast';
+
+  @override
+  String get moodSurprise => 'Verrassing';
+
+  @override
   String dayPlanFoundNewOption(String name, String remaining) {
     return '✨ Nieuwe optie gevonden: $name! (Nog $remaining wijzigingen beschikbaar)';
   }
@@ -5501,6 +5513,68 @@ class AppLocalizationsNl extends AppLocalizations {
   String get exploreDatePickerConfirm => 'Kies';
 
   @override
+  String get exploreTimeGreetingMorning => 'Goedemorgen ☀️';
+
+  @override
+  String get exploreTimeGreetingAfternoon => 'Goedemiddag 🌤';
+
+  @override
+  String get exploreTimeGreetingEvening => 'Goedenavond 🌙';
+
+  @override
+  String get exploreTimeGreetingLateNight => 'Late avond 🌙';
+
+  @override
+  String get exploreSectionBecauseFood => 'Omdat jij van eten houdt 🍜';
+
+  @override
+  String get exploreSectionBecauseCulture => 'Omdat jij van cultuur houdt 🏛️';
+
+  @override
+  String get exploreSectionBecauseNightlife =>
+      'Omdat jij van nachtleven houdt 🌙';
+
+  @override
+  String get exploreSectionBecauseOutdoor => 'Omdat jij van buiten houdt 🌿';
+
+  @override
+  String get exploreSectionBecauseCoffee => 'Omdat jij van koffie houdt ☕';
+
+  @override
+  String exploreSectionTrendingInCity(String city) {
+    return 'Trending in $city 🔥';
+  }
+
+  @override
+  String get exploreSectionPerfectVibe => 'Perfect voor jouw vibe ✨';
+
+  @override
+  String get exploreSectionPerfectSolo => 'Perfect voor solo-dagen ✨';
+
+  @override
+  String get exploreSectionPerfectGroups => 'Perfect voor groepen 👥';
+
+  @override
+  String get exploreSectionSomethingDifferent => 'Iets anders 🎲';
+
+  @override
+  String get exploreSeeAll => 'Alles tonen';
+
+  @override
+  String get exploreLoadMore => 'Meer laden →';
+
+  @override
+  String get exploreSectionErrorRetry =>
+      'Kon plekken niet laden — tik om opnieuw te proberen';
+
+  @override
+  String get exploreOfflineShowingCached => 'Offline — gecachte resultaten';
+
+  @override
+  String get exploreOfflineEmptyBody =>
+      'Maak verbinding met het internet\nom plekken te ontdekken';
+
+  @override
   String explorePlaceDescriptionFallback(String name) {
     return 'Ontdek $name';
   }
@@ -5931,6 +6005,21 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get gamificationCategoryOther => 'Overig';
+
+  @override
+  String get achievementExplorer => 'Ontdekker';
+
+  @override
+  String get achievementEarlyBird => 'Vroege vogel';
+
+  @override
+  String get achievementStreakMaster => 'Streak-meester';
+
+  @override
+  String get achievementMoodTracker => 'Stemming bijhouden';
+
+  @override
+  String get achievementAdventurer => 'Avonturier';
 
   @override
   String get prefScreenTitle => 'Jouw voorkeuren';

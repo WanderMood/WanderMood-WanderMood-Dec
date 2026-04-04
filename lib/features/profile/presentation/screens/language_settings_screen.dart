@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:wandermood/l10n/app_localizations.dart';
-import '../../domain/providers/profile_provider.dart';
-import '../../../../core/presentation/providers/language_provider.dart';
-import '../widgets/settings_screen_template.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/core/providers/notification_provider.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
+import '../../../../core/presentation/providers/language_provider.dart';
+import '../../domain/providers/profile_provider.dart';
+import '../widgets/settings_screen_template.dart';
 
 /// v2 design tokens
 const Color _wmWhite = Color(0xFFFFFFFF);
@@ -48,6 +49,7 @@ class _LanguageSettingsScreenState extends ConsumerState<LanguageSettingsScreen>
     try {
       final l10n = AppLocalizations.of(context)!;
       await ref.read(localeProvider.notifier).setLocale(Locale(code));
+      await ref.read(notificationSchedulerProvider).rescheduleAll();
       await ref.read(profileProvider.notifier).updateProfile(
         languagePreference: code,
       );
