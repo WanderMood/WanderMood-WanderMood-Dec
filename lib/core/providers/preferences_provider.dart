@@ -52,6 +52,8 @@ extension UserPreferencesExtension on UserPreferences {
       'language_preference': languagePreference,
       'has_completed_onboarding': hasCompletedOnboarding,
       'has_completed_preferences': hasCompletedPreferences,
+      'dietary_restrictions': dietaryRestrictions,
+      'mobility_requirements': mobilityRequirements,
       'updated_at': DateTime.now().toIso8601String(),
     };
   }
@@ -135,6 +137,10 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
 
       if (response != null) {
         state = UserPreferencesHelper.fromSupabaseJson(response);
+        // Keep notification + UI copy in sync with saved style (provider default is friendly).
+        _ref
+            .read(communicationStyleProvider.notifier)
+            .setCommunicationStyle(state.communicationStyle);
         debugPrint('✅ Loaded preferences from Supabase');
       }
     } catch (e) {
@@ -166,6 +172,8 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
         'travel_styles': state.travelStyles,
         'favorite_moods': state.favoriteMoods,
         'language_preference': state.languagePreference,
+        'dietary_restrictions': state.dietaryRestrictions,
+        'mobility_requirements': state.mobilityRequirements,
         'has_completed_preferences': state.hasCompletedPreferences,
         'has_completed_onboarding': state.hasCompletedOnboarding,
         'updated_at': DateTime.now().toIso8601String(),
@@ -198,6 +206,8 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
               'travel_styles': state.travelStyles,
               'favorite_moods': state.favoriteMoods,
               'language_preference': state.languagePreference,
+              'dietary_restrictions': state.dietaryRestrictions,
+              'mobility_requirements': state.mobilityRequirements,
               'has_completed_preferences': state.hasCompletedPreferences,
               'has_completed_onboarding': state.hasCompletedOnboarding,
               'updated_at': DateTime.now().toIso8601String(),

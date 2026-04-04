@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import SetLang from "./SetLang";
+import PrivacyConsentStrip from "@/components/PrivacyConsentStrip";
 
 type Props = {
   children: React.ReactNode;
@@ -32,6 +33,7 @@ export default async function LocaleLayout({ children, params }: Props) {
     <NextIntlClientProvider locale={locale} messages={messages}>
       <SetLang lang={locale} />
       {children}
+      <PrivacyConsentStrip />
     </NextIntlClientProvider>
   );
 }

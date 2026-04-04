@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../application/recommendation_service.dart';
 import '../../domain/models/travel_recommendation.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class RecommendationsPage extends ConsumerStatefulWidget {
   const RecommendationsPage({super.key});
@@ -53,9 +54,10 @@ class _RecommendationsPageState extends ConsumerState<RecommendationsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Travel Recommendations'),
+        title: Text(l10n.recListTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -68,6 +70,7 @@ class _RecommendationsPageState extends ConsumerState<RecommendationsPage> {
   }
 
   Widget _buildBody() {
+    final l10n = AppLocalizations.of(context)!;
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -77,11 +80,11 @@ class _RecommendationsPageState extends ConsumerState<RecommendationsPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Error: $_error'),
+            Text('${l10n.recErrorPrefix} $_error'),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadRecommendations,
-              child: const Text('Try Again'),
+              child: Text(l10n.recTryAgain),
             ),
           ],
         ),
@@ -90,8 +93,8 @@ class _RecommendationsPageState extends ConsumerState<RecommendationsPage> {
 
     final recommendations = _recommendations;
     if (recommendations == null || recommendations.isEmpty) {
-      return const Center(
-        child: Text('No recommendations available'),
+      return Center(
+        child: Text(l10n.recNoneAvailable),
       );
     }
 
@@ -101,6 +104,7 @@ class _RecommendationsPageState extends ConsumerState<RecommendationsPage> {
         itemCount: recommendations.length,
         itemBuilder: (context, index) {
           final recommendation = recommendations[index];
+          final loc = AppLocalizations.of(context)!;
           return Card(
             margin: const EdgeInsets.symmetric(
               horizontal: 16.0,
@@ -114,11 +118,11 @@ class _RecommendationsPageState extends ConsumerState<RecommendationsPage> {
                   Text(recommendation.description),
                   const SizedBox(height: 4),
                   Text(
-                    'Location: ${recommendation.location}',
+                    loc.recLocationLabel(recommendation.location),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   Text(
-                    'Price: \$${recommendation.price.toStringAsFixed(2)}',
+                    loc.recPriceLabel('\$${recommendation.price.toStringAsFixed(2)}'),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
@@ -133,14 +137,14 @@ class _RecommendationsPageState extends ConsumerState<RecommendationsPage> {
                     if (mounted) {
                       showWanderMoodToast(
                         context,
-                        message: 'Favorite updated successfully',
+                        message: AppLocalizations.of(context)!.recFavoriteUpdated,
                       );
                     }
                   } catch (e) {
                     if (mounted) {
                       showWanderMoodToast(
                         context,
-                        message: 'Error updating favorite: $e',
+                        message: AppLocalizations.of(context)!.recFavoriteError('$e'),
                         isError: true,
                       );
                     }

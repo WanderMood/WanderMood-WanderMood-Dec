@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 import '../../../home/presentation/widgets/moody_character.dart';
 
@@ -126,6 +127,7 @@ class _AuthWelcomeScreenState extends State<AuthWelcomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
         statusBarColor: Colors.transparent,
@@ -156,7 +158,7 @@ class _AuthWelcomeScreenState extends State<AuthWelcomeScreen>
                   FadeTransition(
                     opacity: _textOpacity,
                     child: Text(
-                      'Je bent erin! Welkom 🎉',
+                      l10n.authWelcomeTitle,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 26,

@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
@@ -9,7 +11,8 @@ import 'package:wandermood/core/notifications/notification_triggers.dart';
 import 'package:wandermood/core/providers/communication_style_provider.dart';
 import 'package:wandermood/core/presentation/providers/language_provider.dart';
 import 'package:wandermood/core/services/notification_service.dart';
-import 'package:wandermood/features/gamification/providers/gamification_provider.dart';
+import 'package:wandermood/features/gamification/providers/gamification_provider.dart'
+    hide sharedPreferencesProvider;
 import 'package:wandermood/features/settings/presentation/providers/user_preferences_provider.dart';
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -22,13 +25,19 @@ import 'package:wandermood/features/settings/presentation/providers/user_prefere
 /// [lookupAppLocalizations] is unavailable for the system locale.
 final notificationL10nProvider = Provider<AppLocalizations>((ref) {
   final locale = ref.watch(localeProvider);
-  final effectiveLocale = locale ?? const Locale('en');
+  // Match MaterialApp: null [localeProvider] means "follow device" — do not default to English here
+  // or scheduled notification copy stays English on Dutch (and other) system locales.
+  final effectiveLocale = locale ?? ui.PlatformDispatcher.instance.locale;
 
   try {
     return lookupAppLocalizations(effectiveLocale);
   } catch (_) {
-    // Fallback — should only happen if a new locale is added without gen-l10n.
-    return lookupAppLocalizations(const Locale('en'));
+    // Unsupported device locale → try language-only, then English.
+    try {
+      return lookupAppLocalizations(Locale(effectiveLocale.languageCode));
+    } catch (_) {
+      return lookupAppLocalizations(const Locale('en'));
+    }
   }
 });
 
@@ -42,7 +51,9 @@ final notificationSchedulerProvider = Provider<NotificationScheduler>((ref) {
     copy: ref.watch(notificationCopyProvider),
     prefs: ref.watch(sharedPreferencesProvider),
     l10n: ref.watch(notificationL10nProvider),
-    style: ref.watch(communicationStyleProvider),
+    style: ref.watch(
+      communicationStyleProvider.select((s) => s.style),
+    ),
   );
 });
 
@@ -56,7 +67,9 @@ final notificationTriggersProvider = Provider<NotificationTriggers>((ref) {
     copy: ref.watch(notificationCopyProvider),
     prefs: ref.watch(sharedPreferencesProvider),
     l10n: ref.watch(notificationL10nProvider),
-    style: ref.watch(communicationStyleProvider),
+    style: ref.watch(
+      communicationStyleProvider.select((s) => s.style),
+    ),
   );
 });
 

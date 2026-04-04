@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
+import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart'
@@ -93,10 +94,12 @@ class _TravelModeToggleState extends ConsumerState<TravelModeToggle> {
           // Show success animation
           _showSuccessAnimation(newMode);
           // Update mode after animation
-          Future.delayed(const Duration(milliseconds: 2000), () {
-            if (mounted) {
-              widget.onModeChanged(newMode);
-              // Invalidate recommendations provider to refresh places
+          Future.delayed(const Duration(milliseconds: 2000), () async {
+            if (!mounted) return;
+            widget.onModeChanged(newMode);
+            final connected = await ref.read(connectivityServiceProvider).isConnected;
+            if (!mounted) return;
+            if (connected) {
               ref.invalidate(moodyExploreAutoProvider);
               ref.invalidate(moodyHubExploreCacheOnlyProvider);
             }

@@ -1,4 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
+import {
+  edgeRateLimitConsume,
+  getServiceSupabase,
+  logApiInvocationFireAndForget,
+  traceEdgeResponse,
+  userRateKey,
+} from '../_shared/edge_guard.ts'
 import { corsHeaders } from './_shared/cors.ts'
 
 interface MoodyRequest {
@@ -108,17 +115,57 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Action is required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
+    const admin = getServiceSupabase()
+    const rateKey = userRateKey(authUser.id)
+    const rateStarted = performance.now()
+    const maxMoodyPerMin = Number(Deno.env.get('EDGE_RATE_MOODY_PER_MINUTE') ?? '60')
+    if (admin) {
+      const { allowed, currentCount } = await edgeRateLimitConsume(admin, rateKey, 'moody', maxMoodyPerMin)
+      if (!allowed) {
+        logApiInvocationFireAndForget(admin, {
+          user_id: authUser.id,
+          user_key: rateKey,
+          function_slug: 'moody',
+          operation: action,
+          http_status: 429,
+          duration_ms: Math.round(performance.now() - rateStarted),
+          error_snippet: `rate_limit count=${currentCount} max=${maxMoodyPerMin}/min`,
+        })
+        return new Response(
+          JSON.stringify({ success: false, error: 'rate_limit_exceeded', retry_after_seconds: 60 }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' } },
+        )
+      }
+    }
+
+    const traceStarted = performance.now()
     console.log(`🎯 Moody: action=${action}, userId=${authUser.id}`)
 
-    switch (action) {
-      case 'get_explore': return await handleGetExplore(supabaseWithAuth, authUser.id, params)
-      case 'create_day_plan': return await handleCreateDayPlan(supabaseWithAuth, authUser.id, params)
-      case 'chat': return await handleChat(supabaseWithAuth, authUser.id, params)
-      case 'generate_hub_message': return await handleGenerateHubMessage(supabaseWithAuth, authUser.id, params)
-      case 'search': return await handleSearch(supabaseWithAuth, authUser.id, params)
-      default:
-        return new Response(JSON.stringify({ error: `Invalid action: ${action}` }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    }
+    return traceEdgeResponse(
+      admin,
+      { user_id: authUser.id, user_key: rateKey, function_slug: 'moody', operation: action },
+      traceStarted,
+      (async (): Promise<Response> => {
+        switch (action) {
+          case 'get_explore':
+            return await handleGetExplore(supabaseWithAuth, authUser.id, params)
+          case 'create_day_plan':
+            return await handleCreateDayPlan(supabaseWithAuth, authUser.id, params)
+          case 'chat':
+            return await handleChat(supabaseWithAuth, authUser.id, params)
+          case 'generate_hub_message':
+            return await handleGenerateHubMessage(supabaseWithAuth, authUser.id, params)
+          case 'search':
+            return await handleSearch(supabaseWithAuth, authUser.id, params)
+          default:
+            return new Response(JSON.stringify({ error: `Invalid action: ${action}` }), {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            })
+        }
+      })(),
+      corsHeaders,
+    )
   } catch (error) {
     console.error('❌ Moody error:', error)
     const errMsg = error instanceof Error ? error.message : String(error)

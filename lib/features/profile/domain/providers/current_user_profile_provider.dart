@@ -44,7 +44,7 @@ class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
       final prefsRes = await supabase
           .from('user_preferences')
           .select(
-              'home_base, age_group, selected_moods, budget_level, social_vibe, '
+              'home_base, age_group, gender, selected_moods, budget_level, social_vibe, '
               'dietary_restrictions, activity_pace, time_available, interests')
           .eq('user_id', userId)
           .maybeSingle();
@@ -81,6 +81,7 @@ class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
         bio: profileRes?['bio'] as String?,
         avatarUrl: avatarUrl,
         ageGroup: prefsRes?['age_group'] as String?,
+        gender: prefsRes?['gender'] as String?,
         moodStreak: moodStreak,
         homeBase: (profileRes?['currently_exploring'] as String?) ??
             (prefsRes?['home_base'] as String?),

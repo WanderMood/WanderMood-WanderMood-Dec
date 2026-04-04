@@ -16,6 +16,7 @@ import 'features/plans/data/services/schema_helper.dart';
 import 'services/daily_cleanup_service.dart';
 import 'core/providers/supabase_provider.dart';
 import 'features/settings/presentation/providers/user_preferences_provider.dart';
+import 'core/services/ai_chat_quota_service.dart';
 import 'core/services/cached_magic_link_email_service.dart';
 import 'features/gamification/providers/gamification_provider.dart' as gamification;
 import 'package:geolocator/geolocator.dart';
@@ -233,6 +234,7 @@ Future<void> main() async {
         }
       } else if (event == AuthChangeEvent.signedOut) {
         await magicLinkEmailCache.clear();
+        await AiChatQuotaService.clearPremiumCache();
       }
     });
 

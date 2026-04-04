@@ -14,6 +14,8 @@ import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/core/providers/communication_style_provider.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_chat_header_subtitle.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/services/connectivity_service.dart';
+import 'package:wandermood/core/utils/offline_feedback.dart';
 
 // WanderMood v2 — Moody chat (Screen 9)
 const Color _wmSkyTint = Color(0xFFF1F7FB);
@@ -182,6 +184,13 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
   Future<void> _sendMessage(String text) async {
     if (text.trim().isEmpty || _isAILoading) return;
 
+    final online = await ref.read(connectivityServiceProvider).isConnected;
+    if (!mounted) return;
+    if (!online) {
+      showOfflineSnackBar(context);
+      return;
+    }
+
     setState(() {
       widget.chatMessages.add(_ChatMsg(
           message: text.trim(), isUser: true, timestamp: MoodyClock.now()));
@@ -211,6 +220,7 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
         longitude: loc.lng,
         city: loc.city,
         clientTurns: priorTurns,
+        languageCode: Localizations.localeOf(context).languageCode,
       );
 
       if (!mounted) return;
@@ -290,6 +300,7 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
                                     .style;
                                 return _MoodyChatHeader(
                                   subtitle: moodyChatTravelBestieSubtitle(
+                                    l10n: AppLocalizations.of(context)!,
                                     city: city,
                                     style: style,
                                   ),
@@ -333,10 +344,29 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
                               padding: EdgeInsets.only(bottom: inputBottomPad),
                               child: Material(
                                 color: Colors.transparent,
-                                child: _MoodyChatInput(
-                                  controller: _chatController,
-                                  isLoading: _isAILoading,
-                                  onSend: _sendMessage,
+                                child: Consumer(
+                                  builder: (context, ref, _) {
+                                    final async = ref.watch(isConnectedProvider);
+                                    final online = async.valueOrNull ?? true;
+                                    if (!online) {
+                                      return Container(
+                                        padding: const EdgeInsets.all(16),
+                                        child: const Text(
+                                          'Moody needs internet to chat — connect and try again',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Color(0xFF8C8780),
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    return _MoodyChatInput(
+                                      controller: _chatController,
+                                      isLoading: _isAILoading,
+                                      onSend: _sendMessage,
+                                    );
+                                  },
                                 ),
                               ),
                             ),

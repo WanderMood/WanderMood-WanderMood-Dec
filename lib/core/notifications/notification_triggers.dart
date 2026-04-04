@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
@@ -7,6 +6,7 @@ import 'package:wandermood/core/services/notification_service.dart';
 import 'notification_category.dart';
 import 'notification_copy_provider.dart';
 import 'notification_ids.dart';
+import 'user_preferences_storage.dart';
 
 /// Fires event-driven notifications in response to in-app actions.
 ///
@@ -29,6 +29,12 @@ class NotificationTriggers {
         _prefs = prefs,
         _l10n = l10n,
         _style = style;
+
+  bool get _tripRemindersEnabled =>
+      userPreferencesFromSharedPrefs(_prefs).tripReminders;
+
+  bool get _weatherUpdatesEnabled =>
+      userPreferencesFromSharedPrefs(_prefs).weatherUpdates;
 
   // ────────────────────────────────────────────────────────────────
   // Gamification
@@ -92,6 +98,7 @@ class NotificationTriggers {
 
   /// Call when a trip/plan is marked as completed.
   Future<void> onTripCompleted() async {
+    if (!_tripRemindersEnabled) return;
     try {
       final copy = await _copy.nextCopy(
         NotificationCategory.postTripReflection,
@@ -109,6 +116,7 @@ class NotificationTriggers {
 
   /// Call when a significant weather change is detected.
   Future<void> onWeatherChange() async {
+    if (!_weatherUpdatesEnabled) return;
     try {
       final copy = await _copy.nextCopy(
         NotificationCategory.weatherNudge,
@@ -122,6 +130,7 @@ class NotificationTriggers {
 
   /// Call when a new interesting location is discovered near the user.
   Future<void> onLocationDiscovery() async {
+    if (!_tripRemindersEnabled) return;
     try {
       final copy = await _copy.nextCopy(
         NotificationCategory.locationDiscovery,
@@ -136,6 +145,7 @@ class NotificationTriggers {
   /// Call to nudge the user about a specific saved activity.
   /// [index] is a stable index into the saved-activities list.
   Future<void> onSavedActivityReminder({int index = 0}) async {
+    if (!_tripRemindersEnabled) return;
     try {
       final copy = await _copy.nextCopy(
         NotificationCategory.savedActivityReminder,

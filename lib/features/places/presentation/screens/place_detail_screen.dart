@@ -68,6 +68,10 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   bool _isInitialized = false; // Track if widget has been initialized to prevent rebuild loops
   /// One enrichment pass per place id (post-frame + rebuilds would otherwise re-invoke).
   final Set<String> _heroPhotoEnrichAttempted = {};
+  bool _isEnrichingPhotos = false;
+  final Set<String> _descriptionEnrichAttempted = {};
+  String? _enrichedWebsite;
+  String? _enrichedPhone;
 
   @override
   void initState() {
@@ -167,10 +171,14 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       _hasAttemptedReviewFetch = false;
       _realReviews = [];
       _heroPhotoEnrichAttempted.clear();
+      _descriptionEnrichAttempted.clear();
+      _enrichedWebsite = null;
+      _enrichedPhone = null;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _cachedPlace == null) return;
       _maybeEnrichHeroPhotos(_cachedPlace!);
+      _maybeEnrichDescription(_cachedPlace!);
     });
   }
 
@@ -185,23 +193,70 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return out;
   }
 
+  bool _samePhotoList(List<String> a, List<String> b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  /// Fetches canonical Google photo URLs so the hero matches the Photos tab even when
+  /// the hub cache held empty, stale, or non-loadable URLs.
   Future<void> _maybeEnrichHeroPhotos(Place place) async {
     if (!place.id.startsWith('google_')) return;
-    if (place.photos.length >= 8) return;
     if (_heroPhotoEnrichAttempted.contains(place.id)) return;
     _heroPhotoEnrichAttempted.add(place.id);
+    if (place.photos.isEmpty && mounted) {
+      setState(() => _isEnrichingPhotos = true);
+    }
     try {
       final urls = await ref.read(placesServiceProvider.notifier).fetchPhotoUrlsForGooglePlace(place.id);
       if (!mounted || _cachedPlace?.id != place.id) return;
-      final merged = _mergeUniquePhotoUrls(place.photos, urls);
-      if (merged.length > place.photos.length) {
-        setState(() {
+      final merged = urls.isNotEmpty
+          ? _mergeUniquePhotoUrls(urls, place.photos)
+          : place.photos;
+      setState(() {
+        if (!_samePhotoList(merged, _cachedPlace!.photos)) {
           _cachedPlace = _cachedPlace!.copyWith(photos: merged);
           _currentPlace = _cachedPlace;
-        });
-      }
+        }
+        _isEnrichingPhotos = false;
+      });
     } catch (_) {
-      // keep existing photos
+      if (mounted) setState(() => _isEnrichingPhotos = false);
+    }
+  }
+
+  /// Fetches editorial description from Places API if the Place came from hub cache
+  /// without one.
+  Future<void> _maybeEnrichDescription(Place place) async {
+    if (!place.id.startsWith('google_')) return;
+    if (_descriptionEnrichAttempted.contains(place.id)) return;
+    // Skip if we already have a real description (non-empty, not an address).
+    final hasDesc = place.description != null &&
+        place.description!.trim().isNotEmpty &&
+        !RegExp(r'^\d').hasMatch(place.description!.trim());
+    if (hasDesc) return;
+    _descriptionEnrichAttempted.add(place.id);
+    try {
+      final raw = place.id.substring('google_'.length);
+      final details = await ref.read(placesServiceProvider.notifier).getPlaceDetails(raw);
+      if (!mounted || _cachedPlace?.id != place.id) return;
+      final desc = details['description'] as String?;
+      final website = details['website'] as String?;
+      final phone = details['phone_number'] as String?;
+      setState(() {
+        if (desc != null && desc.trim().isNotEmpty && !RegExp(r'^\d').hasMatch(desc.trim())) {
+          _cachedPlace = _cachedPlace!.copyWith(description: desc);
+          _currentPlace = _cachedPlace;
+        }
+        if (website != null && website.trim().isNotEmpty) _enrichedWebsite = website;
+        if (phone != null && phone.trim().isNotEmpty) _enrichedPhone = phone;
+      });
+    } catch (_) {
+      // keep existing description
     }
   }
 
@@ -360,10 +415,47 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
 
   Widget _buildPhotoCarousel(Place place) {
     if (place.photos.isEmpty) {
+      if (_isEnrichingPhotos) {
+        // Shimmer-style placeholder while photos are loading from the Places API.
+        return Container(
+          color: const Color(0xFFE0E4E8),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Loading photos…',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: const Color(0xFF8C8780),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
       return Container(
-        color: Colors.grey[300],
-        child: const Center(
-          child: Icon(Icons.image, size: 64, color: Colors.grey),
+        color: const Color(0xFFE0E4E8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.image_not_supported_outlined, size: 56, color: Colors.grey[400]),
+            const SizedBox(height: 8),
+            Text(
+              'No photos available',
+              style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[500]),
+            ),
+          ],
         ),
       );
     }
@@ -565,6 +657,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
 
 
   Widget _buildTabBar() {
+    final l10n = AppLocalizations.of(context)!;
     return Material(
       color: Colors.transparent,
       child: Container(
@@ -601,10 +694,10 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
-        tabs: const [
-          Tab(text: '✨ Details'),
-          Tab(text: '📸 Photos'),
-          Tab(text: '⭐ Reviews'),
+        tabs: [
+          Tab(text: '✨ ${l10n.placeDetailTabDetails}'),
+          Tab(text: '📸 ${l10n.placeDetailTabPhotos}'),
+          Tab(text: '⭐ ${l10n.placeDetailTabReviews}'),
         ],
       ),
       ),
@@ -1682,6 +1775,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
 
   Widget _buildImageCarousel(Place place) {
+    final l10n = AppLocalizations.of(context)!;
     return FutureBuilder<List<String>>(
       future: _getMorePlacePhotos(place),
       builder: (context, snapshot) {
@@ -1708,7 +1802,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             Row(
       children: [
         Text(
-          '📸 Gallery',
+          '📸 ${l10n.placeDetailGalleryTitle}',
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -1730,7 +1824,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 ],
                 const Spacer(),
                 Text(
-                  '${allImages.length} photos',
+                  l10n.placeDetailPhotoCount(allImages.length),
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     color: Colors.grey[600],
@@ -1927,30 +2021,58 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               fontWeight: FontWeight.w400,
             ),
           ),
-          // Address with pin icon
+          // Address
           if (place.address.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.location_on_outlined,
-                    size: 16, color: _pdWmForest),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    place.address,
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: _pdWmCharcoal.withValues(alpha: 0.65),
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ],
+            _buildInfoRow(Icons.location_on_outlined, place.address),
+          ],
+          // Phone
+          if (_enrichedPhone != null) ...[
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: () => launchUrl(Uri.parse('tel:${_enrichedPhone!}')),
+              child: _buildInfoRow(Icons.phone_outlined, _enrichedPhone!,
+                  tappable: true),
+            ),
+          ],
+          // Website
+          if (_enrichedWebsite != null) ...[
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: () => launchUrl(Uri.parse(_enrichedWebsite!),
+                  mode: LaunchMode.externalApplication),
+              child: _buildInfoRow(Icons.language_outlined,
+                  _enrichedWebsite!.replaceFirst(RegExp(r'^https?://'), ''),
+                  tappable: true),
             ),
           ],
         ],
       ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String text, {bool tappable = false}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: tappable ? _pdWmForest : _pdWmForest.withValues(alpha: 0.7)),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              color: tappable
+                  ? _pdWmForest
+                  : _pdWmCharcoal.withValues(alpha: 0.65),
+              height: 1.4,
+              decoration: tappable ? TextDecoration.underline : null,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
+          ),
+        ),
+      ],
     );
   }
 
@@ -2593,7 +2715,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               Row(
                 children: [
                   Text(
-                    '⭐ Reviews',
+                    '⭐ ${l10n.placeDetailReviewsSectionTitle}',
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,

@@ -16,6 +16,8 @@ import 'package:wandermood/features/plans/data/services/scheduled_activity_servi
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/core/utils/auth_helper.dart';
+import 'package:wandermood/core/services/connectivity_service.dart';
+import 'package:wandermood/core/utils/offline_feedback.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'dart:async';
 
@@ -87,6 +89,13 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
   }
 
   Future<void> _startApiCall() async {
+    final connected = await ref.read(connectivityServiceProvider).isConnected;
+    if (!mounted) return;
+    if (!connected) {
+      showOfflineSnackBar(context);
+      if (mounted) context.pop();
+      return;
+    }
     await _generateActivitiesWithProperLoading();
   }
   

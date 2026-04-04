@@ -118,13 +118,23 @@
       "metaTitle": "Privacybeleid | WanderMood",
       "metaDescription": "Hoe WanderMood met je gegevens omgaat en hoe je je account verwijdert.",
       "title": "Privacybeleid",
-      "updated": "Laatst bijgewerkt: maart 2026",
+      "updated": "Laatst bijgewerkt: april 2026",
       "p1": "WanderMood (“wij”) respecteert je privacy. We verzamelen alleen gegevens die nodig zijn om de app te laten werken, je dagplannen te personaliseren en je account te beveiligen.",
       "p2": "We verkopen je persoonsgegevens niet aan derden. Gegevens worden versleuteld verstuurd (HTTPS/TLS) tussen de app en onze diensten.",
       "p3": "Je kunt op elk moment verwijdering van je account en bijbehorende persoonsgegevens aanvragen. Zie onze pagina",
       "p3Link": "Account verwijderen",
       "p3After": "voor een stapsgewijze uitleg, wat we verwijderen en hoe je contact opneemt als je de app niet kunt gebruiken.",
+      "p4": "Soorten gegevens die we verwerken: account- en profielinformatie (zoals e-mail, weergavenaam, door jou gekozen voorkeuren); bij benadering locatie als je dat toestaat (voor plekken in de buurt en weer); mood- en planningskeuzes die je invoert; door jou gemaakte inhoud (opgeslagen plekken, plannen, sociale posts); technische gegevens zoals apparaattype en diagnostiek die nodig zijn om de dienst te laten werken.",
+      "p5": "AI-functies (zoals Moody-chat en aanbevelingen) sturen je prompts en relevante context naar onze backend (Supabase Edge Functions). Berichten kunnen door modelproviders (zoals OpenAI) worden verwerkt om antwoorden te genereren. Stuur geen gezondheidsgegevens of wachtwoorden in de chat.",
+      "p6": "Verwerkers en infrastructuur: we gebruiken Supabase (EU of geconfigureerde regio’s) voor authenticatie, database en opslag; Vercel voor deze website; en kaart-/weer-/places-providers waar je die functies gebruikt. Hun verwerking valt onder onze afspraken en hun privacyverklaringen.",
+      "p7": "Deze website gebruikt alleen essentiële cookies en vergelijkbare technieken die nodig zijn om de site te laten werken (zoals taalvoorkeur). Als we later analytics- of marketingcookies toevoegen, werken we dit beleid bij en vragen we waar nodig om je toestemming vóór niet-essentiële cookies.",
+      "p8": "Europese privacyrechten (waaronder AVG): je kunt toegang, correctie, overdraagbaarheid of verwijdering van je persoonsgegevens aanvragen, en bezwaar maken of beperking vragen waar van toepassing. Neem contact op via het e-mailadres hieronder; je kunt ook een klacht indienen bij je lokale toezichthouder.",
       "questions": "Vragen? Mail ons op"
+    },
+    "consent": {
+      "banner": "We gebruiken essentiële cookies om deze site te laten werken (bijv. je taal te onthouden). Geen advertentiecookies op deze pagina. Zie ons Privacybeleid voor meer.",
+      "dismiss": "OK",
+      "privacyLink": "Privacybeleid"
     },
     "terms": {
       "metaTitle": "Gebruiksvoorwaarden | WanderMood",

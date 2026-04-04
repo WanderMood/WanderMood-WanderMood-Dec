@@ -16,6 +16,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/services/connectivity_service.dart';
 
 // v2 bottom nav — Screen 11 (active = wmForest, pill bg = wmForestTint)
 const Color _navWmForest = Color(0xFF2A6049);
@@ -30,7 +31,7 @@ const Color _wmStone = Color(0xFF8C8780);
 // Create a Provider for the tab controller
 final mainTabProvider = StateProvider<int>((ref) => 0);
 
-/// Bottom tabs: 0 My Day, 1 Explore, 2 Moody, 3 Profile (WanderFeed removed from bar).
+/// Bottom tabs: 0 My Day, 1 Explore, 2 Moody, 3 Profile.
 /// Legacy: old Profile was index 4 → 3.
 int normalizeMainTabIndex(int tab) {
   if (tab < 0) return 0;
@@ -279,7 +280,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     });
   }
   
-  // Screens in the bottom navigation (WanderFeed removed from bar; route /diaries unchanged)
+  // Bottom nav: My Day, Explore, Moody hub, Profile
   final List<Widget> screens = [
     const DynamicMyDayScreen(),
     const ExploreScreen(),
@@ -311,6 +312,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                  !dailyMoodState.hasSelectedMoodToday && 
                                  !hasSeenIntro;
 
+    final connectivityAsync = ref.watch(isConnectedProvider);
+    final isConnected = connectivityAsync.valueOrNull ?? true;
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -318,7 +322,34 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           backgroundColor: const Color(0xFFF5F0E8), // wmCream — QA / design system
           drawer: const ProfileDrawer(),
           extendBody: true, // Allow body to extend behind the floating nav bar
-          body: screens[selectedIndex],
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (!isConnected)
+                Container(
+                  width: double.infinity,
+                  color: const Color(0xFFE05C5C),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.wifi_off, color: Colors.white, size: 16),
+                      SizedBox(width: 8),
+                      Text(
+                        'No internet connection',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              Expanded(child: screens[selectedIndex]),
+            ],
+          ),
           bottomNavigationBar: shouldHideBottomNav
               ? null
               : Padding(

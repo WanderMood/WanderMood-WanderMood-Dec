@@ -1,6 +1,18 @@
 {
   "@@locale": "nl",
   "appTitle": "WanderMood",
+  "moodHomeHowAreYouFeeling": "Hoe voel je je vandaag?",
+  "moodHomeCtxNewUserMorning": "Laten we je dag beginnen met de juiste energie.",
+  "moodHomeCtxNewUserAfternoon": "Tijd om het meeste uit je middag te halen.",
+  "moodHomeCtxNewUserEvening": "De avond is daar — laten we je perfecte vibe vinden.",
+  "moodHomeCtxNewUserNight": "Late-night energie — laten we iets vinden dat past.",
+  "moodHomeCtxReturnMorningWeekend": "Weekendochtend — laten we de toon zetten.",
+  "moodHomeCtxReturnMorningWeekday": "Frisse start van de dag — wat voelt goed?",
+  "moodHomeCtxReturnAfternoon": "De middag komt op gang — tijd om je energie te matchen.",
+  "moodHomeCtxReturnEveningWeekend": "Weekendavond — laten we iets vinden dat past.",
+  "moodHomeCtxReturnEveningWeekday": "Werkdag voorbij — wat is je avondvibe?",
+  "moodHomeCtxReturnNight": "Late-night energie — laten we zien wat je aanspreekt.",
+  "moodHomeCtxFallback": "Laten we de juiste vibe voor vandaag vinden.",
   "splashTagline": "Je reisgezel op basis van je mood",
   "welcome": "Welkom",
   "hello": "Hallo",
@@ -557,6 +569,11 @@
   "profileModeLocalCardDescription": "WanderMood houdt je suggesties dichter bij huis en afgestemd op je vaste ritme.",
   "profileModeTravelCardDescription": "WanderMood denkt meer als reisgenoot en stuurt je naar nieuwe plekken om te ontdekken.",
   "profileActionEdit": "Bewerken",
+  "profileGenderWoman": "Vrouw",
+  "profileGenderMan": "Man",
+  "profileGenderNonBinary": "Non-binair",
+  "profileGenderPreferNotToSay": "Zeg ik liever niet",
+  "profileEditGenderLabel": "Geslacht",
   "profileActionShare": "Delen",
   "profileAgeGroup20s": "20er avonturier",
   "profileAgeGroup30s": "30er avonturier",
@@ -628,12 +645,14 @@
   "profileEditLocationHintExamples": "Bijv. Rotterdam, Amsterdam...",
   "preferencesScreenTitle": "Voorkeuren bewerken",
   "prefSectionCommunicationStyle": "Communicatiestijl",
-  "prefSectionInterests": "Interesses",
-  "prefSectionSocialVibe": "Sociale vibe",
+  "prefSectionInterests": "Jouw interesses",
+  "prefSectionSocialVibe": "Sociale vibe 👥",
   "prefSectionTravelStyles": "Reisstijlen",
   "prefSectionFavoriteMoods": "Favoriete moods",
-  "prefSectionPlanningPace": "Planningstempo",
+  "prefSectionPlanningPace": "Planningsritme ⏰",
   "prefSectionSelectedMoods": "Geselecteerde moods",
+  "prefSectionDietaryInclusion": "Dieet & inclusie",
+  "prefDietaryInclusionSubtitle": "Moody gebruikt dit voor aanbevelingen in de hele app. Kies wat van toepassing is.",
   "prefCommFriendly": "Vriendelijk",
   "prefCommPlayful": "Speels",
   "prefCommCalm": "Rustig",
@@ -1045,8 +1064,6 @@
   "prefTravelSubtitleEnergetic": "Een paar korte vragen om je ervaring persoonlijk te maken",
   "prefTravelSubtitleProfessional": "Een paar korte vragen om je ervaring persoonlijk te maken",
   "prefTravelSubtitleDirect": "Een paar korte vragen om je ervaring persoonlijk te maken",
-  "prefSectionSocialVibe": "Sociale vibe 👥",
-  "prefSectionPlanningPace": "Planningsritme ⏰",
   "prefSectionTravelStyle": "Reisstijl 🎯",
   "prefSelectUpToStyles": "Kies maximaal {count} stijlen",
   "prefSocialSolo": "Solo-avonturen",
@@ -1328,6 +1345,8 @@
   "getReadyTitle": "Maak je klaar",
   "getReadyLeaveBy": "Vertrek uiterlijk om {time}",
   "getReadyTripSummary": "{mode} · ~{minutes} min reistijd",
+  "getReadyTransportWalking": "Lopen",
+  "getReadyTransportPublicTransport": "Openbaar vervoer",
   "getReadyWeatherAt": "Weer om {time}",
   "getReadyWeatherTipDefault": "Het lijkt een goed moment om te vertrekken.",
   "getReadyWeatherTipCool": "Het kan wat fris zijn – neem een lichte jas mee.",
@@ -1351,6 +1370,10 @@
   "getReadyHours": "UUR",
   "getReadyMins": "MIN",
   "getReadyRoute": "Route",
+  "travelTimeLessThanOneMinWalk": "< 1 min lopen",
+  "travelTimeMinWalk": "{minutes} min lopen",
+  "travelTimeBikeAndWalk": "{bikeMinutes} min fietsen · {walkMinutes} min lopen",
+  "travelTimeTransitApprox": "≈ {transitMinutes} min OV · {distance}",
   "getReadyYourAdventureEnergy": "Jouw avontuur-energie",
   "getReadyBoostEnergyHint": "Vink de punten aan om je energie te boosten!",
   "getReadyPackEssentials": "Pak je essentials",
@@ -1391,7 +1414,10 @@
   "myDayDoneSubtitle": "Markeer als afgerond en laat een review achter",
   "myDayShareActivity": "Deel activiteit",
   "myDayShareComingSoon": "Deelfunctie komt binnenkort!",
-  "myDaySavedForLater": "{title} opgeslagen voor later!",
+  "myDaySavedForLater": "{title} opgeslagen bij Opgeslagen plekken!",
+  "myDaySavePlaceFailed": "Opslaan bij Opgeslagen plekken mislukt. Probeer opnieuw.",
+  "myDayShareFailed": "Delen mislukt. Probeer opnieuw.",
+  "myDayDirectionsNavigateTitle": "Navigeren naar",
   "myDayDeleteActivity": "Verwijder activiteit",
   "myDayDeleteActivitySubtitle": "Verwijder deze activiteit uit Mijn Dag",
   "myDayDeleteConfirmTitle": "Activiteit verwijderen?",
@@ -1658,7 +1684,9 @@
   "socialDeleteActivityConfirmTitle": "Delete activity?",
   "socialDeleteFailedTryAgain": "Delete failed. Please try again.",
   "socialShareActivityDetailsCopied": "Activity details copied to share",
-  "exploreNoPlacesFound": "No places found",
+  "exploreNoPlacesFound": "Geen plekken gevonden",
+  "exploreNoPlacesFoundHint": "Probeer andere zoekwoorden of pas je filters aan.",
+  "exploreSearching": "Zoeken…",
   "agendaNoActivitiesPlannedYet": "Je hebt nog geen geplande activiteiten in je agenda",
   "agendaDeleteMissingId": "Kan activiteit niet verwijderen (ontbrekende id).",
   "agendaRemovedFromPlanner": "{title} is uit je planner verwijderd.",
@@ -1889,6 +1917,7 @@
   "moodyConversationTypeMessage": "Typ je bericht...",
   "dayPlanAddMoreToMyDay": "Voeg nog {count} toe aan Mijn Dag",
   "dayPlanViewMyDay": "Bekijk Mijn Dag",
+  "dayPlanSelectAtLeastOne": "Voeg minstens één activiteit toe om door te gaan",
   "dayPlanAddAllSuggestions": "Voeg alle {count} toe aan Mijn Dag",
   "@dayPlanAddAllSuggestions": {
     "placeholders": {
@@ -2034,7 +2063,6 @@
   "prefSectionActivityPaceSub": "Hoe energiek wil je je dag?",
   "prefSectionTimeAvailable": "Beschikbare tijd",
   "prefSectionTimeAvailableSub": "Hoeveel tijd heb je gewoonlijk voor activiteiten?",
-  "prefSectionInterests": "Jouw interesses",
   "prefSectionInterestsSub": "Selecteer alles wat van toepassing is",
   "prefAge1824Label": "Begin twintig",
   "prefAge1824Desc": "Budgetvriendelijk, sociaal",
@@ -2101,6 +2129,7 @@
   "settingsNotificationsTripRemindersSubtitle": "Herinneringen voor geplande activiteiten",
   "settingsNotificationsWeatherUpdatesLabel": "Weer-updates",
   "settingsNotificationsWeatherUpdatesSubtitle": "Updates over het weer op jouw bestemming",
+  "settingsNotificationsLocalDeviceFootnote": "Deze opties gelden voor meldingen op dit apparaat (inclusief geplande herinneringen). Het zijn geen aparte pushberichten vanaf een server.",
   "premiumComingSoonTitle": "Premium — binnenkort",
   "premiumComingSoonBody": "Abonnementen worden later aangeboden via Apple In-App Purchase. WanderMood is in deze versie gratis te gebruiken.",
   "premiumComingSoonFootnote": "We verzamelen in deze build geen kaartgegevens, Apple Pay of andere betalingen.",
@@ -2187,6 +2216,19 @@
   "placeDetailDurationOneToFour": "1–4 uur",
   "placeDetailDurationTwoToThree": "2–3 uur",
   "placeDetailDurationAboutOneHour": "~1 uur",
+  "placeDetailTabDetails": "Details",
+  "placeDetailTabPhotos": "Foto's",
+  "placeDetailTabReviews": "Reviews",
+  "placeDetailGalleryTitle": "Galerij",
+  "placeDetailPhotoCount": "{count} foto's",
+  "@placeDetailPhotoCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "placeDetailReviewsSectionTitle": "Reviews",
   "placeCategoryFood": "Eten",
   "placeCategoryRestaurant": "Restaurant",
   "placeCategoryCafe": "Café",
@@ -2236,7 +2278,51 @@
   },
   "plannerSheetAbout": "Over",
   "plannerSheetNoDescription": "Nog geen beschrijving voor deze activiteit.",
-
+  "plannerSheetTabDetails": "Details",
+  "plannerSheetTabPhotos": "Foto's",
+  "plannerSheetTabReviews": "Reviews",
+  "plannerSheetNoExtraPhotos": "Nog geen extra foto's in dit plan.\nAls de activiteit aan een plek gekoppeld is, zie je een volledige galerij bij Ontdekken.",
+  "plannerSheetRatingOnPlan": "Beoordeling in jouw plan",
+  "plannerSheetWrittenReviews": "Geschreven reviews",
+  "plannerSheetReviewsExplainerWithRating": "Sterren hierboven komen uit jouw plan. Volledige Google-reviews en meer foto's verschijnen zodra deze activiteit aan een plek gekoppeld is — open die via Ontdekken of plan vanaf een plekkaart zodat WanderMood een place-id kan koppelen.",
+  "plannerSheetReviewsExplainerNoRating": "Nog geen reviewgegevens voor dit geplande item. Koppel het aan een Google-plek (bijv. via Ontdekken) om echte bezoekersreviews in de volledige plekweergave te lezen.",
+  "plannerMoodyAdviceBlurb": "Tips van Moody:\n• Check openingstijden (en het weer als je naar buiten gaat).\n• Kom een paar minuten eerder zodat je rustig aankomt.\n• Blijf drinken en houd een open blik — geniet!",
+  "moodyChatSubtitleEnergeticCity": "Jouw {city}-hype-reismaatje",
+  "@moodyChatSubtitleEnergeticCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "moodyChatSubtitleEnergeticNoCity": "Jouw hype-reismaatje",
+  "moodyChatSubtitleFriendlyCity": "Jouw reismaatje in {city}",
+  "@moodyChatSubtitleFriendlyCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "moodyChatSubtitleFriendlyNoCity": "Jouw reismaatje",
+  "moodyChatSubtitleProfessionalCity": "Jouw reisgenoot in {city}",
+  "@moodyChatSubtitleProfessionalCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "moodyChatSubtitleProfessionalNoCity": "Jouw professionele reisgenoot",
+  "moodyChatSubtitleDirectCity": "{city} · no-nonsense reismaatje",
+  "@moodyChatSubtitleDirectCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "moodyChatSubtitleDirectNoCity": "No-nonsense reismaatje",
   "moodyHubYourDayToday": "Jouw dag vandaag",
   "moodyHubChangeMood": "Verander stemming",
   "moodyHubNoMoodChosen": "Nog geen stemming gekozen",
@@ -2321,8 +2407,7 @@
   "moodHomeViewPlan": "Bekijk plan",
   "moodHomePlanAgain": "Opnieuw plannen",
   "planLoadingRotating2": "Je dag wordt samengesteld…",
-  "planLoadingRotating3": "Bijna klaar — je plan is bijna gereed ✨"
-,
+  "planLoadingRotating3": "Bijna klaar — je plan is bijna gereed ✨",
   "settingsTravelModeHelpLabel": "Hulp bij reismodus",
   "settingsTravelModeHelpSubtitle": "Open de gids Lokaal vs Reizen opnieuw",
   "placeDetailOpeningHours": "Openingstijden",
@@ -2358,7 +2443,6 @@
   "placeDescSpa": "{name} is een premium wellnessbestemming met ontspannende behandelingen en verjongende ervaringen.",
   "placeDescGeneric": "{name} is een geweldige plek om te ontdekken, met een fijne sfeer en geweldige vibes.",
   "placeDescGenericWithRating": "{name} is een hoog aangeschreven lokale parel met {rating} sterren, de moeite waard om te verkennen.",
-
   "notifReEngagementEnergeticV0Title": "Moody mist je! 😢",
   "notifReEngagementEnergeticV0Body": "Kom terug en ontdek wat er op je wacht. Jouw volgende avontuur begint hier.",
   "notifReEngagementEnergeticV1Title": "Hé! Waar ben je? 🌍",
@@ -2383,7 +2467,6 @@
   "notifReEngagementDirectV1Body": "Tik hier om je aanbevelingen te bekijken.",
   "notifReEngagementDirectV2Title": "Ga verder waar je gebleven was",
   "notifReEngagementDirectV2Body": "Jouw reisplannen wachten op je.",
-
   "notifDailyMoodCheckInEnergeticV0Title": "Hoe voel je je vandaag? 🎉",
   "notifDailyMoodCheckInEnergeticV0Body": "Vertel Moody je stemming en ontdek de perfecte plek!",
   "notifDailyMoodCheckInEnergeticV1Title": "Dagelijkse mood check! 🌟",
@@ -2408,7 +2491,6 @@
   "notifDailyMoodCheckInDirectV1Body": "Snel inchecken voor de beste aanbevelingen.",
   "notifDailyMoodCheckInDirectV2Title": "Stemmingsregistratie",
   "notifDailyMoodCheckInDirectV2Body": "Log je stemming nu.",
-
   "notifGenerateMyDayEnergeticV0Title": "Genereer je dag! 🚀",
   "notifGenerateMyDayEnergeticV0Body": "Laat Moody een episch dagplan voor je maken. Ben jij er klaar voor?",
   "notifGenerateMyDayEnergeticV1Title": "Jouw perfecte dag begint hier! ✨",
@@ -2433,7 +2515,6 @@
   "notifGenerateMyDayDirectV1Body": "Laat Moody je dag organiseren.",
   "notifGenerateMyDayDirectV2Title": "Maak een dagplan",
   "notifGenerateMyDayDirectV2Body": "Snel een schema voor vandaag.",
-
   "notifWeatherNudgeEnergeticV0Title": "Perfect weer voor een avontuur! ☀️",
   "notifWeatherNudgeEnergeticV0Body": "Het weer is geweldig — Moody heeft de ideale activiteiten klaar!",
   "notifWeatherNudgeEnergeticV1Title": "Het weer is magisch! 🌤️",
@@ -2458,7 +2539,6 @@
   "notifWeatherNudgeDirectV1Body": "Bekijk outdoor-activiteiten voor nu.",
   "notifWeatherNudgeDirectV2Title": "Weersaanbevelingen klaar",
   "notifWeatherNudgeDirectV2Body": "Tik om te bekijken.",
-
   "notifLocationDiscoveryEnergeticV0Title": "Verborgen parel vlakbij! 💎",
   "notifLocationDiscoveryEnergeticV0Body": "Moody heeft een geweldige plek vlak om de hoek gevonden. Ga eropuit!",
   "notifLocationDiscoveryEnergeticV1Title": "Avontuur op loopafstand! 🗺️",
@@ -2483,7 +2563,6 @@
   "notifLocationDiscoveryDirectV1Body": "Bekijk de locatie.",
   "notifLocationDiscoveryDirectV2Title": "Locatieaanbeveling",
   "notifLocationDiscoveryDirectV2Body": "Plek in de buurt wacht op je.",
-
   "notifSavedActivityReminderEnergeticV0Title": "Je opgeslagen activiteiten wachten! 📋",
   "notifSavedActivityReminderEnergeticV0Body": "Tijd om die geweldige plekken die je hebt bewaard eindelijk te bezoeken!",
   "notifSavedActivityReminderEnergeticV1Title": "Vergeet je lijstje niet! ⭐",
@@ -2508,7 +2587,6 @@
   "notifSavedActivityReminderDirectV1Body": "Bekijk je opgeslagen activiteiten.",
   "notifSavedActivityReminderDirectV2Title": "Bewaarde activiteiten",
   "notifSavedActivityReminderDirectV2Body": "Tik om je lijst te zien.",
-
   "notifFestivalEventEnergeticV0Title": "Feest in de buurt! 🎊",
   "notifFestivalEventEnergeticV0Body": "Er is een evenement vlakbij dat perfect bij je past. Ga eropuit!",
   "notifFestivalEventEnergeticV1Title": "Event alert! 🎉",
@@ -2533,7 +2611,78 @@
   "notifFestivalEventDirectV1Body": "Bekijk het evenement.",
   "notifFestivalEventDirectV2Title": "Event beschikbaar",
   "notifFestivalEventDirectV2Body": "Tik voor details.",
-
+  "notifCompanionMorningEnergeticV0Title": "Goedemorgen! ☀️ Moody is er!",
+  "notifCompanionMorningEnergeticV0Body": "Klaar voor een geweldige dag? Vertel me hoe je je voelt!",
+  "notifCompanionMorningEnergeticV1Title": "Wakey wakey! 🌅",
+  "notifCompanionMorningEnergeticV1Body": "Moody is er om je dag geweldig te maken. Hoe voel je je?",
+  "notifCompanionMorningEnergeticV2Title": "Nieuwe dag, nieuw avontuur! 🚀",
+  "notifCompanionMorningEnergeticV2Body": "Moody staat klaar. Hoe begin jij je dag?",
+  "notifCompanionMorningFriendlyV0Title": "Goedemorgen! 🌸",
+  "notifCompanionMorningFriendlyV0Body": "Moody wenst je een mooie dag. Hoe voel je je vanmorgen?",
+  "notifCompanionMorningFriendlyV1Title": "Hallo! Mooie morgen 💛",
+  "notifCompanionMorningFriendlyV1Body": "Even inchecken — hoe start jij je dag?",
+  "notifCompanionMorningFriendlyV2Title": "Ochtendgroet van Moody",
+  "notifCompanionMorningFriendlyV2Body": "We hopen dat je een geweldige dag voor je hebt. Hoe gaat het?",
+  "notifCompanionMorningProfessionalV0Title": "Ochtendcheck-in",
+  "notifCompanionMorningProfessionalV0Body": "Registreer je ochtendsstemming voor gepersonaliseerde dagaanbevelingen.",
+  "notifCompanionMorningProfessionalV1Title": "Dag starten",
+  "notifCompanionMorningProfessionalV1Body": "Log je stemming om de dag optimaal te beginnen.",
+  "notifCompanionMorningProfessionalV2Title": "Ochtendoverzicht beschikbaar",
+  "notifCompanionMorningProfessionalV2Body": "Check je aanbevelingen voor vandaag.",
+  "notifCompanionMorningDirectV0Title": "Goedemorgen",
+  "notifCompanionMorningDirectV0Body": "Hoe voel je je? Tik om in te checken.",
+  "notifCompanionMorningDirectV1Title": "Ochtend check-in",
+  "notifCompanionMorningDirectV1Body": "Log je stemming voor vandaag.",
+  "notifCompanionMorningDirectV2Title": "Start je dag",
+  "notifCompanionMorningDirectV2Body": "Vertel Moody hoe je je voelt.",
+  "notifCompanionAfternoonEnergeticV0Title": "Hoe gaat de dag? ⚡",
+  "notifCompanionAfternoonEnergeticV0Body": "Moody checkt in — is er iets geweldigs gebeurd vandaag?",
+  "notifCompanionAfternoonEnergeticV1Title": "Middagcheck! 🌞",
+  "notifCompanionAfternoonEnergeticV1Body": "Halverwege de dag — hoe voel je je nu?",
+  "notifCompanionAfternoonEnergeticV2Title": "Even bijkomen? 💪",
+  "notifCompanionAfternoonEnergeticV2Body": "Moody wil weten hoe jouw middag verloopt!",
+  "notifCompanionAfternoonFriendlyV0Title": "Middagcheck-in! 😊",
+  "notifCompanionAfternoonFriendlyV0Body": "Hoop dat je dag goed gaat — hoe voel je je nu?",
+  "notifCompanionAfternoonFriendlyV1Title": "Middag check-in",
+  "notifCompanionAfternoonFriendlyV1Body": "Even inchecken — hoe verloopt je dag tot nu toe?",
+  "notifCompanionAfternoonFriendlyV2Title": "Middag met Moody",
+  "notifCompanionAfternoonFriendlyV2Body": "Check in met hoe je je voelt en kijk wat er in de buurt is.",
+  "notifCompanionAfternoonProfessionalV0Title": "Middagstemming bijhouden",
+  "notifCompanionAfternoonProfessionalV0Body": "Log je huidige stemming voor bijgewerkte aanbevelingen.",
+  "notifCompanionAfternoonProfessionalV1Title": "Middag check-in beschikbaar",
+  "notifCompanionAfternoonProfessionalV1Body": "Registreer je stemming halverwege de dag.",
+  "notifCompanionAfternoonProfessionalV2Title": "Stemmingsupdate",
+  "notifCompanionAfternoonProfessionalV2Body": "Hoe voel je je nu? Update je profiel.",
+  "notifCompanionAfternoonDirectV0Title": "Middag check-in",
+  "notifCompanionAfternoonDirectV0Body": "Hoe voel je je?",
+  "notifCompanionAfternoonDirectV1Title": "Stemming bijwerken",
+  "notifCompanionAfternoonDirectV1Body": "Update je stemming voor betere aanbevelingen.",
+  "notifCompanionAfternoonDirectV2Title": "Check-in",
+  "notifCompanionAfternoonDirectV2Body": "Tik om je stemming te loggen.",
+  "notifCompanionEveningEnergeticV0Title": "Avond check-in! 🌙",
+  "notifCompanionEveningEnergeticV0Body": "Hoe was je dag? Vertel Moody alles!",
+  "notifCompanionEveningEnergeticV1Title": "Avondreflectie tijd! ⭐",
+  "notifCompanionEveningEnergeticV1Body": "De dag is bijna voorbij — hoe voel je je nu?",
+  "notifCompanionEveningEnergeticV2Title": "Goedenavond van Moody! 🌆",
+  "notifCompanionEveningEnergeticV2Body": "Even de dag afsluiten. Hoe was het vandaag?",
+  "notifCompanionEveningFriendlyV0Title": "Goedenavond! 🌙",
+  "notifCompanionEveningFriendlyV0Body": "Hoe was je dag? Moody luistert graag.",
+  "notifCompanionEveningFriendlyV1Title": "Avond check-in",
+  "notifCompanionEveningFriendlyV1Body": "Even terugkijken op de dag — hoe voel je je nu?",
+  "notifCompanionEveningFriendlyV2Title": "Moody's avondcheck-in",
+  "notifCompanionEveningFriendlyV2Body": "Hoe voel je je nu de dag ten einde loopt?",
+  "notifCompanionEveningProfessionalV0Title": "Avond check-in",
+  "notifCompanionEveningProfessionalV0Body": "Registreer je avondsstemming voor dagelijkse trends.",
+  "notifCompanionEveningProfessionalV1Title": "Dagafsluiting",
+  "notifCompanionEveningProfessionalV1Body": "Log je stemming aan het einde van de dag.",
+  "notifCompanionEveningProfessionalV2Title": "Avondoverzicht",
+  "notifCompanionEveningProfessionalV2Body": "Update je stemming om je wekelijkse overzicht bij te houden.",
+  "notifCompanionEveningDirectV0Title": "Goedenavond",
+  "notifCompanionEveningDirectV0Body": "Hoe was je dag? Tik om in te loggen.",
+  "notifCompanionEveningDirectV1Title": "Avond check-in",
+  "notifCompanionEveningDirectV1Body": "Log je avondsstemming.",
+  "notifCompanionEveningDirectV2Title": "Dag afsluiten",
+  "notifCompanionEveningDirectV2Body": "Update je stemming voor vandaag.",
   "notifCompanionCheckInMorningEnergeticV0Title": "Goedemorgen! ☀️ Moody is er!",
   "notifCompanionCheckInMorningEnergeticV0Body": "Klaar voor een geweldige dag? Vertel me hoe je je voelt!",
   "notifCompanionCheckInMorningEnergeticV1Title": "Wakey wakey! 🌅",
@@ -2558,7 +2707,6 @@
   "notifCompanionCheckInMorningDirectV1Body": "Log je stemming voor vandaag.",
   "notifCompanionCheckInMorningDirectV2Title": "Start je dag",
   "notifCompanionCheckInMorningDirectV2Body": "Vertel Moody hoe je je voelt.",
-
   "notifCompanionCheckInAfternoonEnergeticV0Title": "Hoe gaat de dag? ⚡",
   "notifCompanionCheckInAfternoonEnergeticV0Body": "Moody checkt in — is er iets geweldigs gebeurd vandaag?",
   "notifCompanionCheckInAfternoonEnergeticV1Title": "Middagcheck! 🌞",
@@ -2583,7 +2731,6 @@
   "notifCompanionCheckInAfternoonDirectV1Body": "Update je stemming voor betere aanbevelingen.",
   "notifCompanionCheckInAfternoonDirectV2Title": "Check-in",
   "notifCompanionCheckInAfternoonDirectV2Body": "Tik om je middag stemming te loggen.",
-
   "notifCompanionCheckInEveningEnergeticV0Title": "Avond check-in! 🌙",
   "notifCompanionCheckInEveningEnergeticV0Body": "Hoe was je dag? Vertel Moody alles!",
   "notifCompanionCheckInEveningEnergeticV1Title": "Avondreflectie tijd! ⭐",
@@ -2608,196 +2755,252 @@
   "notifCompanionCheckInEveningDirectV1Body": "Log je avondsstemming.",
   "notifCompanionCheckInEveningDirectV2Title": "Dag afsluiten",
   "notifCompanionCheckInEveningDirectV2Body": "Update je stemming voor vandaag.",
-
   "notifStreakMilestoneEnergeticV0Title": "{days} dagen op rij — Moody is ONDER DE INDRUK! 🔥",
   "@notifStreakMilestoneEnergeticV0Title": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneEnergeticV0Body": "Jij bent een echte WanderMood legende. Ga zo door!",
   "notifStreakMilestoneEnergeticV1Title": "🎉 {days} daagse streak! Je bent GEWELDIG!",
   "@notifStreakMilestoneEnergeticV1Title": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneEnergeticV1Body": "Zo'n consistentie! Moody is trots op je.",
   "notifStreakMilestoneEnergeticV2Title": "{days} dagen? Jij bent niet te stoppen! 🚀",
   "@notifStreakMilestoneEnergeticV2Title": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneEnergeticV2Body": "Jouw toewijding inspireert zelfs Moody. Blijf doorgaan!",
   "notifStreakMilestoneFriendlyV0Title": "Wauw, {days} dagen op rij! 💛",
   "@notifStreakMilestoneFriendlyV0Title": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneFriendlyV0Body": "Wat een geweldige prestatie. Je bent zo consistent!",
   "notifStreakMilestoneFriendlyV1Title": "{days} daagse streak 🎊",
   "@notifStreakMilestoneFriendlyV1Title": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneFriendlyV1Body": "Zo trots op je. Je hebt {days} dagen lang geweldige dingen gedaan!",
   "@notifStreakMilestoneFriendlyV1Body": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneFriendlyV2Title": "Jij volhoudt maar! {days} dagen 🌸",
   "@notifStreakMilestoneFriendlyV2Title": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneFriendlyV2Body": "Jouw constante inzet maakt Moody blij. Ga door!",
   "notifStreakMilestoneProfessionalV0Title": "{days} daagse streak bereikt",
   "@notifStreakMilestoneProfessionalV0Title": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneProfessionalV0Body": "Je hebt {days} dagen lang consequent ingecheckt. Goed gedaan.",
   "@notifStreakMilestoneProfessionalV0Body": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneProfessionalV1Title": "Streak milestone: {days} dagen",
   "@notifStreakMilestoneProfessionalV1Title": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneProfessionalV1Body": "Consistente tracking gedurende {days} dagen.",
   "@notifStreakMilestoneProfessionalV1Body": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneProfessionalV2Title": "{days} dagen bijgehouden",
   "@notifStreakMilestoneProfessionalV2Title": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneProfessionalV2Body": "Jouw toewijding heeft een {days}-daagse streak opgeleverd.",
   "@notifStreakMilestoneProfessionalV2Body": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneDirectV0Title": "{days} daagse streak!",
   "@notifStreakMilestoneDirectV0Title": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneDirectV0Body": "Je bent {days} dagen op rij actief. Ga door.",
   "@notifStreakMilestoneDirectV0Body": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneDirectV1Title": "Streak: {days} dagen",
   "@notifStreakMilestoneDirectV1Title": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneDirectV1Body": "Goed gedaan — {days} dagen op rij.",
   "@notifStreakMilestoneDirectV1Body": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneDirectV2Title": "{days} dagen op rij",
   "@notifStreakMilestoneDirectV2Title": {
     "placeholders": {
-      "days": { "type": "String" }
+      "days": {
+        "type": "String"
+      }
     }
   },
   "notifStreakMilestoneDirectV2Body": "Tik om je voortgang te bekijken.",
-
   "notifAchievementUnlockedEnergeticV0Title": "🏆 JE HEBT '{achievementTitle}' VERDIEND!",
   "@notifAchievementUnlockedEnergeticV0Title": {
     "placeholders": {
-      "achievementTitle": { "type": "String" }
+      "achievementTitle": {
+        "type": "String"
+      }
     }
   },
   "notifAchievementUnlockedEnergeticV0Body": "WAUW! Je hebt zojuist een geweldige prestatie ontgrendeld!",
   "notifAchievementUnlockedEnergeticV1Title": "Prestatie ontgrendeld: '{achievementTitle}' 🎉",
   "@notifAchievementUnlockedEnergeticV1Title": {
     "placeholders": {
-      "achievementTitle": { "type": "String" }
+      "achievementTitle": {
+        "type": "String"
+      }
     }
   },
   "notifAchievementUnlockedEnergeticV1Body": "Je bent GEWELDIG! Nieuwe badge verdiend!",
   "notifAchievementUnlockedEnergeticV2Title": "'{achievementTitle}' is van jou! 🚀",
   "@notifAchievementUnlockedEnergeticV2Title": {
     "placeholders": {
-      "achievementTitle": { "type": "String" }
+      "achievementTitle": {
+        "type": "String"
+      }
     }
   },
   "notifAchievementUnlockedEnergeticV2Body": "Moody is onder de indruk. Je hebt dit helemaal verdiend!",
   "notifAchievementUnlockedFriendlyV0Title": "Je hebt '{achievementTitle}' verdiend! 🌟",
   "@notifAchievementUnlockedFriendlyV0Title": {
     "placeholders": {
-      "achievementTitle": { "type": "String" }
+      "achievementTitle": {
+        "type": "String"
+      }
     }
   },
   "notifAchievementUnlockedFriendlyV0Body": "Wat een mooie prestatie. Je bent geweldig!",
   "notifAchievementUnlockedFriendlyV1Title": "Nieuwe badge: '{achievementTitle}' 💛",
   "@notifAchievementUnlockedFriendlyV1Title": {
     "placeholders": {
-      "achievementTitle": { "type": "String" }
+      "achievementTitle": {
+        "type": "String"
+      }
     }
   },
   "notifAchievementUnlockedFriendlyV1Body": "Je hebt hard gewerkt voor deze. Gefeliciteerd!",
   "notifAchievementUnlockedFriendlyV2Title": "'{achievementTitle}' ontgrendeld 🎊",
   "@notifAchievementUnlockedFriendlyV2Title": {
     "placeholders": {
-      "achievementTitle": { "type": "String" }
+      "achievementTitle": {
+        "type": "String"
+      }
     }
   },
   "notifAchievementUnlockedFriendlyV2Body": "Moody is zo trots op je. Je verdient dit helemaal!",
   "notifAchievementUnlockedProfessionalV0Title": "Prestatie ontgrendeld: '{achievementTitle}'",
   "@notifAchievementUnlockedProfessionalV0Title": {
     "placeholders": {
-      "achievementTitle": { "type": "String" }
+      "achievementTitle": {
+        "type": "String"
+      }
     }
   },
   "notifAchievementUnlockedProfessionalV0Body": "Je hebt een nieuwe mijlpaal bereikt in de app.",
   "notifAchievementUnlockedProfessionalV1Title": "Nieuwe badge verdiend: '{achievementTitle}'",
   "@notifAchievementUnlockedProfessionalV1Title": {
     "placeholders": {
-      "achievementTitle": { "type": "String" }
+      "achievementTitle": {
+        "type": "String"
+      }
     }
   },
   "notifAchievementUnlockedProfessionalV1Body": "Goed gedaan. Je hebt een prestatie ontgrendeld.",
   "notifAchievementUnlockedProfessionalV2Title": "'{achievementTitle}' toegevoegd aan je profiel",
   "@notifAchievementUnlockedProfessionalV2Title": {
     "placeholders": {
-      "achievementTitle": { "type": "String" }
+      "achievementTitle": {
+        "type": "String"
+      }
     }
   },
   "notifAchievementUnlockedProfessionalV2Body": "Bekijk je nieuwe prestatie in je profiel.",
   "notifAchievementUnlockedDirectV0Title": "Prestatie: '{achievementTitle}'",
   "@notifAchievementUnlockedDirectV0Title": {
     "placeholders": {
-      "achievementTitle": { "type": "String" }
+      "achievementTitle": {
+        "type": "String"
+      }
     }
   },
   "notifAchievementUnlockedDirectV0Body": "Ontgrendeld. Tik om te bekijken.",
   "notifAchievementUnlockedDirectV1Title": "'{achievementTitle}' verdiend",
   "@notifAchievementUnlockedDirectV1Title": {
     "placeholders": {
-      "achievementTitle": { "type": "String" }
+      "achievementTitle": {
+        "type": "String"
+      }
     }
   },
   "notifAchievementUnlockedDirectV1Body": "Nieuwe badge. Tik voor details.",
@@ -2805,10 +3008,11 @@
   "notifAchievementUnlockedDirectV2Body": "'{achievementTitle}' is toegevoegd aan je account.",
   "@notifAchievementUnlockedDirectV2Body": {
     "placeholders": {
-      "achievementTitle": { "type": "String" }
+      "achievementTitle": {
+        "type": "String"
+      }
     }
   },
-
   "notifWeeklyMoodRecapEnergeticV0Title": "Jouw weekoverzicht is klaar! 📊",
   "notifWeeklyMoodRecapEnergeticV0Body": "Wat een week was dat! Bekijk hoe jouw stemming varieerde.",
   "notifWeeklyMoodRecapEnergeticV1Title": "Weekrapport beschikbaar! 🎉",
@@ -2833,7 +3037,6 @@
   "notifWeeklyMoodRecapDirectV1Body": "Je moodrapport staat klaar.",
   "notifWeeklyMoodRecapDirectV2Title": "Moodoverzicht deze week",
   "notifWeeklyMoodRecapDirectV2Body": "Tik om te zien hoe je je voelde.",
-
   "notifPostTripReflectionEnergeticV0Title": "Hoe was het avontuur?! 🌍",
   "notifPostTripReflectionEnergeticV0Body": "Je trip is voorbij — vertel Moody alles! Wat was het hoogtepunt?",
   "notifPostTripReflectionEnergeticV1Title": "Reflectietijd! ✈️",
@@ -2858,25 +3061,30 @@
   "notifPostTripReflectionDirectV1Body": "Beoordeel je trip.",
   "notifPostTripReflectionDirectV2Title": "Trip afgerond",
   "notifPostTripReflectionDirectV2Body": "Voeg een reflectie toe.",
-
   "notifMoodFollowUpEnergeticV0Title": "Nog steeds {moodType}? 💡",
   "@notifMoodFollowUpEnergeticV0Title": {
     "placeholders": {
-      "moodType": { "type": "String" }
+      "moodType": {
+        "type": "String"
+      }
     }
   },
   "notifMoodFollowUpEnergeticV0Body": "Moody heeft activiteiten gevonden die perfect bij jouw stemming passen!",
   "notifMoodFollowUpEnergeticV1Title": "Jij en je {moodType} energie ⚡",
   "@notifMoodFollowUpEnergeticV1Title": {
     "placeholders": {
-      "moodType": { "type": "String" }
+      "moodType": {
+        "type": "String"
+      }
     }
   },
   "notifMoodFollowUpEnergeticV1Body": "Laat die stemming niet verloren gaan — check deze geweldige ideeën!",
   "notifMoodFollowUpEnergeticV2Title": "{moodType} vibes? Moody heeft de oplossing! 🎯",
   "@notifMoodFollowUpEnergeticV2Title": {
     "placeholders": {
-      "moodType": { "type": "String" }
+      "moodType": {
+        "type": "String"
+      }
     }
   },
   "notifMoodFollowUpEnergeticV2Body": "Geweldige activiteiten die bij jouw huidige stemming passen wachten op je!",
@@ -2884,27 +3092,35 @@
   "notifMoodFollowUpFriendlyV0Body": "Je was {moodType} — heeft die stemming nieuwe ideeën geïnspireerd?",
   "@notifMoodFollowUpFriendlyV0Body": {
     "placeholders": {
-      "moodType": { "type": "String" }
+      "moodType": {
+        "type": "String"
+      }
     }
   },
   "notifMoodFollowUpFriendlyV1Title": "Even inchecken na je {moodType} stemming",
   "@notifMoodFollowUpFriendlyV1Title": {
     "placeholders": {
-      "moodType": { "type": "String" }
+      "moodType": {
+        "type": "String"
+      }
     }
   },
   "notifMoodFollowUpFriendlyV1Body": "Moody hoopt dat je je goed voelt. Zin in iets leuks?",
   "notifMoodFollowUpFriendlyV2Title": "Aansluitend op je {moodType} gevoel",
   "@notifMoodFollowUpFriendlyV2Title": {
     "placeholders": {
-      "moodType": { "type": "String" }
+      "moodType": {
+        "type": "String"
+      }
     }
   },
   "notifMoodFollowUpFriendlyV2Body": "We hebben activiteiten gevonden die bij jou passen.",
   "notifMoodFollowUpProfessionalV0Title": "Follow-up op stemming: {moodType}",
   "@notifMoodFollowUpProfessionalV0Title": {
     "placeholders": {
-      "moodType": { "type": "String" }
+      "moodType": {
+        "type": "String"
+      }
     }
   },
   "notifMoodFollowUpProfessionalV0Body": "Activiteiten op basis van je eerder geregistreerde stemming zijn beschikbaar.",
@@ -2912,13 +3128,17 @@
   "notifMoodFollowUpProfessionalV1Body": "Bekijk activiteiten die passen bij je {moodType} stemming.",
   "@notifMoodFollowUpProfessionalV1Body": {
     "placeholders": {
-      "moodType": { "type": "String" }
+      "moodType": {
+        "type": "String"
+      }
     }
   },
   "notifMoodFollowUpProfessionalV2Title": "Aanbevelingen voor {moodType}",
   "@notifMoodFollowUpProfessionalV2Title": {
     "placeholders": {
-      "moodType": { "type": "String" }
+      "moodType": {
+        "type": "String"
+      }
     }
   },
   "notifMoodFollowUpProfessionalV2Body": "Op maat gemaakte suggesties op basis van je stemming.",
@@ -2926,13 +3146,17 @@
   "notifMoodFollowUpDirectV0Body": "Activiteiten voor jouw {moodType} gevoel wachten.",
   "@notifMoodFollowUpDirectV0Body": {
     "placeholders": {
-      "moodType": { "type": "String" }
+      "moodType": {
+        "type": "String"
+      }
     }
   },
   "notifMoodFollowUpDirectV1Title": "Aanbevelingen voor {moodType}",
   "@notifMoodFollowUpDirectV1Title": {
     "placeholders": {
-      "moodType": { "type": "String" }
+      "moodType": {
+        "type": "String"
+      }
     }
   },
   "notifMoodFollowUpDirectV1Body": "Tik om te bekijken.",
@@ -2940,10 +3164,11 @@
   "notifMoodFollowUpDirectV2Body": "Op basis van {moodType}. Tik om te zien.",
   "@notifMoodFollowUpDirectV2Body": {
     "placeholders": {
-      "moodType": { "type": "String" }
+      "moodType": {
+        "type": "String"
+      }
     }
   },
-
   "notifSocialEngagementEnergeticV0Title": "Deel je avontuur! 📣",
   "notifSocialEngagementEnergeticV0Body": "Je ervaringen verdienen een publiek. Deel ze met vrienden!",
   "notifSocialEngagementEnergeticV1Title": "Laat anderen weten wat je doet! 🌍",
@@ -2968,7 +3193,6 @@
   "notifSocialEngagementDirectV1Body": "Deel met vrienden.",
   "notifSocialEngagementDirectV2Title": "Sociale functie",
   "notifSocialEngagementDirectV2Body": "Tik om te verbinden.",
-
   "notifFriendActivityEnergeticV0Title": "Je vriend is aan het adventuren! 👀",
   "notifFriendActivityEnergeticV0Body": "Kijk wat ze hebben ontdekt — misschien wil jij ook mee!",
   "notifFriendActivityEnergeticV1Title": "Vriend alert! 🎉",
@@ -2993,7 +3217,6 @@
   "notifFriendActivityDirectV1Body": "Bekijk de gedeelde activiteit.",
   "notifFriendActivityDirectV2Title": "Sociale update",
   "notifFriendActivityDirectV2Body": "Tik voor details.",
-
   "notifWeekendPlanningNudgeEnergeticV0Title": "Het weekend nadert! 🎉",
   "notifWeekendPlanningNudgeEnergeticV0Body": "Moody staat klaar om je weekendplan samen te stellen. Laten we gaan!",
   "notifWeekendPlanningNudgeEnergeticV1Title": "Weekend is bijna hier! 🚀",
@@ -3018,7 +3241,6 @@
   "notifWeekendPlanningNudgeDirectV1Body": "Tik om te plannen.",
   "notifWeekendPlanningNudgeDirectV2Title": "Plan het weekend",
   "notifWeekendPlanningNudgeDirectV2Body": "Aanbevelingen beschikbaar.",
-
   "notifTrendingInYourCityEnergeticV0Title": "Trending in jouw stad! 🔥",
   "notifTrendingInYourCityEnergeticV0Body": "Dit zijn de populairste plekken nu. Mis je dit niet!",
   "notifTrendingInYourCityEnergeticV1Title": "Hot spots vlakbij! 🌟",
@@ -3042,5 +3264,213 @@
   "notifTrendingInYourCityDirectV1Title": "Populaire plekken",
   "notifTrendingInYourCityDirectV1Body": "Bekijk trending locaties.",
   "notifTrendingInYourCityDirectV2Title": "Trending nu",
-  "notifTrendingInYourCityDirectV2Body": "Tik voor populaire bestemmingen."
+  "notifTrendingInYourCityDirectV2Body": "Tik voor populaire bestemmingen.",
+  "achievements": "Prestaties",
+  "appSettings": "App-instellingen",
+  "autoDetectPermissions": "Automatisch detecteren en machtigingen",
+  "dangerZone": "Gevaarzone",
+  "dataStorage": "Gegevens en opslag",
+  "deleteAccount": "Account verwijderen",
+  "exportClearCache": "Gegevens exporteren en cache wissen",
+  "faqContactUs": "Veelgestelde vragen en contact",
+  "free": "Gratis",
+  "helpSupport": "Hulp en ondersteuning",
+  "language": "Taal",
+  "loading": "Laden…",
+  "location": "Locatie",
+  "logOutOfYourAccount": "Uitloggen bij je account",
+  "more": "Meer",
+  "permanentlyDeleteYourData": "Je gegevens permanent verwijderen",
+  "plan": "Plan",
+  "premium": "Premium",
+  "privacy": "Privacy",
+  "privateProfile": "Privéprofiel",
+  "profileAppSettingsLink": "App-instellingen",
+  "profileSavedPlacesEmpty": "Nog geen opgeslagen plekken",
+  "profileSavedPlacesSeeAll": "Alles bekijken",
+  "profileSavedPlacesTitle": "Opgeslagen plekken",
+  "profileStatsStreakTitle": "Reeks",
+  "profileTopMoodEmpty": "Nog geen",
+  "pushEmailInApp": "Push, e-mail en in-app",
+  "settings": "Instellingen",
+  "settingsAchievementsLabel": "Prestaties",
+  "settingsAchievementsSubtitle": "{count} ontgrendeld",
+  "@settingsAchievementsSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsAppTagline": "Met ❤️ gemaakt voor reizigers",
+  "settingsAppVersion": "WanderMood v{version}",
+  "@settingsAppVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsCacheCleared": "Cache succesvol gewist",
+  "settingsClearCacheDialogBody": "Hiermee verwijder je alle cachegegevens. Opgeslagen plekken en instellingen blijven behouden.",
+  "settingsClearCacheDialogTitle": "Cache wissen?",
+  "settingsClearCacheSubtitle": "Maak ruimte vrij door gecachte afbeeldingen en gegevens te verwijderen",
+  "settingsClearCacheTitle": "App-cache wissen",
+  "settingsDangerDeleteAccountLabel": "Account verwijderen",
+  "settingsDangerDeleteAccountSubtitle": "Je gegevens permanent verwijderen",
+  "settingsDangerSignOutLabel": "Uitloggen",
+  "settingsDangerSignOutSubtitle": "Uitloggen bij je account",
+  "settingsDarkModeSubtitle": "Donker thema in de hele app gebruiken",
+  "settingsDarkModeTitle": "Donkere modus",
+  "settingsDataStorageLabel": "Gegevens en opslag",
+  "settingsDataStorageSubtitle": "Exporteren, cache wissen",
+  "settingsDialogCancel": "Annuleren",
+  "settingsDialogConfirmClear": "Wissen",
+  "settingsDiscoveryRadiusSubtitle": "Toon plekken binnen {distance} km",
+  "@settingsDiscoveryRadiusSubtitle": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsDiscoveryRadiusTitle": "Ontdekkingsradius",
+  "settingsHelpSupportLabel": "Hulp en ondersteuning",
+  "settingsLanguageLabel": "Taal",
+  "settingsLocationLabel": "Locatie",
+  "settingsLocationTrackingSubtitle": "Sta toe dat de app je locatie volgt",
+  "settingsLocationTrackingTitle": "Locatie volgen",
+  "settingsNotificationsSubtitle": "Pushmeldingen inschakelen",
+  "settingsNotificationsTitle": "Meldingen",
+  "settingsOpenPrivacyError": "Fout bij openen privacybeleid: {error}",
+  "@settingsOpenPrivacyError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsOpenPrivacyNetworkError": "Kan privacybeleid niet openen. Controleer je internetverbinding.",
+  "settingsOpenTermsError": "Fout bij openen servicevoorwaarden: {error}",
+  "@settingsOpenTermsError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsOpenTermsNetworkError": "Kan servicevoorwaarden niet openen. Controleer je internetverbinding.",
+  "settingsPrivacyPolicySubtitle": "Lees ons privacybeleid",
+  "settingsPrivacyPolicyTitle": "Privacybeleid",
+  "settingsPrivacyTitle": "Privacy",
+  "settingsSaveButton": "Instellingen opslaan",
+  "settingsSaved": "Instellingen opgeslagen",
+  "settingsSectionDataPrivacy": "Gegevens en privacy",
+  "settingsSectionDiscovery": "Ontdekking",
+  "settingsSectionGeneral": "Algemeen",
+  "settingsSignOutConfirm": "Uitloggen",
+  "settingsSignOutMessage": "Weet je zeker dat je wilt uitloggen?",
+  "settingsSignOutTitle": "Uitloggen",
+  "settingsSubscriptionBadgeFree": "Gratis",
+  "settingsSubscriptionLabel": "Abonnement",
+  "settingsSubscriptionSubtitleFree": "Gratis abonnement",
+  "settingsTermsOfServiceSubtitle": "Lees onze servicevoorwaarden",
+  "settingsTermsOfServiceTitle": "Servicevoorwaarden",
+  "settingsThemeLabel": "Thema",
+  "settingsThemeValueSystem": "Systeem",
+  "signOut": "Uitloggen",
+  "subscription": "Abonnement",
+  "theme": "Thema",
+  "unlocked": "ontgrendeld",
+  "@prefSelectUpToStyles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commPrefChooseStyleTitle": "Kies jouw Moody-stijl",
+  "commPrefChooseStyleSubtitle": "Zo pas ik mijn toon perfect op jou aan.",
+  "commPrefSpeechBubble": "Hoe wil je dat ik met je praat? 😊",
+  "authWelcomeTitle": "Je bent erin! Welkom 🎉",
+  "authCallbackConfirmingEmail": "Je e-mail wordt bevestigd…",
+  "authCallbackVerificationFailed": "E-mailverificatie mislukt. Probeer het opnieuw.",
+  "dialogClose": "Sluiten",
+  "supportHowCanWeHelp": "Waarmee kunnen we je helpen?",
+  "supportContactUsCard": "Contact",
+  "supportSendFeedbackCard": "Feedback sturen",
+  "supportTutorialCard": "Tutorial",
+  "supportReportIssueCard": "Probleem melden",
+  "supportFaqSectionTitle": "Veelgestelde vragen",
+  "supportFaq1Q": "Hoe plan ik een nieuw avontuur?",
+  "supportFaq1A": "Ga naar het tabblad Ontdekken en start een nieuw plan. Kies je stemming, interesses en voorkeuren voor persoonlijke aanbevelingen.",
+  "supportFaq2Q": "Kan ik plekken bewaren voor later?",
+  "supportFaq2A": "Ja! Tik op het hart bij een plek om op te slaan onder Opgeslagen plekken via je profielmenu.",
+  "supportFaq3Q": "Hoe houd ik mijn stemming bij?",
+  "supportFaq3A": "WanderMood kan je herinneren om in te checken. Je kunt ook een invoer toevoegen vanuit de Moody-hub.",
+  "supportFaq4Q": "Wat betekenen de prestatiebadges?",
+  "supportFaq4A": "Badges verdien je door activiteiten in de app. Bij Prestaties in je profiel zie je de vereisten.",
+  "supportFaq5Q": "Hoe gebruikt WanderMood mijn locatie?",
+  "supportFaq5A": "Voor suggesties in de buurt. Locatiemachtigingen pas je aan in de app-instellingen.",
+  "supportFaq6Q": "Kan ik WanderMood offline gebruiken?",
+  "supportFaq6A": "Sommige functies hebben internet nodig. Opgeslagen items zijn vaak nog te zien.",
+  "supportAdditionalResources": "Extra bronnen",
+  "supportAppVersionLabel": "App-versie",
+  "supportContactDialogTitle": "Contact opnemen",
+  "supportEmailUsAt": "Mail ons op:",
+  "supportEmailSupportHours": "Ons team is bereikbaar ma–vr, 9:00–17:00 PST.",
+  "supportToastOpeningFeedback": "Feedbackformulier openen…",
+  "supportToastOpeningTutorial": "Tutorial openen…",
+  "supportToastOpeningIssue": "Melding openen…",
+  "recListTitle": "Reisaanbevelingen",
+  "recErrorPrefix": "Fout:",
+  "recTryAgain": "Opnieuw proberen",
+  "recNoneAvailable": "Geen aanbevelingen beschikbaar",
+  "recLocationLabel": "Locatie: {location}",
+  "recPriceLabel": "Prijs: {price}",
+  "recFavoriteUpdated": "Favoriet bijgewerkt",
+  "recFavoriteError": "Favoriet bijwerken mislukt: {error}",
+  "recDetailTitle": "Aanbevelingdetails",
+  "recDetailMarkCompleteTooltip": "Markeren als voltooid",
+  "recDetailStatusCompleted": "Voltooid",
+  "recDetailStatusNotCompleted": "Nog niet voltooid",
+  "recDetailSectionDescription": "Beschrijving",
+  "recDetailSectionCategory": "Categorie",
+  "recDetailSectionTags": "Tags",
+  "recDetailSectionConfidence": "Betrouwbaarheid",
+  "recDetailSectionMood": "Stemming",
+  "recDetailMoodRegisteredOn": "Geregistreerd op {date}",
+  "recDetailSectionWeather": "Weer",
+  "recDetailWeatherSubtitle": "{temp}°C, {humidity}% luchtvochtigheid",
+  "adventurePlanTitleYour": "Jouw ",
+  "adventurePlanTitleHighlight": "avonturenplan",
+  "adventurePlanTitleForToday": " voor vandaag",
+  "adventurePlanLoadError": "Fout bij laden van avonturen: {error}",
+  "receiptDownloadPdf": "PDF downloaden",
+  "receiptShare": "Bon delen",
+  "placePhotoTapToView": "Tik om te bekijken",
+  "periodActivitiesRemoveTitle": "Activiteit verwijderen?",
+  "periodActivitiesRemoveBody": "Weet je zeker dat je \"{name}\" wilt verwijderen?",
+  "periodActivitiesRemoveCta": "Verwijderen",
+  "periodActivitiesSwipeDelete": "Verwijderen",
+  "weatherFailedLoadCurrent": "Kon het weer niet laden",
+  "weatherFailedLoadForecast": "Kon de voorspelling niet laden",
+  "weatherNoDataAvailable": "Geen weergegevens beschikbaar",
+  "weatherShowMore": "Meer weergeven",
+  "weatherShowLess": "Minder weergeven",
+  "locationPickerSelectTitle": "Locatie kiezen",
+  "weatherLoadError": "Fout bij laden van weergegevens: {error}",
+  "weatherStatsTitle": "Weerstatistieken",
+  "weatherHistoryTitle": "Weergeschiedenis",
+  "weatherToggleTemperature": "Temperatuur",
+  "weatherToggleHumidity": "Vochtigheid",
+  "weatherTogglePrecipitation": "Neerslag",
+  "weatherForecastTitle": "Voorspelling",
+  "weatherNoForecasts": "Geen voorspellingen beschikbaar",
+  "weatherAlertsTitle": "Weerwaarschuwingen",
+  "weatherNoActiveAlerts": "Geen actieve waarschuwingen",
+  "weatherHistoryEmpty": "Geen historische gegevens beschikbaar",
+  "weatherHistoryInvalid": "Geen geldige historische gegevens",
+  "moodHistoryEmpty": "Geen stemminggeschiedenis beschikbaar",
+  "periodActivitiesSwipeComplete": "Voltooien"
 }

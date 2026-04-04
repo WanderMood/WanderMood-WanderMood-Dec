@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/recommendation.dart';
 import '../../application/ai_recommendation_service.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class RecommendationDetailPage extends ConsumerWidget {
   final Recommendation recommendation;
@@ -13,20 +14,21 @@ class RecommendationDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Aanbeveling Details'),
+        title: Text(l10n.recDetailTitle),
         actions: [
           if (!recommendation.isCompleted)
             IconButton(
               icon: const Icon(Icons.check_circle_outline),
               onPressed: () {
                 ref
-                    .read(aiRecommendationServiceProvider.notifier)
+                    .read(aIRecommendationServiceProvider.notifier)
                     .markAsCompleted(recommendation.id);
                 Navigator.pop(context);
               },
-              tooltip: 'Markeer als voltooid',
+              tooltip: l10n.recDetailMarkCompleteTooltip,
             ),
         ],
       ),
@@ -50,14 +52,16 @@ class RecommendationDetailPage extends ConsumerWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  recommendation.isCompleted ? 'Voltooid' : 'Nog niet voltooid',
+                  recommendation.isCompleted
+                      ? l10n.recDetailStatusCompleted
+                      : l10n.recDetailStatusNotCompleted,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ],
             ),
             const SizedBox(height: 24),
             Text(
-              'Beschrijving',
+              l10n.recDetailSectionDescription,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
@@ -67,7 +71,7 @@ class RecommendationDetailPage extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Categorie',
+              l10n.recDetailSectionCategory,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
@@ -77,7 +81,7 @@ class RecommendationDetailPage extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Tags',
+              l10n.recDetailSectionTags,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
@@ -93,7 +97,7 @@ class RecommendationDetailPage extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Betrouwbaarheid',
+              l10n.recDetailSectionConfidence,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
@@ -109,7 +113,7 @@ class RecommendationDetailPage extends ConsumerWidget {
             const SizedBox(height: 24),
             if (recommendation.currentMood != null) ...[
               Text(
-                'Stemming',
+                l10n.recDetailSectionMood,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 8),
@@ -117,14 +121,16 @@ class RecommendationDetailPage extends ConsumerWidget {
                 leading: const Icon(Icons.mood),
                 title: Text(recommendation.currentMood!.label),
                 subtitle: Text(
-                  'Geregistreerd op ${_formatDateTime(recommendation.currentMood!.timestamp)}',
+                  l10n.recDetailMoodRegisteredOn(
+                    _formatDateTime(recommendation.currentMood!.timestamp),
+                  ),
                 ),
               ),
             ],
             if (recommendation.currentWeather != null) ...[
               const SizedBox(height: 16),
               Text(
-                'Weer',
+                l10n.recDetailSectionWeather,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 8),
@@ -132,7 +138,10 @@ class RecommendationDetailPage extends ConsumerWidget {
                 leading: const Icon(Icons.wb_sunny),
                 title: Text(recommendation.currentWeather!.conditions),
                 subtitle: Text(
-                  '${recommendation.currentWeather!.temperature}°C, ${recommendation.currentWeather!.humidity}% luchtvochtigheid',
+                  l10n.recDetailWeatherSubtitle(
+                    '${recommendation.currentWeather!.temperature}',
+                    '${recommendation.currentWeather!.humidity}',
+                  ),
                 ),
               ),
             ],

@@ -53,9 +53,11 @@ class CheckInService {
         debugPrint('🌍 Skipping globe: No location data');
       }
 
-      // Update streak
+      // Update streak locally and persist to Supabase so the profile screen
+      // always reflects the real consecutive-day count.
       final streak = await getCheckInStreak();
       await _updateStreakInLocalStorage(streak);
+      await _updateStreakInSupabase(streak, checkIn.userId);
 
       debugPrint('✅ Check-in saved: ${checkIn.id}');
     } catch (e) {
@@ -238,6 +240,18 @@ class CheckInService {
       await prefs.setInt('check_in_streak', streak);
     } catch (e) {
       print('⚠️ Error saving streak: $e');
+    }
+  }
+
+  Future<void> _updateStreakInSupabase(int streak, String userId) async {
+    try {
+      await _client
+          .from('profiles')
+          .update({'mood_streak': streak})
+          .eq('id', userId);
+      debugPrint('✅ mood_streak updated to $streak in Supabase');
+    } catch (e) {
+      debugPrint('⚠️ Failed to update mood_streak in Supabase: $e');
     }
   }
 

@@ -56,33 +56,27 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
   
   void _toggleLike(SocialPost post) {
-    // WanderFeed coming soon - interactions disabled
     showWanderMoodToast(
       context,
-      message:
-          'WanderFeed is coming soon! Social interactions will be available then. 🧳✨',
+      message: 'This feature isn’t available yet.',
       duration: const Duration(seconds: 3),
     );
   }
 
   void _toggleBookmark() {
-    // WanderFeed coming soon - interactions disabled
     showWanderMoodToast(
       context,
-      message:
-          'WanderFeed is coming soon! Bookmarking will be available then. 🧳✨',
+      message: 'This feature isn’t available yet.',
       duration: const Duration(seconds: 3),
     );
   }
 
   void _addComment() {
     if (_commentController.text.trim().isEmpty) return;
-    
-    // WanderFeed coming soon - interactions disabled
+
     showWanderMoodToast(
       context,
-      message:
-          'WanderFeed is coming soon! Comments will be available then. 🧳✨',
+      message: 'This feature isn’t available yet.',
       duration: const Duration(seconds: 3),
     );
 

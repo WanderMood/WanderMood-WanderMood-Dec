@@ -1326,27 +1326,33 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
                 width: double.infinity,
                 height: double.infinity,
                 errorBuilder: (context, error, stackTrace) {
+                  final l10n = AppLocalizations.of(context)!;
                   return Container(
                     color: Colors.grey[300],
-                    child: const Center(
+                    child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('📷', style: TextStyle(fontSize: 30)),
-                          SizedBox(height: 4),
-                          Text('Tap to view', style: TextStyle(fontSize: 10)),
+                          const Text('📷', style: TextStyle(fontSize: 30)),
+                          const SizedBox(height: 4),
+                          Text(
+                            l10n.placePhotoTapToView,
+                            style: const TextStyle(fontSize: 10),
+                          ),
                         ],
                       ),
                     ),
                   );
                 },
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
+                progressIndicatorBuilder: (context, url, progress) {
                   return Container(
                     color: Colors.grey[200],
-                    child: const Center(
+                    child: Center(
                       child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF5C6BC0)),
+                        value: progress.progress,
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF5C6BC0),
+                        ),
                       ),
                     ),
                   );

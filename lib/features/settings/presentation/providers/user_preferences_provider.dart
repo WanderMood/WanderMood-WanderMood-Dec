@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wandermood/core/domain/models/user_preferences.dart';
+import 'package:wandermood/core/notifications/user_preferences_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:wandermood/core/config/env_config.dart';
@@ -17,7 +18,7 @@ final userPreferencesProvider = StateNotifierProvider<UserPreferencesNotifier, U
 
 class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
   final SharedPreferences _prefs;
-  static const String _prefsKey = 'user_preferences';
+  static const String _prefsKey = userPreferencesSharedPrefsKey;
 
   UserPreferencesNotifier(this._prefs) : super(UserPreferences()) {
     _loadPreferences();

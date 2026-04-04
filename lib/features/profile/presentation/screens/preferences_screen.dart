@@ -5,6 +5,8 @@ import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/constants/inclusion_preference_options.dart';
+import 'package:wandermood/features/profile/presentation/widgets/inclusion_dietary_preference_field.dart';
 
 class PreferencesScreen extends ConsumerStatefulWidget {
   const PreferencesScreen({super.key});
@@ -23,6 +25,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
   List<String> _travelStyles = [];
   List<String> _favoriteMoods = [];
   List<String> _selectedMoods = [];
+  final Set<String> _dietaryInclusionKeys = {};
 
   bool _isLoading = true;
   bool _hasChanges = false;
@@ -87,12 +90,17 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
             travel_styles,
             favorite_moods,
             planning_pace,
-            selected_moods
+            selected_moods,
+            dietary_restrictions
           ''')
           .eq('user_id', userId)
           .maybeSingle();
 
       if (mounted) {
+        final drRaw = response?['dietary_restrictions'] as List?;
+        final dr = normalizeInclusionPreferenceKeys(
+          (drRaw ?? const []).map((e) => e.toString()),
+        );
         setState(() {
           _communicationStyle = response?['communication_style'] as String?;
           _travelInterests =
@@ -106,6 +114,9 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
           _planningPace = response?['planning_pace'] as String?;
           _selectedMoods =
               List<String>.from((response?['selected_moods'] as List?) ?? const []);
+          _dietaryInclusionKeys
+            ..clear()
+            ..addAll(dr);
           _isLoading = false;
         });
       }
@@ -128,6 +139,8 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
         'favorite_moods': _favoriteMoods,
         'planning_pace': _planningPace,
         'selected_moods': _selectedMoods,
+        'dietary_restrictions':
+            normalizeInclusionPreferenceKeys(_dietaryInclusionKeys),
         'updated_at': DateTime.now().toIso8601String(),
       };
 
@@ -171,6 +184,17 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
         list.remove(value);
       } else {
         list.add(value);
+      }
+    });
+  }
+
+  void _toggleDietaryInclusionKey(String key) {
+    setState(() {
+      _hasChanges = true;
+      if (_dietaryInclusionKeys.contains(key)) {
+        _dietaryInclusionKeys.remove(key);
+      } else {
+        _dietaryInclusionKeys.add(key);
       }
     });
   }
@@ -394,6 +418,22 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                           selected: _travelStyles,
                           labelFor: _travelStyleLabel,
                           onTap: (v) => _toggleValue(_travelStyles, v),
+                        ),
+                        const SizedBox(height: 22),
+                        _buildSectionTitle(l10n.prefSectionDietaryInclusion),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.prefDietaryInclusionSubtitle,
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            color: const Color(0xFF8C8780),
+                            height: 1.35,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        InclusionDietaryPreferenceField(
+                          selected: _dietaryInclusionKeys,
+                          onToggleKey: _toggleDietaryInclusionKey,
                         ),
                         const SizedBox(height: 22),
                         _buildSectionTitle(l10n.prefSectionFavoriteMoods),

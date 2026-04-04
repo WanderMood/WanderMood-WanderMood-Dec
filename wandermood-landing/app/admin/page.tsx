@@ -19,8 +19,36 @@ type StatsResponse = {
     userCheckInsTotal: number | null;
     placesCacheRows: number | null;
   };
+  billing: {
+    paymentsLast30Days: number | null;
+    revenueLast30DaysCents: number | null;
+    revenueCurrency: string | null;
+    note?: string;
+    stripeWebhookEventsTotal: number | null;
+  };
+  edgeApi: {
+    available: boolean;
+    totalLast24h: number | null;
+    rateLimited429Last24h: number | null;
+    byFunction: Record<string, number> | null;
+    moodyByAction: Record<string, number> | null;
+    medianDurationMsByFunction: Record<string, number> | null;
+  };
   note: string;
 };
+
+function formatMoneyCents(cents: number | null, currency: string | null): string {
+  if (cents === null) return "—";
+  const cur = (currency ?? "usd").toUpperCase();
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: cur,
+    }).format(cents / 100);
+  } catch {
+    return `${(cents / 100).toFixed(2)} ${cur}`;
+  }
+}
 
 function StatCard({
   label,
@@ -144,6 +172,110 @@ export default function AdminPage() {
                 <StatCard label="Subscription rows" value={stats.subscriptions.totalRows} />
                 <StatCard label="Active premium" value={stats.subscriptions.activePremium} />
               </div>
+            </section>
+
+            <section>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500">
+                Edge API (rate limit + calls)
+              </h2>
+              <p className="mb-3 text-xs text-zinc-500">
+                Logged from Supabase Edge Functions <code className="rounded bg-zinc-100 px-1">moody</code>,{" "}
+                <code className="rounded bg-zinc-100 px-1">places</code>, <code className="rounded bg-zinc-100 px-1">weather</code>.
+                Set secret <code className="rounded bg-zinc-100 px-1">SUPABASE_SERVICE_ROLE_KEY</code> on each function.
+                Optional env: <code className="rounded bg-zinc-100 px-1">EDGE_RATE_MOODY_PER_MINUTE</code> (default 60),{" "}
+                <code className="rounded bg-zinc-100 px-1">EDGE_RATE_PLACES_PER_MINUTE</code> (120),{" "}
+                <code className="rounded bg-zinc-100 px-1">EDGE_RATE_WEATHER_PER_MINUTE</code> (60).
+              </p>
+              {!stats.edgeApi.available ? (
+                <p className="text-sm text-zinc-600">
+                  No <code className="rounded bg-zinc-100 px-1">api_invocations</code> table yet — apply migration{" "}
+                  <code className="rounded bg-zinc-100 px-1">20260404200000_edge_api_rate_limit_and_logs.sql</code>.
+                </p>
+              ) : (
+                <>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <StatCard label="Logged calls — last 24h" value={stats.edgeApi.totalLast24h} />
+                    <StatCard label="Rate limited (429) — last 24h" value={stats.edgeApi.rateLimited429Last24h} />
+                  </div>
+                  {stats.edgeApi.byFunction && Object.keys(stats.edgeApi.byFunction).length > 0 ? (
+                    <div className="mt-4 rounded-xl border border-zinc-200 bg-white p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                        By function (24h)
+                      </p>
+                      <ul className="mt-2 space-y-1 text-sm">
+                        {Object.entries(stats.edgeApi.byFunction)
+                          .sort((a, b) => b[1] - a[1])
+                          .map(([name, count]) => {
+                            const med =
+                              stats.edgeApi.medianDurationMsByFunction?.[name] ?? null;
+                            const medLabel =
+                              med != null ? ` · median ${med.toLocaleString()} ms` : "";
+                            return (
+                              <li key={name} className="flex justify-between gap-4 tabular-nums">
+                                <span className="font-medium text-zinc-800">{name}</span>
+                                <span className="text-zinc-600">
+                                  {count.toLocaleString()}
+                                  {medLabel}
+                                </span>
+                              </li>
+                            );
+                          })}
+                      </ul>
+                    </div>
+                  ) : (
+                    <p className="mt-3 text-sm text-zinc-600">No calls logged in the last 24 hours.</p>
+                  )}
+                  {stats.edgeApi.moodyByAction && Object.keys(stats.edgeApi.moodyByAction).length > 0 ? (
+                    <div className="mt-4 rounded-xl border border-zinc-200 bg-white p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                        Moody — by action (24h)
+                      </p>
+                      <ul className="mt-2 space-y-1 text-sm">
+                        {Object.entries(stats.edgeApi.moodyByAction)
+                          .sort((a, b) => b[1] - a[1])
+                          .map(([action, count]) => (
+                            <li key={action} className="flex justify-between gap-4 tabular-nums">
+                              <span className="text-zinc-800">{action}</span>
+                              <span className="text-zinc-600">{count.toLocaleString()}</span>
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                </>
+              )}
+            </section>
+
+            <section>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500">
+                Billing (Stripe)
+              </h2>
+              <p className="mb-3 text-xs text-zinc-500">
+                From <code className="rounded bg-zinc-100 px-1">billing_payments</code> after webhooks.
+                Set <code className="rounded bg-zinc-100 px-1">STRIPE_SECRET_KEY</code>,{" "}
+                <code className="rounded bg-zinc-100 px-1">STRIPE_WEBHOOK_SECRET</code> in Vercel and point Stripe to{" "}
+                <code className="rounded bg-zinc-100 px-1">/api/stripe/webhook</code>.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <StatCard
+                  label="Paid invoices — last 30 days"
+                  value={stats.billing.paymentsLast30Days}
+                />
+                <StatCard
+                  label="Revenue — last 30 days (largest currency)"
+                  value={formatMoneyCents(
+                    stats.billing.revenueLast30DaysCents,
+                    stats.billing.revenueCurrency
+                  )}
+                />
+                <StatCard
+                  label="Stripe webhook events (all time)"
+                  value={stats.billing.stripeWebhookEventsTotal}
+                />
+              </div>
+              {stats.billing.note ? (
+                <p className="mt-2 text-xs text-amber-800">{stats.billing.note}</p>
+              ) : null}
             </section>
 
             <section>

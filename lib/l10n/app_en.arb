@@ -4,6 +4,18 @@
   "@appTitle": {
     "description": "The application title"
   },
+  "moodHomeHowAreYouFeeling": "How are you feeling today?",
+  "moodHomeCtxNewUserMorning": "Let's start your day with the right energy.",
+  "moodHomeCtxNewUserAfternoon": "Time to make the most of your afternoon.",
+  "moodHomeCtxNewUserEvening": "Evening's here — let's find your perfect vibe.",
+  "moodHomeCtxNewUserNight": "Late night energy — let's find something that fits.",
+  "moodHomeCtxReturnMorningWeekend": "Weekend morning vibes — let's set the tone.",
+  "moodHomeCtxReturnMorningWeekday": "Fresh start to the day — what feels right?",
+  "moodHomeCtxReturnAfternoon": "Afternoon's rolling in — time to match your energy.",
+  "moodHomeCtxReturnEveningWeekend": "Weekend evening — let's find something that fits.",
+  "moodHomeCtxReturnEveningWeekday": "Workday's done — what's your evening vibe?",
+  "moodHomeCtxReturnNight": "Late night energy — let's see what calls to you.",
+  "moodHomeCtxFallback": "Let's find the right vibe for today.",
   "splashTagline": "Your mood-based travel companion",
   "welcome": "Welcome",
   "hello": "Hello",
@@ -563,6 +575,11 @@
   "profileModeTravelCardDescription": "WanderMood thinks more like a travel companion and sends you to new places to discover.",
   "profileActionEdit": "Edit",
   "profileActionShare": "Share",
+  "profileGenderWoman": "Woman",
+  "profileGenderMan": "Man",
+  "profileGenderNonBinary": "Non-binary",
+  "profileGenderPreferNotToSay": "Prefer not to say",
+  "profileEditGenderLabel": "Gender",
   "profileAgeGroup20s": "20s Adventurer",
   "profileAgeGroup30s": "30s Adventurer",
   "profileAgeGroup40s": "40s Adventurer",
@@ -660,6 +677,8 @@
   "prefSectionFavoriteMoods": "Favorite moods",
   "prefSectionPlanningPace": "Planning pace",
   "prefSectionSelectedMoods": "Selected moods",
+  "prefSectionDietaryInclusion": "Dietary & inclusion",
+  "prefDietaryInclusionSubtitle": "Moody uses these for recommendations across the app. Select any that apply.",
   "prefCommFriendly": "Friendly",
   "prefCommPlayful": "Playful",
   "prefCommCalm": "Calm",
@@ -1423,6 +1442,10 @@
     }
   },
   "dayPlanViewMyDay": "View My Day",
+  "dayPlanSelectAtLeastOne": "Add at least one activity to continue",
+  "@dayPlanSelectAtLeastOne": {
+    "description": "Hint shown below the greyed-out View My Day button"
+  },
   "dayPlanAddAllSuggestions": "Add all {count} to My Day",
   "@dayPlanAddAllSuggestions": {
     "placeholders": {
@@ -1683,6 +1706,8 @@
       }
     }
   },
+  "getReadyTransportWalking": "Walking",
+  "getReadyTransportPublicTransport": "Public transport",
   "getReadyWeatherAt": "Weather at {time}",
   "@getReadyWeatherAt": {
     "placeholders": {
@@ -1713,6 +1738,37 @@
   "getReadyHours": "HOURS",
   "getReadyMins": "MINS",
   "getReadyRoute": "Route",
+  "travelTimeLessThanOneMinWalk": "< 1 min walk",
+  "travelTimeMinWalk": "{minutes} min walk",
+  "@travelTimeMinWalk": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "travelTimeBikeAndWalk": "{bikeMinutes} min bike · {walkMinutes} min walk",
+  "@travelTimeBikeAndWalk": {
+    "placeholders": {
+      "bikeMinutes": {
+        "type": "int"
+      },
+      "walkMinutes": {
+        "type": "int"
+      }
+    }
+  },
+  "travelTimeTransitApprox": "≈ {transitMinutes} min transit · {distance}",
+  "@travelTimeTransitApprox": {
+    "placeholders": {
+      "transitMinutes": {
+        "type": "int"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
   "getReadyYourAdventureEnergy": "Your Adventure Energy",
   "getReadyBoostEnergyHint": "Check off items below to boost your energy!",
   "getReadyPackEssentials": "Pack Your Essentials",
@@ -1795,7 +1851,7 @@
   "myDayDoneSubtitle": "Mark complete and leave a review",
   "myDayShareActivity": "Share activity",
   "myDayShareComingSoon": "Share functionality coming soon!",
-  "myDaySavedForLater": "{title} saved for later!",
+  "myDaySavedForLater": "{title} saved to Saved places!",
   "@myDaySavedForLater": {
     "placeholders": {
       "title": {
@@ -1803,6 +1859,9 @@
       }
     }
   },
+  "myDaySavePlaceFailed": "Could not save to Saved places. Try again.",
+  "myDayShareFailed": "Could not share. Try again.",
+  "myDayDirectionsNavigateTitle": "Navigate to",
   "myDayDeleteActivity": "Delete activity",
   "myDayDeleteActivitySubtitle": "Remove this activity from My Day",
   "myDayDeleteConfirmTitle": "Delete activity?",
@@ -2313,6 +2372,14 @@
   "myDayAddFailedTryAgain": "Could not add activity. Please try again.",
   "activityOptionsViewAction": "View",
   "exploreNoPlacesFound": "No places found",
+  "exploreNoPlacesFoundHint": "Try different keywords or adjust your filters.",
+  "@exploreNoPlacesFoundHint": {
+    "description": "Subtitle shown below 'No places found'"
+  },
+  "exploreSearching": "Searching…",
+  "@exploreSearching": {
+    "description": "Loading indicator while a search is in progress"
+  },
   "agendaChooseActivityForDay": "Choose an activity to add for {day}.",
   "agendaLoadingActivities": "Loading activities...",
   "agendaErrorLoadingActivities": "Error loading activities",
@@ -2898,6 +2965,7 @@
   "settingsNotificationsTripRemindersSubtitle": "Reminders for planned activities",
   "settingsNotificationsWeatherUpdatesLabel": "Weather updates",
   "settingsNotificationsWeatherUpdatesSubtitle": "Updates about the weather at your destination",
+  "settingsNotificationsLocalDeviceFootnote": "These options apply to notifications on this device (including scheduled reminders). They are not separate cloud push messages.",
 
   "premiumComingSoonTitle": "Premium — coming soon",
   "premiumComingSoonBody": "Subscriptions will be offered with Apple In-App Purchase in a future update. WanderMood is free to use in this version.",
@@ -2986,6 +3054,19 @@
   "placeDetailDurationOneToFour": "1–4 hours",
   "placeDetailDurationTwoToThree": "2–3 hours",
   "placeDetailDurationAboutOneHour": "~1 hour",
+  "placeDetailTabDetails": "Details",
+  "placeDetailTabPhotos": "Photos",
+  "placeDetailTabReviews": "Reviews",
+  "placeDetailGalleryTitle": "Gallery",
+  "placeDetailPhotoCount": "{count} photos",
+  "@placeDetailPhotoCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "placeDetailReviewsSectionTitle": "Reviews",
   "placeCategoryFood": "Food",
   "placeCategoryRestaurant": "Restaurant",
   "placeCategoryCafe": "Café",
@@ -3035,6 +3116,51 @@
   },
   "plannerSheetAbout": "About",
   "plannerSheetNoDescription": "No description available for this activity yet.",
+  "plannerSheetTabDetails": "Details",
+  "plannerSheetTabPhotos": "Photos",
+  "plannerSheetTabReviews": "Reviews",
+  "plannerSheetNoExtraPhotos": "No extra photos on this plan yet.\nWhen the activity is linked to a place, you'll see a full gallery in Explore.",
+  "plannerSheetRatingOnPlan": "Rating on your plan",
+  "plannerSheetWrittenReviews": "Written reviews",
+  "plannerSheetReviewsExplainerWithRating": "Star ratings from your plan are shown above. Full Google reviews and more photos appear when this activity is linked to a place — open it from Explore, or schedule it from a place card so WanderMood can attach a place id.",
+  "plannerSheetReviewsExplainerNoRating": "There's no review data on this scheduled item yet. Link it to a Google place (e.g. add it from Explore) to read real visitor reviews in the full place view.",
+  "plannerMoodyAdviceBlurb": "Tips from Moody:\n• Check opening hours (and weather if you'll be outside).\n• Arrive a few minutes early so you can settle in.\n• Stay hydrated and keep an open mind — enjoy the moment!",
+  "moodyChatSubtitleEnergeticCity": "Your {city} hype travel bestie",
+  "@moodyChatSubtitleEnergeticCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "moodyChatSubtitleEnergeticNoCity": "Your hype travel bestie",
+  "moodyChatSubtitleFriendlyCity": "Your {city} travel bestie",
+  "@moodyChatSubtitleFriendlyCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "moodyChatSubtitleFriendlyNoCity": "Your travel bestie",
+  "moodyChatSubtitleProfessionalCity": "Your travel companion in {city}",
+  "@moodyChatSubtitleProfessionalCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "moodyChatSubtitleProfessionalNoCity": "Your professional travel companion",
+  "moodyChatSubtitleDirectCity": "{city} · straight-up travel bestie",
+  "@moodyChatSubtitleDirectCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "moodyChatSubtitleDirectNoCity": "Straight-up travel bestie",
 
   "moodyHubYourDayToday": "Your day today",
   "moodyHubChangeMood": "Change mood",
@@ -3680,5 +3806,163 @@
   "notifTrendingInYourCityDirectV1Title": "Local hotspot",
   "notifTrendingInYourCityDirectV1Body": "Tap to see what's trending.",
   "notifTrendingInYourCityDirectV2Title": "What's popular now",
-  "notifTrendingInYourCityDirectV2Body": "Trending activity near you."
+  "notifTrendingInYourCityDirectV2Body": "Trending activity near you.",
+
+  "commPrefChooseStyleTitle": "Choose your Moody style",
+  "commPrefChooseStyleSubtitle": "So I can match my tone perfectly to you.",
+  "commPrefSpeechBubble": "How do you want me to talk to you? 😊",
+
+  "authWelcomeTitle": "You're in! Welcome 🎉",
+  "authCallbackConfirmingEmail": "Confirming your email…",
+  "authCallbackVerificationFailed": "Email verification failed. Please try again.",
+
+  "dialogClose": "Close",
+
+  "supportHowCanWeHelp": "How can we help you?",
+  "supportContactUsCard": "Contact Us",
+  "supportSendFeedbackCard": "Send Feedback",
+  "supportTutorialCard": "Tutorial",
+  "supportReportIssueCard": "Report Issue",
+  "supportFaqSectionTitle": "Frequently Asked Questions",
+  "supportFaq1Q": "How do I plan a new adventure?",
+  "supportFaq1A": "To plan a new adventure, go to the Explore tab and start a new plan. You can choose your mood, interests, and travel preferences to get personalized recommendations.",
+  "supportFaq2Q": "Can I save places for later?",
+  "supportFaq2A": "Yes! When viewing a place, tap the heart icon to save it to your Saved Places, which you can access from your profile menu.",
+  "supportFaq3Q": "How do I track my mood?",
+  "supportFaq3A": "WanderMood can remind you to track your mood. You can also add a mood entry from the Moody hub when you check in.",
+  "supportFaq4Q": "What do the achievement badges mean?",
+  "supportFaq4A": "Badges are earned by completing activities in the app. Visit Achievements in your profile to see requirements for each badge.",
+  "supportFaq5Q": "How does WanderMood use my location?",
+  "supportFaq5A": "WanderMood uses your location to suggest nearby places and activities. You can adjust location permissions in app settings.",
+  "supportFaq6Q": "Can I use WanderMood offline?",
+  "supportFaq6A": "Some features need an internet connection. Saved places and items already on your device may still be viewable offline.",
+  "supportAdditionalResources": "Additional Resources",
+  "supportAppVersionLabel": "App Version",
+  "supportContactDialogTitle": "Contact Support",
+  "supportEmailUsAt": "Email us at:",
+  "supportEmailSupportHours": "Our support team is available Monday–Friday, 9am–5pm PST.",
+  "supportToastOpeningFeedback": "Opening feedback form…",
+  "supportToastOpeningTutorial": "Opening app tutorial…",
+  "supportToastOpeningIssue": "Opening issue report…",
+
+  "recListTitle": "Travel Recommendations",
+  "recErrorPrefix": "Error:",
+  "recTryAgain": "Try Again",
+  "recNoneAvailable": "No recommendations available",
+  "recLocationLabel": "Location: {location}",
+  "@recLocationLabel": {
+    "placeholders": {
+      "location": {
+        "type": "String"
+      }
+    }
+  },
+  "recPriceLabel": "Price: {price}",
+  "@recPriceLabel": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "recFavoriteUpdated": "Favorite updated successfully",
+  "recFavoriteError": "Error updating favorite: {error}",
+  "@recFavoriteError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "recDetailTitle": "Recommendation details",
+  "recDetailMarkCompleteTooltip": "Mark as complete",
+  "recDetailStatusCompleted": "Completed",
+  "recDetailStatusNotCompleted": "Not completed yet",
+  "recDetailSectionDescription": "Description",
+  "recDetailSectionCategory": "Category",
+  "recDetailSectionTags": "Tags",
+  "recDetailSectionConfidence": "Confidence",
+  "recDetailSectionMood": "Mood",
+  "recDetailMoodRegisteredOn": "Logged on {date}",
+  "@recDetailMoodRegisteredOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recDetailSectionWeather": "Weather",
+  "recDetailWeatherSubtitle": "{temp}°C, {humidity}% humidity",
+  "@recDetailWeatherSubtitle": {
+    "placeholders": {
+      "temp": {
+        "type": "String"
+      },
+      "humidity": {
+        "type": "String"
+      }
+    }
+  },
+
+  "adventurePlanTitleYour": "Your ",
+  "adventurePlanTitleHighlight": "Adventure Plan",
+  "adventurePlanTitleForToday": " for today",
+  "adventurePlanLoadError": "Error loading adventures: {error}",
+  "@adventurePlanLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "receiptDownloadPdf": "Download PDF",
+  "receiptShare": "Share Receipt",
+
+  "placePhotoTapToView": "Tap to view",
+
+  "periodActivitiesRemoveTitle": "Remove activity?",
+  "periodActivitiesRemoveBody": "Are you sure you want to remove \"{name}\"?",
+  "@periodActivitiesRemoveBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "periodActivitiesRemoveCta": "Remove",
+  "periodActivitiesSwipeDelete": "Delete",
+  "periodActivitiesSwipeComplete": "Complete",
+
+  "weatherFailedLoadCurrent": "Failed to load weather",
+  "weatherFailedLoadForecast": "Failed to load forecast",
+  "weatherNoDataAvailable": "No weather data available",
+  "weatherShowMore": "Show More",
+  "weatherShowLess": "Show Less",
+
+  "locationPickerSelectTitle": "Select Location",
+
+  "weatherLoadError": "Error loading weather data: {error}",
+  "@weatherLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "weatherStatsTitle": "Weather statistics",
+  "weatherHistoryTitle": "Weather history",
+  "weatherToggleTemperature": "Temperature",
+  "weatherToggleHumidity": "Humidity",
+  "weatherTogglePrecipitation": "Precipitation",
+  "weatherForecastTitle": "Forecast",
+  "weatherNoForecasts": "No forecasts available",
+  "weatherAlertsTitle": "Weather alerts",
+  "weatherNoActiveAlerts": "No active alerts",
+
+  "weatherHistoryEmpty": "No historical data available",
+  "weatherHistoryInvalid": "No valid historical data available",
+
+  "moodHistoryEmpty": "No mood history available"
 }

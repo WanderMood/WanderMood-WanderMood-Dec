@@ -15,6 +15,9 @@ import 'package:wandermood/features/places/domain/models/place.dart' show PlaceA
 import '../widgets/edit_favorite_vibes.dart'
     show allVibes, localizedVibeDescription, localizedVibeLabelForStored, localizedVibeName;
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
+import 'package:wandermood/core/constants/inclusion_preference_options.dart';
+import 'package:wandermood/core/providers/preferences_provider.dart';
+import '../widgets/inclusion_dietary_preference_field.dart';
 
 // WanderMood v2 — Edit Profile (Screen 12)
 const Color _wmCream = Color(0xFFF5F0E8);
@@ -46,6 +49,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Timer? _locationDebounce;
 
   DateTime? _dateOfBirth;
+  String? _selectedGender; // 'woman' | 'man' | 'non_binary' | 'prefer_not_to_say'
   String? _profileImageUrl;
   String? _selectedImagePath;
   bool _isSaving = false;
@@ -54,6 +58,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   
   EditScreenMode _currentMode = EditScreenMode.edit;
   List<String> _favoriteVibes = [];
+  final Set<String> _dietaryInclusionKeys = <String>{};
   
   // Original data for comparison
   Map<String, dynamic> _originalData = {};
@@ -89,6 +94,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
       final travelVibesRaw = profileResponse?['travel_vibes'] as List<dynamic>?;
       final vibes = _loadTravelVibes(travelVibesRaw);
+
+      final dietaryNormalized = normalizeInclusionPreferenceKeys(
+        currentProfile?.dietaryRestrictions ?? const [],
+      );
       
       final dateOfBirthRaw = profileResponse?['date_of_birth'];
       final DateTime? dateOfBirth = dateOfBirthRaw != null
@@ -106,9 +115,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           _emailController.text = email;
           _bioController.text = currentProfile?.bio ?? '';
           _dateOfBirth = dateOfBirth;
+          _selectedGender = currentProfile?.gender;
           _profileImageUrl = avatarUrl;
-          _locationController.text = profileResponse?['currently_exploring'] as String? ?? '';
+          // 'local' / 'traveling' / 'traveler' are travel-mode flags, not city names.
+          // Show an empty field so the user can type their actual city.
+          final rawLocation = profileResponse?['currently_exploring'] as String? ?? '';
+          const travelModeValues = {'local', 'traveling', 'traveler', 'Local Explorer', 'Traveler'};
+          _locationController.text = travelModeValues.contains(rawLocation) ? '' : rawLocation;
           _favoriteVibes = vibes;
+          _dietaryInclusionKeys
+            ..clear()
+            ..addAll(dietaryNormalized);
           
           _originalData = {
             'name': currentProfile?.fullName ?? '',
@@ -116,9 +133,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             'email': email,
             'bio': currentProfile?.bio ?? '',
             'dateOfBirth': dateOfBirth,
+            'gender': currentProfile?.gender,
             'imageUrl': avatarUrl,
-            'location': profileResponse?['currently_exploring'] as String? ?? '',
+            'location': _locationController.text,
             'vibes': List<String>.from(_favoriteVibes),
+            'dietaryInclusion': List<String>.from(dietaryNormalized),
           };
           
           _isLoading = false;
@@ -151,11 +170,25 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         _emailController.text != (_originalData['email'] ?? '') ||
         _bioController.text != (_originalData['bio'] ?? '') ||
         _dateOfBirth != _originalData['dateOfBirth'] ||
+        _selectedGender != _originalData['gender'] ||
         _locationController.text != (_originalData['location'] ?? '') ||
         _selectedImagePath != null ||
-        !_listEquals(_favoriteVibes, _originalData['vibes'] ?? []);
+        !_listEquals(_favoriteVibes, _originalData['vibes'] ?? []) ||
+        !_setEquals(
+          _dietaryInclusionKeys,
+          Set<String>.from(
+            (_originalData['dietaryInclusion'] as List<dynamic>?)
+                    ?.map((e) => e.toString()) ??
+                const [],
+          ),
+        );
     
     setState(() => _hasChanges = hasChanges);
+  }
+
+  bool _setEquals(Set<String> a, Set<String> b) {
+    if (a.length != b.length) return false;
+    return a.containsAll(b);
   }
 
   bool _listEquals(List<String> a, List<String> b) {
@@ -300,8 +333,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             'user_id': userId,
             'selected_moods': _favoriteVibes,
             'age_group': _deriveAgeGroup(_dateOfBirth),
+            if (_selectedGender != null) 'gender': _selectedGender,
+            'dietary_restrictions':
+                normalizeInclusionPreferenceKeys(_dietaryInclusionKeys),
             'updated_at': DateTime.now().toIso8601String(),
           }, onConflict: 'user_id');
+
+      ref.invalidate(preferencesProvider);
 
       // Update email in auth if changed
       if (_emailController.text != _originalData['email']) {
@@ -345,10 +383,30 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       _dateOfBirth = _originalData['dateOfBirth'];
       _locationController.text = _originalData['location'] ?? '';
       _favoriteVibes = List<String>.from(_originalData['vibes'] ?? []);
+      _dietaryInclusionKeys
+        ..clear()
+        ..addAll(
+          normalizeInclusionPreferenceKeys(
+            (_originalData['dietaryInclusion'] as List<dynamic>?)
+                    ?.map((e) => e.toString()) ??
+                const [],
+          ),
+        );
       _selectedImagePath = null;
       _hasChanges = false;
       _currentMode = EditScreenMode.edit;
     });
+  }
+
+  void _toggleDietaryInclusionKey(String key) {
+    setState(() {
+      if (_dietaryInclusionKeys.contains(key)) {
+        _dietaryInclusionKeys.remove(key);
+      } else {
+        _dietaryInclusionKeys.add(key);
+      }
+    });
+    _checkForChanges();
   }
 
   @override
@@ -659,6 +717,33 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               ),
                             ],
                           ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Gender
+                      _buildGenderCard(),
+                      const SizedBox(height: 12),
+
+                      _buildInputCard(
+                        label: l10n.prefSectionDietaryInclusion,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.prefDietaryInclusionSubtitle,
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                color: _wmStone,
+                                height: 1.35,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            InclusionDietaryPreferenceField(
+                              selected: _dietaryInclusionKeys,
+                              onToggleKey: _toggleDietaryInclusionKey,
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -1015,6 +1100,92 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildGenderCard() {
+    final l10n = AppLocalizations.of(context)!;
+    const options = [
+      ('woman', '👩', null),
+      ('man', '👨', null),
+      ('non_binary', '🧑', null),
+      ('prefer_not_to_say', '🔒', null),
+    ];
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _wmParchment, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.profileEditGenderLabel,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: _wmStone,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: options.map((opt) {
+              final (key, emoji, _) = opt;
+              final label = _genderLabel(l10n, key);
+              final isSelected = _selectedGender == key;
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedGender = isSelected ? null : key;
+                  });
+                  _checkForChanges();
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? _wmForest : const Color(0xFFF9FAFB),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSelected ? _wmForest : _wmParchment,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(emoji, style: const TextStyle(fontSize: 15)),
+                      const SizedBox(width: 6),
+                      Text(
+                        label,
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: isSelected ? Colors.white : const Color(0xFF1E1C18),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _genderLabel(AppLocalizations l10n, String key) {
+    switch (key) {
+      case 'woman': return l10n.profileGenderWoman;
+      case 'man': return l10n.profileGenderMan;
+      case 'non_binary': return l10n.profileGenderNonBinary;
+      case 'prefer_not_to_say': return l10n.profileGenderPreferNotToSay;
+      default: return key;
+    }
   }
 
   Widget _buildFavoriteVibesCard() {

@@ -7,6 +7,7 @@ import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class ViewReceiptScreen extends StatelessWidget {
   final Map<String, dynamic> activity;
@@ -15,6 +16,7 @@ class ViewReceiptScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SwirlBackground(
@@ -341,7 +343,7 @@ class ViewReceiptScreen extends StatelessWidget {
                           child: OutlinedButton.icon(
                             onPressed: () => _downloadReceipt(context),
                             icon: const Icon(Icons.download),
-                            label: const Text('Download PDF'),
+                            label: Text(l10n.receiptDownloadPdf),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: const Color(0xFF2A6049),
                               side: const BorderSide(color: Color(0xFF2A6049)),
@@ -357,7 +359,7 @@ class ViewReceiptScreen extends StatelessWidget {
                           child: ElevatedButton.icon(
                             onPressed: () => _shareReceipt(context),
                             icon: const Icon(Icons.share),
-                            label: const Text('Share Receipt'),
+                            label: Text(l10n.receiptShare),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF2A6049),
                               foregroundColor: Colors.white,

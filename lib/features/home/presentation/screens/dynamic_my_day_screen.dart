@@ -1,4 +1,6 @@
 import 'package:wandermood/core/utils/moody_clock.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:flutter/services.dart';
@@ -32,6 +34,11 @@ import 'package:wandermood/features/home/presentation/widgets/planner_activity_d
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import '../widgets/travel_time_connector.dart';
 import 'package:wandermood/features/home/presentation/utils/my_day_status_l10n.dart';
+import 'package:wandermood/core/services/connectivity_service.dart';
+import 'package:wandermood/core/utils/offline_feedback.dart';
+import 'package:wandermood/features/places/models/place.dart';
+import 'package:wandermood/features/places/services/saved_places_service.dart';
+import 'package:share_plus/share_plus.dart';
 
 class DynamicMyDayScreen extends ConsumerStatefulWidget {
   const DynamicMyDayScreen({super.key});
@@ -52,6 +59,21 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   String _safeActivityTitle(Map<String, dynamic> activity) {
     return activity['title']?.toString() ??
         AppLocalizations.of(context)!.dayPlanCardActivity;
+  }
+
+  /// Resolves coordinates from scheduled-activity maps (`lat`/`lng` and/or `location` "lat,lng").
+  ({double? lat, double? lng}) _activityLatLng(Map<String, dynamic> activity) {
+    double? lat = (activity['lat'] as num?)?.toDouble();
+    double? lng = (activity['lng'] as num?)?.toDouble();
+    final loc = activity['location'];
+    if (loc is String && loc.contains(',')) {
+      final parts = loc.split(',');
+      if (parts.length >= 2) {
+        lat ??= double.tryParse(parts[0].trim());
+        lng ??= double.tryParse(parts[1].trim());
+      }
+    }
+    return (lat: lat, lng: lng);
   }
 
   Uri _googleWebDirectionsUri(double? lat, double? lng, String title) {
@@ -2581,6 +2603,15 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   void _navigateToTab(int tabIndex) async {
     // Add haptic feedback immediately for instant response
     HapticFeedback.lightImpact();
+
+    if (tabIndex == 2) {
+      final connected = await ref.read(connectivityServiceProvider).isConnected;
+      if (!mounted) return;
+      if (!connected) {
+        showOfflineSnackBar(context);
+        return;
+      }
+    }
     
     // Show brief visual feedback
     if (mounted) {
@@ -2653,7 +2684,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               child: OutlinedButton.icon(
                 onPressed: () {
                   pop();
-                  _saveActivity(activity);
+                  unawaited(_saveActivity(activity));
                 },
                 icon: const Icon(Icons.bookmark_outline),
                 label: Text(AppLocalizations.of(context)!.myDaySaveForLater),
@@ -2674,10 +2705,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   void _showDirectionsOptions(Map<String, dynamic> activity) {
-    // Show directions modal for booked activities
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
-      builder: (context) => Container(
+      builder: (sheetContext) => Container(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -2702,9 +2732,25 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () async {
+                      final coords = _activityLatLng(activity);
+                      final title = _safeActivityTitle(activity);
+                      final googleAppUri =
+                          _googleAppDirectionsUri(coords.lat, coords.lng, title);
+                      final googleWebUri =
+                          _googleWebDirectionsUri(coords.lat, coords.lng, title);
+                      final canOpenGoogleApp =
+                          await canLaunchUrl(googleAppUri);
+                      Navigator.pop(sheetContext);
+                      if (!mounted) return;
+                      final uri =
+                          canOpenGoogleApp ? googleAppUri : googleWebUri;
+                      await launchUrl(uri,
+                          mode: LaunchMode.externalApplication);
+                    },
                     icon: const Icon(Icons.map),
-                    label: Text(AppLocalizations.of(context)!.myDayOpenGoogleMaps),
+                    label: Text(
+                        AppLocalizations.of(context)!.myDayOpenGoogleMaps),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2A6049),
                       foregroundColor: Colors.white,
@@ -2717,9 +2763,19 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () async {
+                      final coords = _activityLatLng(activity);
+                      final title = _safeActivityTitle(activity);
+                      final appleUri =
+                          _appleMapsUri(coords.lat, coords.lng, title);
+                      Navigator.pop(sheetContext);
+                      if (!mounted) return;
+                      await launchUrl(appleUri,
+                          mode: LaunchMode.externalApplication);
+                    },
                     icon: const Icon(Icons.navigation),
-                    label: Text(AppLocalizations.of(context)!.myDayOpenAppleMaps),
+                    label: Text(
+                        AppLocalizations.of(context)!.myDayOpenAppleMaps),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF2A6049),
                       side: const BorderSide(color: Color(0xFF2A6049)),
@@ -2879,7 +2935,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 title: AppLocalizations.of(context)!.myDaySaveForLater,
                 onTap: () {
                   Navigator.pop(sheetContext);
-                  _saveActivity(activity.rawData);
+                  unawaited(_saveActivity(activity.rawData));
                 },
               ),
               if (activity.status == ActivityStatus.upcoming)
@@ -2907,10 +2963,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 title: AppLocalizations.of(context)!.myDayShareActivity,
                 onTap: () {
                   Navigator.pop(sheetContext);
-                  showWanderMoodToast(
-                    context,
-                    message: AppLocalizations.of(context)!.myDayShareComingSoon,
-                  );
+                  unawaited(_shareActivityFromMap(activity.rawData));
                 },
               ),
               _activityOptionSheetTile(
@@ -2961,12 +3014,67 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     );
   }
 
-  void _saveActivity(Map<String, dynamic> activity) {
-    showWanderMoodToast(
-      context,
-      message: AppLocalizations.of(context)!
-          .myDaySavedForLater((activity['title'] ?? '').toString()),
-    );
+  Future<void> _saveActivity(Map<String, dynamic> activity) async {
+    final l10n = AppLocalizations.of(context)!;
+    final title =
+        activity['title']?.toString().trim().isNotEmpty == true
+            ? activity['title']!.toString().trim()
+            : l10n.dayPlanCardActivity;
+    try {
+      final coords = _activityLatLng(activity);
+      final rawId = activity['id']?.toString() ?? '';
+      final placeIdField = activity['placeId']?.toString();
+      final id = (placeIdField != null && placeIdField.isNotEmpty)
+          ? (placeIdField.startsWith('google_')
+              ? placeIdField
+              : 'google_$placeIdField')
+          : 'myday_${rawId.isNotEmpty ? rawId : title.hashCode}';
+      final lat = coords.lat ?? 0.0;
+      final lng = coords.lng ?? 0.0;
+      final imageUrl = activity['imageUrl']?.toString() ?? '';
+      final place = Place(
+        id: id,
+        name: title,
+        address: '',
+        location: PlaceLocation(lat: lat, lng: lng),
+        photos: imageUrl.isNotEmpty ? [imageUrl] : [],
+        description: activity['description']?.toString(),
+        types: const ['point_of_interest'],
+      );
+      await ref.read(savedPlacesServiceProvider).savePlace(place);
+      if (!mounted) return;
+      showWanderMoodToast(context, message: l10n.myDaySavedForLater(title));
+    } catch (_) {
+      if (!mounted) return;
+      showWanderMoodToast(
+        context,
+        message: l10n.myDaySavePlaceFailed,
+        isError: true,
+      );
+    }
+  }
+
+  Future<void> _shareActivityFromMap(Map<String, dynamic> activity) async {
+    final l10n = AppLocalizations.of(context)!;
+    final title = _safeActivityTitle(activity);
+    final coords = _activityLatLng(activity);
+    final buffer = StringBuffer(title);
+    if (coords.lat != null && coords.lng != null) {
+      buffer.writeln();
+      buffer.write(
+        'https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}',
+      );
+    }
+    try {
+      await Share.share(buffer.toString(), subject: title);
+    } catch (_) {
+      if (!mounted) return;
+      showWanderMoodToast(
+        context,
+        message: l10n.myDayShareFailed,
+        isError: true,
+      );
+    }
   }
 
   void _confirmDeleteActivity(EnhancedActivityData activity) {
@@ -3061,8 +3169,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
   void _openDirections(Map<String, dynamic> activity) async {
     try {
-      final lat = (activity['lat'] as num?)?.toDouble();
-      final lng = (activity['lng'] as num?)?.toDouble();
+      final coords = _activityLatLng(activity);
+      final lat = coords.lat;
+      final lng = coords.lng;
       final title = _safeActivityTitle(activity);
 
       final appleUri = _appleMapsUri(lat, lng, title);
@@ -3116,7 +3225,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Navigeer naar',
+                AppLocalizations.of(context)!.myDayDirectionsNavigateTitle,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,

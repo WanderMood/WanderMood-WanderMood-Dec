@@ -16,6 +16,8 @@ import 'package:wandermood/features/plans/presentation/screens/plan_loading_scre
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/services/connectivity_service.dart';
+import 'package:wandermood/core/utils/offline_feedback.dart';
 
 // WanderMood v2 — Moody conversation overlay (aligned with moody_chat_sheet / Screen 9)
 const Color _wmSkyTint = Color(0xFFEDF5F9);
@@ -878,40 +880,45 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
     );
     
     // Navigate to plan loading screen after a short delay to let dialog animation play
-    Future.delayed(const Duration(milliseconds: 1800), () {
-      if (mounted) {
-        // Close the dialog
-        Navigator.of(context).pop();
-        
-        // Close the conversation screen
-        widget.onClose();
-        
-        // Navigate to plan loading screen with hero animation
-        Navigator.of(context).push(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => PlanLoadingScreen(
-              selectedMoods: _detectedMoods.toList(),
-            ),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              const begin = Offset(0.0, 1.0);
-              const end = Offset.zero;
-              const curve = Curves.easeInOutCubic;
-              
-              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              var offsetAnimation = animation.drive(tween);
-              
-              return SlideTransition(
-                position: offsetAnimation,
-                child: FadeTransition(
-                  opacity: animation,
-                  child: child,
-                ),
-              );
-            },
-            transitionDuration: const Duration(milliseconds: 800),
-          ),
-        );
+    Future.delayed(const Duration(milliseconds: 1800), () async {
+      if (!mounted) return;
+      final connected = await ref.read(connectivityServiceProvider).isConnected;
+      if (!mounted) return;
+
+      Navigator.of(context).pop();
+
+      if (!connected) {
+        showOfflineSnackBar(context);
+        return;
       }
+
+      widget.onClose();
+
+      if (!mounted) return;
+      Navigator.of(context).push(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => PlanLoadingScreen(
+            selectedMoods: _detectedMoods.toList(),
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(0.0, 1.0);
+            const end = Offset.zero;
+            const curve = Curves.easeInOutCubic;
+
+            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            var offsetAnimation = animation.drive(tween);
+
+            return SlideTransition(
+              position: offsetAnimation,
+              child: FadeTransition(
+                opacity: animation,
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 800),
+        ),
+      );
     });
   }
   

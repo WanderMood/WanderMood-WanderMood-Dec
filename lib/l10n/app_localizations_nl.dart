@@ -12,6 +12,53 @@ class AppLocalizationsNl extends AppLocalizations {
   String get appTitle => 'WanderMood';
 
   @override
+  String get moodHomeHowAreYouFeeling => 'Hoe voel je je vandaag?';
+
+  @override
+  String get moodHomeCtxNewUserMorning =>
+      'Laten we je dag beginnen met de juiste energie.';
+
+  @override
+  String get moodHomeCtxNewUserAfternoon =>
+      'Tijd om het meeste uit je middag te halen.';
+
+  @override
+  String get moodHomeCtxNewUserEvening =>
+      'De avond is daar — laten we je perfecte vibe vinden.';
+
+  @override
+  String get moodHomeCtxNewUserNight =>
+      'Late-night energie — laten we iets vinden dat past.';
+
+  @override
+  String get moodHomeCtxReturnMorningWeekend =>
+      'Weekendochtend — laten we de toon zetten.';
+
+  @override
+  String get moodHomeCtxReturnMorningWeekday =>
+      'Frisse start van de dag — wat voelt goed?';
+
+  @override
+  String get moodHomeCtxReturnAfternoon =>
+      'De middag komt op gang — tijd om je energie te matchen.';
+
+  @override
+  String get moodHomeCtxReturnEveningWeekend =>
+      'Weekendavond — laten we iets vinden dat past.';
+
+  @override
+  String get moodHomeCtxReturnEveningWeekday =>
+      'Werkdag voorbij — wat is je avondvibe?';
+
+  @override
+  String get moodHomeCtxReturnNight =>
+      'Late-night energie — laten we zien wat je aanspreekt.';
+
+  @override
+  String get moodHomeCtxFallback =>
+      'Laten we de juiste vibe voor vandaag vinden.';
+
+  @override
   String get splashTagline => 'Je reisgezel op basis van je mood';
 
   @override
@@ -395,16 +442,16 @@ class AppLocalizationsNl extends AppLocalizations {
   String get emailNotificationsDisabled => 'E-mailmeldingen uitgeschakeld';
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'Instellingen';
 
   @override
   String get privacy => 'Privacy';
 
   @override
-  String get privateProfile => 'Private Profile';
+  String get privateProfile => 'Privéprofiel';
 
   @override
-  String get loading => 'Loading...';
+  String get loading => 'Laden…';
 
   @override
   String get loadingTitle => 'We zetten je perfecte dag klaar!';
@@ -736,37 +783,37 @@ class AppLocalizationsNl extends AppLocalizations {
       'WanderMood maakt elke dag een nieuw avontuur. Word wakker, check je vibe, ontdek handgepickte activiteiten 💡📍 Laat je mood de weg wijzen – keer op keer.';
 
   @override
-  String get appSettings => 'App Settings';
+  String get appSettings => 'App-instellingen';
 
   @override
-  String get pushEmailInApp => 'Push, email, and in-app';
+  String get pushEmailInApp => 'Push, e-mail en in-app';
 
   @override
-  String get location => 'Location';
+  String get location => 'Locatie';
 
   @override
-  String get autoDetectPermissions => 'Auto-detect and permissions';
+  String get autoDetectPermissions => 'Automatisch detecteren en machtigingen';
 
   @override
-  String get language => 'Language';
+  String get language => 'Taal';
 
   @override
-  String get theme => 'Theme';
+  String get theme => 'Thema';
 
   @override
-  String get more => 'More';
+  String get more => 'Meer';
 
   @override
-  String get achievements => 'Achievements';
+  String get achievements => 'Prestaties';
 
   @override
-  String get unlocked => 'unlocked';
+  String get unlocked => 'ontgrendeld';
 
   @override
-  String get subscription => 'Subscription';
+  String get subscription => 'Abonnement';
 
   @override
-  String get free => 'Free';
+  String get free => 'Gratis';
 
   @override
   String get plan => 'Plan';
@@ -775,31 +822,31 @@ class AppLocalizationsNl extends AppLocalizations {
   String get premium => 'Premium';
 
   @override
-  String get dataStorage => 'Data & Storage';
+  String get dataStorage => 'Gegevens en opslag';
 
   @override
-  String get exportClearCache => 'Export data and clear cache';
+  String get exportClearCache => 'Gegevens exporteren en cache wissen';
 
   @override
-  String get helpSupport => 'Help & Support';
+  String get helpSupport => 'Hulp en ondersteuning';
 
   @override
-  String get faqContactUs => 'FAQ and contact us';
+  String get faqContactUs => 'Veelgestelde vragen en contact';
 
   @override
-  String get dangerZone => 'Danger Zone';
+  String get dangerZone => 'Gevaarzone';
 
   @override
-  String get deleteAccount => 'Delete Account';
+  String get deleteAccount => 'Account verwijderen';
 
   @override
-  String get permanentlyDeleteYourData => 'Permanently delete your data';
+  String get permanentlyDeleteYourData => 'Je gegevens permanent verwijderen';
 
   @override
-  String get signOut => 'Sign Out';
+  String get signOut => 'Uitloggen';
 
   @override
-  String get logOutOfYourAccount => 'Log out of your account';
+  String get logOutOfYourAccount => 'Uitloggen bij je account';
 
   @override
   String get introTagline => 'Jouw mood. Jouw dag. Jouw avontuur.';
@@ -1359,25 +1406,25 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileStatsTopMoodTitle => 'Top mood';
 
   @override
-  String get profileStatsStreakTitle => 'Streak';
+  String get profileStatsStreakTitle => 'Reeks';
 
   @override
-  String get profileTopMoodEmpty => 'None yet';
+  String get profileTopMoodEmpty => 'Nog geen';
 
   @override
-  String get profileSavedPlacesTitle => 'Saved places';
+  String get profileSavedPlacesTitle => 'Opgeslagen plekken';
 
   @override
-  String get profileSavedPlacesSeeAll => 'See all';
+  String get profileSavedPlacesSeeAll => 'Alles bekijken';
 
   @override
-  String get profileSavedPlacesEmpty => 'No saved places yet';
+  String get profileSavedPlacesEmpty => 'Nog geen opgeslagen plekken';
 
   @override
   String get profileEditProfileButton => 'Profiel bewerken';
 
   @override
-  String get profileAppSettingsLink => 'App settings';
+  String get profileAppSettingsLink => 'App-instellingen';
 
   @override
   String get profileFavoriteVibesTitle => 'Jouw favoriete vibes';
@@ -1540,6 +1587,21 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get profileActionShare => 'Delen';
+
+  @override
+  String get profileGenderWoman => 'Vrouw';
+
+  @override
+  String get profileGenderMan => 'Man';
+
+  @override
+  String get profileGenderNonBinary => 'Non-binair';
+
+  @override
+  String get profileGenderPreferNotToSay => 'Zeg ik liever niet';
+
+  @override
+  String get profileEditGenderLabel => 'Geslacht';
 
   @override
   String get profileAgeGroup20s => '20er avonturier';
@@ -1738,6 +1800,13 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get prefSectionSelectedMoods => 'Geselecteerde moods';
+
+  @override
+  String get prefSectionDietaryInclusion => 'Dieet & inclusie';
+
+  @override
+  String get prefDietaryInclusionSubtitle =>
+      'Moody gebruikt dit voor aanbevelingen in de hele app. Kies wat van toepassing is.';
 
   @override
   String get prefCommFriendly => 'Vriendelijk';
@@ -2229,81 +2298,82 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileModeTravelSpot4 => 'Toeristvriendelijke locaties';
 
   @override
-  String get settingsSectionGeneral => 'General';
+  String get settingsSectionGeneral => 'Algemeen';
 
   @override
-  String get settingsSectionDiscovery => 'Discovery';
+  String get settingsSectionDiscovery => 'Ontdekking';
 
   @override
-  String get settingsSectionDataPrivacy => 'Data & Privacy';
+  String get settingsSectionDataPrivacy => 'Gegevens en privacy';
 
   @override
-  String get settingsNotificationsTitle => 'Notifications';
+  String get settingsNotificationsTitle => 'Meldingen';
 
   @override
-  String get settingsNotificationsSubtitle => 'Enable push notifications';
+  String get settingsNotificationsSubtitle => 'Pushmeldingen inschakelen';
 
   @override
-  String get settingsLocationTrackingTitle => 'Location Tracking';
+  String get settingsLocationTrackingTitle => 'Locatie volgen';
 
   @override
   String get settingsLocationTrackingSubtitle =>
-      'Allow app to track your location';
+      'Sta toe dat de app je locatie volgt';
 
   @override
-  String get settingsDarkModeTitle => 'Dark Mode';
+  String get settingsDarkModeTitle => 'Donkere modus';
 
   @override
-  String get settingsDarkModeSubtitle => 'Use dark theme throughout the app';
+  String get settingsDarkModeSubtitle =>
+      'Donker thema in de hele app gebruiken';
 
   @override
-  String get settingsDiscoveryRadiusTitle => 'Discovery Radius';
+  String get settingsDiscoveryRadiusTitle => 'Ontdekkingsradius';
 
   @override
   String settingsDiscoveryRadiusSubtitle(String distance) {
-    return 'Show places within $distance km';
+    return 'Toon plekken binnen $distance km';
   }
 
   @override
-  String get settingsClearCacheTitle => 'Clear App Cache';
+  String get settingsClearCacheTitle => 'App-cache wissen';
 
   @override
   String get settingsClearCacheSubtitle =>
-      'Free up space by removing cached images and data';
+      'Maak ruimte vrij door gecachte afbeeldingen en gegevens te verwijderen';
 
   @override
-  String get settingsPrivacyPolicyTitle => 'Privacy Policy';
+  String get settingsPrivacyPolicyTitle => 'Privacybeleid';
 
   @override
-  String get settingsPrivacyPolicySubtitle => 'Read our privacy policy';
+  String get settingsPrivacyPolicySubtitle => 'Lees ons privacybeleid';
 
   @override
-  String get settingsTermsOfServiceTitle => 'Terms of Service';
+  String get settingsTermsOfServiceTitle => 'Servicevoorwaarden';
 
   @override
-  String get settingsTermsOfServiceSubtitle => 'Read our terms of service';
+  String get settingsTermsOfServiceSubtitle => 'Lees onze servicevoorwaarden';
 
   @override
-  String get settingsSaveButton => 'Save Settings';
+  String get settingsSaveButton => 'Instellingen opslaan';
 
   @override
-  String get settingsClearCacheDialogTitle => 'Clear Cache?';
+  String get settingsClearCacheDialogTitle => 'Cache wissen?';
 
   @override
   String get settingsClearCacheDialogBody =>
-      'This will remove all cached data. Your saved places and settings will not be affected.';
+      'Hiermee verwijder je alle cachegegevens. Opgeslagen plekken en instellingen blijven behouden.';
 
   @override
-  String get settingsDialogCancel => 'Cancel';
+  String get settingsDialogCancel => 'Annuleren';
 
   @override
-  String get settingsDialogConfirmClear => 'Clear';
+  String get settingsDialogConfirmClear => 'Wissen';
 
   @override
-  String get settingsCacheCleared => 'Cache cleared successfully';
+  String get settingsCacheCleared => 'Cache succesvol gewist';
 
   @override
-  String get settingsSaved => 'Settings saved';
+  String get settingsSaved => 'Instellingen opgeslagen';
 
   @override
   String get settingsHubTitle => 'Instellingen';
@@ -2528,61 +2598,61 @@ class AppLocalizationsNl extends AppLocalizations {
   String get settingsHubNotificationsSubtitle => 'Push, e-mail, in-app';
 
   @override
-  String get settingsLocationLabel => 'Location';
+  String get settingsLocationLabel => 'Locatie';
 
   @override
   String get settingsLocationSubtitle => 'Automatisch bepalen, rechten';
 
   @override
-  String get settingsLanguageLabel => 'Language';
+  String get settingsLanguageLabel => 'Taal';
 
   @override
-  String get settingsThemeLabel => 'Theme';
+  String get settingsThemeLabel => 'Thema';
 
   @override
-  String get settingsThemeValueSystem => 'System';
+  String get settingsThemeValueSystem => 'Systeem';
 
   @override
-  String get settingsAchievementsLabel => 'Achievements';
+  String get settingsAchievementsLabel => 'Prestaties';
 
   @override
   String settingsAchievementsSubtitle(String count) {
-    return '$count unlocked';
+    return '$count ontgrendeld';
   }
 
   @override
-  String get settingsSubscriptionLabel => 'Subscription';
+  String get settingsSubscriptionLabel => 'Abonnement';
 
   @override
-  String get settingsSubscriptionSubtitleFree => 'Free Plan';
+  String get settingsSubscriptionSubtitleFree => 'Gratis abonnement';
 
   @override
-  String get settingsSubscriptionBadgeFree => 'Free';
+  String get settingsSubscriptionBadgeFree => 'Gratis';
 
   @override
-  String get settingsDataStorageLabel => 'Data & Storage';
+  String get settingsDataStorageLabel => 'Gegevens en opslag';
 
   @override
-  String get settingsDataStorageSubtitle => 'Export, clear cache';
+  String get settingsDataStorageSubtitle => 'Exporteren, cache wissen';
 
   @override
-  String get settingsHelpSupportLabel => 'Help & Support';
+  String get settingsHelpSupportLabel => 'Hulp en ondersteuning';
 
   @override
   String get settingsHelpSupportSubtitle => 'FAQ, neem contact op';
 
   @override
-  String get settingsDangerDeleteAccountLabel => 'Delete Account';
+  String get settingsDangerDeleteAccountLabel => 'Account verwijderen';
 
   @override
   String get settingsDangerDeleteAccountSubtitle =>
-      'Permanently delete your data';
+      'Je gegevens permanent verwijderen';
 
   @override
-  String get settingsDangerSignOutLabel => 'Sign Out';
+  String get settingsDangerSignOutLabel => 'Uitloggen';
 
   @override
-  String get settingsDangerSignOutSubtitle => 'Log out of your account';
+  String get settingsDangerSignOutSubtitle => 'Uitloggen bij je account';
 
   @override
   String settingsAppVersion(String version) {
@@ -2590,33 +2660,33 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get settingsAppTagline => 'Made with ❤️ for travelers';
+  String get settingsAppTagline => 'Met ❤️ gemaakt voor reizigers';
 
   @override
-  String get settingsSignOutTitle => 'Sign Out';
+  String get settingsSignOutTitle => 'Uitloggen';
 
   @override
-  String get settingsSignOutMessage => 'Are you sure you want to sign out?';
+  String get settingsSignOutMessage => 'Weet je zeker dat je wilt uitloggen?';
 
   @override
-  String get settingsSignOutConfirm => 'Sign Out';
+  String get settingsSignOutConfirm => 'Uitloggen';
 
   @override
   String get settingsOpenPrivacyNetworkError =>
-      'Unable to open Privacy Policy. Please check your internet connection.';
+      'Kan privacybeleid niet openen. Controleer je internetverbinding.';
 
   @override
   String settingsOpenPrivacyError(String error) {
-    return 'Error opening Privacy Policy: $error';
+    return 'Fout bij openen privacybeleid: $error';
   }
 
   @override
   String get settingsOpenTermsNetworkError =>
-      'Unable to open Terms of Service. Please check your internet connection.';
+      'Kan servicevoorwaarden niet openen. Controleer je internetverbinding.';
 
   @override
   String settingsOpenTermsError(String error) {
-    return 'Error opening Terms of Service: $error';
+    return 'Fout bij openen servicevoorwaarden: $error';
   }
 
   @override
@@ -3366,6 +3436,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get dayPlanViewMyDay => 'Bekijk Mijn Dag';
 
   @override
+  String get dayPlanSelectAtLeastOne =>
+      'Voeg minstens één activiteit toe om door te gaan';
+
+  @override
   String dayPlanAddAllSuggestions(String count) {
     return 'Voeg alle $count toe aan Mijn Dag';
   }
@@ -3773,6 +3847,12 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String get getReadyTransportWalking => 'Lopen';
+
+  @override
+  String get getReadyTransportPublicTransport => 'Openbaar vervoer';
+
+  @override
   String getReadyWeatherAt(String time) {
     return 'Weer om $time';
   }
@@ -3846,6 +3926,24 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get getReadyRoute => 'Route';
+
+  @override
+  String get travelTimeLessThanOneMinWalk => '< 1 min lopen';
+
+  @override
+  String travelTimeMinWalk(int minutes) {
+    return '$minutes min lopen';
+  }
+
+  @override
+  String travelTimeBikeAndWalk(int bikeMinutes, int walkMinutes) {
+    return '$bikeMinutes min fietsen · $walkMinutes min lopen';
+  }
+
+  @override
+  String travelTimeTransitApprox(int transitMinutes, String distance) {
+    return '≈ $transitMinutes min OV · $distance';
+  }
 
   @override
   String get getReadyYourAdventureEnergy => 'Jouw avontuur-energie';
@@ -3985,8 +4083,18 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String myDaySavedForLater(String title) {
-    return '$title opgeslagen voor later!';
+    return '$title opgeslagen bij Opgeslagen plekken!';
   }
+
+  @override
+  String get myDaySavePlaceFailed =>
+      'Opslaan bij Opgeslagen plekken mislukt. Probeer opnieuw.';
+
+  @override
+  String get myDayShareFailed => 'Delen mislukt. Probeer opnieuw.';
+
+  @override
+  String get myDayDirectionsNavigateTitle => 'Navigeren naar';
 
   @override
   String get myDayDeleteActivity => 'Verwijder activiteit';
@@ -4758,7 +4866,14 @@ class AppLocalizationsNl extends AppLocalizations {
   String get activityOptionsViewAction => 'View';
 
   @override
-  String get exploreNoPlacesFound => 'No places found';
+  String get exploreNoPlacesFound => 'Geen plekken gevonden';
+
+  @override
+  String get exploreNoPlacesFoundHint =>
+      'Probeer andere zoekwoorden of pas je filters aan.';
+
+  @override
+  String get exploreSearching => 'Zoeken…';
 
   @override
   String agendaChooseActivityForDay(String day) {
@@ -6062,6 +6177,10 @@ class AppLocalizationsNl extends AppLocalizations {
       'Updates over het weer op jouw bestemming';
 
   @override
+  String get settingsNotificationsLocalDeviceFootnote =>
+      'Deze opties gelden voor meldingen op dit apparaat (inclusief geplande herinneringen). Het zijn geen aparte pushberichten vanaf een server.';
+
+  @override
   String get premiumComingSoonTitle => 'Premium — binnenkort';
 
   @override
@@ -6308,6 +6427,26 @@ class AppLocalizationsNl extends AppLocalizations {
   String get placeDetailDurationAboutOneHour => '~1 uur';
 
   @override
+  String get placeDetailTabDetails => 'Details';
+
+  @override
+  String get placeDetailTabPhotos => 'Foto\'s';
+
+  @override
+  String get placeDetailTabReviews => 'Reviews';
+
+  @override
+  String get placeDetailGalleryTitle => 'Galerij';
+
+  @override
+  String placeDetailPhotoCount(int count) {
+    return '$count foto\'s';
+  }
+
+  @override
+  String get placeDetailReviewsSectionTitle => 'Reviews';
+
+  @override
   String get placeCategoryFood => 'Eten';
 
   @override
@@ -6369,6 +6508,70 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get plannerSheetNoDescription =>
       'Nog geen beschrijving voor deze activiteit.';
+
+  @override
+  String get plannerSheetTabDetails => 'Details';
+
+  @override
+  String get plannerSheetTabPhotos => 'Foto\'s';
+
+  @override
+  String get plannerSheetTabReviews => 'Reviews';
+
+  @override
+  String get plannerSheetNoExtraPhotos =>
+      'Nog geen extra foto\'s in dit plan.\nAls de activiteit aan een plek gekoppeld is, zie je een volledige galerij bij Ontdekken.';
+
+  @override
+  String get plannerSheetRatingOnPlan => 'Beoordeling in jouw plan';
+
+  @override
+  String get plannerSheetWrittenReviews => 'Geschreven reviews';
+
+  @override
+  String get plannerSheetReviewsExplainerWithRating =>
+      'Sterren hierboven komen uit jouw plan. Volledige Google-reviews en meer foto\'s verschijnen zodra deze activiteit aan een plek gekoppeld is — open die via Ontdekken of plan vanaf een plekkaart zodat WanderMood een place-id kan koppelen.';
+
+  @override
+  String get plannerSheetReviewsExplainerNoRating =>
+      'Nog geen reviewgegevens voor dit geplande item. Koppel het aan een Google-plek (bijv. via Ontdekken) om echte bezoekersreviews in de volledige plekweergave te lezen.';
+
+  @override
+  String get plannerMoodyAdviceBlurb =>
+      'Tips van Moody:\n• Check openingstijden (en het weer als je naar buiten gaat).\n• Kom een paar minuten eerder zodat je rustig aankomt.\n• Blijf drinken en houd een open blik — geniet!';
+
+  @override
+  String moodyChatSubtitleEnergeticCity(String city) {
+    return 'Jouw $city-hype-reismaatje';
+  }
+
+  @override
+  String get moodyChatSubtitleEnergeticNoCity => 'Jouw hype-reismaatje';
+
+  @override
+  String moodyChatSubtitleFriendlyCity(String city) {
+    return 'Jouw reismaatje in $city';
+  }
+
+  @override
+  String get moodyChatSubtitleFriendlyNoCity => 'Jouw reismaatje';
+
+  @override
+  String moodyChatSubtitleProfessionalCity(String city) {
+    return 'Jouw reisgenoot in $city';
+  }
+
+  @override
+  String get moodyChatSubtitleProfessionalNoCity =>
+      'Jouw professionele reisgenoot';
+
+  @override
+  String moodyChatSubtitleDirectCity(String city) {
+    return '$city · no-nonsense reismaatje';
+  }
+
+  @override
+  String get moodyChatSubtitleDirectNoCity => 'No-nonsense reismaatje';
 
   @override
   String get moodyHubYourDayToday => 'Jouw dag vandaag';
@@ -6683,4 +6886,1996 @@ class AppLocalizationsNl extends AppLocalizations {
   String placeDescGenericWithRating(String name, String rating) {
     return '$name is een hoog aangeschreven lokale parel met $rating sterren, de moeite waard om te verkennen.';
   }
+
+  @override
+  String get notifReEngagementEnergeticV0Title => 'Moody mist je! 😢';
+
+  @override
+  String get notifReEngagementEnergeticV0Body =>
+      'Kom terug en ontdek wat er op je wacht. Jouw volgende avontuur begint hier.';
+
+  @override
+  String get notifReEngagementEnergeticV1Title => 'Hé! Waar ben je? 🌍';
+
+  @override
+  String get notifReEngagementEnergeticV1Body =>
+      'Moody heeft nieuwe ideeën voor je. Kom ze ontdekken!';
+
+  @override
+  String get notifReEngagementEnergeticV2Title => 'WanderMood roept je! 🚀';
+
+  @override
+  String get notifReEngagementEnergeticV2Body =>
+      'Je hebt al een tijdje niet gereisd. Tijd voor wat inspiratie?';
+
+  @override
+  String get notifReEngagementFriendlyV0Title => 'We denken aan je 💙';
+
+  @override
+  String get notifReEngagementFriendlyV0Body =>
+      'Moody is er voor je wanneer je klaar bent om te ontdekken.';
+
+  @override
+  String get notifReEngagementFriendlyV1Title => 'Welkom terug, avonturier!';
+
+  @override
+  String get notifReEngagementFriendlyV1Body =>
+      'Het is een tijdje geleden. Laten we samen nieuwe plekken verkennen.';
+
+  @override
+  String get notifReEngagementFriendlyV2Title => 'Je reisgezel wacht op je';
+
+  @override
+  String get notifReEngagementFriendlyV2Body =>
+      'Moody heeft een paar ideeën bewaard voor wanneer je terugkomt.';
+
+  @override
+  String get notifReEngagementProfessionalV0Title =>
+      'Klaar voor je volgende bestemming?';
+
+  @override
+  String get notifReEngagementProfessionalV0Body =>
+      'Ontdek op maat gemaakte reisaanbevelingen.';
+
+  @override
+  String get notifReEngagementProfessionalV1Title =>
+      'Nieuwe aanbevelingen beschikbaar';
+
+  @override
+  String get notifReEngagementProfessionalV1Body =>
+      'Open de app om gepersonaliseerde reisideeën te bekijken.';
+
+  @override
+  String get notifReEngagementProfessionalV2Title => 'Je reisprofiel wacht';
+
+  @override
+  String get notifReEngagementProfessionalV2Body =>
+      'Ga terug en ontdek wat er op je wacht.';
+
+  @override
+  String get notifReEngagementDirectV0Title => 'Open WanderMood';
+
+  @override
+  String get notifReEngagementDirectV0Body =>
+      'Je hebt de app al een tijdje niet gebruikt. Tik om door te gaan.';
+
+  @override
+  String get notifReEngagementDirectV1Title => 'Nieuwe plekken beschikbaar';
+
+  @override
+  String get notifReEngagementDirectV1Body =>
+      'Tik hier om je aanbevelingen te bekijken.';
+
+  @override
+  String get notifReEngagementDirectV2Title => 'Ga verder waar je gebleven was';
+
+  @override
+  String get notifReEngagementDirectV2Body => 'Jouw reisplannen wachten op je.';
+
+  @override
+  String get notifDailyMoodCheckInEnergeticV0Title =>
+      'Hoe voel je je vandaag? 🎉';
+
+  @override
+  String get notifDailyMoodCheckInEnergeticV0Body =>
+      'Vertel Moody je stemming en ontdek de perfecte plek!';
+
+  @override
+  String get notifDailyMoodCheckInEnergeticV1Title =>
+      'Dagelijkse mood check! 🌟';
+
+  @override
+  String get notifDailyMoodCheckInEnergeticV1Body =>
+      'Even inchecken — hoe is je energie vandaag?';
+
+  @override
+  String get notifDailyMoodCheckInEnergeticV2Title => 'Moody wil het weten! 😄';
+
+  @override
+  String get notifDailyMoodCheckInEnergeticV2Body =>
+      'Jouw stemming van vandaag = jouw avontuur van vandaag. Check in!';
+
+  @override
+  String get notifDailyMoodCheckInFriendlyV0Title => 'Hoe gaat het met je? 💛';
+
+  @override
+  String get notifDailyMoodCheckInFriendlyV0Body =>
+      'Deel je stemming en laat Moody de perfecte dag voor je samenstellen.';
+
+  @override
+  String get notifDailyMoodCheckInFriendlyV1Title =>
+      'Goedemorgen! Hoe voel je je?';
+
+  @override
+  String get notifDailyMoodCheckInFriendlyV1Body =>
+      'Een kleine check-in helpt Moody je dag te personaliseren.';
+
+  @override
+  String get notifDailyMoodCheckInFriendlyV2Title => 'Even inchecken 🌸';
+
+  @override
+  String get notifDailyMoodCheckInFriendlyV2Body =>
+      'Vertel hoe je je voelt — Moody heeft geweldige ideeën voor je.';
+
+  @override
+  String get notifDailyMoodCheckInProfessionalV0Title =>
+      'Dagelijkse stemming bijhouden';
+
+  @override
+  String get notifDailyMoodCheckInProfessionalV0Body =>
+      'Log je huidige stemming voor gepersonaliseerde aanbevelingen.';
+
+  @override
+  String get notifDailyMoodCheckInProfessionalV1Title =>
+      'Moodcheck beschikbaar';
+
+  @override
+  String get notifDailyMoodCheckInProfessionalV1Body =>
+      'Neem even de tijd om je stemming van vandaag te registreren.';
+
+  @override
+  String get notifDailyMoodCheckInProfessionalV2Title =>
+      'Persoonlijke aanbevelingen wachten';
+
+  @override
+  String get notifDailyMoodCheckInProfessionalV2Body =>
+      'Voer je stemming in voor op maat gemaakte reissuggesties.';
+
+  @override
+  String get notifDailyMoodCheckInDirectV0Title => 'Hoe voel je je?';
+
+  @override
+  String get notifDailyMoodCheckInDirectV0Body =>
+      'Tik om je stemming in te voeren.';
+
+  @override
+  String get notifDailyMoodCheckInDirectV1Title => 'Check je mood in';
+
+  @override
+  String get notifDailyMoodCheckInDirectV1Body =>
+      'Snel inchecken voor de beste aanbevelingen.';
+
+  @override
+  String get notifDailyMoodCheckInDirectV2Title => 'Stemmingsregistratie';
+
+  @override
+  String get notifDailyMoodCheckInDirectV2Body => 'Log je stemming nu.';
+
+  @override
+  String get notifGenerateMyDayEnergeticV0Title => 'Genereer je dag! 🚀';
+
+  @override
+  String get notifGenerateMyDayEnergeticV0Body =>
+      'Laat Moody een episch dagplan voor je maken. Ben jij er klaar voor?';
+
+  @override
+  String get notifGenerateMyDayEnergeticV1Title =>
+      'Jouw perfecte dag begint hier! ✨';
+
+  @override
+  String get notifGenerateMyDayEnergeticV1Body =>
+      'Moody staat klaar om iets geweldigs voor je samen te stellen!';
+
+  @override
+  String get notifGenerateMyDayEnergeticV2Title =>
+      'Dag vol avontuur? Ja graag! 🎯';
+
+  @override
+  String get notifGenerateMyDayEnergeticV2Body =>
+      'Druk op genereer en laat de magie beginnen.';
+
+  @override
+  String get notifGenerateMyDayFriendlyV0Title =>
+      'Laat Moody je dag plannen 💙';
+
+  @override
+  String get notifGenerateMyDayFriendlyV0Body =>
+      'We maken een dag op maat voor jou — vol plekken die bij je passen.';
+
+  @override
+  String get notifGenerateMyDayFriendlyV1Title =>
+      'Je persoonlijke dagplan wacht';
+
+  @override
+  String get notifGenerateMyDayFriendlyV1Body =>
+      'Moody heeft ideeën voor een geweldige dag. Wil je ze zien?';
+
+  @override
+  String get notifGenerateMyDayFriendlyV2Title => 'Genereer een dag op maat 🌟';
+
+  @override
+  String get notifGenerateMyDayFriendlyV2Body =>
+      'Vertel Moody je stemming en laat de rest aan ons over.';
+
+  @override
+  String get notifGenerateMyDayProfessionalV0Title => 'Dagplan beschikbaar';
+
+  @override
+  String get notifGenerateMyDayProfessionalV0Body =>
+      'Genereer een gepersonaliseerd activiteitenprogramma voor vandaag.';
+
+  @override
+  String get notifGenerateMyDayProfessionalV1Title =>
+      'Maak je agenda voor vandaag';
+
+  @override
+  String get notifGenerateMyDayProfessionalV1Body =>
+      'Laat de app een op maat gemaakt dagplan samenstellen.';
+
+  @override
+  String get notifGenerateMyDayProfessionalV2Title => 'Persoonlijk reisschema';
+
+  @override
+  String get notifGenerateMyDayProfessionalV2Body =>
+      'Tik om een dagplan te genereren op basis van je voorkeuren.';
+
+  @override
+  String get notifGenerateMyDayDirectV0Title => 'Genereer je dag';
+
+  @override
+  String get notifGenerateMyDayDirectV0Body => 'Tik om een dagplan te maken.';
+
+  @override
+  String get notifGenerateMyDayDirectV1Title => 'Dag plannen';
+
+  @override
+  String get notifGenerateMyDayDirectV1Body => 'Laat Moody je dag organiseren.';
+
+  @override
+  String get notifGenerateMyDayDirectV2Title => 'Maak een dagplan';
+
+  @override
+  String get notifGenerateMyDayDirectV2Body => 'Snel een schema voor vandaag.';
+
+  @override
+  String get notifWeatherNudgeEnergeticV0Title =>
+      'Perfect weer voor een avontuur! ☀️';
+
+  @override
+  String get notifWeatherNudgeEnergeticV0Body =>
+      'Het weer is geweldig — Moody heeft de ideale activiteiten klaar!';
+
+  @override
+  String get notifWeatherNudgeEnergeticV1Title => 'Het weer is magisch! 🌤️';
+
+  @override
+  String get notifWeatherNudgeEnergeticV1Body =>
+      'Gebruik dit mooie weer en ontdek geweldige plekken vlakbij!';
+
+  @override
+  String get notifWeatherNudgeEnergeticV2Title => 'Zonnige kansen wachten! 🌞';
+
+  @override
+  String get notifWeatherNudgeEnergeticV2Body =>
+      'Moody ziet perfecte reisweersomstandigheden. Ga eropuit!';
+
+  @override
+  String get notifWeatherNudgeFriendlyV0Title =>
+      'Het weer ziet er geweldig uit 🌈';
+
+  @override
+  String get notifWeatherNudgeFriendlyV0Body =>
+      'Wat een mooie dag om iets nieuws te ontdekken!';
+
+  @override
+  String get notifWeatherNudgeFriendlyV1Title => 'Geniet van het mooie weer';
+
+  @override
+  String get notifWeatherNudgeFriendlyV1Body =>
+      'Moody heeft ideeën die perfect passen bij het huidige weer.';
+
+  @override
+  String get notifWeatherNudgeFriendlyV2Title => 'Buiten is het heerlijk! ☁️';
+
+  @override
+  String get notifWeatherNudgeFriendlyV2Body =>
+      'Een mooie dag vraagt om een mooi avontuur. Moody helpt je.';
+
+  @override
+  String get notifWeatherNudgeProfessionalV0Title =>
+      'Weersgebaseerde aanbevelingen';
+
+  @override
+  String get notifWeatherNudgeProfessionalV0Body =>
+      'Huidige weersomstandigheden zijn ideaal voor buitenactiviteiten.';
+
+  @override
+  String get notifWeatherNudgeProfessionalV1Title =>
+      'Optimale reisomstandigheden';
+
+  @override
+  String get notifWeatherNudgeProfessionalV1Body =>
+      'Het weer is gunstig — bekijk activiteiten voor buiten.';
+
+  @override
+  String get notifWeatherNudgeProfessionalV2Title => 'Weersupdate beschikbaar';
+
+  @override
+  String get notifWeatherNudgeProfessionalV2Body =>
+      'Ontdek aanbevelingen die zijn afgestemd op het huidige weer.';
+
+  @override
+  String get notifWeatherNudgeDirectV0Title => 'Mooi weer vandaag';
+
+  @override
+  String get notifWeatherNudgeDirectV0Body =>
+      'Tik voor activiteiten die bij het weer passen.';
+
+  @override
+  String get notifWeatherNudgeDirectV1Title => 'Goed reerweer';
+
+  @override
+  String get notifWeatherNudgeDirectV1Body =>
+      'Bekijk outdoor-activiteiten voor nu.';
+
+  @override
+  String get notifWeatherNudgeDirectV2Title => 'Weersaanbevelingen klaar';
+
+  @override
+  String get notifWeatherNudgeDirectV2Body => 'Tik om te bekijken.';
+
+  @override
+  String get notifLocationDiscoveryEnergeticV0Title =>
+      'Verborgen parel vlakbij! 💎';
+
+  @override
+  String get notifLocationDiscoveryEnergeticV0Body =>
+      'Moody heeft een geweldige plek vlak om de hoek gevonden. Ga eropuit!';
+
+  @override
+  String get notifLocationDiscoveryEnergeticV1Title =>
+      'Avontuur op loopafstand! 🗺️';
+
+  @override
+  String get notifLocationDiscoveryEnergeticV1Body =>
+      'Er is iets geweldigs vlakbij. Moody laat je zien wat!';
+
+  @override
+  String get notifLocationDiscoveryEnergeticV2Title =>
+      'Ontdek wat er om de hoek is! 🔍';
+
+  @override
+  String get notifLocationDiscoveryEnergeticV2Body =>
+      'Jij + interessante plek vlakbij = perfecte combinatie. Tik!';
+
+  @override
+  String get notifLocationDiscoveryFriendlyV0Title =>
+      'Er is iets leuks vlakbij 📍';
+
+  @override
+  String get notifLocationDiscoveryFriendlyV0Body =>
+      'Moody heeft een geweldige plek in jouw buurt gevonden.';
+
+  @override
+  String get notifLocationDiscoveryFriendlyV1Title => 'Ontdek je omgeving';
+
+  @override
+  String get notifLocationDiscoveryFriendlyV1Body =>
+      'Er is een mooie plek vlakbij die misschien bij je past.';
+
+  @override
+  String get notifLocationDiscoveryFriendlyV2Title => 'Leuke plek gevonden! 🌟';
+
+  @override
+  String get notifLocationDiscoveryFriendlyV2Body =>
+      'Moody denkt dat je dit misschien leuk vindt — even kijken?';
+
+  @override
+  String get notifLocationDiscoveryProfessionalV0Title =>
+      'Locatieaanbeveling beschikbaar';
+
+  @override
+  String get notifLocationDiscoveryProfessionalV0Body =>
+      'Er is een relevante bestemming vlakbij jouw huidige locatie.';
+
+  @override
+  String get notifLocationDiscoveryProfessionalV1Title =>
+      'Bestemming vlakbij gevonden';
+
+  @override
+  String get notifLocationDiscoveryProfessionalV1Body =>
+      'Bekijk een aanbeveling op basis van je locatie.';
+
+  @override
+  String get notifLocationDiscoveryProfessionalV2Title =>
+      'Locatiegebaseerde suggestie';
+
+  @override
+  String get notifLocationDiscoveryProfessionalV2Body =>
+      'Er is iets interessants in je directe omgeving.';
+
+  @override
+  String get notifLocationDiscoveryDirectV0Title => 'Plek vlakbij gevonden';
+
+  @override
+  String get notifLocationDiscoveryDirectV0Body => 'Tik om te bekijken.';
+
+  @override
+  String get notifLocationDiscoveryDirectV1Title => 'Iets vlakbij';
+
+  @override
+  String get notifLocationDiscoveryDirectV1Body => 'Bekijk de locatie.';
+
+  @override
+  String get notifLocationDiscoveryDirectV2Title => 'Locatieaanbeveling';
+
+  @override
+  String get notifLocationDiscoveryDirectV2Body =>
+      'Plek in de buurt wacht op je.';
+
+  @override
+  String get notifSavedActivityReminderEnergeticV0Title =>
+      'Je opgeslagen activiteiten wachten! 📋';
+
+  @override
+  String get notifSavedActivityReminderEnergeticV0Body =>
+      'Tijd om die geweldige plekken die je hebt bewaard eindelijk te bezoeken!';
+
+  @override
+  String get notifSavedActivityReminderEnergeticV1Title =>
+      'Vergeet je lijstje niet! ⭐';
+
+  @override
+  String get notifSavedActivityReminderEnergeticV1Body =>
+      'Je hebt coole plekken opgeslagen — wanneer ga je ze bezoeken?';
+
+  @override
+  String get notifSavedActivityReminderEnergeticV2Title =>
+      'Jouw bucket list roept! 🎯';
+
+  @override
+  String get notifSavedActivityReminderEnergeticV2Body =>
+      'Moody herinnert je aan je opgeslagen avonturen. Ga ervoor!';
+
+  @override
+  String get notifSavedActivityReminderFriendlyV0Title =>
+      'Je hebt plekken bewaard 💛';
+
+  @override
+  String get notifSavedActivityReminderFriendlyV0Body =>
+      'Weet je nog die plekken die je wilde bezoeken? Ze staan nog op je lijst!';
+
+  @override
+  String get notifSavedActivityReminderFriendlyV1Title =>
+      'Herinnering: je lijstje';
+
+  @override
+  String get notifSavedActivityReminderFriendlyV1Body =>
+      'Je hebt een paar geweldige plekken opgeslagen. Wanneer ga je?';
+
+  @override
+  String get notifSavedActivityReminderFriendlyV2Title =>
+      'Je opgeslagen avonturen';
+
+  @override
+  String get notifSavedActivityReminderFriendlyV2Body =>
+      'Moody herinnert je eraan dat er mooie plekken op je wachten.';
+
+  @override
+  String get notifSavedActivityReminderProfessionalV0Title =>
+      'Opgeslagen activiteiten beschikbaar';
+
+  @override
+  String get notifSavedActivityReminderProfessionalV0Body =>
+      'Bekijk je lijst met bewaarde bestemmingen en plan je volgende bezoek.';
+
+  @override
+  String get notifSavedActivityReminderProfessionalV1Title =>
+      'Activiteitenherinnering';
+
+  @override
+  String get notifSavedActivityReminderProfessionalV1Body =>
+      'Je hebt bestemmingen opgeslagen die nog niet zijn bezocht.';
+
+  @override
+  String get notifSavedActivityReminderProfessionalV2Title =>
+      'Bewaarde locaties wachten';
+
+  @override
+  String get notifSavedActivityReminderProfessionalV2Body =>
+      'Plan een bezoek aan een van je opgeslagen bestemmingen.';
+
+  @override
+  String get notifSavedActivityReminderDirectV0Title =>
+      'Opgeslagen plekken bekijken';
+
+  @override
+  String get notifSavedActivityReminderDirectV0Body =>
+      'Je hebt activiteiten bewaard. Tik om te plannen.';
+
+  @override
+  String get notifSavedActivityReminderDirectV1Title => 'Je lijstje';
+
+  @override
+  String get notifSavedActivityReminderDirectV1Body =>
+      'Bekijk je opgeslagen activiteiten.';
+
+  @override
+  String get notifSavedActivityReminderDirectV2Title => 'Bewaarde activiteiten';
+
+  @override
+  String get notifSavedActivityReminderDirectV2Body =>
+      'Tik om je lijst te zien.';
+
+  @override
+  String get notifFestivalEventEnergeticV0Title => 'Feest in de buurt! 🎊';
+
+  @override
+  String get notifFestivalEventEnergeticV0Body =>
+      'Er is een evenement vlakbij dat perfect bij je past. Ga eropuit!';
+
+  @override
+  String get notifFestivalEventEnergeticV1Title => 'Event alert! 🎉';
+
+  @override
+  String get notifFestivalEventEnergeticV1Body =>
+      'Moody heeft een geweldig festival of evenement voor je gevonden!';
+
+  @override
+  String get notifFestivalEventEnergeticV2Title => 'Mis dit niet! 🎶';
+
+  @override
+  String get notifFestivalEventEnergeticV2Body =>
+      'Er is iets episch aan de gang in jouw stad. Check het uit!';
+
+  @override
+  String get notifFestivalEventFriendlyV0Title =>
+      'Leuk evenement in de buurt 🎈';
+
+  @override
+  String get notifFestivalEventFriendlyV0Body =>
+      'Er is een evenement dat misschien perfect bij je past. Kijk even!';
+
+  @override
+  String get notifFestivalEventFriendlyV1Title => 'Festival of event vlakbij';
+
+  @override
+  String get notifFestivalEventFriendlyV1Body =>
+      'Moody denkt dat je dit leuk zou vinden — een evenement vlakbij.';
+
+  @override
+  String get notifFestivalEventFriendlyV2Title => 'Activiteit in jouw stad';
+
+  @override
+  String get notifFestivalEventFriendlyV2Body =>
+      'Er gebeurt iets leuks. Wil je meer weten?';
+
+  @override
+  String get notifFestivalEventProfessionalV0Title => 'Evenementaanbeveling';
+
+  @override
+  String get notifFestivalEventProfessionalV0Body =>
+      'Er is een relevant evenement in jouw omgeving dat aansluit bij je interesses.';
+
+  @override
+  String get notifFestivalEventProfessionalV1Title =>
+      'Lokaal evenement gevonden';
+
+  @override
+  String get notifFestivalEventProfessionalV1Body =>
+      'Bekijk een evenement dat is afgestemd op jouw profiel.';
+
+  @override
+  String get notifFestivalEventProfessionalV2Title =>
+      'Festival of evenement beschikbaar';
+
+  @override
+  String get notifFestivalEventProfessionalV2Body =>
+      'Er is een aankomend evenement in jouw regio.';
+
+  @override
+  String get notifFestivalEventDirectV0Title => 'Evenement vlakbij';
+
+  @override
+  String get notifFestivalEventDirectV0Body => 'Tik om te bekijken.';
+
+  @override
+  String get notifFestivalEventDirectV1Title => 'Festival in de buurt';
+
+  @override
+  String get notifFestivalEventDirectV1Body => 'Bekijk het evenement.';
+
+  @override
+  String get notifFestivalEventDirectV2Title => 'Event beschikbaar';
+
+  @override
+  String get notifFestivalEventDirectV2Body => 'Tik voor details.';
+
+  @override
+  String get notifCompanionMorningEnergeticV0Title =>
+      'Goedemorgen! ☀️ Moody is er!';
+
+  @override
+  String get notifCompanionMorningEnergeticV0Body =>
+      'Klaar voor een geweldige dag? Vertel me hoe je je voelt!';
+
+  @override
+  String get notifCompanionMorningEnergeticV1Title => 'Wakey wakey! 🌅';
+
+  @override
+  String get notifCompanionMorningEnergeticV1Body =>
+      'Moody is er om je dag geweldig te maken. Hoe voel je je?';
+
+  @override
+  String get notifCompanionMorningEnergeticV2Title =>
+      'Nieuwe dag, nieuw avontuur! 🚀';
+
+  @override
+  String get notifCompanionMorningEnergeticV2Body =>
+      'Moody staat klaar. Hoe begin jij je dag?';
+
+  @override
+  String get notifCompanionMorningFriendlyV0Title => 'Goedemorgen! 🌸';
+
+  @override
+  String get notifCompanionMorningFriendlyV0Body =>
+      'Moody wenst je een mooie dag. Hoe voel je je vanmorgen?';
+
+  @override
+  String get notifCompanionMorningFriendlyV1Title => 'Hallo! Mooie morgen 💛';
+
+  @override
+  String get notifCompanionMorningFriendlyV1Body =>
+      'Even inchecken — hoe start jij je dag?';
+
+  @override
+  String get notifCompanionMorningFriendlyV2Title => 'Ochtendgroet van Moody';
+
+  @override
+  String get notifCompanionMorningFriendlyV2Body =>
+      'We hopen dat je een geweldige dag voor je hebt. Hoe gaat het?';
+
+  @override
+  String get notifCompanionMorningProfessionalV0Title => 'Ochtendcheck-in';
+
+  @override
+  String get notifCompanionMorningProfessionalV0Body =>
+      'Registreer je ochtendsstemming voor gepersonaliseerde dagaanbevelingen.';
+
+  @override
+  String get notifCompanionMorningProfessionalV1Title => 'Dag starten';
+
+  @override
+  String get notifCompanionMorningProfessionalV1Body =>
+      'Log je stemming om de dag optimaal te beginnen.';
+
+  @override
+  String get notifCompanionMorningProfessionalV2Title =>
+      'Ochtendoverzicht beschikbaar';
+
+  @override
+  String get notifCompanionMorningProfessionalV2Body =>
+      'Check je aanbevelingen voor vandaag.';
+
+  @override
+  String get notifCompanionMorningDirectV0Title => 'Goedemorgen';
+
+  @override
+  String get notifCompanionMorningDirectV0Body =>
+      'Hoe voel je je? Tik om in te checken.';
+
+  @override
+  String get notifCompanionMorningDirectV1Title => 'Ochtend check-in';
+
+  @override
+  String get notifCompanionMorningDirectV1Body =>
+      'Log je stemming voor vandaag.';
+
+  @override
+  String get notifCompanionMorningDirectV2Title => 'Start je dag';
+
+  @override
+  String get notifCompanionMorningDirectV2Body =>
+      'Vertel Moody hoe je je voelt.';
+
+  @override
+  String get notifCompanionAfternoonEnergeticV0Title => 'Hoe gaat de dag? ⚡';
+
+  @override
+  String get notifCompanionAfternoonEnergeticV0Body =>
+      'Moody checkt in — is er iets geweldigs gebeurd vandaag?';
+
+  @override
+  String get notifCompanionAfternoonEnergeticV1Title => 'Middagcheck! 🌞';
+
+  @override
+  String get notifCompanionAfternoonEnergeticV1Body =>
+      'Halverwege de dag — hoe voel je je nu?';
+
+  @override
+  String get notifCompanionAfternoonEnergeticV2Title => 'Even bijkomen? 💪';
+
+  @override
+  String get notifCompanionAfternoonEnergeticV2Body =>
+      'Moody wil weten hoe jouw middag verloopt!';
+
+  @override
+  String get notifCompanionAfternoonFriendlyV0Title => 'Middagcheck-in! 😊';
+
+  @override
+  String get notifCompanionAfternoonFriendlyV0Body =>
+      'Hoop dat je dag goed gaat — hoe voel je je nu?';
+
+  @override
+  String get notifCompanionAfternoonFriendlyV1Title => 'Middag check-in';
+
+  @override
+  String get notifCompanionAfternoonFriendlyV1Body =>
+      'Even inchecken — hoe verloopt je dag tot nu toe?';
+
+  @override
+  String get notifCompanionAfternoonFriendlyV2Title => 'Middag met Moody';
+
+  @override
+  String get notifCompanionAfternoonFriendlyV2Body =>
+      'Check in met hoe je je voelt en kijk wat er in de buurt is.';
+
+  @override
+  String get notifCompanionAfternoonProfessionalV0Title =>
+      'Middagstemming bijhouden';
+
+  @override
+  String get notifCompanionAfternoonProfessionalV0Body =>
+      'Log je huidige stemming voor bijgewerkte aanbevelingen.';
+
+  @override
+  String get notifCompanionAfternoonProfessionalV1Title =>
+      'Middag check-in beschikbaar';
+
+  @override
+  String get notifCompanionAfternoonProfessionalV1Body =>
+      'Registreer je stemming halverwege de dag.';
+
+  @override
+  String get notifCompanionAfternoonProfessionalV2Title => 'Stemmingsupdate';
+
+  @override
+  String get notifCompanionAfternoonProfessionalV2Body =>
+      'Hoe voel je je nu? Update je profiel.';
+
+  @override
+  String get notifCompanionAfternoonDirectV0Title => 'Middag check-in';
+
+  @override
+  String get notifCompanionAfternoonDirectV0Body => 'Hoe voel je je?';
+
+  @override
+  String get notifCompanionAfternoonDirectV1Title => 'Stemming bijwerken';
+
+  @override
+  String get notifCompanionAfternoonDirectV1Body =>
+      'Update je stemming voor betere aanbevelingen.';
+
+  @override
+  String get notifCompanionAfternoonDirectV2Title => 'Check-in';
+
+  @override
+  String get notifCompanionAfternoonDirectV2Body =>
+      'Tik om je stemming te loggen.';
+
+  @override
+  String get notifCompanionEveningEnergeticV0Title => 'Avond check-in! 🌙';
+
+  @override
+  String get notifCompanionEveningEnergeticV0Body =>
+      'Hoe was je dag? Vertel Moody alles!';
+
+  @override
+  String get notifCompanionEveningEnergeticV1Title => 'Avondreflectie tijd! ⭐';
+
+  @override
+  String get notifCompanionEveningEnergeticV1Body =>
+      'De dag is bijna voorbij — hoe voel je je nu?';
+
+  @override
+  String get notifCompanionEveningEnergeticV2Title =>
+      'Goedenavond van Moody! 🌆';
+
+  @override
+  String get notifCompanionEveningEnergeticV2Body =>
+      'Even de dag afsluiten. Hoe was het vandaag?';
+
+  @override
+  String get notifCompanionEveningFriendlyV0Title => 'Goedenavond! 🌙';
+
+  @override
+  String get notifCompanionEveningFriendlyV0Body =>
+      'Hoe was je dag? Moody luistert graag.';
+
+  @override
+  String get notifCompanionEveningFriendlyV1Title => 'Avond check-in';
+
+  @override
+  String get notifCompanionEveningFriendlyV1Body =>
+      'Even terugkijken op de dag — hoe voel je je nu?';
+
+  @override
+  String get notifCompanionEveningFriendlyV2Title => 'Moody\'s avondcheck-in';
+
+  @override
+  String get notifCompanionEveningFriendlyV2Body =>
+      'Hoe voel je je nu de dag ten einde loopt?';
+
+  @override
+  String get notifCompanionEveningProfessionalV0Title => 'Avond check-in';
+
+  @override
+  String get notifCompanionEveningProfessionalV0Body =>
+      'Registreer je avondsstemming voor dagelijkse trends.';
+
+  @override
+  String get notifCompanionEveningProfessionalV1Title => 'Dagafsluiting';
+
+  @override
+  String get notifCompanionEveningProfessionalV1Body =>
+      'Log je stemming aan het einde van de dag.';
+
+  @override
+  String get notifCompanionEveningProfessionalV2Title => 'Avondoverzicht';
+
+  @override
+  String get notifCompanionEveningProfessionalV2Body =>
+      'Update je stemming om je wekelijkse overzicht bij te houden.';
+
+  @override
+  String get notifCompanionEveningDirectV0Title => 'Goedenavond';
+
+  @override
+  String get notifCompanionEveningDirectV0Body =>
+      'Hoe was je dag? Tik om in te loggen.';
+
+  @override
+  String get notifCompanionEveningDirectV1Title => 'Avond check-in';
+
+  @override
+  String get notifCompanionEveningDirectV1Body => 'Log je avondsstemming.';
+
+  @override
+  String get notifCompanionEveningDirectV2Title => 'Dag afsluiten';
+
+  @override
+  String get notifCompanionEveningDirectV2Body =>
+      'Update je stemming voor vandaag.';
+
+  @override
+  String notifStreakMilestoneEnergeticV0Title(String days) {
+    return '$days dagen op rij — Moody is ONDER DE INDRUK! 🔥';
+  }
+
+  @override
+  String get notifStreakMilestoneEnergeticV0Body =>
+      'Jij bent een echte WanderMood legende. Ga zo door!';
+
+  @override
+  String notifStreakMilestoneEnergeticV1Title(String days) {
+    return '🎉 $days daagse streak! Je bent GEWELDIG!';
+  }
+
+  @override
+  String get notifStreakMilestoneEnergeticV1Body =>
+      'Zo\'n consistentie! Moody is trots op je.';
+
+  @override
+  String notifStreakMilestoneEnergeticV2Title(String days) {
+    return '$days dagen? Jij bent niet te stoppen! 🚀';
+  }
+
+  @override
+  String get notifStreakMilestoneEnergeticV2Body =>
+      'Jouw toewijding inspireert zelfs Moody. Blijf doorgaan!';
+
+  @override
+  String notifStreakMilestoneFriendlyV0Title(String days) {
+    return 'Wauw, $days dagen op rij! 💛';
+  }
+
+  @override
+  String get notifStreakMilestoneFriendlyV0Body =>
+      'Wat een geweldige prestatie. Je bent zo consistent!';
+
+  @override
+  String notifStreakMilestoneFriendlyV1Title(String days) {
+    return '$days daagse streak 🎊';
+  }
+
+  @override
+  String get notifStreakMilestoneFriendlyV1Body =>
+      'Zo trots op je. Je hebt null dagen lang geweldige dingen gedaan!';
+
+  @override
+  String notifStreakMilestoneFriendlyV2Title(String days) {
+    return 'Jij volhoudt maar! $days dagen 🌸';
+  }
+
+  @override
+  String get notifStreakMilestoneFriendlyV2Body =>
+      'Jouw constante inzet maakt Moody blij. Ga door!';
+
+  @override
+  String notifStreakMilestoneProfessionalV0Title(String days) {
+    return '$days daagse streak bereikt';
+  }
+
+  @override
+  String get notifStreakMilestoneProfessionalV0Body =>
+      'Je hebt null dagen lang consequent ingecheckt. Goed gedaan.';
+
+  @override
+  String get notifStreakMilestoneProfessionalV1Title =>
+      'Streak milestone: null dagen';
+
+  @override
+  String notifStreakMilestoneProfessionalV1Body(String days) {
+    return 'Consistente tracking gedurende $days dagen.';
+  }
+
+  @override
+  String notifStreakMilestoneProfessionalV2Title(String days) {
+    return '$days dagen bijgehouden';
+  }
+
+  @override
+  String get notifStreakMilestoneProfessionalV2Body =>
+      'Jouw toewijding heeft een null-daagse streak opgeleverd.';
+
+  @override
+  String notifStreakMilestoneDirectV0Title(String days) {
+    return '$days daagse streak!';
+  }
+
+  @override
+  String get notifStreakMilestoneDirectV0Body =>
+      'Je bent null dagen op rij actief. Ga door.';
+
+  @override
+  String notifStreakMilestoneDirectV1Title(String days) {
+    return 'Streak: $days dagen';
+  }
+
+  @override
+  String get notifStreakMilestoneDirectV1Body =>
+      'Goed gedaan — null dagen op rij.';
+
+  @override
+  String notifStreakMilestoneDirectV2Title(String days) {
+    return '$days dagen op rij';
+  }
+
+  @override
+  String get notifStreakMilestoneDirectV2Body =>
+      'Tik om je voortgang te bekijken.';
+
+  @override
+  String notifAchievementUnlockedEnergeticV0Title(String achievementTitle) {
+    return '🏆 JE HEBT \'$achievementTitle\' VERDIEND!';
+  }
+
+  @override
+  String get notifAchievementUnlockedEnergeticV0Body =>
+      'WAUW! Je hebt zojuist een geweldige prestatie ontgrendeld!';
+
+  @override
+  String notifAchievementUnlockedEnergeticV1Title(String achievementTitle) {
+    return 'Prestatie ontgrendeld: \'$achievementTitle\' 🎉';
+  }
+
+  @override
+  String get notifAchievementUnlockedEnergeticV1Body =>
+      'Je bent GEWELDIG! Nieuwe badge verdiend!';
+
+  @override
+  String notifAchievementUnlockedEnergeticV2Title(String achievementTitle) {
+    return '\'$achievementTitle\' is van jou! 🚀';
+  }
+
+  @override
+  String get notifAchievementUnlockedEnergeticV2Body =>
+      'Moody is onder de indruk. Je hebt dit helemaal verdiend!';
+
+  @override
+  String get notifAchievementUnlockedFriendlyV0Title =>
+      'Je hebt \'null\' verdiend! 🌟';
+
+  @override
+  String notifAchievementUnlockedFriendlyV0Body(String achievementTitle) {
+    return 'Wat een mooie prestatie. Je bent geweldig!';
+  }
+
+  @override
+  String notifAchievementUnlockedFriendlyV1Title(String achievementTitle) {
+    return 'Nieuwe badge: \'$achievementTitle\' 💛';
+  }
+
+  @override
+  String get notifAchievementUnlockedFriendlyV1Body =>
+      'Je hebt hard gewerkt voor deze. Gefeliciteerd!';
+
+  @override
+  String notifAchievementUnlockedFriendlyV2Title(String achievementTitle) {
+    return '\'$achievementTitle\' ontgrendeld 🎊';
+  }
+
+  @override
+  String get notifAchievementUnlockedFriendlyV2Body =>
+      'Moody is zo trots op je. Je verdient dit helemaal!';
+
+  @override
+  String notifAchievementUnlockedProfessionalV0Title(String achievementTitle) {
+    return 'Prestatie ontgrendeld: \'$achievementTitle\'';
+  }
+
+  @override
+  String get notifAchievementUnlockedProfessionalV0Body =>
+      'Je hebt een nieuwe mijlpaal bereikt in de app.';
+
+  @override
+  String notifAchievementUnlockedProfessionalV1Title(String achievementTitle) {
+    return 'Nieuwe badge verdiend: \'$achievementTitle\'';
+  }
+
+  @override
+  String get notifAchievementUnlockedProfessionalV1Body =>
+      'Goed gedaan. Je hebt een prestatie ontgrendeld.';
+
+  @override
+  String notifAchievementUnlockedProfessionalV2Title(String achievementTitle) {
+    return '\'$achievementTitle\' toegevoegd aan je profiel';
+  }
+
+  @override
+  String get notifAchievementUnlockedProfessionalV2Body =>
+      'Bekijk je nieuwe prestatie in je profiel.';
+
+  @override
+  String notifAchievementUnlockedDirectV0Title(String achievementTitle) {
+    return 'Prestatie: \'$achievementTitle\'';
+  }
+
+  @override
+  String get notifAchievementUnlockedDirectV0Body =>
+      'Ontgrendeld. Tik om te bekijken.';
+
+  @override
+  String notifAchievementUnlockedDirectV1Title(String achievementTitle) {
+    return '\'$achievementTitle\' verdiend';
+  }
+
+  @override
+  String get notifAchievementUnlockedDirectV1Body =>
+      'Nieuwe badge. Tik voor details.';
+
+  @override
+  String notifAchievementUnlockedDirectV2Title(String achievementTitle) {
+    return 'Badge verdiend';
+  }
+
+  @override
+  String get notifAchievementUnlockedDirectV2Body =>
+      '\'null\' is toegevoegd aan je account.';
+
+  @override
+  String get notifWeeklyMoodRecapEnergeticV0Title =>
+      'Jouw weekoverzicht is klaar! 📊';
+
+  @override
+  String get notifWeeklyMoodRecapEnergeticV0Body =>
+      'Wat een week was dat! Bekijk hoe jouw stemming varieerde.';
+
+  @override
+  String get notifWeeklyMoodRecapEnergeticV1Title =>
+      'Weekrapport beschikbaar! 🎉';
+
+  @override
+  String get notifWeeklyMoodRecapEnergeticV1Body =>
+      'Moody heeft jouw week geanalyseerd. Benieuwd naar de resultaten?';
+
+  @override
+  String get notifWeeklyMoodRecapEnergeticV2Title =>
+      'Wekelijks moodrapport! 🌟';
+
+  @override
+  String get notifWeeklyMoodRecapEnergeticV2Body =>
+      'Zie hoe jouw stemming deze week was en wat dat betekent.';
+
+  @override
+  String get notifWeeklyMoodRecapFriendlyV0Title => 'Je weekoverzicht is er 💙';
+
+  @override
+  String get notifWeeklyMoodRecapFriendlyV0Body =>
+      'Bekijk hoe je deze week hebt gevoeld. Moody heeft het samengevat.';
+
+  @override
+  String get notifWeeklyMoodRecapFriendlyV1Title => 'Wekelijks overzicht klaar';
+
+  @override
+  String get notifWeeklyMoodRecapFriendlyV1Body =>
+      'Even terugkijken op de week? Moody heeft alles voor je samengesteld.';
+
+  @override
+  String get notifWeeklyMoodRecapFriendlyV2Title => 'Jouw moodweek 🌸';
+
+  @override
+  String get notifWeeklyMoodRecapFriendlyV2Body =>
+      'Hoe was jouw stemming deze week? Bekijk je overzicht.';
+
+  @override
+  String get notifWeeklyMoodRecapProfessionalV0Title =>
+      'Wekelijks moodoverzicht beschikbaar';
+
+  @override
+  String get notifWeeklyMoodRecapProfessionalV0Body =>
+      'Bekijk je stemmingsanalyse van de afgelopen week.';
+
+  @override
+  String get notifWeeklyMoodRecapProfessionalV1Title =>
+      'Weekrapport gegenereerd';
+
+  @override
+  String get notifWeeklyMoodRecapProfessionalV1Body =>
+      'Je wekelijkse moodoverzicht is beschikbaar voor review.';
+
+  @override
+  String get notifWeeklyMoodRecapProfessionalV2Title => 'Wekelijkse moodtrends';
+
+  @override
+  String get notifWeeklyMoodRecapProfessionalV2Body =>
+      'Analyseer jouw stemmingpatronen van de afgelopen 7 dagen.';
+
+  @override
+  String get notifWeeklyMoodRecapDirectV0Title => 'Weekoverzicht klaar';
+
+  @override
+  String get notifWeeklyMoodRecapDirectV0Body =>
+      'Tik om je moodoverzicht te bekijken.';
+
+  @override
+  String get notifWeeklyMoodRecapDirectV1Title => 'Wekelijks rapport';
+
+  @override
+  String get notifWeeklyMoodRecapDirectV1Body => 'Je moodrapport staat klaar.';
+
+  @override
+  String get notifWeeklyMoodRecapDirectV2Title => 'Moodoverzicht deze week';
+
+  @override
+  String get notifWeeklyMoodRecapDirectV2Body =>
+      'Tik om te zien hoe je je voelde.';
+
+  @override
+  String get notifPostTripReflectionEnergeticV0Title =>
+      'Hoe was het avontuur?! 🌍';
+
+  @override
+  String get notifPostTripReflectionEnergeticV0Body =>
+      'Je trip is voorbij — vertel Moody alles! Wat was het hoogtepunt?';
+
+  @override
+  String get notifPostTripReflectionEnergeticV1Title => 'Reflectietijd! ✈️';
+
+  @override
+  String get notifPostTripReflectionEnergeticV1Body =>
+      'Welke herinneringen heb je meegenomen? Deel je reiservaring!';
+
+  @override
+  String get notifPostTripReflectionEnergeticV2Title =>
+      'De reis is voorbij... maar de herinneringen niet! 📸';
+
+  @override
+  String get notifPostTripReflectionEnergeticV2Body =>
+      'Vertel hoe het was en help Moody nog beter voor je te worden!';
+
+  @override
+  String get notifPostTripReflectionFriendlyV0Title => 'Hoe was je reis? 💛';
+
+  @override
+  String get notifPostTripReflectionFriendlyV0Body =>
+      'We zijn benieuwd hoe je reis was. Deel je ervaringen met Moody.';
+
+  @override
+  String get notifPostTripReflectionFriendlyV1Title => 'Terugkijken op je trip';
+
+  @override
+  String get notifPostTripReflectionFriendlyV1Body =>
+      'Je avontuur is achter de rug. Hoe was het?';
+
+  @override
+  String get notifPostTripReflectionFriendlyV2Title =>
+      'Deel je reiservaring 🌸';
+
+  @override
+  String get notifPostTripReflectionFriendlyV2Body =>
+      'Moody luistert graag naar hoe je reis was verlopen.';
+
+  @override
+  String get notifPostTripReflectionProfessionalV0Title =>
+      'Reisreflectie beschikbaar';
+
+  @override
+  String get notifPostTripReflectionProfessionalV0Body =>
+      'Deel je reiservaring voor verbeterde toekomstige aanbevelingen.';
+
+  @override
+  String get notifPostTripReflectionProfessionalV1Title => 'Post-trip feedback';
+
+  @override
+  String get notifPostTripReflectionProfessionalV1Body =>
+      'Beoordeel je recent voltooide reis.';
+
+  @override
+  String get notifPostTripReflectionProfessionalV2Title =>
+      'Reis afgerond — reflecteer';
+
+  @override
+  String get notifPostTripReflectionProfessionalV2Body =>
+      'Voeg je ervaringen toe om je reisprofiel te verbeteren.';
+
+  @override
+  String get notifPostTripReflectionDirectV0Title => 'Hoe was je reis?';
+
+  @override
+  String get notifPostTripReflectionDirectV0Body => 'Tik om te reflecteren.';
+
+  @override
+  String get notifPostTripReflectionDirectV1Title => 'Reiservaring delen';
+
+  @override
+  String get notifPostTripReflectionDirectV1Body => 'Beoordeel je trip.';
+
+  @override
+  String get notifPostTripReflectionDirectV2Title => 'Trip afgerond';
+
+  @override
+  String get notifPostTripReflectionDirectV2Body => 'Voeg een reflectie toe.';
+
+  @override
+  String notifMoodFollowUpEnergeticV0Title(String moodType) {
+    return 'Nog steeds $moodType? 💡';
+  }
+
+  @override
+  String get notifMoodFollowUpEnergeticV0Body =>
+      'Moody heeft activiteiten gevonden die perfect bij jouw stemming passen!';
+
+  @override
+  String notifMoodFollowUpEnergeticV1Title(String moodType) {
+    return 'Jij en je $moodType energie ⚡';
+  }
+
+  @override
+  String get notifMoodFollowUpEnergeticV1Body =>
+      'Laat die stemming niet verloren gaan — check deze geweldige ideeën!';
+
+  @override
+  String notifMoodFollowUpEnergeticV2Title(String moodType) {
+    return '$moodType vibes? Moody heeft de oplossing! 🎯';
+  }
+
+  @override
+  String get notifMoodFollowUpEnergeticV2Body =>
+      'Geweldige activiteiten die bij jouw huidige stemming passen wachten op je!';
+
+  @override
+  String notifMoodFollowUpFriendlyV0Title(String moodType) {
+    return 'Hoe voel je je nu? 💛';
+  }
+
+  @override
+  String get notifMoodFollowUpFriendlyV0Body =>
+      'Je was null — heeft die stemming nieuwe ideeën geïnspireerd?';
+
+  @override
+  String notifMoodFollowUpFriendlyV1Title(String moodType) {
+    return 'Even inchecken na je $moodType stemming';
+  }
+
+  @override
+  String get notifMoodFollowUpFriendlyV1Body =>
+      'Moody hoopt dat je je goed voelt. Zin in iets leuks?';
+
+  @override
+  String notifMoodFollowUpFriendlyV2Title(String moodType) {
+    return 'Aansluitend op je $moodType gevoel';
+  }
+
+  @override
+  String get notifMoodFollowUpFriendlyV2Body =>
+      'We hebben activiteiten gevonden die bij jou passen.';
+
+  @override
+  String get notifMoodFollowUpProfessionalV0Title =>
+      'Follow-up op stemming: null';
+
+  @override
+  String notifMoodFollowUpProfessionalV0Body(String moodType) {
+    return 'Activiteiten op basis van je eerder geregistreerde stemming zijn beschikbaar.';
+  }
+
+  @override
+  String get notifMoodFollowUpProfessionalV1Title =>
+      'Stemminggebaseerde aanbevelingen';
+
+  @override
+  String notifMoodFollowUpProfessionalV1Body(String moodType) {
+    return 'Bekijk activiteiten die passen bij je $moodType stemming.';
+  }
+
+  @override
+  String get notifMoodFollowUpProfessionalV2Title => 'Aanbevelingen voor null';
+
+  @override
+  String notifMoodFollowUpProfessionalV2Body(String moodType) {
+    return 'Op maat gemaakte suggesties op basis van je stemming.';
+  }
+
+  @override
+  String notifMoodFollowUpDirectV0Title(String moodType) {
+    return 'Stemming follow-up';
+  }
+
+  @override
+  String get notifMoodFollowUpDirectV0Body =>
+      'Activiteiten voor jouw null gevoel wachten.';
+
+  @override
+  String get notifMoodFollowUpDirectV1Title => 'Aanbevelingen voor null';
+
+  @override
+  String notifMoodFollowUpDirectV1Body(String moodType) {
+    return 'Tik om te bekijken.';
+  }
+
+  @override
+  String notifMoodFollowUpDirectV2Title(String moodType) {
+    return 'Activiteiten voor je stemming';
+  }
+
+  @override
+  String get notifMoodFollowUpDirectV2Body =>
+      'Op basis van null. Tik om te zien.';
+
+  @override
+  String get notifSocialEngagementEnergeticV0Title => 'Deel je avontuur! 📣';
+
+  @override
+  String get notifSocialEngagementEnergeticV0Body =>
+      'Je ervaringen verdienen een publiek. Deel ze met vrienden!';
+
+  @override
+  String get notifSocialEngagementEnergeticV1Title =>
+      'Laat anderen weten wat je doet! 🌍';
+
+  @override
+  String get notifSocialEngagementEnergeticV1Body =>
+      'Deel je reis en inspireer anderen met Moody!';
+
+  @override
+  String get notifSocialEngagementEnergeticV2Title => 'Social time! 🎉';
+
+  @override
+  String get notifSocialEngagementEnergeticV2Body =>
+      'Deel je ontdekkingen en maak vrienden jaloers!';
+
+  @override
+  String get notifSocialEngagementFriendlyV0Title => 'Deel je ervaringen 💙';
+
+  @override
+  String get notifSocialEngagementFriendlyV0Body =>
+      'Je vrienden willen vast weten waar je bent geweest!';
+
+  @override
+  String get notifSocialEngagementFriendlyV1Title => 'Inspireer anderen';
+
+  @override
+  String get notifSocialEngagementFriendlyV1Body =>
+      'Deel je reiservaringen en help anderen geweldige plekken te ontdekken.';
+
+  @override
+  String get notifSocialEngagementFriendlyV2Title => 'Verbind met anderen 🌸';
+
+  @override
+  String get notifSocialEngagementFriendlyV2Body =>
+      'Deel je avonturen en ontdek die van anderen.';
+
+  @override
+  String get notifSocialEngagementProfessionalV0Title =>
+      'Sociale functies beschikbaar';
+
+  @override
+  String get notifSocialEngagementProfessionalV0Body =>
+      'Deel je reiservaringen met je netwerk.';
+
+  @override
+  String get notifSocialEngagementProfessionalV1Title => 'Activiteit delen';
+
+  @override
+  String get notifSocialEngagementProfessionalV1Body =>
+      'Deel je laatste ontdekking met je contacten.';
+
+  @override
+  String get notifSocialEngagementProfessionalV2Title =>
+      'Community betrokkenheid';
+
+  @override
+  String get notifSocialEngagementProfessionalV2Body =>
+      'Draag bij aan de WanderMood community door je ervaringen te delen.';
+
+  @override
+  String get notifSocialEngagementDirectV0Title => 'Deel je ervaring';
+
+  @override
+  String get notifSocialEngagementDirectV0Body => 'Tik om te delen.';
+
+  @override
+  String get notifSocialEngagementDirectV1Title => 'Activiteit delen';
+
+  @override
+  String get notifSocialEngagementDirectV1Body => 'Deel met vrienden.';
+
+  @override
+  String get notifSocialEngagementDirectV2Title => 'Sociale functie';
+
+  @override
+  String get notifSocialEngagementDirectV2Body => 'Tik om te verbinden.';
+
+  @override
+  String get notifFriendActivityEnergeticV0Title =>
+      'Je vriend is aan het adventuren! 👀';
+
+  @override
+  String get notifFriendActivityEnergeticV0Body =>
+      'Kijk wat ze hebben ontdekt — misschien wil jij ook mee!';
+
+  @override
+  String get notifFriendActivityEnergeticV1Title => 'Vriend alert! 🎉';
+
+  @override
+  String get notifFriendActivityEnergeticV1Body =>
+      'Je vriend heeft iets geweldigs gedaan. Laat je inspireren!';
+
+  @override
+  String get notifFriendActivityEnergeticV2Title =>
+      'Activiteit van een vriend! 🌍';
+
+  @override
+  String get notifFriendActivityEnergeticV2Body =>
+      'Zie wat je vriend heeft ontdekt en plan je eigen avontuur!';
+
+  @override
+  String get notifFriendActivityFriendlyV0Title =>
+      'Je vriend heeft iets gedeeld 💛';
+
+  @override
+  String get notifFriendActivityFriendlyV0Body =>
+      'Kijk wat je vriend heeft ontdekt. Misschien word je geïnspireerd!';
+
+  @override
+  String get notifFriendActivityFriendlyV1Title => 'Nieuws van een vriend';
+
+  @override
+  String get notifFriendActivityFriendlyV1Body =>
+      'Je vriend heeft een activiteit gedeeld. Wil je het zien?';
+
+  @override
+  String get notifFriendActivityFriendlyV2Title =>
+      'Vriend is aan het reizen 🌸';
+
+  @override
+  String get notifFriendActivityFriendlyV2Body =>
+      'Moody laat je weten dat een vriend iets leuks heeft gedaan.';
+
+  @override
+  String get notifFriendActivityProfessionalV0Title =>
+      'Vriendactiviteit beschikbaar';
+
+  @override
+  String get notifFriendActivityProfessionalV0Body =>
+      'Een contactpersoon heeft een reisactiviteit gedeeld.';
+
+  @override
+  String get notifFriendActivityProfessionalV1Title =>
+      'Activiteit gedeeld door vriend';
+
+  @override
+  String get notifFriendActivityProfessionalV1Body =>
+      'Bekijk wat een van je contacten heeft ontdekt.';
+
+  @override
+  String get notifFriendActivityProfessionalV2Title => 'Sociale update';
+
+  @override
+  String get notifFriendActivityProfessionalV2Body =>
+      'Een vriend heeft een activiteit gedeeld in de community.';
+
+  @override
+  String get notifFriendActivityDirectV0Title => 'Vriend deelde activiteit';
+
+  @override
+  String get notifFriendActivityDirectV0Body => 'Tik om te bekijken.';
+
+  @override
+  String get notifFriendActivityDirectV1Title => 'Activiteit van vriend';
+
+  @override
+  String get notifFriendActivityDirectV1Body =>
+      'Bekijk de gedeelde activiteit.';
+
+  @override
+  String get notifFriendActivityDirectV2Title => 'Sociale update';
+
+  @override
+  String get notifFriendActivityDirectV2Body => 'Tik voor details.';
+
+  @override
+  String get notifWeekendPlanningNudgeEnergeticV0Title =>
+      'Het weekend nadert! 🎉';
+
+  @override
+  String get notifWeekendPlanningNudgeEnergeticV0Body =>
+      'Moody staat klaar om je weekendplan samen te stellen. Laten we gaan!';
+
+  @override
+  String get notifWeekendPlanningNudgeEnergeticV1Title =>
+      'Weekend is bijna hier! 🚀';
+
+  @override
+  String get notifWeekendPlanningNudgeEnergeticV1Body =>
+      'Maak van dit weekend een episch avontuur met Moody!';
+
+  @override
+  String get notifWeekendPlanningNudgeEnergeticV2Title =>
+      'Weekendplanner is actief! 📅';
+
+  @override
+  String get notifWeekendPlanningNudgeEnergeticV2Body =>
+      'Tijd om je weekend vol avonturen te plannen!';
+
+  @override
+  String get notifWeekendPlanningNudgeFriendlyV0Title =>
+      'Het weekend komt eraan 💛';
+
+  @override
+  String get notifWeekendPlanningNudgeFriendlyV0Body =>
+      'Laat Moody je helpen het beste weekend ooit te plannen.';
+
+  @override
+  String get notifWeekendPlanningNudgeFriendlyV1Title => 'Plan je weekend 🌸';
+
+  @override
+  String get notifWeekendPlanningNudgeFriendlyV1Body =>
+      'Moody heeft ideeën voor een geweldig weekend. Wil je ze zien?';
+
+  @override
+  String get notifWeekendPlanningNudgeFriendlyV2Title => 'Weekendplannen maken';
+
+  @override
+  String get notifWeekendPlanningNudgeFriendlyV2Body =>
+      'Een fijn weekend begint met goede planning. Moody helpt je.';
+
+  @override
+  String get notifWeekendPlanningNudgeProfessionalV0Title =>
+      'Weekendplanning beschikbaar';
+
+  @override
+  String get notifWeekendPlanningNudgeProfessionalV0Body =>
+      'Bekijk aanbevelingen voor activiteiten dit weekend.';
+
+  @override
+  String get notifWeekendPlanningNudgeProfessionalV1Title =>
+      'Weekend aanbevelingen';
+
+  @override
+  String get notifWeekendPlanningNudgeProfessionalV1Body =>
+      'Gepersonaliseerde weekendactiviteiten zijn beschikbaar.';
+
+  @override
+  String get notifWeekendPlanningNudgeProfessionalV2Title => 'Plan je weekend';
+
+  @override
+  String get notifWeekendPlanningNudgeProfessionalV2Body =>
+      'Bekijk suggesties voor het komende weekend.';
+
+  @override
+  String get notifWeekendPlanningNudgeDirectV0Title => 'Weekend plannen';
+
+  @override
+  String get notifWeekendPlanningNudgeDirectV0Body =>
+      'Tik om activiteiten voor dit weekend te bekijken.';
+
+  @override
+  String get notifWeekendPlanningNudgeDirectV1Title =>
+      'Weekendaanbevelingen klaar';
+
+  @override
+  String get notifWeekendPlanningNudgeDirectV1Body => 'Tik om te plannen.';
+
+  @override
+  String get notifWeekendPlanningNudgeDirectV2Title => 'Plan het weekend';
+
+  @override
+  String get notifWeekendPlanningNudgeDirectV2Body =>
+      'Aanbevelingen beschikbaar.';
+
+  @override
+  String get notifTrendingInYourCityEnergeticV0Title =>
+      'Trending in jouw stad! 🔥';
+
+  @override
+  String get notifTrendingInYourCityEnergeticV0Body =>
+      'Dit zijn de populairste plekken nu. Mis je dit niet!';
+
+  @override
+  String get notifTrendingInYourCityEnergeticV1Title => 'Hot spots vlakbij! 🌟';
+
+  @override
+  String get notifTrendingInYourCityEnergeticV1Body =>
+      'Moody ziet wat er trending is in jouw stad. Ga eropuit!';
+
+  @override
+  String get notifTrendingInYourCityEnergeticV2Title =>
+      'Dit is nu populair! 📈';
+
+  @override
+  String get notifTrendingInYourCityEnergeticV2Body =>
+      'De meest bezochte plekken in jouw stad wachten op je!';
+
+  @override
+  String get notifTrendingInYourCityFriendlyV0Title =>
+      'Populair in jouw stad 💙';
+
+  @override
+  String get notifTrendingInYourCityFriendlyV0Body =>
+      'Dit zijn de plekken waar iedereen nu over praat. Kijk even!';
+
+  @override
+  String get notifTrendingInYourCityFriendlyV1Title =>
+      'Trending plekken vlakbij';
+
+  @override
+  String get notifTrendingInYourCityFriendlyV1Body =>
+      'Moody heeft de populairste bestemmingen in jouw stad gevonden.';
+
+  @override
+  String get notifTrendingInYourCityFriendlyV2Title => 'Dit is nu hip! 🌸';
+
+  @override
+  String get notifTrendingInYourCityFriendlyV2Body =>
+      'Ontdek wat trending is in jouw stad met hulp van Moody.';
+
+  @override
+  String get notifTrendingInYourCityProfessionalV0Title =>
+      'Trending bestemmingen beschikbaar';
+
+  @override
+  String get notifTrendingInYourCityProfessionalV0Body =>
+      'Bekijk de meest populaire locaties in jouw stad.';
+
+  @override
+  String get notifTrendingInYourCityProfessionalV1Title => 'Populaire locaties';
+
+  @override
+  String get notifTrendingInYourCityProfessionalV1Body =>
+      'Trending bestemmingen in jouw omgeving zijn beschikbaar.';
+
+  @override
+  String get notifTrendingInYourCityProfessionalV2Title => 'Stedelijke trends';
+
+  @override
+  String get notifTrendingInYourCityProfessionalV2Body =>
+      'Ontdek populaire bestemmingen in jouw stad.';
+
+  @override
+  String get notifTrendingInYourCityDirectV0Title => 'Trending in jouw stad';
+
+  @override
+  String get notifTrendingInYourCityDirectV0Body => 'Tik om te bekijken.';
+
+  @override
+  String get notifTrendingInYourCityDirectV1Title => 'Populaire plekken';
+
+  @override
+  String get notifTrendingInYourCityDirectV1Body => 'Bekijk trending locaties.';
+
+  @override
+  String get notifTrendingInYourCityDirectV2Title => 'Trending nu';
+
+  @override
+  String get notifTrendingInYourCityDirectV2Body =>
+      'Tik voor populaire bestemmingen.';
+
+  @override
+  String get commPrefChooseStyleTitle => 'Kies jouw Moody-stijl';
+
+  @override
+  String get commPrefChooseStyleSubtitle =>
+      'Zo pas ik mijn toon perfect op jou aan.';
+
+  @override
+  String get commPrefSpeechBubble => 'Hoe wil je dat ik met je praat? 😊';
+
+  @override
+  String get authWelcomeTitle => 'Je bent erin! Welkom 🎉';
+
+  @override
+  String get authCallbackConfirmingEmail => 'Je e-mail wordt bevestigd…';
+
+  @override
+  String get authCallbackVerificationFailed =>
+      'E-mailverificatie mislukt. Probeer het opnieuw.';
+
+  @override
+  String get dialogClose => 'Sluiten';
+
+  @override
+  String get supportHowCanWeHelp => 'Waarmee kunnen we je helpen?';
+
+  @override
+  String get supportContactUsCard => 'Contact';
+
+  @override
+  String get supportSendFeedbackCard => 'Feedback sturen';
+
+  @override
+  String get supportTutorialCard => 'Tutorial';
+
+  @override
+  String get supportReportIssueCard => 'Probleem melden';
+
+  @override
+  String get supportFaqSectionTitle => 'Veelgestelde vragen';
+
+  @override
+  String get supportFaq1Q => 'Hoe plan ik een nieuw avontuur?';
+
+  @override
+  String get supportFaq1A =>
+      'Ga naar het tabblad Ontdekken en start een nieuw plan. Kies je stemming, interesses en voorkeuren voor persoonlijke aanbevelingen.';
+
+  @override
+  String get supportFaq2Q => 'Kan ik plekken bewaren voor later?';
+
+  @override
+  String get supportFaq2A =>
+      'Ja! Tik op het hart bij een plek om op te slaan onder Opgeslagen plekken via je profielmenu.';
+
+  @override
+  String get supportFaq3Q => 'Hoe houd ik mijn stemming bij?';
+
+  @override
+  String get supportFaq3A =>
+      'WanderMood kan je herinneren om in te checken. Je kunt ook een invoer toevoegen vanuit de Moody-hub.';
+
+  @override
+  String get supportFaq4Q => 'Wat betekenen de prestatiebadges?';
+
+  @override
+  String get supportFaq4A =>
+      'Badges verdien je door activiteiten in de app. Bij Prestaties in je profiel zie je de vereisten.';
+
+  @override
+  String get supportFaq5Q => 'Hoe gebruikt WanderMood mijn locatie?';
+
+  @override
+  String get supportFaq5A =>
+      'Voor suggesties in de buurt. Locatiemachtigingen pas je aan in de app-instellingen.';
+
+  @override
+  String get supportFaq6Q => 'Kan ik WanderMood offline gebruiken?';
+
+  @override
+  String get supportFaq6A =>
+      'Sommige functies hebben internet nodig. Opgeslagen items zijn vaak nog te zien.';
+
+  @override
+  String get supportAdditionalResources => 'Extra bronnen';
+
+  @override
+  String get supportAppVersionLabel => 'App-versie';
+
+  @override
+  String get supportContactDialogTitle => 'Contact opnemen';
+
+  @override
+  String get supportEmailUsAt => 'Mail ons op:';
+
+  @override
+  String get supportEmailSupportHours =>
+      'Ons team is bereikbaar ma–vr, 9:00–17:00 PST.';
+
+  @override
+  String get supportToastOpeningFeedback => 'Feedbackformulier openen…';
+
+  @override
+  String get supportToastOpeningTutorial => 'Tutorial openen…';
+
+  @override
+  String get supportToastOpeningIssue => 'Melding openen…';
+
+  @override
+  String get recListTitle => 'Reisaanbevelingen';
+
+  @override
+  String get recErrorPrefix => 'Fout:';
+
+  @override
+  String get recTryAgain => 'Opnieuw proberen';
+
+  @override
+  String get recNoneAvailable => 'Geen aanbevelingen beschikbaar';
+
+  @override
+  String recLocationLabel(String location) {
+    return 'Locatie: $location';
+  }
+
+  @override
+  String recPriceLabel(String price) {
+    return 'Prijs: $price';
+  }
+
+  @override
+  String get recFavoriteUpdated => 'Favoriet bijgewerkt';
+
+  @override
+  String recFavoriteError(String error) {
+    return 'Favoriet bijwerken mislukt: $error';
+  }
+
+  @override
+  String get recDetailTitle => 'Aanbevelingdetails';
+
+  @override
+  String get recDetailMarkCompleteTooltip => 'Markeren als voltooid';
+
+  @override
+  String get recDetailStatusCompleted => 'Voltooid';
+
+  @override
+  String get recDetailStatusNotCompleted => 'Nog niet voltooid';
+
+  @override
+  String get recDetailSectionDescription => 'Beschrijving';
+
+  @override
+  String get recDetailSectionCategory => 'Categorie';
+
+  @override
+  String get recDetailSectionTags => 'Tags';
+
+  @override
+  String get recDetailSectionConfidence => 'Betrouwbaarheid';
+
+  @override
+  String get recDetailSectionMood => 'Stemming';
+
+  @override
+  String recDetailMoodRegisteredOn(String date) {
+    return 'Geregistreerd op $date';
+  }
+
+  @override
+  String get recDetailSectionWeather => 'Weer';
+
+  @override
+  String recDetailWeatherSubtitle(String temp, String humidity) {
+    return '$temp°C, $humidity% luchtvochtigheid';
+  }
+
+  @override
+  String get adventurePlanTitleYour => 'Jouw ';
+
+  @override
+  String get adventurePlanTitleHighlight => 'avonturenplan';
+
+  @override
+  String get adventurePlanTitleForToday => ' voor vandaag';
+
+  @override
+  String adventurePlanLoadError(String error) {
+    return 'Fout bij laden van avonturen: $error';
+  }
+
+  @override
+  String get receiptDownloadPdf => 'PDF downloaden';
+
+  @override
+  String get receiptShare => 'Bon delen';
+
+  @override
+  String get placePhotoTapToView => 'Tik om te bekijken';
+
+  @override
+  String get periodActivitiesRemoveTitle => 'Activiteit verwijderen?';
+
+  @override
+  String periodActivitiesRemoveBody(String name) {
+    return 'Weet je zeker dat je \"$name\" wilt verwijderen?';
+  }
+
+  @override
+  String get periodActivitiesRemoveCta => 'Verwijderen';
+
+  @override
+  String get periodActivitiesSwipeDelete => 'Verwijderen';
+
+  @override
+  String get periodActivitiesSwipeComplete => 'Voltooien';
+
+  @override
+  String get weatherFailedLoadCurrent => 'Kon het weer niet laden';
+
+  @override
+  String get weatherFailedLoadForecast => 'Kon de voorspelling niet laden';
+
+  @override
+  String get weatherNoDataAvailable => 'Geen weergegevens beschikbaar';
+
+  @override
+  String get weatherShowMore => 'Meer weergeven';
+
+  @override
+  String get weatherShowLess => 'Minder weergeven';
+
+  @override
+  String get locationPickerSelectTitle => 'Locatie kiezen';
+
+  @override
+  String weatherLoadError(String error) {
+    return 'Fout bij laden van weergegevens: $error';
+  }
+
+  @override
+  String get weatherStatsTitle => 'Weerstatistieken';
+
+  @override
+  String get weatherHistoryTitle => 'Weergeschiedenis';
+
+  @override
+  String get weatherToggleTemperature => 'Temperatuur';
+
+  @override
+  String get weatherToggleHumidity => 'Vochtigheid';
+
+  @override
+  String get weatherTogglePrecipitation => 'Neerslag';
+
+  @override
+  String get weatherForecastTitle => 'Voorspelling';
+
+  @override
+  String get weatherNoForecasts => 'Geen voorspellingen beschikbaar';
+
+  @override
+  String get weatherAlertsTitle => 'Weerwaarschuwingen';
+
+  @override
+  String get weatherNoActiveAlerts => 'Geen actieve waarschuwingen';
+
+  @override
+  String get weatherHistoryEmpty => 'Geen historische gegevens beschikbaar';
+
+  @override
+  String get weatherHistoryInvalid => 'Geen geldige historische gegevens';
+
+  @override
+  String get moodHistoryEmpty => 'Geen stemminggeschiedenis beschikbaar';
 }

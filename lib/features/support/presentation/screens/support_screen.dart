@@ -5,6 +5,7 @@ import 'package:wandermood/core/utils/legal_url_launcher.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/core/constants/legal_urls.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class SupportScreen extends ConsumerStatefulWidget {
   const SupportScreen({Key? key}) : super(key: key);
@@ -14,39 +15,21 @@ class SupportScreen extends ConsumerStatefulWidget {
 }
 
 class _SupportScreenState extends ConsumerState<SupportScreen> {
-  // Track expanded FAQ items
   final List<bool> _expandedItems = List.generate(6, (index) => false);
-  
-  // FAQ items
-  final List<Map<String, String>> _faqItems = [
-    {
-      'question': 'How do I plan a new adventure?',
-      'answer': 'To plan a new adventure, go to the Explore tab and select "New Adventure". You can then choose your mood, interests, and travel preferences to get personalized recommendations.'
-    },
-    {
-      'question': 'Can I save places for later?',
-      'answer': 'Yes! When viewing a place, tap the heart icon to save it to your Saved Places, which you can access from your profile menu.'
-    },
-    {
-      'question': 'How do I track my mood?',
-      'answer': 'WanderMood will remind you to track your mood daily. You can also manually add a mood entry by tapping the Moody tab and selecting "How are you feeling today?"'
-    },
-    {
-      'question': 'What do the achievement badges mean?',
-      'answer': 'Badges are earned by completing various activities in the app. Visit the Achievements section in your profile to see the requirements for each badge.'
-    },
-    {
-      'question': 'How does WanderMood use my location?',
-      'answer': 'WanderMood uses your location to provide personalized recommendations for places and activities nearby. You can adjust location permissions in the app settings.'
-    },
-    {
-      'question': 'Can I use WanderMood offline?',
-      'answer': 'Some features of WanderMood require an internet connection. However, saved places and activities can be viewed offline.'
-    },
-  ];
+
+  List<({String q, String a})> _faqPairs(AppLocalizations l) => [
+        (q: l.supportFaq1Q, a: l.supportFaq1A),
+        (q: l.supportFaq2Q, a: l.supportFaq2A),
+        (q: l.supportFaq3Q, a: l.supportFaq3A),
+        (q: l.supportFaq4Q, a: l.supportFaq4A),
+        (q: l.supportFaq5Q, a: l.supportFaq5A),
+        (q: l.supportFaq6Q, a: l.supportFaq6A),
+      ];
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final faq = _faqPairs(l10n);
     return SwirlBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -54,7 +37,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           title: Text(
-            'Help & Support',
+            l10n.helpSupport,
             style: GoogleFonts.museoModerno(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -76,7 +59,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
-                    'How can we help you?',
+                    l10n.supportHowCanWeHelp,
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -92,7 +75,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                       Expanded(
                         child: _buildSupportCard(
                           icon: Icons.mail_outline,
-                          title: 'Contact Us',
+                          title: l10n.supportContactUsCard,
                           onTap: _contactSupport,
                         ),
                       ),
@@ -100,7 +83,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                       Expanded(
                         child: _buildSupportCard(
                           icon: Icons.feedback_outlined,
-                          title: 'Send Feedback',
+                          title: l10n.supportSendFeedbackCard,
                           onTap: _sendFeedback,
                         ),
                       ),
@@ -117,7 +100,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                       Expanded(
                         child: _buildSupportCard(
                           icon: Icons.help_outline,
-                          title: 'Tutorial',
+                          title: l10n.supportTutorialCard,
                           onTap: _showTutorial,
                         ),
                       ),
@@ -125,7 +108,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                       Expanded(
                         child: _buildSupportCard(
                           icon: Icons.report_problem_outlined,
-                          title: 'Report Issue',
+                          title: l10n.supportReportIssueCard,
                           onTap: _reportIssue,
                         ),
                       ),
@@ -139,7 +122,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                   child: Text(
-                    'Frequently Asked Questions',
+                    l10n.supportFaqSectionTitle,
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -152,8 +135,9 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                 ListView.builder(
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
-                  itemCount: _faqItems.length,
+                  itemCount: faq.length,
                   itemBuilder: (context, index) {
+                    final pair = faq[index];
                     return Card(
                       margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                       shape: RoundedRectangleBorder(
@@ -169,7 +153,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                         },
                         tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         title: Text(
-                          _faqItems[index]['question']!,
+                          pair.q,
                           style: GoogleFonts.poppins(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -186,7 +170,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                             child: Text(
-                              _faqItems[index]['answer']!,
+                              pair.a,
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 height: 1.5,
@@ -206,7 +190,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Text(
-                    'Additional Resources',
+                    l10n.supportAdditionalResources,
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -216,19 +200,19 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                 ),
                 
                 _buildResourceItem(
-                  title: 'Privacy Policy',
+                  title: l10n.settingsPrivacyPolicyTitle,
                   icon: Icons.privacy_tip_outlined,
                   onTap: () => _openPrivacyPolicy(),
                 ),
                 
                 _buildResourceItem(
-                  title: 'Terms of Service',
+                  title: l10n.settingsTermsOfServiceTitle,
                   icon: Icons.gavel_outlined,
                   onTap: () => _openTermsOfService(),
                 ),
                 
                 _buildResourceItem(
-                  title: 'App Version',
+                  title: l10n.supportAppVersionLabel,
                   icon: Icons.info_outline,
                   trailing: Text(
                     '1.0.2',
@@ -318,11 +302,12 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
   
   // Contact support action
   void _contactSupport() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(
-          'Contact Support',
+          l10n.supportContactDialogTitle,
           style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -333,7 +318,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Email us at:',
+              l10n.supportEmailUsAt,
               style: GoogleFonts.poppins(
                 fontSize: 14,
               ),
@@ -349,7 +334,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Our support team is available Monday-Friday, 9am-5pm PST.',
+              l10n.supportEmailSupportHours,
               style: GoogleFonts.poppins(
                 fontSize: 14,
               ),
@@ -358,9 +343,9 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text(
-              'Close',
+              l10n.dialogClose,
               style: GoogleFonts.poppins(
                 color: const Color(0xFF2A6049),
               ),
@@ -371,23 +356,24 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
     );
   }
   
-  // Send feedback action
   void _sendFeedback() {
-    showWanderMoodToast(context, message: 'Opening feedback form...');
+    final l10n = AppLocalizations.of(context)!;
+    showWanderMoodToast(context, message: l10n.supportToastOpeningFeedback);
   }
   
-  // Show tutorial action
   void _showTutorial() {
-    showWanderMoodToast(context, message: 'Opening app tutorial...');
+    final l10n = AppLocalizations.of(context)!;
+    showWanderMoodToast(context, message: l10n.supportToastOpeningTutorial);
   }
   
-  // Report issue action
   void _reportIssue() {
-    showWanderMoodToast(context, message: 'Opening issue report form...');
+    final l10n = AppLocalizations.of(context)!;
+    showWanderMoodToast(context, message: l10n.supportToastOpeningIssue);
   }
 
   /// Open Privacy Policy in external browser
   Future<void> _openPrivacyPolicy() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final code = Localizations.localeOf(context).languageCode;
       final url = LegalUrls.privacyForLanguageCode(code);
@@ -395,8 +381,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
       if (!ok && mounted) {
         showWanderMoodToast(
           context,
-          message:
-              'Unable to open Privacy Policy. Please check your internet connection.',
+          message: l10n.settingsOpenPrivacyNetworkError,
           isError: true,
           duration: const Duration(seconds: 3),
         );
@@ -405,7 +390,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: 'Error opening Privacy Policy: $e',
+          message: l10n.settingsOpenPrivacyError('$e'),
           isError: true,
           duration: const Duration(seconds: 3),
         );
@@ -413,8 +398,8 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
     }
   }
 
-  /// Open Terms of Service in external browser
   Future<void> _openTermsOfService() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final code = Localizations.localeOf(context).languageCode;
       final url = LegalUrls.termsForLanguageCode(code);
@@ -422,8 +407,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
       if (!ok && mounted) {
         showWanderMoodToast(
           context,
-          message:
-              'Unable to open Terms of Service. Please check your internet connection.',
+          message: l10n.settingsOpenTermsNetworkError,
           isError: true,
           duration: const Duration(seconds: 3),
         );
@@ -432,7 +416,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: 'Error opening Terms of Service: $e',
+          message: l10n.settingsOpenTermsError('$e'),
           isError: true,
           duration: const Duration(seconds: 3),
         );

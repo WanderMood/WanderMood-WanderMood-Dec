@@ -967,6 +967,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         longitude: longitude,
         city: city,
         clientTurns: priorTurns,
+        languageCode: Localizations.localeOf(context).languageCode,
       );
 
       if (response.conversationId != null) {

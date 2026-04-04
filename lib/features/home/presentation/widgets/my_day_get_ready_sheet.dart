@@ -17,6 +17,8 @@ import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 
+enum _GetReadyTransport { walking, publicTransport }
+
 Future<void> showMyDayGetReadySheet({
   required BuildContext context,
   required WidgetRef ref,
@@ -38,7 +40,7 @@ Future<void> showMyDayGetReadySheet({
 
   double? distanceKm;
   int tripMinutes;
-  String transportMode;
+  _GetReadyTransport transportKind;
 
   if (userPosition != null && destLat != null && destLng != null) {
     distanceKm = _distanceKm(
@@ -49,19 +51,19 @@ Future<void> showMyDayGetReadySheet({
     );
 
     if (distanceKm <= 1.2) {
-      transportMode = 'Walking';
+      transportKind = _GetReadyTransport.walking;
       tripMinutes = (distanceKm / 4.5 * 60).round().clamp(5, 40);
     } else if (distanceKm <= 5) {
-      transportMode = 'Public transport';
+      transportKind = _GetReadyTransport.publicTransport;
       tripMinutes = (distanceKm / 12 * 60).round() + 5;
     } else {
-      transportMode = 'Public transport';
+      transportKind = _GetReadyTransport.publicTransport;
       tripMinutes = (distanceKm / 18 * 60).round() + 10;
     }
     tripMinutes = tripMinutes.clamp(5, 120);
   } else {
     distanceKm = null;
-    transportMode = 'Walking';
+    transportKind = _GetReadyTransport.walking;
     tripMinutes = 15;
   }
 
@@ -73,6 +75,9 @@ Future<void> showMyDayGetReadySheet({
   final condition =
       weather?.condition ?? weather?.details['description'] as String? ?? '—';
   final l10n = AppLocalizations.of(context)!;
+  final transportLabel = transportKind == _GetReadyTransport.walking
+      ? l10n.getReadyTransportWalking
+      : l10n.getReadyTransportPublicTransport;
 
   String tip = l10n.getReadyWeatherTipDefault;
   if (temp != null && temp < 16) {
@@ -87,23 +92,34 @@ Future<void> showMyDayGetReadySheet({
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
+    isDismissible: true,
+    enableDrag: true,
     builder: (sheetContext) {
-      return Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
-        ),
-        child: _ExcitingGetReadySheetContent(
-          activity: activity,
-          leaveByTime: leaveByTime,
-          tripMinutes: tripMinutes,
-          transportMode: transportMode,
-          weatherTemp: temp,
-          weatherCondition: condition,
-          weatherTip: tip,
-          checklist: checklist,
-          formatTime: formatTime,
-          onOpenDirections: () => _openDirections(activity),
-        ),
+      return DraggableScrollableSheet(
+        initialChildSize: 0.92,
+        minChildSize: 0.35,
+        maxChildSize: 0.92,
+        expand: false,
+        builder: (dragContext, scrollController) {
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(dragContext).viewInsets.bottom,
+            ),
+            child: _ExcitingGetReadySheetContent(
+              activity: activity,
+              leaveByTime: leaveByTime,
+              tripMinutes: tripMinutes,
+              transportLabel: transportLabel,
+              listScrollController: scrollController,
+              weatherTemp: temp,
+              weatherCondition: condition,
+              weatherTip: tip,
+              checklist: checklist,
+              formatTime: formatTime,
+              onOpenDirections: () => _openDirections(activity),
+            ),
+          );
+        },
       );
     },
   );
@@ -175,7 +191,8 @@ class _ExcitingGetReadySheetContent extends StatefulWidget {
   final EnhancedActivityData activity;
   final DateTime leaveByTime;
   final int tripMinutes;
-  final String transportMode;
+  final String transportLabel;
+  final ScrollController listScrollController;
   final double? weatherTemp;
   final String weatherCondition;
   final String weatherTip;
@@ -187,7 +204,8 @@ class _ExcitingGetReadySheetContent extends StatefulWidget {
     required this.activity,
     required this.leaveByTime,
     required this.tripMinutes,
-    required this.transportMode,
+    required this.transportLabel,
+    required this.listScrollController,
     required this.weatherTemp,
     required this.weatherCondition,
     required this.weatherTip,
@@ -311,6 +329,7 @@ class _ExcitingGetReadySheetContentState
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
         child: SingleChildScrollView(
+          controller: widget.listScrollController,
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -427,7 +446,7 @@ class _ExcitingGetReadySheetContentState
                       const SizedBox(height: 2),
                       Text(
                         l10n.getReadyTripSummary(
-                          widget.transportMode,
+                          widget.transportLabel,
                           widget.tripMinutes,
                         ),
                         style: GoogleFonts.poppins(

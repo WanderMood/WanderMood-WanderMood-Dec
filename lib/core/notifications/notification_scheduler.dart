@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
@@ -7,6 +6,7 @@ import 'package:wandermood/core/services/notification_service.dart';
 import 'notification_category.dart';
 import 'notification_copy_provider.dart';
 import 'notification_ids.dart';
+import 'user_preferences_storage.dart';
 
 /// Schedules all recurring / time-based notifications.
 ///
@@ -37,13 +37,31 @@ class NotificationScheduler {
   // ────────────────────────────────────────────────────────────────
 
   Future<void> rescheduleAll() async {
+    final userPrefs = userPreferencesFromSharedPrefs(_prefs);
+
     await Future.wait([
       scheduleDailyMoodCheckIn(),
-      scheduleCompanionCheckIns(),
       scheduleWeeklyMoodRecap(),
-      scheduleWeekendPlanningNudge(),
-      scheduleGenerateMyDay(),
       scheduleReEngagement(),
+      ...(userPrefs.tripReminders
+          ? [
+              scheduleCompanionCheckIns(),
+              scheduleWeekendPlanningNudge(),
+              scheduleGenerateMyDay(),
+            ]
+          : [_cancelTripPlanningNotifications()]),
+    ]);
+  }
+
+  /// Clears day-planning / trip-style recurring slots when the user disables
+  /// trip reminders in Settings → Notifications.
+  Future<void> _cancelTripPlanningNotifications() async {
+    await Future.wait([
+      _svc.cancel(NotificationIds.companionMorning),
+      _svc.cancel(NotificationIds.companionAfternoon),
+      _svc.cancel(NotificationIds.companionEvening),
+      _svc.cancel(NotificationIds.weekendPlanningNudge),
+      _svc.cancel(NotificationIds.generateMyDay),
     ]);
   }
 

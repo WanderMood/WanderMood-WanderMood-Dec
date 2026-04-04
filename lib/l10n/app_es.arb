@@ -1,6 +1,18 @@
 {
   "@@locale": "es",
   "appTitle": "WanderMood",
+  "moodHomeHowAreYouFeeling": "¿Cómo te sientes hoy?",
+  "moodHomeCtxNewUserMorning": "Empecemos el día con la energía adecuada.",
+  "moodHomeCtxNewUserAfternoon": "Hora de aprovechar al máximo tu tarde.",
+  "moodHomeCtxNewUserEvening": "Ya es de noche — encontremos tu vibe perfecta.",
+  "moodHomeCtxNewUserNight": "Energía nocturna — busquemos algo que encaje.",
+  "moodHomeCtxReturnMorningWeekend": "Mañana de finde — marquemos el tono.",
+  "moodHomeCtxReturnMorningWeekday": "Arranque fresco — ¿qué te apetece?",
+  "moodHomeCtxReturnAfternoon": "La tarde avanza — ajustemos tu energía.",
+  "moodHomeCtxReturnEveningWeekend": "Noche de finde — busquemos algo que encaje.",
+  "moodHomeCtxReturnEveningWeekday": "Salió el trabajo — ¿cuál es tu plan de noche?",
+  "moodHomeCtxReturnNight": "Noche larga — veamos qué te llama.",
+  "moodHomeCtxFallback": "Busquemos la vibe adecuada para hoy.",
   "splashTagline": "Tu compañero de viaje según tu estado de ánimo",
   "welcome": "Bienvenido",
   "hello": "Hola",
@@ -557,6 +569,11 @@
   "profileSavedPlacesCarouselEmpty": "Sin guardados aún — toca ♥ en un lugar para guardarlo.",
   "profileBioEmptyHint": "Añade una bio corta en Editar perfil.",
   "profileActionEdit": "Editar",
+  "profileGenderWoman": "Mujer",
+  "profileGenderMan": "Hombre",
+  "profileGenderNonBinary": "No binario",
+  "profileGenderPreferNotToSay": "Prefiero no decirlo",
+  "profileEditGenderLabel": "Género",
   "profileActionShare": "Compartir",
   "profileAgeGroup20s": "Aventurero 20 años",
   "profileAgeGroup30s": "Aventurero 30 años",
@@ -628,12 +645,14 @@
   "profileEditLocationHintExamples": "p. ej. Madrid, Barcelona...",
   "preferencesScreenTitle": "Editar preferencias",
   "prefSectionCommunicationStyle": "Estilo de comunicación",
-  "prefSectionInterests": "Intereses",
+  "prefSectionInterests": "Tus intereses",
   "prefSectionSocialVibe": "Vibe social",
   "prefSectionTravelStyles": "Estilos de viaje",
   "prefSectionFavoriteMoods": "Estados de ánimo favoritos",
   "prefSectionPlanningPace": "Ritmo de planificación",
   "prefSectionSelectedMoods": "Estados seleccionados",
+  "prefSectionDietaryInclusion": "Dieta e inclusión",
+  "prefDietaryInclusionSubtitle": "Moody lo usa para recomendaciones en toda la app. Elige lo que aplique.",
   "prefCommFriendly": "Amistoso",
   "prefCommPlayful": "Juguetón",
   "prefCommCalm": "Tranquilo",
@@ -1243,6 +1262,8 @@
   "getReadyTitle": "Prepárate",
   "getReadyLeaveBy": "Sal antes de las {time}",
   "getReadyTripSummary": "{mode} · ~{minutes} min de trayecto",
+  "getReadyTransportWalking": "A pie",
+  "getReadyTransportPublicTransport": "Transporte público",
   "getReadyWeatherAt": "Tiempo a las {time}",
   "getReadyWeatherTipDefault": "Parece un buen momento para salir.",
   "getReadyWeatherTipCool": "Puede hacer un poco de frío – lleva una chaqueta ligera.",
@@ -1266,6 +1287,37 @@
   "getReadyHours": "HORAS",
   "getReadyMins": "MIN",
   "getReadyRoute": "Ruta",
+  "travelTimeLessThanOneMinWalk": "< 1 min a pie",
+  "travelTimeMinWalk": "{minutes} min a pie",
+  "@travelTimeMinWalk": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "travelTimeBikeAndWalk": "{bikeMinutes} min en bici · {walkMinutes} min a pie",
+  "@travelTimeBikeAndWalk": {
+    "placeholders": {
+      "bikeMinutes": {
+        "type": "int"
+      },
+      "walkMinutes": {
+        "type": "int"
+      }
+    }
+  },
+  "travelTimeTransitApprox": "≈ {transitMinutes} min en transporte · {distance}",
+  "@travelTimeTransitApprox": {
+    "placeholders": {
+      "transitMinutes": {
+        "type": "int"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
   "getReadyYourAdventureEnergy": "Tu energía aventurera",
   "getReadyBoostEnergyHint": "Marca los puntos para subir tu energía.",
   "getReadyPackEssentials": "Prepara lo esencial",
@@ -1307,7 +1359,10 @@
   "myDayDoneSubtitle": "Mark complete and leave a review",
   "myDayShareActivity": "Share activity",
   "myDayShareComingSoon": "Share functionality coming soon!",
-  "myDaySavedForLater": "{title} saved for later!",
+  "myDaySavedForLater": "¡{title} guardado en Lugares guardados!",
+  "myDaySavePlaceFailed": "No se pudo guardar en Lugares guardados. Inténtalo de nuevo.",
+  "myDayShareFailed": "No se pudo compartir. Inténtalo de nuevo.",
+  "myDayDirectionsNavigateTitle": "Navegar a",
   "myDayDeleteActivity": "Delete activity",
   "myDayDeleteActivitySubtitle": "Remove this activity from My Day",
   "myDayDeleteConfirmTitle": "Delete activity?",
@@ -1318,7 +1373,7 @@
   "myDayDeleteFailed": "Delete failed. Please try again.",
   "myDayActivityLocationFallback": "Activity Location",
   "myDayUnableOpenDirections": "Unable to open directions",
-  "myDayChatWithMoodyTitle": "Chat with Moody",
+  "myDayChatWithMoodyTitle": "Chatear con Moody",
   "myDayChatWithMoodyComingSoon": "Coming soon! Moody will be able to help you plan your day and suggest activities based on your mood and preferences.",
   "myDayUnableLoadActivities": "No se pudieron cargar las actividades",
   "navMyDay": "Mi Día",
@@ -1573,7 +1628,9 @@
   "socialDeleteActivityConfirmTitle": "Delete activity?",
   "socialDeleteFailedTryAgain": "Delete failed. Please try again.",
   "socialShareActivityDetailsCopied": "Activity details copied to share",
-  "exploreNoPlacesFound": "No places found",
+  "exploreNoPlacesFound": "No se encontraron lugares",
+  "exploreNoPlacesFoundHint": "Prueba otras palabras clave o ajusta tus filtros.",
+  "exploreSearching": "Buscando…",
   "agendaNoActivitiesPlannedYet": "Aún no tienes actividades planificadas en tu agenda",
   "agendaDeleteMissingId": "No se pudo eliminar la actividad (falta el id).",
   "agendaRemovedFromPlanner": "{title} se eliminó de tu planificador.",
@@ -1804,6 +1861,7 @@
   "moodyConversationTypeMessage": "Escribe tu mensaje...",
   "dayPlanAddMoreToMyDay": "Agregar {count} más a Mi Día",
   "dayPlanViewMyDay": "Ver Mi Día",
+  "dayPlanSelectAtLeastOne": "Añade al menos una actividad para continuar",
   "dayPlanAddAllSuggestions": "Añadir las {count} a Mi Día",
   "@dayPlanAddAllSuggestions": {
     "placeholders": {
@@ -1944,13 +2002,11 @@
   "prefSectionAgeGroupSub": "Nos ayuda a recomendar actividades apropiadas para tu edad",
   "prefSectionBudget": "Presupuesto",
   "prefSectionBudgetSub": "Tu rango de gasto típico para actividades",
-  "prefSectionSocialVibe": "Vibe social",
   "prefSectionSocialVibeSub": "¿Prefieres actividades en solitario o escenas sociales?",
   "prefSectionActivityPace": "Ritmo de actividad",
   "prefSectionActivityPaceSub": "¿Qué tan activo quieres que sea tu día?",
   "prefSectionTimeAvailable": "Tiempo disponible",
   "prefSectionTimeAvailableSub": "¿Cuánto tiempo sueles tener para las actividades?",
-  "prefSectionInterests": "Tus intereses",
   "prefSectionInterestsSub": "Selecciona todo lo que aplique",
   "prefAge1824Label": "Principios de los 20",
   "prefAge1824Desc": "Económico, social",
@@ -2019,6 +2075,7 @@
   "settingsNotificationsTripRemindersSubtitle": "Recordatorios de actividades planificadas",
   "settingsNotificationsWeatherUpdatesLabel": "Actualizaciones del tiempo",
   "settingsNotificationsWeatherUpdatesSubtitle": "Actualizaciones del tiempo en tu destino",
+  "settingsNotificationsLocalDeviceFootnote": "Estas opciones se aplican a las notificaciones en este dispositivo (incluidos los recordatorios programados). No son notificaciones push remotas aparte.",
   "premiumComingSoonTitle": "Premium — próximamente",
   "premiumComingSoonBody": "Las suscripciones se ofrecerán con Apple In-App Purchase en una actualización futura. WanderMood es gratis en esta versión.",
   "premiumComingSoonFootnote": "En esta compilación no recopilamos datos de tarjeta, Apple Pay ni otros pagos.",
@@ -2154,7 +2211,6 @@
   },
   "plannerSheetAbout": "Acerca de",
   "plannerSheetNoDescription": "Aún no hay descripción para esta actividad.",
-
   "moodyHubYourDayToday": "Tu día hoy",
   "moodyHubChangeMood": "Cambiar estado de ánimo",
   "moodyHubNoMoodChosen": "Aún no has elegido un estado de ánimo",
@@ -2239,8 +2295,7 @@
   "moodHomeViewPlan": "Ver plan",
   "moodHomePlanAgain": "Planificar de nuevo",
   "planLoadingRotating2": "Montando tu día…",
-  "planLoadingRotating3": "Casi listo — tu plan está casi aquí ✨"
-,
+  "planLoadingRotating3": "Casi listo — tu plan está casi aquí ✨",
   "settingsTravelModeHelpLabel": "Ayuda de modo viaje",
   "settingsTravelModeHelpSubtitle": "Volver a abrir la guía Local vs Viaje",
   "placeDetailOpeningHours": "Horario de apertura",
@@ -2276,7 +2331,6 @@
   "placeDescSpa": "{name} es un destino de bienestar premium con tratamientos relajantes.",
   "placeDescGeneric": "{name} es un lugar maravilloso con una gran atmósfera y excelente ambiente.",
   "placeDescGenericWithRating": "{name} es una joya local muy valorada con {rating} estrellas.",
-
   "notifReEngagementEnergeticV0Title": "Psst... Moody te echa de menos 👀",
   "notifReEngagementEnergeticV0Body": "El mundo ha estado esperando. ¿Listo para explorar de nuevo?",
   "notifReEngagementEnergeticV1Title": "Tu espíritu viajero llamó",
@@ -2518,76 +2572,220 @@
   "notifCompanionEveningDirectV2Title": "Buenas noches",
   "notifCompanionEveningDirectV2Body": "Toca para hacer check-in.",
   "notifStreakMilestoneEnergeticV0Title": "{days} días seguidos — Moody está EMOCIONADO 🔥",
-  "@notifStreakMilestoneEnergeticV0Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneEnergeticV0Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneEnergeticV0Body": "Eres básicamente una leyenda de WanderMood. Sigue así.",
   "notifStreakMilestoneEnergeticV1Title": "Alerta: racha de {days} días detectada ⚡",
-  "@notifStreakMilestoneEnergeticV1Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneEnergeticV1Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneEnergeticV1Body": "Esto es increíblemente impresionante y Moody no está tranquilo.",
   "notifStreakMilestoneEnergeticV2Title": "¡Racha de {days} días! ¡Estás en llamas!",
-  "@notifStreakMilestoneEnergeticV2Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneEnergeticV2Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneEnergeticV2Body": "El mundo necesita más exploradores como tú. No pares.",
   "notifStreakMilestoneFriendlyV0Title": "¡Vaya, {days} días seguidos! 🎉",
-  "@notifStreakMilestoneFriendlyV0Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneFriendlyV0Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneFriendlyV0Body": "Has sido tan constante — ¡Moody está muy orgulloso de ti!",
   "notifStreakMilestoneFriendlyV1Title": "¡Racha de {days} días alcanzada!",
-  "@notifStreakMilestoneFriendlyV1Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneFriendlyV1Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneFriendlyV1Body": "Lo estás haciendo increíble. ¡Mantén esa energía viajera!",
   "notifStreakMilestoneFriendlyV2Title": "Llevas una racha de {days} días 🔥",
-  "@notifStreakMilestoneFriendlyV2Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneFriendlyV2Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneFriendlyV2Body": "¡Qué logro — a por el siguiente hito!",
   "notifStreakMilestoneProfessionalV0Title": "Hito de racha de {days} días",
-  "@notifStreakMilestoneProfessionalV0Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneProfessionalV0Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneProfessionalV0Body": "Participación constante. Tu racha continúa.",
   "notifStreakMilestoneProfessionalV1Title": "Hito de racha alcanzado",
   "notifStreakMilestoneProfessionalV1Body": "{days} días consecutivos. Sigue así.",
-  "@notifStreakMilestoneProfessionalV1Body": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneProfessionalV1Body": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneProfessionalV2Title": "{days} días",
-  "@notifStreakMilestoneProfessionalV2Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneProfessionalV2Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneProfessionalV2Body": "Hito de racha alcanzado.",
   "notifStreakMilestoneDirectV0Title": "Racha de {days} días",
-  "@notifStreakMilestoneDirectV0Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneDirectV0Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneDirectV0Body": "Sigue así.",
   "notifStreakMilestoneDirectV1Title": "Hito de racha: {days} días",
-  "@notifStreakMilestoneDirectV1Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneDirectV1Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneDirectV1Body": "No lo rompas ahora.",
   "notifStreakMilestoneDirectV2Title": "{days} días consecutivos",
-  "@notifStreakMilestoneDirectV2Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneDirectV2Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneDirectV2Body": "Hito de racha alcanzado.",
   "notifAchievementUnlockedEnergeticV0Title": "🏆 ¡ACABAS DE GANAR '{achievementTitle}'!",
-  "@notifAchievementUnlockedEnergeticV0Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedEnergeticV0Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedEnergeticV0Body": "Moody está haciendo un baile de felicidad ahora mismo. Eres una leyenda.",
   "notifAchievementUnlockedEnergeticV1Title": "Insignia desbloqueada: {achievementTitle} ✨",
-  "@notifAchievementUnlockedEnergeticV1Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedEnergeticV1Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedEnergeticV1Body": "Esta tiene tu nombre. Bien merecido.",
   "notifAchievementUnlockedEnergeticV2Title": "Logro conseguido: {achievementTitle} 🎉",
-  "@notifAchievementUnlockedEnergeticV2Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedEnergeticV2Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedEnergeticV2Body": "Añadido a tu colección. Moody sabía que podías.",
   "notifAchievementUnlockedFriendlyV0Title": "¡Nuevo logro desbloqueado! 🏆",
   "notifAchievementUnlockedFriendlyV0Body": "Ganaste la insignia '{achievementTitle}' — ¡increíble!",
-  "@notifAchievementUnlockedFriendlyV0Body": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedFriendlyV0Body": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedFriendlyV1Title": "¡Felicidades! '{achievementTitle}' es tuyo 🌟",
-  "@notifAchievementUnlockedFriendlyV1Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedFriendlyV1Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedFriendlyV1Body": "Trabajaste para esto. ¡Disfruta el hito!",
   "notifAchievementUnlockedFriendlyV2Title": "¡Desbloqueaste '{achievementTitle}'!",
-  "@notifAchievementUnlockedFriendlyV2Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedFriendlyV2Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedFriendlyV2Body": "Logro añadido a tu perfil — ¡estás en racha!",
   "notifAchievementUnlockedProfessionalV0Title": "Logro desbloqueado: {achievementTitle}",
-  "@notifAchievementUnlockedProfessionalV0Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedProfessionalV0Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedProfessionalV0Body": "Insignia ganada y añadida a tu perfil.",
   "notifAchievementUnlockedProfessionalV1Title": "Nueva insignia: {achievementTitle}",
-  "@notifAchievementUnlockedProfessionalV1Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedProfessionalV1Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedProfessionalV1Body": "Hito de logro alcanzado.",
-  "notifAchievementUnlockedProfessionalV2Title": "{achievementTitle}",
-  "@notifAchievementUnlockedProfessionalV2Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "notifAchievementUnlockedProfessionalV2Title": "Nuevo logro: {achievementTitle}",
+  "@notifAchievementUnlockedProfessionalV2Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedProfessionalV2Body": "Logro desbloqueado.",
   "notifAchievementUnlockedDirectV0Title": "Insignia ganada: {achievementTitle}",
-  "@notifAchievementUnlockedDirectV0Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedDirectV0Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedDirectV0Body": "Logro desbloqueado.",
   "notifAchievementUnlockedDirectV1Title": "{achievementTitle} desbloqueado",
-  "@notifAchievementUnlockedDirectV1Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedDirectV1Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedDirectV1Body": "Nuevo logro añadido.",
   "notifAchievementUnlockedDirectV2Title": "Logro: {achievementTitle}",
-  "@notifAchievementUnlockedDirectV2Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedDirectV2Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedDirectV2Body": "Conseguido.",
   "notifWeeklyMoodRecapEnergeticV0Title": "Tu semana en estados de ánimo acaba de llegar 📊",
   "notifWeeklyMoodRecapEnergeticV0Body": "Giro inesperado: eres multifacético. ¿Ver los datos?",
@@ -2638,40 +2836,112 @@
   "notifPostTripReflectionDirectV2Title": "Check-in post-viaje",
   "notifPostTripReflectionDirectV2Body": "Registra tu experiencia.",
   "notifMoodFollowUpEnergeticV0Title": "¿Sigues sintiéndote {moodType}? 💡",
-  "@notifMoodFollowUpEnergeticV0Title": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpEnergeticV0Title": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpEnergeticV0Body": "Moody encontró algo que encaja perfectamente con tu energía.",
   "notifMoodFollowUpEnergeticV1Title": "Tu vibe {moodType} merece un outlet",
-  "@notifMoodFollowUpEnergeticV1Title": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpEnergeticV1Title": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpEnergeticV1Body": "Aquí está exactamente dónde llevar esa energía. Te encantará.",
   "notifMoodFollowUpEnergeticV2Title": "Energía {moodType} + este lugar = perfecto",
-  "@notifMoodFollowUpEnergeticV2Title": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpEnergeticV2Title": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpEnergeticV2Body": "Moody hizo los cálculos. Confía en el algoritmo.",
   "notifMoodFollowUpFriendlyV0Title": "Basado en tu ánimo {moodType} 💛",
-  "@notifMoodFollowUpFriendlyV0Title": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpFriendlyV0Title": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpFriendlyV0Body": "Moody encontró algo cercano que encaja perfectamente. ¿Ver?",
   "notifMoodFollowUpFriendlyV1Title": "Una sugerencia para tu vibe {moodType}",
-  "@notifMoodFollowUpFriendlyV1Title": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpFriendlyV1Title": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpFriendlyV1Body": "Algo cercano que encaja con cómo te sientes.",
   "notifMoodFollowUpFriendlyV2Title": "¿Sigues sintiéndote {moodType}?",
-  "@notifMoodFollowUpFriendlyV2Title": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpFriendlyV2Title": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpFriendlyV2Body": "Aquí hay un gran match para tu energía actual.",
   "notifMoodFollowUpProfessionalV0Title": "Sugerencia adaptada al ánimo",
   "notifMoodFollowUpProfessionalV0Body": "Recomendación de actividad basada en tu check-in {moodType}.",
-  "@notifMoodFollowUpProfessionalV0Body": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpProfessionalV0Body": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpProfessionalV1Title": "Basado en tu ánimo",
   "notifMoodFollowUpProfessionalV1Body": "Sugerencia curada alineada con tu preferencia {moodType}.",
-  "@notifMoodFollowUpProfessionalV1Body": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpProfessionalV1Body": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpProfessionalV2Title": "Match de actividad",
   "notifMoodFollowUpProfessionalV2Body": "Sugerencia adaptada a tu ánimo {moodType}.",
-  "@notifMoodFollowUpProfessionalV2Body": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpProfessionalV2Body": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpDirectV0Title": "Sugerencia para tu ánimo {moodType}",
-  "@notifMoodFollowUpDirectV0Title": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpDirectV0Title": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpDirectV0Body": "Toca para ver qué encaja.",
   "notifMoodFollowUpDirectV1Title": "Match de actividad",
   "notifMoodFollowUpDirectV1Body": "Basado en tu check-in {moodType}.",
-  "@notifMoodFollowUpDirectV1Body": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpDirectV1Body": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpDirectV2Title": "Match de ánimo {moodType} listo",
-  "@notifMoodFollowUpDirectV2Title": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpDirectV2Title": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpDirectV2Body": "Toca para ver.",
   "notifSocialEngagementEnergeticV0Title": "Alguien vibra con tu publicación 👀",
   "notifSocialEngagementEnergeticV0Body": "Ve a ver quién siente tu energía aventurera.",
@@ -2768,5 +3038,352 @@
   "notifTrendingInYourCityDirectV1Title": "Hotspot local",
   "notifTrendingInYourCityDirectV1Body": "Toca para ver qué está en tendencia.",
   "notifTrendingInYourCityDirectV2Title": "Lo popular ahora",
-  "notifTrendingInYourCityDirectV2Body": "Actividad en tendencia cerca de ti."
+  "notifTrendingInYourCityDirectV2Body": "Actividad en tendencia cerca de ti.",
+  "achievements": "Logros",
+  "appSettings": "Ajustes de la app",
+  "autoDetectPermissions": "Detección automática y permisos",
+  "dangerZone": "Zona de peligro",
+  "dataStorage": "Datos y almacenamiento",
+  "deleteAccount": "Eliminar cuenta",
+  "exportClearCache": "Exportar datos y vaciar caché",
+  "faqContactUs": "Preguntas frecuentes y contacto",
+  "free": "Gratis",
+  "helpSupport": "Ayuda y soporte",
+  "language": "Idioma",
+  "loading": "Cargando…",
+  "location": "Ubicación",
+  "logOutOfYourAccount": "Cerrar sesión en tu cuenta",
+  "moodyChatSubtitleDirectCity": "{city} · compañero de viaje directo",
+  "@moodyChatSubtitleDirectCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "moodyChatSubtitleDirectNoCity": "Compañero de viaje directo",
+  "moodyChatSubtitleEnergeticCity": "Tu compañero de viaje hype en {city}",
+  "@moodyChatSubtitleEnergeticCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "moodyChatSubtitleEnergeticNoCity": "Tu compañero de viaje hype",
+  "moodyChatSubtitleFriendlyCity": "Tu compañero de viaje en {city}",
+  "@moodyChatSubtitleFriendlyCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "moodyChatSubtitleFriendlyNoCity": "Tu compañero de viaje",
+  "moodyChatSubtitleProfessionalCity": "Tu acompañante de viaje en {city}",
+  "@moodyChatSubtitleProfessionalCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "moodyChatSubtitleProfessionalNoCity": "Tu acompañante de viaje profesional",
+  "more": "Más",
+  "permanentlyDeleteYourData": "Eliminar tus datos de forma permanente",
+  "placeDetailGalleryTitle": "Galería",
+  "placeDetailPhotoCount": "{count} fotos",
+  "@placeDetailPhotoCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "placeDetailReviewsSectionTitle": "Reseñas",
+  "placeDetailTabDetails": "Detalles",
+  "placeDetailTabPhotos": "Fotos",
+  "placeDetailTabReviews": "Reseñas",
+  "plan": "Plan",
+  "plannerMoodyAdviceBlurb": "Consejos de Moody:\\n• Revisa horarios (y el tiempo si vas a estar fuera).\\n• Llega unos minutos antes para acomodarte.\\n• Mantente hidratado y con la mente abierta — ¡disfruta!",
+  "plannerSheetNoExtraPhotos": "Aún no hay fotos extra en este plan.\\nCuando la actividad esté vinculada a un lugar, verás la galería en Explorar.",
+  "plannerSheetRatingOnPlan": "Valoración en tu plan",
+  "plannerSheetReviewsExplainerNoRating": "Aún no hay datos de reseñas para este elemento. Vincúlalo a un lugar de Google (p. ej. desde Explorar) para leer opiniones reales.",
+  "plannerSheetReviewsExplainerWithRating": "Las estrellas de arriba vienen de tu plan. Las reseñas completas de Google y más fotos aparecen cuando la actividad esté vinculada a un lugar: ábrela desde Explorar o planifica desde una tarjeta de lugar para que WanderMood pueda asociar un place id.",
+  "plannerSheetTabDetails": "Detalles",
+  "plannerSheetTabPhotos": "Fotos",
+  "plannerSheetTabReviews": "Reseñas",
+  "plannerSheetWrittenReviews": "Reseñas escritas",
+  "prefCommunicationIntro": "Para que nuestro viaje juntos sea aún mejor, me encantaría saber cómo prefieres que me comunique contigo.",
+  "prefCommunicationSubtitle": "¡Así ajusto mi tono y estilo a tus preferencias! 🎯",
+  "prefCommunicationTitle": "¿Cómo debería hablarte? 💬",
+  "prefInterestArts": "Arte y cultura",
+  "prefInterestArtsDesc": "Museos, galerías y teatros",
+  "prefInterestFoodDesc": "Cocina local y restaurantes únicos",
+  "prefInterestShoppingDesc": "Mercados locales y zonas de compras",
+  "prefInterestSports": "Deporte y actividades",
+  "prefInterestSportsDesc": "Experiencias activas e instalaciones deportivas",
+  "prefInterestStays": "Alojamientos y escapadas",
+  "prefInterestStaysDesc": "Hoteles con encanto y lugares de ensueño",
+  "prefInterestsSubtitleDirect": "Elige tipos de actividad :",
+  "prefInterestsSubtitleEnergetic": "¡Elige todo lo que te emocione!",
+  "prefInterestsSubtitleFriendly": "Elige las actividades que te apetezcan",
+  "prefInterestsSubtitleProfessional": "Selecciona tus categorías de actividad preferidas",
+  "prefInterestsTitleDirect": "Seleccionar intereses",
+  "prefInterestsTitleEnergetic": "¿Qué te pone a tope? 🔥",
+  "prefInterestsTitleFriendly": "¿Qué te interesa? 🌟",
+  "prefInterestsTitleProfessional": "Categorías de intereses de viaje",
+  "prefMoodAdventurous": "Aventurero",
+  "prefMoodCultural": "Cultural",
+  "prefMoodFoody": "Gourmet",
+  "prefMoodPeaceful": "Tranquilo",
+  "prefMoodSocial": "Social",
+  "prefMoodSpontaneous": "Espontáneo",
+  "prefMoodSubtitleDirect": "Elige tus tipos de experiencia preferidos:",
+  "prefMoodSubtitleEnergetic": "¿Qué estados de ánimo te inspiran a explorar?",
+  "prefMoodSubtitleFriendly": "¿Qué te inspira a salir y explorar?",
+  "prefMoodSubtitleProfessional": "¿Qué tipo de experiencias te atraen más?",
+  "prefMoodTitleDirect": "Seleccionar estados de ánimo",
+  "prefMoodTitleEnergetic": "¡Sincronicemos nuestras vibras! ✨",
+  "prefMoodTitleFriendly": "¿Cuál es tu estado de ánimo de viaje? 😊",
+  "prefMoodTitleProfessional": "Preferencias de estado de ánimo de viaje",
+  "prefMultipleHintDirect": "Se permiten varias opciones",
+  "prefMultipleHintEnergetic": "Puedes elegir varias — ¡a tope! ✨",
+  "prefMultipleHintFriendly": "Puedes seleccionar varias opciones ✨",
+  "prefMultipleHintProfessional": "Se permiten múltiples selecciones",
+  "prefPaceMaster": "Maestro del planificación",
+  "prefPaceMasterDesc": "Le encanta planificar con semanas de antelación",
+  "prefPaceRightNow": "Ahora mismo",
+  "prefPaceRightNowDesc": "¿Qué hago ahora mismo?",
+  "prefPaceSameDay": "Planificador del mismo día",
+  "prefPaceSameDayDesc": "Planifica por la mañana para el día",
+  "prefPaceWeekend": "Preparador de fin de semana",
+  "prefPaceWeekendDesc": "Planifica con unos días de antelación",
+  "prefSectionTravelStyle": "Estilo de viaje 🎯",
+  "prefSelectUpToStyles": "Selecciona hasta {count} estilos",
+  "@prefSelectUpToStyles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "prefSocialButterfly": "Mariposa social",
+  "prefSocialButterflyDesc": "Le encanta conocer gente nueva",
+  "prefSocialMoodDependent": "Depende del ánimo",
+  "prefSocialMoodDependentDesc": "A veces solo, a veces social",
+  "prefSocialSmallGroups": "Grupos pequeños",
+  "prefSocialSmallGroupsDesc": "Amigos cercanos, ambiente íntimo",
+  "prefSocialSolo": "Aventuras en solitario",
+  "prefSocialSoloDesc": "El tiempo para mí es lo mejor",
+  "prefStyleDirect": "Directo",
+  "prefStyleDirectDesc": "Al grano",
+  "prefStyleEnergetic": "Energético",
+  "prefStyleEnergeticDesc": "Comunicación divertida y entusiasta",
+  "prefStyleFriendly": "Amigable",
+  "prefStyleFriendlyDesc": "Informal y cercana",
+  "prefStyleProfessional": "Profesional",
+  "prefStyleProfessionalDesc": "Clara y formal",
+  "prefTravelStyleBudget": "Consciente del presse-budget",
+  "prefTravelStyleBudgetDesc": "Buena relación calidad-precio",
+  "prefTravelStyleLocal": "Experiencia local",
+  "prefTravelStyleLocalDesc": "Vivir como un local, sitios auténticos",
+  "prefTravelStyleLuxury": "Lujo",
+  "prefTravelStyleLuxuryDesc": "Experiencias premium, sitios de alta gama",
+  "prefTravelStylePlanned": "Planificado",
+  "prefTravelStylePlannedDesc": "Itinerarios organizados, visitas programadas",
+  "prefTravelStyleSpontaneous": "Espontáneo",
+  "prefTravelStyleSpontaneousDesc": "Ir con la corriente, abrazar las sorpresas",
+  "prefTravelSubtitleDirect": "Unas preguntas rápidas para personalizar tu experiencia",
+  "prefTravelSubtitleEnergetic": "Unas preguntas rápidas para personalizar tu experiencia",
+  "prefTravelSubtitleFriendly": "Unas preguntas rápidas para personalizar tu experiencia",
+  "prefTravelSubtitleProfessional": "Unas preguntas rápidas para personalizar tu experiencia",
+  "prefTravelTitleDirect": "Cuéntanos tu estilo de viaje ✈️",
+  "prefTravelTitleEnergetic": "Cuéntanos tu estilo de viaje ✈️",
+  "prefTravelTitleFriendly": "Cuéntanos tu estilo de viaje ✈️",
+  "prefTravelTitleProfessional": "Cuéntanos tu estilo de viaje ✈️",
+  "premium": "Premium",
+  "privacy": "Privacidad",
+  "privateProfile": "Perfil privado",
+  "profileAppSettingsLink": "Ajustes de la app",
+  "profileSavedPlacesEmpty": "Aún no hay lugares guardados",
+  "profileSavedPlacesSeeAll": "Ver todos",
+  "profileSavedPlacesTitle": "Lugares guardados",
+  "profileStatsStreakTitle": "Racha",
+  "profileTopMoodEmpty": "Aún ninguno",
+  "pushEmailInApp": "Push, correo y en la app",
+  "settings": "Ajustes",
+  "settingsAchievementsLabel": "Logros",
+  "settingsAchievementsSubtitle": "{count} desbloqueados",
+  "@settingsAchievementsSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsAppTagline": "Hecho con ❤️ para viajeros",
+  "settingsAppVersion": "WanderMood v{version}",
+  "@settingsAppVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsCacheCleared": "Caché borrada correctement",
+  "settingsClearCacheDialogBody": "Se eliminarán todos los datos en caché. Tus lugares guardados y ajustes no se verán afectados.",
+  "settingsClearCacheDialogTitle": "¿Vaciar la caché?",
+  "settingsClearCacheSubtitle": "Libera espacio eliminando imágenes y datos en caché",
+  "settingsClearCacheTitle": "Vaciar caché de la app",
+  "settingsDangerDeleteAccountLabel": "Eliminar cuenta",
+  "settingsDangerDeleteAccountSubtitle": "Eliminar tus datos de forma permanente",
+  "settingsDangerSignOutLabel": "Cerrar sesión",
+  "settingsDangerSignOutSubtitle": "Cerrar sesión en tu cuenta",
+  "settingsDarkModeSubtitle": "Usar tema oscuro en toda la app",
+  "settingsDarkModeTitle": "Modo oscuro",
+  "settingsDataStorageLabel": "Datos y almacenamiento",
+  "settingsDataStorageSubtitle": "Exportar, vaciar caché",
+  "settingsDialogCancel": "Cancelar",
+  "settingsDialogConfirmClear": "Vaciar",
+  "settingsDiscoveryRadiusSubtitle": "Mostrar lugares en un radio de {distance} km",
+  "@settingsDiscoveryRadiusSubtitle": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsDiscoveryRadiusTitle": "Radio de descubrimiento",
+  "settingsHelpSupportLabel": "Ayuda y soporte",
+  "settingsLanguageLabel": "Idioma",
+  "settingsLocationLabel": "Ubicación",
+  "settingsLocationTrackingSubtitle": "Permitir que la app use tu ubicación",
+  "settingsLocationTrackingTitle": "Seguimiento de ubicación",
+  "settingsNotificationsSubtitle": "Activar notificaciones push",
+  "settingsNotificationsTitle": "Notificaciones",
+  "settingsOpenPrivacyError": "Error al abrir la política de privacidad: {error}",
+  "@settingsOpenPrivacyError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsOpenPrivacyNetworkError": "No se puede abrir la politica de privacidad. Comprueba tu conexión.",
+  "settingsOpenTermsError": "Error al abrir los términos del servicio: {error}",
+  "@settingsOpenTermsError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsOpenTermsNetworkError": "No se pueden abrir los términos del servicio. Comprueba tu conexión.",
+  "settingsPrivacyPolicySubtitle": "Lee nuestra política de privacité",
+  "settingsPrivacyPolicyTitle": "Política de privacidad",
+  "settingsPrivacyTitle": "Privacidad",
+  "settingsSaveButton": "Guardar ajustes",
+  "settingsSaved": "Ajustes guardados",
+  "settingsSectionDataPrivacy": "Datos y privacidad",
+  "settingsSectionDiscovery": "Descubrimiento",
+  "settingsSectionGeneral": "General",
+  "settingsSignOutConfirm": "Cerrar sesión",
+  "settingsSignOutMessage": "¿Seguro que quieres cerrar sesión?",
+  "settingsSignOutTitle": "Cerrar sesión",
+  "settingsSubscriptionBadgeFree": "Gratis",
+  "settingsSubscriptionLabel": "Suscripción",
+  "settingsSubscriptionSubtitleFree": "Plan gratuito",
+  "settingsTermsOfServiceSubtitle": "Lee nuestros términos del servicio",
+  "settingsTermsOfServiceTitle": "Términos del servicio",
+  "settingsThemeLabel": "Tema",
+  "settingsThemeValueSystem": "Systeme",
+  "signOut": "Cerrar sesión",
+  "subscription": "Suscripción",
+  "theme": "Tema",
+  "unlocked": "desbloqueado",
+  "commPrefChooseStyleTitle": "Elige tu estilo de Moody",
+  "commPrefChooseStyleSubtitle": "Así adapto mi tono perfectamente a ti.",
+  "commPrefSpeechBubble": "¿Cómo quieres que hable contigo? 😊",
+  "authWelcomeTitle": "¡Ya estás dentro! Bienvenido/a 🎉",
+  "authCallbackConfirmingEmail": "Confirmando tu correo…",
+  "authCallbackVerificationFailed": "No se pudo verificar el correo. Inténtalo de nuevo.",
+  "dialogClose": "Cerrar",
+  "supportHowCanWeHelp": "¿En qué podemos ayudarte?",
+  "supportContactUsCard": "Contáctanos",
+  "supportSendFeedbackCard": "Enviar comentarios",
+  "supportTutorialCard": "Tutorial",
+  "supportReportIssueCard": "Informar de un problema",
+  "supportFaqSectionTitle": "Preguntas frecuentes",
+  "supportFaq1Q": "¿Cómo planifico una nueva aventura?",
+  "supportFaq1A": "Ve a la pestaña Explorar y empieza un plan nuevo. Elige tu estado de ánimo, intereses y preferencias para recomendaciones personalizadas.",
+  "supportFaq2Q": "¿Puedo guardar sitios para más tarde?",
+  "supportFaq2A": "¡Sí! Toca el corazón en una ficha de lugar para guardarlo en Guardados, desde el menú de perfil.",
+  "supportFaq3Q": "¿Cómo registro mi estado de ánimo?",
+  "supportFaq3A": "WanderMood puede recordarte check-ins. También puedes añadir una entrada desde el hub de Moody.",
+  "supportFaq4Q": "¿Qué significan las insignias de logros?",
+  "supportFaq4A": "Ganas insignias por actividades en la app. En Logros del perfil verás los requisitos.",
+  "supportFaq5Q": "¿Cómo usa WanderMood mi ubicación?",
+  "supportFaq5A": "Para sugerir sitios cercanos. Puedes ajustar los permisos de ubicación en ajustes.",
+  "supportFaq6Q": "¿Puedo usar WanderMood sin conexión?",
+  "supportFaq6A": "Algunas funciones requieren internet. Lo guardado a veces sigue visible.",
+  "supportAdditionalResources": "Recursos adicionales",
+  "supportAppVersionLabel": "Versión de la app",
+  "supportContactDialogTitle": "Contactar soporte",
+  "supportEmailUsAt": "Escríbenos a:",
+  "supportEmailSupportHours": "Nuestro equipo está disponible de lunes a viernes, 9–17 h PST.",
+  "supportToastOpeningFeedback": "Abriendo formulario de comentarios…",
+  "supportToastOpeningTutorial": "Abriendo tutorial…",
+  "supportToastOpeningIssue": "Abriendo informe de incidencia…",
+  "recListTitle": "Recomendaciones de viaje",
+  "recErrorPrefix": "Error:",
+  "recTryAgain": "Reintentar",
+  "recNoneAvailable": "No hay recomendaciones",
+  "recLocationLabel": "Ubicación: {location}",
+  "recPriceLabel": "Precio: {price}",
+  "recFavoriteUpdated": "Favorito actualizado",
+  "recFavoriteError": "Error al actualizar favorito: {error}",
+  "recDetailTitle": "Detalles de la recomendación",
+  "recDetailMarkCompleteTooltip": "Marcar como completado",
+  "recDetailStatusCompleted": "Completado",
+  "recDetailStatusNotCompleted": "Aún no completado",
+  "recDetailSectionDescription": "Descripción",
+  "recDetailSectionCategory": "Categoría",
+  "recDetailSectionTags": "Etiquetas",
+  "recDetailSectionConfidence": "Confianza",
+  "recDetailSectionMood": "Estado de ánimo",
+  "recDetailMoodRegisteredOn": "Registrado el {date}",
+  "recDetailSectionWeather": "Tiempo",
+  "recDetailWeatherSubtitle": "{temp}°C, {humidity} % de humedad",
+  "adventurePlanTitleYour": "Tu ",
+  "adventurePlanTitleHighlight": "plan de aventura",
+  "adventurePlanTitleForToday": " de hoy",
+  "adventurePlanLoadError": "Error al cargar aventuras: {error}",
+  "receiptDownloadPdf": "Descargar PDF",
+  "receiptShare": "Compartir recibo",
+  "placePhotoTapToView": "Toca para ver",
+  "periodActivitiesRemoveTitle": "¿Quitar actividad?",
+  "periodActivitiesRemoveBody": "¿Seguro que quieres quitar \"{name}\"?",
+  "periodActivitiesRemoveCta": "Quitar",
+  "periodActivitiesSwipeDelete": "Eliminar",
+  "weatherFailedLoadCurrent": "No se pudo cargar el tiempo",
+  "weatherFailedLoadForecast": "No se pudo cargar el pronóstico",
+  "weatherNoDataAvailable": "No hay datos meteorológicos",
+  "weatherShowMore": "Ver más",
+  "weatherShowLess": "Ver menos",
+  "locationPickerSelectTitle": "Elegir ubicación",
+  "weatherLoadError": "Error al cargar el tiempo: {error}",
+  "weatherStatsTitle": "Estadísticas del tiempo",
+  "weatherHistoryTitle": "Historial del tiempo",
+  "weatherToggleTemperature": "Temperatura",
+  "weatherToggleHumidity": "Humedad",
+  "weatherTogglePrecipitation": "Precipitación",
+  "weatherForecastTitle": "Pronóstico",
+  "weatherNoForecasts": "No hay pronósticos",
+  "weatherAlertsTitle": "Alertas meteorológicas",
+  "weatherNoActiveAlerts": "No hay alertas activas",
+  "weatherHistoryEmpty": "No hay datos históricos",
+  "weatherHistoryInvalid": "No hay datos históricos válidos",
+  "moodHistoryEmpty": "No hay historial de estado de ánimo",
+  "periodActivitiesSwipeComplete": "Completar"
 }

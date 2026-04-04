@@ -32,6 +32,8 @@ import 'package:wandermood/core/providers/communication_style_provider.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_chat_header_subtitle.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/services/connectivity_service.dart';
+import 'package:wandermood/core/utils/offline_feedback.dart';
 import 'package:intl/intl.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
@@ -60,8 +62,6 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   bool _isAILoading = false;
   final List<ChatMessage> _chatMessages = [];
   String? _conversationId;
-  String _moodQuestion = "How are you feeling today?";
-  String _characterEmoji = "😊";
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   // Add personalization state
@@ -82,10 +82,11 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_hasResolvedRouteDate) return;
-    _hasResolvedRouteDate = true;
-    _targetDateFromRoute = _resolveTargetDateFromRoute();
-    _selectedPlanningDate = _targetDateFromRoute ?? DateTime.now();
+    if (!_hasResolvedRouteDate) {
+      _hasResolvedRouteDate = true;
+      _targetDateFromRoute = _resolveTargetDateFromRoute();
+      _selectedPlanningDate = _targetDateFromRoute ?? DateTime.now();
+    }
   }
 
   @override
@@ -110,32 +111,6 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         _timeGreeting = 'Hi night owl';
         _timeEmoji = '🌙'; // Moon
       }
-    });
-
-    // Also update AI-powered elements
-    _updateAIGreeting();
-  }
-
-  // Generate contextual message based on time, user history, and context
-  void _updateAIGreeting() {
-    final hour = MoodyClock.now().hour;
-
-    // Get contextual message
-    final contextualMessage = _getContextualMoodMessage();
-
-    setState(() {
-      // Smart character expressions based on context
-      if (hour >= 5 && hour < 12) {
-        _characterEmoji = "😊"; // Happy morning
-      } else if (hour >= 12 && hour < 17) {
-        _characterEmoji = "☀️"; // Sunny afternoon
-      } else if (hour >= 17 && hour < 21) {
-        _characterEmoji = "✨"; // Evening sparkle
-      } else {
-        _characterEmoji = "🌙"; // Night owl
-      }
-
-      _moodQuestion = contextualMessage;
     });
   }
 
@@ -184,212 +159,6 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     }
   }
 
-  /// Generate contextual mood selection message
-  /// Returns a statement (not a question) that guides the user
-  String _getContextualMoodMessage() {
-    try {
-      final hour = MoodyClock.now().hour;
-      final isWeekend = MoodyClock.now().weekday >= 6;
-
-      // Check if user is new (no previous mood selections)
-      final dailyState = ref.read(dailyMoodStateNotifierProvider);
-      final isNewUser =
-          !dailyState.hasSelectedMoodToday && dailyState.currentMood == null;
-
-      // Generate contextual message based on available data
-      if (isNewUser) {
-        // First-time user messages
-        if (hour >= 5 && hour < 12) {
-          return "Let's start your day with the right energy.";
-        } else if (hour >= 12 && hour < 17) {
-          return "Time to make the most of your afternoon.";
-        } else if (hour >= 17 && hour < 21) {
-          return "Evening's here — let's find your perfect vibe.";
-        } else {
-          return "Late night energy — let's find something that fits.";
-        }
-      }
-
-      // Time-based messages for returning users
-      if (hour >= 5 && hour < 12) {
-        return isWeekend
-            ? "Weekend morning vibes — let's set the tone."
-            : "Fresh start to the day — what feels right?";
-      } else if (hour >= 12 && hour < 17) {
-        return "Afternoon's rolling in — time to match your energy.";
-      } else if (hour >= 17 && hour < 21) {
-        return isWeekend
-            ? "Weekend evening — let's find something that fits."
-            : "Workday's done — what's your evening vibe?";
-      } else {
-        return "Late night energy — let's see what calls to you.";
-      }
-    } catch (e) {
-      if (kDebugMode) debugPrint('⚠️ Error generating contextual message: $e');
-      // Fallback message
-      return "Let's find the right vibe for today.";
-    }
-  }
-
-  /// Get enhanced contextual Moody message - feels like Moody is speaking.
-  /// Varies by time of day, new vs returning user, last mood, and user's communication style from onboarding.
-  Future<String> _getContextualMoodyMessage(
-      DailyMoodState dailyMoodState) async {
-    try {
-      final hour = MoodyClock.now().hour;
-      final isWeekend = MoodyClock.now().weekday >= 6;
-      final isNewUser = !dailyMoodState.hasSelectedMoodToday &&
-          dailyMoodState.currentMood == null;
-      final lastMood = dailyMoodState.currentMood;
-      final style = ref.read(communicationStyleProvider).style;
-
-      // Build contextual message, then apply communication-style tone
-      String message = '';
-
-      if (isNewUser) {
-        if (hour >= 5 && hour < 12) {
-          message = _pickStyle(style, [
-            "Good morning! Let's start your day with the right energy. ✨",
-            "Good morning! Let's start your day with the right energy.",
-            "Good morning. How would you like to plan your day?",
-            "Morning. What's your mood?",
-          ]);
-        } else if (hour >= 12 && hour < 17) {
-          message = _pickStyle(style, [
-            "Afternoon's here — time to match your vibe! 🌟",
-            "Afternoon's here — time to match your vibe.",
-            "Good afternoon. What type of experience are you looking for?",
-            "Afternoon. What's your vibe?",
-          ]);
-        } else if (hour >= 17 && hour < 21) {
-          message = _pickStyle(style, [
-            "Evening's perfect for exploring — what feels right? ✨",
-            "Evening's perfect for exploring — what feels right?",
-            "Good evening. What would you like to do today?",
-            "Evening. What's your mood?",
-          ]);
-        } else {
-          message = _pickStyle(style, [
-            "Late night energy — let's find something that fits. 🌙",
-            "Late night energy — let's find something that fits.",
-            "Good evening. How can I help you plan?",
-            "Late night. Your vibe?",
-          ]);
-        }
-      } else {
-        if (lastMood != null) {
-          if (hour >= 5 && hour < 12) {
-            message = isWeekend
-                ? _pickStyle(style, [
-                    "Weekend morning — ready to switch it up from $lastMood? ✨",
-                    "Weekend morning — ready to switch it up from yesterday's $lastMood mood?",
-                    "Weekend morning. Would you like to try something different from $lastMood?",
-                    "Weekend morning. Different from $lastMood?",
-                  ])
-                : _pickStyle(style, [
-                    "Morning vibes — try something different from $lastMood? 🌟",
-                    "Morning vibes — ready to try something different from $lastMood?",
-                    "Good morning. Interested in a different mood from $lastMood today?",
-                    "Morning. Different from $lastMood?",
-                  ]);
-          } else if (hour >= 12 && hour < 17) {
-            message = _pickStyle(style, [
-              "Afternoon's rolling in — what's calling to you? ✨",
-              "Afternoon's rolling in — what's calling to you today?",
-              "Good afternoon. What would you like to do next?",
-              "Afternoon. What's calling to you?",
-            ]);
-          } else if (hour >= 17 && hour < 21) {
-            message = isWeekend
-                ? _pickStyle(style, [
-                    "Weekend evening — let's find something that fits. 🌟",
-                    "Weekend evening — let's find something that fits.",
-                    "Good evening. How would you like to spend your evening?",
-                    "Weekend evening. Your vibe?",
-                  ])
-                : _pickStyle(style, [
-                    "Workday's done — what's your evening vibe? ✨",
-                    "Workday's done — what's your evening vibe?",
-                    "Good evening. What type of evening would you prefer?",
-                    "Evening. Your vibe?",
-                  ]);
-          } else {
-            message = _pickStyle(style, [
-              "Late night — what calls to you? 🌙",
-              "Late night energy — let's see what calls to you.",
-              "Good evening. What would you like to do?",
-              "Late night. Your mood?",
-            ]);
-          }
-        } else {
-          if (hour >= 5 && hour < 12) {
-            message = isWeekend
-                ? _pickStyle(style, [
-                    "Weekend morning — let's set the tone! ✨",
-                    "Weekend morning — let's set the tone for your day.",
-                    "Good morning. How would you like to plan your day?",
-                    "Weekend morning. Set the tone?",
-                  ])
-                : _pickStyle(style, [
-                    "Fresh start — what feels right today? 🌟",
-                    "Fresh start — what feels right today?",
-                    "Good morning. What would you like to accomplish today?",
-                    "Morning. What feels right?",
-                  ]);
-          } else if (hour >= 12 && hour < 17) {
-            message = _pickStyle(style, [
-              "Afternoon's here — time to match your energy! ✨",
-              "Afternoon's here — time to match your energy.",
-              "Good afternoon. What are you in the mood for?",
-              "Afternoon. Your energy?",
-            ]);
-          } else if (hour >= 17 && hour < 21) {
-            message = isWeekend
-                ? _pickStyle(style, [
-                    "Weekend evening — let's find something that fits! 🌟",
-                    "Weekend evening — let's find something that fits.",
-                    "Good evening. How would you like to spend your time?",
-                    "Weekend evening. Your vibe?",
-                  ])
-                : _pickStyle(style, [
-                    "Evening's perfect — what's your vibe? ✨",
-                    "Evening's perfect — what's your vibe?",
-                    "Good evening. What would you like to do today?",
-                    "Evening. Your vibe?",
-                  ]);
-          } else {
-            message = _pickStyle(style, [
-              "Late night energy — let's see what fits! 🌙",
-              "Late night energy — let's see what fits.",
-              "Good evening. What can I help you with?",
-              "Late night. Your mood?",
-            ]);
-          }
-        }
-      }
-
-      return message;
-    } catch (e) {
-      if (kDebugMode)
-        debugPrint('⚠️ Error generating contextual Moody message: $e');
-      return _getContextualMoodMessage();
-    }
-  }
-
-  /// Pick message variant by communication style: [energetic, friendly, professional, direct]
-  String _pickStyle(CommunicationStyle style, List<String> variants) {
-    assert(variants.length == 4,
-        'Need 4 variants for energetic, friendly, professional, direct');
-    final index = style == CommunicationStyle.energetic
-        ? 0
-        : style == CommunicationStyle.friendly
-            ? 1
-            : style == CommunicationStyle.professional
-                ? 2
-                : 3;
-    return variants[index.clamp(0, variants.length - 1)];
-  }
-
   /// Reads current GPS position + city from providers, with Rotterdam fallback.
   Future<({double lat, double lng, String city})> _getUserLocation() async {
     final position = await ref.read(userLocationProvider.future);
@@ -399,31 +168,6 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       lng: position?.longitude ?? 4.4792,
       city: city,
     );
-  }
-
-  Future<void> _getAIPersonalizedGreeting() async {
-    try {
-      final loc = await _getUserLocation();
-      final response = await WanderMoodAIService.chat(
-        message:
-            "Generate a short personalized greeting question for the user based on current time and weather",
-        conversationId: null,
-        moods: [],
-        latitude: loc.lat,
-        longitude: loc.lng,
-        city: loc.city,
-      );
-
-      if (mounted &&
-          response.message.isNotEmpty &&
-          response.message.length < 50) {
-        setState(() {
-          _moodQuestion = response.message;
-        });
-      }
-    } catch (e) {
-      debugPrint('🤖 Could not get AI greeting: $e');
-    }
   }
 
   void _toggleMood(MoodOption mood) {
@@ -442,32 +186,46 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     });
   }
 
-  void _generatePlan() {
-    if (_selectedMoods.isNotEmpty) {
-      print('🎯 Generating plan for moods: $_selectedMoods');
+  Future<void> _generatePlan() async {
+    if (_selectedMoods.isEmpty) return;
 
-      // 🎯 Save mood selection state for hub
-      ref.read(dailyMoodStateNotifierProvider.notifier).setMoodSelection(
-            mood: _selectedMoods.first,
-            selectedMoods: _selectedMoods.toList(),
-            conversationId: _conversationId,
-          );
+    final connected = await ref.read(connectivityServiceProvider).isConnected;
+    if (!context.mounted) return;
+    if (!connected) {
+      showOfflineSnackBar(context);
+      return;
+    }
 
-      if (context.mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PlanLoadingScreen(
-              selectedMoods: _selectedMoods.toList(),
-              targetDate: _selectedPlanningDate,
-            ),
-          ),
+    print('🎯 Generating plan for moods: $_selectedMoods');
+
+    // 🎯 Save mood selection state for hub
+    ref.read(dailyMoodStateNotifierProvider.notifier).setMoodSelection(
+          mood: _selectedMoods.first,
+          selectedMoods: _selectedMoods.toList(),
+          conversationId: _conversationId,
         );
-      }
+
+    if (context.mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlanLoadingScreen(
+            selectedMoods: _selectedMoods.toList(),
+            targetDate: _selectedPlanningDate,
+          ),
+        ),
+      );
     }
   }
 
   Future<void> _getAIRecommendations() async {
+    final connected = await ref.read(connectivityServiceProvider).isConnected;
+    if (!mounted) return;
+    if (!connected) {
+      showOfflineSnackBar(context);
+      return;
+    }
+
     setState(() {
       _isAILoading = true;
     });
@@ -834,6 +592,8 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                                 Flexible(
                                                   child: Text(
                                                     moodyChatTravelBestieSubtitle(
+                                                      l10n: AppLocalizations.of(
+                                                          context)!,
                                                       city: ref
                                                           .watch(
                                                               locationNotifierProvider)
@@ -1434,6 +1194,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         longitude: loc.lng,
         city: loc.city,
         clientTurns: priorTurns,
+        languageCode: Localizations.localeOf(context).languageCode,
       );
 
       debugPrint('✅ Moody AI response received successfully');
@@ -1512,6 +1273,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         longitude: loc.lng,
         city: loc.city,
         clientTurns: priorTurns,
+        languageCode: Localizations.localeOf(context).languageCode,
       );
 
       print('✅ Moody AI response: ${response.message}');
@@ -2043,7 +1805,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                           child: ElevatedButton(
                             onPressed: _selectedMoods.isEmpty || _isAILoading
                                 ? null
-                                : _generatePlan,
+                                : () => _generatePlan(),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: _selectedMoods.isEmpty ||
                                       _isAILoading

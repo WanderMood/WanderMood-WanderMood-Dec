@@ -23,6 +23,7 @@ import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
+import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
 
 /// v2 profile — design tokens
@@ -183,7 +184,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   Future<void> _updateTravelMode(bool isLocal) async {
     await ref.read(currentUserProfileProvider.notifier).updateTravelMode(isLocal);
     // Invalidate explore cache so next visit fetches results for new mode
-    ref.invalidate(moodyExploreAutoProvider);
+    final connected = await ref.read(connectivityServiceProvider).isConnected;
+    if (connected) {
+      ref.invalidate(moodyExploreAutoProvider);
+    }
     if (!mounted) return;
     final l10n = AppLocalizations.of(context)!;
     showWanderMoodToast(
@@ -286,7 +290,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     final userName = profile.fullName ?? l10n.profileFallbackUser;
     final username = profile.username;
     final displayedVibes = profile.selectedMoods.take(3).toList();
-    final hasChips = (profile.ageGroup != null && profile.ageGroup!.isNotEmpty) ||
+    final formattedAge = _formatAgeGroup(profile.ageGroup);
+    final formattedGender = _formatGender(profile.gender);
+    final hasChips = formattedAge.isNotEmpty ||
+        formattedGender.isNotEmpty ||
         displayedVibes.isNotEmpty;
     final bioText = profile.bio?.trim();
     final hasBio = bioText != null && bioText.isNotEmpty;
@@ -475,10 +482,17 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                if (profile.ageGroup != null && profile.ageGroup!.isNotEmpty)
+                if (formattedGender.isNotEmpty)
+                  _buildHeroChip(
+                    icon: Icons.person_rounded,
+                    label: formattedGender,
+                    fillColor: _wmCream,
+                    textColor: _wmDusk,
+                  ),
+                if (formattedAge.isNotEmpty)
                   _buildHeroChip(
                     icon: Icons.calendar_today_rounded,
-                    label: _formatAgeGroup(profile.ageGroup!),
+                    label: formattedAge,
                     fillColor: _wmCream,
                     textColor: _wmDusk,
                   ),
@@ -1087,8 +1101,20 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   String _formatAgeGroup(String? ageGroup) {
     final l10n = AppLocalizations.of(context)!;
     if (ageGroup == null || ageGroup.isEmpty) return '';
-    
-    // Format to localized "20s Adventurer" style
+
+    // Map canonical keys written by _deriveAgeGroup in edit_profile_screen.
+    switch (ageGroup) {
+      case 'young_adult':
+        return l10n.profileAgeGroup20s;
+      case 'twenties_thirties':
+        return l10n.profileAgeGroup30s;
+      case 'thirties_forties':
+        return l10n.profileAgeGroup40s;
+      case 'forties_plus':
+        return l10n.profileAgeGroup50s;
+    }
+
+    // Legacy numeric range strings (stored before canonical keys were introduced).
     if (ageGroup.contains('18-24') || ageGroup.contains('18') || ageGroup.contains('20')) {
       return l10n.profileAgeGroup20s;
     } else if (ageGroup.contains('25-34') || ageGroup.contains('25') || ageGroup.contains('30')) {
@@ -1100,16 +1126,35 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     } else if (ageGroup.contains('55+') || ageGroup.contains('55')) {
       return l10n.profileAgeGroup55Plus;
     }
-    
-    // If it already has "Adventurer" or similar, return as is
-    if (ageGroup.toLowerCase().contains('adventurer') || 
+
+    // If it already contains a human-readable traveller word, return as is.
+    if (ageGroup.toLowerCase().contains('adventurer') ||
         ageGroup.toLowerCase().contains('explorer') ||
         ageGroup.toLowerCase().contains('traveler')) {
       return ageGroup;
     }
-    
-    // Default: localized suffix for unknown age-group strings
-    return l10n.profileAgeGroupGenericSuffix(ageGroup);
+
+    // Hide anything that's still a raw snake_case key so it never shows on UI.
+    if (ageGroup.contains('_')) return '';
+
+    return ageGroup;
+  }
+
+  String _formatGender(String? gender) {
+    final l10n = AppLocalizations.of(context)!;
+    if (gender == null || gender.isEmpty) return '';
+    switch (gender) {
+      case 'woman':
+        return l10n.profileGenderWoman;
+      case 'man':
+        return l10n.profileGenderMan;
+      case 'non_binary':
+        return l10n.profileGenderNonBinary;
+      case 'prefer_not_to_say':
+        return '';
+      default:
+        return '';
+    }
   }
 
   String _formatBudget(AppLocalizations l10n, String? budget) {

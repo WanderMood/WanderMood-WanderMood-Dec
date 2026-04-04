@@ -1,4 +1,5 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createSupabaseAdmin } from "@/lib/supabase-admin";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
 const ADMIN_HEADER = "x-wandermood-admin";
@@ -14,6 +15,126 @@ async function safeCount(
   return count ?? 0;
 }
 
+/** Stripe `billing_payments` + `stripe_webhook_events` — null if tables missing. */
+async function stripeBillingSnapshot(supabase: SupabaseClient) {
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  const payments = await supabase
+    .from("billing_payments")
+    .select("amount_paid_cents, currency")
+    .gte("paid_at", since);
+
+  if (payments.error) {
+    return {
+      paymentsLast30Days: null as number | null,
+      revenueLast30DaysCents: null as number | null,
+      revenueCurrency: null as string | null,
+    };
+  }
+
+  const rows = payments.data ?? [];
+  if (rows.length === 0) {
+    return {
+      paymentsLast30Days: 0,
+      revenueLast30DaysCents: 0,
+      revenueCurrency: null as string | null,
+    };
+  }
+
+  const byCurrency = new Map<string, number>();
+  for (const r of rows) {
+    const c = (r.currency ?? "usd").toLowerCase();
+    byCurrency.set(c, (byCurrency.get(c) ?? 0) + Number(r.amount_paid_cents ?? 0));
+  }
+  let topCurrency = "usd";
+  let topCents = 0;
+  for (const [cur, cents] of byCurrency) {
+    if (cents > topCents) {
+      topCents = cents;
+      topCurrency = cur;
+    }
+  }
+
+  return {
+    paymentsLast30Days: rows.length,
+    revenueLast30DaysCents: topCents,
+    revenueCurrency: topCurrency,
+    revenueByCurrencyNote:
+      byCurrency.size > 1
+        ? `${byCurrency.size} currencies in window; totals shown for largest amount.`
+        : undefined,
+  };
+}
+
+async function stripeWebhookEventCount(supabase: SupabaseClient) {
+  const { count, error } = await supabase
+    .from("stripe_webhook_events")
+    .select("*", { count: "exact", head: true });
+  if (error) return null;
+  return count ?? 0;
+}
+
+/** Edge Function `api_invocations` rollup (last 24h); null fields if table missing. */
+async function edgeApiSnapshot(supabase: SupabaseClient) {
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from("api_invocations")
+    .select("function_slug, http_status, operation, duration_ms")
+    .gte("created_at", since)
+    .limit(15_000);
+
+  if (error) {
+    return {
+      available: false as const,
+      totalLast24h: null as number | null,
+      rateLimited429Last24h: null as number | null,
+      byFunction: null as Record<string, number> | null,
+      moodyByAction: null as Record<string, number> | null,
+      medianDurationMsByFunction: null as Record<string, number> | null,
+    };
+  }
+
+  type Row = {
+    function_slug: string;
+    http_status: number;
+    operation: string | null;
+    duration_ms: number | null;
+  };
+  const rows = (data ?? []) as Row[];
+  const byFunction: Record<string, number> = {};
+  const moodyByAction: Record<string, number> = {};
+  let rate429 = 0;
+  const durationsBySlug: Record<string, number[]> = {};
+
+  for (const r of rows) {
+    const slug = r.function_slug || "unknown";
+    byFunction[slug] = (byFunction[slug] ?? 0) + 1;
+    if (r.http_status === 429) rate429 += 1;
+    if (slug === "moody" && r.operation) {
+      moodyByAction[r.operation] = (moodyByAction[r.operation] ?? 0) + 1;
+    }
+    if (!durationsBySlug[slug]) durationsBySlug[slug] = [];
+    durationsBySlug[slug].push(Number(r.duration_ms ?? 0));
+  }
+
+  const medianDurationMsByFunction: Record<string, number> = {};
+  for (const [slug, arr] of Object.entries(durationsBySlug)) {
+    if (arr.length === 0) continue;
+    const sorted = [...arr].sort((a, b) => a - b);
+    medianDurationMsByFunction[slug] = sorted[Math.floor(sorted.length / 2)] ?? 0;
+  }
+
+  return {
+    available: true as const,
+    totalLast24h: rows.length,
+    rateLimited429Last24h: rate429,
+    byFunction,
+    moodyByAction: Object.keys(moodyByAction).length > 0 ? moodyByAction : null,
+    medianDurationMsByFunction:
+      Object.keys(medianDurationMsByFunction).length > 0 ? medianDurationMsByFunction : null,
+  };
+}
+
 export async function GET(request: Request) {
   const secret = request.headers.get(ADMIN_HEADER);
   const expected = process.env.WANDERMOOD_ADMIN_SECRET;
@@ -22,10 +143,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const url = process.env.SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!url || !serviceKey) {
+  const supabase = createSupabaseAdmin();
+  if (!supabase) {
     return NextResponse.json(
       {
         error:
@@ -34,10 +153,6 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
-
-  const supabase = createClient(url, serviceKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
 
   const now = Date.now();
   const d7 = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -84,6 +199,9 @@ export async function GET(request: Request) {
     scheduledActivities,
     checkIns,
     placesCacheRows,
+    billing,
+    webhookEventsTotal,
+    edgeApi,
   ] = await Promise.all([
     safeCount(supabase, "profiles"),
     safeCount(supabase, "subscriptions"),
@@ -99,6 +217,9 @@ export async function GET(request: Request) {
     safeCount(supabase, "scheduled_activities"),
     safeCount(supabase, "user_check_ins"),
     safeCount(supabase, "places_cache"),
+    stripeBillingSnapshot(supabase),
+    stripeWebhookEventCount(supabase),
+    edgeApiSnapshot(supabase),
   ]);
 
   return NextResponse.json({
@@ -118,7 +239,24 @@ export async function GET(request: Request) {
       userCheckInsTotal: checkIns,
       placesCacheRows,
     },
+    billing: {
+      paymentsLast30Days: billing.paymentsLast30Days,
+      revenueLast30DaysCents: billing.revenueLast30DaysCents,
+      revenueCurrency: billing.revenueCurrency,
+      ...(billing.revenueByCurrencyNote
+        ? { note: billing.revenueByCurrencyNote }
+        : {}),
+      stripeWebhookEventsTotal: webhookEventsTotal,
+    },
+    edgeApi: {
+      available: edgeApi.available,
+      totalLast24h: edgeApi.totalLast24h,
+      rateLimited429Last24h: edgeApi.rateLimited429Last24h,
+      byFunction: edgeApi.byFunction,
+      moodyByAction: edgeApi.moodyByAction,
+      medianDurationMsByFunction: edgeApi.medianDurationMsByFunction,
+    },
     note:
-      "Counts reflect your Supabase project. Tables missing or renamed show as null.",
+      "Counts reflect your Supabase project. Edge API analytics need migration 20260404200000_edge_api_rate_limit_and_logs.sql + SUPABASE_SERVICE_ROLE_KEY on functions moody, places, weather. Stripe billing: 20260404180000_stripe_billing_foundation.sql.",
   });
 }

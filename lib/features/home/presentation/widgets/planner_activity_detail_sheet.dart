@@ -26,113 +26,12 @@ String _capitalizeFirst(String text) {
 }
 
 /// Shared “Moody says” copy for planner detail sheet (My Day + Agenda).
-/// Uses the same rules everywhere so the two entry points never diverge.
-String plannerMoodyAdviceForActivity(Map<String, dynamic> activity) {
-  DateTime startTime;
-  final startTimeStr = activity['startTime'] as String?;
-  if (startTimeStr != null && startTimeStr.trim().isNotEmpty) {
-    try {
-      startTime = DateTime.parse(startTimeStr);
-    } catch (_) {
-      startTime = _parseActivityDate(activity);
-    }
-  } else {
-    startTime = _parseActivityDate(activity);
-  }
-
-  final category = activity['category']?.toString().toLowerCase() ?? '';
-  final duration = activity['duration'] as int? ?? 60;
-  final paymentStatus = _paymentStatusForMoodyAdvice(activity);
-
-  final advice = <String>[];
-
-  if (startTime.hour < 12) {
-    advice.add('🌅 Perfect morning timing - enjoy the fresh start');
-  } else if (startTime.hour >= 18) {
-    advice.add('🌆 Great evening activity - perfect for unwinding');
-  }
-
-  if (duration >= 120) {
-    advice.add('⏰ Longer experience - bring water and snacks');
-  } else if (duration <= 45) {
-    advice.add('⚡ Quick and energizing - perfect mood boost');
-  }
-
-  switch (category) {
-    case 'outdoor':
-      advice.addAll([
-        '🌿 Check the weather before heading out',
-        '👟 Comfortable walking shoes recommended',
-        '📱 Download offline maps for the area',
-      ]);
-      break;
-    case 'cultural':
-      advice.addAll([
-        '🎨 Take your time to appreciate the experience',
-        '📖 Look for guided tours or information',
-        '🔇 Be respectful of others enjoying the space',
-      ]);
-      break;
-    case 'food':
-      advice.addAll([
-        '🍽️ Come with an appetite for new flavors',
-        '💰 Bring cash - some vendors prefer it',
-        '📸 Great photo opportunities for food memories',
-      ]);
-      break;
-    case 'nature':
-      advice.addAll([
-        '🌳 Perfect for connecting with nature',
-        '📸 Bring a camera for beautiful moments',
-        '🧴 Sunscreen and water are essentials',
-      ]);
-      break;
-    default:
-      advice.addAll([
-        '💚 Be present and enjoy every moment',
-        '📍 Arrive a few minutes early to settle in',
-        '🌟 Open mind leads to the best experiences',
-      ]);
-  }
-
-  switch (paymentStatus) {
-    case 'paid':
-      advice.add('🎫 All set - your experience is confirmed');
-      break;
-    case 'reserved':
-      advice.add('⏱️ Complete payment to secure your spot');
-      break;
-    case 'free':
-      advice.add('🆓 Free doesn\'t mean less valuable - enjoy fully');
-      break;
-  }
-
-  advice.add('✨ This activity was chosen to match your mood perfectly');
-
-  return advice.take(5).map((tip) => '• $tip').join('\n');
-}
-
-DateTime _parseActivityDate(Map<String, dynamic> activity) {
-  final dateStr = activity['date'] as String?;
-  if (dateStr != null && dateStr.trim().isNotEmpty) {
-    try {
-      return DateTime.parse(dateStr);
-    } catch (_) {}
-  }
-  return DateTime.now();
-}
-
-/// Agenda uses [paymentStatus]; My Day scheduled maps use [paymentType] (e.g. PaymentType.free).
-String _paymentStatusForMoodyAdvice(Map<String, dynamic> activity) {
-  final explicit = activity['paymentStatus'];
-  if (explicit != null && explicit.toString().trim().isNotEmpty) {
-    return explicit.toString();
-  }
-  final pt = activity['paymentType']?.toString().toLowerCase() ?? '';
-  if (pt.contains('paid')) return 'paid';
-  if (pt.contains('reserved')) return 'reserved';
-  if (pt.contains('pending')) return 'pending';
-  return 'free';
+/// Localized via [AppLocalizations] so it matches the user’s locale.
+String plannerMoodyAdviceForActivity(
+  AppLocalizations l10n,
+  Map<String, dynamic> activity,
+) {
+  return l10n.plannerMoodyAdviceBlurb;
 }
 
 List<String> _photoUrlsForActivity(Map<String, dynamic> activity) {
@@ -163,6 +62,7 @@ Future<void> showPlannerActivityDetailSheet(
     builder: (sheetContext) {
       void popSheet() => Navigator.of(sheetContext).pop();
       final height = MediaQuery.sizeOf(sheetContext).height * 0.92;
+      final l10n = AppLocalizations.of(sheetContext)!;
 
       return Align(
         alignment: Alignment.bottomCenter,
@@ -200,16 +100,16 @@ Future<void> showPlannerActivityDetailSheet(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
-                    tabs: const [
+                    tabs: [
                       Tab(
                         height: 44,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.auto_awesome, size: 16),
-                            SizedBox(width: 6),
-                            Text('Details'),
+                            const Icon(Icons.auto_awesome, size: 16),
+                            const SizedBox(width: 6),
+                            Text(l10n.plannerSheetTabDetails),
                           ],
                         ),
                       ),
@@ -219,9 +119,9 @@ Future<void> showPlannerActivityDetailSheet(
                           mainAxisAlignment: MainAxisAlignment.center,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.photo_library_outlined, size: 16),
-                            SizedBox(width: 6),
-                            Text('Photos'),
+                            const Icon(Icons.photo_library_outlined, size: 16),
+                            const SizedBox(width: 6),
+                            Text(l10n.plannerSheetTabPhotos),
                           ],
                         ),
                       ),
@@ -231,9 +131,9 @@ Future<void> showPlannerActivityDetailSheet(
                           mainAxisAlignment: MainAxisAlignment.center,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.star_outline, size: 16),
-                            SizedBox(width: 6),
-                            Text('Reviews'),
+                            const Icon(Icons.star_outline, size: 16),
+                            const SizedBox(width: 6),
+                            Text(l10n.plannerSheetTabReviews),
                           ],
                         ),
                       ),
@@ -246,10 +146,13 @@ Future<void> showPlannerActivityDetailSheet(
                         _DetailsPane(
                           activity: activity,
                           scheduledTimeLabel: scheduledTimeLabel,
-                          moodyTip: plannerMoodyAdviceForActivity(activity),
+                          moodyTip: plannerMoodyAdviceForActivity(l10n, activity),
                         ),
-                        _PhotosPane(urls: _photoUrlsForActivity(activity)),
-                        _ReviewsPane(activity: activity),
+                        _PhotosPane(
+                          urls: _photoUrlsForActivity(activity),
+                          l10n: l10n,
+                        ),
+                        _ReviewsPane(activity: activity, l10n: l10n),
                       ],
                     ),
                   ),
@@ -494,8 +397,9 @@ class _InfoLine extends StatelessWidget {
 
 class _PhotosPane extends StatelessWidget {
   final List<String> urls;
+  final AppLocalizations l10n;
 
-  const _PhotosPane({required this.urls});
+  const _PhotosPane({required this.urls, required this.l10n});
 
   @override
   Widget build(BuildContext context) {
@@ -504,8 +408,7 @@ class _PhotosPane extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Text(
-            'No extra photos on this plan yet.\n'
-            'When the activity is linked to a place, you’ll see a full gallery in Explore.',
+            l10n.plannerSheetNoExtraPhotos,
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: 14,
@@ -546,8 +449,9 @@ class _PhotosPane extends StatelessWidget {
 
 class _ReviewsPane extends StatelessWidget {
   final Map<String, dynamic> activity;
+  final AppLocalizations l10n;
 
-  const _ReviewsPane({required this.activity});
+  const _ReviewsPane({required this.activity, required this.l10n});
 
   @override
   Widget build(BuildContext context) {
@@ -559,7 +463,7 @@ class _ReviewsPane extends StatelessWidget {
       children: [
         if (hasNumeric) ...[
           Text(
-            'Rating on your plan',
+            l10n.plannerSheetRatingOnPlan,
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -593,7 +497,7 @@ class _ReviewsPane extends StatelessWidget {
           const SizedBox(height: 20),
         ],
         Text(
-          'Written reviews',
+          l10n.plannerSheetWrittenReviews,
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -603,8 +507,8 @@ class _ReviewsPane extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           hasNumeric
-              ? 'Star ratings from your plan are shown above. Full Google reviews and more photos appear when this activity is linked to a place — open it from Explore, or schedule it from a place card so WanderMood can attach a place id.'
-              : 'There’s no review data on this scheduled item yet. Link it to a Google place (e.g. add it from Explore) to read real visitor reviews in the full place view.',
+              ? l10n.plannerSheetReviewsExplainerWithRating
+              : l10n.plannerSheetReviewsExplainerNoRating,
           style: GoogleFonts.poppins(
             fontSize: 14,
             height: 1.5,

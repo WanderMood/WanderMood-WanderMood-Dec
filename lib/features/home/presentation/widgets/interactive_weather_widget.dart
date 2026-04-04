@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/features/home/providers/weather_provider.dart';
 import 'package:wandermood/features/weather/domain/models/weather.dart';
 import 'package:wandermood/features/weather/domain/models/weather_forecast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class InteractiveWeatherWidget extends ConsumerStatefulWidget {
   const InteractiveWeatherWidget({super.key});
@@ -18,6 +19,7 @@ class _InteractiveWeatherWidgetState extends ConsumerState<InteractiveWeatherWid
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final currentWeather = ref.watch(weatherProvider);
     final hourlyForecast = ref.watch(hourlyForecastProvider);
     final dailyForecast = ref.watch(dailyForecastProvider);
@@ -39,9 +41,9 @@ class _InteractiveWeatherWidgetState extends ConsumerState<InteractiveWeatherWid
         children: [
           // Current Weather
           currentWeather.when(
-            data: (weather) => _buildCurrentWeather(weather),
+            data: (weather) => _buildCurrentWeather(context, weather),
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, __) => const Center(child: Text('Failed to load weather')),
+            error: (_, __) => Center(child: Text(l10n.weatherFailedLoadCurrent)),
             ),
 
           // Hourly Forecast
@@ -50,7 +52,7 @@ class _InteractiveWeatherWidgetState extends ConsumerState<InteractiveWeatherWid
             hourlyForecast.when(
               data: (forecast) => _buildHourlyForecast(forecast),
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const Center(child: Text('Failed to load forecast')),
+              error: (_, __) => Center(child: Text(l10n.weatherFailedLoadForecast)),
             ),
 
             // Daily Forecast
@@ -58,7 +60,7 @@ class _InteractiveWeatherWidgetState extends ConsumerState<InteractiveWeatherWid
             dailyForecast.when(
               data: (forecast) => _buildDailyForecast(forecast),
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const Center(child: Text('Failed to load forecast')),
+              error: (_, __) => Center(child: Text(l10n.weatherFailedLoadForecast)),
             ),
           ],
 
@@ -76,7 +78,7 @@ class _InteractiveWeatherWidgetState extends ConsumerState<InteractiveWeatherWid
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    _isDetailExpanded ? 'Show Less' : 'Show More',
+                    _isDetailExpanded ? l10n.weatherShowLess : l10n.weatherShowMore,
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: Colors.grey[600],
@@ -91,9 +93,10 @@ class _InteractiveWeatherWidgetState extends ConsumerState<InteractiveWeatherWid
     );
   }
 
-  Widget _buildCurrentWeather(Weather? weather) {
+  Widget _buildCurrentWeather(BuildContext context, Weather? weather) {
+    final l10n = AppLocalizations.of(context)!;
     if (weather == null) {
-      return const Center(child: Text('No weather data available'));
+      return Center(child: Text(l10n.weatherNoDataAvailable));
     }
 
     return Padding(

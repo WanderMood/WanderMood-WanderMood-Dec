@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../application/adventure_service.dart';
 import '../../domain/models/adventure.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class AdventurePlanScreen extends ConsumerWidget {
   const AdventurePlanScreen({Key? key}) : super(key: key);
@@ -11,6 +12,7 @@ class AdventurePlanScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final adventuresAsync = ref.watch(adventureServiceProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: Container(
@@ -79,15 +81,15 @@ class AdventurePlanScreen extends ConsumerWidget {
                       color: Colors.black87,
                     ),
                     children: [
-                      const TextSpan(text: 'Your '),
+                      TextSpan(text: l10n.adventurePlanTitleYour),
                       TextSpan(
-                        text: 'Adventure Plan',
+                        text: l10n.adventurePlanTitleHighlight,
                         style: GoogleFonts.poppins(
                           color: Colors.green,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const TextSpan(text: ' for today'),
+                      TextSpan(text: l10n.adventurePlanTitleForToday),
                     ],
                   ),
                 ),
@@ -101,7 +103,7 @@ class AdventurePlanScreen extends ConsumerWidget {
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (error, stack) => Center(
                     child: Text(
-                      'Error loading adventures: $error',
+                      l10n.adventurePlanLoadError('$error'),
                       style: GoogleFonts.poppins(color: Colors.red),
                     ),
                   ),

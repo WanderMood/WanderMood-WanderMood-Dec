@@ -8,6 +8,7 @@ class CurrentUserProfile {
     this.bio,
     this.avatarUrl,
     this.ageGroup,
+    this.gender,
     this.homeBase,
     this.selectedMoods = const [],
     this.budgetLevel,
@@ -27,6 +28,7 @@ class CurrentUserProfile {
   final String? bio;
   final String? avatarUrl;
   final String? ageGroup;
+  final String? gender;
   final String? homeBase;
   final List<String> selectedMoods;
   final String? budgetLevel;
@@ -51,6 +53,7 @@ class CurrentUserProfile {
     String? bio,
     String? avatarUrl,
     String? ageGroup,
+    String? gender,
     String? homeBase,
     List<String>? selectedMoods,
     String? budgetLevel,
@@ -68,6 +71,7 @@ class CurrentUserProfile {
       bio: bio ?? this.bio,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       ageGroup: ageGroup ?? this.ageGroup,
+      gender: gender ?? this.gender,
       homeBase: homeBase ?? this.homeBase,
       selectedMoods: selectedMoods ?? this.selectedMoods,
       budgetLevel: budgetLevel ?? this.budgetLevel,

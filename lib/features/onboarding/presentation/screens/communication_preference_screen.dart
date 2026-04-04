@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 import '../../../../core/providers/communication_style_provider.dart';
 import '../../../../core/providers/preferences_provider.dart';
@@ -35,32 +36,27 @@ class _CommunicationPreferenceScreenState
   late final AnimationController _breathController;
   late final Animation<double> _breathScale;
 
-  static const List<Map<String, String>> _options = [
-    {
-      'key': 'friendly',
-      'emoji': '😊',
-      'name': 'Vriendelijk',
-      'hint': 'Informeel en warm',
-    },
-    {
-      'key': 'professional',
-      'emoji': '👔',
-      'name': 'Professioneel',
-      'hint': 'Helder en formeel',
-    },
-    {
-      'key': 'energetic',
-      'emoji': '⚡',
-      'name': 'Energiek',
-      'hint': 'Leuk en enthousiast',
-    },
-    {
-      'key': 'direct',
-      'emoji': '🎯',
-      'name': 'Direct',
-      'hint': 'Kort en duidelijk',
-    },
+  static const List<Map<String, String>> _optionMeta = [
+    {'key': 'friendly', 'emoji': '😊'},
+    {'key': 'professional', 'emoji': '👔'},
+    {'key': 'energetic', 'emoji': '⚡'},
+    {'key': 'direct', 'emoji': '🎯'},
   ];
+
+  ({String title, String hint}) _styleLabels(String key, AppLocalizations l10n) {
+    switch (key) {
+      case 'friendly':
+        return (title: l10n.prefStyleFriendly, hint: l10n.prefStyleFriendlyDesc);
+      case 'professional':
+        return (title: l10n.prefStyleProfessional, hint: l10n.prefStyleProfessionalDesc);
+      case 'energetic':
+        return (title: l10n.prefStyleEnergetic, hint: l10n.prefStyleEnergeticDesc);
+      case 'direct':
+        return (title: l10n.prefStyleDirect, hint: l10n.prefStyleDirectDesc);
+      default:
+        return (title: key, hint: '');
+    }
+  }
 
   @override
   void initState() {
@@ -97,6 +93,7 @@ class _CommunicationPreferenceScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: _wmCream,
       body: SafeArea(
@@ -114,7 +111,7 @@ class _CommunicationPreferenceScreenState
                     color: _wmStone,
                     size: 20,
                   ),
-                  tooltip: 'Terug',
+                  tooltip: l10n.prefBack,
                 ),
               ),
             ),
@@ -158,7 +155,7 @@ class _CommunicationPreferenceScreenState
                     ),
                   ),
                   const SizedBox(width: 10),
-                  Expanded(child: _SpeechBubble()),
+                  Expanded(child: _SpeechBubble(text: l10n.commPrefSpeechBubble)),
                 ],
               ),
             ),
@@ -169,7 +166,7 @@ class _CommunicationPreferenceScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Kies jouw Moody-stijl',
+                    l10n.commPrefChooseStyleTitle,
                     style: GoogleFonts.poppins(
                       fontSize: 26,
                       fontWeight: FontWeight.w800,
@@ -179,7 +176,7 @@ class _CommunicationPreferenceScreenState
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Zo pas ik mijn toon perfect op jou aan.',
+                    l10n.commPrefChooseStyleSubtitle,
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.w400,
@@ -202,15 +199,16 @@ class _CommunicationPreferenceScreenState
                     crossAxisSpacing: 12,
                     childAspectRatio: 0.98,
                   ),
-                  itemCount: _options.length,
+                  itemCount: _optionMeta.length,
                   itemBuilder: (context, index) {
-                    final o = _options[index];
+                    final o = _optionMeta[index];
                     final key = o['key']!;
+                    final labels = _styleLabels(key, l10n);
                     final selected = _selectedStyle == key;
                     return _StyleTile(
                       emoji: o['emoji']!,
-                      title: o['name']!,
-                      hint: o['hint']!,
+                      title: labels.title,
+                      hint: labels.hint,
                       selected: selected,
                       onTap: () => _onSelect(key),
                     );
@@ -242,7 +240,7 @@ class _CommunicationPreferenceScreenState
                     ),
                   ),
                   child: Text(
-                    'Doorgaan →',
+                    l10n.interestsContinue,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -259,6 +257,10 @@ class _CommunicationPreferenceScreenState
 }
 
 class _SpeechBubble extends StatelessWidget {
+  const _SpeechBubble({required this.text});
+
+  final String text;
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -279,7 +281,7 @@ class _SpeechBubble extends StatelessWidget {
                 border: Border.all(color: _wmSky, width: 0.5),
               ),
               child: Text(
-                'Hoe wil je dat ik met je praat? 😊',
+                text,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,

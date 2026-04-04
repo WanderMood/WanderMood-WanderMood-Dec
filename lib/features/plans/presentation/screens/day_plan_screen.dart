@@ -632,13 +632,12 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
               ],
             ),
           ),
-          // Bottom CTAs: default is View My Day (no bulk save). Explicit second action adds all suggestions.
+          // Bottom CTA: greyed out until the user has added ≥1 activity via a card button.
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: Container(
-              // Bottom inset comes from SafeArea only — extra padding here duplicated the home-indicator gap.
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -650,84 +649,50 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
                 minimum: EdgeInsets.zero,
                 child: Builder(builder: (context) {
                   final l10n = AppLocalizations.of(context)!;
-                  final remaining = _activities.length - _addedCount;
-                  if (_addedCount == 0) {
-                    return Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: _activities.isEmpty
-                                ? null
-                                : () => _navigateToMyDayOnly(ref),
-                            icon: const Text('🗓️', style: TextStyle(fontSize: 22)),
-                            label: Text(
-                              l10n.dayPlanViewMyDay,
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
+                  final canProceed = _addedCount > 0;
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          // Disabled (grey) until at least 1 activity is added.
+                          onPressed: canProceed
+                              ? () => _navigateToMyDayOnly(ref)
+                              : null,
+                          icon: const Text('🗓️', style: TextStyle(fontSize: 22)),
+                          label: Text(
+                            l10n.dayPlanViewMyDay,
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
                             ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: wmForest,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              elevation: 0,
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: canProceed ? wmForest : const Color(0xFFB0BEC5),
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: const Color(0xFFCDD5D8),
+                            disabledForegroundColor: Colors.white70,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50),
                             ),
+                            elevation: 0,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        TextButton(
-                          onPressed: _activities.isEmpty
-                              ? null
-                              : () => _addPlanToMyDay(ref),
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: Text(
-                            l10n.dayPlanAddAllSuggestions(
-                              _activities.length.toString(),
-                            ),
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: wmForest,
-                            ),
+                      ),
+                      if (!canProceed) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          l10n.dayPlanSelectAtLeastOne,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: const Color(0xFF8C8780),
                           ),
                         ),
                       ],
-                    );
-                  }
-                  return SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _activities.isEmpty ? null : () => _addPlanToMyDay(ref),
-                      icon: const Text('🗓️', style: TextStyle(fontSize: 22)),
-                      label: Text(
-                        remaining > 0
-                            ? l10n.dayPlanAddMoreToMyDay(remaining.toString())
-                            : l10n.dayPlanViewMyDay,
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: wmForest,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        elevation: 0,
-                      ),
-                    ),
+                      const SizedBox(height: 4),
+                    ],
                   );
                 }),
               ),

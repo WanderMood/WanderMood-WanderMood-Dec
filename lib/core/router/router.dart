@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,12 +18,10 @@ import '../../features/onboarding/presentation/screens/planning_pace_screen.dart
 import '../../features/onboarding/presentation/screens/travel_style_screen.dart';
 import '../../features/onboarding/presentation/screens/combined_travel_preferences_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_loading_screen.dart';
-// import '../../features/dev/reset_screen.dart'; // Removed - debug only
 import '../../features/plans/presentation/screens/plan_loading_screen.dart';
 import '../../features/plans/presentation/screens/day_plan_screen.dart';
 import '../../features/plans/domain/models/activity.dart';
 import '../../core/config/supabase_config.dart';
-// Removed mood_page.dart import - page has been archived
 import '../../features/weather/presentation/pages/weather_page.dart';
 import '../../features/recommendations/presentation/pages/recommendations_page.dart';
 import '../../features/profile/presentation/screens/user_profile_screen.dart' as profile;
@@ -60,7 +59,6 @@ import '../../features/social/presentation/screens/message_hub_screen.dart';
 import '../../features/social/presentation/screens/view_story_screen.dart';
 import '../../features/social/domain/providers/social_providers.dart';
 import '../../features/social/presentation/screens/edit_social_profile_screen.dart';
-import '../../features/social/presentation/screens/wanderfeed_coming_soon_screen.dart';
 // Note: social/user_profile_screen.dart removed — all social profile routes use UnifiedProfileScreen
 import '../../features/auth/providers/auth_state_provider.dart';
 import '../../features/auth/presentation/screens/magic_link_signup_screen.dart';
@@ -70,7 +68,6 @@ import '../providers/feature_flags_provider.dart';
 import '../../features/onboarding/presentation/screens/app_intro_screen.dart';
 import '../../features/onboarding/presentation/screens/moody_demo_screen.dart';
 import '../../features/onboarding/presentation/screens/guest_explore_screen.dart';
-import '../../features/dev/reset_onboarding_screen.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, ValueNotifier;
 // import '../../admin/admin_screen.dart'; // Removed - debug only
 
@@ -454,17 +451,18 @@ GoRouter router(RouterRef ref) {
             future: _handleEmailVerification(state.uri),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Scaffold(
+                final l10n = AppLocalizations.of(context);
+                return Scaffold(
                   backgroundColor: _routerWmForest,
                   body: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(color: _routerWmWhite),
-                        SizedBox(height: 16),
+                        const CircularProgressIndicator(color: _routerWmWhite),
+                        const SizedBox(height: 16),
                         Text(
-                          'Confirming your email...',
-                          style: TextStyle(
+                          l10n?.authCallbackConfirmingEmail ?? 'Confirming your email…',
+                          style: const TextStyle(
                             color: _routerWmWhite,
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -481,20 +479,22 @@ GoRouter router(RouterRef ref) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   context.go('/auth/signup');
                 });
-                return const Scaffold(
+                final l10n = AppLocalizations.of(context);
+                return Scaffold(
                   backgroundColor: _routerWmCream,
                   body: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.error_outline, color: _routerWmError, size: 48),
-                        SizedBox(height: 16),
+                        const Icon(Icons.error_outline, color: _routerWmError, size: 48),
+                        const SizedBox(height: 16),
                         Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 32),
+                          padding: const EdgeInsets.symmetric(horizontal: 32),
                           child: Text(
-                            'Email verification failed. Please try again.',
+                            l10n?.authCallbackVerificationFailed ??
+                                'Email verification failed. Please try again.',
                             textAlign: TextAlign.center,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: _routerWmCharcoal,
                               fontSize: 16,
                             ),
@@ -699,42 +699,7 @@ GoRouter router(RouterRef ref) {
           );
         },
       ),
-      // Travelers discovery is archived for future release.
-      // Keep legacy links as placeholders so old deep links do not break.
-      GoRoute(
-        path: '/social/discovery',
-        name: 'social-discovery',
-        builder: (context, state) => const WanderFeedComingSoonScreen(),
-      ),
-      GoRoute(
-        path: '/travelers/discovery',
-        name: 'travelers-discovery',
-        builder: (context, state) => const WanderFeedComingSoonScreen(),
-      ),
-      
-      // Diary feature is archived for future release.
-      // Keep routes as placeholders so old deep links don't break.
-      GoRoute(
-        path: '/diaries',
-        name: 'diaries-platform',
-        builder: (context, state) => const WanderFeedComingSoonScreen(),
-      ),
-      GoRoute(
-        path: '/diaries/create-entry',
-        name: 'create-diary-entry',
-        builder: (context, state) => const WanderFeedComingSoonScreen(),
-      ),
-      GoRoute(
-        path: '/diaries/entry/:id',
-        name: 'diary-detail',
-        builder: (context, state) => const WanderFeedComingSoonScreen(),
-      ),
-      GoRoute(
-        path: '/diaries/profile/:userId',
-        name: 'travel-diary-profile',
-        builder: (context, state) => const WanderFeedComingSoonScreen(),
-      ),
-      
+
       // Admin route - ONLY available in debug mode for App Store compliance
       if (kDebugMode)
         GoRoute(
@@ -747,16 +712,6 @@ GoRouter router(RouterRef ref) {
                 child: Text('Admin screen disabled in production builds'),
               ),
             );
-          },
-        ),
-      
-      // Dev route to reset onboarding (debug only)
-      if (kDebugMode)
-        GoRoute(
-          path: '/dev/reset-onboarding',
-          name: 'reset-onboarding',
-          builder: (context, state) {
-            return const ResetOnboardingScreen();
           },
         ),
       
@@ -888,6 +843,18 @@ GoRouter router(RouterRef ref) {
       ),
     ],
     redirect: (context, state) async {
+      // Legacy WanderFeed / diary URLs (no GoRoutes — handled here so deep links don’t 404).
+      final rawPath = state.uri.path;
+      final path = rawPath.endsWith('/') && rawPath.length > 1
+          ? rawPath.substring(0, rawPath.length - 1)
+          : rawPath;
+      if (path == '/social/discovery' ||
+          path == '/travelers/discovery' ||
+          path == '/diaries' ||
+          path.startsWith('/diaries/')) {
+        return '/main';
+      }
+
       final authState = ref.read(authStateProvider);
       final currentLocation = state.matchedLocation;
       

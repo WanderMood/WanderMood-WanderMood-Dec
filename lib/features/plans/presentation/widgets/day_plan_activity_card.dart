@@ -16,6 +16,7 @@ import 'package:wandermood/features/plans/presentation/providers/place_open_now_
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 /// v2 design tokens — day plan result cards
 const Color _wmWhite = Color(0xFFFFFFFF);
@@ -153,12 +154,20 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
         final photos = snapshot.data ?? initialPhotos;
         if (photos.isEmpty) return _imagePlaceholder();
         if (photos.length == 1) {
-          return CachedNetworkImage(
-            cacheManager: WanderMoodImageCacheManager.instance,
-            imageUrl: photos[0],
+          return WmNetworkImage(
+            photos[0],
             fit: BoxFit.cover,
-            placeholder: (_, __) => _imagePlaceholder(),
-            errorWidget: (_, __, ___) => _imagePlaceholder(),
+            progressIndicatorBuilder: (c, url, progress) => Container(
+              color: Colors.grey.shade200,
+              child: Center(
+                child: CircularProgressIndicator(
+                  value: progress.progress,
+                  color: _wmForest,
+                  strokeWidth: 2,
+                ),
+              ),
+            ),
+            errorBuilder: (_, __, ___) => _imagePlaceholder(),
           );
         }
         return Stack(
@@ -168,12 +177,20 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
               controller: _imagePageController,
               itemCount: photos.length,
               onPageChanged: (i) => setState(() => _currentImageIndex = i),
-              itemBuilder: (_, i) => CachedNetworkImage(
-                cacheManager: WanderMoodImageCacheManager.instance,
-                imageUrl: photos[i],
+              itemBuilder: (_, i) => WmNetworkImage(
+                photos[i],
                 fit: BoxFit.cover,
-                placeholder: (_, __) => _imagePlaceholder(),
-                errorWidget: (_, __, ___) => _imagePlaceholder(),
+                progressIndicatorBuilder: (c, url, progress) => Container(
+                  color: Colors.grey.shade200,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      value: progress.progress,
+                      color: _wmForest,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                ),
+                errorBuilder: (_, __, ___) => _imagePlaceholder(),
               ),
             ),
             Positioned(
@@ -384,9 +401,8 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
               width: double.infinity,
               color: _wmForest,
             ),
-            // Image: swipeable PageView — outside InkWell so horizontal drags are not eaten.
+            // Image: swipeable PageView — deferToChild so horizontal drags reach the PageView (Explore parity).
             GestureDetector(
-              behavior: HitTestBehavior.opaque,
               onTap: () => widget.onTap(widget.activity, distanceKm: widget.distanceKm),
               child: SizedBox(
                 height: 192,

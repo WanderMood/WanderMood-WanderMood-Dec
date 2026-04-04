@@ -8,6 +8,7 @@ import 'package:wandermood/features/mood/presentation/widgets/activity_rating_sh
 import 'dart:math' as math;
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class PeriodActivitiesBottomSheet extends ConsumerStatefulWidget {
   final Map<String, dynamic> period;
@@ -444,6 +445,7 @@ class _PeriodActivitiesBottomSheetState extends ConsumerState<PeriodActivitiesBo
   }
 
   Widget _buildActivityCard(EnhancedActivityData activity, Color accentColor) {
+    final l10n = AppLocalizations.of(context)!;
     final activityName = activity.rawData['name'] as String? ?? activity.rawData['title'] as String? ?? 'Activity';
     final location = activity.rawData['location'] as String?;
     final imageUrl = activity.rawData['imageUrl'] as String? ?? activity.rawData['image'] as String?;
@@ -454,13 +456,13 @@ class _PeriodActivitiesBottomSheetState extends ConsumerState<PeriodActivitiesBo
       background: _buildSwipeBackground(
         color: const Color(0xFF2A6049),
         icon: Icons.check_circle,
-        label: 'Complete',
+        label: l10n.periodActivitiesSwipeComplete,
         alignment: Alignment.centerLeft,
       ),
       secondaryBackground: _buildSwipeBackground(
         color: const Color(0xFFE53E3E),
         icon: Icons.delete,
-        label: 'Delete',
+        label: l10n.periodActivitiesSwipeDelete,
         alignment: Alignment.centerRight,
       ),
       confirmDismiss: (direction) async {
@@ -470,24 +472,31 @@ class _PeriodActivitiesBottomSheetState extends ConsumerState<PeriodActivitiesBo
           return false;
         } else {
           // Delete
-          return await showDialog(
+          return await showDialog<bool>(
             context: context,
-            builder: (context) => AlertDialog(
-              title: Text('Remove activity?', style: GoogleFonts.poppins()),
-              content: Text('Are you sure you want to remove "$activityName"?',
-                  style: GoogleFonts.poppins()),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: Text('Cancel', style: GoogleFonts.poppins()),
+            builder: (dialogContext) {
+              final dlg = AppLocalizations.of(dialogContext)!;
+              return AlertDialog(
+                title: Text(dlg.periodActivitiesRemoveTitle, style: GoogleFonts.poppins()),
+                content: Text(
+                  dlg.periodActivitiesRemoveBody(activityName),
+                  style: GoogleFonts.poppins(),
                 ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: Text('Remove',
-                      style: GoogleFonts.poppins(color: const Color(0xFFE53E3E))),
-                ),
-              ],
-            ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(dialogContext, false),
+                    child: Text(dlg.cancel, style: GoogleFonts.poppins()),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(dialogContext, true),
+                    child: Text(
+                      dlg.periodActivitiesRemoveCta,
+                      style: GoogleFonts.poppins(color: const Color(0xFFE53E3E)),
+                    ),
+                  ),
+                ],
+              );
+            },
           );
         }
       },
@@ -779,7 +788,7 @@ class _PeriodActivitiesBottomSheetState extends ConsumerState<PeriodActivitiesBo
                   Icon(Icons.chat_bubble_outline, color: accentColor, size: 22),
                   const SizedBox(width: 12),
                   Text(
-                    'Chat with Moody',
+                    AppLocalizations.of(context)!.myDayChatWithMoodyTitle,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

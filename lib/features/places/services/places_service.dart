@@ -229,6 +229,8 @@ class PlacesService extends _$PlacesService {
           'lng': locationRaw['lng'] as num? ?? 0.0,
         } : null,
         'open_now': openNow,
+        'website': result['website'] as String?,
+        'phone_number': result['formatted_phone_number'] as String?,
       };
 
       debugPrint('✅ Got details for ${result['name']} with ${photoReferences.length} photos and ${reviews.length} reviews');

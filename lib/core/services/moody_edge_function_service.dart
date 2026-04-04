@@ -62,6 +62,8 @@ class MoodyEdgeFunctionService {
     required double latitude,
     required double longitude,
     Map<String, dynamic>? filters,
+    /// When non-empty, skips Flutter cache read — backend fetches fresh (named filter paths are not cached server-side).
+    List<String>? namedFilters,
   }) async {
     try {
       // CRITICAL: Ensure session is valid before calling Edge Function
@@ -93,19 +95,25 @@ class MoodyEdgeFunctionService {
 
       final isLocal = await _readIsLocalMode();
 
-      // Cache-first: same aggregate key as moody `handleGetExplore` (`explore_v6_{local|travel}_…`).
-      final cachedPlaces = await PlacesCacheUtils.tryLoadExplorePlaces(
-        _supabase,
-        mood,
-        location,
-        isLocalMode: isLocal,
-      );
-      if (cachedPlaces != null) {
-        return cachedPlaces;
+      final hasNamedFilters =
+          namedFilters != null && namedFilters.isNotEmpty;
+
+      // Cache-first for standard explore only — named filter combinations are not cached (backend always refreshes).
+      if (!hasNamedFilters) {
+        final cachedPlaces = await PlacesCacheUtils.tryLoadExplorePlaces(
+          _supabase,
+          mood,
+          location,
+          isLocalMode: isLocal,
+        );
+        if (cachedPlaces != null) {
+          return cachedPlaces;
+        }
       }
       if (kDebugMode) {
-        debugPrint('🔴 Cache MISS — moody get_explore via network');
-        debugPrint('   mood: $mood | location: $location | filters: $filters');
+        debugPrint('🔴 moody get_explore via network');
+        debugPrint(
+            '   mood: $mood | location: $location | filters: $filters | namedFilters: $namedFilters');
         debugPrint('   🔑 Token preview: ${token.substring(0, 20)}...');
       }
 
@@ -114,19 +122,24 @@ class MoodyEdgeFunctionService {
       final supabaseUrl = SupabaseConfig.url;
       final functionUrl = '$supabaseUrl/functions/v1/moody';
 
+      final payload = <String, dynamic>{
+        'action': 'get_explore',
+        'mood': mood,
+        'location': location,
+        'is_local': isLocal,
+        'coordinates': {
+          'lat': latitude,
+          'lng': longitude,
+        },
+        'filters': filters ?? {},
+      };
+      if (hasNamedFilters) {
+        payload['namedFilters'] = namedFilters;
+      }
+
       final response = await dio.post(
         functionUrl,
-        data: {
-          'action': 'get_explore',
-          'mood': mood,
-          'location': location,
-          'is_local': isLocal,
-          'coordinates': {
-            'lat': latitude,
-            'lng': longitude,
-          },
-          'filters': filters ?? {},
-        },
+        data: payload,
         options: Options(
           headers: {
             'Authorization': 'Bearer $token',

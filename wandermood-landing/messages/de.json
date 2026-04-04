@@ -118,13 +118,23 @@
       "metaTitle": "Datenschutz | WanderMood",
       "metaDescription": "Wie WanderMood mit deinen Daten umgeht und wie du dein Konto löschst.",
       "title": "Datenschutz",
-      "updated": "Stand: März 2026",
+      "updated": "Stand: April 2026",
       "p1": "WanderMood („wir“) respektiert deine Privatsphäre. Wir erheben nur Daten, die nötig sind, um die App zu betreiben, deine Tagespläne zu personalisieren und dein Konto zu schützen.",
       "p2": "Wir verkaufen deine personenbezogenen Daten nicht an Dritte. Daten werden verschlüsselt über HTTPS/TLS zwischen der App und unseren Diensten übertragen.",
       "p3": "Du kannst jederzeit die Löschung deines Kontos und der zugehörigen Daten beantragen. Siehe die Seite",
       "p3Link": "Konto löschen",
       "p3After": "für Schritt-für-Schritt-Anleitung, welche Daten entfernt werden und wie du uns erreichst, falls du die App nicht nutzen kannst.",
+      "p4": "Categories of data we process include: account and profile information (e.g. email, display name, preferences you choose); approximate location when you allow it (for nearby places and weather); mood and planning choices you enter; content you create (e.g. saved places, plans, social posts); technical data such as device type and app diagnostics needed to operate the service.",
+      "p5": "AI features (e.g. Moody chat and recommendations) send your prompts and relevant context to our backend (Supabase Edge Functions). Messages may be processed by model providers (e.g. OpenAI) under our instructions to generate replies. Do not send health data or passwords in chat.",
+      "p6": "Processors and infrastructure: we use Supabase (EU or configured regions) for authentication, database, and storage; Vercel for this website; and map/weather/places providers where you use those features. Their processing is governed by our agreements and their privacy policies.",
+      "p7": "This website uses only essential cookies and similar technologies needed to run the site (e.g. language preference). If we add analytics or marketing cookies later, we will update this policy and, where required, ask for your consent before non-essential cookies are set.",
+      "p8": "European privacy rights (including GDPR): you may request access, correction, portability, or deletion of your personal data, and object to or restrict certain processing where applicable. Contact us at the email below; you may also lodge a complaint with your local supervisory authority.",
       "questions": "Fragen? Schreibe uns an"
+    },
+    "consent": {
+      "banner": "Wir verwenden notwendige Cookies, um diese Website zu betreiben (z. B. Sprache). Keine Werbe-Cookies auf dieser Seite. Details in der Datenschutzerklärung.",
+      "dismiss": "OK",
+      "privacyLink": "Datenschutz"
     },
     "terms": {
       "metaTitle": "Nutzungsbedingungen | WanderMood",

@@ -39,6 +39,8 @@ import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/services/connectivity_service.dart';
+import 'package:wandermood/core/utils/offline_feedback.dart';
 
 /// WanderMood v2 — Advanced Filters modal (SCREEN 7)
 const Color _afWmWhite = Color(0xFFFFFFFF);
@@ -51,6 +53,20 @@ const Color _afWmStone = Color(0xFF8C8780);
 
 /// Clears MainScreen floating pill nav + typical home indicator ([MainScreen] `extendBody`).
 const double _kExploreFloatingNavClearance = 88;
+
+/// Inclusion / vibe chips — keys must match Moody `get_explore` `namedFilters` (v59+).
+const List<Map<String, dynamic>> kExploreInclusionFilters = [
+  {'key': 'halal', 'label': 'Halal', 'icon': '🥩'},
+  {'key': 'lgbtq_friendly', 'label': 'LGBTQ+ Friendly', 'icon': '🏳️‍🌈'},
+  {'key': 'black_owned', 'label': 'Black-Owned', 'icon': '✊🏾'},
+  {'key': 'family_friendly', 'label': 'Family-Friendly', 'icon': '👨‍👩‍👧'},
+  {'key': 'kids_friendly', 'label': 'Kids-Friendly', 'icon': '🧒'},
+  {'key': 'vegan', 'label': 'Vegan', 'icon': '🌱'},
+  {'key': 'instagrammable', 'label': 'Instagrammable', 'icon': '📸'},
+  {'key': 'romantic', 'label': 'Romantic', 'icon': '💑'},
+  {'key': 'trendy', 'label': 'Trending', 'icon': '🔥'},
+  {'key': 'outdoor', 'label': 'Outdoor', 'icon': '🌿'},
+];
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({Key? key}) : super(key: key);
@@ -84,6 +100,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   String _selectedIntent = '';
   String _currentExplanation = '';
   List<Place> _intentFilteredPlaces = [];
+
+  /// Active `namedFilters` chip keys; empty = use normal [moodyExploreAutoProvider] feed.
+  final Set<String> _inclusionNamedFilterKeys = {};
+
+  /// Places from last `get_explore` + namedFilters call; null = use provider list.
+  List<Place>? _inclusionNamedFilterPlaces;
+  bool _inclusionNamedFilterLoading = false;
 
   // Advanced filter settings - New Structure
   int _activeFiltersCount = 0;
@@ -199,6 +222,82 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     });
   }
 
+  Future<void> _invalidateExploreIfOnline() async {
+    final connected = await ref.read(connectivityServiceProvider).isConnected;
+    if (!mounted) return;
+    if (!connected) {
+      showOfflineSnackBar(context);
+      return;
+    }
+    ref.invalidate(moodyExploreAutoProvider);
+  }
+
+  void _clearInclusionNamedFilters() {
+    _inclusionNamedFilterKeys.clear();
+    _inclusionNamedFilterPlaces = null;
+    _inclusionNamedFilterLoading = false;
+  }
+
+  Future<void> _onInclusionFilterTapped(String filterKey) async {
+    final connected = await ref.read(connectivityServiceProvider).isConnected;
+    if (!mounted) return;
+    if (!connected) {
+      showOfflineSnackBar(context);
+      return;
+    }
+
+    setState(() {
+      if (_inclusionNamedFilterKeys.contains(filterKey)) {
+        _inclusionNamedFilterKeys.remove(filterKey);
+      } else {
+        _inclusionNamedFilterKeys.add(filterKey);
+      }
+      if (_inclusionNamedFilterKeys.isEmpty) {
+        _inclusionNamedFilterPlaces = null;
+      }
+    });
+
+    if (_inclusionNamedFilterKeys.isEmpty) {
+      ref.invalidate(moodyExploreAutoProvider);
+      return;
+    }
+
+    setState(() => _inclusionNamedFilterLoading = true);
+
+    try {
+      final location = ref.read(locationNotifierProvider).value?.trim() ?? '';
+      final position = await ref.read(userLocationProvider.future);
+      if (!mounted) return;
+      if (location.isEmpty || position == null) {
+        setState(() => _inclusionNamedFilterLoading = false);
+        return;
+      }
+
+      final service = ref.read(moodyEdgeFunctionServiceProvider);
+      final places = await service.getExplore(
+        mood: 'all',
+        location: location,
+        latitude: position.latitude,
+        longitude: position.longitude,
+        filters: const <String, dynamic>{},
+        namedFilters: _inclusionNamedFilterKeys.toList(),
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _inclusionNamedFilterPlaces = places;
+        _inclusionNamedFilterLoading = false;
+      });
+    } catch (e, st) {
+      debugPrint('Inclusion namedFilters fetch error: $e\n$st');
+      if (!mounted) return;
+      setState(() {
+        _inclusionNamedFilterPlaces = [];
+        _inclusionNamedFilterLoading = false;
+      });
+    }
+  }
+
   void _onScrollChanged() {
     final currentScrollOffset = _scrollController.offset;
     final scrollDelta = currentScrollOffset - _lastScrollOffset;
@@ -230,8 +329,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final explorePlacesAsync = ref.read(moodyExploreAutoProvider);
     // OLD: ref.read(explorePlacesProvider(city: ref.read(locationNotifierProvider).value ?? 'Rotterdam'))
     explorePlacesAsync.whenData((places) {
+      final base = _inclusionNamedFilterPlaces ?? places;
       final result =
-          IntentProcessor.processIntent(intent, places, context: smartContext);
+          IntentProcessor.processIntent(intent, base, context: smartContext);
       final sortedPlaces = IntentProcessor.sortByPriority(
           result['filteredPlaces'], result['priority']);
 
@@ -276,6 +376,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final positionAsync = ref.read(userLocationProvider);
     final position = positionAsync.value;
     if (position == null) return;
+
+    final connected = await ref.read(connectivityServiceProvider).isConnected;
+    if (!connected) {
+      if (mounted) showOfflineSnackBar(context);
+      return;
+    }
 
     final supabase = Supabase.instance.client;
 
@@ -496,10 +602,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       _bestAtSunset = false;
 
       _activeFiltersCount = 0;
+      _clearInclusionNamedFilters();
     });
     ref.read(moodyExploreBackendFiltersProvider.notifier).state =
         <String, dynamic>{};
-    ref.invalidate(moodyExploreAutoProvider);
+    unawaited(_invalidateExploreIfOnline());
   }
 
   Map<String, dynamic> _buildMoodyBackendFilters() {
@@ -1073,7 +1180,93 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     }
   }
 
-  Widget _buildExploreHeaderColumn(int activitiesCount) {
+  Widget _buildInclusionFilterChipsRow() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: 44,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: kExploreInclusionFilters.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, i) {
+              final filter = kExploreInclusionFilters[i];
+              final key = filter['key']! as String;
+              final isActive = _inclusionNamedFilterKeys.contains(key);
+              return GestureDetector(
+                onTap: _inclusionNamedFilterLoading
+                    ? null
+                    : () => unawaited(_onInclusionFilterTapped(key)),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color:
+                        isActive ? const Color(0xFF2A6049) : Colors.white,
+                    border: Border.all(
+                      color: isActive
+                          ? const Color(0xFF2A6049)
+                          : const Color(0xFFE8E2D8),
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: isActive
+                        ? []
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        filter['icon']! as String,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        filter['label']! as String,
+                        style: TextStyle(
+                          color: isActive
+                              ? Colors.white
+                              : const Color(0xFF1E1C18),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        if (_inclusionNamedFilterLoading)
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 6, 16, 2),
+            child: Center(
+              child: SizedBox(
+                width: 120,
+                height: 3,
+                child: LinearProgressIndicator(),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildExploreHeaderColumn(
+    int activitiesCount, {
+    bool showOfflineCachedHint = false,
+  }) {
     final l10n = AppLocalizations.of(context)!;
     return SafeArea(
       bottom: false,
@@ -1117,18 +1310,46 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               });
             },
           ),
+          if (showOfflineCachedHint)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Text(
+                'Offline — showing cached results',
+                style: TextStyle(color: Color(0xFF8C8780), fontSize: 12),
+              ),
+            ),
         ],
         ),
       ),
     );
   }
 
-  Widget _buildExploreSliverAppBar(int activitiesCount) {
+  Widget _buildExploreOfflineEmptyBody() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.wifi_off, size: 48, color: Color(0xFF8C8780)),
+          SizedBox(height: 16),
+          Text(
+            'Connect to the internet\nto discover places',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Color(0xFF4A4640), fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExploreSliverAppBar(
+    int activitiesCount, {
+    bool showOfflineCachedHint = false,
+  }) {
     return SliverAppBar(
       floating: true,
       pinned: true,
       snap: false,
-      expandedHeight: 268,
+      expandedHeight: 350,
       backgroundColor: Colors.transparent,
       elevation: 0,
       automaticallyImplyLeading: false,
@@ -1136,7 +1357,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       title: null,
       flexibleSpace: FlexibleSpaceBar(
         collapseMode: CollapseMode.parallax,
-        background: _buildExploreHeaderColumn(activitiesCount),
+        background: _buildExploreHeaderColumn(
+          activitiesCount,
+          showOfflineCachedHint: showOfflineCachedHint,
+        ),
       ),
       bottom: const PreferredSize(
         preferredSize: Size.fromHeight(0),
@@ -1189,7 +1413,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           ),
           const SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
+              final connected =
+                  await ref.read(connectivityServiceProvider).isConnected;
+              if (!mounted) return;
+              if (!connected) {
+                showOfflineSnackBar(context);
+                return;
+              }
               ref.invalidate(moodyExploreAutoProvider);
               if (isLocationError) {
                 ref
@@ -1210,7 +1441,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   /// Map mode avoids [NestedScrollView] so pinch/pan gestures are not stolen by the header scroll coordinator.
-  Widget _buildExploreMapModeBody(List<Place> allPlaces, int activitiesCount) {
+  Widget _buildExploreMapModeBody(
+    List<Place> allPlaces,
+    int activitiesCount, {
+    bool showOfflineCachedHint = false,
+  }) {
     final locationAsync = ref.watch(locationNotifierProvider);
     final userLocationAsync = ref.read(userLocationProvider);
     final currentCity = locationAsync.value ?? 'Rotterdam';
@@ -1244,7 +1479,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildExploreHeaderColumn(activitiesCount),
+        _buildExploreHeaderColumn(
+          activitiesCount,
+          showOfflineCachedHint: showOfflineCachedHint,
+        ),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1305,6 +1543,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     }
 
     if (filteredPlaces.isEmpty) {
+      final l10n = AppLocalizations.of(context)!;
+      // While the user is actively typing / search is in-flight, show a
+      // "searching" indicator instead of "no results found".
+      final isTyping = _isSearching || (_searchQuery.trim().length >= 1 && _searchResults == null);
       return CustomScrollView(
         slivers: [
           SliverFillRemaining(
@@ -1313,17 +1555,52 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               children: [
                 Expanded(
                   child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.search_off, size: 64, color: Colors.grey),
-                        const SizedBox(height: 16),
-                        Text(
-                          AppLocalizations.of(context)!.exploreNoPlacesFound,
-                          style: const TextStyle(fontSize: 18, color: Colors.grey),
-                        ),
-                      ],
-                    ),
+                    child: isTyping
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const SizedBox(
+                                width: 40,
+                                height: 40,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  color: Color(0xFF2A6049),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                l10n.exploreSearching,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 15,
+                                  color: const Color(0xFF8C8780),
+                                ),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.search_off, size: 64, color: Color(0xFFB0BAC0)),
+                              const SizedBox(height: 16),
+                              Text(
+                                l10n.exploreNoPlacesFound,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF4A4640),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                l10n.exploreNoPlacesFoundHint,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  color: const Color(0xFF8C8780),
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
                 ),
                 BookWithGygSection(
@@ -1412,13 +1689,25 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F0E8),
       body: explorePlacesAsync.when(
-        loading: () => NestedScrollView(
-          controller: _scrollController,
-          headerSliverBuilder: (context, innerBoxIsScrolled) => [
-            _buildExploreSliverAppBar(0),
-          ],
-          body: const Center(child: CircularProgressIndicator()),
-        ),
+        loading: () {
+          final online = ref.watch(isConnectedProvider).valueOrNull ?? true;
+          if (!online) {
+            return NestedScrollView(
+              controller: _scrollController,
+              headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                _buildExploreSliverAppBar(0),
+              ],
+              body: _buildExploreOfflineEmptyBody(),
+            );
+          }
+          return NestedScrollView(
+            controller: _scrollController,
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              _buildExploreSliverAppBar(0),
+            ],
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        },
         error: (error, stack) => NestedScrollView(
           controller: _scrollController,
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -1427,18 +1716,38 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           body: _buildExploreErrorBody(error, stack),
         ),
         data: (allPlaces) {
+          final online = ref.watch(isConnectedProvider).valueOrNull ?? true;
+          final effectivePlaces =
+              _inclusionNamedFilterPlaces ?? allPlaces;
+          final offlineCached = !online && effectivePlaces.isNotEmpty;
+          if (!online && effectivePlaces.isEmpty) {
+            return NestedScrollView(
+              controller: _scrollController,
+              headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                _buildExploreSliverAppBar(0),
+              ],
+              body: _buildExploreOfflineEmptyBody(),
+            );
+          }
           final activitiesCount = _searchResults != null
               ? _searchResults!.length
-              : _filterPlaces(allPlaces).length;
+              : _filterPlaces(effectivePlaces).length;
           if (_isMapView) {
-            return _buildExploreMapModeBody(allPlaces, activitiesCount);
+            return _buildExploreMapModeBody(
+              effectivePlaces,
+              activitiesCount,
+              showOfflineCachedHint: offlineCached,
+            );
           }
           return NestedScrollView(
             controller: _scrollController,
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
-              _buildExploreSliverAppBar(activitiesCount),
+              _buildExploreSliverAppBar(
+                activitiesCount,
+                showOfflineCachedHint: offlineCached,
+              ),
             ],
-            body: _buildExploreListGridBody(allPlaces),
+            body: _buildExploreListGridBody(effectivePlaces),
           );
         },
       ),
@@ -1731,8 +2040,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     children: [
                       Center(
                         child: ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
+                            final connected = await ref
+                                .read(connectivityServiceProvider)
+                                .isConnected;
+                            if (!context.mounted) return;
+                            if (!connected) {
+                              showOfflineSnackBar(context);
+                              return;
+                            }
                             Navigator.pop(context);
+                            _clearInclusionNamedFilters();
                             final backendFilters = _buildMoodyBackendFilters();
                             ref
                                 .read(moodyExploreBackendFiltersProvider.notifier)

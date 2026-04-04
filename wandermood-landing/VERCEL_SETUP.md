@@ -43,8 +43,44 @@ The Next.js app lives in a subfolder, so Vercel must build from that folder:
   - `WANDERMOOD_ADMIN_SECRET` — long random string; you enter it on `https://wandermood.com/admin` to load stats.
   - `SUPABASE_URL` — same project URL as the Flutter app.
   - `SUPABASE_SERVICE_ROLE_KEY` — **server only**; never put in the Flutter app or client code. Only Vercel serverless reads this.
+- **Stripe** (Checkout + webhook + admin revenue): see [Stripe on Vercel](#stripe-on-vercel-subscriptions) below.
+- **Checkout API** (`/api/stripe/create-checkout-session`): also needs `SUPABASE_ANON_KEY` (same as Flutter “anon” key), `STRIPE_SECRET_KEY`, `STRIPE_PREMIUM_PRICE_ID`.
 
-After saving env vars, **redeploy** the project.
+After saving env vars, **redeploy** the project (Deployments → … → Redeploy, or push a new commit).
+
+---
+
+## How to deploy updates (get latest `/admin`, Stripe routes, etc.)
+
+1. **Commit and push** your changes to the branch Vercel is connected to (usually `main`).
+2. Vercel **builds automatically** on push. Or open the project → **Deployments** → **Redeploy** on the latest commit.
+3. Confirm **Root Directory** is still `wandermood-landing` so the right app builds.
+
+**CLI (optional):**
+
+```bash
+cd wandermood-landing
+npx vercel --prod
+```
+
+---
+
+## Stripe on Vercel (subscriptions)
+
+Set these in **Vercel → Project → Settings → Environment Variables** (Production + Preview as you prefer). **Do not** put `STRIPE_SECRET_KEY` or `SUPABASE_SERVICE_ROLE_KEY` in the Flutter app or in any client bundle.
+
+| Variable | Where the value comes from |
+|----------|----------------------------|
+| `STRIPE_SECRET_KEY` | [Stripe Dashboard](https://dashboard.stripe.com) → **Developers → API keys** → **Secret key** (`sk_live_...` or `sk_test_...`). Use **test** keys until you go live. |
+| `STRIPE_WEBHOOK_SECRET` | **Developers → Webhooks** → **Add endpoint** → URL: `https://wandermood.com/api/stripe/webhook` → select events: `checkout.session.completed`, `invoice.paid`, `customer.subscription.updated`, `customer.subscription.deleted` → after creating, open the endpoint and reveal **Signing secret** (`whsec_...`). |
+| `STRIPE_PREMIUM_PRICE_ID` | **Product catalog** → your premium **Product** → **Pricing** → copy the **Price ID** (`price_...`) for the subscription price you want Checkout to use by default. |
+| `SUPABASE_ANON_KEY` (or `NEXT_PUBLIC_SUPABASE_ANON_KEY`) | Supabase → **Project Settings → API** → **anon public** key. Server-only use here: verifies the user JWT for `/api/stripe/create-checkout-session`. Prefer `SUPABASE_ANON_KEY` on Vercel so the key isn’t exposed in the browser bundle unless you already use the `NEXT_PUBLIC_` variant. |
+
+Optional:
+
+- `STRIPE_CHECKOUT_ALLOWED_HOST_SUFFIXES` — comma-separated host suffixes allowed for `successUrl` / `cancelUrl` (default: `wandermood.com,localhost,vercel.app`).
+
+After changing env vars, **Redeploy** so serverless routes pick them up.
 
 ---
 

@@ -1,0 +1,191 @@
+key	de	es	fr	nl
+achievements	Erfolge	Logros	Succès	Prestaties
+appSettings	App-Einstellungen	Ajustes de la app	Paramètres de l’appli	App-instellingen
+autoDetectPermissions	Automatische Erkennung & Berechtigungen	Detección automática y permisos	Détection auto et autorisations	Automatisch detecteren en machtigingen
+dangerZone	Gefahrenzone	Zona de peligro	Zone sensible	Gevaarzone
+dataStorage	Daten & Speicher	Datos y almacenamiento	Données et stockage	Gegevens en opslag
+deleteAccount	Konto löschen	Eliminar cuenta	Supprimer le compte	Account verwijderen
+exportClearCache	Daten exportieren & Cache leeren	Exportar datos y vaciar caché	Exporter les données et vider le cache	Gegevens exporteren en cache wissen
+faqContactUs	FAQ & Kontakt	Preguntas frecuentes y contacto	FAQ et contact	Veelgestelde vragen en contact
+free	Kostenlos	Gratis	Gratuit	Gratis
+helpSupport	Hilfe & Support	Ayuda y soporte	Aide et assistance	Hulp en ondersteuning
+language	Sprache	Idioma	Langue	Taal
+loading	Laden…	Cargando…	Chargement…	Laden…
+location	Standort	Ubicación	Localisation	Locatie
+logOutOfYourAccount	Von deinem Konto abmelden	Cerrar sesión en tu cuenta	Se déconnecter de votre compte	Uitloggen bij je account
+moodyChatSubtitleDirectCity	{city} · gerader Reisebuddy	{city} · compañero de viaje directo	{city} · pote voyage sans détour	{city} · no-nonsense reismaatje
+moodyChatSubtitleDirectNoCity	Gerader Reisebuddy	Compañero de viaje directo	Pote voyage sans détour	No-nonsense reismaatje
+moodyChatSubtitleEnergeticCity	Dein {city}-Hype-Reisebuddy	Tu compañero de viaje hype en {city}	Ton pote voyage hype à {city}	Jouw {city}-hype-reismaatje
+moodyChatSubtitleEnergeticNoCity	Dein Hype-Reisebuddy	Tu compañero de viaje hype	Ton pote voyage hype	Jouw hype-reismaatje
+moodyChatSubtitleFriendlyCity	Dein Reisebuddy in {city}	Tu compañero de viaje en {city}	Ton pote voyage à {city}	Jouw reismaatje in {city}
+moodyChatSubtitleFriendlyNoCity	Dein Reisebuddy	Tu compañero de viaje	Ton pote voyage	Jouw reismaatje
+moodyChatSubtitleProfessionalCity	Dein Reisebegleiter in {city}	Tu acompañante de viaje en {city}	Ton compagnon de voyage à {city}	Jouw reisgenoot in {city}
+moodyChatSubtitleProfessionalNoCity	Dein professioneller Reisebegleiter	Tu acompañante de viaje profesional	Ton compagnon de voyage professionnel	Jouw professionele reisgenoot
+more	Mehr	Más	Plus	Meer
+permanentlyDeleteYourData	Daten dauerhaft löschen	Eliminar tus datos de forma permanente	Supprimer définitivement vos données	Je gegevens permanent verwijderen
+placeDetailGalleryTitle	Galerie	Galería	Galerie	Galerij
+placeDetailPhotoCount	{count} Fotos	{count} fotos	{count} photos	{count} foto's
+placeDetailReviewsSectionTitle	Bewertungen	Reseñas	Avis	Reviews
+placeDetailTabDetails	Details	Detalles	Détails	Details
+placeDetailTabPhotos	Fotos	Fotos	Photos	Foto's
+placeDetailTabReviews	Bewertungen	Reseñas	Avis	Reviews
+plan	Tarif	Plan	Offre	Plan
+plannerMoodyAdviceBlurb	Tipps von Moody:\n• Öffnungszeiten prüfen (und Wetter, wenn du draußen bist).\n• Komm ein paar Minuten früher, damit du ankommst.\n• Trink genug und bleib offen — genieß den Moment!	Consejos de Moody:\n• Revisa horarios (y el tiempo si vas a estar fuera).\n• Llega unos minutos antes para acomodarte.\n• Mantente hidratado y con la mente abierta — ¡disfruta!	Conseils de Moody :\n• Vérifie les horaires (et la météo si tu es dehors).\n• Arrive quelques minutes en avance pour t’installer.\n• Reste hydraté et garde l’esprit ouvert — profite du moment !	"Tips van Moody:
+• Check openingstijden (en het weer als je naar buiten gaat).
+• Kom een paar minuten eerder zodat je rustig aankomt.
+• Blijf drinken en houd een open blik — geniet!"
+plannerSheetNoExtraPhotos	Noch keine zusätzlichen Fotos in diesem Plan.\nWenn die Aktivität mit einem Ort verknüpft ist, siehst du die Galerie unter Entdecken.	Aún no hay fotos extra en este plan.\nCuando la actividad esté vinculada a un lugar, verás la galería en Explorar.	Pas encore de photos supplémentaires pour ce plan.\nQuand l’activité est liée à un lieu, tu verras la galerie dans Explorer.	"Nog geen extra foto's in dit plan.
+Als de activiteit aan een plek gekoppeld is, zie je een volledige galerij bij Ontdekken."
+plannerSheetRatingOnPlan	Bewertung in deinem Plan	Valoración en tu plan	Note dans ton plan	Beoordeling in jouw plan
+plannerSheetReviewsExplainerNoRating	Für diesen geplanten Eintrag gibt es noch keine Bewertungsdaten. Verknüpfe ihn mit einem Google-Ort (z. B. über Entdecken), um echte Besucherbewertungen zu lesen.	Aún no hay datos de reseñas para este elemento. Vincúlalo a un lugar de Google (p. ej. desde Explorar) para leer opiniones reales.	Il n’y a pas encore d’avis pour cet élément planifié. Associe-le à un lieu Google (p. ex. depuis Explorer) pour lire des avis de visiteurs.	Nog geen reviewgegevens voor dit geplande item. Koppel het aan een Google-plek (bijv. via Ontdekken) om echte bezoekersreviews in de volledige plekweergave te lezen.
+plannerSheetReviewsExplainerWithRating	Sterne oben stammen aus deinem Plan. Vollständige Google-Bewertungen und mehr Fotos erscheinen, sobald die Aktivität mit einem Ort verknüpft ist — öffne sie über Entdecken oder plane von einer Ortkarte, damit WanderMood eine Place-ID setzen kann.	Las estrellas de arriba vienen de tu plan. Las reseñas completas de Google y más fotos aparecen cuando la actividad esté vinculada a un lugar: ábrela desde Explorar o planifica desde una tarjeta de lugar para que WanderMood pueda asociar un place id.	Les étoiles ci-dessus viennent de ton plan. Les avis Google complets et plus de photos apparaissent quand l’activité est liée à un lieu — ouvre-la depuis Explorer ou planifie depuis une fiche lieu pour que WanderMood puisse attacher un identifiant de lieu.	Sterren hierboven komen uit jouw plan. Volledige Google-reviews en meer foto's verschijnen zodra deze activiteit aan een plek gekoppeld is — open die via Ontdekken of plan vanaf een plekkaart zodat WanderMood een place-id kan koppelen.
+plannerSheetTabDetails	Details	Detalles	Détails	Details
+plannerSheetTabPhotos	Fotos	Fotos	Photos	Foto's
+plannerSheetTabReviews	Bewertungen	Reseñas	Avis	Reviews
+plannerSheetWrittenReviews	Geschriebene Bewertungen	Reseñas escritas	Avis rédigés	Geschreven reviews
+prefCommunicationIntro	Damit unsere gemeinsame Reise noch schöner wird, möchte ich wissen, wie du am liebsten mit mir sprichst.	Para que nuestro viaje juntos sea aún mejor, me encantaría saber cómo prefieres que me comunique contigo.	Pour que notre voyage ensemble soit encore plus agréable, j’aimerais savoir comment tu préfères que je m’adresse à toi.	Om onze reis samen leuker te maken, wil ik graag weten hoe ik het beste met je kan communiceren.
+prefCommunicationSubtitle	So passe ich Ton und Stil perfekt an dich an! 🎯	¡Así ajusto mi tono y estilo a tus preferencias! 🎯	Ça m’aide à ajuster ton et style à tes préférences ! 🎯	Zo kan ik mijn toon en stijl perfect op jouw voorkeuren afstemmen! 🎯
+prefCommunicationTitle	Wie soll ich mit dir sprechen? 💬	¿Cómo debería hablarte? 💬	Comment dois-je m’adresser à toi ? 💬	Hoe wil je dat ik tegen je praat? 💬
+prefInterestArts	Kunst & Kultur	Arte y cultura	Arts et culture	Kunst & cultuur
+prefInterestArtsDesc	Museen, Galerien und Theater	Museos, galerías y teatros	Musées, galeries et théâtres	Musea, galeries en theaters
+prefInterestFoodDesc	Lokale Küche und besondere Restaurants	Cocina local y restaurantes únicos	Cuisine locale et restaurants uniques	Lokale keuken en unieke restaurants
+prefInterestShoppingDesc	Lokale Märkte und Einkaufsviertel	Mercados locales y zonas de compras	Marchés locaux et quartiers commerçants	Lokale markten en winkelstraten
+prefInterestSports	Sport & Aktivitäten	Deporte y actividades	Sport et activités	Sport & activiteiten
+prefInterestSportsDesc	Aktive Erlebnisse und Sportstätten	Experiencias activas e instalaciones deportivas	Expériences actives et lieux de sport	Actieve ervaringen en sportlocaties
+prefInterestStays	Übernachtungen & Auszeiten	Alojamientos y escapadas	Séjours et escapades	Overnachten & uitjes
+prefInterestStaysDesc	Charmante Hotels und traumhafte Orte	Hoteles con encanto y lugares de ensueño	Hôtels de charme et lieux de rêve	Sfeervolle hotels en droomplekken
+prefInterestsSubtitleDirect	Aktivitätstypen wählen:	Elige tipos de actividad :	Choisis des types d’activités :	Kies activiteitstypes:
+prefInterestsSubtitleEnergetic	Wähle alles, was dein Herz höher schlagen lässt!	¡Elige todo lo que te emocione!	Choisis tout ce qui te fait vibrer !	Kies alles wat je hart sneller laat kloppen!
+prefInterestsSubtitleFriendly	Wähle Aktivitäten, die dir Spaß machen	Elige las actividades que te apetezcan	Choisis les activités qui te plaisent	Kies activiteiten die je leuk lijken
+prefInterestsSubtitleProfessional	Bevorzugte Aktivitätskategorien auswählen	Selecciona tus categorías de actividad preferidas	Sélectionne tes catégories d’activités préférées	Selecteer je voorkeurscategorieën
+prefInterestsTitleDirect	Interessen wählen	Seleccionar intereses	Choisir les centres d’intérêt	Kies interesses
+prefInterestsTitleEnergetic	Was macht dich hyped? 🔥	¿Qué te pone a tope? 🔥	Qu’est-ce qui te hype ? 🔥	Wat maakt je enthousiast? 🔥
+prefInterestsTitleFriendly	Was interessiert dich? 🌟	¿Qué te interesa? 🌟	Qu’est-ce qui t’intéresse ? 🌟	Wat vind je leuk? 🌟
+prefInterestsTitleProfessional	Reise-Interessenskategorien	Categorías de intereses de viaje	Catégories d’intérêts voyage	Categorieën reisinteresses
+prefMoodAdventurous	Abenteuerlustig	Aventurero	Aventureux	Avontuurlijk
+prefMoodCultural	Kulturell	Cultural	Culturel	Cultureel
+prefMoodFoody	Feinschmecker	Gourmet	Gourmand	Foody
+prefMoodPeaceful	Ruhig	Tranquilo	Paisible	Rustig
+prefMoodSocial	Gesellig	Social	Sociable	Sociaal
+prefMoodSpontaneous	Spontan	Espontáneo	Spontané	Spontaan
+prefMoodSubtitleDirect	Bevorzugte Erlebnistypen wählen:	Elige tus tipos de experiencia preferidos:	Choisis tes types d’expériences préférés :	Kies je voorkeurservaringen:
+prefMoodSubtitleEnergetic	Welche Stimmungen inspirieren dich zum Entdecken?	¿Qué estados de ánimo te inspiran a explorar?	Quelles humeurs t’inspirent à explorer ?	Welke moods zetten je in beweging?
+prefMoodSubtitleFriendly	Was motiviert dich rauszugehen und zu entdecken?	¿Qué te inspira a salir y explorar?	Qu’est-ce qui t’inspire à sortir et explorer ?	Wat inspireert je om eropuit te gaan?
+prefMoodSubtitleProfessional	Welche Erlebnisse sprechen dich am meisten an?	¿Qué tipo de experiencias te atraen más?	Quels types d’expériences t’attirent le plus ?	Welke ervaringen spreken je het meest aan?
+prefMoodTitleDirect	Stimmungen wählen	Seleccionar estados de ánimo	Choisir les humeurs	Kies je moods
+prefMoodTitleEnergetic	Lass uns unsere Vibes abstimmen! ✨	¡Sincronicemos nuestras vibras! ✨	Synchronisons nos vibes ! ✨	Laten we onze vibes matchen! ✨
+prefMoodTitleFriendly	Wie ist deine Reisestimmung? 😊	¿Cuál es tu estado de ánimo de viaje? 😊	Quelle est ton humeur voyage ? 😊	Wat is je reisgevoel? 😊
+prefMoodTitleProfessional	Reisestimmungs-Einstellungen	Preferencias de estado de ánimo de viaje	Préférences d’humeur voyage	Voorkeuren reisgevoel
+prefMultipleHintDirect	Mehrfachauswahl möglich	Se permiten varias opciones	Sélection multiple possible	Meerdere selecties toegestaan
+prefMultipleHintEnergetic	Du kannst mehrere wählen — ruhig wild! ✨	Puedes elegir varias — ¡a tope! ✨	Tu peux en choisir plusieurs — lâche-toi ! ✨	Je kunt er meerdere kiezen – ga ervoor! ✨
+prefMultipleHintFriendly	Mehrere Optionen möglich	Puedes seleccionar varias opciones ✨	Plusieurs choix possibles ✨	Je kunt meerdere opties kiezen ✨
+prefMultipleHintProfessional	Mehrfachauswahl ist erlaubt	Se permiten múltiples selecciones	Sélections multiples autorisées	Meerdere selecties mogelijk
+prefPaceMaster	Meisterplaner	Maestro del planificación	Maître planificateur	Masterplanner
+prefPaceMasterDesc	Plant gerne Wochen im Voraus	Le encanta planificar con semanas de antelación	Aime planifier des semaines à l’avance	Graag weken van tevoren plannen
+prefPaceRightNow	Sofort-Modus	Ahora mismo	En ce moment	Right now-vibes
+prefPaceRightNowDesc	Was soll ich jetzt tun?	¿Qué hago ahora mismo?	Que faire tout de suite ?	Wat kan ik nu doen?
+prefPaceSameDay	Tagesplaner	Planificador del mismo día	Planificateur du jour même	Zelfde-dag-planner
+prefPaceSameDayDesc	Morgens für den Tag planen	Planifica por la mañana para el día	Planifier le matin pour la journée	’s Ochtends plannen voor de dag
+prefPaceWeekend	Wochenend-Planer	Preparador de fin de semana	Préparateur de week-end	Weekendplanner
+prefPaceWeekendDesc	Plant ein paar Tage im Voraus	Planifica con unos días de antelación	Planifie quelques jours à l’avance	Een paar dagen van tevoren plannen
+prefSectionTravelStyle	Reisestil 🎯	Estilo de viaje 🎯	Style de voyage 🎯	Reisstijl 🎯
+prefSelectUpToStyles	Bis zu {count} Stile wählen	Selecciona hasta {count} estilos	Choisis jusqu’à {count} styles	Kies maximaal {count} stijlen
+prefSocialButterfly	Gesellschaftsschmetterling	Mariposa social	Papillon social	Sociale vlinder
+prefSocialButterflyDesc	Liebt es, neue Leute kennenzulernen	Le encanta conocer gente nueva	Aime rencontrer de nouvelles personnes	Hou van nieuwe mensen ontmoeten
+prefSocialMoodDependent	Stimmungsabhängig	Depende del ánimo	Selon l’humeur	Afhankelijk van mood
+prefSocialMoodDependentDesc	Mal allein, mal in Gesellschaft	A veces solo, a veces social	Tantôt solo, tantôt social	Soms solo, soms sociaal
+prefSocialSmallGroups	Kleine Gruppen	Grupos pequeños	Petits groupes	Kleine groepen
+prefSocialSmallGroupsDesc	Enge Freunde, intime Atmosphäre	Amigos cercanos, ambiente íntimo	Amis proches, ambiance intime	Goede vrienden, intieme sfeer
+prefSocialSolo	Solo-Abenteuer	Aventuras en solitario	Aventures en solo	Solo-avonturen
+prefSocialSoloDesc	Ich-Zeit ist die beste Zeit	El tiempo para mí es lo mejor	Le temps pour soi, c’est le meilleur	Tijd voor mezelf is het beste
+prefStyleDirect	Direkt	Directo	Direct	Direct
+prefStyleDirectDesc	Auf den Punkt gebracht	Al grano	Aller droit au but	Gewoon to the point
+prefStyleEnergetic	Energisch	Energético	Énergique	Energiek
+prefStyleEnergeticDesc	Fröhliche, enthusiastische Kommunikation	Comunicación divertida y entusiasta	Communication ludique et enthousiaste	Leuk en enthousiast
+prefStyleFriendly	Freundlich	Amigable	Amical	Vriendelijk
+prefStyleFriendlyDesc	Locker und warmherzig	Informal y cercana	Décontractée et chaleureuse	Informeel en warm
+prefStyleProfessional	Professionell	Profesional	Professionnel	Professioneel
+prefStyleProfessionalDesc	Klar und formell	Clara y formal	Claire et formelle	Helder en formeel
+prefTravelStyleBudget	Budgetbewusst	Consciente del presse-budget	Soucieux du budget	Budgetbewust
+prefTravelStyleBudgetDesc	Gutes Preis-Leistungs-Verhältnis	Buena relación calidad-precio	Bon rapport qualité-prix	Goede waarde, slim uitgeven
+prefTravelStyleLocal	Lokales Erlebnis	Experiencia local	Expérience locale	Lokale ervaring
+prefTravelStyleLocalDesc	Wie ein Einheimischer leben, authentische Orte	Vivir como un local, sitios auténticos	Vivre comme un local, lieux authentiques	Leven als een local, authentieke plekken
+prefTravelStyleLuxury	Luxus	Lujo	Luxe	Luxezoeker
+prefTravelStyleLuxuryDesc	Premium-Erlebnisse, gehobene Orte	Experiencias premium, sitios de alta gama	Expériences haut de gamme	Premium ervaringen, high-end plekken
+prefTravelStylePlanned	Geplant	Planificado	Planifié	Gepland
+prefTravelStylePlannedDesc	Strukturierte Routinen, feste Termine	Itinerarios organizados, visitas programadas	Itinéraires structurés, visites planifiées	Georganiseerde routes, geplande bezoeken
+prefTravelStyleSpontaneous	Spontan	Espontáneo	Spontané	Spontaan
+prefTravelStyleSpontaneousDesc	Auf den Zufall verlassen, Überraschungen willkommen	Ir con la corriente, abrazar las sorpresas	Suivre le courant, accueillir les surprises	Met de flow meegaan, verrassingen omarmen
+prefTravelSubtitleDirect	Ein paar kurze Fragen zur Personalisierung	Unas preguntas rápidas para personalizar tu experiencia	Quelques questions rapides pour personnaliser ton expérience	Een paar korte vragen om je ervaring persoonlijk te maken
+prefTravelSubtitleEnergetic	Ein paar kurze Fragen zur Personalisierung	Unas preguntas rápidas para personalizar tu experiencia	Quelques questions rapides pour personnaliser ton expérience	Een paar korte vragen om je ervaring persoonlijk te maken
+prefTravelSubtitleFriendly	Ein paar kurze Fragen zur Personalisierung	Unas preguntas rápidas para personalizar tu experiencia	Quelques questions rapides pour personnaliser ton expérience	Een paar korte vragen om je ervaring persoonlijk te maken
+prefTravelSubtitleProfessional	Ein paar kurze Fragen zur Personalisierung	Unas preguntas rápidas para personalizar tu experiencia	Quelques questions rapides pour personnaliser ton expérience	Een paar korte vragen om je ervaring persoonlijk te maken
+prefTravelTitleDirect	Erzähl uns von deinem Reisestil ✈️	Cuéntanos tu estilo de viaje ✈️	Parle-nous de ton style de voyage ✈️	Vertel over je reisstijl ✈️
+prefTravelTitleEnergetic	Erzähl uns von deinem Reisestil ✈️	Cuéntanos tu estilo de viaje ✈️	Parle-nous de ton style de voyage ✈️	Vertel over je reisstijl ✈️
+prefTravelTitleFriendly	Erzähl uns von deinem Reisestil ✈️	Cuéntanos tu estilo de viaje ✈️	Parle-nous de ton style de voyage ✈️	Vertel over je reisstijl ✈️
+prefTravelTitleProfessional	Erzähl uns von deinem Reisestil ✈️	Cuéntanos tu estilo de viaje ✈️	Parle-nous de ton style de voyage ✈️	Vertel over je reisstijl ✈️
+premium	Premium	Premium	Premium	Premium
+privacy	Datenschutz	Privacidad	Confidentialité	Privacy
+privateProfile	Privates Profil	Perfil privado	Profil privé	Privéprofiel
+profileAppSettingsLink	App-Einstellungen	Ajustes de la app	Paramètres de l’appli	App-instellingen
+profileSavedPlacesEmpty	Noch keine gespeicherten Orte	Aún no hay lugares guardados	Aucun lieu enregistré pour l’instant	Nog geen opgeslagen plekken
+profileSavedPlacesSeeAll	Alle anzeigen	Ver todos	Tout voir	Alles bekijken
+profileSavedPlacesTitle	Gespeicherte Orte	Lugares guardados	Lieux enregistrés	Opgeslagen plekken
+profileStatsStreakTitle	Serie	Racha	Série	Reeks
+profileTopMoodEmpty	Noch keine	Aún ninguno	Aucune pour l’instant	Nog geen
+pushEmailInApp	Push, E-Mail und in der App	Push, correo y en la app	Push, e-mail et in-app	Push, e-mail en in-app
+settings	Einstellungen	Ajustes	Paramètres	Instellingen
+settingsAchievementsLabel	Erfolge	Logros	Succès	Prestaties
+settingsAchievementsSubtitle	{count} freigeschaltet	{count} desbloqueados	{count} débloqués	{count} ontgrendeld
+settingsAppTagline	Mit ❤️ für Reisende gemacht	Hecho con ❤️ para viajeros	Fait avec ❤️ pour les voyageurs	Met ❤️ gemaakt voor reizigers
+settingsAppVersion	WanderMood v{version}	WanderMood v{version}	WanderMood v{version}	WanderMood v{version}
+settingsCacheCleared	Cache erfolgreich geleert	Caché borrada correctement	Cache vidé avec succès	Cache succesvol gewist
+settingsClearCacheDialogBody	Dadurch werden alle zwischengespeicherten Daten entfernt. Gespeicherte Orte und Einstellungen bleiben erhalten.	Se eliminarán todos los datos en caché. Tus lugares guardados y ajustes no se verán afectados.	Cela supprime toutes les données en cache. Tes lieux enregistrés et paramètres ne sont pas affectés.	Hiermee verwijder je alle cachegegevens. Opgeslagen plekken en instellingen blijven behouden.
+settingsClearCacheDialogTitle	Cache leeren?	¿Vaciar la caché?	Vider le cache ?	Cache wissen?
+settingsClearCacheSubtitle	Platz schaffen: zwischengespeicherte Bilder und Daten entfernen	Libera espacio eliminando imágenes y datos en caché	Libère de l’espace en supprimant images et données en cache	Maak ruimte vrij door gecachte afbeeldingen en gegevens te verwijderen
+settingsClearCacheTitle	App-Cache leeren	Vaciar caché de la app	Vider le cache de l’app	App-cache wissen
+settingsDangerDeleteAccountLabel	Konto löschen	Eliminar cuenta	Supprimer le compte	Account verwijderen
+settingsDangerDeleteAccountSubtitle	Daten dauerhaft löschen	Eliminar tus datos de forma permanente	Supprimer définitivement tes données	Je gegevens permanent verwijderen
+settingsDangerSignOutLabel	Abmelden	Cerrar sesión	Se déconnecter	Uitloggen
+settingsDangerSignOutSubtitle	Von deinem Konto abmelden	Cerrar sesión en tu cuenta	Se déconnecter de ton compte	Uitloggen bij je account
+settingsDarkModeSubtitle	Dunkles Design in der gesamten App	Usar tema oscuro en toda la app	Thème sombre dans toute l’app	Donker thema in de hele app gebruiken
+settingsDarkModeTitle	Dunkelmodus	Modo oscuro	Mode sombre	Donkere modus
+settingsDataStorageLabel	Daten & Speicher	Datos y almacenamiento	Données et stockage	Gegevens en opslag
+settingsDataStorageSubtitle	Exportieren, Cache leeren	Exportar, vaciar caché	Exporter, vider le cache	Exporteren, cache wissen
+settingsDialogCancel	Abbrechen	Cancelar	Annuler	Annuleren
+settingsDialogConfirmClear	Leeren	Vaciar	Vider	Wissen
+settingsDiscoveryRadiusSubtitle	Orte innerhalb von {distance} km anzeigen	Mostrar lugares en un radio de {distance} km	Afficher les lieux dans un rayon de {distance} km	Toon plekken binnen {distance} km
+settingsDiscoveryRadiusTitle	Entdeckungsradius	Radio de descubrimiento	Rayon de découverte	Ontdekkingsradius
+settingsHelpSupportLabel	Hilfe & Support	Ayuda y soporte	Aide et assistance	Hulp en ondersteuning
+settingsLanguageLabel	Sprache	Idioma	Langue	Taal
+settingsLocationLabel	Standort	Ubicación	Localisation	Locatie
+settingsLocationTrackingSubtitle	App erlauben, deinen Standort zu nutzen	Permitir que la app use tu ubicación	Autoriser l’app à utiliser ta position	Sta toe dat de app je locatie volgt
+settingsLocationTrackingTitle	Standortverfolgung	Seguimiento de ubicación	Suivi de localisation	Locatie volgen
+settingsNotificationsSubtitle	Push-Benachrichtigungen aktivieren	Activar notificaciones push	Activer les notifications push	Pushmeldingen inschakelen
+settingsNotificationsTitle	Benachrichtigungen	Notificaciones	Notifications	Meldingen
+settingsOpenPrivacyError	Fehler beim Öffnen der Datenschutzerklärung: {error}	Error al abrir la política de privacidad: {error}	Erreur lors de l’ouverture de la politique de confidentialité : {error}	Fout bij openen privacybeleid: {error}
+settingsOpenPrivacyNetworkError	Datenschutzerklärung kann nicht geöffnet werden. Bitte Internet prüfen.	No se puede abrir la politica de privacidad. Comprueba tu conexión.	Impossible d’ouvrir la politique de confidentialité. Vérifie ta connexion.	Kan privacybeleid niet openen. Controleer je internetverbinding.
+settingsOpenTermsError	Fehler beim Öffnen der Nutzungsbedingungen: {error}	Error al abrir los términos del servicio: {error}	Erreur lors de l’ouverture des conditions d’utilisation : {error}	Fout bij openen servicevoorwaarden: {error}
+settingsOpenTermsNetworkError	Nutzungsbedingungen können nicht geöffnet werden. Bitte Internet prüfen.	No se pueden abrir los términos del servicio. Comprueba tu conexión.	Impossible d’ouvrir les conditions d’utilisation. Vérifie ta connexion.	Kan servicevoorwaarden niet openen. Controleer je internetverbinding.
+settingsPrivacyPolicySubtitle	Unsere Datenschutzerklärung lesen	Lee nuestra política de privacité	Lire notre politique de confidentialité	Lees ons privacybeleid
+settingsPrivacyPolicyTitle	Datenschutzerklärung	Política de privacidad	Politique de confidentialité	Privacybeleid
+settingsPrivacyTitle	Datenschutz	Privacidad	Confidentialité	Privacy
+settingsSaveButton	Einstellungen speichern	Guardar ajustes	Enregistrer les paramètres	Instellingen opslaan
+settingsSaved	Einstellungen gespeichert	Ajustes guardados	Paramètres enregistrés	Instellingen opgeslagen
+settingsSectionDataPrivacy	Daten & Datenschutz	Datos y privacidad	Données et confidentialité	Gegevens en privacy
+settingsSectionDiscovery	Entdecken	Descubrimiento	Découverte	Ontdekking
+settingsSectionGeneral	Allgemein	General	Général	Algemeen
+settingsSignOutConfirm	Abmelden	Cerrar sesión	Se déconnecter	Uitloggen
+settingsSignOutMessage	Möchtest du dich wirklich abmelden?	¿Seguro que quieres cerrar sesión?	Confirmer la déconnexion ?	Weet je zeker dat je wilt uitloggen?
+settingsSignOutTitle	Abmelden	Cerrar sesión	Se déconnecter	Uitloggen
+settingsSubscriptionBadgeFree	Kostenlos	Gratis	Gratuit	Gratis
+settingsSubscriptionLabel	Abo	Suscripción	Abonnement	Abonnement
+settingsSubscriptionSubtitleFree	Kostenloser Plan	Plan gratuito	Offre gratuite	Gratis abonnement
+settingsTermsOfServiceSubtitle	Unsere Nutzungsbedingungen lesen	Lee nuestros términos del servicio	Lire nos conditions d’utilisation	Lees onze servicevoorwaarden
+settingsTermsOfServiceTitle	Nutzungsbedingungen	Términos del servicio	Conditions d’utilisation	Servicevoorwaarden
+settingsThemeLabel	Design	Tema	Thème	Thema
+settingsThemeValueSystem	System	Systeme	Système	Systeem
+signOut	Abmelden	Cerrar sesión	Se déconnecter	Uitloggen
+subscription	Abo	Suscripción	Abonnement	Abonnement
+theme	Design	Tema	Thème	Thema
+unlocked	freigeschaltet	desbloqueado	débloqué	ontgrendeld

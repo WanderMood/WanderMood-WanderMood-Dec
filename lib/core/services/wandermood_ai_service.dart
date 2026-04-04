@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/models/ai_recommendation.dart';
 import 'package:wandermood/core/models/ai_chat_message.dart';
+import 'package:wandermood/core/services/ai_chat_quota_service.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 
 /// @deprecated - All methods now route through the moody
@@ -225,10 +226,25 @@ class WanderMoodAIService {
     /// Prior turns in the current UI session (excluding the message being sent).
     /// Used when [getConversationHistory] is empty (e.g. guest or failed saves).
     List<Map<String, String>>? clientTurns,
+    /// BCP 47 language code (e.g. `de`, `nl`) so Moody replies match app locale.
+    String languageCode = 'en',
   }) async {
     debugPrint('💬 Routing chat through moody edge function');
 
     final convId = conversationId ?? _generateConversationId();
+
+    final quotaMsg =
+        await AiChatQuotaService.blockingMessageIfOverQuota(_supabase);
+    if (quotaMsg != null) {
+      return AIChatResponse(
+        success: true,
+        action: 'chat',
+        timestamp: MoodyClock.now().toIso8601String(),
+        message: quotaMsg,
+        conversationId: convId,
+        contextUsed: {'quotaExceeded': true},
+      );
+    }
 
     // Load conversation history for context continuity
     List<Map<String, String>> history = [];
@@ -263,7 +279,7 @@ class WanderMoodAIService {
             'lat': latitude,
             'lng': longitude,
           },
-          'language_code': 'en',
+          'language_code': languageCode,
         },
       );
 
@@ -280,6 +296,8 @@ class WanderMoodAIService {
       if (reply.isEmpty) throw Exception('Empty reply from moody');
 
       debugPrint('✅ Moody chat response received');
+
+      await AiChatQuotaService.recordSuccessfulChat(_supabase);
 
       return AIChatResponse(
         success: true,
@@ -584,7 +602,7 @@ class WanderMoodAIService {
 
   /// Generate a unique conversation ID
   static String _generateConversationId() {
-    return 'conv_${MoodyClock.now().millisecondsSinceEpoch}_${_supabase.auth.currentUser?.id?.substring(0, 8) ?? 'anon'}';
+    return 'conv_${MoodyClock.now().millisecondsSinceEpoch}_${_supabase.auth.currentUser?.id.substring(0, 8) ?? 'anon'}';
   }
 
   /// Get or create a persistent conversation ID for the current user

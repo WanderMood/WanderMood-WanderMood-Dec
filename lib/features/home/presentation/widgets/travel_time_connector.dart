@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/services/distance_service.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 /// Connector shown between two consecutive My Day activity cards.
 /// Estimates travel time from straight-line (Haversine) distance with
@@ -30,21 +31,23 @@ class TravelTimeConnector extends StatelessWidget {
   static const Color _wmStone = Color(0xFF8C8780);
   static const Color _wmParchment = Color(0xFFE8E2D8);
 
-  _TravelEstimate _estimate(double km) {
+  _TravelEstimate _estimate(double km, AppLocalizations l10n) {
     final realKm = km * _routeMultiplier;
     final walkMin = (realKm / _walkingSpeedKmH * 60).round();
 
     if (realKm < 0.25) {
       return _TravelEstimate(
         icon: Icons.directions_walk,
-        label: walkMin <= 1 ? '< 1 min lopen' : '$walkMin min lopen',
+        label: walkMin <= 1
+            ? l10n.travelTimeLessThanOneMinWalk
+            : l10n.travelTimeMinWalk(walkMin),
         mode: 'walking',
         distanceLabel: DistanceService.formatDistance(km),
       );
     } else if (realKm < 1.5) {
       return _TravelEstimate(
         icon: Icons.directions_walk,
-        label: '$walkMin min lopen',
+        label: l10n.travelTimeMinWalk(walkMin),
         mode: 'walking',
         distanceLabel: DistanceService.formatDistance(km),
       );
@@ -52,7 +55,7 @@ class TravelTimeConnector extends StatelessWidget {
       final cycleMin = (realKm / _cyclingSpeedKmH * 60).round();
       return _TravelEstimate(
         icon: Icons.directions_bike,
-        label: '${cycleMin} min fietsen  ·  ${walkMin} min lopen',
+        label: l10n.travelTimeBikeAndWalk(cycleMin, walkMin),
         mode: 'cycling',
         distanceLabel: DistanceService.formatDistance(km),
       );
@@ -60,7 +63,10 @@ class TravelTimeConnector extends StatelessWidget {
       final transitMin = (realKm / _transitSpeedKmH * 60).round();
       return _TravelEstimate(
         icon: Icons.directions_transit,
-        label: '≈ $transitMin min OV  ·  ${DistanceService.formatDistance(km)}',
+        label: l10n.travelTimeTransitApprox(
+          transitMin,
+          DistanceService.formatDistance(km),
+        ),
         mode: 'transit',
         distanceLabel: DistanceService.formatDistance(km),
       );
@@ -69,12 +75,13 @@ class TravelTimeConnector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final km = DistanceService.calculateDistance(fromLat, fromLng, toLat, toLng);
 
     // Same location (< 50 m) — no connector needed.
     if (km < 0.05) return const SizedBox.shrink();
 
-    final est = _estimate(km);
+    final est = _estimate(km, l10n);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),

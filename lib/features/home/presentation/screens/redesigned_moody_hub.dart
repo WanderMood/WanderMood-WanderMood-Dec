@@ -27,6 +27,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/core/services/moody_hub_message_service.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
+import 'package:wandermood/core/services/connectivity_service.dart';
+import 'package:wandermood/core/utils/offline_feedback.dart';
 
 /// WanderMood v2 design tokens (Moody Hub — active plan)
 const Color _wmWhite = Color(0xFFFFFFFF);
@@ -783,6 +785,28 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan>
     super.dispose();
   }
 
+  Future<void> _openPlanLoadingAfterMood({
+    required String mood,
+    required List<String> selectedMoods,
+  }) async {
+    ref.read(dailyMoodStateNotifierProvider.notifier).setMoodSelection(
+          mood: mood,
+          selectedMoods: selectedMoods,
+        );
+    final ok = await ref.read(connectivityServiceProvider).isConnected;
+    if (!mounted) return;
+    if (!ok) {
+      showOfflineSnackBar(context);
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PlanLoadingScreen(selectedMoods: selectedMoods),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -935,19 +959,10 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan>
                               Color(0xFF2A6049)
                             ],
                             onTap: () {
-                              ref
-                                  .read(dailyMoodStateNotifierProvider.notifier)
-                                  .setMoodSelection(
+                              unawaited(_openPlanLoadingAfterMood(
                                 mood: 'Relaxed',
-                                selectedMoods: ['Relaxed'],
-                              );
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const PlanLoadingScreen(
-                                      selectedMoods: ['Relaxed']),
-                                ),
-                              );
+                                selectedMoods: const ['Relaxed'],
+                              ));
                             },
                           ).animate().fadeIn(delay: 700.ms).slideY(
                               begin: 0.2, end: 0, curve: Curves.easeOut),
@@ -963,19 +978,10 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan>
                               Color(0xFF2A6049)
                             ],
                             onTap: () {
-                              ref
-                                  .read(dailyMoodStateNotifierProvider.notifier)
-                                  .setMoodSelection(
+                              unawaited(_openPlanLoadingAfterMood(
                                 mood: 'Energetic',
-                                selectedMoods: ['Energetic'],
-                              );
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const PlanLoadingScreen(
-                                      selectedMoods: ['Energetic']),
-                                ),
-                              );
+                                selectedMoods: const ['Energetic'],
+                              ));
                             },
                           ).animate().fadeIn(delay: 800.ms).slideY(
                               begin: 0.2, end: 0, curve: Curves.easeOut),

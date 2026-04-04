@@ -41,6 +41,11 @@ export default async function PrivacyPage({ params }: Props) {
           </Link>{" "}
           {t("p3After")}
         </p>
+        <p className="leading-relaxed">{t("p4")}</p>
+        <p className="leading-relaxed">{t("p5")}</p>
+        <p className="leading-relaxed">{t("p6")}</p>
+        <p className="leading-relaxed">{t("p7")}</p>
+        <p className="leading-relaxed">{t("p8")}</p>
         <p className="leading-relaxed">
           {t("questions")}{" "}
           <a

@@ -3,8 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
-/// App Store–safe screen: no simulated payments, no Stripe/card/Apple Pay flows.
-/// Premium will ship later with real In-App Purchase + restore.
+/// App Store–safe: no fake purchases in-app. Premium can ship via StoreKit and/or
+/// Stripe Checkout (web). For Stripe, pass `metadata.supabase_user_id` (or
+/// `client_reference_id`) when creating Checkout so `wandermood.com/api/stripe/webhook`
+/// can upsert `subscriptions`.
 const Color _puWmCream = Color(0xFFF5F0E8);
 const Color _puWmParchment = Color(0xFFE8E2D8);
 const Color _puWmCharcoal = Color(0xFF1E1C18);

@@ -110,6 +110,78 @@ abstract class AppLocalizations {
   /// **'WanderMood'**
   String get appTitle;
 
+  /// No description provided for @moodHomeHowAreYouFeeling.
+  ///
+  /// In en, this message translates to:
+  /// **'How are you feeling today?'**
+  String get moodHomeHowAreYouFeeling;
+
+  /// No description provided for @moodHomeCtxNewUserMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s start your day with the right energy.'**
+  String get moodHomeCtxNewUserMorning;
+
+  /// No description provided for @moodHomeCtxNewUserAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to make the most of your afternoon.'**
+  String get moodHomeCtxNewUserAfternoon;
+
+  /// No description provided for @moodHomeCtxNewUserEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening\'s here — let\'s find your perfect vibe.'**
+  String get moodHomeCtxNewUserEvening;
+
+  /// No description provided for @moodHomeCtxNewUserNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Late night energy — let\'s find something that fits.'**
+  String get moodHomeCtxNewUserNight;
+
+  /// No description provided for @moodHomeCtxReturnMorningWeekend.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend morning vibes — let\'s set the tone.'**
+  String get moodHomeCtxReturnMorningWeekend;
+
+  /// No description provided for @moodHomeCtxReturnMorningWeekday.
+  ///
+  /// In en, this message translates to:
+  /// **'Fresh start to the day — what feels right?'**
+  String get moodHomeCtxReturnMorningWeekday;
+
+  /// No description provided for @moodHomeCtxReturnAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon\'s rolling in — time to match your energy.'**
+  String get moodHomeCtxReturnAfternoon;
+
+  /// No description provided for @moodHomeCtxReturnEveningWeekend.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend evening — let\'s find something that fits.'**
+  String get moodHomeCtxReturnEveningWeekend;
+
+  /// No description provided for @moodHomeCtxReturnEveningWeekday.
+  ///
+  /// In en, this message translates to:
+  /// **'Workday\'s done — what\'s your evening vibe?'**
+  String get moodHomeCtxReturnEveningWeekday;
+
+  /// No description provided for @moodHomeCtxReturnNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Late night energy — let\'s see what calls to you.'**
+  String get moodHomeCtxReturnNight;
+
+  /// No description provided for @moodHomeCtxFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s find the right vibe for today.'**
+  String get moodHomeCtxFallback;
+
   /// No description provided for @splashTagline.
   ///
   /// In en, this message translates to:
@@ -2846,6 +2918,36 @@ abstract class AppLocalizations {
   /// **'Share'**
   String get profileActionShare;
 
+  /// No description provided for @profileGenderWoman.
+  ///
+  /// In en, this message translates to:
+  /// **'Woman'**
+  String get profileGenderWoman;
+
+  /// No description provided for @profileGenderMan.
+  ///
+  /// In en, this message translates to:
+  /// **'Man'**
+  String get profileGenderMan;
+
+  /// No description provided for @profileGenderNonBinary.
+  ///
+  /// In en, this message translates to:
+  /// **'Non-binary'**
+  String get profileGenderNonBinary;
+
+  /// No description provided for @profileGenderPreferNotToSay.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer not to say'**
+  String get profileGenderPreferNotToSay;
+
+  /// No description provided for @profileEditGenderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender'**
+  String get profileEditGenderLabel;
+
   /// No description provided for @profileAgeGroup20s.
   ///
   /// In en, this message translates to:
@@ -3217,6 +3319,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Selected moods'**
   String get prefSectionSelectedMoods;
+
+  /// No description provided for @prefSectionDietaryInclusion.
+  ///
+  /// In en, this message translates to:
+  /// **'Dietary & inclusion'**
+  String get prefSectionDietaryInclusion;
+
+  /// No description provided for @prefDietaryInclusionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody uses these for recommendations across the app. Select any that apply.'**
+  String get prefDietaryInclusionSubtitle;
 
   /// No description provided for @prefCommFriendly.
   ///
@@ -6170,6 +6284,12 @@ abstract class AppLocalizations {
   /// **'View My Day'**
   String get dayPlanViewMyDay;
 
+  /// Hint shown below the greyed-out View My Day button
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one activity to continue'**
+  String get dayPlanSelectAtLeastOne;
+
   /// No description provided for @dayPlanAddAllSuggestions.
   ///
   /// In en, this message translates to:
@@ -6878,6 +6998,18 @@ abstract class AppLocalizations {
   /// **'{mode} · ~{minutes} min trip'**
   String getReadyTripSummary(String mode, int minutes);
 
+  /// No description provided for @getReadyTransportWalking.
+  ///
+  /// In en, this message translates to:
+  /// **'Walking'**
+  String get getReadyTransportWalking;
+
+  /// No description provided for @getReadyTransportPublicTransport.
+  ///
+  /// In en, this message translates to:
+  /// **'Public transport'**
+  String get getReadyTransportPublicTransport;
+
   /// No description provided for @getReadyWeatherAt.
   ///
   /// In en, this message translates to:
@@ -7015,6 +7147,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Route'**
   String get getReadyRoute;
+
+  /// No description provided for @travelTimeLessThanOneMinWalk.
+  ///
+  /// In en, this message translates to:
+  /// **'< 1 min walk'**
+  String get travelTimeLessThanOneMinWalk;
+
+  /// No description provided for @travelTimeMinWalk.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min walk'**
+  String travelTimeMinWalk(int minutes);
+
+  /// No description provided for @travelTimeBikeAndWalk.
+  ///
+  /// In en, this message translates to:
+  /// **'{bikeMinutes} min bike · {walkMinutes} min walk'**
+  String travelTimeBikeAndWalk(int bikeMinutes, int walkMinutes);
+
+  /// No description provided for @travelTimeTransitApprox.
+  ///
+  /// In en, this message translates to:
+  /// **'≈ {transitMinutes} min transit · {distance}'**
+  String travelTimeTransitApprox(int transitMinutes, String distance);
 
   /// No description provided for @getReadyYourAdventureEnergy.
   ///
@@ -7259,8 +7415,26 @@ abstract class AppLocalizations {
   /// No description provided for @myDaySavedForLater.
   ///
   /// In en, this message translates to:
-  /// **'{title} saved for later!'**
+  /// **'{title} saved to Saved places!'**
   String myDaySavedForLater(String title);
+
+  /// No description provided for @myDaySavePlaceFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save to Saved places. Try again.'**
+  String get myDaySavePlaceFailed;
+
+  /// No description provided for @myDayShareFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not share. Try again.'**
+  String get myDayShareFailed;
+
+  /// No description provided for @myDayDirectionsNavigateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigate to'**
+  String get myDayDirectionsNavigateTitle;
 
   /// No description provided for @myDayDeleteActivity.
   ///
@@ -8545,6 +8719,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No places found'**
   String get exploreNoPlacesFound;
+
+  /// Subtitle shown below 'No places found'
+  ///
+  /// In en, this message translates to:
+  /// **'Try different keywords or adjust your filters.'**
+  String get exploreNoPlacesFoundHint;
+
+  /// Loading indicator while a search is in progress
+  ///
+  /// In en, this message translates to:
+  /// **'Searching…'**
+  String get exploreSearching;
 
   /// No description provided for @agendaChooseActivityForDay.
   ///
@@ -10988,6 +11174,12 @@ abstract class AppLocalizations {
   /// **'Updates about the weather at your destination'**
   String get settingsNotificationsWeatherUpdatesSubtitle;
 
+  /// No description provided for @settingsNotificationsLocalDeviceFootnote.
+  ///
+  /// In en, this message translates to:
+  /// **'These options apply to notifications on this device (including scheduled reminders). They are not separate cloud push messages.'**
+  String get settingsNotificationsLocalDeviceFootnote;
+
   /// No description provided for @premiumComingSoonTitle.
   ///
   /// In en, this message translates to:
@@ -11462,6 +11654,42 @@ abstract class AppLocalizations {
   /// **'~1 hour'**
   String get placeDetailDurationAboutOneHour;
 
+  /// No description provided for @placeDetailTabDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get placeDetailTabDetails;
+
+  /// No description provided for @placeDetailTabPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get placeDetailTabPhotos;
+
+  /// No description provided for @placeDetailTabReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get placeDetailTabReviews;
+
+  /// No description provided for @placeDetailGalleryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get placeDetailGalleryTitle;
+
+  /// No description provided for @placeDetailPhotoCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} photos'**
+  String placeDetailPhotoCount(int count);
+
+  /// No description provided for @placeDetailReviewsSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get placeDetailReviewsSectionTitle;
+
   /// No description provided for @placeCategoryFood.
   ///
   /// In en, this message translates to:
@@ -11569,6 +11797,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No description available for this activity yet.'**
   String get plannerSheetNoDescription;
+
+  /// No description provided for @plannerSheetTabDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get plannerSheetTabDetails;
+
+  /// No description provided for @plannerSheetTabPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get plannerSheetTabPhotos;
+
+  /// No description provided for @plannerSheetTabReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get plannerSheetTabReviews;
+
+  /// No description provided for @plannerSheetNoExtraPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'No extra photos on this plan yet.\nWhen the activity is linked to a place, you\'ll see a full gallery in Explore.'**
+  String get plannerSheetNoExtraPhotos;
+
+  /// No description provided for @plannerSheetRatingOnPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating on your plan'**
+  String get plannerSheetRatingOnPlan;
+
+  /// No description provided for @plannerSheetWrittenReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Written reviews'**
+  String get plannerSheetWrittenReviews;
+
+  /// No description provided for @plannerSheetReviewsExplainerWithRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Star ratings from your plan are shown above. Full Google reviews and more photos appear when this activity is linked to a place — open it from Explore, or schedule it from a place card so WanderMood can attach a place id.'**
+  String get plannerSheetReviewsExplainerWithRating;
+
+  /// No description provided for @plannerSheetReviewsExplainerNoRating.
+  ///
+  /// In en, this message translates to:
+  /// **'There\'s no review data on this scheduled item yet. Link it to a Google place (e.g. add it from Explore) to read real visitor reviews in the full place view.'**
+  String get plannerSheetReviewsExplainerNoRating;
+
+  /// No description provided for @plannerMoodyAdviceBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'Tips from Moody:\n• Check opening hours (and weather if you\'ll be outside).\n• Arrive a few minutes early so you can settle in.\n• Stay hydrated and keep an open mind — enjoy the moment!'**
+  String get plannerMoodyAdviceBlurb;
+
+  /// No description provided for @moodyChatSubtitleEnergeticCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {city} hype travel bestie'**
+  String moodyChatSubtitleEnergeticCity(String city);
+
+  /// No description provided for @moodyChatSubtitleEnergeticNoCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Your hype travel bestie'**
+  String get moodyChatSubtitleEnergeticNoCity;
+
+  /// No description provided for @moodyChatSubtitleFriendlyCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {city} travel bestie'**
+  String moodyChatSubtitleFriendlyCity(String city);
+
+  /// No description provided for @moodyChatSubtitleFriendlyNoCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Your travel bestie'**
+  String get moodyChatSubtitleFriendlyNoCity;
+
+  /// No description provided for @moodyChatSubtitleProfessionalCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Your travel companion in {city}'**
+  String moodyChatSubtitleProfessionalCity(String city);
+
+  /// No description provided for @moodyChatSubtitleProfessionalNoCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Your professional travel companion'**
+  String get moodyChatSubtitleProfessionalNoCity;
+
+  /// No description provided for @moodyChatSubtitleDirectCity.
+  ///
+  /// In en, this message translates to:
+  /// **'{city} · straight-up travel bestie'**
+  String moodyChatSubtitleDirectCity(String city);
+
+  /// No description provided for @moodyChatSubtitleDirectNoCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Straight-up travel bestie'**
+  String get moodyChatSubtitleDirectNoCity;
 
   /// No description provided for @moodyHubYourDayToday.
   ///
@@ -12110,6 +12440,3246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name} is a highly-rated local gem with {rating} stars, offering a unique experience worth exploring.'**
   String placeDescGenericWithRating(String name, String rating);
+
+  /// No description provided for @notifReEngagementEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Psst... Moody misses you 👀'**
+  String get notifReEngagementEnergeticV0Title;
+
+  /// No description provided for @notifReEngagementEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'The world\'s been waiting. Ready to explore again?'**
+  String get notifReEngagementEnergeticV0Body;
+
+  /// No description provided for @notifReEngagementEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your wanderlust called'**
+  String get notifReEngagementEnergeticV1Title;
+
+  /// No description provided for @notifReEngagementEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'It left a voicemail. Something about adventure. Want to listen?'**
+  String get notifReEngagementEnergeticV1Body;
+
+  /// No description provided for @notifReEngagementEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Plot twist needed'**
+  String get notifReEngagementEnergeticV2Title;
+
+  /// No description provided for @notifReEngagementEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your story\'s been on pause. Time to write the next chapter.'**
+  String get notifReEngagementEnergeticV2Body;
+
+  /// No description provided for @notifReEngagementFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Hey, we\'ve been thinking of you 💛'**
+  String get notifReEngagementFriendlyV0Title;
+
+  /// No description provided for @notifReEngagementFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Come back and let Moody help plan your next adventure.'**
+  String get notifReEngagementFriendlyV0Body;
+
+  /// No description provided for @notifReEngagementFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing your energy around here!'**
+  String get notifReEngagementFriendlyV1Title;
+
+  /// No description provided for @notifReEngagementFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your travel bestie is ready whenever you are.'**
+  String get notifReEngagementFriendlyV1Body;
+
+  /// No description provided for @notifReEngagementFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Good to see you again soon'**
+  String get notifReEngagementFriendlyV2Title;
+
+  /// No description provided for @notifReEngagementFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to discover something new together?'**
+  String get notifReEngagementFriendlyV2Body;
+
+  /// No description provided for @notifReEngagementProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready when you are'**
+  String get notifReEngagementProfessionalV0Title;
+
+  /// No description provided for @notifReEngagementProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your travel plans are waiting.'**
+  String get notifReEngagementProfessionalV0Body;
+
+  /// No description provided for @notifReEngagementProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to explore'**
+  String get notifReEngagementProfessionalV1Title;
+
+  /// No description provided for @notifReEngagementProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the app to pick up where you left off.'**
+  String get notifReEngagementProfessionalV1Body;
+
+  /// No description provided for @notifReEngagementProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your journey continues'**
+  String get notifReEngagementProfessionalV2Title;
+
+  /// No description provided for @notifReEngagementProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'New recommendations are ready for you.'**
+  String get notifReEngagementProfessionalV2Body;
+
+  /// No description provided for @notifReEngagementDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t checked in lately'**
+  String get notifReEngagementDirectV0Title;
+
+  /// No description provided for @notifReEngagementDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Open WanderMood to continue.'**
+  String get notifReEngagementDirectV0Body;
+
+  /// No description provided for @notifReEngagementDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your travel plans are waiting'**
+  String get notifReEngagementDirectV1Title;
+
+  /// No description provided for @notifReEngagementDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to continue.'**
+  String get notifReEngagementDirectV1Body;
+
+  /// No description provided for @notifReEngagementDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Back when you\'re ready'**
+  String get notifReEngagementDirectV2Title;
+
+  /// No description provided for @notifReEngagementDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your saved plans and mood history are here.'**
+  String get notifReEngagementDirectV2Body;
+
+  /// No description provided for @notifDailyMoodCheckInEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'What vibe are we serving today? ✨'**
+  String get notifDailyMoodCheckInEnergeticV0Title;
+
+  /// No description provided for @notifDailyMoodCheckInEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your mood and let Moody find your perfect match.'**
+  String get notifDailyMoodCheckInEnergeticV0Body;
+
+  /// No description provided for @notifDailyMoodCheckInEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood check! Go.'**
+  String get notifDailyMoodCheckInEnergeticV1Title;
+
+  /// No description provided for @notifDailyMoodCheckInEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Three seconds. Maximum insights. Let\'s see it.'**
+  String get notifDailyMoodCheckInEnergeticV1Body;
+
+  /// No description provided for @notifDailyMoodCheckInEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your emotional GPS needs calibrating'**
+  String get notifDailyMoodCheckInEnergeticV2Title;
+
+  /// No description provided for @notifDailyMoodCheckInEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell Moody how you\'re feeling — it shapes everything.'**
+  String get notifDailyMoodCheckInEnergeticV2Body;
+
+  /// No description provided for @notifDailyMoodCheckInFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning! How are you feeling? 😊'**
+  String get notifDailyMoodCheckInFriendlyV0Title;
+
+  /// No description provided for @notifDailyMoodCheckInFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your mood and let\'s plan something that fits.'**
+  String get notifDailyMoodCheckInFriendlyV0Body;
+
+  /// No description provided for @notifDailyMoodCheckInFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily mood check-in time'**
+  String get notifDailyMoodCheckInFriendlyV1Title;
+
+  /// No description provided for @notifDailyMoodCheckInFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'A quick tap to let Moody know how your day\'s going.'**
+  String get notifDailyMoodCheckInFriendlyV1Body;
+
+  /// No description provided for @notifDailyMoodCheckInFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'How\'s your travel mood today?'**
+  String get notifDailyMoodCheckInFriendlyV2Title;
+
+  /// No description provided for @notifDailyMoodCheckInFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Share how you\'re feeling and discover what matches.'**
+  String get notifDailyMoodCheckInFriendlyV2Body;
+
+  /// No description provided for @notifDailyMoodCheckInProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily mood check-in'**
+  String get notifDailyMoodCheckInProfessionalV0Title;
+
+  /// No description provided for @notifDailyMoodCheckInProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Log today\'s mood for personalised recommendations.'**
+  String get notifDailyMoodCheckInProfessionalV0Body;
+
+  /// No description provided for @notifDailyMoodCheckInProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to check in'**
+  String get notifDailyMoodCheckInProfessionalV1Title;
+
+  /// No description provided for @notifDailyMoodCheckInProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Record your mood to continue your streak.'**
+  String get notifDailyMoodCheckInProfessionalV1Body;
+
+  /// No description provided for @notifDailyMoodCheckInProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood log reminder'**
+  String get notifDailyMoodCheckInProfessionalV2Title;
+
+  /// No description provided for @notifDailyMoodCheckInProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your daily check-in keeps recommendations accurate.'**
+  String get notifDailyMoodCheckInProfessionalV2Body;
+
+  /// No description provided for @notifDailyMoodCheckInDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Log today\'s mood'**
+  String get notifDailyMoodCheckInDirectV0Title;
+
+  /// No description provided for @notifDailyMoodCheckInDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to check in.'**
+  String get notifDailyMoodCheckInDirectV0Body;
+
+  /// No description provided for @notifDailyMoodCheckInDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily check-in'**
+  String get notifDailyMoodCheckInDirectV1Title;
+
+  /// No description provided for @notifDailyMoodCheckInDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'How are you feeling today?'**
+  String get notifDailyMoodCheckInDirectV1Body;
+
+  /// No description provided for @notifDailyMoodCheckInDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood reminder'**
+  String get notifDailyMoodCheckInDirectV2Title;
+
+  /// No description provided for @notifDailyMoodCheckInDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your mood to keep your streak alive.'**
+  String get notifDailyMoodCheckInDirectV2Body;
+
+  /// No description provided for @notifGenerateMyDayEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Let Moody cook today 🔥'**
+  String get notifGenerateMyDayEnergeticV0Title;
+
+  /// No description provided for @notifGenerateMyDayEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your perfect day is one tap away — trust the algorithm.'**
+  String get notifGenerateMyDayEnergeticV0Body;
+
+  /// No description provided for @notifGenerateMyDayEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Blank day? Not on Moody\'s watch'**
+  String get notifGenerateMyDayEnergeticV1Title;
+
+  /// No description provided for @notifGenerateMyDayEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell Moody your mood and watch the magic happen.'**
+  String get notifGenerateMyDayEnergeticV1Body;
+
+  /// No description provided for @notifGenerateMyDayEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Today could be legendary'**
+  String get notifGenerateMyDayEnergeticV2Title;
+
+  /// No description provided for @notifGenerateMyDayEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'You in? Moody\'s ready to generate something unforgettable.'**
+  String get notifGenerateMyDayEnergeticV2Body;
+
+  /// No description provided for @notifGenerateMyDayFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to plan today? 🗺️'**
+  String get notifGenerateMyDayFriendlyV0Title;
+
+  /// No description provided for @notifGenerateMyDayFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Let Moody put together the perfect day for your mood.'**
+  String get notifGenerateMyDayFriendlyV0Body;
+
+  /// No description provided for @notifGenerateMyDayFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your day is full of possibilities'**
+  String get notifGenerateMyDayFriendlyV1Title;
+
+  /// No description provided for @notifGenerateMyDayFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate a plan and make the most of today.'**
+  String get notifGenerateMyDayFriendlyV1Body;
+
+  /// No description provided for @notifGenerateMyDayFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody has ideas for today!'**
+  String get notifGenerateMyDayFriendlyV2Title;
+
+  /// No description provided for @notifGenerateMyDayFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to see what\'s perfect for your current mood.'**
+  String get notifGenerateMyDayFriendlyV2Body;
+
+  /// No description provided for @notifGenerateMyDayProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan your day'**
+  String get notifGenerateMyDayProfessionalV0Title;
+
+  /// No description provided for @notifGenerateMyDayProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate a mood-matched itinerary for today.'**
+  String get notifGenerateMyDayProfessionalV0Body;
+
+  /// No description provided for @notifGenerateMyDayProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily planner ready'**
+  String get notifGenerateMyDayProfessionalV1Title;
+
+  /// No description provided for @notifGenerateMyDayProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to create today\'s activity plan.'**
+  String get notifGenerateMyDayProfessionalV1Body;
+
+  /// No description provided for @notifGenerateMyDayProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate today\'s itinerary'**
+  String get notifGenerateMyDayProfessionalV2Title;
+
+  /// No description provided for @notifGenerateMyDayProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalised to your mood and preferences.'**
+  String get notifGenerateMyDayProfessionalV2Body;
+
+  /// No description provided for @notifGenerateMyDayDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan today'**
+  String get notifGenerateMyDayDirectV0Title;
+
+  /// No description provided for @notifGenerateMyDayDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to generate your day.'**
+  String get notifGenerateMyDayDirectV0Body;
+
+  /// No description provided for @notifGenerateMyDayDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate My Day'**
+  String get notifGenerateMyDayDirectV1Title;
+
+  /// No description provided for @notifGenerateMyDayDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Create today\'s itinerary now.'**
+  String get notifGenerateMyDayDirectV1Body;
+
+  /// No description provided for @notifGenerateMyDayDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s plan'**
+  String get notifGenerateMyDayDirectV2Title;
+
+  /// No description provided for @notifGenerateMyDayDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to build your schedule.'**
+  String get notifGenerateMyDayDirectV2Body;
+
+  /// No description provided for @notifWeatherNudgeEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'The weather just got interesting ☀️'**
+  String get notifWeatherNudgeEnergeticV0Title;
+
+  /// No description provided for @notifWeatherNudgeEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody\'s already updating your picks. Check what\'s good.'**
+  String get notifWeatherNudgeEnergeticV0Body;
+
+  /// No description provided for @notifWeatherNudgeEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather alert: perfect adventure conditions'**
+  String get notifWeatherNudgeEnergeticV1Title;
+
+  /// No description provided for @notifWeatherNudgeEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Get out there — Moody\'s got the spots.'**
+  String get notifWeatherNudgeEnergeticV1Body;
+
+  /// No description provided for @notifWeatherNudgeEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Rain? Moody has opinions about that'**
+  String get notifWeatherNudgeEnergeticV2Title;
+
+  /// No description provided for @notifWeatherNudgeEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to see what\'s actually great on a day like this.'**
+  String get notifWeatherNudgeEnergeticV2Body;
+
+  /// No description provided for @notifWeatherNudgeFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s weather is looking great! 🌤️'**
+  String get notifWeatherNudgeFriendlyV0Title;
+
+  /// No description provided for @notifWeatherNudgeFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfect for getting out — want to see what\'s nearby?'**
+  String get notifWeatherNudgeFriendlyV0Body;
+
+  /// No description provided for @notifWeatherNudgeFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather update for your plans'**
+  String get notifWeatherNudgeFriendlyV1Title;
+
+  /// No description provided for @notifWeatherNudgeFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the latest conditions and adjust your day.'**
+  String get notifWeatherNudgeFriendlyV1Body;
+
+  /// No description provided for @notifWeatherNudgeFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Cosy day incoming'**
+  String get notifWeatherNudgeFriendlyV2Title;
+
+  /// No description provided for @notifWeatherNudgeFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Let Moody suggest something perfect for this weather.'**
+  String get notifWeatherNudgeFriendlyV2Body;
+
+  /// No description provided for @notifWeatherNudgeProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather update'**
+  String get notifWeatherNudgeProfessionalV0Title;
+
+  /// No description provided for @notifWeatherNudgeProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Conditions have changed. Check activity suggestions.'**
+  String get notifWeatherNudgeProfessionalV0Body;
+
+  /// No description provided for @notifWeatherNudgeProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s forecast'**
+  String get notifWeatherNudgeProfessionalV1Title;
+
+  /// No description provided for @notifWeatherNudgeProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated recommendations based on current weather.'**
+  String get notifWeatherNudgeProfessionalV1Body;
+
+  /// No description provided for @notifWeatherNudgeProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather change noted'**
+  String get notifWeatherNudgeProfessionalV2Title;
+
+  /// No description provided for @notifWeatherNudgeProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your activity plan has been refreshed.'**
+  String get notifWeatherNudgeProfessionalV2Body;
+
+  /// No description provided for @notifWeatherNudgeDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather changed'**
+  String get notifWeatherNudgeDirectV0Title;
+
+  /// No description provided for @notifWeatherNudgeDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Check updated activity suggestions.'**
+  String get notifWeatherNudgeDirectV0Body;
+
+  /// No description provided for @notifWeatherNudgeDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather alert'**
+  String get notifWeatherNudgeDirectV1Title;
+
+  /// No description provided for @notifWeatherNudgeDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap for weather-matched plans.'**
+  String get notifWeatherNudgeDirectV1Body;
+
+  /// No description provided for @notifWeatherNudgeDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s conditions'**
+  String get notifWeatherNudgeDirectV2Title;
+
+  /// No description provided for @notifWeatherNudgeDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated picks based on the weather.'**
+  String get notifWeatherNudgeDirectV2Body;
+
+  /// No description provided for @notifLocationDiscoveryEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re surrounded by hidden gems 💎'**
+  String get notifLocationDiscoveryEnergeticV0Title;
+
+  /// No description provided for @notifLocationDiscoveryEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody spotted something amazing near you. Go look.'**
+  String get notifLocationDiscoveryEnergeticV0Body;
+
+  /// No description provided for @notifLocationDiscoveryEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Plot twist: your next fave spot is 5 mins away'**
+  String get notifLocationDiscoveryEnergeticV1Title;
+
+  /// No description provided for @notifLocationDiscoveryEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'No excuses. Moody found it. Tap to see.'**
+  String get notifLocationDiscoveryEnergeticV1Body;
+
+  /// No description provided for @notifLocationDiscoveryEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Something\'s calling your name nearby'**
+  String get notifLocationDiscoveryEnergeticV2Title;
+
+  /// No description provided for @notifLocationDiscoveryEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your GPS says you should definitely check this out.'**
+  String get notifLocationDiscoveryEnergeticV2Body;
+
+  /// No description provided for @notifLocationDiscoveryFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Something great is near you! 📍'**
+  String get notifLocationDiscoveryFriendlyV0Title;
+
+  /// No description provided for @notifLocationDiscoveryFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody found a spot that might be just your thing.'**
+  String get notifLocationDiscoveryFriendlyV0Body;
+
+  /// No description provided for @notifLocationDiscoveryFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovery nearby'**
+  String get notifLocationDiscoveryFriendlyV1Title;
+
+  /// No description provided for @notifLocationDiscoveryFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'There\'s something worth checking out close to where you are.'**
+  String get notifLocationDiscoveryFriendlyV1Body;
+
+  /// No description provided for @notifLocationDiscoveryFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody found something interesting'**
+  String get notifLocationDiscoveryFriendlyV2Title;
+
+  /// No description provided for @notifLocationDiscoveryFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'A local gem is waiting just around the corner.'**
+  String get notifLocationDiscoveryFriendlyV2Body;
+
+  /// No description provided for @notifLocationDiscoveryProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearby discovery'**
+  String get notifLocationDiscoveryProfessionalV0Title;
+
+  /// No description provided for @notifLocationDiscoveryProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'A new location matches your travel interests.'**
+  String get notifLocationDiscoveryProfessionalV0Body;
+
+  /// No description provided for @notifLocationDiscoveryProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Local point of interest'**
+  String get notifLocationDiscoveryProfessionalV1Title;
+
+  /// No description provided for @notifLocationDiscoveryProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Something relevant to your preferences is close by.'**
+  String get notifLocationDiscoveryProfessionalV1Body;
+
+  /// No description provided for @notifLocationDiscoveryProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Place discovered nearby'**
+  String get notifLocationDiscoveryProfessionalV2Title;
+
+  /// No description provided for @notifLocationDiscoveryProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the activity suggestion for your area.'**
+  String get notifLocationDiscoveryProfessionalV2Body;
+
+  /// No description provided for @notifLocationDiscoveryDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Place nearby'**
+  String get notifLocationDiscoveryDirectV0Title;
+
+  /// No description provided for @notifLocationDiscoveryDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Something matches your interests. Tap to see.'**
+  String get notifLocationDiscoveryDirectV0Body;
+
+  /// No description provided for @notifLocationDiscoveryDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Local discovery'**
+  String get notifLocationDiscoveryDirectV1Title;
+
+  /// No description provided for @notifLocationDiscoveryDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'New spot near you.'**
+  String get notifLocationDiscoveryDirectV1Body;
+
+  /// No description provided for @notifLocationDiscoveryDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearby activity'**
+  String get notifLocationDiscoveryDirectV2Title;
+
+  /// No description provided for @notifLocationDiscoveryDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Check what\'s close.'**
+  String get notifLocationDiscoveryDirectV2Body;
+
+  /// No description provided for @notifSavedActivityReminderEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your saved spots are feeling ignored 👀'**
+  String get notifSavedActivityReminderEnergeticV0Title;
+
+  /// No description provided for @notifSavedActivityReminderEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'You saved it for a reason. Time to actually go.'**
+  String get notifSavedActivityReminderEnergeticV0Body;
+
+  /// No description provided for @notifSavedActivityReminderEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'That thing on your list? Still there.'**
+  String get notifSavedActivityReminderEnergeticV1Title;
+
+  /// No description provided for @notifSavedActivityReminderEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody\'s keeping receipts. Shall we make it happen?'**
+  String get notifSavedActivityReminderEnergeticV1Body;
+
+  /// No description provided for @notifSavedActivityReminderEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder: you have taste'**
+  String get notifSavedActivityReminderEnergeticV2Title;
+
+  /// No description provided for @notifSavedActivityReminderEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your saved activities are proof. Go experience them.'**
+  String get notifSavedActivityReminderEnergeticV2Body;
+
+  /// No description provided for @notifSavedActivityReminderFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember that place you saved? 🌟'**
+  String get notifSavedActivityReminderFriendlyV0Title;
+
+  /// No description provided for @notifSavedActivityReminderFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s still on your list — want to make plans?'**
+  String get notifSavedActivityReminderFriendlyV0Body;
+
+  /// No description provided for @notifSavedActivityReminderFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your saved activities are waiting'**
+  String get notifSavedActivityReminderFriendlyV1Title;
+
+  /// No description provided for @notifSavedActivityReminderFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to turn those saves into actual plans?'**
+  String get notifSavedActivityReminderFriendlyV1Body;
+
+  /// No description provided for @notifSavedActivityReminderFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t forget your saved spots!'**
+  String get notifSavedActivityReminderFriendlyV2Title;
+
+  /// No description provided for @notifSavedActivityReminderFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'You picked these for a reason — let Moody help you go.'**
+  String get notifSavedActivityReminderFriendlyV2Body;
+
+  /// No description provided for @notifSavedActivityReminderProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved activity reminder'**
+  String get notifSavedActivityReminderProfessionalV0Title;
+
+  /// No description provided for @notifSavedActivityReminderProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'You have activities saved. Ready to plan a visit?'**
+  String get notifSavedActivityReminderProfessionalV0Body;
+
+  /// No description provided for @notifSavedActivityReminderProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your saved list'**
+  String get notifSavedActivityReminderProfessionalV1Title;
+
+  /// No description provided for @notifSavedActivityReminderProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Revisit your saved places and schedule a visit.'**
+  String get notifSavedActivityReminderProfessionalV1Body;
+
+  /// No description provided for @notifSavedActivityReminderProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved places waiting'**
+  String get notifSavedActivityReminderProfessionalV2Title;
+
+  /// No description provided for @notifSavedActivityReminderProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan a visit to your bookmarked activities.'**
+  String get notifSavedActivityReminderProfessionalV2Body;
+
+  /// No description provided for @notifSavedActivityReminderDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved activities need attention'**
+  String get notifSavedActivityReminderDirectV0Title;
+
+  /// No description provided for @notifSavedActivityReminderDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to view your list.'**
+  String get notifSavedActivityReminderDirectV0Body;
+
+  /// No description provided for @notifSavedActivityReminderDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your saved list'**
+  String get notifSavedActivityReminderDirectV1Title;
+
+  /// No description provided for @notifSavedActivityReminderDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Check and plan a visit.'**
+  String get notifSavedActivityReminderDirectV1Body;
+
+  /// No description provided for @notifSavedActivityReminderDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved spots reminder'**
+  String get notifSavedActivityReminderDirectV2Title;
+
+  /// No description provided for @notifSavedActivityReminderDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule a visit to a saved activity.'**
+  String get notifSavedActivityReminderDirectV2Body;
+
+  /// No description provided for @notifFestivalEventEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Something epic is happening near you 🎉'**
+  String get notifFestivalEventEnergeticV0Title;
+
+  /// No description provided for @notifFestivalEventEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody can\'t keep quiet about this. You need to see it.'**
+  String get notifFestivalEventEnergeticV0Body;
+
+  /// No description provided for @notifFestivalEventEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'An event just dropped that has your name on it'**
+  String get notifFestivalEventEnergeticV1Title;
+
+  /// No description provided for @notifFestivalEventEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Seriously, this one\'s too good to miss. Tap to see.'**
+  String get notifFestivalEventEnergeticV1Body;
+
+  /// No description provided for @notifFestivalEventEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Festival alert! Your kind of thing.'**
+  String get notifFestivalEventEnergeticV2Title;
+
+  /// No description provided for @notifFestivalEventEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody found an event that matches your vibe. Go.'**
+  String get notifFestivalEventEnergeticV2Body;
+
+  /// No description provided for @notifFestivalEventFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'There\'s a fun event coming up! 🎊'**
+  String get notifFestivalEventFriendlyV0Title;
+
+  /// No description provided for @notifFestivalEventFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Something\'s happening nearby that you might love.'**
+  String get notifFestivalEventFriendlyV0Body;
+
+  /// No description provided for @notifFestivalEventFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Event alert near you'**
+  String get notifFestivalEventFriendlyV1Title;
+
+  /// No description provided for @notifFestivalEventFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody found something worth checking out this week.'**
+  String get notifFestivalEventFriendlyV1Body;
+
+  /// No description provided for @notifFestivalEventFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Something exciting is happening'**
+  String get notifFestivalEventFriendlyV2Title;
+
+  /// No description provided for @notifFestivalEventFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'A local event that fits your interests is coming up.'**
+  String get notifFestivalEventFriendlyV2Body;
+
+  /// No description provided for @notifFestivalEventProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming local event'**
+  String get notifFestivalEventProfessionalV0Title;
+
+  /// No description provided for @notifFestivalEventProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'An event matching your interests is taking place soon.'**
+  String get notifFestivalEventProfessionalV0Body;
+
+  /// No description provided for @notifFestivalEventProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Event notification'**
+  String get notifFestivalEventProfessionalV1Title;
+
+  /// No description provided for @notifFestivalEventProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'A relevant festival or event is happening nearby.'**
+  String get notifFestivalEventProfessionalV1Body;
+
+  /// No description provided for @notifFestivalEventProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Festival alert'**
+  String get notifFestivalEventProfessionalV2Title;
+
+  /// No description provided for @notifFestivalEventProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Local event details are ready for review.'**
+  String get notifFestivalEventProfessionalV2Body;
+
+  /// No description provided for @notifFestivalEventDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Event nearby this week'**
+  String get notifFestivalEventDirectV0Title;
+
+  /// No description provided for @notifFestivalEventDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to see details.'**
+  String get notifFestivalEventDirectV0Body;
+
+  /// No description provided for @notifFestivalEventDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Local festival happening'**
+  String get notifFestivalEventDirectV1Title;
+
+  /// No description provided for @notifFestivalEventDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Check event details.'**
+  String get notifFestivalEventDirectV1Body;
+
+  /// No description provided for @notifFestivalEventDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming event'**
+  String get notifFestivalEventDirectV2Title;
+
+  /// No description provided for @notifFestivalEventDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Event near you this week.'**
+  String get notifFestivalEventDirectV2Body;
+
+  /// No description provided for @notifCompanionMorningEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning! Moody\'s already plotting ☀️'**
+  String get notifCompanionMorningEnergeticV0Title;
+
+  /// No description provided for @notifCompanionMorningEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'What are we doing today? Drop your mood and let\'s go.'**
+  String get notifCompanionMorningEnergeticV0Body;
+
+  /// No description provided for @notifCompanionMorningEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Rise and explore! ✨'**
+  String get notifCompanionMorningEnergeticV1Title;
+
+  /// No description provided for @notifCompanionMorningEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'A new day = new adventures. Moody\'s ready when you are.'**
+  String get notifCompanionMorningEnergeticV1Body;
+
+  /// No description provided for @notifCompanionMorningEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your travel bestie is awake'**
+  String get notifCompanionMorningEnergeticV2Title;
+
+  /// No description provided for @notifCompanionMorningEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'And honestly a little too excited about today\'s possibilities.'**
+  String get notifCompanionMorningEnergeticV2Body;
+
+  /// No description provided for @notifCompanionMorningFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning! ☀️'**
+  String get notifCompanionMorningFriendlyV0Title;
+
+  /// No description provided for @notifCompanionMorningFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'How are you feeling? Let Moody help make today amazing.'**
+  String get notifCompanionMorningFriendlyV0Body;
+
+  /// No description provided for @notifCompanionMorningFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning check-in'**
+  String get notifCompanionMorningFriendlyV1Title;
+
+  /// No description provided for @notifCompanionMorningFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Start the day with your mood and let\'s plan something great.'**
+  String get notifCompanionMorningFriendlyV1Body;
+
+  /// No description provided for @notifCompanionMorningFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody\'s saying good morning 😊'**
+  String get notifCompanionMorningFriendlyV2Title;
+
+  /// No description provided for @notifCompanionMorningFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Share how you\'re feeling and let\'s make today count.'**
+  String get notifCompanionMorningFriendlyV2Body;
+
+  /// No description provided for @notifCompanionMorningProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get notifCompanionMorningProfessionalV0Title;
+
+  /// No description provided for @notifCompanionMorningProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Check in with today\'s mood to get personalised suggestions.'**
+  String get notifCompanionMorningProfessionalV0Body;
+
+  /// No description provided for @notifCompanionMorningProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning check-in'**
+  String get notifCompanionMorningProfessionalV1Title;
+
+  /// No description provided for @notifCompanionMorningProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your mood to start your day with tailored recommendations.'**
+  String get notifCompanionMorningProfessionalV1Body;
+
+  /// No description provided for @notifCompanionMorningProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Start your day'**
+  String get notifCompanionMorningProfessionalV2Title;
+
+  /// No description provided for @notifCompanionMorningProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s recommendations are ready for your mood.'**
+  String get notifCompanionMorningProfessionalV2Body;
+
+  /// No description provided for @notifCompanionMorningDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning check-in'**
+  String get notifCompanionMorningDirectV0Title;
+
+  /// No description provided for @notifCompanionMorningDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your mood to start the day.'**
+  String get notifCompanionMorningDirectV0Body;
+
+  /// No description provided for @notifCompanionMorningDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get notifCompanionMorningDirectV1Title;
+
+  /// No description provided for @notifCompanionMorningDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to check in.'**
+  String get notifCompanionMorningDirectV1Body;
+
+  /// No description provided for @notifCompanionMorningDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Start your day'**
+  String get notifCompanionMorningDirectV2Title;
+
+  /// No description provided for @notifCompanionMorningDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your mood.'**
+  String get notifCompanionMorningDirectV2Body;
+
+  /// No description provided for @notifCompanionAfternoonEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Midday report — how\'s it going? 🌞'**
+  String get notifCompanionAfternoonEnergeticV0Title;
+
+  /// No description provided for @notifCompanionAfternoonEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell Moody what you\'re feeling. We can still make today legendary.'**
+  String get notifCompanionAfternoonEnergeticV0Body;
+
+  /// No description provided for @notifCompanionAfternoonEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon check! Still thriving? ✨'**
+  String get notifCompanionAfternoonEnergeticV1Title;
+
+  /// No description provided for @notifCompanionAfternoonEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your mood and Moody will update your picks.'**
+  String get notifCompanionAfternoonEnergeticV1Body;
+
+  /// No description provided for @notifCompanionAfternoonEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Halfway through the day'**
+  String get notifCompanionAfternoonEnergeticV2Title;
+
+  /// No description provided for @notifCompanionAfternoonEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'How\'s your energy? Moody\'s got afternoon plans if you need them.'**
+  String get notifCompanionAfternoonEnergeticV2Body;
+
+  /// No description provided for @notifCompanionAfternoonFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon check-in! 😊'**
+  String get notifCompanionAfternoonFriendlyV0Title;
+
+  /// No description provided for @notifCompanionAfternoonFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Hope your day\'s been great — how are you feeling now?'**
+  String get notifCompanionAfternoonFriendlyV0Body;
+
+  /// No description provided for @notifCompanionAfternoonFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody\'s thinking of you'**
+  String get notifCompanionAfternoonFriendlyV1Title;
+
+  /// No description provided for @notifCompanionAfternoonFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'How\'s your afternoon going? Update your mood anytime.'**
+  String get notifCompanionAfternoonFriendlyV1Body;
+
+  /// No description provided for @notifCompanionAfternoonFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Midday with Moody'**
+  String get notifCompanionAfternoonFriendlyV2Title;
+
+  /// No description provided for @notifCompanionAfternoonFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Check in with how you\'re feeling and see what\'s nearby.'**
+  String get notifCompanionAfternoonFriendlyV2Body;
+
+  /// No description provided for @notifCompanionAfternoonProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon check-in'**
+  String get notifCompanionAfternoonProfessionalV0Title;
+
+  /// No description provided for @notifCompanionAfternoonProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your mood for afternoon recommendations.'**
+  String get notifCompanionAfternoonProfessionalV0Body;
+
+  /// No description provided for @notifCompanionAfternoonProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Midday update'**
+  String get notifCompanionAfternoonProfessionalV1Title;
+
+  /// No description provided for @notifCompanionAfternoonProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Log how you\'re feeling to refine today\'s suggestions.'**
+  String get notifCompanionAfternoonProfessionalV1Body;
+
+  /// No description provided for @notifCompanionAfternoonProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'How\'s your afternoon?'**
+  String get notifCompanionAfternoonProfessionalV2Title;
+
+  /// No description provided for @notifCompanionAfternoonProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Check in to keep your travel profile current.'**
+  String get notifCompanionAfternoonProfessionalV2Body;
+
+  /// No description provided for @notifCompanionAfternoonDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon check-in'**
+  String get notifCompanionAfternoonDirectV0Title;
+
+  /// No description provided for @notifCompanionAfternoonDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'How are you feeling?'**
+  String get notifCompanionAfternoonDirectV0Body;
+
+  /// No description provided for @notifCompanionAfternoonDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Midday check'**
+  String get notifCompanionAfternoonDirectV1Title;
+
+  /// No description provided for @notifCompanionAfternoonDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your mood.'**
+  String get notifCompanionAfternoonDirectV1Body;
+
+  /// No description provided for @notifCompanionAfternoonDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon'**
+  String get notifCompanionAfternoonDirectV2Title;
+
+  /// No description provided for @notifCompanionAfternoonDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to log your mood.'**
+  String get notifCompanionAfternoonDirectV2Body;
+
+  /// No description provided for @notifCompanionEveningEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening! What did you get up to? 🌙'**
+  String get notifCompanionEveningEnergeticV0Title;
+
+  /// No description provided for @notifCompanionEveningEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody wants a full debrief. Any highlights from today?'**
+  String get notifCompanionEveningEnergeticV0Body;
+
+  /// No description provided for @notifCompanionEveningEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Golden hour check ✨'**
+  String get notifCompanionEveningEnergeticV1Title;
+
+  /// No description provided for @notifCompanionEveningEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind down, reflect, share. What was the best bit?'**
+  String get notifCompanionEveningEnergeticV1Body;
+
+  /// No description provided for @notifCompanionEveningEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Night mode activated'**
+  String get notifCompanionEveningEnergeticV2Title;
+
+  /// No description provided for @notifCompanionEveningEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell Moody about your day — and maybe plan tomorrow.'**
+  String get notifCompanionEveningEnergeticV2Body;
+
+  /// No description provided for @notifCompanionEveningFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening! 🌙'**
+  String get notifCompanionEveningFriendlyV0Title;
+
+  /// No description provided for @notifCompanionEveningFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'How was your day? Share your mood and reflect with Moody.'**
+  String get notifCompanionEveningFriendlyV0Body;
+
+  /// No description provided for @notifCompanionEveningFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening check-in'**
+  String get notifCompanionEveningFriendlyV1Title;
+
+  /// No description provided for @notifCompanionEveningFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind down time — any adventures to log?'**
+  String get notifCompanionEveningFriendlyV1Body;
+
+  /// No description provided for @notifCompanionEveningFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody\'s evening check-in'**
+  String get notifCompanionEveningFriendlyV2Title;
+
+  /// No description provided for @notifCompanionEveningFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'How are you feeling as the day wraps up?'**
+  String get notifCompanionEveningFriendlyV2Body;
+
+  /// No description provided for @notifCompanionEveningProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening check-in'**
+  String get notifCompanionEveningProfessionalV0Title;
+
+  /// No description provided for @notifCompanionEveningProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflect on today and log your end-of-day mood.'**
+  String get notifCompanionEveningProfessionalV0Body;
+
+  /// No description provided for @notifCompanionEveningProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'End of day'**
+  String get notifCompanionEveningProfessionalV1Title;
+
+  /// No description provided for @notifCompanionEveningProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Record your evening mood for a full picture of your day.'**
+  String get notifCompanionEveningProfessionalV1Body;
+
+  /// No description provided for @notifCompanionEveningProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get notifCompanionEveningProfessionalV2Title;
+
+  /// No description provided for @notifCompanionEveningProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s activity summary is ready. Log your reflection.'**
+  String get notifCompanionEveningProfessionalV2Body;
+
+  /// No description provided for @notifCompanionEveningDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening check-in'**
+  String get notifCompanionEveningDirectV0Title;
+
+  /// No description provided for @notifCompanionEveningDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'How was your day?'**
+  String get notifCompanionEveningDirectV0Body;
+
+  /// No description provided for @notifCompanionEveningDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'End of day'**
+  String get notifCompanionEveningDirectV1Title;
+
+  /// No description provided for @notifCompanionEveningDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your mood.'**
+  String get notifCompanionEveningDirectV1Body;
+
+  /// No description provided for @notifCompanionEveningDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get notifCompanionEveningDirectV2Title;
+
+  /// No description provided for @notifCompanionEveningDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to check in.'**
+  String get notifCompanionEveningDirectV2Body;
+
+  /// No description provided for @notifStreakMilestoneEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days straight — Moody is SHOOK 🔥'**
+  String notifStreakMilestoneEnergeticV0Title(String days);
+
+  /// No description provided for @notifStreakMilestoneEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re basically a WanderMood legend at this point. Keep going.'**
+  String get notifStreakMilestoneEnergeticV0Body;
+
+  /// No description provided for @notifStreakMilestoneEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert: {days}-day streak detected ⚡'**
+  String notifStreakMilestoneEnergeticV1Title(String days);
+
+  /// No description provided for @notifStreakMilestoneEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'This is extremely impressive and Moody is not chill about it.'**
+  String get notifStreakMilestoneEnergeticV1Body;
+
+  /// No description provided for @notifStreakMilestoneEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}-day streak! You\'re on fire!'**
+  String notifStreakMilestoneEnergeticV2Title(String days);
+
+  /// No description provided for @notifStreakMilestoneEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'The world needs more explorers like you. Don\'t stop now.'**
+  String get notifStreakMilestoneEnergeticV2Body;
+
+  /// No description provided for @notifStreakMilestoneFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Wow, {days} days in a row! 🎉'**
+  String notifStreakMilestoneFriendlyV0Title(String days);
+
+  /// No description provided for @notifStreakMilestoneFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve been so consistent — Moody is really proud of you!'**
+  String get notifStreakMilestoneFriendlyV0Body;
+
+  /// No description provided for @notifStreakMilestoneFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}-day streak reached!'**
+  String notifStreakMilestoneFriendlyV1Title(String days);
+
+  /// No description provided for @notifStreakMilestoneFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re doing amazing. Keep that travel energy going!'**
+  String get notifStreakMilestoneFriendlyV1Body;
+
+  /// No description provided for @notifStreakMilestoneFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re on a {days}-day streak 🔥'**
+  String notifStreakMilestoneFriendlyV2Title(String days);
+
+  /// No description provided for @notifStreakMilestoneFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'What an achievement — here\'s to the next milestone!'**
+  String get notifStreakMilestoneFriendlyV2Body;
+
+  /// No description provided for @notifStreakMilestoneProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}-day streak milestone'**
+  String notifStreakMilestoneProfessionalV0Title(String days);
+
+  /// No description provided for @notifStreakMilestoneProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Consistent engagement. Your streak continues.'**
+  String get notifStreakMilestoneProfessionalV0Body;
+
+  /// No description provided for @notifStreakMilestoneProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak milestone reached'**
+  String get notifStreakMilestoneProfessionalV1Title;
+
+  /// No description provided for @notifStreakMilestoneProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} consecutive days. Keep it going.'**
+  String notifStreakMilestoneProfessionalV1Body(String days);
+
+  /// No description provided for @notifStreakMilestoneProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days'**
+  String notifStreakMilestoneProfessionalV2Title(String days);
+
+  /// No description provided for @notifStreakMilestoneProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak milestone achieved.'**
+  String get notifStreakMilestoneProfessionalV2Body;
+
+  /// No description provided for @notifStreakMilestoneDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}-day streak'**
+  String notifStreakMilestoneDirectV0Title(String days);
+
+  /// No description provided for @notifStreakMilestoneDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep going.'**
+  String get notifStreakMilestoneDirectV0Body;
+
+  /// No description provided for @notifStreakMilestoneDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak milestone: {days} days'**
+  String notifStreakMilestoneDirectV1Title(String days);
+
+  /// No description provided for @notifStreakMilestoneDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t break it now.'**
+  String get notifStreakMilestoneDirectV1Body;
+
+  /// No description provided for @notifStreakMilestoneDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} consecutive days'**
+  String notifStreakMilestoneDirectV2Title(String days);
+
+  /// No description provided for @notifStreakMilestoneDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak milestone reached.'**
+  String get notifStreakMilestoneDirectV2Body;
+
+  /// No description provided for @notifAchievementUnlockedEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'🏆 YOU JUST EARNED \'{achievementTitle}\'!'**
+  String notifAchievementUnlockedEnergeticV0Title(String achievementTitle);
+
+  /// No description provided for @notifAchievementUnlockedEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody is doing an actual happy dance right now. You legend.'**
+  String get notifAchievementUnlockedEnergeticV0Body;
+
+  /// No description provided for @notifAchievementUnlockedEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Badge unlocked: {achievementTitle} ✨'**
+  String notifAchievementUnlockedEnergeticV1Title(String achievementTitle);
+
+  /// No description provided for @notifAchievementUnlockedEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'This one\'s got your name all over it. Well deserved.'**
+  String get notifAchievementUnlockedEnergeticV1Body;
+
+  /// No description provided for @notifAchievementUnlockedEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement get: {achievementTitle} 🎉'**
+  String notifAchievementUnlockedEnergeticV2Title(String achievementTitle);
+
+  /// No description provided for @notifAchievementUnlockedEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to your collection. Moody knew you could do it.'**
+  String get notifAchievementUnlockedEnergeticV2Body;
+
+  /// No description provided for @notifAchievementUnlockedFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'New achievement unlocked! 🏆'**
+  String get notifAchievementUnlockedFriendlyV0Title;
+
+  /// No description provided for @notifAchievementUnlockedFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'You earned the \'{achievementTitle}\' badge — that\'s amazing!'**
+  String notifAchievementUnlockedFriendlyV0Body(String achievementTitle);
+
+  /// No description provided for @notifAchievementUnlockedFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Congrats! \'{achievementTitle}\' is yours 🌟'**
+  String notifAchievementUnlockedFriendlyV1Title(String achievementTitle);
+
+  /// No description provided for @notifAchievementUnlockedFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'You worked for this one. Enjoy the milestone!'**
+  String get notifAchievementUnlockedFriendlyV1Body;
+
+  /// No description provided for @notifAchievementUnlockedFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'You unlocked \'{achievementTitle}\'!'**
+  String notifAchievementUnlockedFriendlyV2Title(String achievementTitle);
+
+  /// No description provided for @notifAchievementUnlockedFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement added to your profile — you\'re on a roll!'**
+  String get notifAchievementUnlockedFriendlyV2Body;
+
+  /// No description provided for @notifAchievementUnlockedProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement unlocked: {achievementTitle}'**
+  String notifAchievementUnlockedProfessionalV0Title(String achievementTitle);
+
+  /// No description provided for @notifAchievementUnlockedProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Badge earned and added to your profile.'**
+  String get notifAchievementUnlockedProfessionalV0Body;
+
+  /// No description provided for @notifAchievementUnlockedProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'New badge: {achievementTitle}'**
+  String notifAchievementUnlockedProfessionalV1Title(String achievementTitle);
+
+  /// No description provided for @notifAchievementUnlockedProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement milestone reached.'**
+  String get notifAchievementUnlockedProfessionalV1Body;
+
+  /// No description provided for @notifAchievementUnlockedProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'{achievementTitle}'**
+  String notifAchievementUnlockedProfessionalV2Title(String achievementTitle);
+
+  /// No description provided for @notifAchievementUnlockedProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement unlocked.'**
+  String get notifAchievementUnlockedProfessionalV2Body;
+
+  /// No description provided for @notifAchievementUnlockedDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Badge earned: {achievementTitle}'**
+  String notifAchievementUnlockedDirectV0Title(String achievementTitle);
+
+  /// No description provided for @notifAchievementUnlockedDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement unlocked.'**
+  String get notifAchievementUnlockedDirectV0Body;
+
+  /// No description provided for @notifAchievementUnlockedDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'{achievementTitle} unlocked'**
+  String notifAchievementUnlockedDirectV1Title(String achievementTitle);
+
+  /// No description provided for @notifAchievementUnlockedDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'New achievement added.'**
+  String get notifAchievementUnlockedDirectV1Body;
+
+  /// No description provided for @notifAchievementUnlockedDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement: {achievementTitle}'**
+  String notifAchievementUnlockedDirectV2Title(String achievementTitle);
+
+  /// No description provided for @notifAchievementUnlockedDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Earned.'**
+  String get notifAchievementUnlockedDirectV2Body;
+
+  /// No description provided for @notifWeeklyMoodRecapEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your week in moods just dropped 📊'**
+  String get notifWeeklyMoodRecapEnergeticV0Title;
+
+  /// No description provided for @notifWeeklyMoodRecapEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Plot twist: you contain multitudes. Want to see the data?'**
+  String get notifWeeklyMoodRecapEnergeticV0Body;
+
+  /// No description provided for @notifWeeklyMoodRecapEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly mood report — and it\'s giving a lot'**
+  String get notifWeeklyMoodRecapEnergeticV1Title;
+
+  /// No description provided for @notifWeeklyMoodRecapEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody crunched the numbers. The results are interesting.'**
+  String get notifWeeklyMoodRecapEnergeticV1Body;
+
+  /// No description provided for @notifWeeklyMoodRecapEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'7 days, infinite vibes'**
+  String get notifWeeklyMoodRecapEnergeticV2Title;
+
+  /// No description provided for @notifWeeklyMoodRecapEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your mood recap is here and honestly? You\'re fascinating.'**
+  String get notifWeeklyMoodRecapEnergeticV2Body;
+
+  /// No description provided for @notifWeeklyMoodRecapFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your weekly mood recap is ready! 🌈'**
+  String get notifWeeklyMoodRecapFriendlyV0Title;
+
+  /// No description provided for @notifWeeklyMoodRecapFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a moment to reflect on how your week felt.'**
+  String get notifWeeklyMoodRecapFriendlyV0Body;
+
+  /// No description provided for @notifWeeklyMoodRecapFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Week in review 📊'**
+  String get notifWeeklyMoodRecapFriendlyV1Title;
+
+  /// No description provided for @notifWeeklyMoodRecapFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Here\'s a look at your moods this week — want to explore it?'**
+  String get notifWeeklyMoodRecapFriendlyV1Body;
+
+  /// No description provided for @notifWeeklyMoodRecapFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody has your mood summary ready'**
+  String get notifWeeklyMoodRecapFriendlyV2Title;
+
+  /// No description provided for @notifWeeklyMoodRecapFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'A little reflection goes a long way. Check your week.'**
+  String get notifWeeklyMoodRecapFriendlyV2Body;
+
+  /// No description provided for @notifWeeklyMoodRecapProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly mood summary'**
+  String get notifWeeklyMoodRecapProfessionalV0Title;
+
+  /// No description provided for @notifWeeklyMoodRecapProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your mood report for the past 7 days is ready.'**
+  String get notifWeeklyMoodRecapProfessionalV0Body;
+
+  /// No description provided for @notifWeeklyMoodRecapProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Week in review'**
+  String get notifWeeklyMoodRecapProfessionalV1Title;
+
+  /// No description provided for @notifWeeklyMoodRecapProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood data and insights from this week are available.'**
+  String get notifWeeklyMoodRecapProfessionalV1Body;
+
+  /// No description provided for @notifWeeklyMoodRecapProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly report'**
+  String get notifWeeklyMoodRecapProfessionalV2Title;
+
+  /// No description provided for @notifWeeklyMoodRecapProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Review your mood patterns from the past week.'**
+  String get notifWeeklyMoodRecapProfessionalV2Body;
+
+  /// No description provided for @notifWeeklyMoodRecapDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly mood recap'**
+  String get notifWeeklyMoodRecapDirectV0Title;
+
+  /// No description provided for @notifWeeklyMoodRecapDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to view your summary.'**
+  String get notifWeeklyMoodRecapDirectV0Body;
+
+  /// No description provided for @notifWeeklyMoodRecapDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood summary ready'**
+  String get notifWeeklyMoodRecapDirectV1Title;
+
+  /// No description provided for @notifWeeklyMoodRecapDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your week.'**
+  String get notifWeeklyMoodRecapDirectV1Body;
+
+  /// No description provided for @notifWeeklyMoodRecapDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly report'**
+  String get notifWeeklyMoodRecapDirectV2Title;
+
+  /// No description provided for @notifWeeklyMoodRecapDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'7-day mood data ready.'**
+  String get notifWeeklyMoodRecapDirectV2Body;
+
+  /// No description provided for @notifPostTripReflectionEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'You just did a whole thing! 🗺️'**
+  String get notifPostTripReflectionEnergeticV0Title;
+
+  /// No description provided for @notifPostTripReflectionEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'We need ALL the details. How was the adventure?'**
+  String get notifPostTripReflectionEnergeticV0Body;
+
+  /// No description provided for @notifPostTripReflectionEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip complete — debrief time'**
+  String get notifPostTripReflectionEnergeticV1Title;
+
+  /// No description provided for @notifPostTripReflectionEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody wants a full recap. Rate it, log it, live it.'**
+  String get notifPostTripReflectionEnergeticV1Body;
+
+  /// No description provided for @notifPostTripReflectionEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell me everything'**
+  String get notifPostTripReflectionEnergeticV2Title;
+
+  /// No description provided for @notifPostTripReflectionEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'That adventure you just finished? It deserves a proper reflection.'**
+  String get notifPostTripReflectionEnergeticV2Body;
+
+  /// No description provided for @notifPostTripReflectionFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Hope your trip was amazing! 🌟'**
+  String get notifPostTripReflectionFriendlyV0Title;
+
+  /// No description provided for @notifPostTripReflectionFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'How did it go? Share your thoughts and log a post-trip mood.'**
+  String get notifPostTripReflectionFriendlyV0Body;
+
+  /// No description provided for @notifPostTripReflectionFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan is complete'**
+  String get notifPostTripReflectionFriendlyV1Title;
+
+  /// No description provided for @notifPostTripReflectionFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a moment to reflect on how it went.'**
+  String get notifPostTripReflectionFriendlyV1Body;
+
+  /// No description provided for @notifPostTripReflectionFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Time for a trip reflection 😊'**
+  String get notifPostTripReflectionFriendlyV2Title;
+
+  /// No description provided for @notifPostTripReflectionFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Log how you felt about your adventure — Moody wants to know!'**
+  String get notifPostTripReflectionFriendlyV2Body;
+
+  /// No description provided for @notifPostTripReflectionProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip completed'**
+  String get notifPostTripReflectionProfessionalV0Title;
+
+  /// No description provided for @notifPostTripReflectionProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your post-trip reflection and mood rating.'**
+  String get notifPostTripReflectionProfessionalV0Body;
+
+  /// No description provided for @notifPostTripReflectionProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Post-trip feedback'**
+  String get notifPostTripReflectionProfessionalV1Title;
+
+  /// No description provided for @notifPostTripReflectionProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Log how your completed plan went.'**
+  String get notifPostTripReflectionProfessionalV1Body;
+
+  /// No description provided for @notifPostTripReflectionProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip summary'**
+  String get notifPostTripReflectionProfessionalV2Title;
+
+  /// No description provided for @notifPostTripReflectionProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Record your post-activity mood and reflections.'**
+  String get notifPostTripReflectionProfessionalV2Body;
+
+  /// No description provided for @notifPostTripReflectionDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your post-trip mood'**
+  String get notifPostTripReflectionDirectV0Title;
+
+  /// No description provided for @notifPostTripReflectionDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate your experience.'**
+  String get notifPostTripReflectionDirectV0Body;
+
+  /// No description provided for @notifPostTripReflectionDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip done'**
+  String get notifPostTripReflectionDirectV1Title;
+
+  /// No description provided for @notifPostTripReflectionDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflect on how it went.'**
+  String get notifPostTripReflectionDirectV1Body;
+
+  /// No description provided for @notifPostTripReflectionDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Post-trip check-in'**
+  String get notifPostTripReflectionDirectV2Title;
+
+  /// No description provided for @notifPostTripReflectionDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your experience.'**
+  String get notifPostTripReflectionDirectV2Body;
+
+  /// No description provided for @notifMoodFollowUpEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Still feeling {moodType}? 💡'**
+  String notifMoodFollowUpEnergeticV0Title(String moodType);
+
+  /// No description provided for @notifMoodFollowUpEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody found something that matches your energy perfectly.'**
+  String get notifMoodFollowUpEnergeticV0Body;
+
+  /// No description provided for @notifMoodFollowUpEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {moodType} vibe deserves an outlet'**
+  String notifMoodFollowUpEnergeticV1Title(String moodType);
+
+  /// No description provided for @notifMoodFollowUpEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Here\'s exactly where to take that energy. You\'ll love it.'**
+  String get notifMoodFollowUpEnergeticV1Body;
+
+  /// No description provided for @notifMoodFollowUpEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'{moodType} energy + this place = chef\'s kiss'**
+  String notifMoodFollowUpEnergeticV2Title(String moodType);
+
+  /// No description provided for @notifMoodFollowUpEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody did the math. Trust the algorithm.'**
+  String get notifMoodFollowUpEnergeticV2Body;
+
+  /// No description provided for @notifMoodFollowUpFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on your {moodType} mood 💛'**
+  String notifMoodFollowUpFriendlyV0Title(String moodType);
+
+  /// No description provided for @notifMoodFollowUpFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody found something nearby that fits perfectly. Want to see?'**
+  String get notifMoodFollowUpFriendlyV0Body;
+
+  /// No description provided for @notifMoodFollowUpFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'A suggestion for your {moodType} vibe'**
+  String notifMoodFollowUpFriendlyV1Title(String moodType);
+
+  /// No description provided for @notifMoodFollowUpFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Something close by that matches how you\'re feeling.'**
+  String get notifMoodFollowUpFriendlyV1Body;
+
+  /// No description provided for @notifMoodFollowUpFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Still feeling {moodType}?'**
+  String notifMoodFollowUpFriendlyV2Title(String moodType);
+
+  /// No description provided for @notifMoodFollowUpFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Here\'s a great match for your current energy.'**
+  String get notifMoodFollowUpFriendlyV2Body;
+
+  /// No description provided for @notifMoodFollowUpProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood-matched suggestion'**
+  String get notifMoodFollowUpProfessionalV0Title;
+
+  /// No description provided for @notifMoodFollowUpProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity recommendation based on your {moodType} check-in.'**
+  String notifMoodFollowUpProfessionalV0Body(String moodType);
+
+  /// No description provided for @notifMoodFollowUpProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on your mood'**
+  String get notifMoodFollowUpProfessionalV1Title;
+
+  /// No description provided for @notifMoodFollowUpProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Curated suggestion aligned with your {moodType} preference.'**
+  String notifMoodFollowUpProfessionalV1Body(String moodType);
+
+  /// No description provided for @notifMoodFollowUpProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity match'**
+  String get notifMoodFollowUpProfessionalV2Title;
+
+  /// No description provided for @notifMoodFollowUpProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggestion tailored to your {moodType} mood.'**
+  String notifMoodFollowUpProfessionalV2Body(String moodType);
+
+  /// No description provided for @notifMoodFollowUpDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggestion for your {moodType} mood'**
+  String notifMoodFollowUpDirectV0Title(String moodType);
+
+  /// No description provided for @notifMoodFollowUpDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to see what matches.'**
+  String get notifMoodFollowUpDirectV0Body;
+
+  /// No description provided for @notifMoodFollowUpDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity match'**
+  String get notifMoodFollowUpDirectV1Title;
+
+  /// No description provided for @notifMoodFollowUpDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on your {moodType} check-in.'**
+  String notifMoodFollowUpDirectV1Body(String moodType);
+
+  /// No description provided for @notifMoodFollowUpDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'{moodType} mood match ready'**
+  String notifMoodFollowUpDirectV2Title(String moodType);
+
+  /// No description provided for @notifMoodFollowUpDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to see.'**
+  String get notifMoodFollowUpDirectV2Body;
+
+  /// No description provided for @notifSocialEngagementEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone\'s vibing with your post 👀'**
+  String get notifSocialEngagementEnergeticV0Title;
+
+  /// No description provided for @notifSocialEngagementEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Go see who\'s feeling your adventure energy.'**
+  String get notifSocialEngagementEnergeticV0Body;
+
+  /// No description provided for @notifSocialEngagementEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your mood post got attention!'**
+  String get notifSocialEngagementEnergeticV1Title;
+
+  /// No description provided for @notifSocialEngagementEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone reacted — Moody is curious what they thought.'**
+  String get notifSocialEngagementEnergeticV1Body;
+
+  /// No description provided for @notifSocialEngagementEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'People are talking about your adventure 🎉'**
+  String get notifSocialEngagementEnergeticV2Title;
+
+  /// No description provided for @notifSocialEngagementEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your post got some love. Go check it out.'**
+  String get notifSocialEngagementEnergeticV2Body;
+
+  /// No description provided for @notifSocialEngagementFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone liked your post! 💛'**
+  String get notifSocialEngagementFriendlyV0Title;
+
+  /// No description provided for @notifSocialEngagementFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shared adventure resonated with someone.'**
+  String get notifSocialEngagementFriendlyV0Body;
+
+  /// No description provided for @notifSocialEngagementFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'New activity on your post'**
+  String get notifSocialEngagementFriendlyV1Title;
+
+  /// No description provided for @notifSocialEngagementFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone\'s engaging with your travel content.'**
+  String get notifSocialEngagementFriendlyV1Body;
+
+  /// No description provided for @notifSocialEngagementFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your post got some love'**
+  String get notifSocialEngagementFriendlyV2Title;
+
+  /// No description provided for @notifSocialEngagementFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Check out who\'s reacting to your adventure.'**
+  String get notifSocialEngagementFriendlyV2Body;
+
+  /// No description provided for @notifSocialEngagementProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'New activity on your post'**
+  String get notifSocialEngagementProfessionalV0Title;
+
+  /// No description provided for @notifSocialEngagementProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone has reacted to your shared content.'**
+  String get notifSocialEngagementProfessionalV0Body;
+
+  /// No description provided for @notifSocialEngagementProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Post engagement'**
+  String get notifSocialEngagementProfessionalV1Title;
+
+  /// No description provided for @notifSocialEngagementProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'New interaction on your recent activity.'**
+  String get notifSocialEngagementProfessionalV1Body;
+
+  /// No description provided for @notifSocialEngagementProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Social notification'**
+  String get notifSocialEngagementProfessionalV2Title;
+
+  /// No description provided for @notifSocialEngagementProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your post has new activity.'**
+  String get notifSocialEngagementProfessionalV2Body;
+
+  /// No description provided for @notifSocialEngagementDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'New like on your post'**
+  String get notifSocialEngagementDirectV0Title;
+
+  /// No description provided for @notifSocialEngagementDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to see.'**
+  String get notifSocialEngagementDirectV0Body;
+
+  /// No description provided for @notifSocialEngagementDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Post activity'**
+  String get notifSocialEngagementDirectV1Title;
+
+  /// No description provided for @notifSocialEngagementDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone reacted to your post.'**
+  String get notifSocialEngagementDirectV1Body;
+
+  /// No description provided for @notifSocialEngagementDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'New comment'**
+  String get notifSocialEngagementDirectV2Title;
+
+  /// No description provided for @notifSocialEngagementDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your post has a new comment.'**
+  String get notifSocialEngagementDirectV2Body;
+
+  /// No description provided for @notifFriendActivityEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your travel buddy is making moves 🗺️'**
+  String get notifFriendActivityEnergeticV0Title;
+
+  /// No description provided for @notifFriendActivityEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone in your network just did something worth knowing about.'**
+  String get notifFriendActivityEnergeticV0Body;
+
+  /// No description provided for @notifFriendActivityEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Plot twist: your crew is exploring'**
+  String get notifFriendActivityEnergeticV1Title;
+
+  /// No description provided for @notifFriendActivityEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t get FOMO — check what your travel friends are up to.'**
+  String get notifFriendActivityEnergeticV1Body;
+
+  /// No description provided for @notifFriendActivityEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Network activity detected 👀'**
+  String get notifFriendActivityEnergeticV2Title;
+
+  /// No description provided for @notifFriendActivityEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'A friend just logged a mood or started a new plan. Curious?'**
+  String get notifFriendActivityEnergeticV2Body;
+
+  /// No description provided for @notifFriendActivityFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'A friend just shared their adventure 💛'**
+  String get notifFriendActivityFriendlyV0Title;
+
+  /// No description provided for @notifFriendActivityFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone you follow has new travel activity. Go check it out.'**
+  String get notifFriendActivityFriendlyV0Body;
+
+  /// No description provided for @notifFriendActivityFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your travel buddy is on the move'**
+  String get notifFriendActivityFriendlyV1Title;
+
+  /// No description provided for @notifFriendActivityFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'One of your friends has something new to share.'**
+  String get notifFriendActivityFriendlyV1Body;
+
+  /// No description provided for @notifFriendActivityFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Friend activity'**
+  String get notifFriendActivityFriendlyV2Title;
+
+  /// No description provided for @notifFriendActivityFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone you follow just posted a mood or plan.'**
+  String get notifFriendActivityFriendlyV2Body;
+
+  /// No description provided for @notifFriendActivityProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Network activity'**
+  String get notifFriendActivityProfessionalV0Title;
+
+  /// No description provided for @notifFriendActivityProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone you follow has posted new travel content.'**
+  String get notifFriendActivityProfessionalV0Body;
+
+  /// No description provided for @notifFriendActivityProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Friend update'**
+  String get notifFriendActivityProfessionalV1Title;
+
+  /// No description provided for @notifFriendActivityProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity from your network is available.'**
+  String get notifFriendActivityProfessionalV1Body;
+
+  /// No description provided for @notifFriendActivityProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection activity'**
+  String get notifFriendActivityProfessionalV2Title;
+
+  /// No description provided for @notifFriendActivityProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone you follow has an update.'**
+  String get notifFriendActivityProfessionalV2Body;
+
+  /// No description provided for @notifFriendActivityDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Friend posted'**
+  String get notifFriendActivityDirectV0Title;
+
+  /// No description provided for @notifFriendActivityDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'New activity in your network.'**
+  String get notifFriendActivityDirectV0Body;
+
+  /// No description provided for @notifFriendActivityDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel buddy update'**
+  String get notifFriendActivityDirectV1Title;
+
+  /// No description provided for @notifFriendActivityDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone you follow has new content.'**
+  String get notifFriendActivityDirectV1Body;
+
+  /// No description provided for @notifFriendActivityDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Network update'**
+  String get notifFriendActivityDirectV2Title;
+
+  /// No description provided for @notifFriendActivityDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Friend activity available.'**
+  String get notifFriendActivityDirectV2Body;
+
+  /// No description provided for @notifWeekendPlanningNudgeEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'The weekend is almost here and you have zero plans'**
+  String get notifWeekendPlanningNudgeEnergeticV0Title;
+
+  /// No description provided for @notifWeekendPlanningNudgeEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody to the rescue. Tap to fix that immediately.'**
+  String get notifWeekendPlanningNudgeEnergeticV0Body;
+
+  /// No description provided for @notifWeekendPlanningNudgeEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Blank weekend detected 🎨'**
+  String get notifWeekendPlanningNudgeEnergeticV1Title;
+
+  /// No description provided for @notifWeekendPlanningNudgeEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a creative emergency. Let Moody fill that canvas.'**
+  String get notifWeekendPlanningNudgeEnergeticV1Body;
+
+  /// No description provided for @notifWeekendPlanningNudgeEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Friday energy! Weekend plans?'**
+  String get notifWeekendPlanningNudgeEnergeticV2Title;
+
+  /// No description provided for @notifWeekendPlanningNudgeEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Because \'see how it goes\' is not a Moody-approved strategy.'**
+  String get notifWeekendPlanningNudgeEnergeticV2Body;
+
+  /// No description provided for @notifWeekendPlanningNudgeFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'The weekend\'s coming up! Any plans? 🌟'**
+  String get notifWeekendPlanningNudgeFriendlyV0Title;
+
+  /// No description provided for @notifWeekendPlanningNudgeFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Let Moody help you plan something you\'ll actually love.'**
+  String get notifWeekendPlanningNudgeFriendlyV0Body;
+
+  /// No description provided for @notifWeekendPlanningNudgeFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend planning time!'**
+  String get notifWeekendPlanningNudgeFriendlyV1Title;
+
+  /// No description provided for @notifWeekendPlanningNudgeFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'A few taps and Moody can put together a perfect weekend plan.'**
+  String get notifWeekendPlanningNudgeFriendlyV1Body;
+
+  /// No description provided for @notifWeekendPlanningNudgeFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to plan your weekend?'**
+  String get notifWeekendPlanningNudgeFriendlyV2Title;
+
+  /// No description provided for @notifWeekendPlanningNudgeFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody\'s got ideas — want to see what fits your mood?'**
+  String get notifWeekendPlanningNudgeFriendlyV2Body;
+
+  /// No description provided for @notifWeekendPlanningNudgeProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend planning'**
+  String get notifWeekendPlanningNudgeProfessionalV0Title;
+
+  /// No description provided for @notifWeekendPlanningNudgeProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a weekend itinerary tailored to your preferences.'**
+  String get notifWeekendPlanningNudgeProfessionalV0Body;
+
+  /// No description provided for @notifWeekendPlanningNudgeProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan your weekend'**
+  String get notifWeekendPlanningNudgeProfessionalV1Title;
+
+  /// No description provided for @notifWeekendPlanningNudgeProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend activities are available to schedule.'**
+  String get notifWeekendPlanningNudgeProfessionalV1Body;
+
+  /// No description provided for @notifWeekendPlanningNudgeProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend ahead'**
+  String get notifWeekendPlanningNudgeProfessionalV2Title;
+
+  /// No description provided for @notifWeekendPlanningNudgeProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to plan your upcoming days.'**
+  String get notifWeekendPlanningNudgeProfessionalV2Body;
+
+  /// No description provided for @notifWeekendPlanningNudgeDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan your weekend'**
+  String get notifWeekendPlanningNudgeDirectV0Title;
+
+  /// No description provided for @notifWeekendPlanningNudgeDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'No plans yet. Tap to create some.'**
+  String get notifWeekendPlanningNudgeDirectV0Body;
+
+  /// No description provided for @notifWeekendPlanningNudgeDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend scheduler'**
+  String get notifWeekendPlanningNudgeDirectV1Title;
+
+  /// No description provided for @notifWeekendPlanningNudgeDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Add plans for the upcoming weekend.'**
+  String get notifWeekendPlanningNudgeDirectV1Body;
+
+  /// No description provided for @notifWeekendPlanningNudgeDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend ahead'**
+  String get notifWeekendPlanningNudgeDirectV2Title;
+
+  /// No description provided for @notifWeekendPlanningNudgeDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to plan.'**
+  String get notifWeekendPlanningNudgeDirectV2Body;
+
+  /// No description provided for @notifTrendingInYourCityEnergeticV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Something is TRENDING near you right now 🔥'**
+  String get notifTrendingInYourCityEnergeticV0Title;
+
+  /// No description provided for @notifTrendingInYourCityEnergeticV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone in your city is doing this and Moody can\'t keep quiet.'**
+  String get notifTrendingInYourCityEnergeticV0Body;
+
+  /// No description provided for @notifTrendingInYourCityEnergeticV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Hot take: this is blowing up in your area'**
+  String get notifTrendingInYourCityEnergeticV1Title;
+
+  /// No description provided for @notifTrendingInYourCityEnergeticV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'You probably should know about this. Tap to see.'**
+  String get notifTrendingInYourCityEnergeticV1Body;
+
+  /// No description provided for @notifTrendingInYourCityEnergeticV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend alert in your city!'**
+  String get notifTrendingInYourCityEnergeticV2Title;
+
+  /// No description provided for @notifTrendingInYourCityEnergeticV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the moment. Are you going to be part of it?'**
+  String get notifTrendingInYourCityEnergeticV2Body;
+
+  /// No description provided for @notifTrendingInYourCityFriendlyV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Something popular is happening near you! 🌟'**
+  String get notifTrendingInYourCityFriendlyV0Title;
+
+  /// No description provided for @notifTrendingInYourCityFriendlyV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody spotted a trend in your area that fits your style.'**
+  String get notifTrendingInYourCityFriendlyV0Body;
+
+  /// No description provided for @notifTrendingInYourCityFriendlyV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending in your city'**
+  String get notifTrendingInYourCityFriendlyV1Title;
+
+  /// No description provided for @notifTrendingInYourCityFriendlyV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Here\'s what everyone\'s been enjoying nearby this week.'**
+  String get notifTrendingInYourCityFriendlyV1Body;
+
+  /// No description provided for @notifTrendingInYourCityFriendlyV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Hot right now in your area'**
+  String get notifTrendingInYourCityFriendlyV2Title;
+
+  /// No description provided for @notifTrendingInYourCityFriendlyV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Check out what\'s trending and see if it\'s your thing.'**
+  String get notifTrendingInYourCityFriendlyV2Body;
+
+  /// No description provided for @notifTrendingInYourCityProfessionalV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending locally'**
+  String get notifTrendingInYourCityProfessionalV0Title;
+
+  /// No description provided for @notifTrendingInYourCityProfessionalV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular activity in your area matching your interests.'**
+  String get notifTrendingInYourCityProfessionalV0Body;
+
+  /// No description provided for @notifTrendingInYourCityProfessionalV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Local trend'**
+  String get notifTrendingInYourCityProfessionalV1Title;
+
+  /// No description provided for @notifTrendingInYourCityProfessionalV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s popular nearby this week.'**
+  String get notifTrendingInYourCityProfessionalV1Body;
+
+  /// No description provided for @notifTrendingInYourCityProfessionalV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular nearby'**
+  String get notifTrendingInYourCityProfessionalV2Title;
+
+  /// No description provided for @notifTrendingInYourCityProfessionalV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending activity available in your area.'**
+  String get notifTrendingInYourCityProfessionalV2Body;
+
+  /// No description provided for @notifTrendingInYourCityDirectV0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending near you'**
+  String get notifTrendingInYourCityDirectV0Title;
+
+  /// No description provided for @notifTrendingInYourCityDirectV0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Check what\'s popular in your area.'**
+  String get notifTrendingInYourCityDirectV0Body;
+
+  /// No description provided for @notifTrendingInYourCityDirectV1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Local hotspot'**
+  String get notifTrendingInYourCityDirectV1Title;
+
+  /// No description provided for @notifTrendingInYourCityDirectV1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to see what\'s trending.'**
+  String get notifTrendingInYourCityDirectV1Body;
+
+  /// No description provided for @notifTrendingInYourCityDirectV2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s popular now'**
+  String get notifTrendingInYourCityDirectV2Title;
+
+  /// No description provided for @notifTrendingInYourCityDirectV2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending activity near you.'**
+  String get notifTrendingInYourCityDirectV2Body;
+
+  /// No description provided for @commPrefChooseStyleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your Moody style'**
+  String get commPrefChooseStyleTitle;
+
+  /// No description provided for @commPrefChooseStyleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'So I can match my tone perfectly to you.'**
+  String get commPrefChooseStyleSubtitle;
+
+  /// No description provided for @commPrefSpeechBubble.
+  ///
+  /// In en, this message translates to:
+  /// **'How do you want me to talk to you? 😊'**
+  String get commPrefSpeechBubble;
+
+  /// No description provided for @authWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re in! Welcome 🎉'**
+  String get authWelcomeTitle;
+
+  /// No description provided for @authCallbackConfirmingEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirming your email…'**
+  String get authCallbackConfirmingEmail;
+
+  /// No description provided for @authCallbackVerificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verification failed. Please try again.'**
+  String get authCallbackVerificationFailed;
+
+  /// No description provided for @dialogClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get dialogClose;
+
+  /// No description provided for @supportHowCanWeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'How can we help you?'**
+  String get supportHowCanWeHelp;
+
+  /// No description provided for @supportContactUsCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Us'**
+  String get supportContactUsCard;
+
+  /// No description provided for @supportSendFeedbackCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Feedback'**
+  String get supportSendFeedbackCard;
+
+  /// No description provided for @supportTutorialCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Tutorial'**
+  String get supportTutorialCard;
+
+  /// No description provided for @supportReportIssueCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Report Issue'**
+  String get supportReportIssueCard;
+
+  /// No description provided for @supportFaqSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequently Asked Questions'**
+  String get supportFaqSectionTitle;
+
+  /// No description provided for @supportFaq1Q.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I plan a new adventure?'**
+  String get supportFaq1Q;
+
+  /// No description provided for @supportFaq1A.
+  ///
+  /// In en, this message translates to:
+  /// **'To plan a new adventure, go to the Explore tab and start a new plan. You can choose your mood, interests, and travel preferences to get personalized recommendations.'**
+  String get supportFaq1A;
+
+  /// No description provided for @supportFaq2Q.
+  ///
+  /// In en, this message translates to:
+  /// **'Can I save places for later?'**
+  String get supportFaq2Q;
+
+  /// No description provided for @supportFaq2A.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes! When viewing a place, tap the heart icon to save it to your Saved Places, which you can access from your profile menu.'**
+  String get supportFaq2A;
+
+  /// No description provided for @supportFaq3Q.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I track my mood?'**
+  String get supportFaq3Q;
+
+  /// No description provided for @supportFaq3A.
+  ///
+  /// In en, this message translates to:
+  /// **'WanderMood can remind you to track your mood. You can also add a mood entry from the Moody hub when you check in.'**
+  String get supportFaq3A;
+
+  /// No description provided for @supportFaq4Q.
+  ///
+  /// In en, this message translates to:
+  /// **'What do the achievement badges mean?'**
+  String get supportFaq4Q;
+
+  /// No description provided for @supportFaq4A.
+  ///
+  /// In en, this message translates to:
+  /// **'Badges are earned by completing activities in the app. Visit Achievements in your profile to see requirements for each badge.'**
+  String get supportFaq4A;
+
+  /// No description provided for @supportFaq5Q.
+  ///
+  /// In en, this message translates to:
+  /// **'How does WanderMood use my location?'**
+  String get supportFaq5Q;
+
+  /// No description provided for @supportFaq5A.
+  ///
+  /// In en, this message translates to:
+  /// **'WanderMood uses your location to suggest nearby places and activities. You can adjust location permissions in app settings.'**
+  String get supportFaq5A;
+
+  /// No description provided for @supportFaq6Q.
+  ///
+  /// In en, this message translates to:
+  /// **'Can I use WanderMood offline?'**
+  String get supportFaq6Q;
+
+  /// No description provided for @supportFaq6A.
+  ///
+  /// In en, this message translates to:
+  /// **'Some features need an internet connection. Saved places and items already on your device may still be viewable offline.'**
+  String get supportFaq6A;
+
+  /// No description provided for @supportAdditionalResources.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional Resources'**
+  String get supportAdditionalResources;
+
+  /// No description provided for @supportAppVersionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'App Version'**
+  String get supportAppVersionLabel;
+
+  /// No description provided for @supportContactDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Support'**
+  String get supportContactDialogTitle;
+
+  /// No description provided for @supportEmailUsAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Email us at:'**
+  String get supportEmailUsAt;
+
+  /// No description provided for @supportEmailSupportHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Our support team is available Monday–Friday, 9am–5pm PST.'**
+  String get supportEmailSupportHours;
+
+  /// No description provided for @supportToastOpeningFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening feedback form…'**
+  String get supportToastOpeningFeedback;
+
+  /// No description provided for @supportToastOpeningTutorial.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening app tutorial…'**
+  String get supportToastOpeningTutorial;
+
+  /// No description provided for @supportToastOpeningIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening issue report…'**
+  String get supportToastOpeningIssue;
+
+  /// No description provided for @recListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel Recommendations'**
+  String get recListTitle;
+
+  /// No description provided for @recErrorPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Error:'**
+  String get recErrorPrefix;
+
+  /// No description provided for @recTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get recTryAgain;
+
+  /// No description provided for @recNoneAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No recommendations available'**
+  String get recNoneAvailable;
+
+  /// No description provided for @recLocationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Location: {location}'**
+  String recLocationLabel(String location);
+
+  /// No description provided for @recPriceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Price: {price}'**
+  String recPriceLabel(String price);
+
+  /// No description provided for @recFavoriteUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite updated successfully'**
+  String get recFavoriteUpdated;
+
+  /// No description provided for @recFavoriteError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error updating favorite: {error}'**
+  String recFavoriteError(String error);
+
+  /// No description provided for @recDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendation details'**
+  String get recDetailTitle;
+
+  /// No description provided for @recDetailMarkCompleteTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as complete'**
+  String get recDetailMarkCompleteTooltip;
+
+  /// No description provided for @recDetailStatusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get recDetailStatusCompleted;
+
+  /// No description provided for @recDetailStatusNotCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not completed yet'**
+  String get recDetailStatusNotCompleted;
+
+  /// No description provided for @recDetailSectionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get recDetailSectionDescription;
+
+  /// No description provided for @recDetailSectionCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get recDetailSectionCategory;
+
+  /// No description provided for @recDetailSectionTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get recDetailSectionTags;
+
+  /// No description provided for @recDetailSectionConfidence.
+  ///
+  /// In en, this message translates to:
+  /// **'Confidence'**
+  String get recDetailSectionConfidence;
+
+  /// No description provided for @recDetailSectionMood.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get recDetailSectionMood;
+
+  /// No description provided for @recDetailMoodRegisteredOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged on {date}'**
+  String recDetailMoodRegisteredOn(String date);
+
+  /// No description provided for @recDetailSectionWeather.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather'**
+  String get recDetailSectionWeather;
+
+  /// No description provided for @recDetailWeatherSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{temp}°C, {humidity}% humidity'**
+  String recDetailWeatherSubtitle(String temp, String humidity);
+
+  /// No description provided for @adventurePlanTitleYour.
+  ///
+  /// In en, this message translates to:
+  /// **'Your '**
+  String get adventurePlanTitleYour;
+
+  /// No description provided for @adventurePlanTitleHighlight.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventure Plan'**
+  String get adventurePlanTitleHighlight;
+
+  /// No description provided for @adventurePlanTitleForToday.
+  ///
+  /// In en, this message translates to:
+  /// **' for today'**
+  String get adventurePlanTitleForToday;
+
+  /// No description provided for @adventurePlanLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading adventures: {error}'**
+  String adventurePlanLoadError(String error);
+
+  /// No description provided for @receiptDownloadPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Download PDF'**
+  String get receiptDownloadPdf;
+
+  /// No description provided for @receiptShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Receipt'**
+  String get receiptShare;
+
+  /// No description provided for @placePhotoTapToView.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to view'**
+  String get placePhotoTapToView;
+
+  /// No description provided for @periodActivitiesRemoveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove activity?'**
+  String get periodActivitiesRemoveTitle;
+
+  /// No description provided for @periodActivitiesRemoveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove \"{name}\"?'**
+  String periodActivitiesRemoveBody(String name);
+
+  /// No description provided for @periodActivitiesRemoveCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get periodActivitiesRemoveCta;
+
+  /// No description provided for @periodActivitiesSwipeDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get periodActivitiesSwipeDelete;
+
+  /// No description provided for @periodActivitiesSwipeComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get periodActivitiesSwipeComplete;
+
+  /// No description provided for @weatherFailedLoadCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load weather'**
+  String get weatherFailedLoadCurrent;
+
+  /// No description provided for @weatherFailedLoadForecast.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load forecast'**
+  String get weatherFailedLoadForecast;
+
+  /// No description provided for @weatherNoDataAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No weather data available'**
+  String get weatherNoDataAvailable;
+
+  /// No description provided for @weatherShowMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Show More'**
+  String get weatherShowMore;
+
+  /// No description provided for @weatherShowLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Less'**
+  String get weatherShowLess;
+
+  /// No description provided for @locationPickerSelectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Location'**
+  String get locationPickerSelectTitle;
+
+  /// No description provided for @weatherLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading weather data: {error}'**
+  String weatherLoadError(String error);
+
+  /// No description provided for @weatherStatsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather statistics'**
+  String get weatherStatsTitle;
+
+  /// No description provided for @weatherHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather history'**
+  String get weatherHistoryTitle;
+
+  /// No description provided for @weatherToggleTemperature.
+  ///
+  /// In en, this message translates to:
+  /// **'Temperature'**
+  String get weatherToggleTemperature;
+
+  /// No description provided for @weatherToggleHumidity.
+  ///
+  /// In en, this message translates to:
+  /// **'Humidity'**
+  String get weatherToggleHumidity;
+
+  /// No description provided for @weatherTogglePrecipitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Precipitation'**
+  String get weatherTogglePrecipitation;
+
+  /// No description provided for @weatherForecastTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Forecast'**
+  String get weatherForecastTitle;
+
+  /// No description provided for @weatherNoForecasts.
+  ///
+  /// In en, this message translates to:
+  /// **'No forecasts available'**
+  String get weatherNoForecasts;
+
+  /// No description provided for @weatherAlertsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather alerts'**
+  String get weatherAlertsTitle;
+
+  /// No description provided for @weatherNoActiveAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'No active alerts'**
+  String get weatherNoActiveAlerts;
+
+  /// No description provided for @weatherHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No historical data available'**
+  String get weatherHistoryEmpty;
+
+  /// No description provided for @weatherHistoryInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'No valid historical data available'**
+  String get weatherHistoryInvalid;
+
+  /// No description provided for @moodHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No mood history available'**
+  String get moodHistoryEmpty;
 }
 
 class _AppLocalizationsDelegate
