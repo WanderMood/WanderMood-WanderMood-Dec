@@ -117,7 +117,7 @@ Deno.serve(async (req) => {
       }
     }
     const traceStarted = performance.now()
-    console.log(`🎯 Moody v64: action=${action}, userId=${authUser.id}`)
+    console.log(`🎯 Moody v65: action=${action}, userId=${authUser.id}`)
     return traceEdgeResponse(admin, { user_id: authUser.id, user_key: rateKey, function_slug: 'moody', operation: action }, traceStarted,
       (async (): Promise<Response> => {
         switch (action) {
@@ -187,16 +187,26 @@ function clientOutputLang(params: Record<string, unknown>): 'nl' | 'en' {
   return (typeof raw === 'string' && raw.trim().toLowerCase().split('-')[0] === 'nl') ? 'nl' : 'en'
 }
 
+// Maps request params to a Google Places languageCode
+// Aligned with PlacesCacheUtils.normalizeExploreLanguageCode
+function googlePlacesLanguageFromRequest(params: Record<string, unknown>): string {
+  const raw = params.language_code ?? params.locale
+  if (typeof raw !== 'string') return 'en'
+  const lang = raw.trim().toLowerCase().split('-')[0]
+  if (lang === 'nl') return 'nl'
+  if (lang === 'de') return 'de'
+  if (lang === 'es') return 'es'
+  if (lang === 'fr') return 'fr'
+  return 'en'
+}
+
 // ============================================
-// NORMALISE MOOD — maps app label strings to backend keys
-// App sends Title Case: 'Foody', 'Excited', 'Relaxed' etc.
-// This ensures every variant resolves to the correct key.
+// NORMALISE MOOD
 // ============================================
 
 function normaliseMood(raw: string): string {
   const m = raw.toLowerCase().trim()
-  // App-specific aliases
-  if (m === 'foody') return 'foodie'   // app spells it Foody, backend key is foodie
+  if (m === 'foody') return 'foodie'
   if (m === 'ontspannen') return 'relaxed'
   if (m === 'energiek') return 'energetic'
   if (m === 'romantisch') return 'romantic'
@@ -208,11 +218,11 @@ function normaliseMood(raw: string): string {
   if (m === 'gezellig') return 'cozy'
   if (m === 'blij') return 'happy'
   if (m === 'verrassing') return 'surprise'
-  return m  // already lowercase english key
+  return m
 }
 
 // ============================================
-// PLACES API v1
+// PLACES API v1 — with language support
 // ============================================
 
 const FIELD_MASK_STANDARD = [
@@ -228,14 +238,30 @@ const FIELD_MASK_ATMOSPHERE = [
   'places.goodForGroups','places.servesVegetarianFood','places.servesCocktails','places.servesCoffee',
 ].join(',')
 
-async function searchPlacesV1(textQuery: string, coordinates: { lat: number; lng: number }, radius = 15000, useAtmosphere = false, pageSize = 20): Promise<PlaceCard[]> {
+async function searchPlacesV1(
+  textQuery: string,
+  coordinates: { lat: number; lng: number },
+  radius = 15000,
+  useAtmosphere = false,
+  pageSize = 20,
+  languageCode = 'en',
+): Promise<PlaceCard[]> {
   const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY')
   if (!apiKey?.trim()) throw new Error('GOOGLE_PLACES_API_KEY not configured')
   try {
     const response = await fetch('https://places.googleapis.com/v1/places:searchText', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': apiKey, 'X-Goog-FieldMask': useAtmosphere ? FIELD_MASK_ATMOSPHERE : FIELD_MASK_STANDARD },
-      body: JSON.stringify({ textQuery, pageSize, locationBias: { circle: { center: { latitude: coordinates.lat, longitude: coordinates.lng }, radius } }, languageCode: 'en' }),
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': apiKey,
+        'X-Goog-FieldMask': useAtmosphere ? FIELD_MASK_ATMOSPHERE : FIELD_MASK_STANDARD,
+      },
+      body: JSON.stringify({
+        textQuery,
+        pageSize,
+        locationBias: { circle: { center: { latitude: coordinates.lat, longitude: coordinates.lng }, radius } },
+        languageCode, // now dynamic per user language
+      }),
     })
     if (!response.ok) { const err = await response.text(); console.error(`❌ Places v1 "${textQuery}": ${response.status} ${err.slice(0,200)}`); return [] }
     const data = await response.json()
@@ -273,26 +299,44 @@ function transformPlaceV1(p: any, apiKey: string): PlaceCard {
   }
 }
 
-async function fetchPlacesFromGoogle(location: string, coordinates: { lat: number; lng: number }, mood: string, filters: any, queriesOverride?: string[] | null, useAtmosphere = false): Promise<PlaceCard[]> {
-  const queries = (queriesOverride?.length) ? queriesOverride : getMoodQueries(mood)
+async function fetchPlacesFromGoogle(
+  location: string,
+  coordinates: { lat: number; lng: number },
+  mood: string,
+  filters: any,
+  queriesOverride?: string[] | null,
+  useAtmosphere = false,
+  languageCode = 'en',
+): Promise<PlaceCard[]> {
+  const queries = queriesOverride?.length ? queriesOverride : getMoodQueries(mood)
   const all: PlaceCard[] = []
   for (const q of queries) {
-    try { const r = await searchPlacesV1(`${q} in ${location}`, coordinates, filters?.radius || 15000, useAtmosphere); all.push(...r); await new Promise(r => setTimeout(r, 80)) }
-    catch (e) { console.error(`❌ query "${q}":`, e) }
+    try {
+      const r = await searchPlacesV1(`${q} in ${location}`, coordinates, filters?.radius || 15000, useAtmosphere, 20, languageCode)
+      all.push(...r)
+      await new Promise(r => setTimeout(r, 80))
+    } catch (e) { console.error(`❌ query "${q}":`, e) }
   }
   return Array.from(new Map(all.map(p => [p.id, p])).values())
 }
 
-async function fetchFallbackPlaces(location: string, coordinates: { lat: number; lng: number }): Promise<PlaceCard[]> {
+async function fetchFallbackPlaces(
+  location: string,
+  coordinates: { lat: number; lng: number },
+  languageCode = 'en',
+): Promise<PlaceCard[]> {
   const queries = [`popular restaurant in ${location}`, `cafe in ${location}`, `tourist attraction in ${location}`, `park in ${location}`]
   const all: PlaceCard[] = []
-  for (const q of queries) { const r = await searchPlacesV1(q, coordinates, 20000, false, 20); all.push(...r); await new Promise(r => setTimeout(r, 80)) }
+  for (const q of queries) {
+    const r = await searchPlacesV1(q, coordinates, 20000, false, 20, languageCode)
+    all.push(...r)
+    await new Promise(r => setTimeout(r, 80))
+  }
   return Array.from(new Map(all.map(p => [p.id, p])).values())
 }
 
 // ============================================
-// MOOD DEFINITIONS v64
-// All app mood labels normalised via normaliseMood() before lookup
+// MOOD DEFINITIONS v65
 // ============================================
 
 function getMoodQueries(rawMood: string): string[] {
@@ -302,7 +346,6 @@ function getMoodQueries(rawMood: string): string[] {
     energetic:   ['street food market', 'busy food hall', 'lively neighbourhood area', 'night market', 'area with many bars', 'vibrant market'],
     romantic:    ['candlelight dinner restaurant', 'restaurant with sunset view', 'wine bar cozy', 'romantic terrace restaurant', 'restaurant by water evening', 'rooftop dinner restaurant'],
     adventurous: ['hidden gem restaurant', 'underground bar', 'street art area', 'local market authentic', 'unique experience city', 'unusual cafe'],
-    // foodie — app sends 'Foody', normaliseMood maps it here
     foodie:      ['best bakery city', 'specialty coffee roastery', 'authentic local restaurant', 'food market artisan', 'famous food spot', 'chef restaurant'],
     cultural:    ['art museum modern', 'history museum city', 'cultural center', 'heritage building', 'art gallery contemporary'],
     social:      ['lively bar', 'rooftop bar busy', 'live music venue', 'cocktail bar popular', 'food hall social', 'terrace bar groups'],
@@ -310,7 +353,7 @@ function getMoodQueries(rawMood: string): string[] {
     curious:     ['interesting places', 'interactive museum', 'unique concept store', 'hidden exhibition', 'unusual cafe experience'],
     cozy:        ['cozy cafe with sofas', 'warm bakery seating', 'quiet coffee corner', 'cafe with candles', 'small wine bar cozy'],
     happy:       ['cute brunch spot', 'fun cafe colorful', 'sunny terrace', 'ice cream dessert cafe', 'good vibes restaurant'],
-    surprise:    [], // handled by getMoodQueriesSurprise()
+    surprise:    [],
   }
   if (m === 'surprise') return getMoodQueriesSurprise()
   return map[m] || ['popular restaurant', 'local cafe', 'city park', 'attraction', 'art gallery']
@@ -536,16 +579,24 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     const userContext = await fetchUserContext(supabase, userId)
     const modeKey = userContext.isLocalMode ? 'local' : 'travel'
     const timeCtx = getTimeOfDayContext()
-    console.log(`🔍 get_explore v64: loc=${location}, mode=${modeKey}, section=${section}, time=${timeCtx.timeSlot}`)
+    const lang = googlePlacesLanguageFromRequest(params)
+    // Cache key includes language so Dutch/English get separate caches
+    // Legacy: for English we also try the old key without _en suffix
+    const cacheKey = lang === 'en'
+      ? `explore_v7_${modeKey}_${section || mood}_${location.toLowerCase().trim()}`
+      : `explore_v7_${modeKey}_${section || mood}_${location.toLowerCase().trim()}_${lang}`
+    console.log(`🔍 get_explore v65: loc=${location}, mode=${modeKey}, section=${section}, time=${timeCtx.timeSlot}, lang=${lang}`)
     if (!hasNamedFilters) {
-      const cacheKey = `explore_v7_${modeKey}_${section || mood}_${location.toLowerCase().trim()}`
       const cached = await checkCache(supabase, cacheKey)
       if (cached && cached.cards.length > 0) {
         console.log(`✅ Cache hit: ${cached.cards.length}`)
         return new Response(JSON.stringify({ ...cached, cards: applyFilters(cached.cards, filters), filters_applied: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
+      // Legacy cache fallback for English only
+      if (lang !== 'en') {
+        // No legacy fallback for non-English — we want fresh localised results
+      }
     }
-    const lang = clientOutputLang(params)
     let exploreQueries: string[]
     if (hasNamedFilters) {
       exploreQueries = namedFilters.flatMap(f => getFilterSearchQueries(f)).slice(0, 12)
@@ -566,18 +617,19 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
       const base = getBroadExploreQueries(userContext.isLocalMode, userContext.allInterests || [])
       exploreQueries = [...timeCtx.queryBoost.map(q => `${q} in ${location}`), ...base].slice(0, 12)
     } else {
-      const aiQ = await getMoodySearchQueries([mood], location, userContext, lang)
+      const clientLang = clientOutputLang(params)
+      const aiQ = await getMoodySearchQueries([mood], location, userContext, clientLang)
       exploreQueries = aiQ ?? getMoodQueries(mood)
     }
-    let places = await fetchPlacesFromGoogle(location, coordinates, mood, filters, exploreQueries, hasNamedFilters)
-    if (places.length < 10) { const fb = await fetchFallbackPlaces(location, coordinates); places = Array.from(new Map([...places, ...fb].map(p => [p.id, p])).values()) }
+    let places = await fetchPlacesFromGoogle(location, coordinates, mood, filters, exploreQueries, hasNamedFilters, lang)
+    if (places.length < 10) { const fb = await fetchFallbackPlaces(location, coordinates, lang); places = Array.from(new Map([...places, ...fb].map(p => [p.id, p])).values()) }
     places = places.slice(0, 50)
     if (hasNamedFilters) { for (const f of namedFilters) places = filterByNamedFilter(places, f) }
     const thresholds = hasNamedFilters ? { minRating: 3.5, minReviews: 5 } : { minRating: 4.0, minReviews: 8 }
     let qualified = await enrichAndFilter(places, thresholds)
     if (qualified.length < 8) qualified = await enrichAndFilter(places, { minRating: 3.5, minReviews: 5 })
     const ranked = rankPlaces(qualified, mood, !!userContext.isLocalMode, userContext.allInterests || [])
-    if (!hasNamedFilters) { const cacheKey = `explore_v7_${modeKey}_${section || mood}_${location.toLowerCase().trim()}`; await cacheExplore(supabase, cacheKey, ranked) }
+    if (!hasNamedFilters) { await cacheExplore(supabase, cacheKey, ranked) }
     const final = applyFilters(ranked, filters)
     return new Response(JSON.stringify({ cards: final, cached: false, total_found: final.length, unfiltered_total: ranked.length, named_filters_applied: namedFilters, section: section || 'all', time_slot: timeCtx.timeSlot }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (error) {
@@ -599,10 +651,11 @@ async function handleCreateDayPlan(supabase: any, userId: string, params: any): 
     const coordinates = params.coordinates
     const userContext = await fetchUserContext(supabase, userId)
     const lang = clientOutputLang(params)
+    const placesLang = googlePlacesLanguageFromRequest(params)
     const timeCtx = getTimeOfDayContext()
-    console.log(`🎯 create_day_plan v64: moods=${moods}, loc=${location}, local=${userContext.isLocalMode}, time=${timeCtx.timeSlot}`)
+    console.log(`🎯 create_day_plan v65: moods=${moods}, loc=${location}, local=${userContext.isLocalMode}, time=${timeCtx.timeSlot}, lang=${placesLang}`)
     const aiQueries = await getMoodySearchQueries(moods, location, userContext, lang, timeCtx.timeSlot)
-    let places = await fetchPlacesFromGoogle(location, coordinates, moods[0], params.filters || {}, aiQueries)
+    let places = await fetchPlacesFromGoogle(location, coordinates, moods[0], params.filters || {}, aiQueries, false, placesLang)
     let qualified = await enrichAndFilter(places, { minRating: 3.8, minReviews: 8 })
     if (qualified.length === 0) return new Response(JSON.stringify({ success: false, activities: [], location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: 0, error: 'No places found' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     const ranked = rankPlaces(qualified, moods[0] || 'adventurous', !!userContext.isLocalMode, userContext.allInterests || [])
@@ -637,7 +690,6 @@ async function getMoodySearchQueries(moods: string[], location: string, userCont
     happy: 'cute brunch spots, colorful cafes, sunny terraces, ice cream',
     surprise: 'mix of cozy cafe + authentic food + unusual experience + rooftop bar',
   }
-  // Normalise mood labels before looking up definition
   const normalisedMoods = moods.map(m => normaliseMood(m))
   const moodDef = normalisedMoods.map(m => moodDefs[m] || m).join(' + ')
   const localHint = userContext.isLocalMode
@@ -767,7 +819,8 @@ async function handleSearch(supabase: any, userId: string, params: any): Promise
   if (!query) return new Response(JSON.stringify({ error: 'Query required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   if (!location || !coordinates?.lat || !coordinates?.lng) return new Response(JSON.stringify({ error: 'Location and coordinates required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   try {
-    const results = await searchPlacesV1(`${query} in ${location}`, coordinates, 20000, false, 20)
+    const placesLang = googlePlacesLanguageFromRequest(params)
+    const results = await searchPlacesV1(`${query} in ${location}`, coordinates, 20000, false, 20, placesLang)
     const qualified = await enrichAndFilter(results, { minRating: 3.5, minReviews: 5 })
     return new Response(JSON.stringify({ cards: qualified, total_found: qualified.length }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (error) { return new Response(JSON.stringify({ cards: [], total_found: 0 }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
