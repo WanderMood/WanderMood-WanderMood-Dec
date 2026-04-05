@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
@@ -16,6 +17,7 @@ import 'package:wandermood/features/home/presentation/widgets/moody_chat_header_
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
+import 'package:wandermood/core/utils/wandermood_tts_presentation.dart';
 
 // WanderMood v2 — Moody chat (Screen 9)
 const Color _wmSkyTint = Color(0xFFF1F7FB);
@@ -28,6 +30,12 @@ const Color _wmCharcoal = Color(0xFF1E1C18);
 
 /// Below 1.0 leaves a strip of scrim above the sheet so it feels slightly shorter.
 const double _kMoodyChatSheetHeightFactor = 0.93;
+
+/// BCP-47 style tag for [FlutterTts.setLanguage] (matches full-screen Moody conversation).
+String _moodyChatSheetTtsLang(String languageCode) {
+  const m = {'nl': 'nl-NL', 'de': 'de-DE', 'fr': 'fr-FR', 'es': 'es-ES'};
+  return m[languageCode] ?? 'en-US';
+}
 
 /// Host status bar / in-app browser chrome often overlaps when only [MediaQuery.padding]
 /// is used, or when horizontal safe area is omitted. [viewPadding] is the physical inset.
@@ -155,7 +163,10 @@ class _MoodyChatSheetContent extends ConsumerStatefulWidget {
 class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> {
   late final TextEditingController _chatController;
   late final ScrollController _scrollController;
+  final FlutterTts _flutterTts = FlutterTts();
   bool _isAILoading = false;
+  bool _ttsConfigured = false;
+  bool _ttsEnabled = true;
 
   @override
   void initState() {
@@ -165,7 +176,47 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_ttsConfigured) {
+      _ttsConfigured = true;
+      _configureTtsForLocale();
+    }
+  }
+
+  Future<void> _configureTtsForLocale() async {
+    if (kIsWeb) return;
+    final lang = Localizations.localeOf(context).languageCode;
+    await applyWanderMoodTtsPresentation(
+      tts: _flutterTts,
+      bcp47Locale: _moodyChatSheetTtsLang(lang),
+    );
+  }
+
+  Future<void> _speakAssistantReply(String text) async {
+    if (kIsWeb || !_ttsEnabled || text.trim().isEmpty) return;
+    if (!mounted) return;
+    try {
+      await _flutterTts.stop();
+      if (!mounted) return;
+      await _flutterTts.speak(text);
+    } catch (_) {}
+  }
+
+  void _toggleTtsEnabled() {
+    setState(() {
+      _ttsEnabled = !_ttsEnabled;
+      if (!_ttsEnabled && !kIsWeb) {
+        _flutterTts.stop();
+      }
+    });
+  }
+
+  @override
   void dispose() {
+    if (!kIsWeb) {
+      _flutterTts.stop();
+    }
     _chatController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -232,6 +283,7 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
         _isAILoading = false;
       });
       _scheduleMoodyChatScroll(_scrollController);
+      _speakAssistantReply(response.message);
     } catch (e) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
@@ -304,6 +356,8 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
                                     city: city,
                                     style: style,
                                   ),
+                                  ttsEnabled: _ttsEnabled,
+                                  onTtsToggle: _toggleTtsEnabled,
                                 );
                               },
                             ),
@@ -463,9 +517,15 @@ class _RepaintWhenKeyboardMetricsChangeState
 // Header
 // ---------------------------------------------------------------------------
 class _MoodyChatHeader extends StatelessWidget {
-  const _MoodyChatHeader({required this.subtitle});
+  const _MoodyChatHeader({
+    required this.subtitle,
+    required this.ttsEnabled,
+    required this.onTtsToggle,
+  });
 
   final String subtitle;
+  final bool ttsEnabled;
+  final VoidCallback onTtsToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -557,6 +617,29 @@ class _MoodyChatHeader extends StatelessWidget {
                           ],
                         ),
                       ),
+                      if (!kIsWeb) ...[
+                        Material(
+                          color: Colors.white.withValues(alpha: 0.55),
+                          shape: const CircleBorder(),
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            onTap: onTtsToggle,
+                            customBorder: const CircleBorder(),
+                            child: SizedBox(
+                              width: 40,
+                              height: 40,
+                              child: Icon(
+                                ttsEnabled
+                                    ? Icons.volume_up_rounded
+                                    : Icons.volume_off_rounded,
+                                color: Colors.grey.shade700,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
                       Material(
                         color: Colors.white.withValues(alpha: 0.55),
                         shape: const CircleBorder(),

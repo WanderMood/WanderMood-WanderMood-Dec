@@ -18,6 +18,7 @@ import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
+import 'package:wandermood/core/utils/wandermood_tts_presentation.dart';
 
 // WanderMood v2 — Moody conversation overlay (aligned with moody_chat_sheet / Screen 9)
 const Color _wmSkyTint = Color(0xFFEDF5F9);
@@ -181,6 +182,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
       final greeting = AppLocalizations.of(context)!.moodyConversationGreeting;
       _addMoodyMessage(greeting);
       Future.delayed(const Duration(milliseconds: 500), () {
+        if (!mounted) return;
         _speakMoodyResponse(greeting);
       });
     }
@@ -209,24 +211,27 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
   }
   
   Future<void> _initTts() async {
-    await _flutterTts.setLanguage(_ttsLang(_langCode));
-    await _flutterTts.setSpeechRate(0.5);
-    await _flutterTts.setVolume(1.0);
-    await _flutterTts.setPitch(1.0);
-    
+    await applyWanderMoodTtsPresentation(
+      tts: _flutterTts,
+      bcp47Locale: _ttsLang(_langCode),
+    );
+
     _flutterTts.setStartHandler(() {
+      if (!mounted) return;
       setState(() {
         _isSpeaking = true;
       });
     });
     
     _flutterTts.setCompletionHandler(() {
+      if (!mounted) return;
       setState(() {
         _isSpeaking = false;
       });
     });
     
     _flutterTts.setErrorHandler((message) {
+      if (!mounted) return;
       setState(() {
         _isSpeaking = false;
       });
@@ -395,10 +400,11 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
   }
   
   Future<void> _speakMoodyResponse(String text) async {
+    if (!mounted) return;
     if (_isSpeaking) {
       await _flutterTts.stop();
     }
-    
+    if (!mounted) return;
     await _flutterTts.speak(text);
   }
   
@@ -766,7 +772,10 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
     
     // Wait for speech to finish, then navigate
     _flutterTts.setCompletionHandler(() {
-      // Show some visual feedback that we're transitioning to plan creation
+      if (!mounted) return;
+      setState(() {
+        _isSpeaking = false;
+      });
       _showPlanTransition();
     });
   }
