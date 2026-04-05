@@ -427,6 +427,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     });
 
     final filters = ref.read(moodyExploreBackendFiltersProvider);
+    final namedFilters = ref.read(moodyExploreBackendNamedFiltersProvider);
     final service = ref.read(moodyEdgeFunctionServiceProvider);
     try {
       final places = await service.getExplore(
@@ -435,6 +436,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         longitude: position.longitude,
         section: section.id,
         filters: filters.isEmpty ? null : filters,
+        namedFilters: namedFilters.isEmpty ? null : namedFilters,
         languageCode: exploreLang,
       );
       if (!mounted) return;
@@ -766,6 +768,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     });
     ref.read(moodyExploreBackendFiltersProvider.notifier).state =
         <String, dynamic>{};
+    ref.read(moodyExploreBackendNamedFiltersProvider.notifier).state = [];
     unawaited(_invalidateExploreIfOnline());
   }
 
@@ -812,27 +815,19 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       filters['excludeTypes'] = excludeTypes;
     }
 
+    // Dietary / inclusion / photo vibes go to moody `namedFilters` (see _buildMoodyNamedFilters).
+    // Remaining strings are applied server-side on cache hits as `filters.requiredKeywords`.
     final requiredKeywords = <String>[];
-    if (_vegan) requiredKeywords.add('vegan');
-    if (_vegetarian) requiredKeywords.add('vegetarian');
-    if (_halal) requiredKeywords.add('halal');
-    if (_glutenFree) requiredKeywords.add('gluten');
+    if (_pescatarian) requiredKeywords.add('pescatarian');
+    if (_noAlcohol) requiredKeywords.add('no alcohol');
     if (_wheelchairAccessible) requiredKeywords.add('wheelchair');
-    if (_lgbtqFriendly) requiredKeywords.add('lgbt');
     if (_seniorFriendly) requiredKeywords.add('senior');
-    if (_babyFriendly) requiredKeywords.add('family');
-    if (_blackOwned) requiredKeywords.add('black owned');
+    if (_sensoryFriendly) requiredKeywords.add('sensory');
     if (_wifiAvailable) requiredKeywords.add('wifi');
     if (_chargingPoints) requiredKeywords.add('charging');
     if (_parkingAvailable) requiredKeywords.add('parking');
     if (_creditCards) requiredKeywords.add('card payment');
-    if (_instagrammable) requiredKeywords.add('instagrammable');
-    if (_artisticDesign) requiredKeywords.add('design');
-    if (_aestheticSpaces) requiredKeywords.add('aesthetic');
-    if (_scenicViews) requiredKeywords.add('scenic');
-    if (_bestAtSunset) requiredKeywords.add('sunset');
     if (_bestAtNight) requiredKeywords.add('night');
-    if (_romanticVibe) requiredKeywords.add('romantic');
     if (_weatherSafe) requiredKeywords.add('indoor');
 
     if (requiredKeywords.isNotEmpty) {
@@ -840,6 +835,29 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     }
 
     return filters;
+  }
+
+  /// Slugs aligned with moody `getFilterSearchQueries` / `filterByNamedFilter`.
+  List<String> _buildMoodyNamedFilters() {
+    final out = <String>[];
+    void add(String s) {
+      if (!out.contains(s)) out.add(s);
+    }
+
+    if (_vegan) add('vegan');
+    if (_vegetarian) add('vegetarian');
+    if (_halal) add('halal');
+    if (_glutenFree) add('gluten_free');
+    if (_instagrammable) add('instagrammable');
+    if (_romanticVibe) add('romantic');
+    if (_aestheticSpaces || _artisticDesign) add('aesthetic_spaces');
+    if (_scenicViews) add('scenic_views');
+    if (_bestAtSunset) add('sunset');
+    if (_blackOwned) add('black_owned');
+    if (_lgbtqFriendly) add('lgbtq_friendly');
+    if (_babyFriendly) add('kids_friendly');
+
+    return out;
   }
 
   void _showAdvancedFilters() {
@@ -1040,6 +1058,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return result;
   }
 
+  bool _backendNamedFilterActive(String slug) {
+    return ref.read(moodyExploreBackendNamedFiltersProvider).contains(slug);
+  }
+
   bool _checkAdvancedFilters(Place place) {
     // Mood filter
     if (_selectedMood != null && !_placeMatchesMood(place, _selectedMood!))
@@ -1055,23 +1077,36 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     // Availability filter
     if (_openNow && !_placeIsCurrentlyOpen(place)) return false;
 
-    // Dietary preferences - using smart metadata matching
-    if (_vegan && !_matchesFilter(place, 'vegan')) return false;
-    if (_vegetarian && !_matchesFilter(place, 'vegetarian')) return false;
-    if (_halal && !_matchesFilter(place, 'halal')) return false;
-    if (_glutenFree && !_matchesFilter(place, 'gluten_free')) return false;
+    // Dietary — when moody fetched with matching [namedFilters], trust that path.
+    if (_vegan &&
+        !_backendNamedFilterActive('vegan') &&
+        !_matchesFilter(place, 'vegan')) return false;
+    if (_vegetarian &&
+        !_backendNamedFilterActive('vegetarian') &&
+        !_matchesFilter(place, 'vegetarian')) return false;
+    if (_halal &&
+        !_backendNamedFilterActive('halal') &&
+        !_matchesFilter(place, 'halal')) return false;
+    if (_glutenFree &&
+        !_backendNamedFilterActive('gluten_free') &&
+        !_matchesFilter(place, 'gluten_free')) return false;
     if (_pescatarian && !_placeSupportsVeganVegetarian(place))
       return false; // Pescatarian matches vegetarian
 
     // Accessibility & Inclusion - using smart metadata matching
     if (_wheelchairAccessible &&
         !_matchesFilter(place, 'wheelchair_accessible')) return false;
-    if (_lgbtqFriendly && !_matchesFilter(place, 'lgbtq_friendly'))
-      return false;
+    if (_lgbtqFriendly &&
+        (!_backendNamedFilterActive('lgbtq_friendly') &&
+            !_matchesFilter(place, 'lgbtq_friendly'))) return false;
     if (_seniorFriendly && !_matchesFilter(place, 'senior_friendly'))
       return false;
-    if (_babyFriendly && !_matchesFilter(place, 'baby_friendly')) return false;
-    if (_blackOwned && !_matchesFilter(place, 'black_owned')) return false;
+    if (_babyFriendly &&
+        (!_backendNamedFilterActive('kids_friendly') &&
+            !_matchesFilter(place, 'baby_friendly'))) return false;
+    if (_blackOwned &&
+        (!_backendNamedFilterActive('black_owned') &&
+            !_matchesFilter(place, 'black_owned'))) return false;
 
     // Comfort & Convenience - using smart metadata matching
     if (_wifiAvailable && !_matchesFilter(place, 'wifi_available'))
@@ -1083,12 +1118,18 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     if (_creditCards && !_matchesFilter(place, 'credit_cards')) return false;
 
     // Photo Options - using smart metadata matching
-    if (_instagrammable && !_matchesFilter(place, 'instagrammable'))
-      return false;
-    if (_aestheticSpaces && !_matchesFilter(place, 'aesthetic_spaces'))
-      return false;
-    if (_scenicViews && !_matchesFilter(place, 'scenic_views')) return false;
-    if (_bestAtSunset && !_matchesFilter(place, 'best_at_sunset')) return false;
+    if (_instagrammable &&
+        (!_backendNamedFilterActive('instagrammable') &&
+            !_matchesFilter(place, 'instagrammable'))) return false;
+    if ((_aestheticSpaces || _artisticDesign) &&
+        (!_backendNamedFilterActive('aesthetic_spaces') &&
+            !_matchesFilter(place, 'aesthetic_spaces'))) return false;
+    if (_scenicViews &&
+        (!_backendNamedFilterActive('scenic_views') &&
+            !_matchesFilter(place, 'scenic_views'))) return false;
+    if (_bestAtSunset &&
+        (!_backendNamedFilterActive('sunset') &&
+            !_matchesFilter(place, 'best_at_sunset'))) return false;
 
     return true;
   }
@@ -1111,7 +1152,23 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final keywordMap = {
       'vegan': ['vegan', 'plant-based', 'plant based', 'vegetarian'],
       'vegetarian': ['vegetarian', 'veggie', 'meat-free', 'meat free'],
-      'halal': ['halal', 'muslim', 'islamic'],
+      'halal': [
+        'halal',
+        'muslim',
+        'islamic',
+        'turkish',
+        'kebab',
+        'kabab',
+        'döner',
+        'doner',
+        'shawarma',
+        'middle eastern',
+        'persian',
+        'arab',
+        'moroccan',
+        'lebanese',
+        'pakistani',
+      ],
       'gluten_free': ['gluten-free', 'gluten free', 'celiac', 'gf'],
       'wheelchair_accessible': [
         'accessible',
@@ -2228,9 +2285,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             }
                             Navigator.pop(context);
                             final backendFilters = _buildMoodyBackendFilters();
+                            final namedFilters = _buildMoodyNamedFilters();
                             ref
                                 .read(moodyExploreBackendFiltersProvider.notifier)
                                 .state = backendFilters;
+                            ref
+                                .read(
+                                    moodyExploreBackendNamedFiltersProvider
+                                        .notifier,
+                                )
+                                .state = namedFilters;
                             ref.invalidate(moodyExploreAutoProvider);
                             unawaited(_loadAllSections());
                             // Force a rebuild to apply filters

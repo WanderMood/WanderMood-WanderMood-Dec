@@ -428,15 +428,25 @@ function getBroadExploreQueries(isLocalMode: boolean, interests: string[]): stri
 
 function getFilterSearchQueries(filterName: string): string[] {
   const map: Record<string, string[]> = {
-    halal: ['halal restaurant', 'halal food', 'halal cafe', 'muslim friendly restaurant'],
+    halal: [
+      'halal restaurant', 'halal food', 'halal cafe', 'muslim friendly restaurant',
+      'turkish restaurant', 'kebab restaurant', 'middle eastern restaurant', 'lebanese restaurant',
+      'moroccan restaurant', 'persian restaurant', 'shawarma restaurant',
+    ],
     lgbtq_friendly: ['lgbtq friendly bar', 'gay friendly cafe', 'inclusive restaurant queer'],
     black_owned: ['black owned restaurant', 'black owned cafe', 'afro restaurant'],
     family_friendly: ['family restaurant', 'family friendly cafe', 'family park attraction'],
     kids_friendly: ['kids friendly restaurant', 'children museum', 'playground family restaurant'],
-    vegan: ['vegan restaurant', 'plant based restaurant', 'vegan cafe'],
-    vegetarian: ['vegetarian restaurant', 'vegetarian cafe', 'plant based food'],
-    gluten_free: ['gluten free restaurant', 'celiac friendly restaurant cafe'],
-    instagrammable: ['aesthetic cafe', 'rooftop restaurant view', 'scenic viewpoint', 'beautiful interior restaurant', 'flower cafe'],
+    vegan: [
+      'vegan restaurant', 'plant based restaurant', 'vegan cafe', 'fully vegan food',
+      'vegan friendly restaurant', 'plant based cafe', 'raw vegan restaurant',
+    ],
+    vegetarian: ['vegetarian restaurant', 'vegetarian cafe', 'veg restaurant', 'meat free restaurant'],
+    gluten_free: ['gluten free restaurant', 'celiac friendly restaurant cafe', 'gluten free bakery cafe'],
+    instagrammable: ['aesthetic cafe', 'rooftop restaurant view', 'scenic viewpoint', 'beautiful interior restaurant', 'flower cafe', 'instagram worthy cafe'],
+    aesthetic_spaces: ['design hotel lobby cafe', 'minimalist aesthetic restaurant', 'beautiful interior brunch', 'concept store cafe design', 'art cafe gallery'],
+    scenic_views: ['rooftop bar city view', 'waterfront restaurant view', 'hill viewpoint cafe', 'panoramic terrace restaurant', 'scenic overlook'],
+    sunset: ['sunset rooftop bar', 'waterfront sunset dinner', 'terrace sunset view restaurant', 'golden hour viewpoint'],
     romantic: ['candlelight dinner', 'rooftop dining', 'wine bar cozy', 'romantic restaurant water'],
     trendy: ['trendy restaurant', 'specialty coffee', 'craft beer bar', 'rooftop bar'],
     outdoor: ['city park', 'botanical garden', 'outdoor terrace', 'waterfront'],
@@ -562,11 +572,55 @@ function isPlaceValid(place: PlaceCard, thresholds: { minRating: number; minRevi
     !!place.photo_url?.trim() && (place.rating || 0) >= thresholds.minRating && (place.user_ratings_total || 0) >= thresholds.minReviews
 }
 
+function placeCardSearchText(p: PlaceCard): string {
+  return ((p.name || '') + ' ' + (p.editorial_summary || '') + ' ' + (p.address || '') + ' ' + (p.vicinity || '') + ' ' + (p.types || []).join(' ')).toLowerCase()
+}
+
 function filterByNamedFilter(places: PlaceCard[], filterName: string): PlaceCard[] {
-  const f = filterName.toLowerCase()
-  if (f === 'kids_friendly' || f === 'family_friendly') { const a = places.filter(p => p.good_for_children === true); return a.length > 0 ? a : places }
-  if (f === 'vegan' || f === 'vegetarian') { const a = places.filter(p => p.serves_vegetarian_food === true); return a.length > 0 ? a : places }
-  if (f === 'outdoor') { const a = places.filter(p => p.outdoor_seating === true); return a.length > 0 ? a : places }
+  const f = filterName.toLowerCase().replace(/[^a-z_]/g, '')
+  if (f === 'kids_friendly' || f === 'family_friendly') {
+    const a = places.filter(p => p.good_for_children === true)
+    return a.length > 0 ? a : places
+  }
+  if (f === 'vegetarian') {
+    const a = places.filter(p =>
+      p.serves_vegetarian_food === true ||
+      /vegetarian|veggie|plant[- ]?based|vegan|meat[- ]?free/.test(placeCardSearchText(p)),
+    )
+    return a.length > 0 ? a : places
+  }
+  if (f === 'vegan') {
+    const a = places.filter(p =>
+      /vegan|plant[- ]?based|plantbased|100% plant|fully plant/.test(placeCardSearchText(p)) ||
+      (p.serves_vegetarian_food === true && /vegan/.test(placeCardSearchText(p))),
+    )
+    return a.length > 0 ? a : places
+  }
+  if (f === 'halal') {
+    const a = places.filter(p =>
+      /halal|muslim|islamic|turkish|kebab|kabab|döner|doner|shawarma|middle eastern|persian|arab|moroccan|lebanese|pakistani|indonesian|uyghur/.test(placeCardSearchText(p)),
+    )
+    return a.length > 0 ? a : places
+  }
+  if (f === 'gluten_free') {
+    const a = places.filter(p =>
+      /gluten[- ]?free|celiac|gf\b|sin gluten/.test(placeCardSearchText(p)),
+    )
+    return a.length > 0 ? a : places
+  }
+  if (f === 'outdoor') {
+    const a = places.filter(p => p.outdoor_seating === true)
+    return a.length > 0 ? a : places
+  }
+  if (f === 'instagrammable' || f === 'aesthetic_spaces' || f === 'scenic_views' || f === 'sunset') {
+    const a = places.filter(p =>
+      (p.photo_url?.trim() ? 1 : 0) +
+        (p.editorial_summary?.trim() ? 1 : 0) +
+        (/view|rooftop|terrace|waterfront|sunset|panoramic|scenic|aesthetic|beautiful|design|interior|gallery/.test(placeCardSearchText(p)) ? 1 : 0) >=
+        (f === 'instagrammable' || f === 'aesthetic_spaces' ? 1 : 2),
+    )
+    return a.length > 0 ? a : places
+  }
   return places
 }
 
@@ -593,13 +647,39 @@ async function cacheExplore(supabase: any, cacheKey: string, places: PlaceCard[]
   } catch (e) { console.error('❌ cacheExplore:', e) }
 }
 
+function placeMatchesRequiredKeyword(text: string, rawKey: string): boolean {
+  const k = rawKey.toLowerCase().trim()
+  if (!k) return true
+  if (k === 'halal' || k.includes('halal')) {
+    return /halal|muslim|islamic|turkish|kebab|kabab|döner|doner|shawarma|middle eastern|persian|arab|moroccan|lebanese|pakistani/.test(text)
+  }
+  if (k === 'vegan' || k.includes('vegan')) {
+    return /vegan|plant[- ]?based|plantbased/.test(text)
+  }
+  if (k === 'vegetarian' || k.includes('vegetarian')) {
+    return /vegetarian|veggie|plant[- ]?based|vegan|meat[- ]?free/.test(text)
+  }
+  if (k.includes('gluten')) {
+    return /gluten[- ]?free|celiac|gf\b/.test(text)
+  }
+  return text.includes(k)
+}
+
 function applyFilters(places: PlaceCard[], filters: any): PlaceCard[] {
   if (!filters || Object.keys(filters).length === 0) return places
+  const required = filters.requiredKeywords
+  const kwList = Array.isArray(required) ? required.filter((x: any) => typeof x === 'string' && x.trim()) : []
   return places.filter(place => {
     if (filters.rating && place.rating < filters.rating) return false
     if (filters.priceLevel && place.price_level && place.price_level > filters.priceLevel) return false
     if (filters.openNow === true && place.opening_hours?.open_now !== true) return false
     if (filters.minReviews && (place.user_ratings_total || 0) < filters.minReviews) return false
+    if (kwList.length > 0) {
+      const text = placeCardSearchText(place)
+      for (const kw of kwList) {
+        if (!placeMatchesRequiredKeyword(text, kw)) return false
+      }
+    }
     return true
   })
 }
@@ -637,7 +717,7 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     const clientLang = clientOutputLang(params)
     let exploreQueries: string[]
     if (hasNamedFilters) {
-      exploreQueries = namedFilters.flatMap(f => getFilterSearchQueries(f)).slice(0, 12)
+      exploreQueries = namedFilters.flatMap(f => getFilterSearchQueries(f)).slice(0, 16)
     } else if (section === 'food') {
       exploreQueries = userContext.isLocalMode
         ? ['neighbourhood restaurant', 'local food market', 'artisan bakery', 'specialty coffee', 'local bistro', 'neighbourhood cafe', 'local restaurant hidden gem']

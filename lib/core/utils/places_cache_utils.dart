@@ -1,3 +1,4 @@
+import 'dart:math' show Random;
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -278,10 +279,12 @@ class PlacesCacheUtils {
           );
         }
 
-        return cards.map((c) {
+        final mapped = cards.map((c) {
           final m = c is Map<String, dynamic> ? c : Map<String, dynamic>.from(c as Map);
           return placeFromMoodyExploreCard(m);
         }).toList();
+        mapped.shuffle(Random());
+        return mapped;
       } catch (e, st) {
         if (kDebugMode) {
           debugPrint('⚠️ places_cache explore read error ($cacheKey): $e\n$st');

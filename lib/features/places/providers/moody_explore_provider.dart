@@ -16,6 +16,7 @@ class ExploreParams {
   final double latitude;
   final double longitude;
   final Map<String, dynamic>? filters;
+  final List<String>? namedFilters;
   final String? section;
   final String languageCode;
 
@@ -24,6 +25,7 @@ class ExploreParams {
     required this.latitude,
     required this.longitude,
     this.filters,
+    this.namedFilters,
     this.section,
     required this.languageCode,
   });
@@ -38,7 +40,8 @@ class ExploreParams {
           longitude == other.longitude &&
           section == other.section &&
           languageCode == other.languageCode &&
-          _mapsEqual(filters, other.filters);
+          _mapsEqual(filters, other.filters) &&
+          _stringListsEqual(namedFilters, other.namedFilters);
 
   @override
   int get hashCode =>
@@ -47,7 +50,19 @@ class ExploreParams {
       longitude.hashCode ^
       (section?.hashCode ?? 0) ^
       languageCode.hashCode ^
-      (filters?.toString().hashCode ?? 0);
+      (filters?.toString().hashCode ?? 0) ^
+      Object.hashAll(namedFilters ?? const <String>[]);
+
+  static bool _stringListsEqual(List<String>? a, List<String>? b) {
+    if (identical(a, b)) return true;
+    if (a == null && b == null) return true;
+    if (a == null || b == null) return false;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
 
   bool _mapsEqual(Map<String, dynamic>? a, Map<String, dynamic>? b) {
     if (a == null && b == null) return true;
@@ -69,6 +84,10 @@ final moodyEdgeFunctionServiceProvider = Provider<MoodyEdgeFunctionService>((ref
 final moodyExploreBackendFiltersProvider =
     StateProvider<Map<String, dynamic>>((ref) => <String, dynamic>{});
 
+/// Named Explore filters (vegan, halal, instagrammable, …) sent to moody `get_explore` as `namedFilters`.
+final moodyExploreBackendNamedFiltersProvider =
+    StateProvider<List<String>>((ref) => <String>[]);
+
 /// Provider that gets explore places from Moody Edge Function
 final moodyExploreProvider = FutureProvider.family<List<Place>, ExploreParams>((ref, params) async {
   final service = ref.watch(moodyEdgeFunctionServiceProvider);
@@ -80,6 +99,7 @@ final moodyExploreProvider = FutureProvider.family<List<Place>, ExploreParams>((
       longitude: params.longitude,
       section: params.section,
       filters: params.filters,
+      namedFilters: params.namedFilters,
       languageCode: params.languageCode,
     );
     final notifier = ref.read(placesServiceProvider.notifier);
@@ -129,13 +149,15 @@ final moodyExploreAutoProvider = FutureProvider<List<Place>>((ref) async {
   
   // Advanced filters from Explore UI (kept in provider state).
   final filters = ref.watch(moodyExploreBackendFiltersProvider);
-  
+  final namedFilters = ref.watch(moodyExploreBackendNamedFiltersProvider);
+
   // Create params with validated location and coordinates
   final params = ExploreParams(
     location: location.trim(),
     latitude: position.latitude,
     longitude: position.longitude,
     filters: filters,
+    namedFilters: namedFilters.isEmpty ? null : namedFilters,
     section: null,
     languageCode: PlacesCacheUtils.effectiveExploreLanguageTag(
       appLocale: ref.watch(localeProvider),
