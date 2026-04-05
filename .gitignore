@@ -4,6 +4,9 @@
 *.pyc
 *.swp
 .DS_Store
+
+# Claude Code / Cursor local worktrees (nested copies; do not commit)
+.claude/
 .atom/
 .build/
 .buildlog/
