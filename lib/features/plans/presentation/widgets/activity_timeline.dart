@@ -116,7 +116,7 @@ class TimelineItem extends StatelessWidget {
                   if (activity.imageUrl != null)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: WmNetworkImage(
+                      child: WmPlacePhotoNetworkImage(
                         activity.imageUrl!,
                         width: double.infinity,
                         height: 80,

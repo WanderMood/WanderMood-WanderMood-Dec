@@ -34,7 +34,7 @@ class AllTrendingDestinationsScreen extends StatelessWidget {
             leading: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: url != null
-                  ? WmNetworkImage(
+                  ? WmPlacePhotoNetworkImage(
                       url,
                       width: 56,
                       height: 56,

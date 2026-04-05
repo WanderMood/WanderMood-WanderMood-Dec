@@ -121,7 +121,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
         background: Stack(
           fit: StackFit.expand,
           children: [
-            WmNetworkImage(
+            WmPlacePhotoNetworkImage(
               widget.activity.imageUrl,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Container(color: Colors.grey[300], child: const Icon(Icons.place, size: 80, color: Colors.grey)),
@@ -1320,7 +1320,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
           borderRadius: BorderRadius.circular(16),
           child: Stack(
             children: [
-              WmNetworkImage(
+              WmPlacePhotoNetworkImage(
                 imageUrl,
                 fit: BoxFit.cover,
                 width: double.infinity,
@@ -1388,7 +1388,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
         child: Stack(
           children: [
             Center(
-              child: WmNetworkImage(
+              child: WmPlacePhotoNetworkImage(
                 imageUrl,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {

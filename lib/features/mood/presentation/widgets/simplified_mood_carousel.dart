@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import '../../../places/models/place.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import '../../../places/services/saved_places_service.dart';
 import '../../../../core/extensions/string_extensions.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -263,11 +262,10 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
     final imageUrl = place.photos.isNotEmpty ? place.photos.first : null;
     
     if (imageUrl != null && imageUrl.isNotEmpty) {
-      return CachedNetworkImage(
-        cacheManager: WanderMoodImageCacheManager.instance,
-        imageUrl: imageUrl,
+      return WmPlacePhotoNetworkImage(
+        imageUrl,
         fit: BoxFit.cover,
-        placeholder: (context, url) => Container(
+        progressIndicatorBuilder: (context, url, progress) => Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -278,18 +276,17 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
           child: Center(
             child: CircularProgressIndicator(
               strokeWidth: 2,
+              value: progress.progress,
               valueColor: AlwaysStoppedAnimation<Color>(
                 Colors.white.withOpacity(0.5),
               ),
             ),
           ),
         ),
-        errorWidget: (context, url, error) {
-          if (kDebugMode) debugPrint('⚠️ Image load error for $url: $error');
+        errorBuilder: (context, error, stackTrace) {
+          if (kDebugMode) debugPrint('⚠️ Image load error for $imageUrl: $error');
           return _buildGradientPlaceholder(place, gradientColors);
         },
-        fadeInDuration: const Duration(milliseconds: 300),
-        fadeOutDuration: const Duration(milliseconds: 100),
       );
     }
     

@@ -472,7 +472,7 @@ class _DailyScheduleScreenState extends ConsumerState<DailyScheduleScreen> {
               topLeft: Radius.circular(16),
               bottomLeft: Radius.circular(16),
             ),
-            child: WmNetworkImage(
+            child: WmPlacePhotoNetworkImage(
               activity.imageUrl,
               width: 100,
               height: 120,

@@ -190,7 +190,7 @@ class PlanSummarySheet extends StatelessWidget {
           // Activity image
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: WmNetworkImage(
+            child: WmPlacePhotoNetworkImage(
               activity.imageUrl,
               width: 60,
               height: 60,

@@ -245,7 +245,7 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
 
   Widget _buildImage(Place place, List<Color> gradientColors) {
     return place.photos.isNotEmpty
-        ? WmNetworkImage(
+        ? WmPlacePhotoNetworkImage(
             place.photos.first,
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) =>

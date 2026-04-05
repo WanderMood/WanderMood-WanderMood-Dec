@@ -115,7 +115,7 @@ class MoodBasedCarousel extends ConsumerWidget {
                       children: [
                         // Place image or gradient placeholder
                         place.photos.isNotEmpty
-                            ? WmNetworkImage(
+                            ? WmPlacePhotoNetworkImage(
                                 place.photos.first,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) =>

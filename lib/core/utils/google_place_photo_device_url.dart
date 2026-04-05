@@ -13,8 +13,12 @@ import 'package:wandermood/core/constants/api_keys.dart';
 /// disk cache, but they all receive the same `photo_url` strings from the server.
 ///
 /// Backend URLs often embed a **server-only** API key; mobile gets 403 / grey placeholder.
-/// This helper swaps `key=` for the app’s [ApiKeys.googlePlacesKey] while keeping the same
-/// `photoreference`, so the cached file key stays stable for a given reference + maxwidth.
+/// This helper swaps `key=` for the app’s [ApiKeys.googlePlacesKey].
+///
+/// Handles:
+/// - Legacy: `maps.googleapis.com/.../place/photo?photoreference=...&key=...`
+/// - Places API (New): `places.googleapis.com/v1/.../media?maxWidthPx=...&key=...`
+///   (Moody `get_explore` / v1 search — must use the **device** Places key for the image GET).
 String deviceAccessibleGooglePlacePhotoUrl(String url) {
   final trimmed = url.trim();
   if (trimmed.isEmpty) return trimmed;
@@ -27,11 +31,20 @@ String deviceAccessibleGooglePlacePhotoUrl(String url) {
     return trimmed;
   }
 
-  if (uri.host != 'maps.googleapis.com') return trimmed;
-  if (!uri.path.contains('place/photo')) return trimmed;
-
   try {
     final clientKey = ApiKeys.googlePlacesKey;
+
+    // Places API (New) photo media — same resource name, replace server key for on-device GET.
+    if (uri.host == 'places.googleapis.com' &&
+        uri.path.contains('/media')) {
+      final qp = Map<String, String>.from(uri.queryParameters);
+      qp['key'] = clientKey;
+      return uri.replace(queryParameters: qp).toString();
+    }
+
+    if (uri.host != 'maps.googleapis.com') return trimmed;
+    if (!uri.path.contains('place/photo')) return trimmed;
+
     final qp = Map<String, String>.from(uri.queryParameters);
     if (qp['photoreference'] == null || qp['photoreference']!.isEmpty) {
       return trimmed;

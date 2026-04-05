@@ -590,7 +590,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           if (activity.imageUrl.isNotEmpty)
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: WmNetworkImage(
+              child: WmPlacePhotoNetworkImage(
                 activity.imageUrl,
                 width: 60,
                 height: 60,
@@ -2471,7 +2471,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             children: [
               // Background image
               if (adventure.imageUrl.isNotEmpty)
-                WmNetworkImage(
+                WmPlacePhotoNetworkImage(
                   adventure.imageUrl,
                   width: double.infinity,
                   height: 200,
@@ -4862,7 +4862,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                       top: Radius.circular(16),
                     ),
                     child: activity.imageUrl.isNotEmpty
-                        ? WmNetworkImage(
+                        ? WmPlacePhotoNetworkImage(
                             activity.imageUrl,
                             width: double.infinity,
                             height: 120,

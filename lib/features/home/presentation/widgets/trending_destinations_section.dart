@@ -159,7 +159,7 @@ class TrendingDestinationsSection extends ConsumerWidget {
             fit: StackFit.expand,
             children: [
               if (destination.photos.isNotEmpty)
-                WmNetworkImage(
+                WmPlacePhotoNetworkImage(
                   destination.photos.first,
                   fit: BoxFit.cover,
                 ),
