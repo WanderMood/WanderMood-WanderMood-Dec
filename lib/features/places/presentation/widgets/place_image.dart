@@ -37,7 +37,7 @@ class PlaceImage extends StatelessWidget {
                   return _buildPlaceholder();
                 },
               )
-            : WmNetworkImage(
+            : WmPlacePhotoNetworkImage(
                 imageUrl,
                 width: width,
                 height: height,

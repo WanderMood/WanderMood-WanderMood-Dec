@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/features/auth/providers/auth_provider.dart';
 import '../models/current_user_profile.dart';
 
 final currentUserProfileProvider =
@@ -24,7 +25,62 @@ class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
 
   @override
   Future<CurrentUserProfile?> build() async {
+    // Re-run when auth hydrates so Profile tab does not stick on a null spinner.
+    ref.watch(authStateChangesProvider);
     return _fetch();
+  }
+
+  Future<Map<String, dynamic>?> _fetchProfileRow(
+    SupabaseClient supabase,
+    String userId,
+  ) async {
+    try {
+      return await supabase
+          .from('profiles')
+          .select(
+              'full_name, username, bio, image_url, mood_streak, currently_exploring')
+          .eq('id', userId)
+          .maybeSingle();
+    } on PostgrestException catch (e) {
+      final msg = e.message.toLowerCase();
+      if (msg.contains('column') && msg.contains('does not exist')) {
+        return await supabase
+            .from('profiles')
+            .select('full_name, username, bio, image_url, mood_streak')
+            .eq('id', userId)
+            .maybeSingle();
+      }
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>?> _fetchPrefsRow(
+    SupabaseClient supabase,
+    String userId,
+  ) async {
+    const full =
+        'home_base, age_group, gender, selected_moods, budget_level, social_vibe, '
+        'dietary_restrictions, activity_pace, time_available, interests';
+    const narrow =
+        'home_base, age_group, gender, selected_moods, budget_level, social_vibe, '
+        'dietary_restrictions, activity_pace, time_available';
+    try {
+      return await supabase
+          .from('user_preferences')
+          .select(full)
+          .eq('user_id', userId)
+          .maybeSingle();
+    } on PostgrestException catch (e) {
+      final msg = e.message.toLowerCase();
+      if (msg.contains('column') && msg.contains('does not exist')) {
+        return await supabase
+            .from('user_preferences')
+            .select(narrow)
+            .eq('user_id', userId)
+            .maybeSingle();
+      }
+      rethrow;
+    }
   }
 
   Future<CurrentUserProfile?> _fetch() async {
@@ -33,21 +89,13 @@ class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
     if (userId == null) return null;
 
     try {
-      final profileRes = await supabase
-          .from('profiles')
-          // Some environments don't have `avatar_url` in the profiles table.
-          // Prefer `image_url` and never request `avatar_url` to avoid 42703 errors.
-          .select('full_name, username, bio, image_url, mood_streak, currently_exploring')
-          .eq('id', userId)
-          .maybeSingle();
-
-      final prefsRes = await supabase
-          .from('user_preferences')
-          .select(
-              'home_base, age_group, gender, selected_moods, budget_level, social_vibe, '
-              'dietary_restrictions, activity_pace, time_available, interests')
-          .eq('user_id', userId)
-          .maybeSingle();
+      final profileRes = await _fetchProfileRow(supabase, userId);
+      Map<String, dynamic>? prefsRes;
+      try {
+        prefsRes = await _fetchPrefsRow(supabase, userId);
+      } catch (_) {
+        prefsRes = null;
+      }
 
       final avatarUrl = profileRes?['image_url'] as String?;
 

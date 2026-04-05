@@ -1,6 +1,11 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show Locale;
+import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/services/distance_service.dart';
+import 'package:wandermood/core/utils/explore_place_card_copy.dart';
 import 'package:wandermood/features/places/models/place.dart';
 
 /// Supabase `places_cache` helpers — cache-first for Explore (`get_explore`).
@@ -38,61 +43,102 @@ class PlacesCacheUtils {
     }
   }
 
-  /// Canonical aggregate key — moody v7: `explore_v7_{local|travel}_{section}_{city}`.
+  /// ISO 639-1 tag for cache keys — aligned with moody `googlePlacesLanguage` / `normalizeAppLang`.
+  static String normalizeExploreLanguageCode(String? code) {
+    final x = (code ?? 'en').toLowerCase().split(RegExp(r'[-_]')).first;
+    if (x == 'nl' || x == 'es' || x == 'de' || x == 'fr') return x;
+    return 'en';
+  }
+
+  /// In-app locale if set, else device — for moody `language_code` and localized `places_cache` keys.
+  static String effectiveExploreLanguageTag({Locale? appLocale}) {
+    final raw = appLocale?.languageCode ?? ui.PlatformDispatcher.instance.locale.languageCode;
+    return normalizeExploreLanguageCode(raw);
+  }
+
+  /// Canonical aggregate key — moody v7: `explore_v7_{local|travel}_{mood|section}_{city}_{lang}`.
   static String exploreAggregateCacheKey(
     bool isLocalMode,
     String section,
-    String location,
-  ) {
+    String location, {
+    String? languageCode,
+  }) {
     final modeKey = isLocalMode ? 'local' : 'travel';
     final loc = location.toLowerCase().trim();
     final sec = section.toLowerCase().trim();
-    return 'explore_${exploreCacheSchemaVersion}_${modeKey}_${sec}_$loc';
+    final lang = normalizeExploreLanguageCode(languageCode);
+    return 'explore_${exploreCacheSchemaVersion}_${modeKey}_${sec}_${loc}_$lang';
   }
 
-  /// v7 primary key, then v6 mood-based rows, then older keys (pre–sections Explore).
+  /// v7 primary key (localized), server `all` slot for broad discovery, then legacy keys without language.
   static List<String> exploreAggregateCacheKeyCandidates(
     bool isLocalMode,
     String section,
-    String location,
-  ) {
+    String location, {
+    String? languageCode,
+  }) {
     final modeKey = isLocalMode ? 'local' : 'travel';
     final loc = location.toLowerCase().trim();
-    return [
-      exploreAggregateCacheKey(isLocalMode, section, location),
-      'explore_v6_${modeKey}_adventurous_$loc',
-      'explore_v6_${modeKey}_relaxed_$loc',
-      'explore_v6_${modeKey}_cultural_$loc',
-      'explore_v3_quality_adventurous_$loc',
-      'explore_adventurous_$loc',
+    final sec = section.toLowerCase().trim();
+    final lang = normalizeExploreLanguageCode(languageCode);
+    final v7 = exploreAggregateCacheKey(isLocalMode, section, location, languageCode: languageCode);
+    final v7AllLang = 'explore_${exploreCacheSchemaVersion}_${modeKey}_all_${loc}_$lang';
+    final v7NoLang = 'explore_${exploreCacheSchemaVersion}_${modeKey}_${sec}_$loc';
+    final v7AllNoLang = 'explore_${exploreCacheSchemaVersion}_${modeKey}_all_$loc';
+    final broadDiscovery =
+        sec == 'discovery' || sec == 'all' || sec == 'discover' || sec.isEmpty;
+    final primary = <String>[
+      v7,
+      if (broadDiscovery) v7AllLang,
+      v7NoLang,
+      if (broadDiscovery) v7AllNoLang,
     ];
+    // Legacy keys are English-era aggregates; using them for nl/de/fr/es returns
+    // stale English copy and small sets (~14) while blocking a fresh Edge call.
+    if (lang == 'en') {
+      primary.addAll([
+        'explore_v6_${modeKey}_adventurous_$loc',
+        'explore_v6_${modeKey}_relaxed_$loc',
+        'explore_v6_${modeKey}_cultural_$loc',
+        'explore_v3_quality_adventurous_$loc',
+        'explore_adventurous_$loc',
+      ]);
+    }
+    return primary;
   }
 
   /// Canonical cache key for list-style Explore responses (Edge + `places_cache` aggregate row).
-  static String standardExploreCacheKey(bool isLocalMode, String section, String city) =>
-      exploreAggregateCacheKey(isLocalMode, section, city);
+  static String standardExploreCacheKey(
+    bool isLocalMode,
+    String section,
+    String city, {
+    String? languageCode,
+  }) =>
+      exploreAggregateCacheKey(isLocalMode, section, city, languageCode: languageCode);
 
   /// Per-place row `cache_key` suffix (when used): `${aggregate}_${placeId}`.
   static String explorePerPlaceCacheKey(
     bool isLocalMode,
     String section,
     String location,
-    String placeId,
-  ) {
+    String placeId, {
+    String? languageCode,
+  }) {
     final trimmed = placeId.trim();
     final raw = trimmed.startsWith('google_') ? trimmed.substring(7) : trimmed;
-    return '${exploreAggregateCacheKey(isLocalMode, section, location)}_$raw';
+    return '${exploreAggregateCacheKey(isLocalMode, section, location, languageCode: languageCode)}_$raw';
   }
 
   static List<String> explorePerPlaceCacheKeyCandidates(
     bool isLocalMode,
     String section,
     String location,
-    String placeId,
-  ) {
+    String placeId, {
+    String? languageCode,
+  }) {
     final trimmed = placeId.trim();
     final raw = trimmed.startsWith('google_') ? trimmed.substring(7) : trimmed;
-    return exploreAggregateCacheKeyCandidates(isLocalMode, section, location)
+    return exploreAggregateCacheKeyCandidates(isLocalMode, section, location, languageCode: languageCode)
         .map((k) => '${k}_$raw')
         .toList();
   }
@@ -106,13 +152,15 @@ class PlacesCacheUtils {
     String placeId, {
     String? section,
     bool? isLocalMode,
+    String? languageCode,
   }) async {
     final local = isLocalMode ?? await readExploreIsLocalMode(client);
     final secs = section != null && section.trim().isNotEmpty
         ? [section.toLowerCase().trim()]
         : exploreV7SectionIds;
     for (final sec in secs) {
-      for (final key in explorePerPlaceCacheKeyCandidates(local, sec, location, placeId)) {
+      for (final key in explorePerPlaceCacheKeyCandidates(local, sec, location, placeId,
+          languageCode: languageCode)) {
         final row = await _trySelectPlacesCacheRow(client, key);
         if (row != null) return row;
       }
@@ -153,6 +201,7 @@ class PlacesCacheUtils {
     required String placeId,
     String? section,
     bool? isLocalMode,
+    String? languageCode,
   }) async {
     final data = await tryLoadExplorePlaceData(
       client,
@@ -160,6 +209,7 @@ class PlacesCacheUtils {
       placeId,
       section: section,
       isLocalMode: isLocalMode,
+      languageCode: languageCode,
     );
     final u = data?['photo_url'] as String?;
     return (u != null && u.isNotEmpty) ? u : null;
@@ -175,9 +225,10 @@ class PlacesCacheUtils {
     String section,
     String location, {
     bool? isLocalMode,
+    String? languageCode,
   }) async {
     final local = isLocalMode ?? await readExploreIsLocalMode(client);
-    final keys = exploreAggregateCacheKeyCandidates(local, section, location);
+    final keys = exploreAggregateCacheKeyCandidates(local, section, location, languageCode: languageCode);
 
     for (final cacheKey in keys) {
       try {
@@ -253,17 +304,29 @@ class PlacesCacheUtils {
 
     final types = (card['types'] as List<dynamic>?)?.cast<String>() ?? <String>[];
 
-    final editorial = (card['editorial_summary'] as String?)?.trim();
-    final description = (editorial != null && editorial.isNotEmpty)
-        ? editorial
-        : card['description'] as String?;
+    final editorialRaw = ((card['editorial_summary'] ?? card['editorialSummary'])
+            as String?)
+        ?.trim();
+    final editorialSummary =
+        (editorialRaw != null && editorialRaw.isNotEmpty) ? editorialRaw : null;
+    final description = (card['description'] ?? card['desc']) as String?;
+
+    final primaryRaw = (card['primaryType'] as String?)?.trim() ??
+        (card['primary_type'] as String?)?.trim();
+    final socialRaw = (card['social_signal'] as String?)?.trim() ??
+        (card['socialSignal'] as String?)?.trim();
+    final bestRaw =
+        (card['best_time'] as String?)?.trim() ?? (card['bestTime'] as String?)?.trim();
+
+    final pl = card['price_level'] ?? card['priceLevel'];
+    final priceLevelParsed = pl is num ? pl.toInt() : null;
 
     final openingRaw = card['opening_hours'] as Map<String, dynamic>?;
     PlaceOpeningHours? openingHours;
     if (openingRaw != null && openingRaw.isNotEmpty) {
       openingHours = PlaceOpeningHours(
         isOpen: openingRaw['open_now'] as bool? ?? false,
-        currentStatus: (openingRaw['open_now'] as bool?) == true ? 'open' : 'closed',
+        currentStatus: null,
         weekdayText: (openingRaw['weekday_text'] as List<dynamic>?)
                 ?.map((e) => e.toString())
                 .toList() ??
@@ -283,8 +346,12 @@ class PlacesCacheUtils {
         lng: (locationData['lng'] as num?)?.toDouble() ?? 0.0,
       ),
       description: description,
-      priceLevel: card['price_level'] as int?,
-      isFree: card['price_level'] == null || card['price_level'] == 0,
+      editorialSummary: editorialSummary,
+      primaryType: (primaryRaw != null && primaryRaw.isNotEmpty) ? primaryRaw : null,
+      socialSignal: (socialRaw != null && socialRaw.isNotEmpty) ? socialRaw : null,
+      bestTime: (bestRaw != null && bestRaw.isNotEmpty) ? bestRaw : null,
+      priceLevel: priceLevelParsed,
+      isFree: ExplorePlaceCardCopy.inferIsFreeFromExploreCard(card),
       reviewCount: (card['user_ratings_total'] as num?)?.toInt() ?? 0,
       openingHours: openingHours,
     );
@@ -293,16 +360,40 @@ class PlacesCacheUtils {
   static const String _fallbackFreeTimeImage =
       'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80';
 
+  /// Aligns with [ExplorePlaceCardCopy]: clean editorial or type blurb, no review boilerplate.
+  static String _freeTimeCarouselDescriptionFromPlace(
+    Place p,
+    AppLocalizations l10n,
+  ) {
+    return ExplorePlaceCardCopy.cardDescription(p, l10n);
+  }
+
   /// Maps cached [Place]s to [MyDayFreeTimeCarousel] activity maps (no network besides image URLs).
   static List<Map<String, dynamic>> toMyDayFreeTimeCarouselMaps(
     List<Place> places, {
+    required AppLocalizations l10n,
     double? userLat,
     double? userLng,
     int maxItems = 5,
   }) {
     if (places.isEmpty) return [];
-    final shuffled = List<Place>.from(places)..shuffle();
-    return shuffled.take(maxItems).map((p) {
+    final sorted = List<Place>.from(places);
+    if (userLat != null && userLng != null) {
+      double distKm(Place p) {
+        if (p.location.lat == 0 && p.location.lng == 0) return 1e6;
+        return DistanceService.calculateDistance(
+          userLat,
+          userLng,
+          p.location.lat,
+          p.location.lng,
+        );
+      }
+
+      sorted.sort((a, b) => distKm(a).compareTo(distKm(b)));
+    } else {
+      sorted.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    }
+    return sorted.take(maxItems).map((p) {
       final hasCoords = p.location.lat != 0 && p.location.lng != 0;
       String distanceLabel = '';
       if (userLat != null && userLng != null && hasCoords) {
@@ -316,12 +407,11 @@ class PlacesCacheUtils {
       }
       final imageUrl =
           p.photos.isNotEmpty ? p.photos.first : _fallbackFreeTimeImage;
-      final desc = (p.description != null && p.description!.trim().isNotEmpty)
-          ? p.description!.trim()
-          : (p.address.isNotEmpty ? p.address : 'A spot worth checking out');
+      final desc = _freeTimeCarouselDescriptionFromPlace(p, l10n);
       return <String, dynamic>{
         'title': p.name,
         'description': desc,
+        'place': p,
         'category': _freeTimeCategoryFromPlace(p),
         'distance': distanceLabel,
         'duration': _guessDurationMinutes(p),
@@ -329,6 +419,10 @@ class PlacesCacheUtils {
         'lat': p.location.lat,
         'lng': p.location.lng,
         'placeId': p.id,
+        'rating': p.rating,
+        'reviewCount': p.reviewCount,
+        'priceLevel': p.priceLevel,
+        'isFree': p.isFree,
       };
     }).toList();
   }

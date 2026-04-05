@@ -1334,7 +1334,7 @@
   "activityDetailGetDirections": "Route ophalen →",
   "activityDetailFrom": "Vanaf",
   "activityDetailPerPerson": "per persoon",
-  "activityDetailDirections": "Routebeschrijving",
+  "activityDetailDirections": "Navigatie",
   "activityDetailBookNow": "Nu boeken",
   "@dayPlanFoundNewOption": {
     "placeholders": {
@@ -1682,7 +1682,7 @@
   "agendaErrorLoadingActivities": "Fout bij laden van activiteiten",
   "agendaPleaseTryAgainLater": "Probeer het later opnieuw",
   "agendaNoActivitiesScheduled": "Geen activiteiten gepland",
-  "socialGetDirections": "Get directions",
+  "socialGetDirections": "Route",
   "socialShare": "Share",
   "socialOpenDirectionsFailed": "Unable to open directions",
   "socialDeleteActivityConfirmTitle": "Delete activity?",
@@ -2205,6 +2205,27 @@
   "premiumValidationInvalidCvv": "Ongeldige CVV",
   "premiumValidationNameRequired": "Naam is verplicht",
   "placeDetailAboutThisPlace": "Over deze plek",
+  "placeDetailBlurbExtraAddress": "Adres en snelle acties staan direct onder dit blok.",
+  "placeDetailBlurbExtraRatingCount": "Openbare lijsten gemiddeld rond {rating} van de 5 over {count} beoordelingen.",
+  "@placeDetailBlurbExtraRatingCount": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "placeDetailBlurbExtraRatingOnly": "Scores liggen meestal rond {rating} van de 5 op openbare lijsten.",
+  "@placeDetailBlurbExtraRatingOnly": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "placeDetailBlurbExtraReviewsTab": "Tabblad Reviews laat zien wat mensen recent noemen; openingstijden helpen met je planning.",
   "placeDetailGoodToKnow": "Goed om te weten",
   "placeDetailDurationLabel": "Duur",
   "placeDetailPriceLabel": "Prijs",
@@ -2214,6 +2235,210 @@
   "placeDetailEnergyLabel": "Energie",
   "placeDetailTimeNeededLabel": "Tijd nodig",
   "placeDetailNoPhotos": "Geen foto's beschikbaar",
+  "placeDetailLoadingPhotos": "Foto's laden…",
+  "placeDetailAmazingFeatures": "Leuke highlights",
+  "placeDetailIndoorVibes": "Binnen sfeer",
+  "placeDetailOutdoorFun": "Buiten plezier",
+  "placeDetailEnergyChipLow": "Lage energie",
+  "placeDetailEnergyChipMedium": "Gemiddelde energie",
+  "placeDetailEnergyChipHigh": "Hoge energie",
+  "placeDetailHeroOpenNow": "Nu open",
+  "placeDetailHeroClosed": "Gesloten",
+  "placeDetailHeroOpenNowLine": "✅ Nu open!",
+  "placeDetailHeroClosedLine": "❌ Gesloten",
+  "placeDetailOpen247": "24/7 geopend",
+  "placeDetailPrice5to15": "€5–15",
+  "placeDetailPrice8to25": "€8–25",
+  "placeDetailPrice10to20": "€10–20",
+  "placeDetailPrice10to25": "€10–25",
+  "placeDetailPrice15to35": "€15–35",
+  "placeDetailPrice15to40": "€15–40",
+  "placeDetailPrice40to80": "€40–80",
+  "placeDetailPrice30to50": "€30–50",
+  "placeDetailPrice50Plus": "€50+",
+  "placeDetailFreeEntryPayItems": "Gratis entree (betaal voor aankopen)",
+  "placeDetailFreeDonationsWelcome": "Gratis (donatie welkom)",
+  "placeDetailUnavailableName": "Geen plekdetails beschikbaar",
+  "placeDetailOpeningStatusOpen": "open",
+  "placeDetailOpeningStatusClosed": "gesloten",
+  "myDayCarouselSpotFallbackDescription": "De moeite waard om te bekijken",
+  "myDayFreeTimeSectionTitle": "Activiteiten voor in je vrije tijd",
+  "myDayFreeTimeSectionSubtitle": "Ontdek wat je nu kunt doen",
+  "myDayFreeTimeIntroOneLine": "Bij jouw in de buurt. Ontdek wat je nu kunt doen.",
+  "myDayFreeTimeEmptyHint": "Nog geen suggesties in het geheugen. Open Ontdek voor jouw omgeving — dan verschijnen ideeën hier.",
+  "myDayFreeTimeLoadingFailed": "Suggesties laden mislukt. Probeer het zo opnieuw.",
+  "myDayFreeTimeLoadMore": "Meer laden",
+  "myDayFreeTimeNearYouBadge": "Bij jou in de buurt",
+  "myDayFreeTimeDirectionsShort": "Route",
+  "myDayFreeTimeCategoryExercise": "Buiten & bewegen",
+  "myDayFreeTimeCategoryEntertainment": "Uitgaan",
+  "myDayFreeTimeCategorySocial": "Sociaal",
+  "myDayFreeTimeCategorySpot": "Plek",
+  "exploreCardBlurbRestaurant": "Eten aan tafel met wisselende menu’s — zie details voor keuken en openingstijden.",
+  "exploreCardBlurbBar": "Drankjes centraal — cocktails, wijn of bier, afhankelijk van de zaak.",
+  "exploreCardBlurbCafe": "Koffie, iets lekkers en een rustig moment — gebak of brunch waar ze dat doen.",
+  "exploreCardBlurbBakery": "Vers brood, gebak en hartige snelle hapjes om mee te nemen of ter plekke.",
+  "exploreCardBlurbTakeaway": "Snelle maaltijden en meenemen — handig voor onderweg.",
+  "exploreCardBlurbMuseum": "Tentoonstellingen en collecties binnen — tickets en tijden op de detailpagina.",
+  "exploreCardBlurbZoo": "Dieren binnen en buiten — entree is meestal met ticket.",
+  "exploreCardBlurbAquarium": "Aquarium met familiebezoek — meestal ticket nodig.",
+  "exploreCardBlurbNightlife": "Laat op de avond — muziek, dans of drukte; soms entree of minimum.",
+  "exploreCardBlurbPark": "Buiten wandelen, zitten of ontspannen — meestal gratis toegankelijk.",
+  "exploreCardBlurbAttraction": "Ervaring of bezienswaardigheid — soms ticket of tijdslot nodig.",
+  "exploreCardBlurbSpa": "Behandelingen en ontspanning — reserveren helpt op drukke dagen.",
+  "exploreCardBlurbShopping": "Winkelen en rondkijken — openingstijden verschillen per zaak.",
+  "exploreCardBlurbDefault": "Lokale plek om te ontdekken — open de kaart voor uren en praktische info.",
+  "exploreCardBlurbSecondSentenceRating": "Bezoekers geven dit gemiddeld {rating} van de 5 — tik door voor recensies, foto's en openingstijden.",
+  "@exploreCardBlurbSecondSentenceRating": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreCardBlurbSecondSentenceNoRating": "Open de plek voor adres, foto's en wat reviewers het vaakst noemen.",
+  "exploreCardBlurbPoiNamed": "{name} staat op de kaart als plek in de buurt — leuk voor een spontane tussenstop.",
+  "@exploreCardBlurbPoiNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreCardBlurbTour": "Rondleidingen en lokale tips — zie de fiche voor boeken en wat erbij hoort.",
+  "moodyPlaceBlurbSystemPrompt": "Je bent Moody, de warme stem van de WanderMood-reisapp. Je schrijft accurate en aantrekkelijke plekbeschrijvingen voor kaarten. Verzin geen menu-items, prijzen of voorzieningen. Gebruik alleen feiten uit het gebruikersbericht. Als er weinig feiten zijn, blijf algemeen maar wel aantrekkelijk.",
+  "moodyPlaceBlurbUserMessage": "Dit zijn de enige geverifieerde feiten over een echte plek (uit kaartdata of bezoekerstekst). Voeg geen details toe die daar niet in staan.\n\n{facts}\n\nSchrijf minstens 3 gedetailleerde zinnen over de sfeer en het aanbod voor een reisapp-kaart. Toon: vriendelijk, als Moody. Gebruik alleen de feiten hierboven. Schrijf volledig in het {languageName}. Gewone tekst: geen opsommingen, geen aanhalingstekens, geen lijsten.",
+  "@moodyPlaceBlurbUserMessage": {
+    "placeholders": {
+      "facts": {
+        "type": "String"
+      },
+      "languageName": {
+        "type": "String"
+      }
+    }
+  },
+  "moodyPlaceBlurbLabelName": "Naam",
+  "moodyPlaceBlurbLabelAddress": "Adres",
+  "moodyPlaceBlurbLabelTypes": "Types",
+  "moodyPlaceBlurbLabelRating": "Beoordeling",
+  "moodyPlaceBlurbLabelReviewCount": "Aantal recensies",
+  "moodyPlaceBlurbLabelOverview": "Plekoverzicht",
+  "moodyPlaceBlurbLabelVisitorNotes": "Bezoekersnotities",
+  "moodyPlaceBlurbLanguageEnglish": "Engels",
+  "moodyPlaceBlurbLanguageDutch": "Nederlands",
+  "moodyPlaceBlurbLanguageGerman": "Duits",
+  "moodyPlaceBlurbLanguageFrench": "Frans",
+  "moodyPlaceBlurbLanguageSpanish": "Spaans",
+  "moodyPlaceDetailBlurbSystemPrompt": "Je bent Moody, de warme stem van de WanderMood-reisapp. Je schrijft een uitgebreidere, accurate plekbeschrijving voor een detailscherm. Verzin geen menu-items, prijzen of voorzieningen. Gebruik alleen feiten uit het gebruikersbericht. Als er weinig feiten zijn, blijf algemeen maar wel aantrekkelijk.",
+  "moodyPlaceDetailBlurbUserMessage": "Dit zijn de enige geverifieerde feiten over een echte plek (uit kaartdata of bezoekerstekst). Voeg geen details toe die daar niet in staan.\n\n{facts}\n\nSchrijf 5 tot 8 gedetailleerde zinnen inclusief praktische tips, geschiedenis en waarom het een bezoek waard is voor het detailscherm van de reisapp. Breid sfeer en praktische tips alleen uit als de feiten hierboven dat ondersteunen. Toon: vriendelijk, als Moody. Schrijf volledig in het {languageName}. Gewone tekst: geen opsommingen, geen aanhalingstekens, geen lijsten.",
+  "@moodyPlaceDetailBlurbUserMessage": {
+    "placeholders": {
+      "facts": {
+        "type": "String"
+      },
+      "languageName": {
+        "type": "String"
+      }
+    }
+  },
+  "moodCarouselNearbyBadge": "In de buurt",
+  "moodCarouselSave": "Opslaan",
+  "moodCarouselAddToMorning": "Toevoegen aan ochtend",
+  "moodCarouselAddToAfternoon": "Toevoegen aan middag",
+  "moodCarouselAddToEvening": "Toevoegen aan avond",
+  "moodCarouselActivityVisitName": "Bezoek {name}",
+  "@moodCarouselActivityVisitName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodCarouselToastAddedMorning": "{name} toegevoegd aan je ochtend!",
+  "@moodCarouselToastAddedMorning": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodCarouselToastAddedAfternoon": "{name} toegevoegd aan je middag!",
+  "@moodCarouselToastAddedAfternoon": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodCarouselToastAddedEvening": "{name} toegevoegd aan je avond!",
+  "@moodCarouselToastAddedEvening": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodCarouselToastAddFailed": "Kon {name} niet toevoegen. Probeer het opnieuw.",
+  "@moodCarouselToastAddFailed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodCarouselToastView": "Bekijk",
+  "myDayFreeTimeInsightDuration": "⏱️ ~{minutes} min",
+  "@myDayFreeTimeInsightDuration": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "myDayFreeTimeInsightRating": "⭐ {rating}",
+  "@myDayFreeTimeInsightRating": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "myDayFreeTimeInsightPricePaid": "💶 {symbols}",
+  "@myDayFreeTimeInsightPricePaid": {
+    "placeholders": {
+      "symbols": {
+        "type": "String"
+      }
+    }
+  },
+  "placeCardSignInToAddMyDay": "Log in om activiteiten aan Mijn dag toe te voegen",
+  "placeCardAddedToMyDay": "{name} toegevoegd aan Mijn dag!",
+  "@placeCardAddedToMyDay": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "placeCardFailedAddToMyDay": "Toevoegen van {name} aan Mijn dag mislukt",
+  "@placeCardFailedAddToMyDay": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "placeCardUnableOpenDirections": "Kan route niet openen",
+  "placeCardView": "Bekijk",
+  "placeCardReviewCountInParens": "({count} recensies)",
+  "@placeCardReviewCountInParens": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "placeDetailNoReviews": "Geen reviews beschikbaar",
   "placeDetailReviewsWhenAvailable": "Reviews verschijnen hier zodra ze beschikbaar zijn",
   "placeDetailNotFound": "Plek niet gevonden",
@@ -2363,8 +2588,8 @@
   "moodyHubYourDayToday": "Jouw dag vandaag",
   "moodyHubChangeMood": "Verander stemming",
   "moodyHubNoMoodChosen": "Nog geen stemming gekozen",
-  "moodyHubJourneyPrefix": "Je bent op een ",
-  "moodyHubJourneySuffix": " reis",
+  "moodyHubJourneyPrefix": "Vandaag ben je ",
+  "moodyHubJourneySuffix": ".",
   "moodyHubFallbackAiMessage": "Jouw dag is klaar, Moody is er voor je 🌟",
   "moodyHubActivitySingular": "activiteit",
   "moodyHubActivityPlural": "activiteiten",
@@ -2468,6 +2693,19 @@
   "placeTypeAquarium": "Aquarium",
   "placeTypeBowling": "Bowling",
   "placeTypeStadium": "Stadion",
+  "placeCardSocialTrending": "🔥 Trending",
+  "placeCardSocialHiddenGem": "💎 Verborgen parel",
+  "placeCardSocialLovedByLocals": "❤️ Favoriet bij locals",
+  "placeCardSocialPopular": "⭐ Populair",
+  "placeCardBestMorning": "☀️ Ochtend",
+  "placeCardBestAfternoon": "🌤 Middag",
+  "placeCardBestEvening": "🌙 Avond",
+  "placeCardBestAllDay": "🕐 Hele dag",
+  "placeCardVenuePlace": "Plek",
+  "placeCardVenueGallery": "Galerie",
+  "placeCardVenueAttraction": "Attractie",
+  "placeCardVenueHotel": "Hotel",
+  "placeCardVenueClub": "Club",
   "placeDescFood": "{name} is een geweldige plek voor liefhebbers van lekker eten in de buurt.",
   "placeDescFoodWithReviews": "{name} is een populair restaurant met {reviewCount} reviews en een beoordeling van {rating} sterren. Een uitstekende keuze voor een heerlijke maaltijd.",
   "placeDescCafe": "{name} is een gezellig café, perfect voor een koffiepauze of een kleine hap in een ontspannen sfeer.",
@@ -3506,8 +3744,53 @@
   "weatherNoForecasts": "Geen voorspellingen beschikbaar",
   "weatherAlertsTitle": "Weerwaarschuwingen",
   "weatherNoActiveAlerts": "Geen actieve waarschuwingen",
+  "myDayWeatherDialogTitle": "Weer in {city}",
+  "@myDayWeatherDialogTitle": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "myDayWeatherFeelsLike": "Voelt als",
+  "myDayWeatherHumidity": "Luchtvochtigheid",
+  "myDayWeatherDescriptionLabel": "Omschrijving",
+  "myDayWeatherClose": "Sluiten",
+  "myDayWeatherUnavailable": "Weergegevens niet beschikbaar",
+  "myDayWeatherCheckConnection": "Controleer je internetverbinding",
+  "myDayWeatherClearSkyFallback": "Heldere lucht",
+  "weatherMainClear": "Helder",
+  "weatherMainClouds": "Bewolkt",
+  "weatherMainRain": "Regen",
+  "weatherMainDrizzle": "Motregen",
+  "weatherMainThunderstorm": "Onweer",
+  "weatherMainSnow": "Sneeuw",
+  "weatherMainMist": "Mist",
+  "weatherMainFog": "Dichte mist",
+  "weatherMainHaze": "Nevel",
+  "weatherMainSmoke": "Rook",
+  "weatherMainDust": "Stof",
+  "weatherMainSand": "Zandstorm",
+  "weatherMainAsh": "As",
+  "weatherMainSquall": "Windstoot",
+  "weatherMainTornado": "Tornado",
+  "weatherMainOther": "Weer",
   "weatherHistoryEmpty": "Geen historische gegevens beschikbaar",
   "weatherHistoryInvalid": "Geen geldige historische gegevens",
   "moodHistoryEmpty": "Geen stemminggeschiedenis beschikbaar",
-  "periodActivitiesSwipeComplete": "Voltooien"
+  "periodActivitiesSwipeComplete": "Voltooien",
+
+  "exploreLoadMoreIdeas": "Meer ideeën laden",
+  "agendaPaymentBadgeFree": "Gratis",
+  "agendaPaymentBadgePaid": "Betaald",
+  "agendaPaymentBadgeReserved": "Gereserveerd",
+  "agendaPaymentBadgePending": "In afwachting",
+  "agendaDurationShort": "{minutes} min",
+  "@agendaDurationShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  }
 }

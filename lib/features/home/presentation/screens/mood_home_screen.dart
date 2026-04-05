@@ -31,6 +31,7 @@ import 'package:flutter/foundation.dart';
 import 'package:wandermood/core/providers/communication_style_provider.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_chat_header_subtitle.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/core/localization/localized_mood_labels.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
@@ -2133,34 +2134,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   /// Returns localized label for a mood (by English label key).
   String _localizedMoodLabel(BuildContext context, String label) {
     final l10n = AppLocalizations.of(context)!;
-    switch (label.toLowerCase()) {
-      case 'happy':
-        return l10n.moodHubMoodHappy;
-      case 'adventurous':
-        return l10n.moodHubMoodAdventurous;
-      case 'relaxed':
-        return l10n.moodHubMoodRelaxed;
-      case 'energetic':
-        return l10n.moodHubMoodEnergetic;
-      case 'romantic':
-        return l10n.moodHubMoodRomantic;
-      case 'social':
-        return l10n.moodHubMoodSocial;
-      case 'cultural':
-        return l10n.moodHubMoodCultural;
-      case 'curious':
-        return l10n.moodHubMoodCurious;
-      case 'cozy':
-        return l10n.moodHubMoodCozy;
-      case 'excited':
-        return l10n.moodHubMoodExcited;
-      case 'foody':
-        return l10n.moodHubMoodFoody;
-      case 'surprise':
-        return l10n.moodHubMoodSurprise;
-      default:
-        return label;
-    }
+    return localizedMoodDisplayLabel(l10n, label);
   }
 
   /// Builds a single mood tile with pastel base, frosted-glass overlay, and soft floating shadow.

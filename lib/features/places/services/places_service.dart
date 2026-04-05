@@ -5,7 +5,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/api_keys.dart';
+import '../../../core/utils/explore_place_card_copy.dart';
 import '../../../core/presentation/providers/language_provider.dart';
+import '../../../core/utils/places_cache_utils.dart';
 import '../models/place.dart';
 import 'opening_hours_service.dart';
 
@@ -19,6 +21,9 @@ class PlacesService extends _$PlacesService {
   // Cache to store full Place objects from search results
   // This prevents re-fetching incomplete data from Google API
   final Map<String, Place> _placeCache = {};
+
+  /// Deduped photo URL futures for Explore list/grid cards (avoids repeating details calls).
+  final Map<String, Future<List<String>>> _exploreCardPhotoFutures = {};
 
   @override
   Future<void> build() async {
@@ -39,7 +44,50 @@ class PlacesService extends _$PlacesService {
   /// Clear the place cache
   void clearPlaceCache() {
     _placeCache.clear();
+    _exploreCardPhotoFutures.clear();
     debugPrint('🗑️ Cleared place cache');
+  }
+
+  static List<String> mergeUniquePhotoUrls(
+    Iterable<String> primary,
+    Iterable<String> secondary, {
+    int maxPhotos = 10,
+  }) {
+    final seen = <String>{};
+    final out = <String>[];
+    for (final u in [...primary, ...secondary]) {
+      if (u.isEmpty || seen.contains(u)) continue;
+      seen.add(u);
+      out.add(u);
+      if (out.length >= maxPhotos) break;
+    }
+    return out;
+  }
+
+  /// Resolves up to [maxPhotos] URLs for Explore cards. Bypasses [getPlaceById] cache
+  /// so Google-backed places get the full gallery from the details API when the hub
+  /// only sent a single preview photo.
+  Future<List<String>> resolveExploreCardPhotos(
+    Place place, {
+    int maxPhotos = 10,
+  }) async {
+    if (!place.id.startsWith('google_')) {
+      return place.photos.take(maxPhotos).toList();
+    }
+    if (place.photos.length >= maxPhotos) {
+      return place.photos.take(maxPhotos).toList();
+    }
+    return _exploreCardPhotoFutures.putIfAbsent(place.id, () async {
+      try {
+        final urls = await fetchPhotoUrlsForGooglePlace(place.id);
+        if (urls.isNotEmpty) {
+          return mergeUniquePhotoUrls(urls, place.photos, maxPhotos: maxPhotos);
+        }
+      } catch (e) {
+        debugPrint('❌ resolveExploreCardPhotos failed for ${place.id}: $e');
+      }
+      return place.photos.take(maxPhotos).toList();
+    });
   }
 
   Future<void> _initializePlaces() async {
@@ -93,8 +141,10 @@ class PlacesService extends _$PlacesService {
       debugPrint('🔍 Smart search for places with query: $query');
       
       // Add a timeout to prevent long-running API calls
-      final lang = ref.read(localeProvider)?.languageCode ??
-          ui.PlatformDispatcher.instance.locale.languageCode;
+      final lang = PlacesCacheUtils.normalizeExploreLanguageCode(
+        ref.read(localeProvider)?.languageCode ??
+            ui.PlatformDispatcher.instance.locale.languageCode,
+      );
       final response = await _places.searchByText(
         query,
         type: 'tourist_attraction',
@@ -136,8 +186,10 @@ class PlacesService extends _$PlacesService {
 
     try {
       final supabase = Supabase.instance.client;
-      final lang = ref.read(localeProvider)?.languageCode ??
-          ui.PlatformDispatcher.instance.locale.languageCode;
+      final lang = PlacesCacheUtils.normalizeExploreLanguageCode(
+        ref.read(localeProvider)?.languageCode ??
+            ui.PlatformDispatcher.instance.locale.languageCode,
+      );
       final fnResponse = await supabase.functions.invoke(
         'places',
         body: {
@@ -306,10 +358,10 @@ class PlacesService extends _$PlacesService {
         final placeTypes = (details['types'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
         final priceLevel = details['priceLevel'] as int?;
         
-        // Determine if place is free
-        final isFreeByPrice = priceLevel == null || priceLevel == 0;
-        final isFreeByType = _isFreePlaceType(placeTypes);
-        final isFree = isFreeByPrice || isFreeByType;
+        final isFree = ExplorePlaceCardCopy.inferIsFreeFromDetails(
+          types: placeTypes,
+          priceLevel: priceLevel,
+        );
         
         // Generate price range string if not free
         String? priceRange;

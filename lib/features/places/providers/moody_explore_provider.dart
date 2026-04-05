@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wandermood/core/presentation/providers/language_provider.dart';
 import 'package:wandermood/core/services/moody_edge_function_service.dart';
 import 'package:wandermood/core/utils/places_cache_utils.dart';
 import 'package:wandermood/features/places/models/place.dart';
+import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/core/errors/explore_location_exception.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
@@ -15,6 +17,7 @@ class ExploreParams {
   final double longitude;
   final Map<String, dynamic>? filters;
   final String? section;
+  final String languageCode;
 
   ExploreParams({
     required this.location,
@@ -22,6 +25,7 @@ class ExploreParams {
     required this.longitude,
     this.filters,
     this.section,
+    required this.languageCode,
   });
 
   @override
@@ -33,6 +37,7 @@ class ExploreParams {
           latitude == other.latitude &&
           longitude == other.longitude &&
           section == other.section &&
+          languageCode == other.languageCode &&
           _mapsEqual(filters, other.filters);
 
   @override
@@ -41,6 +46,7 @@ class ExploreParams {
       latitude.hashCode ^
       longitude.hashCode ^
       (section?.hashCode ?? 0) ^
+      languageCode.hashCode ^
       (filters?.toString().hashCode ?? 0);
 
   bool _mapsEqual(Map<String, dynamic>? a, Map<String, dynamic>? b) {
@@ -74,8 +80,12 @@ final moodyExploreProvider = FutureProvider.family<List<Place>, ExploreParams>((
       longitude: params.longitude,
       section: params.section,
       filters: params.filters,
+      languageCode: params.languageCode,
     );
-    
+    final notifier = ref.read(placesServiceProvider.notifier);
+    for (final p in places) {
+      notifier.cachePlaceObject(p);
+    }
     return places;
   } catch (e) {
     // Log error - this will be handled by UI to show error state
@@ -127,6 +137,9 @@ final moodyExploreAutoProvider = FutureProvider<List<Place>>((ref) async {
     longitude: position.longitude,
     filters: filters,
     section: null,
+    languageCode: PlacesCacheUtils.effectiveExploreLanguageTag(
+      appLocale: ref.watch(localeProvider),
+    ),
   );
   
   return ref.watch(moodyExploreProvider(params).future);
@@ -144,6 +157,9 @@ final moodyHubExploreCacheOnlyProvider =
     Supabase.instance.client,
     'discovery',
     city,
+    languageCode: PlacesCacheUtils.effectiveExploreLanguageTag(
+      appLocale: ref.watch(localeProvider),
+    ),
   );
   return places ?? [];
 });

@@ -233,10 +233,34 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       ),
       data: (CurrentUserProfile? profile) {
         if (profile == null) {
+          final signedIn = _supabase.auth.currentUser != null;
           return Scaffold(
             backgroundColor: _wmCream,
             body: Center(
-              child: CircularProgressIndicator(color: _wmForest),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (signedIn) ...[
+                      CircularProgressIndicator(color: _wmForest),
+                      const SizedBox(height: 20),
+                    ],
+                    Text(
+                      l10n.profileErrorLoad,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(color: _wmDusk, fontSize: 15),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: () =>
+                          ref.read(currentUserProfileProvider.notifier).refresh(),
+                      child: Text(l10n.profileRetry,
+                          style: const TextStyle(color: _wmForest)),
+                    ),
+                  ],
+                ),
+              ),
             ),
           );
         }

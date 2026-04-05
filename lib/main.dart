@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +24,7 @@ import 'features/gamification/providers/gamification_provider.dart' as gamificat
 import 'package:geolocator/geolocator.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/providers/language_provider.dart';
+import 'package:wandermood/core/notifications/notification_navigation.dart';
 import 'package:wandermood/core/services/notification_service.dart';
 import 'package:wandermood/core/providers/notification_provider.dart';
 
@@ -36,10 +39,9 @@ final appInitializerProvider = FutureProvider<bool>((ref) async {
   // **LOCATION PERMISSION**: Request location permission early to show popup
   await _requestLocationPermission();
   
-  // Initialize location
-  if (Supabase.instance.client.auth.currentUser != null) {
-    await ref.read(locationNotifierProvider.notifier).getCurrentLocation();
-  }
+  // Resolve city label from GPS for everyone (not only signed-in). Otherwise the
+  // hub/explore briefly (or permanently) showed a hard-coded default city.
+  await ref.read(locationNotifierProvider.notifier).getCurrentLocation();
   
   // Initialize database schema
   try {
@@ -67,7 +69,17 @@ final appInitializerProvider = FutureProvider<bool>((ref) async {
   // Initialize local notifications + schedule recurring notifications.
   // We do this after auth sync so we can check if a user is logged in.
   try {
+    NotificationService.instance.onNotificationPayload = (payload) {
+      if (payload == null || payload.isEmpty) return;
+      ref.read(notificationLaunchPayloadProvider.notifier).state = payload;
+    };
     await NotificationService.instance.initialize();
+    final coldStartPayload =
+        NotificationService.instance.consumePendingLaunchPayload();
+    if (coldStartPayload != null && coldStartPayload.isNotEmpty) {
+      ref.read(notificationLaunchPayloadProvider.notifier).state =
+          coldStartPayload;
+    }
     await NotificationService.instance.requestPermission();
     if (Supabase.instance.client.auth.currentUser != null) {
       await ref.read(notificationSchedulerProvider).rescheduleAll();
@@ -364,8 +376,9 @@ Future<void> _validateApiKeys() async {
   final openAi = ApiKeys.openAiKey;
   if (openAi.isEmpty) {
     debugPrint(
-      '⚠️ WARNING: OPENAI_API_KEY is not set for the app. Moody chat in '
-      'WanderMoodAIService will use the offline fallback until you run/build with '
+      '⚠️ OPENAI_API_KEY is not set in the app bundle. Moody chat uses offline '
+      'fallback; Explore card blurbs use the Supabase moody function (place_card_blurb) '
+      'if deployed with OPENAI_API_KEY. For on-device OpenAI, use '
       '--dart-define=OPENAI_API_KEY=sk-...',
     );
   }
@@ -404,6 +417,29 @@ class WanderMoodApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Start app initialization
     ref.watch(appInitializerProvider);
+
+    ref.listen<String?>(notificationLaunchPayloadProvider, (prev, next) {
+      if (next == null || next.isEmpty) return;
+      final router = ref.read(routerProvider);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        applyNotificationNavigation(router, next);
+        ref.read(notificationLaunchPayloadProvider.notifier).state = null;
+      });
+    });
+
+    ref.listen<Locale?>(localeProvider, (previous, next) {
+      if (previous == next) return;
+      final init = ref.read(appInitializerProvider);
+      if (!init.hasValue || init.hasError) return;
+      if (Supabase.instance.client.auth.currentUser == null) return;
+      unawaited(Future.microtask(() async {
+        try {
+          await ref.read(notificationSchedulerProvider).rescheduleAll();
+        } catch (e) {
+          debugPrint('Notification reschedule on locale change: $e');
+        }
+      }));
+    });
     
     // Get the router instance
     final router = ref.watch(routerProvider);

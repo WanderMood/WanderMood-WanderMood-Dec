@@ -6348,6 +6348,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get placeDetailAboutThisPlace => 'About this place';
 
   @override
+  String get placeDetailBlurbExtraAddress =>
+      'Address and quick actions are listed just below this section.';
+
+  @override
+  String placeDetailBlurbExtraRatingCount(String rating, int count) {
+    return 'Public listings average about $rating out of 5 across $count ratings.';
+  }
+
+  @override
+  String placeDetailBlurbExtraRatingOnly(String rating) {
+    return 'Typical scores land around $rating out of 5 on public listings.';
+  }
+
+  @override
+  String get placeDetailBlurbExtraReviewsTab =>
+      'The Reviews tab shows what visitors mention lately; hours and busy times help you plan your visit.';
+
+  @override
   String get placeDetailGoodToKnow => 'Good to know';
 
   @override
@@ -6373,6 +6391,339 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get placeDetailNoPhotos => 'No photos available';
+
+  @override
+  String get placeDetailLoadingPhotos => 'Loading photos…';
+
+  @override
+  String get placeDetailAmazingFeatures => 'Amazing features';
+
+  @override
+  String get placeDetailIndoorVibes => 'Indoor vibes';
+
+  @override
+  String get placeDetailOutdoorFun => 'Outdoor fun';
+
+  @override
+  String get placeDetailEnergyChipLow => 'Low energy';
+
+  @override
+  String get placeDetailEnergyChipMedium => 'Medium energy';
+
+  @override
+  String get placeDetailEnergyChipHigh => 'High energy';
+
+  @override
+  String get placeDetailHeroOpenNow => 'Open now';
+
+  @override
+  String get placeDetailHeroClosed => 'Closed';
+
+  @override
+  String get placeDetailHeroOpenNowLine => '✅ Open now!';
+
+  @override
+  String get placeDetailHeroClosedLine => '❌ Closed';
+
+  @override
+  String get placeDetailOpen247 => 'Open 24/7';
+
+  @override
+  String get placeDetailPrice5to15 => '€5–15';
+
+  @override
+  String get placeDetailPrice8to25 => '€8–25';
+
+  @override
+  String get placeDetailPrice10to20 => '€10–20';
+
+  @override
+  String get placeDetailPrice10to25 => '€10–25';
+
+  @override
+  String get placeDetailPrice15to35 => '€15–35';
+
+  @override
+  String get placeDetailPrice15to40 => '€15–40';
+
+  @override
+  String get placeDetailPrice40to80 => '€40–80';
+
+  @override
+  String get placeDetailPrice30to50 => '€30–50';
+
+  @override
+  String get placeDetailPrice50Plus => '€50+';
+
+  @override
+  String get placeDetailFreeEntryPayItems => 'Free entry (pay for items)';
+
+  @override
+  String get placeDetailFreeDonationsWelcome => 'Free (donations welcome)';
+
+  @override
+  String get placeDetailUnavailableName => 'Place details unavailable';
+
+  @override
+  String get placeDetailOpeningStatusOpen => 'open';
+
+  @override
+  String get placeDetailOpeningStatusClosed => 'closed';
+
+  @override
+  String get myDayCarouselSpotFallbackDescription =>
+      'A spot worth checking out';
+
+  @override
+  String get myDayFreeTimeSectionTitle => 'Activities in your free time';
+
+  @override
+  String get myDayFreeTimeSectionSubtitle =>
+      'Discover what you can do right now';
+
+  @override
+  String get myDayFreeTimeIntroOneLine =>
+      'Near you. Discover what you can do right now.';
+
+  @override
+  String get myDayFreeTimeEmptyHint =>
+      'No suggestions cached yet. Open Discover for your area — fresh ideas will show up here.';
+
+  @override
+  String get myDayFreeTimeLoadingFailed =>
+      'Couldn’t load suggestions. Try again in a moment.';
+
+  @override
+  String get myDayFreeTimeLoadMore => 'Load more';
+
+  @override
+  String get myDayFreeTimeNearYouBadge => 'Near you';
+
+  @override
+  String get myDayFreeTimeDirectionsShort => 'Directions';
+
+  @override
+  String get myDayFreeTimeCategoryExercise => 'Outdoors & activity';
+
+  @override
+  String get myDayFreeTimeCategoryEntertainment => 'Going out';
+
+  @override
+  String get myDayFreeTimeCategorySocial => 'Social';
+
+  @override
+  String get myDayFreeTimeCategorySpot => 'Place';
+
+  @override
+  String get exploreCardBlurbRestaurant =>
+      'Sit-down dining with changing menus — check the listing for cuisine and hours.';
+
+  @override
+  String get exploreCardBlurbBar =>
+      'Drinks-focused spot — cocktails, wine, or beer depending on what they pour.';
+
+  @override
+  String get exploreCardBlurbCafe =>
+      'Coffee, light bites, and a calm stop — pastries or brunch where offered.';
+
+  @override
+  String get exploreCardBlurbBakery =>
+      'Fresh bread, pastries, and quick savory bites to stay or take away.';
+
+  @override
+  String get exploreCardBlurbTakeaway =>
+      'Quick meals and grab-and-go food — handy for a fast bite.';
+
+  @override
+  String get exploreCardBlurbMuseum =>
+      'Exhibitions and collections indoors — tickets and hours on the detail page.';
+
+  @override
+  String get exploreCardBlurbZoo =>
+      'Animal exhibits indoors and out — entry is usually ticketed.';
+
+  @override
+  String get exploreCardBlurbAquarium =>
+      'Aquarium galleries and family-friendly visits — typically ticketed.';
+
+  @override
+  String get exploreCardBlurbNightlife =>
+      'Late-night venue — music, dancing, or a lively crowd; fees may apply.';
+
+  @override
+  String get exploreCardBlurbPark =>
+      'Outdoor space to walk, sit, or relax — usually free to visit.';
+
+  @override
+  String get exploreCardBlurbAttraction =>
+      'City experience or landmark — may need tickets or a time slot.';
+
+  @override
+  String get exploreCardBlurbSpa =>
+      'Treatments and downtime — booking ahead helps on busy days.';
+
+  @override
+  String get exploreCardBlurbShopping =>
+      'Shops and browsing — opening hours vary by retailer.';
+
+  @override
+  String get exploreCardBlurbDefault =>
+      'Local place to discover — open the card for hours and practical info.';
+
+  @override
+  String exploreCardBlurbSecondSentenceRating(String rating) {
+    return 'Guests rate it around $rating out of 5 on average — tap through for reviews, photos, and opening hours.';
+  }
+
+  @override
+  String get exploreCardBlurbSecondSentenceNoRating =>
+      'Tap the listing for address, photos, and what reviewers mention most often.';
+
+  @override
+  String exploreCardBlurbPoiNamed(String name) {
+    return '$name appears on the map as a neighborhood spot — a nice spontaneous stop if you are nearby.';
+  }
+
+  @override
+  String get exploreCardBlurbTour =>
+      'Guided experiences and local know-how — check the listing for booking and what is included.';
+
+  @override
+  String get moodyPlaceBlurbSystemPrompt =>
+      'You are Moody, the warm voice of the WanderMood travel app. You write accurate and engaging place descriptions for cards. You must not invent menu items, prices, or amenities. Only use facts supplied by the user message. If facts are thin, stay general but still engaging.';
+
+  @override
+  String moodyPlaceBlurbUserMessage(String facts, String languageName) {
+    return 'These are the only verified facts about a real place (from maps data or visitor text). Do not add details that are not supported by them.\n\n$facts\n\nWrite at least 3 detailed sentences about the atmosphere and offerings for a travel app card. Tone: friendly, like Moody. Use only the facts above. Output entirely in $languageName. Plain prose: no bullet points, no quotation marks, no lists.';
+  }
+
+  @override
+  String get moodyPlaceBlurbLabelName => 'Name';
+
+  @override
+  String get moodyPlaceBlurbLabelAddress => 'Address';
+
+  @override
+  String get moodyPlaceBlurbLabelTypes => 'Types';
+
+  @override
+  String get moodyPlaceBlurbLabelRating => 'Rating';
+
+  @override
+  String get moodyPlaceBlurbLabelReviewCount => 'Review count';
+
+  @override
+  String get moodyPlaceBlurbLabelOverview => 'Place overview';
+
+  @override
+  String get moodyPlaceBlurbLabelVisitorNotes => 'Visitor notes';
+
+  @override
+  String get moodyPlaceBlurbLanguageEnglish => 'English';
+
+  @override
+  String get moodyPlaceBlurbLanguageDutch => 'Dutch';
+
+  @override
+  String get moodyPlaceBlurbLanguageGerman => 'German';
+
+  @override
+  String get moodyPlaceBlurbLanguageFrench => 'French';
+
+  @override
+  String get moodyPlaceBlurbLanguageSpanish => 'Spanish';
+
+  @override
+  String get moodyPlaceDetailBlurbSystemPrompt =>
+      'You are Moody, the warm voice of the WanderMood travel app. You write a fuller, accurate place description for a detail screen. You must not invent menu items, prices, or amenities. Only use facts supplied by the user message. If facts are thin, stay general but still engaging.';
+
+  @override
+  String moodyPlaceDetailBlurbUserMessage(String facts, String languageName) {
+    return 'These are the only verified facts about a real place (from maps data or visitor text). Do not add details that are not supported by them.\n\n$facts\n\nWrite 5 to 8 detailed sentences including practical tips, history, and why it\'s worth visiting for a travel app place detail screen. Expand on what visitors might experience, atmosphere, and practical cues only when supported by the facts above. Tone: friendly, like Moody. Output entirely in $languageName. Plain prose: no bullet points, no quotation marks, no lists.';
+  }
+
+  @override
+  String get moodCarouselNearbyBadge => 'Nearby';
+
+  @override
+  String get moodCarouselSave => 'Save';
+
+  @override
+  String get moodCarouselAddToMorning => 'Add to morning';
+
+  @override
+  String get moodCarouselAddToAfternoon => 'Add to afternoon';
+
+  @override
+  String get moodCarouselAddToEvening => 'Add to evening';
+
+  @override
+  String moodCarouselActivityVisitName(String name) {
+    return 'Visit $name';
+  }
+
+  @override
+  String moodCarouselToastAddedMorning(String name) {
+    return '$name added to your morning!';
+  }
+
+  @override
+  String moodCarouselToastAddedAfternoon(String name) {
+    return '$name added to your afternoon!';
+  }
+
+  @override
+  String moodCarouselToastAddedEvening(String name) {
+    return '$name added to your evening!';
+  }
+
+  @override
+  String moodCarouselToastAddFailed(String name) {
+    return 'Failed to add $name. Please try again.';
+  }
+
+  @override
+  String get moodCarouselToastView => 'View';
+
+  @override
+  String myDayFreeTimeInsightDuration(int minutes) {
+    return '⏱️ ~$minutes min';
+  }
+
+  @override
+  String myDayFreeTimeInsightRating(String rating) {
+    return '⭐ $rating';
+  }
+
+  @override
+  String myDayFreeTimeInsightPricePaid(String symbols) {
+    return '💶 $symbols';
+  }
+
+  @override
+  String get placeCardSignInToAddMyDay =>
+      'Please sign in to add activities to My Day';
+
+  @override
+  String placeCardAddedToMyDay(String name) {
+    return 'Added $name to My Day!';
+  }
+
+  @override
+  String placeCardFailedAddToMyDay(String name) {
+    return 'Failed to add $name to My Day';
+  }
+
+  @override
+  String get placeCardUnableOpenDirections => 'Unable to open directions';
+
+  @override
+  String get placeCardView => 'View';
+
+  @override
+  String placeCardReviewCountInParens(int count) {
+    return '($count reviews)';
+  }
 
   @override
   String get placeDetailNoReviews => 'No reviews available';
@@ -6893,6 +7244,45 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get placeTypeStadium => 'Stadium';
+
+  @override
+  String get placeCardSocialTrending => '🔥 Trending';
+
+  @override
+  String get placeCardSocialHiddenGem => '💎 Hidden gem';
+
+  @override
+  String get placeCardSocialLovedByLocals => '❤️ Locals love it';
+
+  @override
+  String get placeCardSocialPopular => '⭐ Popular';
+
+  @override
+  String get placeCardBestMorning => '☀️ Morning';
+
+  @override
+  String get placeCardBestAfternoon => '🌤 Afternoon';
+
+  @override
+  String get placeCardBestEvening => '🌙 Evening';
+
+  @override
+  String get placeCardBestAllDay => '🕐 All day';
+
+  @override
+  String get placeCardVenuePlace => 'Place';
+
+  @override
+  String get placeCardVenueGallery => 'Gallery';
+
+  @override
+  String get placeCardVenueAttraction => 'Attraction';
+
+  @override
+  String get placeCardVenueHotel => 'Hotel';
+
+  @override
+  String get placeCardVenueClub => 'Club';
 
   @override
   String placeDescFood(String name) {
@@ -8924,6 +9314,81 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weatherNoActiveAlerts => 'No active alerts';
 
   @override
+  String myDayWeatherDialogTitle(String city) {
+    return 'Weather in $city';
+  }
+
+  @override
+  String get myDayWeatherFeelsLike => 'Feels like';
+
+  @override
+  String get myDayWeatherHumidity => 'Humidity';
+
+  @override
+  String get myDayWeatherDescriptionLabel => 'Description';
+
+  @override
+  String get myDayWeatherClose => 'Close';
+
+  @override
+  String get myDayWeatherUnavailable => 'Weather data unavailable';
+
+  @override
+  String get myDayWeatherCheckConnection =>
+      'Please check your internet connection';
+
+  @override
+  String get myDayWeatherClearSkyFallback => 'Clear skies';
+
+  @override
+  String get weatherMainClear => 'Clear';
+
+  @override
+  String get weatherMainClouds => 'Clouds';
+
+  @override
+  String get weatherMainRain => 'Rain';
+
+  @override
+  String get weatherMainDrizzle => 'Drizzle';
+
+  @override
+  String get weatherMainThunderstorm => 'Thunderstorm';
+
+  @override
+  String get weatherMainSnow => 'Snow';
+
+  @override
+  String get weatherMainMist => 'Mist';
+
+  @override
+  String get weatherMainFog => 'Fog';
+
+  @override
+  String get weatherMainHaze => 'Haze';
+
+  @override
+  String get weatherMainSmoke => 'Smoke';
+
+  @override
+  String get weatherMainDust => 'Dust';
+
+  @override
+  String get weatherMainSand => 'Sand';
+
+  @override
+  String get weatherMainAsh => 'Ash';
+
+  @override
+  String get weatherMainSquall => 'Squall';
+
+  @override
+  String get weatherMainTornado => 'Tornado';
+
+  @override
+  String get weatherMainOther => 'Weather';
+
+  @override
   String get weatherHistoryEmpty => 'No historical data available';
 
   @override
@@ -8931,4 +9396,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get moodHistoryEmpty => 'No mood history available';
+
+  @override
+  String get exploreLoadMoreIdeas => 'Load more ideas';
+
+  @override
+  String get agendaPaymentBadgeFree => 'Free';
+
+  @override
+  String get agendaPaymentBadgePaid => 'Paid';
+
+  @override
+  String get agendaPaymentBadgeReserved => 'Reserved';
+
+  @override
+  String get agendaPaymentBadgePending => 'Pending';
+
+  @override
+  String agendaDurationShort(String minutes) {
+    return '$minutes min';
+  }
 }

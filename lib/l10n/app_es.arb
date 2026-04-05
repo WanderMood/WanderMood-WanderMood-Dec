@@ -1626,7 +1626,7 @@
   "agendaErrorLoadingActivities": "Error al cargar actividades",
   "agendaPleaseTryAgainLater": "Por favor, inténtalo de nuevo más tarde",
   "agendaNoActivitiesScheduled": "No hay actividades programadas",
-  "socialGetDirections": "Get directions",
+  "socialGetDirections": "Cómo llegar",
   "socialShare": "Share",
   "socialOpenDirectionsFailed": "Unable to open directions",
   "socialDeleteActivityConfirmTitle": "Delete activity?",
@@ -2151,6 +2151,27 @@
   "premiumValidationInvalidCvv": "CVV inválido",
   "premiumValidationNameRequired": "El nombre es obligatorio",
   "placeDetailAboutThisPlace": "Sobre este lugar",
+  "placeDetailBlurbExtraAddress": "La dirección y las acciones rápidas están justo debajo de este texto.",
+  "placeDetailBlurbExtraRatingCount": "Las fichas públicas suelen rondar {rating} de 5 con {count} valoraciones.",
+  "@placeDetailBlurbExtraRatingCount": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "placeDetailBlurbExtraRatingOnly": "Las puntuaciones suelen situarse alrededor de {rating} de 5 en listados públicos.",
+  "@placeDetailBlurbExtraRatingOnly": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "placeDetailBlurbExtraReviewsTab": "La pestaña Reseñas resume lo que comentan los visitantes; los horarios ayudan a planificar.",
   "placeDetailGoodToKnow": "Bueno saber",
   "placeDetailDurationLabel": "Duración",
   "placeDetailPriceLabel": "Precio",
@@ -2160,6 +2181,210 @@
   "placeDetailEnergyLabel": "Energía",
   "placeDetailTimeNeededLabel": "Tiempo necesario",
   "placeDetailNoPhotos": "No hay fotos disponibles",
+  "placeDetailLoadingPhotos": "Cargando fotos…",
+  "placeDetailAmazingFeatures": "Destacados",
+  "placeDetailIndoorVibes": "Ambiente interior",
+  "placeDetailOutdoorFun": "Diversión al aire libre",
+  "placeDetailEnergyChipLow": "Poca energía",
+  "placeDetailEnergyChipMedium": "Energía media",
+  "placeDetailEnergyChipHigh": "Mucha energía",
+  "placeDetailHeroOpenNow": "Abierto ahora",
+  "placeDetailHeroClosed": "Cerrado",
+  "placeDetailHeroOpenNowLine": "✅ ¡Abierto ahora!",
+  "placeDetailHeroClosedLine": "❌ Cerrado",
+  "placeDetailOpen247": "Abierto 24/7",
+  "placeDetailPrice5to15": "€5–15",
+  "placeDetailPrice8to25": "€8–25",
+  "placeDetailPrice10to20": "€10–20",
+  "placeDetailPrice10to25": "€10–25",
+  "placeDetailPrice15to35": "€15–35",
+  "placeDetailPrice15to40": "€15–40",
+  "placeDetailPrice40to80": "€40–80",
+  "placeDetailPrice30to50": "€30–50",
+  "placeDetailPrice50Plus": "€50+",
+  "placeDetailFreeEntryPayItems": "Entrada gratis (pagas lo que compres)",
+  "placeDetailFreeDonationsWelcome": "Gratis (donaciones bienvenidas)",
+  "placeDetailUnavailableName": "Detalles del lugar no disponibles",
+  "placeDetailOpeningStatusOpen": "abierto",
+  "placeDetailOpeningStatusClosed": "cerrado",
+  "myDayCarouselSpotFallbackDescription": "Un sitio que merece la pena",
+  "myDayFreeTimeSectionTitle": "Actividades en tu tiempo libre",
+  "myDayFreeTimeSectionSubtitle": "Descubre qué puedes hacer ahora",
+  "myDayFreeTimeIntroOneLine": "Cerca de ti. Descubre qué puedes hacer ahora.",
+  "myDayFreeTimeEmptyHint": "Aún no hay sugerencias en caché. Abre Explorar en tu zona — las ideas aparecerán aquí.",
+  "myDayFreeTimeLoadingFailed": "No se pudieron cargar sugerencias. Inténtalo de nuevo en un momento.",
+  "myDayFreeTimeLoadMore": "Cargar más",
+  "myDayFreeTimeNearYouBadge": "Cerca de ti",
+  "myDayFreeTimeDirectionsShort": "Cómo llegar",
+  "myDayFreeTimeCategoryExercise": "Aire libre y actividad",
+  "myDayFreeTimeCategoryEntertainment": "Salir",
+  "myDayFreeTimeCategorySocial": "Social",
+  "myDayFreeTimeCategorySpot": "Lugar",
+  "exploreCardBlurbRestaurant": "Comida en mesa con carta variable — cocina y horarios en el detalle.",
+  "exploreCardBlurbBar": "Enfocado en bebidas — cócteles, vino o cerveza según el local.",
+  "exploreCardBlurbCafe": "Café, algo ligero y una pausa tranquila — bollería o brunch si lo ofrecen.",
+  "exploreCardBlurbBakery": "Pan recién hecho, dulces y bocados salados para aquí o para llevar.",
+  "exploreCardBlurbTakeaway": "Comida rápida para llevar — útil al paso.",
+  "exploreCardBlurbMuseum": "Exposiciones y colecciones — entradas y horarios en la ficha.",
+  "exploreCardBlurbZoo": "Animales en interior y exterior — entrada suele ser de pago.",
+  "exploreCardBlurbAquarium": "Acuario y visita familiar — normalmente con entrada.",
+  "exploreCardBlurbNightlife": "Tarde noche — música, baile o ambiente; puede haber cargo.",
+  "exploreCardBlurbPark": "Espacio al aire libre para pasear o descansar — suele ser gratis.",
+  "exploreCardBlurbAttraction": "Experiencia o punto emblemático — a veces ticket u horario.",
+  "exploreCardBlurbSpa": "Tratamientos y relax — reservar ayuda en días concurridos.",
+  "exploreCardBlurbShopping": "Tiendas y escaparates — horarios según comercio.",
+  "exploreCardBlurbDefault": "Sitio local por descubrir — abre la ficha para horarios e info.",
+  "exploreCardBlurbSecondSentenceRating": "Suele valorarse con un {rating} de 5 de media — entra para reseñas, fotos y horarios.",
+  "@exploreCardBlurbSecondSentenceRating": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreCardBlurbSecondSentenceNoRating": "Abre la ficha para la dirección, fotos y lo que más citan los reseñadores.",
+  "exploreCardBlurbPoiNamed": "{name} aparece en el mapa como un sitio del barrio — ideal para una parada espontánea.",
+  "@exploreCardBlurbPoiNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreCardBlurbTour": "Experiencias guiadas y tips locales — revisa la ficha para reservar y qué incluye.",
+  "moodyPlaceBlurbSystemPrompt": "Eres Moody, la voz cercana de la app de viajes WanderMood. Escribes descripciones de lugares precisas y atractivas para tarjetas. No inventes platos, precios ni servicios. Usa solo los hechos del mensaje del usuario. Si hay pocos hechos, sé general pero atractivo.",
+  "moodyPlaceBlurbUserMessage": "Estos son los únicos hechos verificados de un lugar real (datos de mapas o texto de visitantes). No añadas detalles que no estén respaldados.\n\n{facts}\n\nEscribe al menos 3 oraciones detalladas sobre el ambiente y las ofertas para una tarjeta de app de viajes. Tono: amable, como Moody. Usa solo los hechos anteriores. Salida íntegramente en {languageName}. Texto corrido: sin viñetas, sin comillas, sin listas.",
+  "@moodyPlaceBlurbUserMessage": {
+    "placeholders": {
+      "facts": {
+        "type": "String"
+      },
+      "languageName": {
+        "type": "String"
+      }
+    }
+  },
+  "moodyPlaceBlurbLabelName": "Nombre",
+  "moodyPlaceBlurbLabelAddress": "Dirección",
+  "moodyPlaceBlurbLabelTypes": "Tipos",
+  "moodyPlaceBlurbLabelRating": "Valoración",
+  "moodyPlaceBlurbLabelReviewCount": "Número de reseñas",
+  "moodyPlaceBlurbLabelOverview": "Resumen del lugar",
+  "moodyPlaceBlurbLabelVisitorNotes": "Notas de visitantes",
+  "moodyPlaceBlurbLanguageEnglish": "inglés",
+  "moodyPlaceBlurbLanguageDutch": "neerlandés",
+  "moodyPlaceBlurbLanguageGerman": "alemán",
+  "moodyPlaceBlurbLanguageFrench": "francés",
+  "moodyPlaceBlurbLanguageSpanish": "español",
+  "moodyPlaceDetailBlurbSystemPrompt": "Eres Moody, la voz cercana de la app de viajes WanderMood. Escribes una descripción de lugar más completa y precisa para una pantalla de detalle. No inventes platos, precios ni servicios. Usa solo los hechos del mensaje del usuario. Si hay pocos hechos, sé general pero atractivo.",
+  "moodyPlaceDetailBlurbUserMessage": "Estos son los únicos hechos verificados de un lugar real (datos de mapas o texto de visitantes). No añadas detalles que no estén respaldados.\n\n{facts}\n\nEscribe de 5 a 8 oraciones detalladas incluyendo consejos prácticos, historia y por qué vale la pena visitarlo para la pantalla de detalle de la app de viajes. Amplía ambiente y pistas prácticas solo si los hechos anteriores lo permiten. Tono: amable, como Moody. Salida íntegramente en {languageName}. Texto corrido: sin viñetas, sin comillas, sin listas.",
+  "@moodyPlaceDetailBlurbUserMessage": {
+    "placeholders": {
+      "facts": {
+        "type": "String"
+      },
+      "languageName": {
+        "type": "String"
+      }
+    }
+  },
+  "moodCarouselNearbyBadge": "Cerca",
+  "moodCarouselSave": "Guardar",
+  "moodCarouselAddToMorning": "Añadir a la mañana",
+  "moodCarouselAddToAfternoon": "Añadir a la tarde",
+  "moodCarouselAddToEvening": "Añadir a la noche",
+  "moodCarouselActivityVisitName": "Visitar {name}",
+  "@moodCarouselActivityVisitName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodCarouselToastAddedMorning": "¡{name} añadido a tu mañana!",
+  "@moodCarouselToastAddedMorning": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodCarouselToastAddedAfternoon": "¡{name} añadido a tu tarde!",
+  "@moodCarouselToastAddedAfternoon": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodCarouselToastAddedEvening": "¡{name} añadido a tu noche!",
+  "@moodCarouselToastAddedEvening": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodCarouselToastAddFailed": "No se pudo añadir {name}. Inténtalo de nuevo.",
+  "@moodCarouselToastAddFailed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodCarouselToastView": "Ver",
+  "myDayFreeTimeInsightDuration": "⏱️ ~{minutes} min",
+  "@myDayFreeTimeInsightDuration": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "myDayFreeTimeInsightRating": "⭐ {rating}",
+  "@myDayFreeTimeInsightRating": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "myDayFreeTimeInsightPricePaid": "💶 {symbols}",
+  "@myDayFreeTimeInsightPricePaid": {
+    "placeholders": {
+      "symbols": {
+        "type": "String"
+      }
+    }
+  },
+  "placeCardSignInToAddMyDay": "Inicia sesión para añadir actividades a Mi día",
+  "placeCardAddedToMyDay": "¡{name} añadido a Mi día!",
+  "@placeCardAddedToMyDay": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "placeCardFailedAddToMyDay": "No se pudo añadir {name} a Mi día",
+  "@placeCardFailedAddToMyDay": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "placeCardUnableOpenDirections": "No se puede abrir la ruta",
+  "placeCardView": "Ver",
+  "placeCardReviewCountInParens": "({count} reseñas)",
+  "@placeCardReviewCountInParens": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "placeDetailNoReviews": "No hay reseñas disponibles",
   "placeDetailReviewsWhenAvailable": "Las reseñas aparecerán aquí cuando estén disponibles",
   "placeDetailNotFound": "Lugar no encontrado",
@@ -2356,6 +2581,19 @@
   "placeTypeAquarium": "Acuario",
   "placeTypeBowling": "Bolera",
   "placeTypeStadium": "Estadio",
+  "placeCardSocialTrending": "🔥 Tendencia",
+  "placeCardSocialHiddenGem": "💎 Joya oculta",
+  "placeCardSocialLovedByLocals": "❤️ Querido por locales",
+  "placeCardSocialPopular": "⭐ Popular",
+  "placeCardBestMorning": "☀️ Mañana",
+  "placeCardBestAfternoon": "🌤 Tarde",
+  "placeCardBestEvening": "🌙 Noche",
+  "placeCardBestAllDay": "🕐 Todo el día",
+  "placeCardVenuePlace": "Lugar",
+  "placeCardVenueGallery": "Galería",
+  "placeCardVenueAttraction": "Atracción",
+  "placeCardVenueHotel": "Hotel",
+  "placeCardVenueClub": "Club",
   "placeDescFood": "{name} es un lugar estupendo para los amantes de la comida en busca de una buena comida en la zona.",
   "placeDescFoodWithReviews": "{name} es un restaurante popular con {reviewCount} reseñas y una valoración de {rating} estrellas.",
   "placeDescCafe": "{name} es una acogedora cafetería, perfecta para un descanso con café o un tentempié ligero.",
@@ -3419,8 +3657,53 @@
   "weatherNoForecasts": "No hay pronósticos",
   "weatherAlertsTitle": "Alertas meteorológicas",
   "weatherNoActiveAlerts": "No hay alertas activas",
+  "myDayWeatherDialogTitle": "Tiempo en {city}",
+  "@myDayWeatherDialogTitle": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "myDayWeatherFeelsLike": "Sensación térmica",
+  "myDayWeatherHumidity": "Humedad",
+  "myDayWeatherDescriptionLabel": "Descripción",
+  "myDayWeatherClose": "Cerrar",
+  "myDayWeatherUnavailable": "Datos del tiempo no disponibles",
+  "myDayWeatherCheckConnection": "Comprueba tu conexión a internet",
+  "myDayWeatherClearSkyFallback": "Cielo despejado",
+  "weatherMainClear": "Despejado",
+  "weatherMainClouds": "Nublado",
+  "weatherMainRain": "Lluvia",
+  "weatherMainDrizzle": "Llovizna",
+  "weatherMainThunderstorm": "Tormenta",
+  "weatherMainSnow": "Nieve",
+  "weatherMainMist": "Neblina",
+  "weatherMainFog": "Niebla",
+  "weatherMainHaze": "Calima",
+  "weatherMainSmoke": "Humo",
+  "weatherMainDust": "Polvo",
+  "weatherMainSand": "Arena",
+  "weatherMainAsh": "Ceniza",
+  "weatherMainSquall": "Ráfaga",
+  "weatherMainTornado": "Tornado",
+  "weatherMainOther": "Tiempo",
   "weatherHistoryEmpty": "No hay datos históricos",
   "weatherHistoryInvalid": "No hay datos históricos válidos",
   "moodHistoryEmpty": "No hay historial de estado de ánimo",
-  "periodActivitiesSwipeComplete": "Completar"
+  "periodActivitiesSwipeComplete": "Completar",
+
+  "exploreLoadMoreIdeas": "Cargar más ideas",
+  "agendaPaymentBadgeFree": "Gratis",
+  "agendaPaymentBadgePaid": "Pagado",
+  "agendaPaymentBadgeReserved": "Reservado",
+  "agendaPaymentBadgePending": "Pendiente",
+  "agendaDurationShort": "{minutes} min",
+  "@agendaDurationShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  }
 }

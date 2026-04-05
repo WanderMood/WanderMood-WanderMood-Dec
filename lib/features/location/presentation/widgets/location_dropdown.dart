@@ -101,7 +101,19 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
   List<String> _getPopularCitiesForCountry(String? countryCode) {
     switch (countryCode?.toLowerCase()) {
       case 'nl': // Netherlands
-        return ['Amsterdam', 'Rotterdam', 'The Hague', 'Utrecht', 'Eindhoven', 'Groningen', 'Tilburg', 'Almere', 'Breda', 'Nijmegen'];
+        return [
+          'Amsterdam',
+          'Rotterdam',
+          'The Hague',
+          'Utrecht',
+          'Eindhoven',
+          'Groningen',
+          'Tilburg',
+          'Almere',
+          'Breda',
+          'Nijmegen',
+          'Spijkenisse',
+        ];
       case 'us': // United States
         return ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose'];
       case 'gb': // United Kingdom

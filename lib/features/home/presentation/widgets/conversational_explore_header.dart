@@ -15,6 +15,12 @@ class ConversationalExploreHeader extends StatefulWidget {
   final bool isGridView;
   final bool isMapView;
   final Function(bool, bool) onViewToggle;
+  /// Quick category chips shown under the search bar (Explore feed filter).
+  final List<String>? categoryKeys;
+  final String? selectedCategory;
+  final String Function(String key)? categoryLabel;
+  final String Function(String key)? categoryEmoji;
+  final ValueChanged<String>? onCategorySelected;
 
   const ConversationalExploreHeader({
     Key? key,
@@ -24,6 +30,11 @@ class ConversationalExploreHeader extends StatefulWidget {
     this.isGridView = false,
     this.isMapView = false,
     required this.onViewToggle,
+    this.categoryKeys,
+    this.selectedCategory,
+    this.categoryLabel,
+    this.categoryEmoji,
+    this.onCategorySelected,
   }) : super(key: key);
 
   @override
@@ -33,6 +44,13 @@ class ConversationalExploreHeader extends StatefulWidget {
 
 class _ConversationalExploreHeaderState extends State<ConversationalExploreHeader> {
   final TextEditingController _searchController = TextEditingController();
+
+  bool get _hasCategoryRow =>
+      widget.categoryKeys != null &&
+      widget.categoryKeys!.isNotEmpty &&
+      widget.selectedCategory != null &&
+      widget.categoryLabel != null &&
+      widget.onCategorySelected != null;
 
   @override
   void initState() {
@@ -49,13 +67,17 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildSearchBar(),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
+          if (_hasCategoryRow) ...[
+            _buildCategoryChipsRow(),
+            const SizedBox(height: 6),
+          ],
           _buildActivitiesHeader(),
         ],
       ),
@@ -186,6 +208,68 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
           begin: const Offset(0.95, 0.95),
           end: const Offset(1.0, 1.0),
         );
+  }
+
+  Widget _buildCategoryChipsRow() {
+    final keys = widget.categoryKeys!;
+    final selected = widget.selectedCategory!;
+    final labelFn = widget.categoryLabel!;
+    final emojiFn = widget.categoryEmoji ?? (_) => '📍';
+
+    return SizedBox(
+      height: 36,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: keys.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, i) {
+          final key = keys[i];
+          final isSelected = key == selected;
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => widget.onCategorySelected!(key),
+              borderRadius: BorderRadius.circular(18),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? _wmForest : Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: isSelected ? _wmForest : _wmParchment,
+                    width: isSelected ? 1.25 : 1,
+                  ),
+                  boxShadow: [
+                    if (!isSelected)
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(emojiFn(key), style: const TextStyle(fontSize: 14)),
+                    const SizedBox(width: 6),
+                    Text(
+                      labelFn(key),
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        color: isSelected ? Colors.white : const Color(0xFF4A4640),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Widget _buildActivitiesHeader() {

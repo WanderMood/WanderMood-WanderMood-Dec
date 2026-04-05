@@ -5,6 +5,7 @@ import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/providers/communication_style_provider.dart';
 import 'notification_category.dart';
 import 'notification_copy.dart';
+import 'notification_navigation.dart';
 
 /// Central provider for all push notification copy.
 ///
@@ -92,7 +93,9 @@ class NotificationCopyProvider {
     final variants = variantsFor(category, style, l10n, params: params);
     final nextIndex = (lastIndex + 1) % variants.length;
     await prefs.setInt(key, nextIndex);
-    return variants[nextIndex];
+    final base = variants[nextIndex];
+    final payload = NotificationNavPayload.forCategory(category);
+    return payload != null ? base.withPayload(payload) : base;
   }
 
   // ─────────────────────────────────────────────────────────────────────────

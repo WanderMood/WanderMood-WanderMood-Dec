@@ -1,0 +1,10 @@
+---
+description: Use WmPlacePhotoNetworkImage for Moody/Google place photos; WmNetworkImage for other URLs.
+alwaysApply: true
+---
+
+# Google Place photos — image widget rule
+
+- For **`Place.photos`**, Moody **`photo_url`**, or any `maps.googleapis.com/.../place/photo` URL from Explore / `places_cache` / My Day: use **`WmPlacePhotoNetworkImage`** (`lib/core/presentation/widgets/wm_network_image.dart`). Same pipeline everywhere (hero, list cards, grid, Foto’s, fullscreen).
+- For avatars, Unsplash, social images, or other arbitrary HTTPS images: use **`WmNetworkImage`**.
+- Do not use raw `Image.network` for Google place photos. Do not duplicate URL rewriting outside **`deviceAccessibleGooglePlacePhotoUrl`** / **`WmPlacePhotoNetworkImage`**.

@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 import '../constants/api_constants.dart';
 import '../../features/places/models/place.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 part 'moody_ai_service.g.dart';
 
@@ -15,6 +16,65 @@ class MoodyAIService {
   final String apiKey = ApiConstants.openAiApiKey;
   final String baseUrl = ApiConstants.openAiBaseUrl;
 
+  /// BCP-47 primary tag; tips prompts and fallbacks match Edge `AppLang`.
+  static String normalizeTipsLanguageCode(String? code) {
+    final x = (code ?? 'en').toLowerCase().split(RegExp(r'[-_]')).first;
+    if (x == 'nl' || x == 'es' || x == 'de' || x == 'fr') return x;
+    return 'en';
+  }
+
+  static String _humanOutputLanguage(String lang) {
+    switch (lang) {
+      case 'nl':
+        return 'Dutch';
+      case 'es':
+        return 'Spanish';
+      case 'de':
+        return 'German';
+      case 'fr':
+        return 'French';
+      default:
+        return 'English';
+    }
+  }
+
+  /// Short tips when the client cannot call OpenAI (dedupe wait, errors).
+  static List<String> emergencyTips(String languageCode) {
+    final lang = normalizeTipsLanguageCode(languageCode);
+    switch (lang) {
+      case 'nl':
+        return [
+          '🕐 Check openingstijden voordat je gaat — zo voorkom je teleurstelling',
+          '📱 Download offline kaarten voor het geval het signaal zwak is',
+          '💧 Neem water mee, vooral bij warm weer',
+        ];
+      case 'es':
+        return [
+          '🕐 Revisa el horario antes de ir para evitar disgustos',
+          '📱 Descarga mapas offline por si la cobertura es mala',
+          '💧 Lleva agua, sobre todo si hace calor',
+        ];
+      case 'de':
+        return [
+          '🕐 Prüfe die Öffnungszeiten vor dem Besuch — so vermeidest du Enttäuschungen',
+          '📱 Lade Offline-Karten herunter, falls das Netz schwach ist',
+          '💧 Nimm Wasser mit, besonders bei warmem Wetter',
+        ];
+      case 'fr':
+        return [
+          '🕐 Vérifie les horaires avant d’y aller pour éviter les mauvaises surprises',
+          '📱 Télécharge des cartes hors ligne au cas où le réseau serait faible',
+          '💧 Emporte de l’eau, surtout par temps chaud',
+        ];
+      default:
+        return [
+          '🕐 Check opening hours before your visit to avoid disappointment',
+          '📱 Download offline maps in case of poor signal',
+          '💧 Stay hydrated and bring water, especially during warmer weather',
+        ];
+    }
+  }
+
   /// Generate personalized Moody Tips for a specific place using AI
   Future<List<String>> generateMoodyTips({
     required Place place,
@@ -22,10 +82,12 @@ class MoodyAIService {
     String? timeOfDay,
     String? weather,
     List<String>? userPreferences,
+    String languageCode = 'en',
   }) async {
+    final lang = normalizeTipsLanguageCode(languageCode);
     if (apiKey.isEmpty) {
       debugPrint('⚠️ OpenAI API key not configured, using fallback tips');
-      return _getFallbackTips(place);
+      return _getFallbackTips(place, lang);
     }
 
     try {
@@ -37,6 +99,7 @@ class MoodyAIService {
         timeOfDay: timeOfDay,
         weather: weather,
         userPreferences: userPreferences,
+        outputLang: lang,
       );
 
       debugPrint('🤖 Generating Moody Tips for: ${place.name}');
@@ -52,7 +115,7 @@ class MoodyAIService {
           'messages': [
             {
               'role': 'system',
-              'content': _getSystemPrompt(),
+              'content': _getSystemPrompt(lang),
             },
             {
               'role': 'user',
@@ -69,17 +132,17 @@ class MoodyAIService {
         final content = data['choices'][0]['message']['content'] as String;
         
         // Parse the response and extract tips
-        final tips = _parseAIResponse(content);
+        final tips = _parseAIResponse(content, place: place, lang: lang);
         
         debugPrint('✅ Generated ${tips.length} AI-powered Moody Tips');
         return tips;
       } else {
         debugPrint('❌ OpenAI API error: ${response.statusCode}');
-        return _getFallbackTips(place);
+        return _getFallbackTips(place, lang);
       }
     } catch (e) {
       debugPrint('❌ Error generating Moody Tips: $e');
-      return _getFallbackTips(place);
+      return _getFallbackTips(place, lang);
     }
   }
 
@@ -102,9 +165,11 @@ class MoodyAIService {
     String? timeOfDay,
     String? weather,
     List<String>? userPreferences,
+    required String outputLang,
   }) {
     final context = <String>[];
     final placeLabel = _placeLabelForTips(place);
+    final outName = _humanOutputLanguage(outputLang);
 
     // Add place context
     context.add('Place: $placeLabel');
@@ -133,13 +198,15 @@ Make the tips:
 - Mood-appropriate and engaging
 - Include relevant emojis
 - Written in a friendly, helpful tone as "Moody" the AI travel assistant
+- Write every tip entirely in $outName (no English unless the output language is English)
 
 Format as a simple list, one tip per line, starting with an emoji.
     ''';
   }
 
   /// System prompt that defines Moody's personality
-  String _getSystemPrompt() {
+  String _getSystemPrompt(String lang) {
+    final outName = _humanOutputLanguage(lang);
     return '''
 You are Moody, WanderMood's friendly AI travel assistant. You're knowledgeable about travel, mood-based recommendations, and creating memorable experiences.
 
@@ -155,11 +222,12 @@ Generate tips that are:
 - Practical and immediately actionable
 - Mood-appropriate and engaging
 - 15-30 words each for quick reading
+- Written entirely in $outName for the user (no other human language mixed in)
     ''';
   }
 
   /// Parse AI response and extract individual tips
-  List<String> _parseAIResponse(String content) {
+  List<String> _parseAIResponse(String content, {Place? place, required String lang}) {
     final lines = content.split('\n')
         .map((line) => line.trim())
         .where((line) => line.isNotEmpty)
@@ -184,21 +252,151 @@ Generate tips that are:
     
     // Ensure we have at least 2 tips
     if (tips.length < 2) {
-      return _getFallbackTips(null);
+      return _getFallbackTips(place, lang);
     }
     
     // Limit to 4 tips max
     return tips.take(4).toList();
   }
 
+  /// Localized short fallbacks when [lang] is not English (matches common Edge locales).
+  List<String> _localizedPlaceFallbackTips(Place place, String lang) {
+    final label = _placeLabelForTips(place);
+    final now = MoodyClock.now();
+    final hour = now.hour;
+    final bucket = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+
+    String tMorningOutdoor() {
+      switch (lang) {
+        case 'nl':
+          return '🌅 Perfecte ochtend voor $label — mooi licht en meestal rustiger.';
+        case 'es':
+          return '🌅 Buen momento por la mañana en $label — suele haber buena luz y menos gente.';
+        case 'de':
+          return '🌅 Perfekter Vormittag für $label — schönes Licht und meist weniger los.';
+        case 'fr':
+          return '🌅 Beau moment le matin à $label — belle lumière et souvent moins de monde.';
+        default:
+          return '';
+      }
+    }
+
+    String tAfternoonOutdoor() {
+      switch (lang) {
+        case 'nl':
+          return '☀️ Namiddag bij $label? Neem zonnebescherming en water mee.';
+        case 'es':
+          return '☀️ ¿Por la tarde en $label? Lleva protección solar e hidrátate.';
+        case 'de':
+          return '☀️ Nachmittags bei $label? Sonnenschutz mitnehmen und trinken.';
+        case 'fr':
+          return '☀️ L’après-midi à $label ? Pense au soleil et à t’hydrater.';
+        default:
+          return '';
+      }
+    }
+
+    String tEveningOutdoor() {
+      switch (lang) {
+        case 'nl':
+          return '🌙 Avond bij $label kan prachtig zijn — check of er speciale uren zijn.';
+        case 'es':
+          return '🌙 Por la noche $label puede ser especial — mira si hay horario extendido.';
+        case 'de':
+          return '🌙 Abends kann $label besonders sein — prüf Öffnungszeiten/Events.';
+        case 'fr':
+          return '🌙 Le soir, $label peut être magique — vérifie horaires ou événements.';
+        default:
+          return '';
+      }
+    }
+
+    String tShoes() {
+      switch (lang) {
+        case 'nl':
+          return '👟 Comfortabele schoenen helpen om $label goed te verkennen.';
+        case 'es':
+          return '👟 Calzado cómodo ayuda a disfrutar más $label.';
+        case 'de':
+          return '👟 Bequeme Schuhe helfen, $label richtig zu erkunden.';
+        case 'fr':
+          return '👟 Des chaussures confortables pour bien profiter de $label.';
+        default:
+          return '';
+      }
+    }
+
+    String tHours() {
+      switch (lang) {
+        case 'nl':
+          return '🕐 Check openingstijden en reserveringen voor $label.';
+        case 'es':
+          return '🕐 Revisa horarios y reservas para $label.';
+        case 'de':
+          return '🕐 Prüf Öffnungszeiten und Reservierungen für $label.';
+        case 'fr':
+          return '🕐 Vérifie horaires et réservations pour $label.';
+        default:
+          return '';
+      }
+    }
+
+    final tips = <String>[];
+    final outdoorish = !place.isIndoor ||
+        place.activities.any((a) {
+          final x = a.toLowerCase();
+          return x.contains('nature') || x.contains('outdoor') || x.contains('sightseeing');
+        });
+    if (outdoorish) {
+      if (bucket == 'morning') {
+        tips.add(tMorningOutdoor());
+      } else if (bucket == 'afternoon') {
+        tips.add(tAfternoonOutdoor());
+      } else {
+        tips.add(tEveningOutdoor());
+      }
+    } else {
+      switch (lang) {
+        case 'nl':
+          tips.add('🏠 $label is meestal een fijne plek ongeacht het weer — check wel de openingstijden.');
+        case 'es':
+          tips.add('🏠 $label suele ir bien con cualquier clima — revisa el horario.');
+        case 'de':
+          tips.add('🏠 $label passt meist bei jedem Wetter — Öffnungszeiten checken.');
+        case 'fr':
+          tips.add('🏠 $label convient souvent quelle que soit la météo — vérifie les horaires.');
+        default:
+          break;
+      }
+    }
+    tips.add(tHours());
+    tips.add(tShoes());
+    if (place.rating >= 4.0) {
+      switch (lang) {
+        case 'nl':
+          tips.add('⭐ $label scoort goed bij bezoekers — veel plezier!');
+        case 'es':
+          tips.add('⭐ $label tiene muy buenas valoraciones — ¡disfruta!');
+        case 'de':
+          tips.add('⭐ $label ist gut bewertet — viel Spaß!');
+        case 'fr':
+          tips.add('⭐ $label est bien noté — bonne visite !');
+        default:
+          break;
+      }
+    }
+    return tips.where((s) => s.isNotEmpty).take(4).toList();
+  }
+
   /// Generate smart Moody Tips based on place context (for emergencies)
-  List<String> _getFallbackTips(Place? place) {
+  List<String> _getFallbackTips(Place? place, String lang) {
     if (place == null) {
-      return [
-        '🕐 Check opening hours before your visit to avoid disappointment',
-        '📱 Download offline maps in case of poor signal',
-        '💧 Stay hydrated and bring water, especially during warmer weather',
-      ];
+      return emergencyTips(lang);
+    }
+
+    if (lang != 'en') {
+      final short = _localizedPlaceFallbackTips(place, lang);
+      if (short.length >= 2) return short;
     }
 
     final tips = <String>[];
@@ -326,6 +524,136 @@ Generate tips that are:
     return tips.toSet().take(4).toList();
   }
 
+  /// Grounded card blurb; [factsBlock] must already use localized labels.
+  Future<String> generatePlaceCardBlurb({
+    required AppLocalizations l10n,
+    required String factsBlock,
+    required String bcp47LanguageCode,
+  }) async {
+    if (apiKey.isEmpty) return '';
+    final trimmed = factsBlock.trim();
+    if (trimmed.isEmpty) return '';
+
+    final lang = normalizeTipsLanguageCode(bcp47LanguageCode);
+    final outName = switch (lang) {
+      'nl' => l10n.moodyPlaceBlurbLanguageDutch,
+      'de' => l10n.moodyPlaceBlurbLanguageGerman,
+      'fr' => l10n.moodyPlaceBlurbLanguageFrench,
+      'es' => l10n.moodyPlaceBlurbLanguageSpanish,
+      _ => l10n.moodyPlaceBlurbLanguageEnglish,
+    };
+
+    try {
+      final url = Uri.parse('$baseUrl${ApiConstants.completions}');
+      final userMessage = l10n.moodyPlaceBlurbUserMessage(trimmed, outName);
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $apiKey',
+        },
+        body: json.encode({
+          'model': 'gpt-4o-mini',
+          'messages': [
+            {'role': 'system', 'content': l10n.moodyPlaceBlurbSystemPrompt},
+            {'role': 'user', 'content': userMessage},
+          ],
+          'temperature': 0.45,
+          'max_tokens': 400,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        debugPrint('❌ generatePlaceCardBlurb HTTP ${response.statusCode}');
+        return '';
+      }
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      final content =
+          data['choices']?[0]?['message']?['content'] as String? ?? '';
+      return _sanitizePlaceCardBlurb(content);
+    } catch (e) {
+      debugPrint('❌ generatePlaceCardBlurb: $e');
+      return '';
+    }
+  }
+
+  /// Longer grounded blurb for place detail screens; [factsBlock] must already use localized labels.
+  Future<String> generatePlaceDetailBlurb({
+    required AppLocalizations l10n,
+    required String factsBlock,
+    required String bcp47LanguageCode,
+  }) async {
+    if (apiKey.isEmpty) return '';
+    final trimmed = factsBlock.trim();
+    if (trimmed.isEmpty) return '';
+
+    final lang = normalizeTipsLanguageCode(bcp47LanguageCode);
+    final outName = switch (lang) {
+      'nl' => l10n.moodyPlaceBlurbLanguageDutch,
+      'de' => l10n.moodyPlaceBlurbLanguageGerman,
+      'fr' => l10n.moodyPlaceBlurbLanguageFrench,
+      'es' => l10n.moodyPlaceBlurbLanguageSpanish,
+      _ => l10n.moodyPlaceBlurbLanguageEnglish,
+    };
+
+    try {
+      final url = Uri.parse('$baseUrl${ApiConstants.completions}');
+      final userMessage =
+          l10n.moodyPlaceDetailBlurbUserMessage(trimmed, outName);
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $apiKey',
+        },
+        body: json.encode({
+          'model': 'gpt-4o-mini',
+          'messages': [
+            {
+              'role': 'system',
+              'content': l10n.moodyPlaceDetailBlurbSystemPrompt,
+            },
+            {'role': 'user', 'content': userMessage},
+          ],
+          'temperature': 0.45,
+          'max_tokens': 1000,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        debugPrint('❌ generatePlaceDetailBlurb HTTP ${response.statusCode}');
+        return '';
+      }
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      final content =
+          data['choices']?[0]?['message']?['content'] as String? ?? '';
+      return _sanitizePlaceDetailBlurb(content);
+    } catch (e) {
+      debugPrint('❌ generatePlaceDetailBlurb: $e');
+      return '';
+    }
+  }
+
+  String _sanitizePlaceCardBlurb(String raw) {
+    var s = raw.trim();
+    s = s.replaceAll('"', '');
+    if (s.length > 600) {
+      s = '${s.substring(0, 580).trim()}…';
+    }
+    return s;
+  }
+
+  String _sanitizePlaceDetailBlurb(String raw) {
+    var s = raw.trim();
+    s = s.replaceAll('"', '');
+    if (s.length > 2000) {
+      s = '${s.substring(0, 1980).trim()}…';
+    }
+    return s;
+  }
+
   /// Generate mood-specific activity suggestions using AI
   Future<List<String>> generateMoodActivities({
     required String mood,
@@ -382,7 +710,7 @@ Format as simple list, one per line.
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final content = data['choices'][0]['message']['content'] as String;
-        return _parseAIResponse(content);
+        return _parseAIResponse(content, place: null, lang: 'en');
       }
     } catch (e) {
       debugPrint('❌ Error generating mood activities: $e');

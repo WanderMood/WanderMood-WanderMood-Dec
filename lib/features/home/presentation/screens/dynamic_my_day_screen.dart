@@ -37,6 +37,7 @@ import 'package:wandermood/features/home/presentation/utils/my_day_status_l10n.d
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
 import 'package:wandermood/features/places/models/place.dart';
+import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -297,7 +298,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           slivers: [
             // Header Section
             SliverToBoxAdapter(
+              // Match Explore: do not pad the header's bottom with the home-indicator
+              // inset — that reads as a large empty band above the timeline slivers.
               child: SafeArea(
+                bottom: false,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
                   child: Column(
@@ -359,15 +363,15 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         error: (error, stack) => _buildErrorStatusCard(),
                       ),
                       if (_timelineHasActivities(timelineActivities)) ...[
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         _buildMyDayQuickActionsRow(l10n),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 6),
                         const Divider(
                           height: 1,
                           thickness: 1,
                           color: Color(0xFFE8E2D8),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 14),
                       ] else
                         const SizedBox(height: 16),
                     ],
@@ -2643,9 +2647,31 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     return '$hour:$minute $period';
   }
 
+  /// Warm [PlacesService] so [PlaceDetailScreen] opens from carousel taps without waiting on cache I/O.
+  void _cachePlaceFromCarouselForDetail(Map<String, dynamic> activity) {
+    final routeId = resolvePlannerPlaceDetailRouteId(activity);
+    if (routeId == null) return;
+    final title = (activity['title'] as String?)?.trim();
+    if (title == null || title.isEmpty) return;
+    final coords = _activityLatLng(activity);
+    final imageUrl = activity['imageUrl']?.toString() ?? '';
+    final desc = activity['description']?.toString();
+    final place = Place(
+      id: routeId,
+      name: title,
+      address: '',
+      location: PlaceLocation(lat: coords.lat ?? 0, lng: coords.lng ?? 0),
+      photos: imageUrl.isNotEmpty ? [imageUrl] : [],
+      description: desc,
+      types: const ['point_of_interest'],
+    );
+    ref.read(placesServiceProvider.notifier).cachePlaceObject(place);
+  }
+
   void _showActivityDetails(Map<String, dynamic> activity) {
     final routePlaceId = resolvePlannerPlaceDetailRouteId(activity);
     if (routePlaceId != null) {
+      _cachePlaceFromCarouselForDetail(activity);
       context.pushNamed('place-detail', pathParameters: {'id': routePlaceId});
       return;
     }
@@ -3000,8 +3026,20 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         onSaveTap: _saveActivity,
         onDirectionsTap: _openDirections,
       ),
-      loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      loading: () => MyDayFreeTimeCarousel(
+        activities: const [],
+        isLoading: true,
+        onActivityTap: (_) {},
+        onSaveTap: (_) {},
+        onDirectionsTap: (_) {},
+      ),
+      error: (_, __) => MyDayFreeTimeCarousel(
+        activities: const [],
+        loadFailed: true,
+        onActivityTap: (_) {},
+        onSaveTap: (_) {},
+        onDirectionsTap: (_) {},
+      ),
     );
   }
 
@@ -3023,7 +3061,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     try {
       final coords = _activityLatLng(activity);
       final rawId = activity['id']?.toString() ?? '';
-      final placeIdField = activity['placeId']?.toString();
+      final placeIdField =
+          activity['placeId']?.toString() ?? activity['place_id']?.toString();
       final id = (placeIdField != null && placeIdField.isNotEmpty)
           ? (placeIdField.startsWith('google_')
               ? placeIdField
@@ -3032,10 +3071,11 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       final lat = coords.lat ?? 0.0;
       final lng = coords.lng ?? 0.0;
       final imageUrl = activity['imageUrl']?.toString() ?? '';
+      final address = activity['address']?.toString() ?? '';
       final place = Place(
         id: id,
         name: title,
-        address: '',
+        address: address,
         location: PlaceLocation(lat: lat, lng: lng),
         photos: imageUrl.isNotEmpty ? [imageUrl] : [],
         description: activity['description']?.toString(),

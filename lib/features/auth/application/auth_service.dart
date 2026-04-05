@@ -124,7 +124,8 @@ class AuthService {
         'full_name': name,
         'email': user.email ?? '',
         'bio': 'Hello! I\'m new to WanderMood 👋',
-        'currently_exploring': 'Rotterdam, Netherlands',
+        // Matches profile local/travel toggle: not a default map city (see CurrentUserProfile.isLocalMode).
+        'currently_exploring': 'traveling',
         'travel_style': 'adventurous',
         'travel_vibes': ['Spontaneous', 'Social', 'Relaxed'],
         'favorite_mood': 'happy',

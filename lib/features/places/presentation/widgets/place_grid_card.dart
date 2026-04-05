@@ -9,6 +9,10 @@ import 'package:wandermood/core/services/distance_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
+import 'package:wandermood/features/places/services/places_service.dart';
+import 'package:wandermood/features/places/presentation/widgets/place_photo_carousel.dart';
+import 'package:wandermood/core/utils/explore_place_card_copy.dart';
+import 'package:wandermood/features/places/presentation/widgets/place_card_moody_description.dart';
 
 const Color _wmWhite = Color(0xFFFFFFFF);
 const Color _wmParchment = Color(0xFFE8E2D8);
@@ -16,6 +20,8 @@ const Color _wmForest = Color(0xFF2A6049);
 const Color _wmSunset = Color(0xFFE8784A);
 const Color _wmError = Color(0xFFE05C5C);
 const Color _wmDusk = Color(0xFF4A4640);
+const Color _wmForestTint = Color(0xFFEBF3EE);
+const Color _wmStone = Color(0xFF8C8780);
 
 /// A compact grid card for displaying places in a grid layout
 class PlaceGridCard extends ConsumerWidget {
@@ -62,21 +68,46 @@ class PlaceGridCard extends ConsumerWidget {
     }
   }
 
-  Widget _buildPlaceImage() {
-    // Use photo URL if available
-    if (place.photos.isNotEmpty) {
-      return WmNetworkImage(
-        place.photos.first,
-        height: 120,
+  static const double _kGridImageHeight = 120;
+
+  Widget _buildPlaceImageArea(WidgetRef ref) {
+    Widget buildPhotoAt(int index, List<String> photos) {
+      final safeIndex = index >= 0 && index < photos.length ? index : 0;
+      final photo = photos[safeIndex];
+      if (place.isAsset) {
+        return Image.asset(
+          photo,
+          height: _kGridImageHeight,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => _buildFallbackImage(),
+        );
+      }
+      return WmPlacePhotoNetworkImage(
+        photo,
+        height: _kGridImageHeight,
         width: double.infinity,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return _buildFallbackImage();
-        },
+        errorBuilder: (context, error, stackTrace) => _buildFallbackImage(),
       );
     }
 
-    return _buildFallbackImage();
+    return FutureBuilder<List<String>>(
+      future: ref
+          .read(placesServiceProvider.notifier)
+          .resolveExploreCardPhotos(place, maxPhotos: 10),
+      initialData: place.photos.isNotEmpty ? place.photos : null,
+      builder: (context, snapshot) {
+        final photos = snapshot.data ?? place.photos;
+        if (photos.isEmpty) return _buildFallbackImage();
+        if (photos.length == 1) return buildPhotoAt(0, photos);
+        return PlacePhotoCarousel(
+          height: _kGridImageHeight,
+          photoCount: photos.length,
+          photoBuilder: (i) => buildPhotoAt(i, photos),
+        );
+      },
+    );
   }
 
   Widget _buildFallbackImage() {
@@ -208,6 +239,15 @@ class PlaceGridCard extends ConsumerWidget {
     final savedPlacesAsync = ref.watch(savedPlacesProvider);
     final isFavorite =
         savedPlacesAsync.value?.any((sp) => sp.placeId == place.id) ?? false;
+    final currencySymbol = _getCurrencySymbol();
+    final explorePriceLabel =
+        ExplorePlaceCardCopy.shouldShowExplorePriceBadge(place)
+            ? ExplorePlaceCardCopy.explorePriceBadgeText(
+                place,
+                l10n,
+                currency: currencySymbol,
+              )
+            : '';
 
     return GestureDetector(
       onTap: onTap,
@@ -239,42 +279,83 @@ class PlaceGridCard extends ConsumerWidget {
                   const BorderRadius.vertical(top: Radius.circular(9)),
               child: Stack(
                 children: [
-                  // Main image
-                  _buildPlaceImage(),
+                  // Main image(s) — swipeable when the gallery has more than one photo
+                  _buildPlaceImageArea(ref),
 
-                  // Open/closed indicator
-                  if (place.openingHours?.isOpen != null)
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: place.openingHours!.isOpen
-                              ? _wmForest
-                              : _wmError.withValues(alpha: 0.92),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
+                  // Social signal + open/closed (top-left)
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Builder(
+                      builder: (context) {
+                        final social = ExplorePlaceCardCopy.socialSignalChipStyle(
+                          place.socialSignal,
+                          l10n,
+                        );
+                        final showOpen = place.openingHours?.isOpen != null;
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (social != null) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: social.background,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  social.label,
+                                  style: GoogleFonts.poppins(
+                                    color: social.foreground,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              if (showOpen) const SizedBox(height: 6),
+                            ],
+                            if (showOpen)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: place.openingHours!.isOpen
+                                      ? _wmForest
+                                      : _wmError.withValues(alpha: 0.92),
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  place.openingHours!.isOpen
+                                      ? l10n.dayPlanCardOpenNow
+                                      : l10n.dayPlanCardClosed,
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
                           ],
-                        ),
-                        child: Text(
-                          place.openingHours!.isOpen
-                              ? l10n.dayPlanCardOpenNow
-                              : l10n.dayPlanCardClosed,
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
+                  ),
 
                   // Action buttons (directions, share, favorite) - stacked vertically
                   Positioned(
@@ -382,62 +463,153 @@ class PlaceGridCard extends ConsumerWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (place.rating > 0) ...[
+                        if (place.rating > 0 ||
+                            ExplorePlaceCardCopy.priceLevelEuroSymbols(
+                                    place.priceLevel)
+                                .isNotEmpty) ...[
                           const SizedBox(width: 4),
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
-                                Icons.star,
-                                color: _wmSunset,
-                                size: 12,
-                              ),
-                              const SizedBox(width: 2),
-                              Text(
-                                place.rating.toStringAsFixed(1),
-                                style: GoogleFonts.poppins(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
+                              if (place.rating > 0) ...[
+                                const Icon(
+                                  Icons.star,
+                                  color: _wmSunset,
+                                  size: 12,
                                 ),
-                              ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  place.rating.toStringAsFixed(1),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                if (place.reviewCount > 0) ...[
+                                  Text(
+                                    ' · ',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w500,
+                                      color: _wmStone,
+                                    ),
+                                  ),
+                                  Text(
+                                    ExplorePlaceCardCopy.formatReviewCount(
+                                        place.reviewCount),
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w500,
+                                      color: _wmStone,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                              if (ExplorePlaceCardCopy.priceLevelEuroSymbols(
+                                      place.priceLevel)
+                                  .isNotEmpty) ...[
+                                if (place.rating > 0) const SizedBox(width: 6),
+                                Text(
+                                  ExplorePlaceCardCopy.priceLevelEuroSymbols(
+                                      place.priceLevel),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: _wmStone,
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ],
                       ],
                     ),
-                    if (place.description != null &&
-                        place.description!.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        place.description!,
-                        style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          height: 1.3,
-                          color: _wmDusk,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                    Builder(
+                      builder: (context) {
+                        final pl =
+                            ExplorePlaceCardCopy.primaryTypeLabelForCard(
+                                place, l10n);
+                        if (pl == null) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: _wmForestTint,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: _wmParchment, width: 0.5),
+                            ),
+                            child: Text(
+                              pl,
+                              style: GoogleFonts.poppins(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: _wmForest,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     const SizedBox(height: 4),
-                    Wrap(
-                      spacing: 4,
-                      runSpacing: 4,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        if (_calculateDistance() != null)
-                          _buildCategoryPill(
-                            icon: Icons.directions_walk,
-                            label: _calculateDistance()!,
-                            color: _wmForest,
-                          ),
-                        if (_getPriceBadgeText(l10n).isNotEmpty)
-                          _buildCategoryPill(
-                            icon: _getCurrencyIcon(),
-                            label: _getPriceBadgeText(l10n),
-                            color: _getPriceBadgeColor(),
-                          ),
-                      ],
+                    PlaceCardMoodyDescription(
+                      place: place,
+                      maxLines: 4,
+                      paddingTop: 0,
+                      textStyle: GoogleFonts.poppins(
+                        fontSize: 11,
+                        height: 1.3,
+                        color: _wmDusk,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Builder(
+                      builder: (context) {
+                        final bestLbl = ExplorePlaceCardCopy
+                            .bestTimeDisplayLabel(place.bestTime, l10n);
+                        return Wrap(
+                          spacing: 4,
+                          runSpacing: 4,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            if (bestLbl != null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: _wmForestTint,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                      color: _wmParchment, width: 1),
+                                ),
+                                child: Text(
+                                  bestLbl,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 10,
+                                    color: _wmForest,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            if (_calculateDistance() != null)
+                              _buildCategoryPill(
+                                icon: Icons.directions_walk,
+                                label: _calculateDistance()!,
+                                color: _wmForest,
+                              ),
+                            if (explorePriceLabel.isNotEmpty)
+                              _buildCategoryPill(
+                                icon: _getCurrencyIcon(),
+                                label: explorePriceLabel,
+                                color:
+                                    ExplorePlaceCardCopy.explorePriceBadgeColor(
+                                        place),
+                              ),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -611,130 +783,4 @@ class PlaceGridCard extends ConsumerWidget {
     }
   }
 
-  /// Get price badge text
-  String _getPriceBadgeText(AppLocalizations l10n) {
-    final currency = _getCurrencySymbol();
-
-    // Check if truly free
-    if (place.isFree || place.priceLevel == 0 || _isFreeByType()) {
-      return '${l10n.dayPlanCardFree} 🎉';
-    }
-
-    // If we have explicit price range, use it
-    if (place.priceRange != null) {
-      return place.priceRange!.replaceAll(RegExp(r'[€£\$]'), currency);
-    }
-
-    // If we have explicit price level, convert to range
-    if (place.priceLevel != null) {
-      return _getPriceLevelText(l10n, place.priceLevel!, currency: currency);
-    }
-
-    // Infer from place types
-    final inferredPrice = _inferPriceFromTypes(l10n, currency: currency);
-    if (inferredPrice != null) {
-      return inferredPrice;
-    }
-
-    // Last resort: show "Price varies"
-    return l10n.placeCardPriceVaries;
-  }
-
-  String _getPriceLevelText(AppLocalizations l10n, int priceLevel,
-      {String currency = '€'}) {
-    switch (priceLevel) {
-      case 0:
-        return '${l10n.dayPlanCardFree} 🎉';
-      case 1:
-        return '$currency 5-15';
-      case 2:
-        return '$currency 15-30';
-      case 3:
-        return '$currency 30-50';
-      case 4:
-        return '$currency 50+';
-      default:
-        return '';
-    }
-  }
-
-  /// Infer price from place types
-  String? _inferPriceFromTypes(AppLocalizations l10n, {String currency = '€'}) {
-    if (_isFreeByType()) {
-      return '${l10n.dayPlanCardFree} 🎉';
-    }
-
-    for (final type in place.types) {
-      final typeLower = type.toLowerCase();
-      if (['museum', 'tourist_attraction', 'amusement_park']
-          .contains(typeLower)) {
-        return '$currency 10-25';
-      } else if (['restaurant', 'bar'].contains(typeLower)) {
-        return '$currency 15-40';
-      } else if (['cafe', 'store'].contains(typeLower)) {
-        return '$currency 5-15';
-      } else if (['hotel', 'spa'].contains(typeLower)) {
-        return '$currency 50+';
-      }
-    }
-
-    return null;
-  }
-
-  /// Check if place is free by type
-  bool _isFreeByType() {
-    final freeTypes = [
-      'park',
-      'arboretum',
-      'garden',
-      'botanical_garden',
-      'natural_feature',
-      'cemetery',
-      'church',
-      'mosque',
-      'synagogue',
-      'hindu_temple',
-      'library',
-      'public_square',
-      'plaza',
-      'beach',
-      'hiking_area',
-      'walking_street',
-      'street',
-      'route',
-      'neighborhood',
-      'locality',
-      'viewpoint',
-      'monument',
-    ];
-
-    return place.types.any((type) => freeTypes.any(
-        (freeType) => type.toLowerCase().contains(freeType.toLowerCase())));
-  }
-
-  /// Get price badge color
-  Color _getPriceBadgeColor() {
-    if (place.isFree || place.priceLevel == 0 || _isFreeByType()) {
-      return const Color(0xFF2A6049); // Green for FREE
-    }
-
-    if (place.priceLevel != null) {
-      switch (place.priceLevel!) {
-        case 0:
-          return const Color(0xFF2A6049);
-        case 1:
-          return const Color(0xFF2A6049);
-        case 2:
-          return const Color(0xFFFF9800);
-        case 3:
-          return const Color(0xFFE91E63);
-        case 4:
-          return const Color(0xFF9C27B0);
-        default:
-          return Colors.black.withOpacity(0.7);
-      }
-    }
-
-    return Colors.black.withOpacity(0.7);
-  }
 }

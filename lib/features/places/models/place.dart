@@ -28,6 +28,14 @@ class Place with _$Place {
     int? priceLevel, // 0=Free, 1=€1-15, 2=€15-30, 3=€30-50, 4=€50+
     String? priceRange, // e.g., "€10-25", "FREE", "€50+"
     @Default(false) bool isFree,
+    /// Google-style editorial overview from explore / details (prefer over [description] on cards).
+    String? editorialSummary,
+    /// Single primary Places type from backend, e.g. `bar`, `restaurant`.
+    String? primaryType,
+    /// Backend social hint: `trending`, `hidden_gem`, `loved_by_locals`, `popular`.
+    String? socialSignal,
+    /// Suggested visit window: `morning`, `afternoon`, `evening`, `all_day`.
+    String? bestTime,
   }) = _Place;
 
   factory Place.fromJson(Map<String, dynamic> json) => _$PlaceFromJson(json);

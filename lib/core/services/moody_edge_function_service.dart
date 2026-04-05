@@ -65,6 +65,8 @@ class MoodyEdgeFunctionService {
     String? section,
     Map<String, dynamic>? filters,
     List<String>? namedFilters,
+    /// BCP-47 primary tag (`en`, `nl`, `es`, …). Matches moody `normalizeAppLang`.
+    String? languageCode,
   }) async {
     try {
       // CRITICAL: Ensure session is valid before calling Edge Function
@@ -100,6 +102,10 @@ class MoodyEdgeFunctionService {
       final hasNamedFilters =
           namedFilters != null && namedFilters.isNotEmpty;
 
+      final effectiveLang = (languageCode != null && languageCode.isNotEmpty)
+          ? languageCode.toLowerCase().split(RegExp(r'[-_]')).first
+          : null;
+
       // Cache-first for standard explore only — named filter combinations are not cached (backend always refreshes).
       if (!hasNamedFilters) {
         final cacheSection = section ?? 'discovery';
@@ -108,6 +114,7 @@ class MoodyEdgeFunctionService {
           cacheSection,
           location,
           isLocalMode: isLocal,
+          languageCode: effectiveLang,
         );
         if (cachedPlaces != null) {
           return cachedPlaces;
@@ -142,6 +149,9 @@ class MoodyEdgeFunctionService {
       }
       if (hasNamedFilters) {
         payload['namedFilters'] = namedFilters;
+      }
+      if (effectiveLang != null) {
+        payload['language_code'] = effectiveLang;
       }
 
       final response = await dio.post(

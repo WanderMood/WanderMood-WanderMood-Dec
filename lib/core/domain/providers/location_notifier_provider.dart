@@ -1,9 +1,11 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter/foundation.dart';
-import '../entities/location.dart';
 import '../../../features/location/services/location_service.dart';
+import 'package:wandermood/core/utils/reverse_geocode_settlement.dart';
 
 final locationNotifierProvider = AsyncNotifierProvider<LocationNotifier, String?>(() {
   return LocationNotifier();
@@ -12,9 +14,22 @@ final locationNotifierProvider = AsyncNotifierProvider<LocationNotifier, String?
 class LocationNotifier extends AsyncNotifier<String?> {
   @override
   Future<String?> build() async {
-    // Don't fetch location immediately to avoid provider modification during build
-    // Return default location, location will be fetched when explicitly requested
-    return 'Rotterdam';
+    // No default city: UI should resolve GPS (see appInitializerProvider) or show
+    // "locating…". Hard-coding Rotterdam made every user appear in Rotterdam until
+    // reverse-geocode finished (or if init was skipped).
+    return null;
+  }
+
+  Future<void> _restoreDeviceGeocoderLocale() async {
+    try {
+      final loc = ui.PlatformDispatcher.instance.locale;
+      final cc = loc.countryCode;
+      if (cc != null && cc.isNotEmpty) {
+        await setLocaleIdentifier('${loc.languageCode}_$cc');
+      } else {
+        await setLocaleIdentifier(loc.languageCode);
+      }
+    } catch (_) {}
   }
 
   Future<String?> getCurrentLocation() async {
@@ -53,20 +68,24 @@ class LocationNotifier extends AsyncNotifier<String?> {
         return LocationService.defaultLocation['name'] as String;
       }
       
-      // Get place name from coordinates
-      final placemarks = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
-      );
+      // Prefer Dutch locale for reverse-geocode (better locality for NL, e.g. Spijkenisse).
+      List<Placemark> placemarks;
+      try {
+        await setLocaleIdentifier('nl_NL');
+        placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+      } finally {
+        await _restoreDeviceGeocoderLocale();
+      }
 
       if (placemarks.isNotEmpty) {
-        final place = placemarks.first;
-        // Try multiple fields to get the city name
-        final cityName = place.locality ?? 
-                        place.subAdministrativeArea ?? 
-                        place.administrativeArea ??
-                        LocationService.defaultLocation['name'] as String;
-        debugPrint('Found city name: $cityName');
+        final cityName = settlementNameFromPlacemarks(placemarks) ??
+            LocationService.defaultLocation['name'] as String;
+        debugPrint(
+          'Found settlement: $cityName (from ${placemarks.length} placemark(s))',
+        );
         state = AsyncValue.data(cityName);
         return cityName;
       } else {

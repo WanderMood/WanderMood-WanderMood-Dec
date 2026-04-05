@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:geolocator/geolocator.dart';
+import '../../../core/utils/explore_place_card_copy.dart';
 import '../../../features/location/services/location_service.dart';
 
 part 'explore_places_provider.g.dart';
@@ -780,10 +781,11 @@ class ExplorePlaces extends _$ExplorePlaces {
       // Extract price level from Google Places API result
       final priceLevel = _mapPriceLevel(result.priceLevel);
       
-      // Determine if place is free based on price level or type
-      final isFreeByPrice = priceLevel != null && priceLevel == 0;
-      final isFreeByType = _isFreePlaceType(result.types ?? []);
-      final isFree = isFreeByPrice || isFreeByType;
+      final isFree = ExplorePlaceCardCopy.inferIsFreeFromSearch(
+        types: result.types ?? [],
+        priceLevel: priceLevel,
+        isFreePlaceType: _isFreePlaceType(result.types ?? []),
+      );
       
       // Generate price range string if not free
       String? priceRange;

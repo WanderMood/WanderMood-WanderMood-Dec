@@ -17,6 +17,8 @@ import '../../../places/services/saved_places_service.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
+import 'package:wandermood/features/places/presentation/widgets/place_card_moody_description.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class MoodBasedCarousel extends ConsumerWidget {
   final List<Place> places;
@@ -54,6 +56,7 @@ class MoodBasedCarousel extends ConsumerWidget {
   }
 
   Widget _buildPlaceCard(BuildContext context, Place place, int index) {
+    final l10n = AppLocalizations.of(context)!;
     // Color variations for different cards
     final gradientColors = [
       [const Color(0xFFFFE5B4), const Color(0xFFFFD6A5)], // Warm peach
@@ -165,7 +168,7 @@ class MoodBasedCarousel extends ConsumerWidget {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  'Nearby',
+                                  l10n.moodCarouselNearbyBadge,
                                   style: GoogleFonts.poppins(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
@@ -232,8 +235,7 @@ class MoodBasedCarousel extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Description or types
-                          if (place.types.isNotEmpty)
+                          if (place.types.isNotEmpty) ...[
                             Text(
                               place.types.first.capitalize(),
                               style: GoogleFonts.poppins(
@@ -244,11 +246,20 @@ class MoodBasedCarousel extends ConsumerWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                          
+                            const SizedBox(height: 6),
+                          ],
+                          PlaceCardMoodyDescription(
+                            place: place,
+                            paddingTop: 0,
+                            textStyle: GoogleFonts.poppins(
+                              fontSize: 12,
+                              height: 1.35,
+                              color: const Color(0xFF4A5568),
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
                           const Spacer(),
-                          
-                          // Time-aware action buttons
-                          _buildTimeAwareActions(place, context),
+                          _buildTimeAwareActions(place, context, l10n),
                         ],
                       ),
                     ),
@@ -263,48 +274,50 @@ class MoodBasedCarousel extends ConsumerWidget {
     );
   }
 
-  Widget _buildTimeAwareActions(Place place, BuildContext context) {
+  Widget _buildTimeAwareActions(
+    Place place,
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
     final hour = MoodyClock.now().hour;
-    String primaryLabel;
-    IconData primaryIcon;
-    String timePeriod;
-    
-    // Determine primary action based on time of day
+    late final String primaryLabel;
+    late final IconData primaryIcon;
+    late final String timePeriod;
+
     if (hour >= 6 && hour < 12) {
-      primaryLabel = 'Add to morning';
+      primaryLabel = l10n.moodCarouselAddToMorning;
       primaryIcon = Icons.wb_sunny;
       timePeriod = 'morning';
     } else if (hour >= 12 && hour < 17) {
-      primaryLabel = 'Add to afternoon';
+      primaryLabel = l10n.moodCarouselAddToAfternoon;
       primaryIcon = Icons.wb_cloudy;
       timePeriod = 'afternoon';
     } else {
-      primaryLabel = 'Add to evening';
+      primaryLabel = l10n.moodCarouselAddToEvening;
       primaryIcon = Icons.nightlight;
       timePeriod = 'evening';
     }
-    
+
     return Consumer(
       builder: (context, ref, child) {
         return Row(
           children: [
-            // Save button
             Expanded(
               child: _buildActionButton(
-                label: 'Save',
+                label: l10n.moodCarouselSave,
                 icon: Icons.bookmark_outline,
                 isPrimary: false,
-                onTap: () => _savePlace(context, ref, place),
+                onTap: () => _savePlace(context, ref, place, l10n),
               ),
             ),
             const SizedBox(width: 12),
-            // Time-aware primary button
             Expanded(
               child: _buildActionButton(
                 label: primaryLabel,
                 icon: primaryIcon,
                 isPrimary: true,
-                onTap: () => _addPlaceToSchedule(context, ref, place, timePeriod),
+                onTap: () =>
+                    _addPlaceToSchedule(context, ref, place, timePeriod, l10n),
               ),
             ),
           ],
@@ -313,15 +326,20 @@ class MoodBasedCarousel extends ConsumerWidget {
     );
   }
 
-  Future<void> _savePlace(BuildContext context, WidgetRef ref, Place place) async {
+  Future<void> _savePlace(
+    BuildContext context,
+    WidgetRef ref,
+    Place place,
+    AppLocalizations l10n,
+  ) async {
     try {
       final savedPlacesService = ref.read(savedPlacesServiceProvider);
       await savedPlacesService.savePlace(place);
-      
+
       if (context.mounted) {
         showWanderMoodToast(
           context,
-          message: '${place.name} saved!',
+          message: l10n.placeCardSaved(place.name),
           duration: const Duration(seconds: 2),
           backgroundColor: const Color(0xFF2A6049),
         );
@@ -330,7 +348,7 @@ class MoodBasedCarousel extends ConsumerWidget {
       if (context.mounted) {
         showWanderMoodToast(
           context,
-          message: 'Failed to save ${place.name}',
+          message: l10n.placeCardFailedToggleSave(place.name),
           isError: true,
           duration: const Duration(seconds: 2),
         );
@@ -343,6 +361,7 @@ class MoodBasedCarousel extends ConsumerWidget {
     WidgetRef ref,
     Place place,
     String timePeriod,
+    AppLocalizations l10n,
   ) async {
     try {
       final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
@@ -393,7 +412,9 @@ class MoodBasedCarousel extends ConsumerWidget {
       final activity = Activity(
         id: 'place_${place.id}_${MoodyClock.now().millisecondsSinceEpoch}',
         name: place.name,
-        description: place.address ?? 'Visit ${place.name}',
+        description: place.address.trim().isNotEmpty
+            ? place.address
+            : l10n.moodCarouselActivityVisitName(place.name),
         imageUrl: imageUrl,
         rating: place.rating > 0 ? place.rating : 4.5,
         startTime: startTime,
@@ -404,6 +425,9 @@ class MoodBasedCarousel extends ConsumerWidget {
         location: LatLng(place.location.lat, place.location.lng),
         paymentType: paymentType,
         priceLevel: place.priceLevel != null ? '€${place.priceLevel}' : null,
+        placeId: place.id.startsWith('google_')
+            ? place.id.substring('google_'.length)
+            : null,
       );
       
       // Save to database
@@ -415,13 +439,18 @@ class MoodBasedCarousel extends ConsumerWidget {
       ref.invalidate(todayActivitiesProvider);
       
       if (context.mounted) {
+        final msg = switch (timePeriod.toLowerCase()) {
+          'morning' => l10n.moodCarouselToastAddedMorning(place.name),
+          'evening' => l10n.moodCarouselToastAddedEvening(place.name),
+          _ => l10n.moodCarouselToastAddedAfternoon(place.name),
+        };
         showWanderMoodToast(
           context,
-          message: '${place.name} added to your $timePeriod!',
+          message: msg,
           duration: const Duration(seconds: 3),
           backgroundColor: const Color(0xFF2A6049),
           leading: const Icon(Icons.check_circle, color: Colors.white, size: 20),
-          actionLabel: 'View',
+          actionLabel: l10n.moodCarouselToastView,
           onAction: () {
             ref.read(mainTabProvider.notifier).state = 0;
           },
@@ -432,7 +461,7 @@ class MoodBasedCarousel extends ConsumerWidget {
       if (context.mounted) {
         showWanderMoodToast(
           context,
-          message: 'Failed to add ${place.name}. Please try again.',
+          message: l10n.moodCarouselToastAddFailed(place.name),
           isError: true,
           duration: const Duration(seconds: 3),
         );

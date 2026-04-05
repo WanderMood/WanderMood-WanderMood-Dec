@@ -16,6 +16,7 @@ import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dar
 import 'package:wandermood/features/plans/presentation/screens/plan_loading_screen.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:wandermood/core/localization/localized_mood_labels.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -206,11 +207,6 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
     }
   }
 
-  String _moodDisplayLabel(String mood) {
-    if (mood.isEmpty) return mood;
-    return mood[0].toUpperCase() + mood.substring(1);
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -260,7 +256,12 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
                               if (i > 0 && i < moods.length - 1)
                                 TextSpan(text: l10n.moodyHubListComma),
                               TextSpan(
-                                text: _moodDisplayLabel(moods[i]),
+                                text: Localizations.localeOf(context)
+                                            .languageCode ==
+                                        'nl'
+                                    ? localizedMoodDisplayLabel(l10n, moods[i])
+                                        .toLowerCase()
+                                    : localizedMoodDisplayLabel(l10n, moods[i]),
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   color: _moodColor(moods[i]),
@@ -305,7 +306,7 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
             moods: moods,
             moodColor: _moodColor,
             moodEmoji: _moodEmoji,
-            moodLabel: _moodDisplayLabel,
+            moodLabel: (m) => localizedMoodDisplayLabel(l10n, m),
             onChangeMood: () => context.pushNamed('moody-standalone'),
                 ),
                 const SizedBox(height: 16),

@@ -88,6 +88,9 @@ const _streakMilestones = {7, 14, 30, 60, 90, 180, 365};
 /// Activate this provider in main.dart / appInitializerProvider to start
 /// listening.  It is intentionally a [Provider<void>] so it stays alive for
 /// the lifetime of the ProviderScope.
+/// Latest notification tap payload to navigate to. Cleared after [applyNotificationNavigation].
+final notificationLaunchPayloadProvider = StateProvider<String?>((ref) => null);
+
 final notificationBridgeProvider = Provider<void>((ref) {
   final triggers = ref.watch(notificationTriggersProvider);
 

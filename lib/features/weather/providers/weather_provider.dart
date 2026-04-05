@@ -1,10 +1,14 @@
+import 'dart:convert';
+import 'dart:ui' as ui;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
-import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:wandermood/core/constants/api_keys.dart';
-import 'package:flutter/foundation.dart';
+import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
+import 'package:wandermood/core/presentation/providers/language_provider.dart';
+import 'package:wandermood/core/providers/user_location_provider.dart';
 
 // Weather data model
 class WeatherData {
@@ -70,6 +74,15 @@ class WeatherData {
   }
 }
 
+/// OpenWeatherMap `lang` parameter (subset aligned with app locales).
+String _openWeatherLangCode(Locale? appLocale) {
+  final code =
+      (appLocale ?? ui.PlatformDispatcher.instance.locale).languageCode.toLowerCase();
+  const supported = {'nl', 'de', 'fr', 'es', 'en'};
+  if (supported.contains(code)) return code;
+  return 'en';
+}
+
 // Mock weather data for demo purposes
 WeatherData getMockWeatherData(String location) {
   return WeatherData(
@@ -97,6 +110,7 @@ WeatherData getMockWeatherData(String location) {
 final weatherProvider = FutureProvider.autoDispose<WeatherData?>((ref) async {
   final locationState = await ref.watch(locationNotifierProvider.future);
   final gpsPosition = await ref.watch(userLocationProvider.future);
+  final lang = _openWeatherLangCode(ref.watch(localeProvider));
   final locationLabel = (locationState == null || locationState.trim().isEmpty)
       ? 'Current location'
       : locationState.trim();
@@ -115,8 +129,8 @@ final weatherProvider = FutureProvider.autoDispose<WeatherData?>((ref) async {
   if (apiKey.isNotEmpty) {
     try {
       final url = gpsPosition != null
-          ? 'https://api.openweathermap.org/data/2.5/weather?lat=${gpsPosition.latitude}&lon=${gpsPosition.longitude}&appid=$apiKey&units=metric'
-          : 'https://api.openweathermap.org/data/2.5/weather?q=$locationLabel&appid=$apiKey&units=metric';
+          ? 'https://api.openweathermap.org/data/2.5/weather?lat=${gpsPosition.latitude}&lon=${gpsPosition.longitude}&appid=$apiKey&units=metric&lang=$lang'
+          : 'https://api.openweathermap.org/data/2.5/weather?q=$locationLabel&appid=$apiKey&units=metric&lang=$lang';
       debugPrint('🌤️ Weather URL: $url');
       
       final response = await http.get(Uri.parse(url));

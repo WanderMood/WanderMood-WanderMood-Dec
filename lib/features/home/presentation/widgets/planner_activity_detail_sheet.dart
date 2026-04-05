@@ -13,7 +13,7 @@ const Color _wmStone = Color(0xFF8C8780);
 
 /// Builds the route param for [GoRoute] `place-detail` from scheduled activity data.
 String? resolvePlannerPlaceDetailRouteId(Map<String, dynamic> activity) {
-  final raw = activity['placeId'] as String?;
+  final raw = (activity['placeId'] ?? activity['place_id'])?.toString();
   if (raw == null || raw.trim().isEmpty) return null;
   final t = raw.trim();
   if (t.startsWith('google_')) return t;

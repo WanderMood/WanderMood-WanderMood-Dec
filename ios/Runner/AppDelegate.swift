@@ -8,14 +8,15 @@ import GoogleMaps
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    // Google Maps: release uses GMSApiKey from Info.plist ($(GOOGLE_MAPS_API_KEY) via Secrets.xcconfig).
+    // Google Maps: prefer GMSApiKey from Info.plist ($(GOOGLE_MAPS_API_KEY) via Secrets.xcconfig).
+    // If the key is missing or still contains $(...) after build, fall back to the same key as
+    // AndroidManifest — otherwise Release builds call provideAPIKey with an empty string and tiles never load.
     let plistKey = Bundle.main.object(forInfoDictionaryKey: "GMSApiKey") as? String
-    #if DEBUG
-    let debugFallback = "AIzaSyDFqiRdkEvgQUZisLAgm97aJyFBGznkg0k"
-    #else
-    let debugFallback = ""
-    #endif
-    let mapsKey = (plistKey?.isEmpty == false) ? plistKey! : debugFallback
+    let manifestAlignedFallback = "AIzaSyDFqiRdkEvgQUZisLAgm97aJyFBGznkg0k"
+    var mapsKey = (plistKey?.isEmpty == false) ? plistKey! : manifestAlignedFallback
+    if mapsKey.contains("$(") {
+      mapsKey = manifestAlignedFallback
+    }
     if !mapsKey.isEmpty {
       GMSServices.provideAPIKey(mapsKey)
     }

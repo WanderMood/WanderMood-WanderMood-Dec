@@ -63,14 +63,12 @@ class MyDayTimelineSection extends StatelessWidget {
     );
 
     return SliverToBoxAdapter(
-      child: Transform.translate(
-        offset: Offset(0, isFirstSection ? -10 : 0),
-        child: Padding(
+      child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: isFirstSection ? 8 : 24),
+              SizedBox(height: isFirstSection ? 18 : 24),
             Row(
                 children: [
                   Text(
@@ -181,7 +179,6 @@ class MyDayTimelineSection extends StatelessWidget {
             ],
           ),
         ),
-      ),
     );
   }
 }
@@ -579,14 +576,53 @@ class _OutlineActionButton extends StatelessWidget {
 /// Returns a meaningful activity label: category first, then type, then a mood-tag fallback.
 String _activityLabel(Map<String, dynamic> data, AppLocalizations l10n) {
   final category = data['category'] as String?;
-  if (category != null && category.trim().isNotEmpty && category.toLowerCase() != 'activity') {
-    return _capitalize(category);
+  if (category != null &&
+      category.trim().isNotEmpty &&
+      category.toLowerCase() != 'activity') {
+    return _localizedActivityKindLabel(category.trim(), l10n);
   }
   final type = data['type'] as String?;
-  if (type != null && type.trim().isNotEmpty) return _capitalize(type);
+  if (type != null && type.trim().isNotEmpty) {
+    return _localizedActivityKindLabel(type.trim(), l10n);
+  }
   final mood = data['mood'] as String?;
-  if (mood != null && mood.trim().isNotEmpty) return _capitalize(mood);
+  if (mood != null && mood.trim().isNotEmpty) {
+    return _localizedActivityKindLabel(mood.trim(), l10n);
+  }
   return l10n.myDayActivityFallbackLabel;
+}
+
+/// Maps English plan tags (food, culture, …) to [AppLocalizations] like Explore chips.
+String _localizedActivityKindLabel(String raw, AppLocalizations l10n) {
+  switch (raw.toLowerCase()) {
+    case 'food':
+    case 'foodie':
+      return l10n.exploreCategoryFood;
+    case 'culture':
+      return l10n.exploreCategoryCulture;
+    case 'nature':
+    case 'outdoors':
+      return l10n.exploreCategoryNature;
+    case 'shopping':
+      return l10n.exploreCategoryChipShopping;
+    case 'entertainment':
+      return l10n.myDayFreeTimeCategoryEntertainment;
+    case 'exercise':
+    case 'active':
+    case 'adventure':
+      return l10n.myDayFreeTimeCategoryExercise;
+    case 'social':
+      return l10n.myDayFreeTimeCategorySocial;
+    case 'relaxation':
+    case 'relaxed':
+      return l10n.exploreMoodRelaxed;
+    case 'nightlife':
+      return l10n.exploreCategoryChipNightlife;
+    case 'wellness':
+      return l10n.profileVibeWellnessName;
+    default:
+      return _capitalize(raw);
+  }
 }
 
 String _capitalize(String s) =>

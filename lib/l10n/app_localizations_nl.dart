@@ -3840,7 +3840,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get activityDetailPerPerson => 'per persoon';
 
   @override
-  String get activityDetailDirections => 'Routebeschrijving';
+  String get activityDetailDirections => 'Navigatie';
 
   @override
   String get activityDetailBookNow => 'Nu boeken';
@@ -4918,7 +4918,7 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get socialGetDirections => 'Get directions';
+  String get socialGetDirections => 'Route';
 
   @override
   String get socialShare => 'Share';
@@ -6368,6 +6368,24 @@ class AppLocalizationsNl extends AppLocalizations {
   String get placeDetailAboutThisPlace => 'Over deze plek';
 
   @override
+  String get placeDetailBlurbExtraAddress =>
+      'Adres en snelle acties staan direct onder dit blok.';
+
+  @override
+  String placeDetailBlurbExtraRatingCount(String rating, int count) {
+    return 'Openbare lijsten gemiddeld rond $rating van de 5 over $count beoordelingen.';
+  }
+
+  @override
+  String placeDetailBlurbExtraRatingOnly(String rating) {
+    return 'Scores liggen meestal rond $rating van de 5 op openbare lijsten.';
+  }
+
+  @override
+  String get placeDetailBlurbExtraReviewsTab =>
+      'Tabblad Reviews laat zien wat mensen recent noemen; openingstijden helpen met je planning.';
+
+  @override
   String get placeDetailGoodToKnow => 'Goed om te weten';
 
   @override
@@ -6393,6 +6411,339 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get placeDetailNoPhotos => 'Geen foto\'s beschikbaar';
+
+  @override
+  String get placeDetailLoadingPhotos => 'Foto\'s laden…';
+
+  @override
+  String get placeDetailAmazingFeatures => 'Leuke highlights';
+
+  @override
+  String get placeDetailIndoorVibes => 'Binnen sfeer';
+
+  @override
+  String get placeDetailOutdoorFun => 'Buiten plezier';
+
+  @override
+  String get placeDetailEnergyChipLow => 'Lage energie';
+
+  @override
+  String get placeDetailEnergyChipMedium => 'Gemiddelde energie';
+
+  @override
+  String get placeDetailEnergyChipHigh => 'Hoge energie';
+
+  @override
+  String get placeDetailHeroOpenNow => 'Nu open';
+
+  @override
+  String get placeDetailHeroClosed => 'Gesloten';
+
+  @override
+  String get placeDetailHeroOpenNowLine => '✅ Nu open!';
+
+  @override
+  String get placeDetailHeroClosedLine => '❌ Gesloten';
+
+  @override
+  String get placeDetailOpen247 => '24/7 geopend';
+
+  @override
+  String get placeDetailPrice5to15 => '€5–15';
+
+  @override
+  String get placeDetailPrice8to25 => '€8–25';
+
+  @override
+  String get placeDetailPrice10to20 => '€10–20';
+
+  @override
+  String get placeDetailPrice10to25 => '€10–25';
+
+  @override
+  String get placeDetailPrice15to35 => '€15–35';
+
+  @override
+  String get placeDetailPrice15to40 => '€15–40';
+
+  @override
+  String get placeDetailPrice40to80 => '€40–80';
+
+  @override
+  String get placeDetailPrice30to50 => '€30–50';
+
+  @override
+  String get placeDetailPrice50Plus => '€50+';
+
+  @override
+  String get placeDetailFreeEntryPayItems =>
+      'Gratis entree (betaal voor aankopen)';
+
+  @override
+  String get placeDetailFreeDonationsWelcome => 'Gratis (donatie welkom)';
+
+  @override
+  String get placeDetailUnavailableName => 'Geen plekdetails beschikbaar';
+
+  @override
+  String get placeDetailOpeningStatusOpen => 'open';
+
+  @override
+  String get placeDetailOpeningStatusClosed => 'gesloten';
+
+  @override
+  String get myDayCarouselSpotFallbackDescription =>
+      'De moeite waard om te bekijken';
+
+  @override
+  String get myDayFreeTimeSectionTitle => 'Activiteiten voor in je vrije tijd';
+
+  @override
+  String get myDayFreeTimeSectionSubtitle => 'Ontdek wat je nu kunt doen';
+
+  @override
+  String get myDayFreeTimeIntroOneLine =>
+      'Bij jouw in de buurt. Ontdek wat je nu kunt doen.';
+
+  @override
+  String get myDayFreeTimeEmptyHint =>
+      'Nog geen suggesties in het geheugen. Open Ontdek voor jouw omgeving — dan verschijnen ideeën hier.';
+
+  @override
+  String get myDayFreeTimeLoadingFailed =>
+      'Suggesties laden mislukt. Probeer het zo opnieuw.';
+
+  @override
+  String get myDayFreeTimeLoadMore => 'Meer laden';
+
+  @override
+  String get myDayFreeTimeNearYouBadge => 'Bij jou in de buurt';
+
+  @override
+  String get myDayFreeTimeDirectionsShort => 'Route';
+
+  @override
+  String get myDayFreeTimeCategoryExercise => 'Buiten & bewegen';
+
+  @override
+  String get myDayFreeTimeCategoryEntertainment => 'Uitgaan';
+
+  @override
+  String get myDayFreeTimeCategorySocial => 'Sociaal';
+
+  @override
+  String get myDayFreeTimeCategorySpot => 'Plek';
+
+  @override
+  String get exploreCardBlurbRestaurant =>
+      'Eten aan tafel met wisselende menu’s — zie details voor keuken en openingstijden.';
+
+  @override
+  String get exploreCardBlurbBar =>
+      'Drankjes centraal — cocktails, wijn of bier, afhankelijk van de zaak.';
+
+  @override
+  String get exploreCardBlurbCafe =>
+      'Koffie, iets lekkers en een rustig moment — gebak of brunch waar ze dat doen.';
+
+  @override
+  String get exploreCardBlurbBakery =>
+      'Vers brood, gebak en hartige snelle hapjes om mee te nemen of ter plekke.';
+
+  @override
+  String get exploreCardBlurbTakeaway =>
+      'Snelle maaltijden en meenemen — handig voor onderweg.';
+
+  @override
+  String get exploreCardBlurbMuseum =>
+      'Tentoonstellingen en collecties binnen — tickets en tijden op de detailpagina.';
+
+  @override
+  String get exploreCardBlurbZoo =>
+      'Dieren binnen en buiten — entree is meestal met ticket.';
+
+  @override
+  String get exploreCardBlurbAquarium =>
+      'Aquarium met familiebezoek — meestal ticket nodig.';
+
+  @override
+  String get exploreCardBlurbNightlife =>
+      'Laat op de avond — muziek, dans of drukte; soms entree of minimum.';
+
+  @override
+  String get exploreCardBlurbPark =>
+      'Buiten wandelen, zitten of ontspannen — meestal gratis toegankelijk.';
+
+  @override
+  String get exploreCardBlurbAttraction =>
+      'Ervaring of bezienswaardigheid — soms ticket of tijdslot nodig.';
+
+  @override
+  String get exploreCardBlurbSpa =>
+      'Behandelingen en ontspanning — reserveren helpt op drukke dagen.';
+
+  @override
+  String get exploreCardBlurbShopping =>
+      'Winkelen en rondkijken — openingstijden verschillen per zaak.';
+
+  @override
+  String get exploreCardBlurbDefault =>
+      'Lokale plek om te ontdekken — open de kaart voor uren en praktische info.';
+
+  @override
+  String exploreCardBlurbSecondSentenceRating(String rating) {
+    return 'Bezoekers geven dit gemiddeld $rating van de 5 — tik door voor recensies, foto\'s en openingstijden.';
+  }
+
+  @override
+  String get exploreCardBlurbSecondSentenceNoRating =>
+      'Open de plek voor adres, foto\'s en wat reviewers het vaakst noemen.';
+
+  @override
+  String exploreCardBlurbPoiNamed(String name) {
+    return '$name staat op de kaart als plek in de buurt — leuk voor een spontane tussenstop.';
+  }
+
+  @override
+  String get exploreCardBlurbTour =>
+      'Rondleidingen en lokale tips — zie de fiche voor boeken en wat erbij hoort.';
+
+  @override
+  String get moodyPlaceBlurbSystemPrompt =>
+      'Je bent Moody, de warme stem van de WanderMood-reisapp. Je schrijft accurate en aantrekkelijke plekbeschrijvingen voor kaarten. Verzin geen menu-items, prijzen of voorzieningen. Gebruik alleen feiten uit het gebruikersbericht. Als er weinig feiten zijn, blijf algemeen maar wel aantrekkelijk.';
+
+  @override
+  String moodyPlaceBlurbUserMessage(String facts, String languageName) {
+    return 'Dit zijn de enige geverifieerde feiten over een echte plek (uit kaartdata of bezoekerstekst). Voeg geen details toe die daar niet in staan.\n\n$facts\n\nSchrijf minstens 3 gedetailleerde zinnen over de sfeer en het aanbod voor een reisapp-kaart. Toon: vriendelijk, als Moody. Gebruik alleen de feiten hierboven. Schrijf volledig in het $languageName. Gewone tekst: geen opsommingen, geen aanhalingstekens, geen lijsten.';
+  }
+
+  @override
+  String get moodyPlaceBlurbLabelName => 'Naam';
+
+  @override
+  String get moodyPlaceBlurbLabelAddress => 'Adres';
+
+  @override
+  String get moodyPlaceBlurbLabelTypes => 'Types';
+
+  @override
+  String get moodyPlaceBlurbLabelRating => 'Beoordeling';
+
+  @override
+  String get moodyPlaceBlurbLabelReviewCount => 'Aantal recensies';
+
+  @override
+  String get moodyPlaceBlurbLabelOverview => 'Plekoverzicht';
+
+  @override
+  String get moodyPlaceBlurbLabelVisitorNotes => 'Bezoekersnotities';
+
+  @override
+  String get moodyPlaceBlurbLanguageEnglish => 'Engels';
+
+  @override
+  String get moodyPlaceBlurbLanguageDutch => 'Nederlands';
+
+  @override
+  String get moodyPlaceBlurbLanguageGerman => 'Duits';
+
+  @override
+  String get moodyPlaceBlurbLanguageFrench => 'Frans';
+
+  @override
+  String get moodyPlaceBlurbLanguageSpanish => 'Spaans';
+
+  @override
+  String get moodyPlaceDetailBlurbSystemPrompt =>
+      'Je bent Moody, de warme stem van de WanderMood-reisapp. Je schrijft een uitgebreidere, accurate plekbeschrijving voor een detailscherm. Verzin geen menu-items, prijzen of voorzieningen. Gebruik alleen feiten uit het gebruikersbericht. Als er weinig feiten zijn, blijf algemeen maar wel aantrekkelijk.';
+
+  @override
+  String moodyPlaceDetailBlurbUserMessage(String facts, String languageName) {
+    return 'Dit zijn de enige geverifieerde feiten over een echte plek (uit kaartdata of bezoekerstekst). Voeg geen details toe die daar niet in staan.\n\n$facts\n\nSchrijf 5 tot 8 gedetailleerde zinnen inclusief praktische tips, geschiedenis en waarom het een bezoek waard is voor het detailscherm van de reisapp. Breid sfeer en praktische tips alleen uit als de feiten hierboven dat ondersteunen. Toon: vriendelijk, als Moody. Schrijf volledig in het $languageName. Gewone tekst: geen opsommingen, geen aanhalingstekens, geen lijsten.';
+  }
+
+  @override
+  String get moodCarouselNearbyBadge => 'In de buurt';
+
+  @override
+  String get moodCarouselSave => 'Opslaan';
+
+  @override
+  String get moodCarouselAddToMorning => 'Toevoegen aan ochtend';
+
+  @override
+  String get moodCarouselAddToAfternoon => 'Toevoegen aan middag';
+
+  @override
+  String get moodCarouselAddToEvening => 'Toevoegen aan avond';
+
+  @override
+  String moodCarouselActivityVisitName(String name) {
+    return 'Bezoek $name';
+  }
+
+  @override
+  String moodCarouselToastAddedMorning(String name) {
+    return '$name toegevoegd aan je ochtend!';
+  }
+
+  @override
+  String moodCarouselToastAddedAfternoon(String name) {
+    return '$name toegevoegd aan je middag!';
+  }
+
+  @override
+  String moodCarouselToastAddedEvening(String name) {
+    return '$name toegevoegd aan je avond!';
+  }
+
+  @override
+  String moodCarouselToastAddFailed(String name) {
+    return 'Kon $name niet toevoegen. Probeer het opnieuw.';
+  }
+
+  @override
+  String get moodCarouselToastView => 'Bekijk';
+
+  @override
+  String myDayFreeTimeInsightDuration(int minutes) {
+    return '⏱️ ~$minutes min';
+  }
+
+  @override
+  String myDayFreeTimeInsightRating(String rating) {
+    return '⭐ $rating';
+  }
+
+  @override
+  String myDayFreeTimeInsightPricePaid(String symbols) {
+    return '💶 $symbols';
+  }
+
+  @override
+  String get placeCardSignInToAddMyDay =>
+      'Log in om activiteiten aan Mijn dag toe te voegen';
+
+  @override
+  String placeCardAddedToMyDay(String name) {
+    return '$name toegevoegd aan Mijn dag!';
+  }
+
+  @override
+  String placeCardFailedAddToMyDay(String name) {
+    return 'Toevoegen van $name aan Mijn dag mislukt';
+  }
+
+  @override
+  String get placeCardUnableOpenDirections => 'Kan route niet openen';
+
+  @override
+  String get placeCardView => 'Bekijk';
+
+  @override
+  String placeCardReviewCountInParens(int count) {
+    return '($count recensies)';
+  }
 
   @override
   String get placeDetailNoReviews => 'Geen reviews beschikbaar';
@@ -6672,10 +7023,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get moodyHubNoMoodChosen => 'Nog geen stemming gekozen';
 
   @override
-  String get moodyHubJourneyPrefix => 'Je bent op een ';
+  String get moodyHubJourneyPrefix => 'Vandaag ben je ';
 
   @override
-  String get moodyHubJourneySuffix => ' reis';
+  String get moodyHubJourneySuffix => '.';
 
   @override
   String get moodyHubFallbackAiMessage =>
@@ -6914,6 +7265,45 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get placeTypeStadium => 'Stadion';
+
+  @override
+  String get placeCardSocialTrending => '🔥 Trending';
+
+  @override
+  String get placeCardSocialHiddenGem => '💎 Verborgen parel';
+
+  @override
+  String get placeCardSocialLovedByLocals => '❤️ Favoriet bij locals';
+
+  @override
+  String get placeCardSocialPopular => '⭐ Populair';
+
+  @override
+  String get placeCardBestMorning => '☀️ Ochtend';
+
+  @override
+  String get placeCardBestAfternoon => '🌤 Middag';
+
+  @override
+  String get placeCardBestEvening => '🌙 Avond';
+
+  @override
+  String get placeCardBestAllDay => '🕐 Hele dag';
+
+  @override
+  String get placeCardVenuePlace => 'Plek';
+
+  @override
+  String get placeCardVenueGallery => 'Galerie';
+
+  @override
+  String get placeCardVenueAttraction => 'Attractie';
+
+  @override
+  String get placeCardVenueHotel => 'Hotel';
+
+  @override
+  String get placeCardVenueClub => 'Club';
 
   @override
   String placeDescFood(String name) {
@@ -8960,6 +9350,80 @@ class AppLocalizationsNl extends AppLocalizations {
   String get weatherNoActiveAlerts => 'Geen actieve waarschuwingen';
 
   @override
+  String myDayWeatherDialogTitle(String city) {
+    return 'Weer in $city';
+  }
+
+  @override
+  String get myDayWeatherFeelsLike => 'Voelt als';
+
+  @override
+  String get myDayWeatherHumidity => 'Luchtvochtigheid';
+
+  @override
+  String get myDayWeatherDescriptionLabel => 'Omschrijving';
+
+  @override
+  String get myDayWeatherClose => 'Sluiten';
+
+  @override
+  String get myDayWeatherUnavailable => 'Weergegevens niet beschikbaar';
+
+  @override
+  String get myDayWeatherCheckConnection => 'Controleer je internetverbinding';
+
+  @override
+  String get myDayWeatherClearSkyFallback => 'Heldere lucht';
+
+  @override
+  String get weatherMainClear => 'Helder';
+
+  @override
+  String get weatherMainClouds => 'Bewolkt';
+
+  @override
+  String get weatherMainRain => 'Regen';
+
+  @override
+  String get weatherMainDrizzle => 'Motregen';
+
+  @override
+  String get weatherMainThunderstorm => 'Onweer';
+
+  @override
+  String get weatherMainSnow => 'Sneeuw';
+
+  @override
+  String get weatherMainMist => 'Mist';
+
+  @override
+  String get weatherMainFog => 'Dichte mist';
+
+  @override
+  String get weatherMainHaze => 'Nevel';
+
+  @override
+  String get weatherMainSmoke => 'Rook';
+
+  @override
+  String get weatherMainDust => 'Stof';
+
+  @override
+  String get weatherMainSand => 'Zandstorm';
+
+  @override
+  String get weatherMainAsh => 'As';
+
+  @override
+  String get weatherMainSquall => 'Windstoot';
+
+  @override
+  String get weatherMainTornado => 'Tornado';
+
+  @override
+  String get weatherMainOther => 'Weer';
+
+  @override
   String get weatherHistoryEmpty => 'Geen historische gegevens beschikbaar';
 
   @override
@@ -8967,4 +9431,24 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get moodHistoryEmpty => 'Geen stemminggeschiedenis beschikbaar';
+
+  @override
+  String get exploreLoadMoreIdeas => 'Meer ideeën laden';
+
+  @override
+  String get agendaPaymentBadgeFree => 'Gratis';
+
+  @override
+  String get agendaPaymentBadgePaid => 'Betaald';
+
+  @override
+  String get agendaPaymentBadgeReserved => 'Gereserveerd';
+
+  @override
+  String get agendaPaymentBadgePending => 'In afwachting';
+
+  @override
+  String agendaDurationShort(String minutes) {
+    return '$minutes min';
+  }
 }

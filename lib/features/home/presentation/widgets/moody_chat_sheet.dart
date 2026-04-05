@@ -921,4 +921,3 @@ class _MoodyChatInput extends StatelessWidget {
     );
   }
 }
-

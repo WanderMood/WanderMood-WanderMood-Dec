@@ -14,6 +14,7 @@ import 'package:wandermood/features/home/presentation/widgets/moody_character.da
 import 'package:wandermood/features/home/presentation/widgets/planner_activity_detail_sheet.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 import 'dynamic_my_day_provider.dart';
 // WanderMood v2 — Agenda / calendar (Screen 10)
 const Color _wmCharcoal = Color(0xFF1E1C18);
@@ -174,7 +175,6 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   }
   
   Widget _buildCalendarView(AsyncValue<List<Map<String, dynamic>>> activitiesAsyncValue) {
-    final l10n = AppLocalizations.of(context)!;
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -762,7 +762,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
               Icon(Icons.eco_rounded, size: 12, color: _wmForest),
               const SizedBox(width: 4),
               Text(
-                'FREE',
+                AppLocalizations.of(context)!.agendaPaymentBadgeFree,
                 style: GoogleFonts.poppins(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
@@ -787,7 +787,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
               const Icon(Icons.check_circle_rounded, size: 12, color: paidColor),
               const SizedBox(width: 4),
               Text(
-                'PAID',
+                AppLocalizations.of(context)!.agendaPaymentBadgePaid,
                 style: GoogleFonts.poppins(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
@@ -811,7 +811,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
               Icon(Icons.schedule_rounded, size: 12, color: _wmSunset),
               const SizedBox(width: 4),
               Text(
-                'RESERVED',
+                AppLocalizations.of(context)!.agendaPaymentBadgeReserved,
                 style: GoogleFonts.poppins(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
@@ -836,7 +836,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
               const Icon(Icons.hourglass_empty_rounded, size: 12, color: pendColor),
               const SizedBox(width: 4),
               Text(
-                'PENDING',
+                AppLocalizations.of(context)!.agendaPaymentBadgePending,
                 style: GoogleFonts.poppins(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
@@ -860,7 +860,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     final durationM = activity['duration'] as int? ?? 60;
     final timeLabel = activity['time'] ?? '10:00 AM';
 
-    final footerBits = <String>['$durationM min'];
+    final footerBits = <String>[l10n.agendaDurationShort('$durationM')];
     if (paymentStatus != 'free' && price > 0) {
       footerBits.add('€${price.toStringAsFixed(2)}');
     } else if (paymentStatus != 'free') {
@@ -1146,7 +1146,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                                       const Icon(Icons.delete_outline, size: 18, color: Colors.red),
                                       const SizedBox(width: 8),
                                       Text(
-                                        'Delete',
+                                        AppLocalizations.of(context)!.periodActivitiesRemoveCta,
                                         style: GoogleFonts.poppins(color: Colors.red),
                                       ),
                                     ],
@@ -1233,7 +1233,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       'title': activity['title'] ?? activity['name'] ?? l10n.agendaUntitledActivity,
       'description': activity['description'] ?? l10n.agendaNoDescription,
       'date': startTime.toIso8601String(),
-      'time': _formatTime(startTime),
+      'time': _formatTime(context, startTime),
       'duration': activity['duration'] ?? 60,
       'status': _getActivityStatus(activity, activityManager),
       'location': activity['location'] ?? l10n.agendaLocationTBD,
@@ -1251,12 +1251,13 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     return transformed;
   }
   
-  String _formatTime(DateTime dateTime) {
-    final hour = dateTime.hour;
-    final minute = dateTime.minute;
-    final period = hour >= 12 ? 'PM' : 'AM';
-    final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-    return '$displayHour:${minute.toString().padLeft(2, '0')} $period';
+  String _formatTime(BuildContext context, DateTime dateTime) {
+    final loc = Localizations.localeOf(context).toString();
+    final lang = Localizations.localeOf(context).languageCode;
+    if (lang == 'nl' || lang == 'de' || lang == 'fr' || lang == 'es') {
+      return DateFormat.Hm(loc).format(dateTime);
+    }
+    return DateFormat.jm(loc).format(dateTime);
   }
   
   String _getActivityStatus(Map<String, dynamic> activity, ActivityManagerState activityManager) {

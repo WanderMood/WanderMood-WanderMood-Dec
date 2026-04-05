@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
+import 'package:wandermood/core/presentation/providers/language_provider.dart';
 import 'package:wandermood/core/utils/places_cache_utils.dart';
 
 /// First photo URL from `places_cache` per-place explore row (no Google Details).
@@ -14,6 +15,9 @@ final placePhotoUrlProvider =
       Supabase.instance.client,
       location: city,
       placeId: placeId,
+      languageCode: PlacesCacheUtils.effectiveExploreLanguageTag(
+        appLocale: ref.watch(localeProvider),
+      ),
     );
   } catch (_) {
     return null;

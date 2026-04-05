@@ -1,5 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/features/plans/utils/activity_place_adapter.dart';
+import 'package:wandermood/features/places/presentation/widgets/place_card_moody_description.dart';
 import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/features/places/services/sharing_service.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
@@ -154,7 +153,7 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
         final photos = snapshot.data ?? initialPhotos;
         if (photos.isEmpty) return _imagePlaceholder();
         if (photos.length == 1) {
-          return WmNetworkImage(
+          return WmPlacePhotoNetworkImage(
             photos[0],
             fit: BoxFit.cover,
             progressIndicatorBuilder: (c, url, progress) => Container(
@@ -177,7 +176,7 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
               controller: _imagePageController,
               itemCount: photos.length,
               onPageChanged: (i) => setState(() => _currentImageIndex = i),
-              itemBuilder: (_, i) => WmNetworkImage(
+              itemBuilder: (_, i) => WmPlacePhotoNetworkImage(
                 photos[i],
                 fit: BoxFit.cover,
                 progressIndicatorBuilder: (c, url, progress) => Container(
@@ -549,16 +548,24 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                       ),
                       const SizedBox(height: 10),
                     ],
-                    // Description
-                    Text(
-                      widget.activity.description,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: const Color(0xFF4B5563),
-                        height: 1.4,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                    // Description — Moody + Places when configured
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final p = placeForMoodyBlurb(
+                          widget.activity,
+                          locationLabel: widget.locationLabel,
+                        );
+                        return PlaceCardMoodyDescription(
+                          place: p,
+                          maxLines: 4,
+                          paddingTop: 0,
+                          textStyle: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: const Color(0xFF4B5563),
+                            height: 1.4,
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
                     // Info pills: Duration, Price, Distance, Open/Closed (live when placeId set)

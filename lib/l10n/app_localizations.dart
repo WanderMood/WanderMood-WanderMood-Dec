@@ -11534,6 +11534,30 @@ abstract class AppLocalizations {
   /// **'About this place'**
   String get placeDetailAboutThisPlace;
 
+  /// No description provided for @placeDetailBlurbExtraAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address and quick actions are listed just below this section.'**
+  String get placeDetailBlurbExtraAddress;
+
+  /// No description provided for @placeDetailBlurbExtraRatingCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Public listings average about {rating} out of 5 across {count} ratings.'**
+  String placeDetailBlurbExtraRatingCount(String rating, int count);
+
+  /// No description provided for @placeDetailBlurbExtraRatingOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Typical scores land around {rating} out of 5 on public listings.'**
+  String placeDetailBlurbExtraRatingOnly(String rating);
+
+  /// No description provided for @placeDetailBlurbExtraReviewsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'The Reviews tab shows what visitors mention lately; hours and busy times help you plan your visit.'**
+  String get placeDetailBlurbExtraReviewsTab;
+
   /// No description provided for @placeDetailGoodToKnow.
   ///
   /// In en, this message translates to:
@@ -11587,6 +11611,564 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No photos available'**
   String get placeDetailNoPhotos;
+
+  /// No description provided for @placeDetailLoadingPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading photos…'**
+  String get placeDetailLoadingPhotos;
+
+  /// No description provided for @placeDetailAmazingFeatures.
+  ///
+  /// In en, this message translates to:
+  /// **'Amazing features'**
+  String get placeDetailAmazingFeatures;
+
+  /// No description provided for @placeDetailIndoorVibes.
+  ///
+  /// In en, this message translates to:
+  /// **'Indoor vibes'**
+  String get placeDetailIndoorVibes;
+
+  /// No description provided for @placeDetailOutdoorFun.
+  ///
+  /// In en, this message translates to:
+  /// **'Outdoor fun'**
+  String get placeDetailOutdoorFun;
+
+  /// No description provided for @placeDetailEnergyChipLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low energy'**
+  String get placeDetailEnergyChipLow;
+
+  /// No description provided for @placeDetailEnergyChipMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium energy'**
+  String get placeDetailEnergyChipMedium;
+
+  /// No description provided for @placeDetailEnergyChipHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High energy'**
+  String get placeDetailEnergyChipHigh;
+
+  /// No description provided for @placeDetailHeroOpenNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Open now'**
+  String get placeDetailHeroOpenNow;
+
+  /// No description provided for @placeDetailHeroClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get placeDetailHeroClosed;
+
+  /// No description provided for @placeDetailHeroOpenNowLine.
+  ///
+  /// In en, this message translates to:
+  /// **'✅ Open now!'**
+  String get placeDetailHeroOpenNowLine;
+
+  /// No description provided for @placeDetailHeroClosedLine.
+  ///
+  /// In en, this message translates to:
+  /// **'❌ Closed'**
+  String get placeDetailHeroClosedLine;
+
+  /// No description provided for @placeDetailOpen247.
+  ///
+  /// In en, this message translates to:
+  /// **'Open 24/7'**
+  String get placeDetailOpen247;
+
+  /// No description provided for @placeDetailPrice5to15.
+  ///
+  /// In en, this message translates to:
+  /// **'€5–15'**
+  String get placeDetailPrice5to15;
+
+  /// No description provided for @placeDetailPrice8to25.
+  ///
+  /// In en, this message translates to:
+  /// **'€8–25'**
+  String get placeDetailPrice8to25;
+
+  /// No description provided for @placeDetailPrice10to20.
+  ///
+  /// In en, this message translates to:
+  /// **'€10–20'**
+  String get placeDetailPrice10to20;
+
+  /// No description provided for @placeDetailPrice10to25.
+  ///
+  /// In en, this message translates to:
+  /// **'€10–25'**
+  String get placeDetailPrice10to25;
+
+  /// No description provided for @placeDetailPrice15to35.
+  ///
+  /// In en, this message translates to:
+  /// **'€15–35'**
+  String get placeDetailPrice15to35;
+
+  /// No description provided for @placeDetailPrice15to40.
+  ///
+  /// In en, this message translates to:
+  /// **'€15–40'**
+  String get placeDetailPrice15to40;
+
+  /// No description provided for @placeDetailPrice40to80.
+  ///
+  /// In en, this message translates to:
+  /// **'€40–80'**
+  String get placeDetailPrice40to80;
+
+  /// No description provided for @placeDetailPrice30to50.
+  ///
+  /// In en, this message translates to:
+  /// **'€30–50'**
+  String get placeDetailPrice30to50;
+
+  /// No description provided for @placeDetailPrice50Plus.
+  ///
+  /// In en, this message translates to:
+  /// **'€50+'**
+  String get placeDetailPrice50Plus;
+
+  /// No description provided for @placeDetailFreeEntryPayItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Free entry (pay for items)'**
+  String get placeDetailFreeEntryPayItems;
+
+  /// No description provided for @placeDetailFreeDonationsWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Free (donations welcome)'**
+  String get placeDetailFreeDonationsWelcome;
+
+  /// No description provided for @placeDetailUnavailableName.
+  ///
+  /// In en, this message translates to:
+  /// **'Place details unavailable'**
+  String get placeDetailUnavailableName;
+
+  /// No description provided for @placeDetailOpeningStatusOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'open'**
+  String get placeDetailOpeningStatusOpen;
+
+  /// No description provided for @placeDetailOpeningStatusClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'closed'**
+  String get placeDetailOpeningStatusClosed;
+
+  /// No description provided for @myDayCarouselSpotFallbackDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A spot worth checking out'**
+  String get myDayCarouselSpotFallbackDescription;
+
+  /// No description provided for @myDayFreeTimeSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activities in your free time'**
+  String get myDayFreeTimeSectionTitle;
+
+  /// No description provided for @myDayFreeTimeSectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover what you can do right now'**
+  String get myDayFreeTimeSectionSubtitle;
+
+  /// No description provided for @myDayFreeTimeIntroOneLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Near you. Discover what you can do right now.'**
+  String get myDayFreeTimeIntroOneLine;
+
+  /// No description provided for @myDayFreeTimeEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No suggestions cached yet. Open Discover for your area — fresh ideas will show up here.'**
+  String get myDayFreeTimeEmptyHint;
+
+  /// No description provided for @myDayFreeTimeLoadingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t load suggestions. Try again in a moment.'**
+  String get myDayFreeTimeLoadingFailed;
+
+  /// No description provided for @myDayFreeTimeLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get myDayFreeTimeLoadMore;
+
+  /// No description provided for @myDayFreeTimeNearYouBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Near you'**
+  String get myDayFreeTimeNearYouBadge;
+
+  /// No description provided for @myDayFreeTimeDirectionsShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Directions'**
+  String get myDayFreeTimeDirectionsShort;
+
+  /// No description provided for @myDayFreeTimeCategoryExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Outdoors & activity'**
+  String get myDayFreeTimeCategoryExercise;
+
+  /// No description provided for @myDayFreeTimeCategoryEntertainment.
+  ///
+  /// In en, this message translates to:
+  /// **'Going out'**
+  String get myDayFreeTimeCategoryEntertainment;
+
+  /// No description provided for @myDayFreeTimeCategorySocial.
+  ///
+  /// In en, this message translates to:
+  /// **'Social'**
+  String get myDayFreeTimeCategorySocial;
+
+  /// No description provided for @myDayFreeTimeCategorySpot.
+  ///
+  /// In en, this message translates to:
+  /// **'Place'**
+  String get myDayFreeTimeCategorySpot;
+
+  /// No description provided for @exploreCardBlurbRestaurant.
+  ///
+  /// In en, this message translates to:
+  /// **'Sit-down dining with changing menus — check the listing for cuisine and hours.'**
+  String get exploreCardBlurbRestaurant;
+
+  /// No description provided for @exploreCardBlurbBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Drinks-focused spot — cocktails, wine, or beer depending on what they pour.'**
+  String get exploreCardBlurbBar;
+
+  /// No description provided for @exploreCardBlurbCafe.
+  ///
+  /// In en, this message translates to:
+  /// **'Coffee, light bites, and a calm stop — pastries or brunch where offered.'**
+  String get exploreCardBlurbCafe;
+
+  /// No description provided for @exploreCardBlurbBakery.
+  ///
+  /// In en, this message translates to:
+  /// **'Fresh bread, pastries, and quick savory bites to stay or take away.'**
+  String get exploreCardBlurbBakery;
+
+  /// No description provided for @exploreCardBlurbTakeaway.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick meals and grab-and-go food — handy for a fast bite.'**
+  String get exploreCardBlurbTakeaway;
+
+  /// No description provided for @exploreCardBlurbMuseum.
+  ///
+  /// In en, this message translates to:
+  /// **'Exhibitions and collections indoors — tickets and hours on the detail page.'**
+  String get exploreCardBlurbMuseum;
+
+  /// No description provided for @exploreCardBlurbZoo.
+  ///
+  /// In en, this message translates to:
+  /// **'Animal exhibits indoors and out — entry is usually ticketed.'**
+  String get exploreCardBlurbZoo;
+
+  /// No description provided for @exploreCardBlurbAquarium.
+  ///
+  /// In en, this message translates to:
+  /// **'Aquarium galleries and family-friendly visits — typically ticketed.'**
+  String get exploreCardBlurbAquarium;
+
+  /// No description provided for @exploreCardBlurbNightlife.
+  ///
+  /// In en, this message translates to:
+  /// **'Late-night venue — music, dancing, or a lively crowd; fees may apply.'**
+  String get exploreCardBlurbNightlife;
+
+  /// No description provided for @exploreCardBlurbPark.
+  ///
+  /// In en, this message translates to:
+  /// **'Outdoor space to walk, sit, or relax — usually free to visit.'**
+  String get exploreCardBlurbPark;
+
+  /// No description provided for @exploreCardBlurbAttraction.
+  ///
+  /// In en, this message translates to:
+  /// **'City experience or landmark — may need tickets or a time slot.'**
+  String get exploreCardBlurbAttraction;
+
+  /// No description provided for @exploreCardBlurbSpa.
+  ///
+  /// In en, this message translates to:
+  /// **'Treatments and downtime — booking ahead helps on busy days.'**
+  String get exploreCardBlurbSpa;
+
+  /// No description provided for @exploreCardBlurbShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shops and browsing — opening hours vary by retailer.'**
+  String get exploreCardBlurbShopping;
+
+  /// No description provided for @exploreCardBlurbDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Local place to discover — open the card for hours and practical info.'**
+  String get exploreCardBlurbDefault;
+
+  /// No description provided for @exploreCardBlurbSecondSentenceRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Guests rate it around {rating} out of 5 on average — tap through for reviews, photos, and opening hours.'**
+  String exploreCardBlurbSecondSentenceRating(String rating);
+
+  /// No description provided for @exploreCardBlurbSecondSentenceNoRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the listing for address, photos, and what reviewers mention most often.'**
+  String get exploreCardBlurbSecondSentenceNoRating;
+
+  /// No description provided for @exploreCardBlurbPoiNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} appears on the map as a neighborhood spot — a nice spontaneous stop if you are nearby.'**
+  String exploreCardBlurbPoiNamed(String name);
+
+  /// No description provided for @exploreCardBlurbTour.
+  ///
+  /// In en, this message translates to:
+  /// **'Guided experiences and local know-how — check the listing for booking and what is included.'**
+  String get exploreCardBlurbTour;
+
+  /// No description provided for @moodyPlaceBlurbSystemPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'You are Moody, the warm voice of the WanderMood travel app. You write accurate and engaging place descriptions for cards. You must not invent menu items, prices, or amenities. Only use facts supplied by the user message. If facts are thin, stay general but still engaging.'**
+  String get moodyPlaceBlurbSystemPrompt;
+
+  /// No description provided for @moodyPlaceBlurbUserMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'These are the only verified facts about a real place (from maps data or visitor text). Do not add details that are not supported by them.\n\n{facts}\n\nWrite at least 3 detailed sentences about the atmosphere and offerings for a travel app card. Tone: friendly, like Moody. Use only the facts above. Output entirely in {languageName}. Plain prose: no bullet points, no quotation marks, no lists.'**
+  String moodyPlaceBlurbUserMessage(String facts, String languageName);
+
+  /// No description provided for @moodyPlaceBlurbLabelName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get moodyPlaceBlurbLabelName;
+
+  /// No description provided for @moodyPlaceBlurbLabelAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get moodyPlaceBlurbLabelAddress;
+
+  /// No description provided for @moodyPlaceBlurbLabelTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'Types'**
+  String get moodyPlaceBlurbLabelTypes;
+
+  /// No description provided for @moodyPlaceBlurbLabelRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get moodyPlaceBlurbLabelRating;
+
+  /// No description provided for @moodyPlaceBlurbLabelReviewCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Review count'**
+  String get moodyPlaceBlurbLabelReviewCount;
+
+  /// No description provided for @moodyPlaceBlurbLabelOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Place overview'**
+  String get moodyPlaceBlurbLabelOverview;
+
+  /// No description provided for @moodyPlaceBlurbLabelVisitorNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Visitor notes'**
+  String get moodyPlaceBlurbLabelVisitorNotes;
+
+  /// No description provided for @moodyPlaceBlurbLanguageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get moodyPlaceBlurbLanguageEnglish;
+
+  /// No description provided for @moodyPlaceBlurbLanguageDutch.
+  ///
+  /// In en, this message translates to:
+  /// **'Dutch'**
+  String get moodyPlaceBlurbLanguageDutch;
+
+  /// No description provided for @moodyPlaceBlurbLanguageGerman.
+  ///
+  /// In en, this message translates to:
+  /// **'German'**
+  String get moodyPlaceBlurbLanguageGerman;
+
+  /// No description provided for @moodyPlaceBlurbLanguageFrench.
+  ///
+  /// In en, this message translates to:
+  /// **'French'**
+  String get moodyPlaceBlurbLanguageFrench;
+
+  /// No description provided for @moodyPlaceBlurbLanguageSpanish.
+  ///
+  /// In en, this message translates to:
+  /// **'Spanish'**
+  String get moodyPlaceBlurbLanguageSpanish;
+
+  /// No description provided for @moodyPlaceDetailBlurbSystemPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'You are Moody, the warm voice of the WanderMood travel app. You write a fuller, accurate place description for a detail screen. You must not invent menu items, prices, or amenities. Only use facts supplied by the user message. If facts are thin, stay general but still engaging.'**
+  String get moodyPlaceDetailBlurbSystemPrompt;
+
+  /// No description provided for @moodyPlaceDetailBlurbUserMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'These are the only verified facts about a real place (from maps data or visitor text). Do not add details that are not supported by them.\n\n{facts}\n\nWrite 5 to 8 detailed sentences including practical tips, history, and why it\'s worth visiting for a travel app place detail screen. Expand on what visitors might experience, atmosphere, and practical cues only when supported by the facts above. Tone: friendly, like Moody. Output entirely in {languageName}. Plain prose: no bullet points, no quotation marks, no lists.'**
+  String moodyPlaceDetailBlurbUserMessage(String facts, String languageName);
+
+  /// No description provided for @moodCarouselNearbyBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearby'**
+  String get moodCarouselNearbyBadge;
+
+  /// No description provided for @moodCarouselSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get moodCarouselSave;
+
+  /// No description provided for @moodCarouselAddToMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to morning'**
+  String get moodCarouselAddToMorning;
+
+  /// No description provided for @moodCarouselAddToAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to afternoon'**
+  String get moodCarouselAddToAfternoon;
+
+  /// No description provided for @moodCarouselAddToEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to evening'**
+  String get moodCarouselAddToEvening;
+
+  /// No description provided for @moodCarouselActivityVisitName.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit {name}'**
+  String moodCarouselActivityVisitName(String name);
+
+  /// No description provided for @moodCarouselToastAddedMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added to your morning!'**
+  String moodCarouselToastAddedMorning(String name);
+
+  /// No description provided for @moodCarouselToastAddedAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added to your afternoon!'**
+  String moodCarouselToastAddedAfternoon(String name);
+
+  /// No description provided for @moodCarouselToastAddedEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added to your evening!'**
+  String moodCarouselToastAddedEvening(String name);
+
+  /// No description provided for @moodCarouselToastAddFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add {name}. Please try again.'**
+  String moodCarouselToastAddFailed(String name);
+
+  /// No description provided for @moodCarouselToastView.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get moodCarouselToastView;
+
+  /// No description provided for @myDayFreeTimeInsightDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'⏱️ ~{minutes} min'**
+  String myDayFreeTimeInsightDuration(int minutes);
+
+  /// No description provided for @myDayFreeTimeInsightRating.
+  ///
+  /// In en, this message translates to:
+  /// **'⭐ {rating}'**
+  String myDayFreeTimeInsightRating(String rating);
+
+  /// No description provided for @myDayFreeTimeInsightPricePaid.
+  ///
+  /// In en, this message translates to:
+  /// **'💶 {symbols}'**
+  String myDayFreeTimeInsightPricePaid(String symbols);
+
+  /// No description provided for @placeCardSignInToAddMyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in to add activities to My Day'**
+  String get placeCardSignInToAddMyDay;
+
+  /// No description provided for @placeCardAddedToMyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Added {name} to My Day!'**
+  String placeCardAddedToMyDay(String name);
+
+  /// No description provided for @placeCardFailedAddToMyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add {name} to My Day'**
+  String placeCardFailedAddToMyDay(String name);
+
+  /// No description provided for @placeCardUnableOpenDirections.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to open directions'**
+  String get placeCardUnableOpenDirections;
+
+  /// No description provided for @placeCardView.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get placeCardView;
+
+  /// No description provided for @placeCardReviewCountInParens.
+  ///
+  /// In en, this message translates to:
+  /// **'({count} reviews)'**
+  String placeCardReviewCountInParens(int count);
 
   /// No description provided for @placeDetailNoReviews.
   ///
@@ -12535,6 +13117,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Stadium'**
   String get placeTypeStadium;
+
+  /// No description provided for @placeCardSocialTrending.
+  ///
+  /// In en, this message translates to:
+  /// **'🔥 Trending'**
+  String get placeCardSocialTrending;
+
+  /// No description provided for @placeCardSocialHiddenGem.
+  ///
+  /// In en, this message translates to:
+  /// **'💎 Hidden gem'**
+  String get placeCardSocialHiddenGem;
+
+  /// No description provided for @placeCardSocialLovedByLocals.
+  ///
+  /// In en, this message translates to:
+  /// **'❤️ Locals love it'**
+  String get placeCardSocialLovedByLocals;
+
+  /// No description provided for @placeCardSocialPopular.
+  ///
+  /// In en, this message translates to:
+  /// **'⭐ Popular'**
+  String get placeCardSocialPopular;
+
+  /// No description provided for @placeCardBestMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'☀️ Morning'**
+  String get placeCardBestMorning;
+
+  /// No description provided for @placeCardBestAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'🌤 Afternoon'**
+  String get placeCardBestAfternoon;
+
+  /// No description provided for @placeCardBestEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'🌙 Evening'**
+  String get placeCardBestEvening;
+
+  /// No description provided for @placeCardBestAllDay.
+  ///
+  /// In en, this message translates to:
+  /// **'🕐 All day'**
+  String get placeCardBestAllDay;
+
+  /// No description provided for @placeCardVenuePlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Place'**
+  String get placeCardVenuePlace;
+
+  /// No description provided for @placeCardVenueGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get placeCardVenueGallery;
+
+  /// No description provided for @placeCardVenueAttraction.
+  ///
+  /// In en, this message translates to:
+  /// **'Attraction'**
+  String get placeCardVenueAttraction;
+
+  /// No description provided for @placeCardVenueHotel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hotel'**
+  String get placeCardVenueHotel;
+
+  /// No description provided for @placeCardVenueClub.
+  ///
+  /// In en, this message translates to:
+  /// **'Club'**
+  String get placeCardVenueClub;
 
   /// No description provided for @placeDescFood.
   ///
@@ -15831,6 +16491,150 @@ abstract class AppLocalizations {
   /// **'No active alerts'**
   String get weatherNoActiveAlerts;
 
+  /// No description provided for @myDayWeatherDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather in {city}'**
+  String myDayWeatherDialogTitle(String city);
+
+  /// No description provided for @myDayWeatherFeelsLike.
+  ///
+  /// In en, this message translates to:
+  /// **'Feels like'**
+  String get myDayWeatherFeelsLike;
+
+  /// No description provided for @myDayWeatherHumidity.
+  ///
+  /// In en, this message translates to:
+  /// **'Humidity'**
+  String get myDayWeatherHumidity;
+
+  /// No description provided for @myDayWeatherDescriptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get myDayWeatherDescriptionLabel;
+
+  /// No description provided for @myDayWeatherClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get myDayWeatherClose;
+
+  /// No description provided for @myDayWeatherUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather data unavailable'**
+  String get myDayWeatherUnavailable;
+
+  /// No description provided for @myDayWeatherCheckConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check your internet connection'**
+  String get myDayWeatherCheckConnection;
+
+  /// No description provided for @myDayWeatherClearSkyFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear skies'**
+  String get myDayWeatherClearSkyFallback;
+
+  /// No description provided for @weatherMainClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get weatherMainClear;
+
+  /// No description provided for @weatherMainClouds.
+  ///
+  /// In en, this message translates to:
+  /// **'Clouds'**
+  String get weatherMainClouds;
+
+  /// No description provided for @weatherMainRain.
+  ///
+  /// In en, this message translates to:
+  /// **'Rain'**
+  String get weatherMainRain;
+
+  /// No description provided for @weatherMainDrizzle.
+  ///
+  /// In en, this message translates to:
+  /// **'Drizzle'**
+  String get weatherMainDrizzle;
+
+  /// No description provided for @weatherMainThunderstorm.
+  ///
+  /// In en, this message translates to:
+  /// **'Thunderstorm'**
+  String get weatherMainThunderstorm;
+
+  /// No description provided for @weatherMainSnow.
+  ///
+  /// In en, this message translates to:
+  /// **'Snow'**
+  String get weatherMainSnow;
+
+  /// No description provided for @weatherMainMist.
+  ///
+  /// In en, this message translates to:
+  /// **'Mist'**
+  String get weatherMainMist;
+
+  /// No description provided for @weatherMainFog.
+  ///
+  /// In en, this message translates to:
+  /// **'Fog'**
+  String get weatherMainFog;
+
+  /// No description provided for @weatherMainHaze.
+  ///
+  /// In en, this message translates to:
+  /// **'Haze'**
+  String get weatherMainHaze;
+
+  /// No description provided for @weatherMainSmoke.
+  ///
+  /// In en, this message translates to:
+  /// **'Smoke'**
+  String get weatherMainSmoke;
+
+  /// No description provided for @weatherMainDust.
+  ///
+  /// In en, this message translates to:
+  /// **'Dust'**
+  String get weatherMainDust;
+
+  /// No description provided for @weatherMainSand.
+  ///
+  /// In en, this message translates to:
+  /// **'Sand'**
+  String get weatherMainSand;
+
+  /// No description provided for @weatherMainAsh.
+  ///
+  /// In en, this message translates to:
+  /// **'Ash'**
+  String get weatherMainAsh;
+
+  /// No description provided for @weatherMainSquall.
+  ///
+  /// In en, this message translates to:
+  /// **'Squall'**
+  String get weatherMainSquall;
+
+  /// No description provided for @weatherMainTornado.
+  ///
+  /// In en, this message translates to:
+  /// **'Tornado'**
+  String get weatherMainTornado;
+
+  /// No description provided for @weatherMainOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather'**
+  String get weatherMainOther;
+
   /// No description provided for @weatherHistoryEmpty.
   ///
   /// In en, this message translates to:
@@ -15848,6 +16652,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No mood history available'**
   String get moodHistoryEmpty;
+
+  /// No description provided for @exploreLoadMoreIdeas.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more ideas'**
+  String get exploreLoadMoreIdeas;
+
+  /// No description provided for @agendaPaymentBadgeFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get agendaPaymentBadgeFree;
+
+  /// No description provided for @agendaPaymentBadgePaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get agendaPaymentBadgePaid;
+
+  /// No description provided for @agendaPaymentBadgeReserved.
+  ///
+  /// In en, this message translates to:
+  /// **'Reserved'**
+  String get agendaPaymentBadgeReserved;
+
+  /// No description provided for @agendaPaymentBadgePending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get agendaPaymentBadgePending;
+
+  /// No description provided for @agendaDurationShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String agendaDurationShort(String minutes);
 }
 
 class _AppLocalizationsDelegate

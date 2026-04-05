@@ -20,18 +20,18 @@ class MoodyFeedbackPromptCard extends ConsumerWidget {
   static const Color _wmSky = Color(0xFFA8C8DC);
   static const Color _wmSkyTint = Color(0xFFEDF5F9);
 
-  Future<bool> _shouldShowEndOfDayCard() async {
+  /// Evening reflection on Moody Hub — show without requiring "done" activities first.
+  Future<bool> _shouldShowEveningCheckInCard() async {
     final now = MoodyClock.now();
-    if (now.hour < 20) return false;
+    // 18:00+ local: gentle evening window (was 20:00 + required completed activities, which hid the card for most users).
+    if (now.hour < 18) return false;
 
     final client = Supabase.instance.client;
     final user = client.auth.currentUser;
     if (user == null) return false;
 
-    final names = await EndOfDayCheckInService.fetchDoneActivityNamesToday(client);
-    if (names.isEmpty) return false;
-
-    final alreadyDone = await EndOfDayCheckInService.hasCompletedEndOfDayToday(client);
+    final alreadyDone =
+        await EndOfDayCheckInService.hasCompletedEndOfDayToday(client);
     if (alreadyDone) return false;
 
     return true;
@@ -42,7 +42,7 @@ class MoodyFeedbackPromptCard extends ConsumerWidget {
     final user = client.auth.currentUser;
     if (user == null) return;
 
-    if (MoodyClock.now().hour < 20) {
+    if (MoodyClock.now().hour < 18) {
       if (context.mounted) showMoodyChatSheet(context, ref);
       return;
     }
@@ -50,10 +50,6 @@ class MoodyFeedbackPromptCard extends ConsumerWidget {
     final names =
         await EndOfDayCheckInService.fetchDoneActivityNamesToday(client);
     if (!context.mounted) return;
-    if (names.isEmpty) {
-      showMoodyChatSheet(context, ref);
-      return;
-    }
 
     final alreadyDone =
         await EndOfDayCheckInService.hasCompletedEndOfDayToday(client);
@@ -85,7 +81,7 @@ class MoodyFeedbackPromptCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     return FutureBuilder<bool>(
-      future: _shouldShowEndOfDayCard(),
+      future: _shouldShowEveningCheckInCard(),
       builder: (context, snapshot) {
         final shouldShow = snapshot.data ?? false;
         if (!shouldShow) {

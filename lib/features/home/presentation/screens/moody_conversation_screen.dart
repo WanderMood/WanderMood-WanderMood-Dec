@@ -49,6 +49,19 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
   
   final FlutterTts _flutterTts = FlutterTts();
   final stt.SpeechToText _speech = stt.SpeechToText();
+
+  // Set once in [didChangeDependencies]; used for STT locale + TTS language.
+  String _langCode = 'en';
+
+  static String _ttsLang(String lang) {
+    const m = {'nl': 'nl-NL', 'de': 'de-DE', 'fr': 'fr-FR', 'es': 'es-ES'};
+    return m[lang] ?? 'en-US';
+  }
+
+  static String _sttLocale(String lang) {
+    const m = {'nl': 'nl_NL', 'de': 'de_DE', 'fr': 'fr_FR', 'es': 'es_ES'};
+    return m[lang] ?? 'en_US';
+  }
   final TextEditingController _textController = TextEditingController();
   
   bool _isListening = false;
@@ -93,7 +106,6 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
     'restaurant': 'Foody',
     'cuisine': 'Foody',
     'mindful': 'Mindful',
-    'peaceful': 'Mindful',
     'meditation': 'Mindful',
     'creative': 'Creative',
     'art': 'Creative',
@@ -163,6 +175,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _langCode = Localizations.localeOf(context).languageCode;
     if (!_greetingAdded) {
       _greetingAdded = true;
       final greeting = AppLocalizations.of(context)!.moodyConversationGreeting;
@@ -196,7 +209,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
   }
   
   Future<void> _initTts() async {
-    await _flutterTts.setLanguage("en-US");
+    await _flutterTts.setLanguage(_ttsLang(_langCode));
     await _flutterTts.setSpeechRate(0.5);
     await _flutterTts.setVolume(1.0);
     await _flutterTts.setPitch(1.0);
@@ -335,10 +348,10 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
             }
           });
         },
-        listenFor: const Duration(seconds: 30), // Longer listen time
+        listenFor: const Duration(seconds: 30),
         pauseFor: const Duration(seconds: 3),
-        partialResults: true,
-        localeId: "en_US",
+        localeId: _sttLocale(_langCode),
+        listenOptions: stt.SpeechListenOptions(partialResults: true),
       );
     } catch (e) {
       if (kDebugMode) debugPrint("Error starting speech recognition: $e");
@@ -467,27 +480,6 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
     }
   }
   
-  // Get context-aware response suggestions
-  String _getContextAwareResponse() {
-    // If we have recent topics, use them for better suggestions
-    if (_recentTopics.isNotEmpty) {
-      if (_recentTopics.contains('outdoor') && _recentTopics.contains('active')) {
-        return "Based on your interest in outdoor activities, I recommend hiking at Land's End or renting bikes to explore Golden Gate Park!";
-      } else if (_recentTopics.contains('outdoor') && _recentTopics.contains('relaxed')) {
-        return "If you're looking for a relaxing outdoor experience, try the Japanese Tea Garden or a gentle stroll along Baker Beach at sunset.";
-      } else if (_recentTopics.contains('indoor') && _recentTopics.contains('cultural')) {
-        return "For cultural indoor activities, the Boijmans Van Beuningen Museum or Kunsthal Rotterdam would be perfect for your mood today.";
-      } else if (_recentTopics.contains('social') && _detectedMoods.contains('Festive')) {
-        return "For a festive time with friends, check out the live music venues in the Mission district or the weekend markets at the Ferry Building.";
-      } else if (_recentTopics.contains('solo') && _detectedMoods.contains('Mindful')) {
-        return "If you're seeking a mindful solo experience, the Botanical Gardens or Grace Cathedral's indoor labyrinth could be perfect.";
-      }
-    }
-    
-    // Fallback to a generic response
-    return "Based on our conversation, I have some recommendations that might match your interests. Would you like me to create a personalized plan?";
-  }
-
   // Modify _handleUserInput to include context analysis
   void _handleUserInput(String input) {
     if (input.isEmpty || _conversationCompleted) return;

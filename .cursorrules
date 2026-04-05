@@ -672,6 +672,13 @@ class BaseScreen extends StatelessWidget {
 - Implement lazy loading for lists
 - Cache images locally
 
+### Google Place photos (Moody / Explore / `places_cache`) — REQUIRED widget
+- URLs from Moody, Supabase `places_cache`, or `Place.photos` / `photo_url` often embed a **server-only** Google API key; `Image.network` / raw `WmNetworkImage` can show **grey placeholders** on device.
+- **Always** use **`WmPlacePhotoNetworkImage`** from `lib/core/presentation/widgets/wm_network_image.dart` for those strings (hero, cards, Foto’s tab, fullscreen, My Day activity images). It applies `deviceAccessibleGooglePlacePhotoUrl` then the shared 90-day disk cache (`WanderMoodImageCacheManager`).
+- Use plain **`WmNetworkImage`** only for **non–Place-Photo** URLs (avatars, Unsplash, social uploads, arbitrary HTTPS images).
+- Do **not** reintroduce per-screen URL rewriting; extend **`WmPlacePhotoNetworkImage`** or **`deviceAccessibleGooglePlacePhotoUrl`** if behavior must change for all surfaces.
+- This does **not** add extra Places *Details* calls per scroll; it only fixes the image GET URL. Repeated loads hit **`CachedNetworkImage`** disk cache for the same final URL.
+
 ### Memory Management
 - Dispose controllers and listeners
 - Use const widgets where possible

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
@@ -13,8 +14,7 @@ import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_card.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_grid_card.dart';
-import 'package:wandermood/features/places/presentation/widgets/book_with_gyg_section.dart';
-import 'package:wandermood/features/places/providers/gyg_links_provider.dart';
+import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/core/errors/explore_location_exception.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
@@ -28,6 +28,7 @@ import 'package:wandermood/core/services/user_preferences_service.dart';
 import '../widgets/conversational_explore_header.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/core/presentation/providers/language_provider.dart';
 import 'package:wandermood/core/utils/places_cache_utils.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
@@ -39,8 +40,6 @@ import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
-import 'package:wandermood/features/home/presentation/screens/explore_see_all_screen.dart';
-
 class _ExploreSectionData {
   _ExploreSectionData({required this.id, List<Place>? cards})
       : cards = cards ?? [];
@@ -62,6 +61,9 @@ const Color _afWmStone = Color(0xFF8C8780);
 
 /// Clears MainScreen floating pill nav + typical home indicator ([MainScreen] `extendBody`).
 const double _kExploreFloatingNavClearance = 88;
+
+/// Explore list/grid: initial batch and each "Load more" step (local reveal or after fetch).
+const int _kExplorePageSize = 18;
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({Key? key}) : super(key: key);
@@ -91,6 +93,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   bool _isGridView = false;
   bool _isMapView = false;
   GoogleMapController? _mapController;
+
+  /// Rotates named-filter fetches so "Load more" adds fresh cards without backend pagination.
+  int _exploreMoreRound = 0;
+  bool _isLoadingMoreExplore = false;
+
+  /// How many places to show in list/grid (capped by filtered list length).
+  int _exploreVisiblePlaceCount = _kExplorePageSize;
 
   late final List<_ExploreSectionData> _sections = [
     _ExploreSectionData(id: 'food'),
@@ -247,6 +256,81 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return out;
   }
 
+  /// Extra Explore rows via moody `namedFilters` (skips Flutter cache read).
+  Future<void> _loadMoreExploreIdeas() async {
+    if (_isLoadingMoreExplore || _isMapView) return;
+    final city = ref.read(locationNotifierProvider).value?.trim();
+    final pos = ref.read(userLocationProvider).value;
+    if (city == null || city.isEmpty || pos == null) return;
+    final connected = await ref.read(connectivityServiceProvider).isConnected;
+    if (!connected) {
+      if (mounted) showOfflineSnackBar(context);
+      return;
+    }
+    setState(() => _isLoadingMoreExplore = true);
+    try {
+      final exploreLang = PlacesCacheUtils.effectiveExploreLanguageTag(
+        appLocale: ref.read(localeProvider),
+      );
+      const tags = [
+        'cultural',
+        'foodie',
+        'outdoor',
+        'nightlife',
+        'wellness',
+        'trendy',
+      ];
+      final tag = tags[_exploreMoreRound % tags.length];
+      _exploreMoreRound++;
+      final service = ref.read(moodyEdgeFunctionServiceProvider);
+      final more = await service.getExplore(
+        location: city,
+        latitude: pos.latitude,
+        longitude: pos.longitude,
+        section: 'discovery',
+        namedFilters: [tag],
+        languageCode: exploreLang,
+      );
+      final notifier = ref.read(placesServiceProvider.notifier);
+      for (final p in more) {
+        notifier.cachePlaceObject(p);
+      }
+      if (!mounted) return;
+      setState(() {
+        if (_sections.isNotEmpty) {
+          final last = _sections.last;
+          last.cards = _mergePlaces(last.cards, more);
+        }
+      });
+    } catch (e, st) {
+      debugPrint('Explore load more: $e\n$st');
+    } finally {
+      if (mounted) setState(() => _isLoadingMoreExplore = false);
+    }
+  }
+
+  /// Reveal next page of already-loaded places, or fetch more (main feed only).
+  Future<void> _onExploreLoadMoreTap(int filteredTotal) async {
+    if (_isLoadingMoreExplore || _isMapView) return;
+    final visible = math.min(_exploreVisiblePlaceCount, filteredTotal);
+    if (visible < filteredTotal) {
+      setState(() {
+        _exploreVisiblePlaceCount = math.min(
+          _exploreVisiblePlaceCount + _kExplorePageSize,
+          filteredTotal,
+        );
+      });
+      return;
+    }
+    if (_searchResults != null) return;
+    if (filteredTotal < _kExplorePageSize) return;
+    await _loadMoreExploreIdeas();
+    if (!mounted) return;
+    setState(() {
+      _exploreVisiblePlaceCount += _kExplorePageSize;
+    });
+  }
+
   Future<void> _loadAllSections() async {
     if (!mounted) return;
     final connected = await ref.read(connectivityServiceProvider).isConnected;
@@ -256,6 +340,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     }
 
     setState(() {
+      _exploreVisiblePlaceCount = _kExplorePageSize;
       for (final s in _sections) {
         s.isLoading = true;
         s.hasError = false;
@@ -267,8 +352,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   Future<void> _loadAllSectionsOffline() async {
     final city = ref.read(locationNotifierProvider).value?.trim() ?? '';
     if (city.isEmpty || !mounted) return;
+    final exploreLang = PlacesCacheUtils.effectiveExploreLanguageTag(
+      appLocale: ref.watch(localeProvider),
+    );
     final client = Supabase.instance.client;
     setState(() {
+      _exploreVisiblePlaceCount = _kExplorePageSize;
       for (final s in _sections) {
         s.isLoading = true;
         s.hasError = false;
@@ -279,6 +368,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         client,
         s.id,
         city,
+        languageCode: exploreLang,
       );
       if (!mounted) return;
       setState(() {
@@ -304,16 +394,24 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       return;
     }
 
+    final exploreLang = PlacesCacheUtils.effectiveExploreLanguageTag(
+      appLocale: ref.watch(localeProvider),
+    );
     final connected = await ref.read(connectivityServiceProvider).isConnected;
     if (!connected) {
       final cached = await PlacesCacheUtils.tryLoadExplorePlaces(
         Supabase.instance.client,
         section.id,
         city,
+        languageCode: exploreLang,
       );
       if (!mounted) return;
+      final list = cached ?? [];
+      final notifier = ref.read(placesServiceProvider.notifier);
+      for (final p in list) {
+        notifier.cachePlaceObject(p);
+      }
       setState(() {
-        final list = cached ?? [];
         section.cards =
             append ? _mergePlaces(section.cards, list) : List<Place>.from(list);
         section.isLoading = false;
@@ -337,8 +435,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         longitude: position.longitude,
         section: section.id,
         filters: filters.isEmpty ? null : filters,
+        languageCode: exploreLang,
       );
       if (!mounted) return;
+      final notifier = ref.read(placesServiceProvider.notifier);
+      for (final p in places) {
+        notifier.cachePlaceObject(p);
+      }
       setState(() {
         section.cards = append
             ? _mergePlaces(section.cards, places)
@@ -351,55 +454,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         Supabase.instance.client,
         section.id,
         city,
+        languageCode: exploreLang,
       );
       if (!mounted) return;
+      final list = cached ?? [];
+      final notifier = ref.read(placesServiceProvider.notifier);
+      for (final p in list) {
+        notifier.cachePlaceObject(p);
+      }
       setState(() {
-        final list = cached ?? [];
         section.cards =
             append ? _mergePlaces(section.cards, list) : List<Place>.from(list);
         section.isLoading = false;
         section.hasError = list.isEmpty;
       });
     }
-  }
-
-  String _timeGreeting(AppLocalizations l10n) {
-    final hour = DateTime.now().hour;
-    if (hour >= 6 && hour < 12) return l10n.exploreTimeGreetingMorning;
-    if (hour >= 12 && hour < 17) return l10n.exploreTimeGreetingAfternoon;
-    if (hour >= 17 && hour < 21) return l10n.exploreTimeGreetingEvening;
-    return l10n.exploreTimeGreetingLateNight;
-  }
-
-  String _sectionTitle(AppLocalizations l10n, _ExploreSectionData section, String city) {
-    if (section.id == 'food') {
-      final interests = ref.read(preferencesProvider).travelInterests;
-      if (interests.isNotEmpty) {
-        final top = interests.first.toLowerCase();
-        if (top.contains('culture')) return l10n.exploreSectionBecauseCulture;
-        if (top.contains('nightlife')) return l10n.exploreSectionBecauseNightlife;
-        if (top.contains('outdoor')) return l10n.exploreSectionBecauseOutdoor;
-        if (top.contains('coffee')) return l10n.exploreSectionBecauseCoffee;
-      }
-      return l10n.exploreSectionBecauseFood;
-    }
-    if (section.id == 'trending') {
-      return l10n.exploreSectionTrendingInCity(city);
-    }
-    if (section.id == 'solo') {
-      final vibe = ref.read(preferencesProvider).socialVibe;
-      if (vibe.any((v) => v.toLowerCase().contains('solo'))) {
-        return l10n.exploreSectionPerfectSolo;
-      }
-      if (vibe.any((v) => v.toLowerCase().contains('group'))) {
-        return l10n.exploreSectionPerfectGroups;
-      }
-      return l10n.exploreSectionPerfectVibe;
-    }
-    if (section.id == 'different') {
-      return l10n.exploreSectionSomethingDifferent;
-    }
-    return section.id;
   }
 
   List<Place> get _allCards {
@@ -412,159 +481,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       }
     }
     return all;
-  }
-
-  void _openSeeAll(_ExploreSectionData section, String city) {
-    final l10n = AppLocalizations.of(context)!;
-    Navigator.push<void>(
-      context,
-      MaterialPageRoute<void>(
-        builder: (_) => ExploreSeeAllScreen(
-          title: _sectionTitle(l10n, section, city),
-          initialCards: List<Place>.from(section.cards),
-          onLoadMore: () async {
-            await _loadSection(section, append: true);
-            return List<Place>.from(section.cards);
-          },
-          onAddToMyDay: _showAddToMyDaySheet,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCardSkeleton() {
-    return Container(
-      width: 200,
-      height: 220,
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8E2D8),
-        borderRadius: BorderRadius.circular(16),
-      ),
-    );
-  }
-
-  Widget _buildSectionRow(_ExploreSectionData section, String city) {
-    final l10n = AppLocalizations.of(context)!;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Text(
-                  _sectionTitle(l10n, section, city),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1E1C18),
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () => _openSeeAll(section, city),
-                child: Text(
-                  l10n.exploreSeeAll,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF2A6049),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 10),
-        if (section.isLoading && section.cards.isEmpty)
-          SizedBox(
-            height: 200,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: 3,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (_, __) => _buildCardSkeleton(),
-            ),
-          )
-        else if (section.cards.isEmpty && !section.isLoading)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: section.hasError
-                ? GestureDetector(
-                    onTap: () => unawaited(_loadSection(section)),
-                    child: Text(
-                      l10n.exploreSectionErrorRetry,
-                      style:
-                          const TextStyle(fontSize: 13, color: Color(0xFF8C8780)),
-                    ),
-                  )
-                : Text(
-                    l10n.exploreNoPlacesFound,
-                    style: const TextStyle(fontSize: 13, color: Color(0xFF8C8780)),
-                  ),
-          )
-        else
-          SizedBox(
-            height: 230,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: section.cards.length + 1,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                if (index == section.cards.length) {
-                  return _buildLoadMoreChip(section);
-                }
-                final place = section.cards[index];
-                final ul = ref.read(userLocationProvider).value;
-                return SizedBox(
-                  width: MediaQuery.sizeOf(context).width * 0.72,
-                  child: PlaceCard(
-                    place: place,
-                    userLocation: ul,
-                    cityName: city,
-                    cardMargin: EdgeInsets.zero,
-                    showAddToMyDayButton: true,
-                    onAddToMyDayTap: () => _showAddToMyDaySheet(place),
-                    onTap: () => context.push('/place/${place.id}'),
-                  ),
-                );
-              },
-            ),
-          ),
-        const SizedBox(height: 8),
-        const Divider(
-          height: 1,
-          color: Color(0xFFE8E2D8),
-          indent: 20,
-          endIndent: 20,
-        ),
-        const SizedBox(height: 20),
-      ],
-    );
-  }
-
-  Widget _buildLoadMoreChip(_ExploreSectionData section) {
-    final l10n = AppLocalizations.of(context)!;
-    return Center(
-      child: TextButton(
-        onPressed: section.isLoading
-            ? null
-            : () => unawaited(_loadSection(section, append: true)),
-        child: Text(
-          l10n.exploreLoadMore,
-          style: const TextStyle(
-            color: Color(0xFF2A6049),
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
-          ),
-        ),
-      ),
-    );
   }
 
   void _onScrollChanged() {
@@ -602,6 +518,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       if (mounted) {
         setState(() {
           _searchResults = null;
+          _exploreVisiblePlaceCount = _kExplorePageSize;
         });
       }
       return;
@@ -657,11 +574,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         setState(() {
           _searchResults = places;
           _isSearching = false;
+          _exploreVisiblePlaceCount = _kExplorePageSize;
         });
       } else {
         setState(() {
           _searchResults = [];
           _isSearching = false;
+          _exploreVisiblePlaceCount = _kExplorePageSize;
         });
       }
     } catch (e) {
@@ -678,6 +597,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       _isSearching = false;
       _searchFilter = 'All'; // Reset search filter when clearing
       _searchResults = null;
+      _exploreVisiblePlaceCount = _kExplorePageSize;
     });
   }
 
@@ -842,6 +762,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       _bestAtSunset = false;
 
       _activeFiltersCount = 0;
+      _exploreVisiblePlaceCount = _kExplorePageSize;
     });
     ref.read(moodyExploreBackendFiltersProvider.notifier).state =
         <String, dynamic>{};
@@ -948,6 +869,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     setState(() {
       _selectedCategory = category;
       _searchFilter = category; // Sync search filter with category
+      _exploreVisiblePlaceCount = _kExplorePageSize;
     });
   }
 
@@ -955,6 +877,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     setState(() {
       _searchFilter = filter;
       _selectedCategory = filter; // Sync category with search filter
+      _exploreVisiblePlaceCount = _kExplorePageSize;
     });
   }
 
@@ -1029,7 +952,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             preferencesService.placeMatchesTravelStyles(place);
       }
 
-      return matchesSearch && matchesAdvancedFilters && matchesPreferences;
+      final matchesCategory = _selectedCategory == 'All' ||
+          _checkCategoryMatch(place, _selectedCategory);
+
+      return matchesSearch &&
+          matchesAdvancedFilters &&
+          matchesPreferences &&
+          matchesCategory;
     }).toList();
 
     // Sort places: preference matches first, then by rating
@@ -1360,6 +1289,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   bool _checkCategoryMatch(Place place, String category) {
     switch (category.toLowerCase()) {
+      case 'all':
+        return true;
       case 'popular':
         return place.rating >= 4.0 ||
             place.types.contains('tourist_attraction');
@@ -1424,8 +1355,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     bool showOfflineCachedHint = false,
   }) {
     final l10n = AppLocalizations.of(context)!;
-    final city =
-        ref.watch(locationNotifierProvider).value?.trim() ?? 'Rotterdam';
     return SafeArea(
       bottom: false,
       child: Align(
@@ -1434,41 +1363,30 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+          // Match [DynamicMyDayScreen] title row: horizontal 24, top 16, wmTitle scale.
           Padding(
-            padding:
-                const EdgeInsets.fromLTRB(16, 8, 16, 6),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  _timeGreeting(l10n),
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF8C8780),
+                Expanded(
+                  child: Text(
+                    l10n.navExplore,
+                    style: GoogleFonts.poppins(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.5,
+                      color: Colors.grey[900],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        city,
-                        style: GoogleFonts.poppins(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.grey[900],
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const LocationDropdown(),
-                  ],
-                ),
+                const LocationDropdown(),
               ],
             ),
           ),
+          const SizedBox(height: 8),
           ConversationalExploreHeader(
             onSearchChanged: _onConversationalSearchChanged,
             onFilterTap: _showAdvancedFilters,
@@ -1481,10 +1399,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 _isMapView = isMap;
               });
             },
+            categoryKeys: _categories,
+            selectedCategory: _selectedCategory,
+            categoryLabel: _categoryLabel,
+            categoryEmoji: (k) => _filterIcons[k] ?? '📍',
+            onCategorySelected: _onCategorySelected,
           ),
           if (showOfflineCachedHint)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
               child: Text(
                 l10n.exploreOfflineShowingCached,
                 style: const TextStyle(color: Color(0xFF8C8780), fontSize: 12),
@@ -1522,14 +1445,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       floating: true,
       pinned: true,
       snap: false,
-      expandedHeight: 300,
+      // Title + search + chips + toggles — keep minimal dead space above the list.
+      expandedHeight: 258,
       backgroundColor: Colors.transparent,
       elevation: 0,
       automaticallyImplyLeading: false,
       leading: null,
       title: null,
       flexibleSpace: FlexibleSpaceBar(
-        collapseMode: CollapseMode.parallax,
+        collapseMode: CollapseMode.pin,
         background: _buildExploreHeaderColumn(
           activitiesCount,
           showOfflineCachedHint: showOfflineCachedHint,
@@ -1623,29 +1547,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     int activitiesCount, {
     bool showOfflineCachedHint = false,
   }) {
-    final locationAsync = ref.watch(locationNotifierProvider);
     final userLocationAsync = ref.read(userLocationProvider);
-    final currentCity = locationAsync.value ?? 'Rotterdam';
     final userLocation = userLocationAsync.value;
 
-    List<Place> filteredPlaces;
-    if (_searchResults != null) {
-      filteredPlaces = _searchResults!;
-    } else {
-      filteredPlaces = allPlaces;
-      if (_selectedCategory != 'All') {
-        filteredPlaces = filteredPlaces.where((place) {
-          return place.types.any(
-            (type) =>
-                type.toLowerCase().contains(_selectedCategory.toLowerCase()),
-          );
-        }).toList();
-      }
-      filteredPlaces = _filterPlaces(filteredPlaces);
-    }
+    final List<Place> basePlaces =
+        _searchResults != null ? _searchResults! : allPlaces;
+    final filteredPlaces = _filterPlaces(basePlaces);
 
     final placesForMap = filteredPlaces;
-    final gygLinks = ref.watch(gygLinksProvider(currentCity)).valueOrNull ?? [];
     final bottomPad = MediaQuery.viewPaddingOf(context).bottom +
         _kExploreFloatingNavClearance;
 
@@ -1657,21 +1566,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           showOfflineCachedHint: showOfflineCachedHint,
         ),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: _buildMapView(placesForMap, userLocation),
-              ),
-              Padding(
-                padding: EdgeInsets.only(bottom: bottomPad),
-                child: BookWithGygSection(
-                  cityName: currentCity,
-                  links: gygLinks,
-                  compactForMap: true,
-                ),
-              ),
-            ],
+          child: Padding(
+            padding: EdgeInsets.only(bottom: bottomPad),
+            child: _buildMapView(placesForMap, userLocation),
           ),
         ),
       ],
@@ -1684,21 +1581,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final currentCity = locationAsync.value ?? 'Rotterdam';
     final userLocation = userLocationAsync.value;
 
-    List<Place> filteredPlaces;
-    if (_searchResults != null) {
-      filteredPlaces = _searchResults!;
-    } else {
-      filteredPlaces = allPlaces;
-      if (_selectedCategory != 'All') {
-        filteredPlaces = filteredPlaces.where((place) {
-          return place.types.any(
-            (type) =>
-                type.toLowerCase().contains(_selectedCategory.toLowerCase()),
-          );
-        }).toList();
-      }
-      filteredPlaces = _filterPlaces(filteredPlaces);
-    }
+    final List<Place> basePlaces =
+        _searchResults != null ? _searchResults! : allPlaces;
+    var filteredPlaces = _filterPlaces(basePlaces);
 
     filteredPlaces = _applyQuickFilters(
       filteredPlaces,
@@ -1710,6 +1595,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       debugPrint(
           '⚠️ Filters reduced results to ${filteredPlaces.length} places (${allPlaces.length} unfiltered).');
     }
+
+    final visibleCount =
+        math.min(_exploreVisiblePlaceCount, filteredPlaces.length);
+    final visiblePlaces = filteredPlaces.sublist(0, visibleCount);
+    final hasMoreLocally = visibleCount < filteredPlaces.length;
+    final canFetchMoreExplore = _searchResults == null &&
+        filteredPlaces.length >= _kExplorePageSize &&
+        !hasMoreLocally;
+    final showExploreLoadMore =
+        filteredPlaces.isNotEmpty && (hasMoreLocally || canFetchMoreExplore);
 
     if (filteredPlaces.isEmpty) {
       final l10n = AppLocalizations.of(context)!;
@@ -1772,11 +1667,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           ),
                   ),
                 ),
-                BookWithGygSection(
-                  cityName: currentCity,
-                  links: ref.watch(gygLinksProvider(currentCity)).valueOrNull ??
-                      [],
-                ),
               ],
             ),
           ),
@@ -1784,10 +1674,39 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       );
     }
 
-    final gygFooterSliver = SliverToBoxAdapter(
-      child: BookWithGygSection(
-        cityName: currentCity,
-        links: ref.watch(gygLinksProvider(currentCity)).valueOrNull ?? [],
+    final exploreFooterSliver = SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 4, 24, 12),
+        child: OutlinedButton(
+          onPressed: _isLoadingMoreExplore
+              ? null
+              : () => _onExploreLoadMoreTap(filteredPlaces.length),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFF2A6049),
+            side: const BorderSide(color: Color(0xFF2A6049), width: 1.5),
+            backgroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+          child: _isLoadingMoreExplore
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Color(0xFF2A6049),
+                  ),
+                )
+              : Text(
+                  AppLocalizations.of(context)!.exploreLoadMoreIdeas,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+        ),
       ),
     );
     const explanationSliver = null;
@@ -1796,31 +1715,36 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         ? SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.66,
+              childAspectRatio: 0.62,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
             ),
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                final place = filteredPlaces[index];
+                final place = visiblePlaces[index];
                 final ul = userLocationAsync.value;
                 return PlaceGridCard(
                   place: place,
                   userLocation: ul,
                   cityName: currentCity,
-                  onTap: () => context.push('/place/${place.id}'),
+                  onTap: () {
+                    ref
+                        .read(placesServiceProvider.notifier)
+                        .cachePlaceObject(place);
+                    context.push('/place/${place.id}');
+                  },
                   onAddToMyDayTap: () => _showAddToMyDaySheet(place),
                 ).animate().fadeIn(
                     duration: 300.ms,
                     delay: Duration(milliseconds: index * 30));
               },
-              childCount: filteredPlaces.length,
+              childCount: visiblePlaces.length,
             ),
           )
         : SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                final place = filteredPlaces[index];
+                final place = visiblePlaces[index];
                 final ul = userLocationAsync.value;
                 return PlaceCard(
                   place: place,
@@ -1829,12 +1753,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   cardMargin: const EdgeInsets.only(top: 2, bottom: 16),
                   showAddToMyDayButton: true,
                   onAddToMyDayTap: () => _showAddToMyDaySheet(place),
-                  onTap: () => context.push('/place/${place.id}'),
+                  onTap: () {
+                    ref
+                        .read(placesServiceProvider.notifier)
+                        .cachePlaceObject(place);
+                    context.push('/place/${place.id}');
+                  },
                 ).animate().fadeIn(
                     duration: 300.ms,
                     delay: Duration(milliseconds: index * 50));
               },
-              childCount: filteredPlaces.length,
+              childCount: visiblePlaces.length,
             ),
           );
 
@@ -1842,30 +1771,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       slivers: [
         if (explanationSliver != null) explanationSliver,
         SliverPadding(
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 4, bottom: 16),
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
           sliver: placesSliver,
         ),
-        gygFooterSliver,
-        const SliverToBoxAdapter(child: SizedBox(height: 100)),
-      ],
-    );
-  }
-
-  Widget _buildSectionedExploreBody(String city) {
-    final gygLinks = ref.watch(gygLinksProvider(city)).valueOrNull ?? [];
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final s in _sections) _buildSectionRow(s, city),
-            ],
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: BookWithGygSection(cityName: city, links: gygLinks),
-        ),
+        if (showExploreLoadMore) exploreFooterSliver,
         const SliverToBoxAdapter(child: SizedBox(height: 100)),
       ],
     );
@@ -2003,9 +1912,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             );
           }
 
-          final inner = _isGridView || _searchResults != null
-              ? _buildExploreListGridBody(_allCards)
-              : _buildSectionedExploreBody(city);
+          final inner = _buildExploreListGridBody(_allCards);
 
           return _wrapExploreStack(
             NestedScrollView(
@@ -2328,6 +2235,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             unawaited(_loadAllSections());
                             // Force a rebuild to apply filters
                             setState(() {
+                              _exploreVisiblePlaceCount = _kExplorePageSize;
                               // Update active filters count
                               _updateActiveFiltersCount();
                               debugPrint(
@@ -3428,10 +3336,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           ),
           icon: markerIcon,
           onTap: () async {
-            // Navigate to place detail when marker is tapped
-            // Use a small delay to ensure context is stable
             await Future.delayed(const Duration(milliseconds: 100));
             if (mounted) {
+              ref.read(placesServiceProvider.notifier).cachePlaceObject(place);
               context.push('/place/$placeId');
             }
           },
@@ -3439,79 +3346,71 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       );
     }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Positioned.fill(
-              child: GoogleMap(
-                initialCameraPosition: CameraPosition(
-                  target: initialPosition,
-                  zoom: 13,
-                ),
-                markers: markers,
-                mapType: MapType.normal,
-                gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-                  Factory<OneSequenceGestureRecognizer>(
-                      () => EagerGestureRecognizer()),
-                },
-                scrollGesturesEnabled: true,
-                zoomGesturesEnabled: true,
-                rotateGesturesEnabled: true,
-                tiltGesturesEnabled: true,
-                minMaxZoomPreference: const MinMaxZoomPreference(9, 20),
-                onMapCreated: (GoogleMapController controller) {
-                  _mapController = controller;
-                  if (kDebugMode) {
-                    debugPrint('✅ Google Map created successfully');
-                    debugPrint(
-                        '📍 Initial position: ${initialPosition.latitude}, ${initialPosition.longitude}');
-                    debugPrint('📍 Markers count: ${markers.length}');
-                  }
-                },
-                onCameraMoveStarted: () {
-                  if (kDebugMode) {
-                    debugPrint('🗺️ Camera move started');
-                  }
-                },
-                onTap: (LatLng position) {
-                  if (kDebugMode) {
-                    debugPrint(
-                        '🗺️ Map tapped at: ${position.latitude}, ${position.longitude}');
-                  }
-                },
-                onCameraIdle: () {
-                  if (kDebugMode) {
-                    debugPrint('🗺️ Camera idle - map should be fully loaded');
-                  }
-                },
-                myLocationEnabled: userLocation != null &&
-                    (userLocation.latitude - 37.785834).abs() > 0.1,
-                myLocationButtonEnabled: true,
-                zoomControlsEnabled: false,
-                mapToolbarEnabled: false,
-                compassEnabled: true,
-                trafficEnabled: false,
-                buildingsEnabled: true,
-                indoorViewEnabled: false,
-              ),
+    // Avoid ClipRRect around the PlatformView — on iOS it can leave tiles blank while
+    // markers/logo still render. City / radius is unchanged; LocationDropdown still shows it.
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned.fill(
+            child: GoogleMap(
+            key: const ValueKey<String>('explore_google_map'),
+            initialCameraPosition: CameraPosition(
+              target: initialPosition,
+              zoom: 13,
             ),
+            markers: markers,
+            mapType: MapType.normal,
+            gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+              Factory<OneSequenceGestureRecognizer>(
+                  () => EagerGestureRecognizer()),
+            },
+            scrollGesturesEnabled: true,
+            zoomGesturesEnabled: true,
+            rotateGesturesEnabled: true,
+            tiltGesturesEnabled: true,
+            minMaxZoomPreference: const MinMaxZoomPreference(9, 20),
+            padding: EdgeInsets.zero,
+            onMapCreated: (GoogleMapController controller) {
+              _mapController = controller;
+              if (kDebugMode) {
+                debugPrint('✅ Google Map created successfully');
+                debugPrint(
+                    '📍 Initial position: ${initialPosition.latitude}, ${initialPosition.longitude}');
+                debugPrint('📍 Markers count: ${markers.length}');
+              }
+            },
+            onCameraMoveStarted: () {
+              if (kDebugMode) {
+                debugPrint('🗺️ Camera move started');
+              }
+            },
+            onTap: (LatLng position) {
+              if (kDebugMode) {
+                debugPrint(
+                    '🗺️ Map tapped at: ${position.latitude}, ${position.longitude}');
+              }
+            },
+            onCameraIdle: () {
+              if (kDebugMode) {
+                debugPrint('🗺️ Camera idle - map should be fully loaded');
+              }
+            },
+            myLocationEnabled: userLocation != null &&
+                (userLocation.latitude - 37.785834).abs() > 0.1,
+            myLocationButtonEnabled: true,
+            zoomControlsEnabled: false,
+            mapToolbarEnabled: false,
+            compassEnabled: true,
+            trafficEnabled: false,
+            buildingsEnabled: true,
+            indoorViewEnabled: false,
+          ),
+          ),
 
-            // Quick filter chips at the top
-            Positioned(
+          // Quick filter chips at the top
+          Positioned(
               top: 16,
               left: 16,
               right: 16,
@@ -3553,6 +3452,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       onTap: () {
                         setState(() {
                           _quickFilterDistance1km = !_quickFilterDistance1km;
+                          _exploreVisiblePlaceCount = _kExplorePageSize;
                         });
                       },
                     ),
@@ -3564,6 +3464,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       onTap: () {
                         setState(() {
                           _quickFilterRating45 = !_quickFilterRating45;
+                          _exploreVisiblePlaceCount = _kExplorePageSize;
                         });
                       },
                     ),
@@ -3573,7 +3474,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 

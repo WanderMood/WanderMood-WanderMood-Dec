@@ -57,6 +57,44 @@ class SavedPlacesService {
 
   SavedPlacesService(this._client);
 
+  /// JSON-safe payload for `place_data` (nested Freezed fields are not encodable as plain Map).
+  static Map<String, dynamic> encodePlaceDataRow(Place place) {
+    return {
+      'id': place.id,
+      'name': place.name,
+      'address': place.address,
+      'rating': place.rating,
+      'photos': place.photos,
+      'types': place.types,
+      'location': {'lat': place.location.lat, 'lng': place.location.lng},
+      'description': place.description,
+      'emoji': place.emoji,
+      'tag': place.tag,
+      'isAsset': place.isAsset,
+      'activities': place.activities,
+      'dateAdded': place.dateAdded?.toIso8601String(),
+      'reviewCount': place.reviewCount,
+      'energyLevel': place.energyLevel,
+      'isIndoor': place.isIndoor,
+      'priceLevel': place.priceLevel,
+      'priceRange': place.priceRange,
+      'isFree': place.isFree,
+      if (place.openingHours != null)
+        'openingHours': {
+          'isOpen': place.openingHours!.isOpen,
+          'currentStatus': place.openingHours!.currentStatus,
+          'weekdayText': place.openingHours!.weekdayText,
+          if (place.openingHours!.todayHours != null)
+            'todayHours': {
+              'openTime': place.openingHours!.todayHours!.openTime,
+              'closeTime': place.openingHours!.todayHours!.closeTime,
+              'isOpenAllDay': place.openingHours!.todayHours!.isOpenAllDay,
+              'isClosed': place.openingHours!.todayHours!.isClosed,
+            },
+        },
+    };
+  }
+
   /// Save a place for later
   Future<void> savePlace(Place place) async {
     try {
@@ -65,13 +103,30 @@ class SavedPlacesService {
         throw Exception('User not authenticated');
       }
 
-      await _client.from('user_saved_places').upsert({
+      final row = <String, dynamic>{
         'user_id': userId,
         'place_id': place.id,
-        'place_name': place.name,
-        'place_data': place.toJson(),
         'saved_at': DateTime.now().toIso8601String(),
-      });
+        'place_name': place.name,
+        'place_data': encodePlaceDataRow(place),
+      };
+
+      try {
+        await _client.from('user_saved_places').upsert(
+              row,
+              onConflict: 'user_id,place_id',
+            );
+      } catch (e) {
+        // Older schemas: no place_name / place_data / onConflict — minimal row.
+        if (kDebugMode) {
+          debugPrint('⚠️ Saved places full upsert failed, retrying minimal: $e');
+        }
+        await _client.from('user_saved_places').upsert({
+          'user_id': userId,
+          'place_id': place.id,
+          'saved_at': DateTime.now().toIso8601String(),
+        });
+      }
 
       if (kDebugMode) debugPrint('✅ Place saved: ${place.name}');
     } catch (e) {

@@ -9,7 +9,7 @@ import {
 import { corsHeaders } from './_shared/cors.ts'
 
 interface MoodyRequest {
-  action: 'get_explore' | 'create_day_plan' | 'chat' | 'generate_hub_message' | 'search'
+  action: 'get_explore' | 'create_day_plan' | 'chat' | 'generate_hub_message' | 'search' | 'place_card_blurb' | 'place_detail_blurb'
   mood?: string
   location?: string
   coordinates?: { lat: number; lng: number }
@@ -126,6 +126,8 @@ Deno.serve(async (req) => {
           case 'chat': return await handleChat(supabaseWithAuth, authUser.id, params)
           case 'generate_hub_message': return await handleGenerateHubMessage(supabaseWithAuth, authUser.id, params)
           case 'search': return await handleSearch(supabaseWithAuth, authUser.id, params)
+          case 'place_card_blurb': return await handlePlaceCardBlurb(params)
+          case 'place_detail_blurb': return await handlePlaceDetailBlurb(params)
           default: return new Response(JSON.stringify({ error: `Invalid action: ${action}` }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
         }
       })(), corsHeaders)
@@ -673,6 +675,127 @@ async function handleCreateDayPlan(supabase: any, userId: string, params: any): 
 // OPENAI
 // ============================================
 
+function placeCardBlurbOutputLanguageName(code: string): string {
+  const c = (code || 'en').toLowerCase().split(/[-_]/)[0]
+  const m: Record<string, string> = { nl: 'Dutch', de: 'German', fr: 'French', es: 'Spanish', en: 'English' }
+  return m[c] || 'English'
+}
+
+/** Grounded Explore card copy; uses server OPENAI_API_KEY when the app has no client key. */
+async function handlePlaceCardBlurb(params: Record<string, unknown>): Promise<Response> {
+  const facts = typeof params.facts === 'string' ? params.facts.trim() : ''
+  if (!facts || facts.length > 12000) {
+    return new Response(JSON.stringify({ success: false, error: 'invalid_facts', blurb: '' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+  const languageCode = typeof params.languageCode === 'string'
+    ? params.languageCode.trim().split(/[-_]/)[0] || 'en'
+    : 'en'
+  const outLang = placeCardBlurbOutputLanguageName(languageCode)
+  const openaiKey = Deno.env.get('OPENAI_API_KEY')
+  if (!openaiKey?.trim()) {
+    return new Response(JSON.stringify({ success: false, error: 'openai_not_configured', blurb: '' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+  const systemPrompt =
+    `You are Moody, the warm voice of the WanderMood travel app. Write accurate and engaging place descriptions for mobile cards. Never invent menu items, prices, or amenities not implied by the user's facts. If facts are thin, stay general but engaging.`
+  const userMessage =
+    `These are the only verified facts about a real place. Do not add unsupported details.\n\n${facts}\n\nWrite at least 3 detailed sentences about the atmosphere and offerings for a travel app card. Tone: friendly, like Moody. Use only the facts above. Output entirely in ${outLang}. Plain prose: no bullet points, no quotation marks.`
+  try {
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage },
+        ],
+        temperature: 0.45,
+        max_tokens: 400,
+      }),
+    })
+    if (!resp.ok) {
+      const t = await resp.text()
+      console.error('place_card_blurb OpenAI error', resp.status, t.slice(0, 240))
+      return new Response(JSON.stringify({ success: false, blurb: '' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const data = await resp.json()
+    let blurb = String(data?.choices?.[0]?.message?.content || '').trim().replace(/"/g, '')
+    if (blurb.length > 600) blurb = `${blurb.slice(0, 580).trim()}…`
+    return new Response(JSON.stringify({ success: true, blurb }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  } catch (e) {
+    console.error('handlePlaceCardBlurb', e)
+    return new Response(JSON.stringify({ success: false, blurb: '' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+}
+
+async function handlePlaceDetailBlurb(params: Record<string, unknown>): Promise<Response> {
+  const facts = typeof params.facts === 'string' ? params.facts.trim() : ''
+  if (!facts || facts.length > 12000) {
+    return new Response(JSON.stringify({ success: false, error: 'invalid_facts', blurb: '' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+  const languageCode = typeof params.languageCode === 'string'
+    ? params.languageCode.trim().split(/[-_]/)[0] || 'en'
+    : 'en'
+  const outLang = placeCardBlurbOutputLanguageName(languageCode)
+  const openaiKey = Deno.env.get('OPENAI_API_KEY')
+  if (!openaiKey?.trim()) {
+    return new Response(JSON.stringify({ success: false, error: 'openai_not_configured', blurb: '' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+  const systemPrompt =
+    `You are Moody, the warm voice of the WanderMood travel app. Write a fuller, accurate place description for a detail screen. Never invent menu items, prices, or amenities not implied by the user's facts. If facts are thin, stay general but engaging.`
+  const userMessage =
+    `These are the only verified facts about a real place. Do not add unsupported details.\n\n${facts}\n\nWrite 5 to 8 detailed sentences including practical tips, history, and why it's worth visiting for a travel app place detail screen. Expand on what visitors might experience, atmosphere, and practical cues only when supported by the facts above. Tone: friendly, like Moody. Output entirely in ${outLang}. Plain prose: no bullet points, no quotation marks.`
+  try {
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage },
+        ],
+        temperature: 0.45,
+        max_tokens: 1000,
+      }),
+    })
+    if (!resp.ok) {
+      const t = await resp.text()
+      console.error('place_detail_blurb OpenAI error', resp.status, t.slice(0, 240))
+      return new Response(JSON.stringify({ success: false, blurb: '' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const data = await resp.json()
+    let blurb = String(data?.choices?.[0]?.message?.content || '').trim().replace(/"/g, '')
+    if (blurb.length > 2000) blurb = `${blurb.slice(0, 1980).trim()}…`
+    return new Response(JSON.stringify({ success: true, blurb }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  } catch (e) {
+    console.error('handlePlaceDetailBlurb', e)
+    return new Response(JSON.stringify({ success: false, blurb: '' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+}
+
 async function getMoodySearchQueries(moods: string[], location: string, userContext: any, lang: 'nl' | 'en', timeSlot?: string): Promise<string[] | null> {
   const openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey?.trim()) return null
@@ -869,13 +992,19 @@ function convertPlacesToActivities(places: PlaceCard[], moods: string[], locatio
   const morning: PlaceCard[] = [], afternoon: PlaceCard[] = [], evening: PlaceCard[] = []
   for (const p of places) { if (used.has(p.id)) continue; const slots = getTimeSlotsForPlace(p); if (slots.includes('morning')) morning.push(p); if (slots.includes('afternoon')) afternoon.push(p); if (slots.includes('evening')) evening.push(p) }
   const now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  // Fill up to [count] per slot by scanning the whole pool — the old index loop skipped
+  // slots when pool[i] was already used, so users often saw fewer than 3 per period.
   const add = (pool: PlaceCard[], slot: string, h1: number, h2: number, count: number, pastH: number) => {
-    for (let i = 0; i < Math.min(count, pool.length); i++) {
-      const p = pool[i]; if (used.has(p.id)) continue; used.add(p.id)
-      const h = h1 + Math.floor(Math.random()*(h2-h1)), m = [0,15,30,45][Math.floor(Math.random()*4)]
+    let added = 0
+    for (const p of pool) {
+      if (added >= count) break
+      if (used.has(p.id)) continue
+      used.add(p.id)
+      const h = h1 + Math.floor(Math.random() * (h2 - h1)), m = [0, 15, 30, 45][Math.floor(Math.random() * 4)]
       const st = new Date(today.getTime()); st.setHours(h, m, 0, 0)
-      if (now.getHours() >= pastH) st.setDate(st.getDate()+1)
+      if (now.getHours() >= pastH) st.setDate(st.getDate() + 1)
       activities.push(createActivity(p, slot, st, moods, lang))
+      added++
     }
   }
   add(morning,'morning',7,10,3,11); add(afternoon,'afternoon',12,16,3,17); add(evening,'evening',17,20,3,21)

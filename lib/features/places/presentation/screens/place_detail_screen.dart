@@ -19,9 +19,11 @@ import 'package:wandermood/core/services/moody_ai_service.dart';
 import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/features/places/services/reviews_cache_service.dart';
 import 'package:wandermood/core/widgets/data_source_badge.dart';
+import 'package:wandermood/core/presentation/providers/language_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:wandermood/core/services/distance_service.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/features/places/presentation/widgets/place_card_moody_description.dart';
 import 'package:wandermood/core/utils/places_cache_utils.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
@@ -92,12 +94,30 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   @override
   Widget build(BuildContext context) {
     if (kDebugMode) debugPrint('🔥 PLACE DETAIL SCREEN - BUILDING WITH PLACE ID: ${widget.placeId}');
-    
+    final l10n = AppLocalizations.of(context)!;
+
+    // Instant open when the user tapped a card we already have in memory (Explore / My Day).
+    final memoryPlace =
+        ref.read(placesServiceProvider.notifier).getCachedPlace(widget.placeId);
+    if (memoryPlace != null &&
+        memoryPlace.name.isNotEmpty &&
+        memoryPlace.name != l10n.placeDetailUnavailableName) {
+      if (_cachedPlace?.id != memoryPlace.id) {
+        _cachedPlace = memoryPlace;
+        _syncResolvedPlace(memoryPlace);
+      }
+      return Scaffold(
+        backgroundColor: const Color(0xFFF5F0E8),
+        body: _buildPlaceDetail(memoryPlace),
+        bottomNavigationBar: _buildBottomActionBar(memoryPlace),
+      );
+    }
+
     // Prevent rebuild loops: If we have a cached place and it matches, use it immediately
     // Don't use broken fallback places — let the fetch retry succeed.
     // Don't do any provider reads/watches that could trigger rebuilds
     if (_cachedPlace != null && _cachedPlace!.id == widget.placeId && _isInitialized &&
-        _cachedPlace!.name != 'Place details unavailable') {
+        _cachedPlace!.name != l10n.placeDetailUnavailableName) {
       _syncResolvedPlace(_cachedPlace!);
       return Scaffold(
         backgroundColor: const Color(0xFFF5F0E8),
@@ -145,7 +165,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     _syncResolvedPlace(place);
                     return _buildPlaceDetail(place);
                   }
-                  return _buildErrorState(Exception('Place not found and could not be fetched'));
+                  return _buildErrorState(Exception(l10n.placeDetailNotFound));
                 },
               );
             }
@@ -182,17 +202,6 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     });
   }
 
-  List<String> _mergeUniquePhotoUrls(List<String> primary, List<String> extra) {
-    final seen = <String>{};
-    final out = <String>[];
-    for (final u in [...primary, ...extra]) {
-      if (u.isEmpty || seen.contains(u)) continue;
-      seen.add(u);
-      out.add(u);
-    }
-    return out;
-  }
-
   bool _samePhotoList(List<String> a, List<String> b) {
     if (identical(a, b)) return true;
     if (a.length != b.length) return false;
@@ -205,7 +214,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   /// Fetches canonical Google photo URLs so the hero matches the Photos tab even when
   /// the hub cache held empty, stale, or non-loadable URLs.
   Future<void> _maybeEnrichHeroPhotos(Place place) async {
-    if (!place.id.startsWith('google_')) return;
+    if (!_isGoogleBackedPlace(place.id)) return;
     if (_heroPhotoEnrichAttempted.contains(place.id)) return;
     _heroPhotoEnrichAttempted.add(place.id);
     if (place.photos.isEmpty && mounted) {
@@ -215,8 +224,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       final urls = await ref.read(placesServiceProvider.notifier).fetchPhotoUrlsForGooglePlace(place.id);
       if (!mounted || _cachedPlace?.id != place.id) return;
       final merged = urls.isNotEmpty
-          ? _mergeUniquePhotoUrls(urls, place.photos)
-          : place.photos;
+          ? PlacesService.mergeUniquePhotoUrls(urls, place.photos, maxPhotos: 10)
+          : place.photos.take(10).toList();
       setState(() {
         if (!_samePhotoList(merged, _cachedPlace!.photos)) {
           _cachedPlace = _cachedPlace!.copyWith(photos: merged);
@@ -229,19 +238,24 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     }
   }
 
+  bool _isGoogleBackedPlace(String id) {
+    final t = id.trim();
+    if (t.isEmpty) return false;
+    if (t.startsWith('google_')) return true;
+    return t.startsWith('ChIJ') || t.startsWith('EhIJ');
+  }
+
   /// Fetches editorial description from Places API if the Place came from hub cache
   /// without one.
   Future<void> _maybeEnrichDescription(Place place) async {
-    if (!place.id.startsWith('google_')) return;
+    if (!_isGoogleBackedPlace(place.id)) return;
     if (_descriptionEnrichAttempted.contains(place.id)) return;
-    // Skip if we already have a real description (non-empty, not an address).
-    final hasDesc = place.description != null &&
-        place.description!.trim().isNotEmpty &&
-        !RegExp(r'^\d').hasMatch(place.description!.trim());
-    if (hasDesc) return;
+    // Always fetch once: Explore/cache may be English or wrong locale after mode switch.
     _descriptionEnrichAttempted.add(place.id);
     try {
-      final raw = place.id.substring('google_'.length);
+      final raw = place.id.startsWith('google_')
+          ? place.id.substring('google_'.length)
+          : place.id;
       final details = await ref.read(placesServiceProvider.notifier).getPlaceDetails(raw);
       if (!mounted || _cachedPlace?.id != place.id) return;
       final desc = details['description'] as String?;
@@ -407,13 +421,13 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         // Default stretch/zoom competes with horizontal PageView drags on the hero.
         stretchModes: const [],
         background: ClipRect(
-          child: _buildPhotoCarousel(place),
+          child: _buildPhotoCarousel(place, l10n),
         ),
       ),
     );
   }
 
-  Widget _buildPhotoCarousel(Place place) {
+  Widget _buildPhotoCarousel(Place place, AppLocalizations l10n) {
     if (place.photos.isEmpty) {
       if (_isEnrichingPhotos) {
         // Shimmer-style placeholder while photos are loading from the Places API.
@@ -433,7 +447,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Loading photos…',
+                  l10n.placeDetailLoadingPhotos,
                   style: GoogleFonts.poppins(
                     fontSize: 13,
                     color: const Color(0xFF8C8780),
@@ -452,7 +466,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             Icon(Icons.image_not_supported_outlined, size: 56, color: Colors.grey[400]),
             const SizedBox(height: 8),
             Text(
-              'No photos available',
+              l10n.placeDetailNoPhotos,
               style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[500]),
             ),
           ],
@@ -493,7 +507,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => _buildImageFallback(),
                   )
-                : WmNetworkImage(
+                : WmPlacePhotoNetworkImage(
                     place.photos[index],
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => _buildImageFallback(),
@@ -841,7 +855,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                       ),
                             const SizedBox(width: 12),
                       Text(
-                              place.openingHours!.isOpen ? '✅ Open now!' : '❌ Closed',
+                              place.openingHours!.isOpen
+                                  ? l10n.placeDetailHeroOpenNowLine
+                                  : l10n.placeDetailHeroClosedLine,
                         style: GoogleFonts.poppins(
                                 fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -855,7 +871,11 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                   if (place.openingHours!.currentStatus != null) ...[
                           const SizedBox(height: 8),
                     Text(
-                      place.openingHours!.currentStatus!,
+                      _localizedOpeningSecondary(
+                            l10n,
+                            place.openingHours!.currentStatus,
+                          ) ??
+                          place.openingHours!.currentStatus!,
                       style: GoogleFonts.poppins(
                               fontSize: 14,
                               color: _pdWmCharcoal.withValues(alpha: 0.75),
@@ -885,7 +905,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     ),
                     const SizedBox(width: 8),
           Text(
-                      'Amazing Features',
+                      l10n.placeDetailAmazingFeatures,
             style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -908,7 +928,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         padding: const EdgeInsets.only(right: 8),
                         child: _buildColorfulFeatureChip(
                           place.isIndoor ? '🏠' : '☀️',
-                          place.isIndoor ? 'Indoor Vibes' : 'Outdoor Fun',
+                          place.isIndoor
+                              ? l10n.placeDetailIndoorVibes
+                              : l10n.placeDetailOutdoorFun,
                         ),
                       );
                     } else if (index == 1) {
@@ -916,7 +938,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         padding: const EdgeInsets.only(right: 8),
                         child: _buildColorfulFeatureChip(
                           _getEnergyEmoji(place.energyLevel),
-                          '${place.energyLevel} Energy',
+                          _energyChipLabel(l10n, place.energyLevel),
                         ),
                       );
                     } else {
@@ -924,7 +946,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         padding: const EdgeInsets.only(right: 8),
                         child: _buildColorfulFeatureChip(
                           _getCategoryEmoji(place.types.first),
-                          place.types.first.replaceAll('_', ' ').toUpperCase(),
+                          _localizedGooglePlaceType(l10n, place.types.first),
                         ),
                       );
                     }
@@ -956,6 +978,60 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     if (t.contains('adventure') || t.contains('hiking')) return l10n.placeCategoryAdventure;
     if (t.contains('culture') || t.contains('historic')) return l10n.placeCategoryCulture;
     return activity;
+  }
+
+  String _energyChipLabel(AppLocalizations l10n, String energyLevel) {
+    final e = energyLevel.toLowerCase().trim();
+    if (e.contains('low')) return l10n.placeDetailEnergyChipLow;
+    if (e.contains('high')) return l10n.placeDetailEnergyChipHigh;
+    return l10n.placeDetailEnergyChipMedium;
+  }
+
+  String _localizedGooglePlaceType(AppLocalizations l10n, String rawType) {
+    final t = rawType.toLowerCase().replaceAll('_', ' ').trim();
+    switch (t) {
+      case 'restaurant':
+      case 'meal takeaway':
+      case 'meal delivery':
+      case 'food':
+        return l10n.placeCategoryRestaurant;
+      case 'cafe':
+      case 'coffee shop':
+      case 'bakery':
+        return l10n.placeCategoryCafe;
+      case 'bar':
+      case 'night club':
+        return l10n.placeCategoryBar;
+      case 'museum':
+      case 'art gallery':
+        return l10n.placeCategoryMuseum;
+      case 'park':
+      case 'natural feature':
+        return l10n.placeCategoryPark;
+      case 'shopping mall':
+      case 'store':
+        return l10n.placeCategoryShopping;
+      case 'tourist attraction':
+      case 'point of interest':
+        return l10n.placeCategorySpot;
+      case 'spa':
+      case 'beauty salon':
+        return l10n.placeCategoryCulture;
+      default:
+        return l10n.placeCategorySpot;
+    }
+  }
+
+  String? _localizedOpeningSecondary(AppLocalizations l10n, String? status) {
+    if (status == null || status.isEmpty) return null;
+    final s = status.trim().toLowerCase();
+    if (s == 'open' || s == 'opened' || s == 'geopend') {
+      return l10n.placeDetailHeroOpenNow;
+    }
+    if (s == 'closed' || s == 'gesloten') {
+      return l10n.placeDetailHeroClosed;
+    }
+    return null;
   }
 
   // Helper method to clean activity name by removing location info
@@ -1431,25 +1507,16 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     );
   }
 
-  String _getOpeningHoursText(Place place) {
-    if (place.openingHours?.isOpen == true) {
-      return 'Open 24/7';
-    } else if (place.openingHours?.currentStatus != null) {
-      return place.openingHours!.currentStatus!;
-    }
-    return 'Check locally';
-  }
-
   String _getCostText(Place place, AppLocalizations l10n) {
     if (place.isFree) return l10n.placeDetailFreeToVisit;
     if (place.priceRange != null) return place.priceRange!;
     if (place.priceLevel != null) {
       switch (place.priceLevel!) {
         case 0: return l10n.placeDetailFreeToVisit;
-        case 1: return '€5-15';
-        case 2: return '€15-30';
-        case 3: return '€30-50';
-        case 4: return '€50+';
+        case 1: return l10n.placeDetailPrice5to15;
+        case 2: return l10n.placeDetailPrice15to35;
+        case 3: return l10n.placeDetailPrice30to50;
+        case 4: return l10n.placeDetailPrice50Plus;
         default: return l10n.placeDetailVaries;
       }
     }
@@ -1468,30 +1535,30 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     }
     
     if (placeName.contains('museum') || placeName.contains('gallery')) {
-      return '€8-25';
+      return l10n.placeDetailPrice8to25;
     }
     
     if (placeName.contains('market') || placeName.contains('markt')) {
-      return 'Free entry (pay for items)';
+      return l10n.placeDetailFreeEntryPayItems;
     }
     
     if (placeName.contains('restaurant') || placeName.contains('cafe')) {
       if (description.contains('fine dining') || description.contains('upscale')) {
-        return '€40-80';
+        return l10n.placeDetailPrice40to80;
       }
-      return '€15-35';
+      return l10n.placeDetailPrice15to35;
     }
     
     if (placeName.contains('mall') || placeName.contains('shopping')) {
-      return 'Free entry (pay for items)';
+      return l10n.placeDetailFreeEntryPayItems;
     }
     
     if (placeName.contains('church') || placeName.contains('cathedral')) {
-      return 'Free (donations welcome)';
+      return l10n.placeDetailFreeDonationsWelcome;
     }
     
     if (placeName.contains('tower') || placeName.contains('observation')) {
-      return '€10-20';
+      return l10n.placeDetailPrice10to20;
     }
     
     // Fallback to place types
@@ -1501,9 +1568,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         case 'tourist_attraction':
           return l10n.placeDetailFreeToVisit;
         case 'museum':
-          return '€10-25';
+          return l10n.placeDetailPrice10to25;
         case 'restaurant':
-          return '€15-40';
+          return l10n.placeDetailPrice15to40;
         case 'shopping_mall':
           return l10n.placeDetailFreeEntry;
         default:
@@ -1863,7 +1930,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                                       height: 120,
                               errorBuilder: (_, __, ___) => _buildImageFallback(),
                             )
-                          : WmNetworkImage(
+                          : WmPlacePhotoNetworkImage(
                                       allImages[index],
                               fit: BoxFit.cover,
                                       width: 150,
@@ -1901,47 +1968,25 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     );
   }
 
-  /// Fetch additional photos for a place using Google Places API
+  /// Gallery under "Foto's": up to 10 photos via the same details pipeline as Explore cards.
   Future<List<String>> _getMorePlacePhotos(Place place) async {
     try {
-      final List<String> allPhotos = [...place.photos];
-      
-      // If we have a place ID, try to get more photos from Google Places API
       if (place.id.isNotEmpty && place.id.startsWith('google_')) {
-        final placeId = place.id.replaceFirst('google_', '');
-        
-        // Try to get additional photos using the Legacy API
-        final additionalPhotos = await _fetchAdditionalPhotos(placeId);
-        allPhotos.addAll(additionalPhotos);
+        final urls = await ref
+            .read(placesServiceProvider.notifier)
+            .fetchPhotoUrlsForGooglePlace(place.id);
+        if (urls.isNotEmpty) {
+          return PlacesService.mergeUniquePhotoUrls(
+            urls,
+            place.photos,
+            maxPhotos: 10,
+          );
+        }
       }
-      
-      // Remove duplicates and limit to reasonable number
-      final uniquePhotos = allPhotos.toSet().toList();
-      return uniquePhotos.take(6).toList();
-      
+      return place.photos.take(10).toList();
     } catch (e) {
       debugPrint('Error fetching additional photos: $e');
-      return place.photos;
-    }
-  }
-
-  /// Fetch additional photos from Google Places Legacy API
-  Future<List<String>> _fetchAdditionalPhotos(String placeId) async {
-    try {
-      debugPrint('🔍 Fetching additional photos for place: $placeId');
-      
-      // This would ideally use the GooglePlacesService to get more photo references
-      // For now, return empty list but structure is ready for implementation
-      
-      // In a real implementation, you would:
-      // 1. Call Google Places Details API with photos field
-      // 2. Get all photo references 
-      // 3. Convert them to photo URLs using the Legacy API
-      
-      return [];
-    } catch (e) {
-      debugPrint('❌ Error fetching additional photos: $e');
-      return [];
+      return place.photos.take(10).toList();
     }
   }
 
@@ -1959,14 +2004,6 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         if (categoryChips.length >= 3) break;
       }
     }
-
-    // Description: editorial summary or type-based fallback (never the raw address)
-    final hasRealDescription = place.description != null &&
-        place.description!.trim().isNotEmpty &&
-        !RegExp(r'^\d').hasMatch(place.description!.trim()); // skip if starts with digit (address)
-    final descriptionText = hasRealDescription
-        ? place.description!
-        : _buildTypeFallbackDescription(place, l10n);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -2011,10 +2048,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             ),
             const SizedBox(height: 12),
           ],
-          // Description text
-          Text(
-            descriptionText,
-            style: GoogleFonts.poppins(
+          // Description — Moody + Places (longer on detail)
+          PlaceCardMoodyDescription(
+            place: place,
+            surface: PlaceCardMoodyDescriptionSurface.detail,
+            paddingTop: 0,
+            textStyle: GoogleFonts.poppins(
               fontSize: 14,
               height: 1.6,
               color: _pdWmCharcoal.withValues(alpha: 0.85),
@@ -2101,53 +2140,6 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       case 'stadium': return l10n.placeTypeStadium;
       default: return null;
     }
-  }
-
-  /// Generate a meaningful description when no editorial summary is available.
-  String _buildTypeFallbackDescription(Place place, AppLocalizations l10n) {
-    final types = place.types.map((t) => t.toLowerCase()).toList();
-    final name = place.name;
-    final rating = place.rating > 0 ? place.rating.toStringAsFixed(1) : null;
-    final reviewCount = place.reviewCount > 0 ? place.reviewCount : null;
-
-    // Restaurant / food
-    if (types.any((t) => t == 'restaurant' || t == 'food')) {
-      return reviewCount != null && rating != null
-          ? l10n.placeDescFoodWithReviews(name, rating, reviewCount.toString())
-          : l10n.placeDescFood(name);
-    }
-    // Café
-    if (types.any((t) => t == 'cafe' || t == 'coffee_shop')) {
-      return rating != null
-          ? l10n.placeDescCafeWithRating(name, rating)
-          : l10n.placeDescCafe(name);
-    }
-    // Bar / nightclub
-    if (types.any((t) => t == 'bar' || t == 'night_club')) {
-      return l10n.placeDescBar(name);
-    }
-    // Museum / gallery
-    if (types.any((t) => t == 'museum' || t == 'art_gallery')) {
-      return l10n.placeDescMuseum(name);
-    }
-    // Park / nature
-    if (types.any((t) => t == 'park' || t == 'natural_feature')) {
-      return l10n.placeDescPark(name);
-    }
-    // Tourist attraction
-    if (types.any((t) => t == 'tourist_attraction')) {
-      return rating != null
-          ? l10n.placeDescAttractionWithRating(name, rating)
-          : l10n.placeDescAttraction(name);
-    }
-    // Spa / wellness
-    if (types.any((t) => t == 'spa' || t == 'beauty_salon')) {
-      return l10n.placeDescSpa(name);
-    }
-    // Generic fallback
-    return rating != null
-        ? l10n.placeDescGenericWithRating(name, rating)
-        : l10n.placeDescGeneric(name);
   }
 
   Widget _buildMoodyTips(Place place) {
@@ -2313,16 +2305,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
 
   /// Generate AI-powered Moody Tips for the place with request deduplication
   Future<List<String>> _generateAIMoodyTips(Place place) async {
+    final languageCode = Localizations.localeOf(context).languageCode;
     // Request deduplication: Check if request is already in flight
     final requestKey = 'moody_tips_${place.id}';
     if (_inFlightRequests.contains(requestKey)) {
       if (kDebugMode) debugPrint('⏸️ Moody Tips request already in flight for: ${place.id}');
-      // Return empty list or wait for existing request
-      return [
-        '🕐 Check opening hours before your visit to avoid disappointment',
-        '📱 Consider downloading offline maps in case of poor signal', 
-        '💧 Stay hydrated and bring water, especially during warmer weather',
-      ];
+      return MoodyAIService.emergencyTips(languageCode);
     }
     
     // Mark request as in-flight
@@ -2343,6 +2331,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         place: place,
         userMood: userMood,
         timeOfDay: timeOfDay,
+        languageCode: languageCode,
         // You could add weather context here if available
         // weather: ref.read(weatherProvider).value?.description,
       );
@@ -2351,12 +2340,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       return tips;
     } catch (e) {
       debugPrint('❌ Error generating AI Moody Tips: $e');
-      // Return basic fallback tips in case of complete failure
-      return [
-        '🕐 Check opening hours before your visit to avoid disappointment',
-        '📱 Consider downloading offline maps in case of poor signal', 
-        '💧 Stay hydrated and bring water, especially during warmer weather',
-      ];
+      return MoodyAIService.emergencyTips(languageCode);
     } finally {
       // Always remove from in-flight requests
       _inFlightRequests.remove(requestKey);
@@ -2641,54 +2625,62 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
 
   Widget _buildPhotosTab(Place place) {
-    if (place.photos.isEmpty) {
-      final l10n = AppLocalizations.of(context)!;
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.photo_library_outlined,
-              size: 64,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.placeDetailNoPhotos,
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-      ),
-      itemCount: place.photos.length,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () => _showFullScreenPhoto(place.photos, index, place.isAsset),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: place.isAsset
-                ? Image.asset(
-                    place.photos[index],
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _buildImageFallback(),
-                  )
-                : WmNetworkImage(
-                    place.photos[index],
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _buildImageFallback(),
+    final l10n = AppLocalizations.of(context)!;
+    // Same merged URL list as the gallery strip (hero enrichment + details API).
+    return FutureBuilder<List<String>>(
+      future: _getMorePlacePhotos(place),
+      builder: (context, snapshot) {
+        final urls = (snapshot.hasData && snapshot.data!.isNotEmpty)
+            ? snapshot.data!
+            : place.photos;
+        if (urls.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.photo_library_outlined,
+                  size: 64,
+                  color: Colors.grey[400],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.placeDetailNoPhotos,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    color: Colors.grey[600],
                   ),
+                ),
+              ],
+            ),
+          );
+        }
+        return GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
           ),
+          itemCount: urls.length,
+          itemBuilder: (context, index) {
+            return GestureDetector(
+              onTap: () => _showFullScreenPhoto(urls, index, place.isAsset),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: place.isAsset
+                    ? Image.asset(
+                        urls[index],
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _buildImageFallback(),
+                      )
+                    : WmPlacePhotoNetworkImage(
+                        urls[index],
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _buildImageFallback(),
+                      ),
+              ),
+            );
+          },
         );
       },
     );
@@ -3315,6 +3307,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           Supabase.instance.client,
           location,
           placeId,
+          languageCode: PlacesCacheUtils.effectiveExploreLanguageTag(
+            appLocale: ref.watch(localeProvider),
+          ),
         );
         if (raw != null) {
           var fromCache = PlacesCacheUtils.placeFromMoodyExploreCard(raw);
@@ -3435,7 +3430,7 @@ class _FullScreenPhotoViewState extends State<FullScreenPhotoView> {
                       widget.photos[index],
                       fit: BoxFit.contain,
                     )
-                  : WmNetworkImage(
+                  : WmPlacePhotoNetworkImage(
                       widget.photos[index],
                       fit: BoxFit.contain,
                       errorBuilder: (_, __, ___) => const Icon(

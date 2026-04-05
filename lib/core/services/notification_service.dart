@@ -27,6 +27,18 @@ class NotificationService {
 
   bool _initialized = false;
 
+  /// Set before [initialize]. Called when the user taps a notification (foreground / background).
+  void Function(String? payload)? onNotificationPayload;
+
+  String? _pendingLaunchPayload;
+
+  /// Payload from opening the app via a notification (terminated state). Consume once after init.
+  String? consumePendingLaunchPayload() {
+    final p = _pendingLaunchPayload;
+    _pendingLaunchPayload = null;
+    return p;
+  }
+
   // ────────────────────────────────────────────────────────────────
   // Initialization
   // ────────────────────────────────────────────────────────────────
@@ -52,7 +64,24 @@ class NotificationService {
       iOS: iosSettings,
     );
 
-    await _plugin.initialize(settings);
+    await _plugin.initialize(
+      settings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        final p = response.payload;
+        if (p != null && p.isNotEmpty) {
+          onNotificationPayload?.call(p);
+        }
+      },
+    );
+
+    final launchDetails = await _plugin.getNotificationAppLaunchDetails();
+    if (launchDetails?.didNotificationLaunchApp == true) {
+      final p = launchDetails!.notificationResponse?.payload;
+      if (p != null && p.isNotEmpty) {
+        _pendingLaunchPayload = p;
+      }
+    }
+
     _initialized = true;
 
     if (kDebugMode) debugPrint('✅ NotificationService initialized');
@@ -93,6 +122,7 @@ class NotificationService {
       copy.title,
       copy.body,
       _details(),
+      payload: copy.payload,
     );
   }
 
@@ -112,6 +142,7 @@ class NotificationService {
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
+      payload: copy.payload,
     );
   }
 
@@ -145,6 +176,7 @@ class NotificationService {
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
+      payload: copy.payload,
     );
   }
 
@@ -181,6 +213,7 @@ class NotificationService {
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+      payload: copy.payload,
     );
   }
 

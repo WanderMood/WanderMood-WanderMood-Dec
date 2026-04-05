@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
+import 'package:wandermood/core/utils/google_place_photo_device_url.dart';
 
 /// [ImageProvider] for [DecorationImage], [CircleAvatar.backgroundImage], etc.
 CachedNetworkImageProvider wmCachedNetworkImageProvider(String url) =>
@@ -38,16 +39,15 @@ class WmNetworkImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final placeholder = progressIndicatorBuilder != null
-        ? (BuildContext c, String url) => progressIndicatorBuilder!(
-              c,
-              url,
-              DownloadProgress(url, null, 0),
-            )
-        : (BuildContext _, String __) => ColoredBox(
-              color: Colors.grey.shade200,
-              child: const SizedBox.expand(),
-            );
+    // OctoImage (used by cached_network_image) asserts: do not set both
+    // [placeholder] and [progressIndicatorBuilder].
+    final Widget Function(BuildContext, String)? placeholder =
+        progressIndicatorBuilder != null
+            ? null
+            : (BuildContext _, String __) => ColoredBox(
+                  color: Colors.grey.shade200,
+                  child: const SizedBox.expand(),
+                );
 
     return CachedNetworkImage(
       imageUrl: src,
@@ -66,6 +66,49 @@ class WmNetworkImage extends StatelessWidget {
                 color: Colors.grey.shade300,
                 child: Icon(Icons.broken_image_outlined, color: Colors.grey.shade600),
               ),
+    );
+  }
+}
+
+/// Google Place photos from Explore / `places_cache` — same URL rules as list cards, hero,
+/// and Foto’s tab. Always use this (or [deviceAccessibleGooglePlacePhotoUrl] + [WmNetworkImage])
+/// for `place.photos` / Moody `photo_url` strings so behavior stays identical everywhere.
+class WmPlacePhotoNetworkImage extends StatelessWidget {
+  const WmPlacePhotoNetworkImage(
+    this.src, {
+    super.key,
+    this.fit,
+    this.width,
+    this.height,
+    this.alignment = Alignment.center,
+    this.filterQuality = FilterQuality.low,
+    this.errorBuilder,
+    this.scale = 1.0,
+    this.progressIndicatorBuilder,
+  });
+
+  final String src;
+  final BoxFit? fit;
+  final double? width;
+  final double? height;
+  final Alignment alignment;
+  final FilterQuality filterQuality;
+  final ImageErrorWidgetBuilder? errorBuilder;
+  final double scale;
+  final ProgressIndicatorBuilder? progressIndicatorBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    return WmNetworkImage(
+      deviceAccessibleGooglePlacePhotoUrl(src),
+      fit: fit,
+      width: width,
+      height: height,
+      alignment: alignment,
+      filterQuality: filterQuality,
+      errorBuilder: errorBuilder,
+      scale: scale,
+      progressIndicatorBuilder: progressIndicatorBuilder,
     );
   }
 }
