@@ -1,110 +1,107 @@
 {
-  "nav": {
-    "brand": "WanderMood",
-    "theApp": "La app",
-    "experience": "Experiencia",
-    "moods": "Estados de ánimo",
-    "howItWorks": "Cómo funciona",
-    "download": "Descargar la app"
-  },
-  "hero": {
-    "title": "WanderMood",
-    "tagline": "Planifica tu día perfecto según tu estado de ánimo. Planes personalizados que se adaptan al tiempo y a tus preferencias.",
-    "cta": "Explora tu vibe",
-    "imageAlt": "Pueblo costero en Italia"
-  },
-  "appPreview": {
-    "eyebrow": "La app",
-    "title": "Mira lo que obtienes",
-    "subtitle": "Descubre el mundo con nuestra app.",
-    "nextButton": "Siguiente: Explora tu vibe →"
-  },
-  "appPreviews": {
-    "pickMood": { "label": "Elige tu estado de ánimo", "description": "Elige cómo te sientes y obtén un plan a tu medida." },
-    "myDay": { "label": "Mi día", "description": "Tu línea de tiempo: ahora, después, hecho." },
-    "wanderFeed": { "label": "WanderFeed", "description": "Mira qué exploran otros y comparte lo tuyo." }
-  },
-  "experience": {
-    "eyebrow": "Experimenta el mundo de otra forma",
-    "title": "Viajes que encajan con tu energía.",
-    "intro": "Moody te ayuda a planificar tu día según cómo te sientes — un toque, y tu vibe se convierte en tu plan. Los planes se adaptan al tiempo. Filtra por dieta, accesibilidad y lo que te apetezca.",
-    "back": "Atrás",
-    "nextButton": "Siguiente: Estados de ánimo →"
-  },
-  "featureCards": {
-    "pickMood": { "title": "Elige tu estado de ánimo", "line": "Un toque. Un plan personalizado que encaja con tu vibe." },
-    "getYourDay": { "title": "Obtén tu día", "line": "Ahora, después, hecho — y se adapta al tiempo." },
-    "wanderFeed": { "title": "WanderFeed", "line": "Mira qué exploran otros y comparte lo tuyo." },
-    "advancedFilters": { "title": "Filtros avanzados", "line": "Dieta, accesibilidad, fotos y más — encuentra exactamente lo que buscas." }
-  },
-  "moods": {
-    "eyebrow": "Explora por estado de ánimo",
-    "title": "¿Cómo quieres sentirte hoy?",
-    "subtitle": "Elige uno o más — daremos forma a tu día.",
-    "back": "Atrás",
-    "nextButton": "Siguiente: Cómo funciona →"
-  },
-  "moodsGrid": {
-    "happy": "Feliz",
-    "adventurous": "Aventurero",
-    "relaxed": "Relajado",
-    "energetic": "Enérgico",
-    "romantic": "Romántico",
-    "social": "Social",
-    "cultural": "Cultural",
-    "curious": "Curioso",
-    "cozy": "Acogedor",
-    "excited": "Emocionado",
-    "foody": "Foodie",
-    "surprise": "Sorpresa"
-  },
-  "howItWorks": {
-    "eyebrow": "Cómo funciona",
-    "title": "Tu día, en tres pasos",
-    "subtitle": "Del estado de ánimo al plan en segundos.",
-    "back": "Atrás",
-    "nextButton": "Siguiente: Descargar →"
-  },
-  "steps": {
-    "step1Title": "Elige tu estado de ánimo",
-    "step1Subtitle": "Un toque. Sin formularios.",
-    "step2Title": "Obtén tu día",
-    "step2Subtitle": "Un plan que encaja con tu energía y el tiempo.",
-    "step3Title": "Crea recuerdos",
-    "step3Subtitle": "Explora a tu manera."
-  },
-  "cta": {
-    "title": "Vamos a crear recuerdos.",
-    "subtitle": "Descarga la app y planifica tu día perfecto — estado de ánimo, tiempo y filtros incluidos.",
-    "appStore": "App Store",
-    "googlePlay": "Google Play",
-    "downloadButton": "Descargar la app",
-    "backToHowItWorks": "← Volver a Cómo funciona"
+  "landing": {
+    "meta": {
+      "title": "WanderMood — Planifica tu día perfecto",
+      "description": "Cuéntale a Moody cómo te sientes — él planifica tu día perfecto. Planes según tu estado de ánimo y tu ciudad, con el tiempo, sin scroll infinito."
+    },
+    "nav": {
+      "how": "Cómo funciona",
+      "moods": "Estados de ánimo",
+      "business": "Para negocios",
+      "download": "Descargar la app"
+    },
+    "hero": {
+      "badge": "Con la tecnología de Moody",
+      "title1": "Tu ciudad.",
+      "titleEm": "Tu estado de ánimo.",
+      "title2": "Tu día.",
+      "sub": "Cuéntale a Moody cómo te sientes — él planifica tu día perfecto. Sin scroll, sin buscar. Elige tu vibe y sal.",
+      "appStore": "App Store",
+      "seeHow": "Ver cómo funciona"
+    },
+    "phone": {
+      "greeting": "Buenos días",
+      "myDay": "Mi día",
+      "bubble": "¡Oye! Planifiqué toda tu tarde. De nada 😌",
+      "planLabel": "Plan de hoy",
+      "card1Name": "Bar de matcha",
+      "card1Time": "09:00 · Mañana",
+      "card1Desc": "Sin ruido, buen matcha, nadie que moleste 🍵",
+      "card2Name": "Paseo junto al agua",
+      "card2Time": "13:30 · Tarde",
+      "card2Desc": "Un banco y mirar el agua 🌿",
+      "card3Name": "Bar de vinos naturales",
+      "card3Time": "19:30 · Noche",
+      "card3Desc": "Una hora se convierte en tres 🍷",
+      "tabMyDay": "Mi día",
+      "tabExplore": "Explorar",
+      "tabMoody": "Moody",
+      "tabProfile": "Perfil"
+    },
+    "how": {
+      "eyebrow": "Cómo funciona",
+      "title1": "Del estado de ánimo al plan",
+      "titleEm": "en segundos.",
+      "sub": "Moody es tu amigo que conoce la ciudad. Dile cómo te siente. Él se encarga del resto.",
+      "step1Title": "Cuéntale tu vibe a Moody",
+      "step1Body": "Un toque. Sin formularios. Elige cómo te sientes ahora — relajado, foodie, aventurero, lo que sea.",
+      "step1Moody": "«Entonces… ¿qué tal el día?»",
+      "step2Title": "Yo armo tu día",
+      "step2Body": "Moody elige tres sitios — mañana, tarde, noche — según tu ánimo, el tiempo y tu ciudad.",
+      "step2Moody": "«Dame un segundo… te preparo algo»",
+      "step3Title": "Vamos. Esto es para ti.",
+      "step3Body": "Navega, añade a tu día o pide otra cosa a Moody. Tu ciudad, a tu manera.",
+      "step3Moody": "«Lo hice para ti 🙂»"
+    },
+    "moodsSection": {
+      "eyebrow": "12 estados de ánimo",
+      "title1": "Cada estado de ánimo.",
+      "titleEm": "Cada ciudad."
+    },
+    "moods": {
+      "relaxed": "Relajado",
+      "foodie": "Foodie",
+      "energetic": "Enérgico",
+      "adventurous": "Aventurero",
+      "cultural": "Cultural",
+      "cozy": "Acogedor",
+      "romantic": "Romántico",
+      "social": "Social",
+      "curious": "Curioso",
+      "excited": "Emocionado",
+      "happy": "Feliz",
+      "surprise": "Sorpresa"
+    },
+    "b2b": {
+      "eyebrow": "Para negocios",
+      "titleBefore": "Lleva tu local a las ",
+      "titleEm": "personas adecuadas.",
+      "desc1": "Los usuarios de WanderMood planifican según su estado de ánimo. Me aseguro de que tu sitio forme parte de ese plan — en el momento justo, con la vibe adecuada.",
+      "desc2": "Sin anuncios. Sin banners. Colocación inteligente en los planes de Moody y en Explore. Tus clientes te encuentran cuando están listos para salir.",
+      "price": "€79",
+      "priceNote": "al mes · primeros 30 días gratis",
+      "f1": "Destacado en los planes de Moody de tu ciudad",
+      "f2": "Prioridad en Explore para estados de ánimo afines",
+      "f3": "Informe mensual: vistas, toques y visitas confirmadas",
+      "f4": "Cancela cuando quieras, sin contrato",
+      "trialCta": "Empezar prueba gratuita de 30 días",
+      "trialSubject": "WanderMood negocios — prueba 30 días"
+    },
+    "cta": {
+      "eyebrow": "Descargar la app",
+      "title1": "Hagamos",
+      "titleEm": "recuerdos.",
+      "sub": "Tu ciudad te espera. Cuéntale tu estado de ánimo a Moody y que él continúe.",
+      "appStore": "App Store",
+      "googlePlay": "Google Play"
+    }
   },
   "footer": {
     "brand": "WanderMood",
     "privacy": "Privacidad",
-    "contact": "Contacto"
-  },
-  "phoneMockup": {
-    "howDoYouFeel": "¿Cómo te sientes?",
-    "myDay": "Mi día",
-    "moody": "Moody",
-    "feed": "Feed",
-    "more": "Más",
-    "morning": "Mañana",
-    "afternoon": "Tarde",
-    "evening": "Noche",
-    "coffeeJordaan": "Café en Jordaan",
-    "rijksmuseum": "Rijksmuseum y canal",
-    "dinnerDrinks": "Cena y copas"
-  },
-  "mockupMoods": {
-    "adventure": "Aventura",
-    "relaxed": "Relajado",
-    "foodie": "Foodie",
-    "cultural": "Cultural",
-    "nightOut": "Salir de noche"
+    "terms": "Términos",
+    "contact": "Contacto",
+    "forBusiness": "Para negocios"
   },
   "legal": {
     "common": {

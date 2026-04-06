@@ -32,7 +32,7 @@ export default async function AccountDeletionPage({ params }: Props) {
         <div className="space-y-3">
           <h1
             className="text-3xl font-bold text-zinc-900"
-            style={{ fontFamily: "var(--font-museo), system-ui, sans-serif" }}
+            style={{ fontFamily: "var(--font-fraunces), Georgia, serif" }}
           >
             {t("title")}
           </h1>

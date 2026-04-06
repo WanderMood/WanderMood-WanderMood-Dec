@@ -17,7 +17,7 @@ export default async function LegalChrome({
           <Link
             href="/"
             className="text-lg font-bold tracking-tight text-emerald-700"
-            style={{ fontFamily: "var(--font-museo), system-ui, sans-serif" }}
+            style={{ fontFamily: "var(--font-fraunces), Georgia, serif" }}
           >
             {t("brand")}
           </Link>

@@ -1,110 +1,107 @@
 {
-  "nav": {
-    "brand": "WanderMood",
-    "theApp": "L'app",
-    "experience": "Expérience",
-    "moods": "Humeurs",
-    "howItWorks": "Comment ça marche",
-    "download": "Télécharger l'app"
-  },
-  "hero": {
-    "title": "WanderMood",
-    "tagline": "Planifiez votre journée parfaite selon votre humeur. Des plans personnalisés qui s'adaptent à la météo et à vos préférences.",
-    "cta": "Explorez votre vibe",
-    "imageAlt": "Belle ville côtière en Italie"
-  },
-  "appPreview": {
-    "eyebrow": "L'app",
-    "title": "Découvrez ce que vous obtenez",
-    "subtitle": "Explorez le monde avec notre app.",
-    "nextButton": "Suivant : Explorez votre vibe →"
-  },
-  "appPreviews": {
-    "pickMood": { "label": "Choisissez votre humeur", "description": "Choisissez comment vous vous sentez et obtenez un plan qui vous correspond." },
-    "myDay": { "label": "Ma journée", "description": "Votre timeline : maintenant, ensuite, terminé." },
-    "wanderFeed": { "label": "WanderFeed", "description": "Voyez ce que les autres explorent et partagez le vôtre." }
-  },
-  "experience": {
-    "eyebrow": "Vivez le monde autrement",
-    "title": "Des voyages à l'énergie de votre journée.",
-    "intro": "Moody vous aide à planifier votre journée selon comment vous vous sentez — un tap, et votre vibe devient votre plan. Les plans s'adaptent à la météo. Filtrez par régime, accessibilité et vos envies.",
-    "back": "Retour",
-    "nextButton": "Suivant : Humeurs →"
-  },
-  "featureCards": {
-    "pickMood": { "title": "Choisissez votre humeur", "line": "Un tap. Un plan personnalisé qui correspond à votre vibe." },
-    "getYourDay": { "title": "Obtenez votre journée", "line": "Maintenant, ensuite, terminé — et ça s'adapte à la météo." },
-    "wanderFeed": { "title": "WanderFeed", "line": "Voyez ce que les autres explorent et partagez le vôtre." },
-    "advancedFilters": { "title": "Filtres avancés", "line": "Régime, accessibilité, spots photo et plus — trouvez exactement ce que vous cherchez." }
-  },
-  "moods": {
-    "eyebrow": "Explorer par humeur",
-    "title": "Comment voulez-vous vous sentir aujourd'hui ?",
-    "subtitle": "Choisissez une ou plusieurs — on façonne votre journée autour.",
-    "back": "Retour",
-    "nextButton": "Suivant : Comment ça marche →"
-  },
-  "moodsGrid": {
-    "happy": "Heureux",
-    "adventurous": "Aventurier",
-    "relaxed": "Détendu",
-    "energetic": "Énergique",
-    "romantic": "Romantique",
-    "social": "Sociable",
-    "cultural": "Culturel",
-    "curious": "Curieux",
-    "cozy": "Cocooning",
-    "excited": "Enthousiaste",
-    "foody": "Foodie",
-    "surprise": "Surprise"
-  },
-  "howItWorks": {
-    "eyebrow": "Comment ça marche",
-    "title": "Votre journée en trois étapes",
-    "subtitle": "De l'humeur au plan en quelques secondes.",
-    "back": "Retour",
-    "nextButton": "Suivant : Télécharger →"
-  },
-  "steps": {
-    "step1Title": "Choisissez votre humeur",
-    "step1Subtitle": "Un tap. Aucun formulaire.",
-    "step2Title": "Obtenez votre journée",
-    "step2Subtitle": "Un plan qui correspond à votre énergie et à la météo.",
-    "step3Title": "Créez des souvenirs",
-    "step3Subtitle": "Explorez à votre façon."
-  },
-  "cta": {
-    "title": "Allons faire des souvenirs.",
-    "subtitle": "Téléchargez l'app et planifiez votre journée parfaite — humeur, météo et filtres inclus.",
-    "appStore": "App Store",
-    "googlePlay": "Google Play",
-    "downloadButton": "Télécharger l'app",
-    "backToHowItWorks": "← Retour à Comment ça marche"
+  "landing": {
+    "meta": {
+      "title": "WanderMood — Planifie ta journée idéale",
+      "description": "Dis à Moody comment tu te sens — il planifie ta journée idéale. Des plans selon ton humeur et ta ville, avec la météo, sans scroll infini."
+    },
+    "nav": {
+      "how": "Comment ça marche",
+      "moods": "Humeurs",
+      "business": "Pour les pros",
+      "download": "Télécharger l’app"
+    },
+    "hero": {
+      "badge": "Propulsé par Moody",
+      "title1": "Ta ville.",
+      "titleEm": "Ton humeur.",
+      "title2": "Ta journée.",
+      "sub": "Dis à Moody comment tu te sens — il planifie ta journée parfaite. Pas de scroll, pas de recherche. Choisis ton vibe et c’est parti.",
+      "appStore": "App Store",
+      "seeHow": "Voir comment ça marche"
+    },
+    "phone": {
+      "greeting": "Bonjour",
+      "myDay": "Ma journée",
+      "bubble": "Hey ! J’ai planifié tout ton après-midi. De rien 😌",
+      "planLabel": "Le programme du jour",
+      "card1Name": "Bar matcha",
+      "card1Time": "09:00 · Matin",
+      "card1Desc": "Pas de bruit, bon matcha, personne pour te déranger 🍵",
+      "card2Name": "Balade au bord de l’eau",
+      "card2Time": "13:30 · Après-midi",
+      "card2Desc": "Un banc, l’eau qui passe 🌿",
+      "card3Name": "Bar à vins nature",
+      "card3Time": "19:30 · Soir",
+      "card3Desc": "Une heure qui en devient trois 🍷",
+      "tabMyDay": "Ma journée",
+      "tabExplore": "Explorer",
+      "tabMoody": "Moody",
+      "tabProfile": "Profil"
+    },
+    "how": {
+      "eyebrow": "Comment ça marche",
+      "title1": "De l’humeur au plan",
+      "titleEm": "en quelques secondes.",
+      "sub": "Moody, c’est ton pote qui connaît la ville. Dis-lui comment tu te sens. Il gère le reste.",
+      "step1Title": "Dis ton vibe à Moody",
+      "step1Body": "Un tap. Pas de formulaires. Choisis ce que tu ressens — détendu, foodie, aventurier, peu importe.",
+      "step1Moody": "« Alors… on fait quoi comme journée ? »",
+      "step2Title": "Je compose ta journée",
+      "step2Body": "Moody choisit trois lieux — matin, après-midi, soir — selon ton humeur, la météo et ta ville.",
+      "step2Moody": "« Une seconde… je te prépare quelque chose »",
+      "step3Title": "Go. C’est pour toi.",
+      "step3Body": "Navigue, ajoute à ta journée, ou demande autre chose à Moody. Ta ville, à ta façon.",
+      "step3Moody": "« J’ai fait ça pour toi 🙂 »"
+    },
+    "moodsSection": {
+      "eyebrow": "12 humeurs",
+      "title1": "Chaque humeur.",
+      "titleEm": "Chaque ville."
+    },
+    "moods": {
+      "relaxed": "Détendu",
+      "foodie": "Foodie",
+      "energetic": "Énergique",
+      "adventurous": "Aventurier",
+      "cultural": "Culturel",
+      "cozy": "Cocooning",
+      "romantic": "Romantique",
+      "social": "Sociable",
+      "curious": "Curieux",
+      "excited": "Enthousiaste",
+      "happy": "Heureux",
+      "surprise": "Surprise"
+    },
+    "b2b": {
+      "eyebrow": "Pour les pros",
+      "titleBefore": "Mettez votre lieu devant les ",
+      "titleEm": "bonnes personnes.",
+      "desc1": "Les utilisateurs de WanderMood planifient selon leur humeur. Je fais en sorte que votre lieu fasse partie du plan — au bon moment, avec la bonne vibe.",
+      "desc2": "Pas de pubs. Pas de bannières. Placement intelligent dans les journées de Moody et le fil Explore. Vos clients vous trouvent quand ils sont prêts à sortir.",
+      "price": "€79",
+      "priceNote": "par mois · 30 premiers jours offerts",
+      "f1": "Mis en avant dans les journées de Moody pour votre ville",
+      "f2": "Priorité dans Explore pour les humeurs qui matchent",
+      "f3": "Rapport mensuel : vues, clics et visites confirmées",
+      "f4": "Résiliation à tout moment, sans engagement",
+      "trialCta": "Démarrer l’essai gratuit de 30 jours",
+      "trialSubject": "WanderMood pro — essai 30 jours"
+    },
+    "cta": {
+      "eyebrow": "Télécharger l’app",
+      "title1": "Créons des",
+      "titleEm": "souvenirs.",
+      "sub": "Ta ville t’attend. Dis ton humeur à Moody et laisse-le faire.",
+      "appStore": "App Store",
+      "googlePlay": "Google Play"
+    }
   },
   "footer": {
     "brand": "WanderMood",
     "privacy": "Confidentialité",
-    "contact": "Contact"
-  },
-  "phoneMockup": {
-    "howDoYouFeel": "Comment vous sentez-vous ?",
-    "myDay": "Ma journée",
-    "moody": "Moody",
-    "feed": "Feed",
-    "more": "Plus",
-    "morning": "Matin",
-    "afternoon": "Après-midi",
-    "evening": "Soir",
-    "coffeeJordaan": "Café au Jordaan",
-    "rijksmuseum": "Rijksmuseum et canal",
-    "dinnerDrinks": "Dîner et verres"
-  },
-  "mockupMoods": {
-    "adventure": "Aventure",
-    "relaxed": "Détendu",
-    "foodie": "Foodie",
-    "cultural": "Culturel",
-    "nightOut": "Sortie nocturne"
+    "terms": "Conditions",
+    "contact": "Contact",
+    "forBusiness": "Pour les pros"
   },
   "legal": {
     "common": {

@@ -1,110 +1,107 @@
 {
-  "nav": {
-    "brand": "WanderMood",
-    "theApp": "De app",
-    "experience": "Ervaring",
-    "moods": "Stemmingen",
-    "howItWorks": "Hoe het werkt",
-    "download": "Download de app"
-  },
-  "hero": {
-    "title": "WanderMood",
-    "tagline": "Plan je perfecte dag op basis van je stemming. Persoonlijke plannen die zich aanpassen aan het weer en jouw voorkeuren.",
-    "cta": "Ontdek je vibe",
-    "imageAlt": "Prachtig kuststadje in Italië"
-  },
-  "appPreview": {
-    "eyebrow": "De app",
-    "title": "Zie wat je krijgt",
-    "subtitle": "Ontdek de wereld al met onze app.",
-    "nextButton": "Volgende: Ontdek je vibe →"
-  },
-  "appPreviews": {
-    "pickMood": { "label": "Kies je stemming", "description": "Kies hoe je je voelt en krijg een plan dat bij je past." },
-    "myDay": { "label": "Mijn dag", "description": "Je tijdlijn: nu, daarna, klaar." },
-    "wanderFeed": { "label": "WanderFeed", "description": "Zie wat anderen ontdekken en deel de jouwe." }
-  },
-  "experience": {
-    "eyebrow": "Ervaar de wereld anders",
-    "title": "Reizen die past bij je energie.",
-    "intro": "Moody helpt je je dag te plannen rond hoe je je voelt — één tik, en je vibe wordt je plan. Plannen passen zich aan het weer aan. Filter op dieet, toegankelijkheid en waar je zin in hebt.",
-    "back": "Terug",
-    "nextButton": "Volgende: Stemmingen →"
-  },
-  "featureCards": {
-    "pickMood": { "title": "Kies je stemming", "line": "Eén tik. Krijg een persoonlijk plan dat bij je vibe past." },
-    "getYourDay": { "title": "Krijg je dag", "line": "Nu, daarna, klaar — en het past zich aan het weer aan." },
-    "wanderFeed": { "title": "WanderFeed", "line": "Zie wat anderen ontdekken en deel de jouwe." },
-    "advancedFilters": { "title": "Geavanceerde filters", "line": "Dieet, toegankelijkheid, fotoplekken en meer — vind precies wat je zoekt." }
-  },
-  "moods": {
-    "eyebrow": "Verken op stemming",
-    "title": "Hoe wil je je vandaag voelen?",
-    "subtitle": "Kies één of meer — we vormen je dag eromheen.",
-    "back": "Terug",
-    "nextButton": "Volgende: Hoe het werkt →"
-  },
-  "moodsGrid": {
-    "happy": "Blij",
-    "adventurous": "Avontuurlijk",
-    "relaxed": "Ontspannen",
-    "energetic": "Energiek",
-    "romantic": "Romantisch",
-    "social": "Sociaal",
-    "cultural": "Cultureel",
-    "curious": "Nieuwsgierig",
-    "cozy": "Gezellig",
-    "excited": "Opgewonden",
-    "foody": "Foodie",
-    "surprise": "Verrassing"
-  },
-  "howItWorks": {
-    "eyebrow": "Hoe het werkt",
-    "title": "Je dag, in drie stappen",
-    "subtitle": "Van stemming naar plan in seconden.",
-    "back": "Terug",
-    "nextButton": "Volgende: Download →"
-  },
-  "steps": {
-    "step1Title": "Kies je stemming",
-    "step1Subtitle": "Eén tik. Geen formulieren.",
-    "step2Title": "Krijg je dag",
-    "step2Subtitle": "Een plan dat past bij je energie en het weer.",
-    "step3Title": "Maak herinneringen",
-    "step3Subtitle": "Ga op verkenning, op jouw manier."
-  },
-  "cta": {
-    "title": "Laten we herinneringen maken.",
-    "subtitle": "Download de app en plan je perfecte dag — stemming, weer en filters inbegrepen.",
-    "appStore": "App Store",
-    "googlePlay": "Google Play",
-    "downloadButton": "Download de app",
-    "backToHowItWorks": "← Terug naar Hoe het werkt"
+  "landing": {
+    "meta": {
+      "title": "WanderMood — Plan je perfecte dag",
+      "description": "Vertel Moody hoe je je voelt — hij plant je perfecte dag. Stemmingsplannen voor jouw stad, met het weer mee, zonder eindeloos scrollen."
+    },
+    "nav": {
+      "how": "Hoe het werkt",
+      "moods": "Stemmingen",
+      "business": "Voor bedrijven",
+      "download": "Download de app"
+    },
+    "hero": {
+      "badge": "Aangedreven door Moody",
+      "title1": "Jouw stad.",
+      "titleEm": "Jouw stemming.",
+      "title2": "Jouw dag.",
+      "sub": "Vertel Moody hoe je je voelt — hij plant je perfecte dag. Geen scrollen, geen zoeken. Kies je vibe en ga.",
+      "appStore": "App Store",
+      "seeHow": "Zo werkt het"
+    },
+    "phone": {
+      "greeting": "Goedemorgen",
+      "myDay": "Mijn dag",
+      "bubble": "Hé! Ik heb je hele middag gepland. Graag gedaan 😌",
+      "planLabel": "Plan van vandaag",
+      "card1Name": "Matchabar",
+      "card1Time": "09:00 · Ochtend",
+      "card1Desc": "Geen lawaai, goede matcha, niemand die je stoort 🍵",
+      "card2Name": "Wandeling langs het water",
+      "card2Time": "13:30 · Middag",
+      "card2Desc": "Kies een bankje, kijk naar het water 🌿",
+      "card3Name": "Natuurlijke wijnbar",
+      "card3Time": "19:30 · Avond",
+      "card3Desc": "Een uur wordt er drie 🍷",
+      "tabMyDay": "Mijn dag",
+      "tabExplore": "Ontdekken",
+      "tabMoody": "Moody",
+      "tabProfile": "Profiel"
+    },
+    "how": {
+      "eyebrow": "Hoe het werkt",
+      "title1": "Van stemming naar plan",
+      "titleEm": "in seconden.",
+      "sub": "Moody is je stadsmaatje. Vertel hem hoe je je voelt. De rest regelt hij.",
+      "step1Title": "Vertel Moody je vibe",
+      "step1Body": "Eén tik. Geen formulieren. Kies hoe je je nu voelt — ontspannen, foodie, avontuurlijk, wat je maar wilt.",
+      "step1Moody": "“Dus… wat voor dag hebben we vandaag?”",
+      "step2Title": "Ik stel je dag samen",
+      "step2Body": "Moody kiest drie plekken — ochtend, middag, avond — op basis van je stemming, het weer en jouw stad.",
+      "step2Moody": "“Even geduld… ik zet iets voor je klaar”",
+      "step3Title": "Ga. Dit koos ik voor jou.",
+      "step3Body": "Navigeer direct, voeg toe aan je dag, of vraag Moody om iets anders. Jouw stad, jouw manier.",
+      "step3Moody": "“Ik heb dit voor je gemaakt 🙂”"
+    },
+    "moodsSection": {
+      "eyebrow": "12 stemmingen",
+      "title1": "Elke stemming.",
+      "titleEm": "Elke stad."
+    },
+    "moods": {
+      "relaxed": "Ontspannen",
+      "foodie": "Foodie",
+      "energetic": "Energiek",
+      "adventurous": "Avontuurlijk",
+      "cultural": "Cultureel",
+      "cozy": "Knus",
+      "romantic": "Romantisch",
+      "social": "Sociaal",
+      "curious": "Nieuwsgierig",
+      "excited": "Enthousiast",
+      "happy": "Blij",
+      "surprise": "Verrassing"
+    },
+    "b2b": {
+      "eyebrow": "Voor bedrijven",
+      "titleBefore": "Zorg dat jouw plek bij de ",
+      "titleEm": "juiste mensen landt.",
+      "desc1": "WanderMood-gebruikers plannen hun dag rond hun stemming. Ik zorg dat jouw plek in dat plan past — op het juiste moment, met de juiste vibe.",
+      "desc2": "Geen ads. Geen banners. Slimme plekken in Moody's dagplannen en Explore. Klanten vinden jou als ze er klaar voor zijn.",
+      "price": "€79",
+      "priceNote": "per maand · eerste 30 dagen gratis",
+      "f1": "Uitgelicht in Moody's dagplannen in jouw stad",
+      "f2": "Voorrang in Explore bij passende stemmingen",
+      "f3": "Maandelijks rapport: weergaven, tikken en bevestigde bezoeken",
+      "f4": "Opzeggen wanneer je wilt, geen contract",
+      "trialCta": "Start gratis proefperiode van 30 dagen",
+      "trialSubject": "WanderMood zakelijk — proefperiode 30 dagen"
+    },
+    "cta": {
+      "eyebrow": "Download de app",
+      "title1": "Laten we",
+      "titleEm": "herinneringen maken.",
+      "sub": "Je stad wacht. Vertel Moody je stemming en laat hem het overnemen.",
+      "appStore": "App Store",
+      "googlePlay": "Google Play"
+    }
   },
   "footer": {
     "brand": "WanderMood",
     "privacy": "Privacy",
-    "contact": "Contact"
-  },
-  "phoneMockup": {
-    "howDoYouFeel": "Hoe voel je je?",
-    "myDay": "Mijn dag",
-    "moody": "Moody",
-    "feed": "Feed",
-    "more": "Meer",
-    "morning": "Ochtend",
-    "afternoon": "Middag",
-    "evening": "Avond",
-    "coffeeJordaan": "Koffie in de Jordaan",
-    "rijksmuseum": "Rijksmuseum & gracht",
-    "dinnerDrinks": "Diner & drinks"
-  },
-  "mockupMoods": {
-    "adventure": "Avontuur",
-    "relaxed": "Ontspannen",
-    "foodie": "Foodie",
-    "cultural": "Cultureel",
-    "nightOut": "Uitgaan"
+    "terms": "Voorwaarden",
+    "contact": "Contact",
+    "forBusiness": "Voor bedrijven"
   },
   "legal": {
     "common": {

@@ -24,7 +24,7 @@ export default async function TermsPage({ params }: Props) {
       <article className="space-y-6 text-zinc-700">
         <h1
           className="text-3xl font-bold text-zinc-900"
-          style={{ fontFamily: "var(--font-museo), system-ui, sans-serif" }}
+          style={{ fontFamily: "var(--font-fraunces), Georgia, serif" }}
         >
           {t("title")}
         </h1>

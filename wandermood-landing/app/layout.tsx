@@ -1,43 +1,45 @@
 import type { Metadata } from "next";
-import { Inter, MuseoModerno } from "next/font/google";
+import { DM_Sans, Fraunces } from "next/font/google";
 import "./globals.css";
+import "./landing.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["300", "400", "500"],
 });
 
-const museo = MuseoModerno({
-  variable: "--font-museo",
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
+  weight: ["300", "400", "600"],
+  style: ["normal", "italic"],
 });
 
 const SITE_URL = "https://wandermood.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "WanderMood – Plan your perfect day based on your mood",
+  title: "WanderMood — Plan your perfect day",
   description:
-    "Travel that matches your energy. Discover hidden gems and unforgettable moments — all shaped around how you feel. Pick your mood, get your day.",
-  keywords: ["travel app", "mood-based travel", "day planning", "WanderMood", "explore by mood"],
+    "Tell Moody how you're feeling — he'll plan your perfect day. Mood-based plans for your city, weather-aware, no endless scrolling.",
+  keywords: ["travel app", "mood-based travel", "day planning", "WanderMood", "Moody"],
   authors: [{ name: "WanderMood", url: SITE_URL }],
   creator: "WanderMood",
   openGraph: {
     type: "website",
     url: SITE_URL,
     siteName: "WanderMood",
-    title: "WanderMood – Plan your perfect day based on your mood",
+    title: "WanderMood — Plan your perfect day",
     description:
-      "Travel that matches your energy. Discover hidden gems and unforgettable moments — all shaped around how you feel.",
+      "Your city. Your mood. Your day. Pick your vibe and let Moody plan it — morning, afternoon, evening.",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "WanderMood – Plan your perfect day based on your mood",
+    title: "WanderMood — Plan your perfect day",
     description:
-      "Travel that matches your energy. Discover hidden gems and unforgettable moments — all shaped around how you feel.",
+      "Your city. Your mood. Your day. Pick your vibe and let Moody plan it.",
   },
   robots: {
     index: true,
@@ -53,15 +55,13 @@ const jsonLd = {
       "@type": "Organization",
       name: "WanderMood",
       url: SITE_URL,
-      description:
-        "Travel that matches your energy. Plan your perfect day based on your mood.",
+      description: "Mood-based day planning with Moody — your city, your vibe.",
     },
     {
       "@type": "WebSite",
       name: "WanderMood",
       url: SITE_URL,
-      description:
-        "Plan your perfect day based on your mood. Discover hidden gems and unforgettable moments — all shaped around how you feel.",
+      description: "Plan your perfect day based on your mood and the weather.",
       publisher: { "@type": "Organization", name: "WanderMood", url: SITE_URL },
     },
   ],
@@ -80,7 +80,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className={`${inter.variable} ${museo.variable} font-sans antialiased`}>
+      <body className={`${dmSans.variable} ${fraunces.variable} font-sans antialiased`}>
         {children}
       </body>
     </html>
