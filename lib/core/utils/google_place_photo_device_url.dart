@@ -16,7 +16,7 @@ import 'package:wandermood/core/constants/api_keys.dart';
 /// This helper swaps `key=` for the app’s [ApiKeys.googlePlacesKey].
 ///
 /// Handles:
-/// - Legacy: `maps.googleapis.com/.../place/photo?photoreference=...&key=...`
+/// - Legacy: `maps.googleapis.com/.../place/photo` with `photo_reference` or `photoreference` + `key=...`
 /// - Places API (New): `places.googleapis.com/v1/.../media?maxWidthPx=...&key=...`
 ///   (Moody `get_explore` / v1 search — must use the **device** Places key for the image GET).
 String deviceAccessibleGooglePlacePhotoUrl(String url) {
