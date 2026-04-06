@@ -33,8 +33,7 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS profile_visibility TEXT DEFAULT 'p
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS show_email BOOLEAN DEFAULT FALSE;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS show_age BOOLEAN DEFAULT TRUE;
 
--- Location columns for user_preferences: see 20250713_200000_user_preferences_location_columns.sql
--- (table is created in 20250713_195440_fix_mood_options.sql, after this migration runs)
+-- Location columns for user_preferences: applied in 20250713_195440_fix_mood_options.sql (same migration as CREATE TABLE)
 
 -- Subscription/Plan
 CREATE TABLE IF NOT EXISTS subscriptions (

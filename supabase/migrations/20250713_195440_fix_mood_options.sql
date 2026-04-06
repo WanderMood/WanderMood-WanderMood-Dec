@@ -65,6 +65,12 @@ CREATE TABLE public.user_preferences (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Location settings (were in 20250125 before user_preferences existed; IF NOT EXISTS is safe if already applied)
+ALTER TABLE public.user_preferences ADD COLUMN IF NOT EXISTS auto_detect_location BOOLEAN DEFAULT TRUE;
+ALTER TABLE public.user_preferences ADD COLUMN IF NOT EXISTS default_location TEXT;
+ALTER TABLE public.user_preferences ADD COLUMN IF NOT EXISTS default_latitude DOUBLE PRECISION;
+ALTER TABLE public.user_preferences ADD COLUMN IF NOT EXISTS default_longitude DOUBLE PRECISION;
+
 -- ============================================
 -- 3. MOODS (Mood tracking)
 -- ============================================
