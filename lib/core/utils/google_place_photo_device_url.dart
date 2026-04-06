@@ -46,9 +46,14 @@ String deviceAccessibleGooglePlacePhotoUrl(String url) {
     if (!uri.path.contains('place/photo')) return trimmed;
 
     final qp = Map<String, String>.from(uri.queryParameters);
-    if (qp['photoreference'] == null || qp['photoreference']!.isEmpty) {
+    // Official Places Photo URL uses `photo_reference`; some clients emit `photoreference`.
+    final ref = (qp['photo_reference'] ?? qp['photoreference'])?.trim();
+    if (ref == null || ref.isEmpty) {
       return trimmed;
     }
+    // Normalize to one param name Google documents (underscore form).
+    qp.remove('photoreference');
+    qp['photo_reference'] = ref;
     qp['key'] = clientKey;
     return uri.replace(queryParameters: qp).toString();
   } catch (_) {
