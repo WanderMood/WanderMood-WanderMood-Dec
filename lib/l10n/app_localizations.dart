@@ -188,6 +188,12 @@ abstract class AppLocalizations {
   /// **'Your mood-based travel companion'**
   String get splashTagline;
 
+  /// No description provided for @splashPlanYourDayByFeeling.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan your day by how you feel'**
+  String get splashPlanYourDayByFeeling;
+
   /// No description provided for @welcome.
   ///
   /// In en, this message translates to:
@@ -1562,10 +1568,10 @@ abstract class AppLocalizations {
   /// **'Log out of your account'**
   String get logOutOfYourAccount;
 
-  /// Tagline on the intro screen below Mood-Based Travel Buddy
+  /// Subtitle on the intro screen under the headline; reassures users onboarding is quick.
   ///
   /// In en, this message translates to:
-  /// **'Your mood. Your day. Your adventure.'**
+  /// **'This takes only 10 seconds, I promise.'**
   String get introTagline;
 
   /// No description provided for @introTitleLine1.
@@ -1589,13 +1595,13 @@ abstract class AppLocalizations {
   /// No description provided for @introSeeHowItWorks.
   ///
   /// In en, this message translates to:
-  /// **'See how it works →'**
+  /// **'Take a look, this is fun!'**
   String get introSeeHowItWorks;
 
   /// No description provided for @demoMoodyGreeting.
   ///
   /// In en, this message translates to:
-  /// **'Hey! 👋 I\'m Moody, your travel companion.'**
+  /// **'Hey… I\'m Moody 🙂'**
   String get demoMoodyGreeting;
 
   /// No description provided for @demoMoodyAskVibe.
@@ -2321,7 +2327,7 @@ abstract class AppLocalizations {
   /// No description provided for @signupJoinWanderMood.
   ///
   /// In en, this message translates to:
-  /// **'Join WanderMood'**
+  /// **'Want this every day?'**
   String get signupJoinWanderMood;
 
   /// No description provided for @signupSubtitle.
@@ -2357,7 +2363,7 @@ abstract class AppLocalizations {
   /// No description provided for @signupSendMagicLink.
   ///
   /// In en, this message translates to:
-  /// **'Send Magic Link'**
+  /// **'Send my link'**
   String get signupSendMagicLink;
 
   /// No description provided for @signupErrorGeneric.
@@ -6932,6 +6938,96 @@ abstract class AppLocalizations {
   /// **'{count} photo'**
   String activityDetailPhotoCount(String count);
 
+  /// No description provided for @activityDetailPhotoCountPlural.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} photos'**
+  String activityDetailPhotoCountPlural(String count);
+
+  /// No description provided for @activityDetailTabDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get activityDetailTabDetails;
+
+  /// No description provided for @activityDetailTabPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get activityDetailTabPhotos;
+
+  /// No description provided for @activityDetailTabReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get activityDetailTabReviews;
+
+  /// No description provided for @activityDetailReviewsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet. They\'ll show here when this place is linked to live listings.'**
+  String get activityDetailReviewsEmpty;
+
+  /// No description provided for @activityDetailPreviewSampleNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample photos and reviews for this preview.'**
+  String get activityDetailPreviewSampleNote;
+
+  /// No description provided for @activityDetailDemoReviewRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently'**
+  String get activityDetailDemoReviewRecent;
+
+  /// No description provided for @activityDetailDemoReview1Author.
+  ///
+  /// In en, this message translates to:
+  /// **'Maya K.'**
+  String get activityDetailDemoReview1Author;
+
+  /// No description provided for @activityDetailDemoReview1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet and lovely — exactly the slow morning we wanted.'**
+  String get activityDetailDemoReview1Body;
+
+  /// No description provided for @activityDetailDemoReview2Author.
+  ///
+  /// In en, this message translates to:
+  /// **'Joost V.'**
+  String get activityDetailDemoReview2Author;
+
+  /// No description provided for @activityDetailDemoReview2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Great coffee and friendly service. We\'ll be back.'**
+  String get activityDetailDemoReview2Body;
+
+  /// No description provided for @activityDetailDemoReview3Author.
+  ///
+  /// In en, this message translates to:
+  /// **'Sara L.'**
+  String get activityDetailDemoReview3Author;
+
+  /// No description provided for @activityDetailDemoReview3Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Cozy corners for two. Perfect before a walk in town.'**
+  String get activityDetailDemoReview3Body;
+
+  /// No description provided for @activityDetailDemoReview4Author.
+  ///
+  /// In en, this message translates to:
+  /// **'Eli R.'**
+  String get activityDetailDemoReview4Author;
+
+  /// No description provided for @activityDetailDemoReview4Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Small menu, but everything we tried hit the spot.'**
+  String get activityDetailDemoReview4Body;
+
   /// No description provided for @activityDetailRatingExceptional.
   ///
   /// In en, this message translates to:
@@ -6955,6 +7051,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Distance'**
   String get activityDetailDistance;
+
+  /// No description provided for @activityDetailDistanceNearby.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearby'**
+  String get activityDetailDistanceNearby;
 
   /// No description provided for @activityDetailAbout.
   ///
@@ -8927,13 +9029,13 @@ abstract class AppLocalizations {
   /// No description provided for @signupNoPasswordNeeded.
   ///
   /// In en, this message translates to:
-  /// **'No password needed ✨'**
+  /// **'This is WanderMood — I\'ll do this for you whenever you feel like it 😌'**
   String get signupNoPasswordNeeded;
 
   /// No description provided for @signupRatingBadge.
   ///
   /// In en, this message translates to:
-  /// **'⭐ 4.9/5 · Free · No password'**
+  /// **'No password'**
   String get signupRatingBadge;
 
   /// No description provided for @signupPrivacyPrefix.
@@ -8951,14 +9053,20 @@ abstract class AppLocalizations {
   /// No description provided for @signupSuccessCheckInbox.
   ///
   /// In en, this message translates to:
-  /// **'Check your inbox! 📬'**
+  /// **'I just sent you something ✉️'**
   String get signupSuccessCheckInbox;
 
-  /// No description provided for @signupSuccessWeSentTo.
+  /// No description provided for @signupSuccessTapLinkSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'We sent a link to'**
-  String get signupSuccessWeSentTo;
+  /// **'Tap the link — I\'ll be there 😌'**
+  String get signupSuccessTapLinkSubtitle;
+
+  /// No description provided for @signupSuccessSentToLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to: {email}'**
+  String signupSuccessSentToLine(String email);
 
   /// No description provided for @signupOpenGmail.
   ///
@@ -8981,20 +9089,32 @@ abstract class AppLocalizations {
   /// No description provided for @signupOpenEmailApp.
   ///
   /// In en, this message translates to:
-  /// **'Open email app'**
+  /// **'Open your email'**
   String get signupOpenEmailApp;
 
-  /// No description provided for @signupNoEmailReceived.
+  /// No description provided for @signupInboxFooterPrefix.
   ///
   /// In en, this message translates to:
-  /// **'Didn\'t receive an email?'**
-  String get signupNoEmailReceived;
+  /// **'Didn\'t get it? '**
+  String get signupInboxFooterPrefix;
 
-  /// No description provided for @signupWrongEmailAddress.
+  /// No description provided for @signupInboxFooterResend.
   ///
   /// In en, this message translates to:
-  /// **'Wrong email address?'**
-  String get signupWrongEmailAddress;
+  /// **'Resend'**
+  String get signupInboxFooterResend;
+
+  /// No description provided for @signupInboxFooterOr.
+  ///
+  /// In en, this message translates to:
+  /// **' or '**
+  String get signupInboxFooterOr;
+
+  /// No description provided for @signupInboxFooterChangeEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'change email'**
+  String get signupInboxFooterChangeEmail;
 
   /// No description provided for @introHeadline1.
   ///
@@ -9032,10 +9152,22 @@ abstract class AppLocalizations {
   /// **'Discover more →'**
   String get demoDiscoverMore;
 
+  /// No description provided for @demoMoodSurpriseMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Surprise me'**
+  String get demoMoodSurpriseMe;
+
+  /// No description provided for @demoMoodyGreetingLine2.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell me what kind of day you\'re after — I\'ll take care of the rest.'**
+  String get demoMoodyGreetingLine2;
+
   /// No description provided for @demoMoodyQuestion.
   ///
   /// In en, this message translates to:
-  /// **'I help you discover amazing places based on how you feel. What\'s your mood today?'**
+  /// **'So… what kind of day are we having?'**
   String get demoMoodyQuestion;
 
   /// No description provided for @demoUserReplyRelaxed.
@@ -9074,11 +9206,803 @@ abstract class AppLocalizations {
   /// **'I\'m feeling social'**
   String get demoUserReplySocial;
 
+  /// No description provided for @demoUserReplySurpriseMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Surprise me!'**
+  String get demoUserReplySurpriseMe;
+
   /// No description provided for @demoUserReplyDefault.
   ///
   /// In en, this message translates to:
   /// **'This is my mood!'**
   String get demoUserReplyDefault;
+
+  /// No description provided for @demoMoodReactionRelaxed.
+  ///
+  /// In en, this message translates to:
+  /// **'Soft mornings and slow moments—I\'ve got you.'**
+  String get demoMoodReactionRelaxed;
+
+  /// No description provided for @demoMoodReactionFoodie.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'re eating well today.'**
+  String get demoMoodReactionFoodie;
+
+  /// No description provided for @demoMoodReactionEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'High energy—let\'s make it count.'**
+  String get demoMoodReactionEnergetic;
+
+  /// No description provided for @demoMoodReactionAdventurous.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventure mode activated.'**
+  String get demoMoodReactionAdventurous;
+
+  /// No description provided for @demoMoodReactionCultural.
+  ///
+  /// In en, this message translates to:
+  /// **'Curiosity looks good on you.'**
+  String get demoMoodReactionCultural;
+
+  /// No description provided for @demoMoodReactionCozy.
+  ///
+  /// In en, this message translates to:
+  /// **'Cozy, quiet, and just right.'**
+  String get demoMoodReactionCozy;
+
+  /// No description provided for @demoMoodReactionSurprise.
+  ///
+  /// In en, this message translates to:
+  /// **'A little mystery—I\'ve got ideas for you. ✨'**
+  String get demoMoodReactionSurprise;
+
+  /// No description provided for @demoMoodReactionDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Love it—let\'s shape your day.'**
+  String get demoMoodReactionDefault;
+
+  /// No description provided for @guestDemoResultTitlePicked.
+  ///
+  /// In en, this message translates to:
+  /// **'I picked these for you'**
+  String get guestDemoResultTitlePicked;
+
+  /// No description provided for @guestDemoResultTitleWithMood.
+  ///
+  /// In en, this message translates to:
+  /// **'{moodLabel}'**
+  String guestDemoResultTitleWithMood(String moodLabel);
+
+  /// No description provided for @guestDemoDayPlanMoodyBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'I put this together for you — start here 👇'**
+  String get guestDemoDayPlanMoodyBlurb;
+
+  /// No description provided for @guestDemoPreviewAreaLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotterdam city center · demo pins'**
+  String get guestDemoPreviewAreaLabel;
+
+  /// No description provided for @guestDayPlanHeadingMadeForYou.
+  ///
+  /// In en, this message translates to:
+  /// **'I made this for you'**
+  String get guestDayPlanHeadingMadeForYou;
+
+  /// No description provided for @guestDayPlanHeroHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap any stop for details, photos & reviews.'**
+  String get guestDayPlanHeroHint;
+
+  /// No description provided for @guestDayPlanContinueWithMoody.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Moody'**
+  String get guestDayPlanContinueWithMoody;
+
+  /// No description provided for @guestDemoMoodyRelaxed0.
+  ///
+  /// In en, this message translates to:
+  /// **'Trees first, screens later. 🌿'**
+  String get guestDemoMoodyRelaxed0;
+
+  /// No description provided for @guestDemoMoodyRelaxed1.
+  ///
+  /// In en, this message translates to:
+  /// **'You moved — now melt into the chair. ☕'**
+  String get guestDemoMoodyRelaxed1;
+
+  /// No description provided for @guestDemoMoodyRelaxed2.
+  ///
+  /// In en, this message translates to:
+  /// **'Golden hour hits different from this spot 🌅'**
+  String get guestDemoMoodyRelaxed2;
+
+  /// No description provided for @guestDemoMoodyFoodie0.
+  ///
+  /// In en, this message translates to:
+  /// **'Still warm, good coffee — exactly how your day should start ☕'**
+  String get guestDemoMoodyFoodie0;
+
+  /// No description provided for @guestDemoMoodyFoodie1.
+  ///
+  /// In en, this message translates to:
+  /// **'Get here early… these sell out fast 🥐'**
+  String get guestDemoMoodyFoodie1;
+
+  /// No description provided for @guestDemoMoodyFoodie2.
+  ///
+  /// In en, this message translates to:
+  /// **'Come hungry — portions are generous 🍽️'**
+  String get guestDemoMoodyFoodie2;
+
+  /// No description provided for @guestDemoMoodySocial0.
+  ///
+  /// In en, this message translates to:
+  /// **'Easy to slide in solo or with friends — the vibe is welcoming 🎉'**
+  String get guestDemoMoodySocial0;
+
+  /// No description provided for @guestDemoMoodySocial1.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull up a bench — someone’s always finishing a story. 🥗'**
+  String get guestDemoMoodySocial1;
+
+  /// No description provided for @guestDemoMoodySocial2.
+  ///
+  /// In en, this message translates to:
+  /// **'Strike up a chat at the bar; regulars love newcomers 👋'**
+  String get guestDemoMoodySocial2;
+
+  /// No description provided for @guestDemoMoodyAdventurous0.
+  ///
+  /// In en, this message translates to:
+  /// **'Earn the view — then earn lunch. 🥾'**
+  String get guestDemoMoodyAdventurous0;
+
+  /// No description provided for @guestDemoMoodyAdventurous1.
+  ///
+  /// In en, this message translates to:
+  /// **'You crushed the climb — now let the harbor do the work. 🛥️'**
+  String get guestDemoMoodyAdventurous1;
+
+  /// No description provided for @guestDemoMoodyAdventurous2.
+  ///
+  /// In en, this message translates to:
+  /// **'Let the day’s noise fade into golden hour. 🌇'**
+  String get guestDemoMoodyAdventurous2;
+
+  /// No description provided for @guestDemoMoodyCultural0.
+  ///
+  /// In en, this message translates to:
+  /// **'Give yourself time to read every plaque 🏛️'**
+  String get guestDemoMoodyCultural0;
+
+  /// No description provided for @guestDemoMoodyCultural1.
+  ///
+  /// In en, this message translates to:
+  /// **'Museum brain off, espresso on. ☕'**
+  String get guestDemoMoodyCultural1;
+
+  /// No description provided for @guestDemoMoodyCultural2.
+  ///
+  /// In en, this message translates to:
+  /// **'Culture, but make it unbuttoned-collar. 🎷'**
+  String get guestDemoMoodyCultural2;
+
+  /// No description provided for @guestDemoMoodyRomantic0.
+  ///
+  /// In en, this message translates to:
+  /// **'Low lights, shared plates — keep the phones away 💕'**
+  String get guestDemoMoodyRomantic0;
+
+  /// No description provided for @guestDemoMoodyRomantic1.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for a corner table if you can — worth it 🕯️'**
+  String get guestDemoMoodyRomantic1;
+
+  /// No description provided for @guestDemoMoodyRomantic2.
+  ///
+  /// In en, this message translates to:
+  /// **'Split dessert. Non-negotiable 🍰'**
+  String get guestDemoMoodyRomantic2;
+
+  /// No description provided for @guestDemoTagWalk.
+  ///
+  /// In en, this message translates to:
+  /// **'Walk'**
+  String get guestDemoTagWalk;
+
+  /// No description provided for @guestDemoTagNature.
+  ///
+  /// In en, this message translates to:
+  /// **'Nature'**
+  String get guestDemoTagNature;
+
+  /// No description provided for @guestDemoTagCafe.
+  ///
+  /// In en, this message translates to:
+  /// **'Cafe'**
+  String get guestDemoTagCafe;
+
+  /// No description provided for @guestDemoTagCalm.
+  ///
+  /// In en, this message translates to:
+  /// **'Calm'**
+  String get guestDemoTagCalm;
+
+  /// No description provided for @guestDemoTagRestaurant.
+  ///
+  /// In en, this message translates to:
+  /// **'Restaurant'**
+  String get guestDemoTagRestaurant;
+
+  /// No description provided for @guestDemoTagSunset.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunset'**
+  String get guestDemoTagSunset;
+
+  /// No description provided for @guestDemoTagBreakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast'**
+  String get guestDemoTagBreakfast;
+
+  /// No description provided for @guestDemoTagMarket.
+  ///
+  /// In en, this message translates to:
+  /// **'Market'**
+  String get guestDemoTagMarket;
+
+  /// No description provided for @guestDemoTagLunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch'**
+  String get guestDemoTagLunch;
+
+  /// No description provided for @guestDemoTagDinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Dinner'**
+  String get guestDemoTagDinner;
+
+  /// No description provided for @guestDemoTagActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get guestDemoTagActive;
+
+  /// No description provided for @guestDemoTagOutdoor.
+  ///
+  /// In en, this message translates to:
+  /// **'Outdoor'**
+  String get guestDemoTagOutdoor;
+
+  /// No description provided for @guestDemoTagNightlife.
+  ///
+  /// In en, this message translates to:
+  /// **'Nightlife'**
+  String get guestDemoTagNightlife;
+
+  /// No description provided for @guestDemoTagMusic.
+  ///
+  /// In en, this message translates to:
+  /// **'Music'**
+  String get guestDemoTagMusic;
+
+  /// No description provided for @guestDemoTagHiking.
+  ///
+  /// In en, this message translates to:
+  /// **'Hiking'**
+  String get guestDemoTagHiking;
+
+  /// No description provided for @guestDemoTagView.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get guestDemoTagView;
+
+  /// No description provided for @guestDemoTagBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Bar'**
+  String get guestDemoTagBar;
+
+  /// No description provided for @guestDemoTagMuseum.
+  ///
+  /// In en, this message translates to:
+  /// **'Museum'**
+  String get guestDemoTagMuseum;
+
+  /// No description provided for @guestDemoTagArt.
+  ///
+  /// In en, this message translates to:
+  /// **'Art'**
+  String get guestDemoTagArt;
+
+  /// No description provided for @guestDemoTagGarden.
+  ///
+  /// In en, this message translates to:
+  /// **'Garden'**
+  String get guestDemoTagGarden;
+
+  /// No description provided for @guestDemoTagJazz.
+  ///
+  /// In en, this message translates to:
+  /// **'Jazz'**
+  String get guestDemoTagJazz;
+
+  /// No description provided for @guestDemoTagWine.
+  ///
+  /// In en, this message translates to:
+  /// **'Wine'**
+  String get guestDemoTagWine;
+
+  /// No description provided for @guestDemoTagCozy.
+  ///
+  /// In en, this message translates to:
+  /// **'Cozy'**
+  String get guestDemoTagCozy;
+
+  /// No description provided for @guestDemoTagQuiet.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet'**
+  String get guestDemoTagQuiet;
+
+  /// No description provided for @guestDemoTagDrinks.
+  ///
+  /// In en, this message translates to:
+  /// **'Drinks'**
+  String get guestDemoTagDrinks;
+
+  /// No description provided for @guestDemoTagEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening'**
+  String get guestDemoTagEvening;
+
+  /// No description provided for @guestDemoRelaxed1Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Parkside Morning Reset'**
+  String get guestDemoRelaxed1Name;
+
+  /// No description provided for @guestDemoRelaxed1Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'09:00 • Free'**
+  String get guestDemoRelaxed1Meta;
+
+  /// No description provided for @guestDemoRelaxed1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Easy loops under the trees — wake the body without racing.'**
+  String get guestDemoRelaxed1Desc;
+
+  /// No description provided for @guestDemoRelaxed2Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Slow Matcha Counter'**
+  String get guestDemoRelaxed2Name;
+
+  /// No description provided for @guestDemoRelaxed2Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'12:30 • €€'**
+  String get guestDemoRelaxed2Meta;
+
+  /// No description provided for @guestDemoRelaxed2Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Sit deep, sip slow — let the morning walk settle in.'**
+  String get guestDemoRelaxed2Desc;
+
+  /// No description provided for @guestDemoRelaxed3Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunset Terrace'**
+  String get guestDemoRelaxed3Name;
+
+  /// No description provided for @guestDemoRelaxed3Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'18:00 • €€€'**
+  String get guestDemoRelaxed3Meta;
+
+  /// No description provided for @guestDemoRelaxed3Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Golden hour, one drink, nowhere to be.'**
+  String get guestDemoRelaxed3Desc;
+
+  /// No description provided for @guestDemoFoodie1Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Oven & Oak Bakery'**
+  String get guestDemoFoodie1Name;
+
+  /// No description provided for @guestDemoFoodie1Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'08:00 • €'**
+  String get guestDemoFoodie1Meta;
+
+  /// No description provided for @guestDemoFoodie1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fresh pastries and coffee to start the day.'**
+  String get guestDemoFoodie1Desc;
+
+  /// No description provided for @guestDemoFoodie2Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Market Hall Bites'**
+  String get guestDemoFoodie2Name;
+
+  /// No description provided for @guestDemoFoodie2Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'12:00 • €€'**
+  String get guestDemoFoodie2Meta;
+
+  /// No description provided for @guestDemoFoodie2Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasting trays from local vendors.'**
+  String get guestDemoFoodie2Desc;
+
+  /// No description provided for @guestDemoFoodie3Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Chef\'s Table Pop-up'**
+  String get guestDemoFoodie3Name;
+
+  /// No description provided for @guestDemoFoodie3Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'19:00 • €€€'**
+  String get guestDemoFoodie3Meta;
+
+  /// No description provided for @guestDemoFoodie3Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Small plates and seasonal specials.'**
+  String get guestDemoFoodie3Desc;
+
+  /// No description provided for @guestDemoSocial1Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Park Run Meet-up'**
+  String get guestDemoSocial1Name;
+
+  /// No description provided for @guestDemoSocial1Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'07:30 • Free'**
+  String get guestDemoSocial1Meta;
+
+  /// No description provided for @guestDemoSocial1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick miles with friendly faces.'**
+  String get guestDemoSocial1Desc;
+
+  /// No description provided for @guestDemoSocial2Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Market Hall Long Table'**
+  String get guestDemoSocial2Name;
+
+  /// No description provided for @guestDemoSocial2Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'13:00 • €€'**
+  String get guestDemoSocial2Meta;
+
+  /// No description provided for @guestDemoSocial2Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared plates and easy chatter — recover together after the run.'**
+  String get guestDemoSocial2Desc;
+
+  /// No description provided for @guestDemoSocial3Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Late Live Set'**
+  String get guestDemoSocial3Name;
+
+  /// No description provided for @guestDemoSocial3Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'21:00 • €€'**
+  String get guestDemoSocial3Meta;
+
+  /// No description provided for @guestDemoSocial3Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Loud speakers, cold drinks, big vibes.'**
+  String get guestDemoSocial3Desc;
+
+  /// No description provided for @guestDemoAdventurous1Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Ridge Sunrise Hike'**
+  String get guestDemoAdventurous1Name;
+
+  /// No description provided for @guestDemoAdventurous1Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'06:00 • Free'**
+  String get guestDemoAdventurous1Meta;
+
+  /// No description provided for @guestDemoAdventurous1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Steep trail, wide views, early start.'**
+  String get guestDemoAdventurous1Desc;
+
+  /// No description provided for @guestDemoAdventurous2Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Quayside Lunch Deck'**
+  String get guestDemoAdventurous2Name;
+
+  /// No description provided for @guestDemoAdventurous2Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'13:00 • €€'**
+  String get guestDemoAdventurous2Meta;
+
+  /// No description provided for @guestDemoAdventurous2Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Long lunch with harbor views — legs up, calories back, no rush.'**
+  String get guestDemoAdventurous2Desc;
+
+  /// No description provided for @guestDemoAdventurous3Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Waterfront Sundown Bar'**
+  String get guestDemoAdventurous3Name;
+
+  /// No description provided for @guestDemoAdventurous3Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'19:00 • €€'**
+  String get guestDemoAdventurous3Meta;
+
+  /// No description provided for @guestDemoAdventurous3Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Golden-hour drinks and small plates — land the day softly.'**
+  String get guestDemoAdventurous3Desc;
+
+  /// No description provided for @guestDemoCultural1Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Modern Wing Tour'**
+  String get guestDemoCultural1Name;
+
+  /// No description provided for @guestDemoCultural1Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'10:00 • €'**
+  String get guestDemoCultural1Meta;
+
+  /// No description provided for @guestDemoCultural1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Guided look at the new exhibition.'**
+  String get guestDemoCultural1Desc;
+
+  /// No description provided for @guestDemoCultural2Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Sculpture Garden Café'**
+  String get guestDemoCultural2Name;
+
+  /// No description provided for @guestDemoCultural2Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'14:00 • €'**
+  String get guestDemoCultural2Meta;
+
+  /// No description provided for @guestDemoCultural2Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Espresso between wings — let what you saw sink in.'**
+  String get guestDemoCultural2Desc;
+
+  /// No description provided for @guestDemoCultural3Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Canal-Side Jazz Room'**
+  String get guestDemoCultural3Name;
+
+  /// No description provided for @guestDemoCultural3Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'20:00 • €€'**
+  String get guestDemoCultural3Meta;
+
+  /// No description provided for @guestDemoCultural3Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Dim lights, small band — culture without the sprint finish.'**
+  String get guestDemoCultural3Desc;
+
+  /// No description provided for @guestDemoRomantic1Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Courtyard Café'**
+  String get guestDemoRomantic1Name;
+
+  /// No description provided for @guestDemoRomantic1Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'10:00 • €€'**
+  String get guestDemoRomantic1Meta;
+
+  /// No description provided for @guestDemoRomantic1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet corners and shared pastries.'**
+  String get guestDemoRomantic1Desc;
+
+  /// No description provided for @guestDemoRomantic2Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Independent Bookshop Browse'**
+  String get guestDemoRomantic2Name;
+
+  /// No description provided for @guestDemoRomantic2Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'15:00 • €'**
+  String get guestDemoRomantic2Meta;
+
+  /// No description provided for @guestDemoRomantic2Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Piles of reads and vinyl in the back.'**
+  String get guestDemoRomantic2Desc;
+
+  /// No description provided for @guestDemoRomantic3Name.
+  ///
+  /// In en, this message translates to:
+  /// **'Low-lit Wine Room'**
+  String get guestDemoRomantic3Name;
+
+  /// No description provided for @guestDemoRomantic3Meta.
+  ///
+  /// In en, this message translates to:
+  /// **'20:00 • €€€'**
+  String get guestDemoRomantic3Meta;
+
+  /// No description provided for @guestDemoRomantic3Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Small pours, soft music, no rush.'**
+  String get guestDemoRomantic3Desc;
+
+  /// No description provided for @guestDemoRelaxed1MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nCity park with loops under mature trees—wide gravel paths, a duck pond pinch, and benches every few curves. Locals walk dogs, read on blankets; there is no entry fee.\n\n---\n🗺️ Layout & vibe\n\nMostly flat, stroller-friendly circuits (~2 km on the outer loop). Mornings are misty-quiet; you will hear more birds than traffic from here.\n\n---\n⏱️ Good to know\n\nFree to enter. Washrooms near the main entrance. After rain, shoes that forgive mud are a win.\n\n---\n💬 Moody says\n\nNo pace to hit—if you match steps to breath for one lap, you already won.'**
+  String get guestDemoRelaxed1MoodyAbout;
+
+  /// No description provided for @guestDemoRelaxed2MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nJapanese-style matcha bar: stone-ground ceremonial grade, oat and soy milk, and seasonal lattes (think sakura in spring, yuzu in winter). Pastries stay light—mochi muffins, sesame cookies, minimal sugar crash.\n\n---\n🪑 Space & vibe\n\nLow counter, matte ceramics, soft daylight. Baristas explain matcha grades without the lecture. Laptop corners exist, but phones-down regulars get the best foam.\n\n---\n⏱️ Good to know\n\nMid-range spend (snack + drink). Busy 12:00–14:00—slide in a bit earlier for a slower pour.\n\n---\n💬 Moody says\n\nSit until the morning you already had settles in your bones—that is the whole assignment.'**
+  String get guestDemoRelaxed2MoodyAbout;
+
+  /// No description provided for @guestDemoRelaxed3MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nRooftop terrace restaurant: Mediterranean-leaning small plates (mezze, grilled fish, burrata), natural wines by the glass, and bottles that lean Italian + Portuguese.\n\n---\n🌅 Why sunset works here\n\nWest-facing glass rail—the sky does the lighting design. Book ahead; walk-ins sometimes grab bar spots when lucky.\n\n---\n⏱️ Good to know\n\nUpper-mid price tier. Even summer evenings get breezy off the water—bring a light layer.\n\n---\n💬 Moody says\n\nOne drink, one horizon, zero inbox—pretend that is the only notification that matters.'**
+  String get guestDemoRelaxed3MoodyAbout;
+
+  /// No description provided for @guestDemoFoodie1MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nArtisan bakery + coffee bar: sourdough loaves, butter croissants laminated in-house, seasonal fruit tarts. Espresso rotates single-origin weekly; batch brew if you are sprinting.\n\n---\n🥐 What to order\n\nAsk for whatever left the oven in the last hour. Savory danishes vanish first on Saturdays.\n\n---\n⏱️ Good to know\n\nOpens early; expect a friendly line 09:00–10:30 weekends. Card-only at the counter.\n\n---\n💬 Moody says\n\nCrumbs on your sleeve count as a five-star review—lean in.'**
+  String get guestDemoFoodie1MoodyAbout;
+
+  /// No description provided for @guestDemoFoodie2MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nCovered market hall: 30+ stalls—Dutch cheeses, roti, oysters, Korean bowls, and herring if you are feeling brave. Built for tasting: small plates so you can mix countries in one lunch.\n\n---\n🍽️ How it works\n\nOrder from vendors, meet at the long communal tables in the middle. Most stalls are cashless; allergen cards are posted.\n\n---\n⏱️ Good to know\n\nRush hour 12:00–13:30—scout a table first, then divide and conquer.\n\n---\n💬 Moody says\n\nGrab one thing you cannot pronounce—I will be smug when you love it.'**
+  String get guestDemoFoodie2MoodyAbout;
+
+  /// No description provided for @guestDemoFoodie3MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nEvening chef counter / pop-up dinner: open kitchen, menu that shifts every few weeks, small plates or a set menu. Wine list leans acid-forward whites, light gamay, orange bottles, natural picks.\n\n---\n🔥 Kitchen style\n\nLive fire + local produce call-outs on the board. Vegetarian route exists with a heads-up when you book.\n\n---\n⏱️ Good to know\n\nReservation strongly recommended. Casual-nice dress. Price tier is splurge-okay.\n\n---\n💬 Moody says\n\nSay yes to the server is essential bite—that is where the plot twist lives.'**
+  String get guestDemoFoodie3MoodyAbout;
+
+  /// No description provided for @guestDemoSocial1MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nOrganised park run / group jog at a fixed meeting pin—about 5 km, all paces welcome, volunteer hosts. Free to join; barcode timing if you like stats.\n\n---\n👟 Who shows up\n\nFirst-timers, stroller parents, and speedy folks who lap politely. Zero podium pressure unless you want it.\n\n---\n⏱️ Good to know\n\nQuick briefing a few minutes before go-time. Bag drop is honour-system near the flag—travel light if you can.\n\n---\n💬 Moody says\n\nHigh-five a stranger or just nod—both count as social XP today.'**
+  String get guestDemoSocial1MoodyAbout;
+
+  /// No description provided for @guestDemoSocial2MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nMarket-hall communal tables: stalls all around you, shared benches, loud happy chaos. Order small plates from different vendors and trade bites like a very civilised buffet raid.\n\n---\n🍻 The social cheat code\n\nLong tables = easy icebreakers—ask what someone ordered and steal a recommendation.\n\n---\n⏱️ Good to know\n\nPeak 13:00–14:00. Wipe crumbs when you leave—staff quietly love you for it.\n\n---\n💬 Moody says\n\nSteal a fry, share a story, blame me later.'**
+  String get guestDemoSocial2MoodyAbout;
+
+  /// No description provided for @guestDemoSocial3MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nLive-music bar: indie bands midweek, louder DJ nights on weekends. Craft beer taps + classic cocktails. Standing room near the stage; booths if you arrive with a plan.\n\n---\n🎶 Sound & scene\n\nSet times often live on socials. Earplugs at the bar if you like your hearing long-term.\n\n---\n⏱️ Good to know\n\nCover charge some Fridays/Saturdays. 18+ after 22:00. Coat check by the door.\n\n---\n💬 Moody says\n\nScratchy voice tomorrow means you did nightlife correctly.'**
+  String get guestDemoSocial3MoodyAbout;
+
+  /// No description provided for @guestDemoAdventurous1MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nRidge trail loop just outside the city: steep first kilometre, open viewpoints, roots and gravel underfoot. Not climbing ropes—just honest hills most fit hikers finish in 2–3 hours with snacks.\n\n---\n🥾 Gear & safety\n\nTrail shoes or boots, at least 1L water, wind layer at the top. Offline map helps—signal thins on the spine.\n\n---\n⏱️ Good to know\n\nFree access; small parking lot fills by 07:30 on sunny weekends. Sunrise starts are cooler and calmer.\n\n---\n💬 Moody says\n\nSnap the photo, then pocket the phone for ten minutes—the view rented IMAX seats for you.'**
+  String get guestDemoAdventurous1MoodyAbout;
+
+  /// No description provided for @guestDemoAdventurous2MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nHarbor-front deck restaurant: seafood towers, whole grilled fish, bitterballen for the table, Dutch gin cocktails. Big windows on the water; heaters on the pier when it chills.\n\n---\n⚓ Why it fits after a hike\n\nSalty, high-protein, celebratory—chairs you can sink into for two hours without guilt.\n\n---\n⏱️ Good to know\n\nBook on blue-sky days. Seagulls are professionals—guard your fries like state secrets.\n\n---\n💬 Moody says\n\nOrder the messy thing; napkins exist for exactly this moment.'**
+  String get guestDemoAdventurous2MoodyAbout;
+
+  /// No description provided for @guestDemoAdventurous3MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nWaterfront bar at golden hour: spritz list, local beers, small plates—oysters, charcuterie, croquettes. The room slowly shifts from standing-and-chatting to lounge-and-watch-the-sky.\n\n---\n🍹 Drinks\n\nNatural wine by the glass; negroni riffs on tap in summer.\n\n---\n⏱️ Good to know\n\nHappy hour some weekdays 17:00–19:00. Wind picks up—jacket or borrow a blanket from the host stand.\n\n---\n💬 Moody says\n\nStay for one more round if the sky is still showing off.'**
+  String get guestDemoAdventurous3MoodyAbout;
+
+  /// No description provided for @guestDemoCultural1MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nMuseum new wing with a rotating contemporary show—think large photography, installation, or mixed media. Check the banner at the entrance for this month\'s focus.\n\n---\n🎧 Extras\n\nQR audio guides; Dutch + English wall texts. Gift shop stocks exhibition posters and weirdly good postcards.\n\n---\n⏱️ Good to know\n\nTimed tickets on busy weekends. Café upstairs is a legit reset stop between floors.\n\n---\n💬 Moody says\n\nIf one piece rents space in your head for days, the ticket already paid rent back.'**
+  String get guestDemoCultural1MoodyAbout;
+
+  /// No description provided for @guestDemoCultural2MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nSculpture garden café tucked between museum wings: espresso, filter coffee, cardamom buns, light lunch salads. Glass walls look straight onto bronze pieces and clipped hedges.\n\n---\n🌿 Seating\n\nTerrace when it is dry; mid-century chairs inside when it drizzles—both feel intentional.\n\n---\n⏱️ Good to know\n\nGarden access sometimes needs a museum ticket—read the sign at the gate. Sunday brunch queues; weekday afternoons are softer.\n\n---\n💬 Moody says\n\nStare at the foam, then at a statue—let your brain file what you just saw.'**
+  String get guestDemoCultural2MoodyAbout;
+
+  /// No description provided for @guestDemoCultural3MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nIntimate canal-side jazz room: house trio on quieter nights, guest bands weekends. By-the-glass wines from Loire, Alto Adige, and a few skin-contact bottles; classic cocktails; cheese and charcuterie boards.\n\n---\n🎷 Room & sound\n\nAbout 60 seats—close enough to read the bassist\'s face. Two sets with a breather; service goes whisper-quiet during solos.\n\n---\n⏱️ Good to know\n\nReservations strongly recommended after 19:00. Smart-casual dress keeps the room feeling special.\n\n---\n💬 Moody says\n\nHum on the walk home—if you do, I nailed the encore pick.'**
+  String get guestDemoCultural3MoodyAbout;
+
+  /// No description provided for @guestDemoRomantic1MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nCourtyard café behind a brick arch: viennoiserie, Dutch apple tart, savory galettes at lunch. Coffee from a small Rotterdam roaster; tea list leans floral and cozy.\n\n---\n🪴 Atmosphere\n\nFountain murmur, ivy walls, a handful of two-tops that feel tucked away. Shared blankets appear on chilly evenings.\n\n---\n⏱️ Good to know\n\nWeekend brunch books fast—walk-in luck often after 14:00. Card and contactless.\n\n---\n💬 Moody says\n\nOrder one pastry to split and fight over the last crumb—I am taking notes.'**
+  String get guestDemoRomantic1MoodyAbout;
+
+  /// No description provided for @guestDemoRomantic2MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nIndependent bookshop—not a chain. Front tables: new fiction and translated lit. Middle aisles: essays, design, travel. Back room: curated used stacks plus a vinyl corner (jazz, soul, small Dutch indie labels).\n\n---\n🎧 Listen & browse\n\nPreview headphones at the counter. Staff shelf tags are spicy opinions, not corporate blurbs. Friday readings sometimes—chalkboard by the stairs has the schedule.\n\n---\n⏱️ Good to know\n\nPhones on quiet, please. Bags at the door. Monthly discount cart lives by the stairs—treasure hunt energy.\n\n---\n💬 Moody says\n\nHunt the title that feels like it waited for you—I will take full credit if you find it.'**
+  String get guestDemoRomantic2MoodyAbout;
+
+  /// No description provided for @guestDemoRomantic3MoodyAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'📚 What kind of place is this?\n\nLow-lit wine room with 80+ bottles on display—Italy (Barbera, Etna, Chianti riserva), France (Beaujolais, Loire Chenin, modest Bordeaux), Spain (Rioja, Priorat), plus orange wines and pet-nat from small Dutch importers. Coravin pours on pricier labels.\n\n---\n🍷 How drinking works\n\nRotating by-the-glass list (roughly 6 whites, 6 reds, 2 skin-contact). Bottles pair with small plates: olives, anchovies, burrata, charcuterie. Corkage waived with a food order on many nights—ask when you sit.\n\n---\n⏱️ Good to know\n\nSommelier does table rounds—say surprise us and mean it. Reservations after 19:30; smart-casual keeps the glow right.\n\n---\n💬 Moody says\n\nPick one bottle you cannot pronounce—we will toast to courage and pretend we are sommeliers.'**
+  String get guestDemoRomantic3MoodyAbout;
 
   /// No description provided for @dayMon.
   ///

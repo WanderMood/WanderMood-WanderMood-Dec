@@ -148,10 +148,6 @@ flutter:
     - assets/animations/
     - assets/sounds/
     - assets/globe/
-    - images/Onboarding_meetmoody.png
-    - images/Onboarding_travelbymood.png
-    - images/Onboarding_yourdayyourway.png
-    - images/Onboarding_everydayisamood.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

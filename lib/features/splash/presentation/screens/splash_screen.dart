@@ -8,6 +8,7 @@ import '../../../auth/providers/auth_state_provider.dart';
 import '../../../../core/providers/feature_flags_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 /// Design system — splash (wmForest background)
 const Color _wmForest = Color(0xFF2A6049);
 
@@ -241,7 +242,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'WanderMood',
+                    AppLocalizations.of(context)!.appTitle,
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     style: GoogleFonts.poppins(
@@ -252,7 +253,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Plan je dag op je gevoel',
+                    AppLocalizations.of(context)!.splashPlanYourDayByFeeling,
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     style: GoogleFonts.poppins(

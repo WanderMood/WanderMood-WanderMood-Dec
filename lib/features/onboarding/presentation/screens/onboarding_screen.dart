@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 
 class OnboardingPage {
   final int pageIndex;
@@ -146,53 +147,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         bottom: false,
         child: Column(
           children: [
-            // Add image for the first onboarding page
-            if (page.pageIndex == 0) ...[
+            // Illustration (PNG assets removed from repo — use Moody like app intro).
+            if (page.pageIndex >= 0 && page.pageIndex <= 3) ...[
               const Spacer(flex: 1),
               Center(
-                child: Image.asset(
-                  'images/Onboarding_meetmoody.png',
-                  width: 320,
-                  height: 320,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const Spacer(flex: 1),
-            ] else if (page.pageIndex == 1) ...[
-              const Spacer(flex: 1),
-              Center(
-                child: Image.asset(
-                  'images/Onboarding_travelbymood.png',
-                  width: 320,
-                  height: 320,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const Spacer(flex: 1),
-            ] else if (page.pageIndex == 2) ...[
-              const Spacer(flex: 1),
-              Center(
-                child: Image.asset(
-                  'images/Onboarding_yourdayyourway.png',
-                  width: 320,
-                  height: 320,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const Spacer(flex: 1),
-            ] else if (page.pageIndex == 3) ...[
-              const Spacer(flex: 1),
-              Center(
-                child: Image.asset(
-                  'images/Onboarding_everydayisamood.png',
-                  width: 320,
-                  height: 320,
-                  fit: BoxFit.contain,
+                child: MoodyCharacter(
+                  size: 240,
+                  mood: switch (page.pageIndex) {
+                    0 => 'idle',
+                    1 => 'happy',
+                    2 => 'excited',
+                    _ => 'relaxed',
+                  },
                 ),
               ),
               const Spacer(flex: 1),
             ] else ...[
-              // Future image area
               const Spacer(),
             ],
             // Bottom content area with padding

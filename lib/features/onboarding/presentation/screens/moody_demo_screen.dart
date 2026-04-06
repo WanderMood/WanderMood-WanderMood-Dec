@@ -38,8 +38,8 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
   bool _showMoodOptions = false;
   String? _selectedMood;
   String? _bouncingKey;
-  bool _showContinueCta = false;
   bool _showPostTapTyping = false;
+  bool _showDemoLoading = false;
 
   late final AnimationController _breathController;
   late final Animation<double> _breathScale;
@@ -51,17 +51,17 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
   static const List<Map<String, dynamic>> _demoMoodConfig = [
     {'key': 'adventurous', 'emoji': '🏃', 'colorHex': '#4CAF50'},
     {'key': 'relaxed', 'emoji': '😌', 'colorHex': '#80CBC4'},
-    {'key': 'romantic', 'emoji': '💕', 'colorHex': '#F8BBD9'},
+    {'key': 'surprise_me', 'emoji': '✨', 'colorHex': '#5C6BC0'},
     {'key': 'cultural', 'emoji': '🎨', 'colorHex': '#B39DDB'},
     {'key': 'foodie', 'emoji': '🍕', 'colorHex': '#FFAB91'},
-    {'key': 'social', 'emoji': '🎉', 'colorHex': '#FFF59D'},
+    {'key': 'social', 'emoji': '🎉', 'colorHex': '#FB8C00'},
   ];
 
   String _moodLabel(String key, AppLocalizations l10n) {
     switch (key) {
       case 'adventurous': return l10n.demoMoodAdventurous;
       case 'relaxed': return l10n.demoMoodRelaxed;
-      case 'romantic': return l10n.demoMoodRomantic;
+      case 'surprise_me': return l10n.demoMoodSurpriseMe;
       case 'cultural': return l10n.demoMoodCultural;
       case 'foodie': return l10n.demoMoodFoodie;
       case 'social': return l10n.demoMoodSocial;
@@ -75,6 +75,10 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
   @override
   void initState() {
     super.initState();
+    Future.microtask(() {
+      if (!mounted) return;
+      ref.read(guestDemoMoodProvider.notifier).state = null;
+    });
     _breathController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2400),
@@ -134,7 +138,14 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
         _DemoMessage(text: l10n.demoMoodyGreeting, isFromMoody: true),
       );
     });
-    await Future.delayed(const Duration(milliseconds: 1100));
+    await Future.delayed(const Duration(milliseconds: 900));
+    if (!mounted) return;
+    setState(() {
+      _messages.add(
+        _DemoMessage(text: l10n.demoMoodyGreetingLine2, isFromMoody: true),
+      );
+    });
+    await Future.delayed(const Duration(milliseconds: 900));
     if (!mounted) return;
     setState(() {
       _messages.add(
@@ -171,17 +182,45 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
     setState(() {
       _showPostTapTyping = false;
       _messages.add(
-        _DemoMessage(text: _moodyResponse(mood, l10n), isFromMoody: true),
+        _DemoMessage(text: _moodReaction(mood, l10n), isFromMoody: true),
       );
-      _showContinueCta = true;
     });
+
+    await Future.delayed(const Duration(milliseconds: 1200));
+    if (!mounted) return;
+    setState(() {
+      _showDemoLoading = true;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 2000));
+    if (!mounted) return;
+    _goToGuestDayPlan(mood);
+  }
+
+  String _moodReaction(String mood, AppLocalizations l10n) {
+    switch (mood.toLowerCase()) {
+      case 'relaxed':
+        return l10n.demoMoodReactionRelaxed;
+      case 'foodie':
+        return l10n.demoMoodReactionFoodie;
+      case 'social':
+        return l10n.demoMoodReactionEnergetic;
+      case 'adventurous':
+        return l10n.demoMoodReactionAdventurous;
+      case 'cultural':
+        return l10n.demoMoodReactionCultural;
+      case 'surprise_me':
+        return l10n.demoMoodReactionSurprise;
+      default:
+        return l10n.demoMoodReactionDefault;
+    }
   }
 
   String _userReply(String mood, AppLocalizations l10n) {
     switch (mood.toLowerCase()) {
       case 'relaxed': return l10n.demoUserReplyRelaxed;
       case 'adventurous': return l10n.demoUserReplyAdventurous;
-      case 'romantic': return l10n.demoUserReplyRomantic;
+      case 'surprise_me': return l10n.demoUserReplySurpriseMe;
       case 'cultural': return l10n.demoUserReplyCultural;
       case 'foodie': return l10n.demoUserReplyFoodie;
       case 'social': return l10n.demoUserReplySocial;
@@ -189,22 +228,11 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
     }
   }
 
-  String _moodyResponse(String mood, AppLocalizations l10n) {
-    switch (mood.toLowerCase()) {
-      case 'relaxed': return l10n.demoMoodyResponseRelaxed;
-      case 'adventurous': return l10n.demoMoodyResponseAdventurous;
-      case 'foodie': return l10n.demoMoodyResponseFoodie;
-      case 'social': return l10n.demoMoodyResponseSocial;
-      case 'cultural': return l10n.demoMoodyResponseCultural;
-      case 'romantic': return l10n.demoMoodyResponseRomantic;
-      default: return l10n.demoMoodyResponseDefault;
-    }
-  }
-
-  void _onContinue() {
+  void _goToGuestDayPlan(String mood) {
+    ref.read(guestDemoMoodProvider.notifier).state = mood;
     ref.read(onboardingProgressProvider.notifier).markDemoCompleted();
-    ref.read(currentOnboardingStepProvider.notifier).state = OnboardingStep.guestExplore;
-    context.go('/guest-explore');
+    ref.read(currentOnboardingStepProvider.notifier).state = OnboardingStep.guestDayPlan;
+    context.go('/guest-day-plan');
   }
 
   void _onSignUp() {
@@ -237,6 +265,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
                         children: [
                           ..._messages.map((m) => _buildMessage(m, width)),
                           if (_showPostTapTyping) _buildPostTapTypingBubble(),
+                          if (_showDemoLoading) _buildDemoLoadingBubble(),
                         ],
                       ),
                     ),
@@ -249,7 +278,6 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
                 ),
               ),
             ),
-            if (_showContinueCta) _buildContinueButtonFooter(),
           ],
         ),
       ),
@@ -338,9 +366,9 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
               ScaleTransition(
                 alignment: Alignment.center,
                 scale: _breathScale,
-                child: MoodyCharacter(
+                child:                 MoodyCharacter(
                   size: 96,
-                  mood: _showPostTapTyping ? 'thinking' : 'happy',
+                  mood: (_showPostTapTyping || _showDemoLoading) ? 'thinking' : 'happy',
                   currentFeature: MoodyFeature.none,
                 ),
               ),
@@ -504,6 +532,59 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
         .fadeIn(duration: 320.ms, curve: Curves.easeOut);
   }
 
+  Widget _buildDemoLoadingBubble() {
+    final l10n = AppLocalizations.of(context)!;
+    final maxW = MediaQuery.sizeOf(context).width * 0.88;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12, left: 4),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          constraints: BoxConstraints(maxWidth: maxW),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: _wmSkyTint,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _wmSky, width: 0.5),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const MoodyCharacter(
+                size: 32,
+                mood: 'thinking',
+                currentFeature: MoodyFeature.none,
+              ),
+              const SizedBox(width: 10),
+              SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: _wmForest,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  l10n.planLoadingRotating2,
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    height: 1.45,
+                    fontWeight: FontWeight.w400,
+                    color: _wmCharcoal,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    )
+        .animate()
+        .fadeIn(duration: 320.ms, curve: Curves.easeOut);
+  }
+
   Widget _buildPulseDot(int index) {
     return AnimatedBuilder(
       animation: _pulseController,
@@ -566,52 +647,22 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
     );
   }
 
-  Widget _buildContinueButtonFooter() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          width: double.infinity,
-          height: 54,
-          child: ElevatedButton(
-            onPressed: () {
-              HapticFeedback.mediumImpact();
-              _onContinue();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _wmForest,
-              foregroundColor: _wmWhite,
-              elevation: 0,
-              shadowColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(27),
-              ),
-            ),
-            child: Text(
-              AppLocalizations.of(context)!.demoDiscoverMore,
-              style: GoogleFonts.poppins(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: _wmWhite,
-              ),
-            ),
-          ),
-        ).animate().fadeIn(duration: 250.ms).slideY(begin: 12, end: 0, duration: 280.ms),
-      ),
-    );
-  }
-
   Color _colorFromHex(String hex) {
     String h = hex.startsWith('#') ? hex.substring(1) : hex;
     if (h.length == 6) h = 'FF$h';
     return Color(int.parse(h, radix: 16));
   }
 
+  /// White overlay gradients lighten some tiles; prefer dark text on light bases.
+  Color _moodTileLabelColor(Color pastelBase) {
+    return pastelBase.computeLuminance() > 0.72 ? _wmCharcoal : _wmWhite;
+  }
+
   Widget _buildMoodCard(Map<String, dynamic> config, String label) {
     final String key = config['key'] as String;
     final String emoji = config['emoji'] as String;
     final Color pastelBase = _colorFromHex(config['colorHex'] as String);
+    final Color labelColor = _moodTileLabelColor(pastelBase);
     const double tileRadius = 20;
     final bool isPressed = _bouncingKey == key;
 
@@ -672,7 +723,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
                         style: GoogleFonts.poppins(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: labelColor,
                         ),
                         textAlign: TextAlign.center,
                         maxLines: 2,

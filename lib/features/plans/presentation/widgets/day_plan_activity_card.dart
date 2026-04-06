@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,7 +16,9 @@ import 'package:wandermood/features/plans/presentation/providers/place_open_now_
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/core/presentation/widgets/guest_demo_about_sections.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
+import 'package:wandermood/core/utils/google_place_photo_device_url.dart';
 
 /// v2 design tokens — day plan result cards
 const Color _wmWhite = Color(0xFFFFFFFF);
@@ -38,10 +41,15 @@ class DayPlanActivityCard extends ConsumerStatefulWidget {
   /// When set, the left button shows "Not feeling this?" (swap activity) instead of Directions.
   final VoidCallback? onNotFeelingThis;
   final String? distanceKm;
-  /// Optional address/location line (e.g. from Places API or activity.description).
+  /// Optional address/location line (e.g. from Places API — not the long description).
   final String? locationLabel;
+  /// Guest preview: Moody voice line above the factual description.
+  final String? moodyPersonalityLine;
   /// Callback when the activity is successfully added to My Day.
   final VoidCallback? onAdded;
+
+  /// Guest onboarding preview: hide save / add-to–My Day and favorite; keep directions & share.
+  final bool guestPreviewMode;
 
   const DayPlanActivityCard({
     super.key,
@@ -50,7 +58,9 @@ class DayPlanActivityCard extends ConsumerStatefulWidget {
     this.onNotFeelingThis,
     this.distanceKm,
     this.locationLabel,
+    this.moodyPersonalityLine,
     this.onAdded,
+    this.guestPreviewMode = false,
   });
 
   @override
@@ -107,6 +117,31 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
     return l10n.dayPlanDurationMinutesOnly(d);
   }
 
+  Widget _buildGuestPreviewDescription(BuildContext context) {
+    final desc = widget.activity.description.trim();
+    final voice = widget.moodyPersonalityLine?.trim() ?? '';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (voice.isNotEmpty) ...[
+          Text(
+            voice,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w500,
+              color: _wmForest,
+              height: 1.35,
+            ),
+          ),
+          if (desc.isNotEmpty) const SizedBox(height: 8),
+        ],
+        if (desc.isNotEmpty)
+          GuestDemoAboutSectionsView(source: desc, compact: true),
+      ],
+    );
+  }
+
   String _localizedTagLabel(BuildContext context, String tag) {
     final l10n = AppLocalizations.of(context)!;
     final t = tag.toLowerCase().trim();
@@ -124,6 +159,33 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
     if (t.contains('club') || t.contains('nightlife')) return l10n.placeCategoryNightlife;
     if (t.contains('adventure')) return l10n.placeCategoryAdventure;
     return l10n.placeCategorySpot;
+  }
+
+  /// Google place photo URLs need [WmPlacePhotoNetworkImage]; Unsplash and other HTTPS use [WmNetworkImage].
+  Widget _planCardPhoto(
+    String url, {
+    required BoxFit fit,
+    ProgressIndicatorBuilder? progressIndicatorBuilder,
+  }) {
+    final trimmed = url.trim();
+    final uri = Uri.tryParse(trimmed);
+    final host = uri?.host.toLowerCase() ?? '';
+    final isGooglePlacePhoto = (host == 'maps.googleapis.com' && trimmed.contains('place/photo')) ||
+        (host == 'places.googleapis.com' && trimmed.contains('/media'));
+    if (isGooglePlacePhoto) {
+      return WmPlacePhotoNetworkImage(
+        trimmed,
+        fit: fit,
+        progressIndicatorBuilder: progressIndicatorBuilder,
+        errorBuilder: (_, __, ___) => _imagePlaceholder(),
+      );
+    }
+    return WmNetworkImage(
+      deviceAccessibleGooglePlacePhotoUrl(trimmed),
+      fit: fit,
+      progressIndicatorBuilder: progressIndicatorBuilder,
+      errorBuilder: (_, __, ___) => _imagePlaceholder(),
+    );
   }
 
   String _priceText(BuildContext context) {
@@ -153,7 +215,7 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
         final photos = snapshot.data ?? initialPhotos;
         if (photos.isEmpty) return _imagePlaceholder();
         if (photos.length == 1) {
-          return WmPlacePhotoNetworkImage(
+          return _planCardPhoto(
             photos[0],
             fit: BoxFit.cover,
             progressIndicatorBuilder: (c, url, progress) => Container(
@@ -166,7 +228,6 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                 ),
               ),
             ),
-            errorBuilder: (_, __, ___) => _imagePlaceholder(),
           );
         }
         return Stack(
@@ -176,7 +237,7 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
               controller: _imagePageController,
               itemCount: photos.length,
               onPageChanged: (i) => setState(() => _currentImageIndex = i),
-              itemBuilder: (_, i) => WmPlacePhotoNetworkImage(
+              itemBuilder: (_, i) => _planCardPhoto(
                 photos[i],
                 fit: BoxFit.cover,
                 progressIndicatorBuilder: (c, url, progress) => Container(
@@ -189,7 +250,6 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                     ),
                   ),
                 ),
-                errorBuilder: (_, __, ___) => _imagePlaceholder(),
               ),
             ),
             Positioned(
@@ -467,12 +527,14 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                             icon: Icons.share,
                             onTap: () => _share(context),
                           ),
-                          const SizedBox(width: 8),
-                          _imageActionButton(
-                            icon: isFavorite ? Icons.favorite : Icons.favorite_border,
-                            iconColor: isFavorite ? const Color(0xFFE05C5C) : _wmForest,
-                            onTap: () => _toggleFavorite(context, ref),
-                          ),
+                          if (!widget.guestPreviewMode) ...[
+                            const SizedBox(width: 8),
+                            _imageActionButton(
+                              icon: isFavorite ? Icons.favorite : Icons.favorite_border,
+                              iconColor: isFavorite ? const Color(0xFFE05C5C) : _wmForest,
+                              onTap: () => _toggleFavorite(context, ref),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -548,25 +610,28 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                       ),
                       const SizedBox(height: 10),
                     ],
-                    // Description — Moody + Places when configured
-                    Consumer(
-                      builder: (context, ref, _) {
-                        final p = placeForMoodyBlurb(
-                          widget.activity,
-                          locationLabel: widget.locationLabel,
-                        );
-                        return PlaceCardMoodyDescription(
-                          place: p,
-                          maxLines: 4,
-                          paddingTop: 0,
-                          textStyle: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: const Color(0xFF4B5563),
-                            height: 1.4,
-                          ),
-                        );
-                      },
-                    ),
+                    // Description: guest preview uses plain copy + optional Moody line (no async blurb duplicate).
+                    if (widget.guestPreviewMode)
+                      _buildGuestPreviewDescription(context)
+                    else
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final p = placeForMoodyBlurb(
+                            widget.activity,
+                            locationLabel: widget.locationLabel,
+                          );
+                          return PlaceCardMoodyDescription(
+                            place: p,
+                            maxLines: 4,
+                            paddingTop: 0,
+                            textStyle: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: const Color(0xFF4B5563),
+                              height: 1.4,
+                            ),
+                          );
+                        },
+                      ),
                     const SizedBox(height: 16),
                     // Info pills: Duration, Price, Distance, Open/Closed (live when placeId set)
                     Wrap(
@@ -671,44 +736,45 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    // Add to My Day button
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: _isAdded ? null : () => _addToMyDay(context, ref),
-                        icon: _isAdding 
-                            ? const SizedBox(
-                                width: 16, 
-                                height: 16, 
-                                child: CircularProgressIndicator(strokeWidth: 2, color: _wmForest),
-                              )
-                            : Icon(
-                                _isAdded ? Icons.check_circle_rounded : Icons.calendar_today_rounded, 
-                                size: 16, 
-                                color: _isAdded ? Colors.white : _wmForest,
-                              ),
-                        label: Text(
-                          _isAdded 
-                              ? AppLocalizations.of(context)!.dayPlanCardAdded
-                              : AppLocalizations.of(context)!.dayPlanCardAddToMyDay,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: _isAdded ? Colors.white : _wmForest,
+                    if (!widget.guestPreviewMode) ...[
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: _isAdded ? null : () => _addToMyDay(context, ref),
+                          icon: _isAdding
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: _wmForest),
+                                )
+                              : Icon(
+                                  _isAdded ? Icons.check_circle_rounded : Icons.calendar_today_rounded,
+                                  size: 16,
+                                  color: _isAdded ? Colors.white : _wmForest,
+                                ),
+                          label: Text(
+                            _isAdded
+                                ? AppLocalizations.of(context)!.dayPlanCardAdded
+                                : AppLocalizations.of(context)!.dayPlanCardAddToMyDay,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: _isAdded ? Colors.white : _wmForest,
+                            ),
                           ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          side: BorderSide(
-                            color: _isAdded ? _wmForest : _wmForest, 
-                            width: 1.5,
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            side: BorderSide(
+                              color: _isAdded ? _wmForest : _wmForest,
+                              width: 1.5,
+                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                            backgroundColor: _isAdded ? _wmForest : _wmWhite,
                           ),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-                          backgroundColor: _isAdded ? _wmForest : _wmWhite,
                         ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),

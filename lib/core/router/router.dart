@@ -67,7 +67,7 @@ import '../providers/preferences_provider.dart';
 import '../providers/feature_flags_provider.dart';
 import '../../features/onboarding/presentation/screens/app_intro_screen.dart';
 import '../../features/onboarding/presentation/screens/moody_demo_screen.dart';
-import '../../features/onboarding/presentation/screens/guest_explore_screen.dart';
+import '../../features/onboarding/presentation/screens/guest_day_plan_screen.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, ValueNotifier;
 // import '../../admin/admin_screen.dart'; // Removed - debug only
 
@@ -298,10 +298,15 @@ GoRouter router(RouterRef ref) {
         name: 'demo',
         builder: (context, state) => const MoodyDemoScreen(),
       ),
+      // Legacy path from older onboarding; mood may still be in [guestDemoMoodProvider].
       GoRoute(
         path: '/guest-explore',
-        name: 'guest-explore',
-        builder: (context, state) => const GuestExploreScreen(),
+        redirect: (context, state) => '/demo',
+      ),
+      GoRoute(
+        path: '/guest-day-plan',
+        name: 'guest-day-plan',
+        builder: (context, state) => const GuestDayPlanScreen(),
       ),
       GoRoute(
         path: '/auth/magic-link',
@@ -873,7 +878,7 @@ GoRouter router(RouterRef ref) {
       
       final isNewOnboardingPage = currentLocation == '/intro' ||
                                   currentLocation == '/demo' ||
-                                  currentLocation == '/guest-explore' ||
+                                  currentLocation == '/guest-day-plan' ||
                                   currentLocation == '/auth/magic-link';
       
       final isSplashPage = currentLocation == '/';

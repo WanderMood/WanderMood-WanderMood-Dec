@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +9,11 @@ import 'package:wandermood/features/home/presentation/widgets/moody_character.da
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/plans/providers/selected_activities_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/guest_demo_about_sections.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
+import 'package:wandermood/core/presentation/widgets/stylized_map_preview.dart';
+import 'package:wandermood/core/utils/google_place_photo_device_url.dart';
+import 'package:wandermood/core/utils/google_static_map_url.dart';
 
 class ActivityDetailScreen extends ConsumerStatefulWidget {
   final Activity activity;
@@ -25,28 +30,122 @@ class ActivityDetailScreen extends ConsumerStatefulWidget {
   ConsumerState<ActivityDetailScreen> createState() => _ActivityDetailScreenState();
 }
 
-class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  int _currentImageIndex = 0;
-  static const double _imageHeight = 380;
+class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen> {
+  /// 0 Details, 1 Photos, 2 Reviews
+  int _detailSection = 0;
+  static const double _imageHeight = 260;
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+  // Align with place_detail_screen.dart (_pdWm*) for ~parity with main place card.
+  static const Color _wmCard = Color(0xFFFFFFFF);
+  static const Color _wmCardBorder = Color(0xFFD9D0C3);
+  static const Color _wmForest = Color(0xFF2A6049);
+  static const Color _wmCharcoal = Color(0xFF1E1C18);
+
+  static const List<String> _demoExtraPhotoUrls = [
+    'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=900&q=80',
+    'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=900&q=80',
+    'https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=900&q=80',
+  ];
+
+  bool get _isPreviewDemoActivity => widget.activity.id.startsWith('guest_demo_');
+
+  List<String> _galleryUrls() {
+    final primary = widget.activity.imageUrl.trim();
+    if (!_isPreviewDemoActivity) {
+      if (primary.isEmpty) return [];
+      return [primary];
+    }
+    final out = <String>[];
+    if (primary.isNotEmpty) out.add(primary);
+    for (final u in _demoExtraPhotoUrls) {
+      if (!out.contains(u)) out.add(u);
+      if (out.length >= 3) break;
+    }
+    return out.take(3).toList();
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+  String _photoBadgeLabel(AppLocalizations l10n) {
+    final n = _galleryUrls().length;
+    final count = n < 1 ? 1 : n;
+    if (count == 1) return l10n.activityDetailPhotoCount('1');
+    return l10n.activityDetailPhotoCountPlural('$count');
+  }
+
+  List<Map<String, dynamic>> _reviewsToShow(AppLocalizations l10n) {
+    if (_isPreviewDemoActivity) {
+      return [
+        {
+          'author': l10n.activityDetailDemoReview1Author,
+          'rating': 5,
+          'date': l10n.activityDetailDemoReviewRecent,
+          'text': l10n.activityDetailDemoReview1Body,
+        },
+        {
+          'author': l10n.activityDetailDemoReview2Author,
+          'rating': 5,
+          'date': l10n.activityDetailDemoReviewRecent,
+          'text': l10n.activityDetailDemoReview2Body,
+        },
+        {
+          'author': l10n.activityDetailDemoReview3Author,
+          'rating': 4,
+          'date': l10n.activityDetailDemoReviewRecent,
+          'text': l10n.activityDetailDemoReview3Body,
+        },
+        {
+          'author': l10n.activityDetailDemoReview4Author,
+          'rating': 5,
+          'date': l10n.activityDetailDemoReviewRecent,
+          'text': l10n.activityDetailDemoReview4Body,
+        },
+      ];
+    }
+    return _getRealReviews();
+  }
+
+  /// Google Place photos → [WmPlacePhotoNetworkImage]; Unsplash and other HTTPS → [WmNetworkImage].
+  Widget _activityImageFromUrl(
+    String url, {
+    BoxFit fit = BoxFit.cover,
+    double? width,
+    double? height,
+    ProgressIndicatorBuilder? progressIndicatorBuilder,
+    ImageErrorWidgetBuilder? errorBuilder,
+  }) {
+    final trimmed = url.trim();
+    if (trimmed.isEmpty) {
+      return errorBuilder != null
+          ? errorBuilder(context, Exception('empty'), StackTrace.current)
+          : Container(color: Colors.grey[300], child: const Icon(Icons.place, size: 80, color: Colors.grey));
+    }
+    final uri = Uri.tryParse(trimmed);
+    final host = uri?.host.toLowerCase() ?? '';
+    final isGooglePlacePhoto = (host == 'maps.googleapis.com' && trimmed.contains('place/photo')) ||
+        (host == 'places.googleapis.com' && trimmed.contains('/media'));
+    if (isGooglePlacePhoto) {
+      return WmPlacePhotoNetworkImage(
+        trimmed,
+        fit: fit,
+        width: width,
+        height: height,
+        progressIndicatorBuilder: progressIndicatorBuilder,
+        errorBuilder: errorBuilder,
+      );
+    }
+    return WmNetworkImage(
+      deviceAccessibleGooglePlacePhotoUrl(trimmed),
+      fit: fit,
+      width: width,
+      height: height,
+      progressIndicatorBuilder: progressIndicatorBuilder,
+      errorBuilder: errorBuilder,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFBF5),
+      backgroundColor: const Color(0xFFF5F0E8),
       body: Stack(
         children: [
           CustomScrollView(
@@ -57,10 +156,17 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     _buildTitleAndRating(),
-                    _buildQuickInfoCards(),
-                    _buildAboutSection(),
-                    _buildHighlightsSection(),
-                    _buildLocationSection(),
+                    _buildDetailSectionTabs(),
+                    const SizedBox(height: 16),
+                    if (_detailSection == 0) ...[
+                      _buildQuickInfoCards(),
+                      const SizedBox(height: 24),
+                      _buildAboutSection(),
+                      _buildLocationSection(),
+                    ] else if (_detailSection == 1)
+                      _buildPhotosTabContent()
+                    else
+                      _buildReviewsTabContent(),
                   ]),
                 ),
               ),
@@ -121,10 +227,11 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
         background: Stack(
           fit: StackFit.expand,
           children: [
-            WmPlacePhotoNetworkImage(
+            _activityImageFromUrl(
               widget.activity.imageUrl,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(color: Colors.grey[300], child: const Icon(Icons.place, size: 80, color: Colors.grey)),
+              errorBuilder: (_, __, ___) =>
+                  Container(color: Colors.grey[300], child: const Icon(Icons.place, size: 80, color: Colors.grey)),
             ),
             DecoratedBox(
               decoration: BoxDecoration(
@@ -149,7 +256,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
                   children: [
                     const Icon(Icons.photo_camera, size: 14, color: Colors.white),
                     const SizedBox(width: 6),
-                    Text(AppLocalizations.of(context)!.activityDetailPhotoCount('1'), style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
+                    Text(_photoBadgeLabel(AppLocalizations.of(context)!), style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
                   ],
                 ),
               ),
@@ -180,7 +287,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.star, size: 20, color: Color(0xFFFBBF24)),
+                  const Icon(Icons.star_rounded, size: 20, color: Color(0xFFB45309)),
                   const SizedBox(width: 4),
                   Text(
                     widget.activity.rating.toStringAsFixed(1),
@@ -200,7 +307,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: widget.activity.tags.take(4).map((tag) {
+          children: widget.activity.tags.take(8).map((tag) {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -220,33 +327,43 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
     );
   }
 
+  String _distanceDisplay(AppLocalizations l10n) {
+    final d = widget.distanceKm?.trim();
+    if (d == null || d.isEmpty || d == '—') {
+      return l10n.activityDetailDistanceNearby;
+    }
+    return d;
+  }
+
   Widget _buildQuickInfoCards() {
+    final l10n = AppLocalizations.of(context)!;
     final durationText = widget.activity.duration >= 60
         ? '${widget.activity.duration ~/ 60}h'
         : '${widget.activity.duration} min';
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: _quickInfoCard(
             icon: Icons.schedule,
-            label: AppLocalizations.of(context)!.activityDetailDuration,
+            label: l10n.activityDetailDuration,
             value: durationText,
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Expanded(
           child: _quickInfoCard(
             icon: Icons.euro,
-            label: AppLocalizations.of(context)!.activityDetailPrice,
+            label: l10n.activityDetailPrice,
             value: widget.activity.priceLevel ?? '—',
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Expanded(
           child: _quickInfoCard(
-            icon: Icons.location_on,
-            label: AppLocalizations.of(context)!.activityDetailDistance,
-            value: widget.distanceKm ?? '—',
+            icon: Icons.directions_walk,
+            label: l10n.activityDetailDistance,
+            value: _distanceDisplay(l10n),
           ),
         ),
       ],
@@ -255,78 +372,259 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
 
   Widget _quickInfoCard({required IconData icon, required String label, required String value}) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F0E8),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFD8D0C4), width: 0.5),
+        color: _wmCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _wmCardBorder, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Icon(icon, size: 22, color: const Color(0xFF2A6049)),
-          const SizedBox(height: 6),
-          Text(label, style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey[700])),
-          const SizedBox(height: 2),
-          Text(value, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFF1F2937))),
+          Row(
+            children: [
+              Icon(icon, size: 16, color: _wmForest),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.2,
+                    color: _wmCharcoal.withValues(alpha: 0.55),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              height: 1.25,
+              color: _wmCharcoal,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildAboutSection() {
+  Widget _buildDetailSectionTabs() {
+    final l10n = AppLocalizations.of(context)!;
+    final tabs = [
+      '✨ ${l10n.activityDetailTabDetails}',
+      '📸 ${l10n.activityDetailTabPhotos}',
+      '⭐ ${l10n.activityDetailTabReviews}',
+    ];
+    return Container(
+      decoration: BoxDecoration(
+        color: _wmCard,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: _wmCardBorder, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(4),
+      child: Row(
+        children: List.generate(3, (i) {
+          final selected = _detailSection == i;
+          return Expanded(
+            child: Material(
+              color: selected ? _wmForest : Colors.transparent,
+              borderRadius: BorderRadius.circular(28),
+              child: InkWell(
+                onTap: () {
+                  if (_detailSection != i) setState(() => _detailSection = i);
+                },
+                borderRadius: BorderRadius.circular(28),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                  child: Text(
+                    tabs[i],
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                      color: selected ? Colors.white : _wmCharcoal.withValues(alpha: 0.78),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildPhotosTabContent() {
+    final l10n = AppLocalizations.of(context)!;
+    final urls = _galleryUrls();
+    if (urls.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 28),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: AspectRatio(
+            aspectRatio: 16 / 9,
+            child: ColoredBox(
+              color: Colors.grey[200]!,
+              child: Icon(Icons.image_not_supported_outlined, size: 40, color: Colors.grey[500]),
+            ),
+          ),
+        ),
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(AppLocalizations.of(context)!.activityDetailAbout, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
-        const SizedBox(height: 12),
-        Text(
-          widget.activity.description,
-          style: GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF374151), height: 1.5),
-        ),
-        const SizedBox(height: 28),
+        const SizedBox(height: 8),
+        if (_isPreviewDemoActivity)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              l10n.activityDetailPreviewSampleNote,
+              style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF6B7280), height: 1.35),
+            ),
+          ),
+        ...urls.asMap().entries.map((e) {
+          final i = e.key;
+          final url = e.value;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: GestureDetector(
+              onTap: () => _showImageViewer(url, i),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: _activityImageFromUrl(
+                    url,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    errorBuilder: (context, err, st) => ColoredBox(
+                      color: Colors.grey[300]!,
+                      child: const Center(child: Icon(Icons.broken_image_outlined, size: 40)),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+        const SizedBox(height: 16),
       ],
     );
   }
 
-  Widget _buildHighlightsSection() {
-    final highlights = widget.activity.tags.take(6).map((t) => '• $t').toList();
-    if (highlights.isEmpty) return const SizedBox.shrink();
+  Widget _buildReviewsTabContent() {
+    final l10n = AppLocalizations.of(context)!;
+    final reviews = _reviewsToShow(l10n);
+    if (reviews.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(0, 24, 0, 32),
+        child: Column(
+          children: [
+            Icon(Icons.chat_bubble_outline_rounded, size: 44, color: Colors.grey[400]),
+            const SizedBox(height: 12),
+            Text(
+              l10n.activityDetailReviewsEmpty,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF6B7280), height: 1.45),
+            ),
+          ],
+        ),
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(AppLocalizations.of(context)!.activityDetailHighlights, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: highlights.map((h) => Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F3FF),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFA78BFA).withValues(alpha: 0.3)),
+        const SizedBox(height: 8),
+        if (_isPreviewDemoActivity)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              l10n.activityDetailPreviewSampleNote,
+              style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF6B7280), height: 1.35),
             ),
-            child: Text(h, style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF374151))),
-          )).toList(),
-        ),
+          ),
+        ...reviews.map(_buildReviewCard),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildAboutSection() {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l10n.activityDetailAbout, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
+        const SizedBox(height: 12),
+        if (_isPreviewDemoActivity)
+          GuestDemoAboutSectionsView(source: widget.activity.description)
+        else
+          Text(
+            widget.activity.description,
+            style: GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF374151), height: 1.55),
+          ),
         const SizedBox(height: 28),
       ],
     );
   }
 
   Widget _buildLocationSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(AppLocalizations.of(context)!.activityDetailLocation, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
+        Text(l10n.activityDetailLocation, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
         const SizedBox(height: 12),
         Container(
-          height: 180,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            gradient: const LinearGradient(colors: [Color(0xFFBFDBFE), Color(0xFFE9D5FF)]),
+            border: Border.all(color: const Color(0xFFD8D0C4), width: 0.5),
           ),
-          child: const Center(child: Icon(Icons.map, size: 48, color: Colors.white54)),
+          clipBehavior: Clip.antiAlias,
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              onTap: () => _openDirections(context),
+              child: Semantics(
+                button: true,
+                label: l10n.activityDetailDirections,
+                child: SizedBox(
+                  height: 180,
+                  width: double.infinity,
+                  child: _buildLocationMapPreview(),
+                ),
+              ),
+            ),
+          ),
         ),
         const SizedBox(height: 12),
         Container(
@@ -358,6 +656,23 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
         ),
         const SizedBox(height: 28),
       ],
+    );
+  }
+
+  /// Static Maps snapshot when [googleStaticMapPreviewUrl] is available; otherwise a stylized fallback.
+  Widget _buildLocationMapPreview() {
+    final lat = widget.activity.location.latitude;
+    final lng = widget.activity.location.longitude;
+    final mapUrl = googleStaticMapPreviewUrl(lat, lng);
+    if (mapUrl == null || mapUrl.isEmpty) {
+      return StylizedMapPreview(lat: lat, lng: lng);
+    }
+    return CachedNetworkImage(
+      imageUrl: mapUrl,
+      fit: BoxFit.cover,
+      fadeInDuration: const Duration(milliseconds: 200),
+      placeholder: (_, __) => StylizedMapPreview(lat: lat, lng: lng, showPin: false),
+      errorWidget: (_, __, ___) => StylizedMapPreview(lat: lat, lng: lng),
     );
   }
 
@@ -699,48 +1014,6 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
               fontWeight: FontWeight.bold,
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTabBar() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: TabBar(
-        controller: _tabController,
-        indicator: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF5C6BC0), Color(0xFF7986CB)],
-          ),
-          borderRadius: BorderRadius.circular(25),
-        ),
-        indicatorSize: TabBarIndicatorSize.tab,
-        labelColor: Colors.white,
-        unselectedLabelColor: Colors.grey[600],
-        labelStyle: GoogleFonts.poppins(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
-        unselectedLabelStyle: GoogleFonts.poppins(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-        tabs: const [
-          Tab(text: '🏠 Overview'),
-          Tab(text: '⭐ Reviews'),
-          Tab(text: '📸 Gallery'),
         ],
       ),
     );
@@ -1320,7 +1593,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
           borderRadius: BorderRadius.circular(16),
           child: Stack(
             children: [
-              WmPlacePhotoNetworkImage(
+              _activityImageFromUrl(
                 imageUrl,
                 fit: BoxFit.cover,
                 width: double.infinity,
@@ -1388,7 +1661,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen>
         child: Stack(
           children: [
             Center(
-              child: WmPlacePhotoNetworkImage(
+              child: _activityImageFromUrl(
                 imageUrl,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {

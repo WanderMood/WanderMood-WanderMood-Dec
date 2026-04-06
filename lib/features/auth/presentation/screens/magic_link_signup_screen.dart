@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,7 +25,44 @@ const Color _wmParchment = Color(0xFFE8E2D8);
 const Color _wmForest = Color(0xFF2A6049);
 const Color _wmCharcoal = Color(0xFF1E1C18);
 const Color _wmStone = Color(0xFF8C8780);
+const Color _wmForestTint = Color(0xFFEBF3EE);
 const Color _wmError = Color(0xFFE05C5C);
+
+/// Pragmatic email check: allows +tags, subdomains, and long TLDs; rejects obvious junk.
+bool _looksLikeValidEmail(String raw) {
+  final value = raw.trim();
+  if (value.isEmpty || value.length > 254) return false;
+  if (value.contains(RegExp(r'\s'))) return false;
+  final at = value.indexOf('@');
+  final lastAt = value.lastIndexOf('@');
+  if (at <= 0 || at != lastAt) return false;
+  final local = value.substring(0, at);
+  final domain = value.substring(at + 1);
+  if (local.isEmpty || domain.isEmpty) return false;
+  if (!domain.contains('.')) return false;
+  if (domain.startsWith('.') || domain.endsWith('.')) return false;
+  if (domain.contains('..')) return false;
+  return true;
+}
+
+List<BoxShadow> _magicLinkCardOuterShadows() => [
+      BoxShadow(
+        color: _wmCharcoal.withValues(alpha: 0.12),
+        blurRadius: 36,
+        offset: const Offset(0, 16),
+        spreadRadius: -6,
+      ),
+      BoxShadow(
+        color: _wmCharcoal.withValues(alpha: 0.06),
+        blurRadius: 14,
+        offset: const Offset(0, 6),
+      ),
+      BoxShadow(
+        color: _wmForest.withValues(alpha: 0.04),
+        blurRadius: 8,
+        offset: const Offset(0, 2),
+      ),
+    ];
 
 /// Magic Link Signup Screen
 /// 
@@ -109,8 +147,16 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
   }
 
   Future<void> _sendMagicLink() async {
-    if (!_formKey.currentState!.validate()) return;
-    
+    final form = _formKey.currentState;
+    if (form != null) {
+      if (!form.validate()) return;
+    } else {
+      final email = _emailController.text.trim();
+      if (!_looksLikeValidEmail(email)) {
+        return;
+      }
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -182,60 +228,70 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
     }
   }
 
-  String _getEmailButtonLabel() {
-    final l10n = AppLocalizations.of(context)!;
-    final domain = _emailController.text.trim().split('@').last.toLowerCase();
-    if (domain.contains('gmail')) return l10n.signupOpenGmail;
+  /// Detect email provider from domain for deep linking.
+  String? _emailProvider(String email) {
+    final parts = email.split('@');
+    if (parts.length < 2) return null;
+    final domain = parts.last.toLowerCase();
+    if (domain.contains('gmail')) return 'gmail';
     if (domain.contains('outlook') ||
         domain.contains('hotmail') ||
         domain.contains('live') ||
         domain.contains('msn')) {
-      return l10n.signupOpenOutlook;
+      return 'outlook';
     }
     if (domain.contains('icloud') ||
         domain.contains('me.com') ||
         domain.contains('mac.com')) {
-      return l10n.signupOpenAppleMail;
+      return 'apple';
     }
-    return l10n.signupOpenEmailApp;
+    return null;
+  }
+
+  String _openEmailButtonLabel() {
+    final l10n = AppLocalizations.of(context)!;
+    switch (_emailProvider(_emailController.text.trim())) {
+      case 'gmail':
+        return l10n.signupOpenGmail;
+      case 'outlook':
+        return l10n.signupOpenOutlook;
+      case 'apple':
+        return l10n.signupOpenAppleMail;
+      default:
+        return l10n.signupOpenEmailApp;
+    }
   }
 
   Future<void> _openEmailApp() async {
     final email = _emailController.text.trim();
-    final domain = email.contains('@')
-        ? email.split('@').last.toLowerCase()
-        : '';
-    Uri uri;
-    if (domain.contains('gmail')) {
-      uri = Uri.parse('googlegmail://');
-    } else if (domain.contains('outlook') ||
-        domain.contains('hotmail') ||
-        domain.contains('live') ||
-        domain.contains('msn')) {
-      uri = Uri.parse('ms-outlook://');
-    } else if (domain.contains('icloud') ||
-        domain.contains('me.com') ||
-        domain.contains('mac.com')) {
-      uri = Uri.parse('message://');
-    } else {
-      uri = Uri.parse('mailto:');
-    }
+    final provider = _emailProvider(email);
+    final mailto = Uri.parse('mailto:$email');
 
-    // iOS: canLaunchUrl is false for third-party schemes unless listed in
-    // Info.plist; always try launchUrl, then fall back to system Mail.
-    Future<bool> tryOpen(Uri u) async {
-      try {
-        return await launchUrl(u, mode: LaunchMode.externalApplication);
-      } catch (_) {
-        return false;
+    final Uri uri;
+    switch (provider) {
+      case 'gmail':
+        uri = Uri.parse('googlegmail://');
+        break;
+      case 'outlook':
+        uri = Uri.parse('ms-outlook://');
+        break;
+      case 'apple':
+        uri = Uri.parse('message://');
+        break;
+      default:
+        await launchUrl(mailto, mode: LaunchMode.externalApplication);
+        return;
+    }
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        await launchUrl(mailto, mode: LaunchMode.externalApplication);
       }
-    }
-
-    if (!await tryOpen(uri)) {
-      final fallback = email.isNotEmpty
-          ? Uri.parse('mailto:$email')
-          : Uri.parse('mailto:');
-      await tryOpen(fallback);
+    } catch (_) {
+      try {
+        await launchUrl(mailto, mode: LaunchMode.externalApplication);
+      } catch (_) {}
     }
   }
 
@@ -246,7 +302,12 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
   void _goBack() {
     final useNewFlow = ref.read(useNewOnboardingFlowProvider);
     if (useNewFlow) {
-      context.go('/guest-explore');
+      final mood = ref.read(guestDemoMoodProvider);
+      if (mood != null && mood.isNotEmpty) {
+        context.go('/guest-day-plan');
+      } else {
+        context.go('/demo');
+      }
     } else {
       context.go('/onboarding');
     }
@@ -296,24 +357,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                           child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: _wmCharcoal.withValues(alpha: 0.12),
-                            blurRadius: 36,
-                            offset: const Offset(0, 16),
-                            spreadRadius: -6,
-                          ),
-                          BoxShadow(
-                            color: _wmCharcoal.withValues(alpha: 0.06),
-                            blurRadius: 14,
-                            offset: const Offset(0, 6),
-                          ),
-                          BoxShadow(
-                            color: _wmForest.withValues(alpha: 0.04),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        boxShadow: _magicLinkCardOuterShadows(),
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(24),
@@ -437,8 +481,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                                   if (value == null || value.isEmpty) {
                                     return l10n.signupEmailRequired;
                                   }
-                                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                      .hasMatch(value)) {
+                                  if (!_looksLikeValidEmail(value)) {
                                     return l10n.signupEmailInvalid;
                                   }
                                   return null;
@@ -518,7 +561,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                                           ),
                                         )
                                       : Text(
-                                          '✨ ${l10n.signupSendMagicLink}',
+                                          l10n.signupSendMagicLink,
                                           style: GoogleFonts.poppins(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w700,
@@ -593,87 +636,190 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
 
   Widget _buildSuccessState() {
     final l10n = AppLocalizations.of(context)!;
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Center(
-              child: MoodyCharacter(
-                size: 120,
-                mood: 'happy',
-                currentFeature: MoodyFeature.none,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              l10n.signupSuccessCheckInbox,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1E1C18),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.signupSuccessWeSentTo,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF4A4640),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _emailController.text.trim(),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2A6049),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 54,
-              child: ElevatedButton(
-                onPressed: _openEmailApp,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2A6049),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(27),
-                  ),
-                ),
-                child: Text(
-                  _getEmailButtonLabel(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: _resendMagicLink,
-              child: Text(
-                l10n.signupNoEmailReceived,
-                style: const TextStyle(color: Color(0xFF8C8780)),
-              ),
-            ),
-            TextButton(
-              onPressed: () => setState(() => _emailSent = false),
-              child: Text(
-                l10n.signupWrongEmailAddress,
-                style: const TextStyle(color: Color(0xFF8C8780)),
-              ),
-            ),
-          ],
+    final email = _emailController.text.trim();
+    final muted = GoogleFonts.poppins(
+      fontSize: 14,
+      height: 1.4,
+      color: _wmStone,
+    );
+    final actionStyle = GoogleFonts.poppins(
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+      color: _wmForest,
+    );
+
+    Widget tappable(String label, VoidCallback onTap) {
+      return GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+          child: Text(label, style: actionStyle),
         ),
+      );
+    }
+
+    return SafeArea(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight - 32),
+              child: Center(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: _magicLinkCardOuterShadows(),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: _wmWhite,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: _wmParchment.withValues(alpha: 0.65),
+                            width: 1,
+                          ),
+                        ),
+                        padding: const EdgeInsets.fromLTRB(22, 28, 22, 24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Center(
+                              child: ScaleTransition(
+                                alignment: Alignment.center,
+                                scale: _breathScale,
+                                child: const MoodyCharacter(
+                                  size: 100,
+                                  mood: 'happy',
+                                  currentFeature: MoodyFeature.none,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              l10n.signupSuccessCheckInbox,
+                              style: GoogleFonts.poppins(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                                color: _wmCharcoal,
+                                height: 1.25,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              l10n.signupSuccessTapLinkSubtitle,
+                              style: GoogleFonts.poppins(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: _wmForest,
+                                height: 1.35,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 18),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _wmForestTint,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                l10n.signupSuccessSentToLine(email),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: _wmForest,
+                                  height: 1.3,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(27),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: _wmForest.withValues(alpha: 0.32),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                  BoxShadow(
+                                    color: _wmCharcoal.withValues(alpha: 0.08),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 54,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    HapticFeedback.mediumImpact();
+                                    _openEmailApp();
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: _wmForest,
+                                    foregroundColor: _wmWhite,
+                                    elevation: 0,
+                                    shadowColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(27),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    '${_openEmailButtonLabel()} ➡️',
+                                    style: GoogleFonts.poppins(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            Wrap(
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              alignment: WrapAlignment.center,
+                              spacing: 0,
+                              runSpacing: 4,
+                              children: [
+                                Text(l10n.signupInboxFooterPrefix, style: muted),
+                                tappable(
+                                  l10n.signupInboxFooterResend,
+                                  _resendMagicLink,
+                                ),
+                                Text(l10n.signupInboxFooterOr, style: muted),
+                                tappable(
+                                  l10n.signupInboxFooterChangeEmail,
+                                  () => setState(() => _emailSent = false),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

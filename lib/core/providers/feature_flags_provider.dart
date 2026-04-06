@@ -18,7 +18,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 // ============================================================================
 
 /// Controls whether to use the new onboarding flow
-/// - true: Splash → Intro → Demo → Guest Explore → Magic Link → Main
+/// - true: Splash → Intro → Demo → Guest day plan preview → Magic Link → Main
 /// - false: Splash → Onboarding → Signup → Email Verification → Preferences → Main
 /// 
 /// Set to `true` to enable new flow, `false` to use old flow
@@ -32,13 +32,6 @@ final useNewOnboardingFlowProvider = StateProvider<bool>((ref) {
 /// - true: Show magic link option (email only, no password)
 /// - false: Use traditional email/password signup
 final useMagicLinkAuthProvider = StateProvider<bool>((ref) {
-  return true;
-});
-
-/// Controls whether guest exploration is allowed before signup
-/// - true: Allow limited exploration without authentication
-/// - false: Require authentication before any exploration
-final allowGuestExploreProvider = StateProvider<bool>((ref) {
   return true;
 });
 
@@ -68,14 +61,12 @@ class FeatureFlagsNotifier extends StateNotifier<Map<String, bool>> {
       state = {
         'new_onboarding': true,
         'magic_link_auth': true,
-        'guest_explore': true,
       };
     } catch (e) {
       // Use defaults on error
       state = {
         'new_onboarding': true,
         'magic_link_auth': true,
-        'guest_explore': true,
       };
     }
   }
@@ -121,7 +112,6 @@ class FeatureFlagsNotifier extends StateNotifier<Map<String, bool>> {
     state = {
       'new_onboarding': true,
       'magic_link_auth': true,
-      'guest_explore': true,
     };
     _saveFlags();
   }
@@ -227,6 +217,10 @@ final guestSessionProvider = StateNotifierProvider<GuestSessionNotifier, GuestSe
   return GuestSessionNotifier();
 });
 
+/// Mood key from the interactive demo (`relaxed`, `foodie`, …). Cleared when unset.
+/// Guest explore reads this to show the 3-place demo slice and header.
+final guestDemoMoodProvider = StateProvider<String?>((ref) => null);
+
 // ============================================================================
 // NEW ONBOARDING FLOW STATE
 // ============================================================================
@@ -236,7 +230,7 @@ enum OnboardingStep {
   splash,
   intro,
   demo,
-  guestExplore,
+  guestDayPlan,
   signup,
   complete,
 }
