@@ -288,8 +288,6 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     onEditTap: () => _navigateToEditVibes(profile.selectedMoods),
                   ),
                   const SizedBox(height: 24),
-                  _buildTravelGlobeCard(context),
-                  const SizedBox(height: 24),
                   _buildSectionHeader(
                     title: l10n.profilePreferencesTitle,
                     subtitle: l10n.profileSectionPreferencesSubtitle,
@@ -922,67 +920,6 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildTravelGlobeCard(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () => context.push('/profile/globe'),
-        child: Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: _wmWhite,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: _wmParchment, width: 1),
-            boxShadow: _profileCardShadow(),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: _wmForestTint,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: _wmParchment, width: 1),
-                ),
-                child: const Icon(Icons.public_rounded, color: _wmForest, size: 24),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.profileTravelGlobeTitle,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: _wmCharcoal,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l10n.profileTravelGlobeSubtitle,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        color: _wmStone,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right_rounded, color: _wmForest, size: 22),
-            ],
-          ),
-        ),
-      ),
     );
   }
 

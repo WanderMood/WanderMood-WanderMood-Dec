@@ -10,6 +10,8 @@ import 'dart:math' as math;
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
+import 'package:wandermood/core/services/taste_profile_service.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 
 class EnhancedMoodCarousel extends ConsumerStatefulWidget {
   final List<Place> places;
@@ -740,6 +742,12 @@ class _EnhancedMoodCarouselState extends ConsumerState<EnhancedMoodCarousel>
   }
 
   void _dismissPlace(Place place) {
+    TasteProfileService.recordFromPlace(
+      place,
+      interactionType: 'skipped',
+      moodContext: widget.mood,
+      timeSlot: TasteProfileService.inferTimeSlotFromHour(MoodyClock.now().hour),
+    );
     showWanderMoodToast(
       context,
       message: 'Okay, hiding ${place.name}',

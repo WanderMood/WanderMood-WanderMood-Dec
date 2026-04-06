@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/utils/auth_helper.dart';
 import 'package:wandermood/features/places/models/place.dart';
@@ -109,6 +112,13 @@ class MoodyEdgeFunctionService {
       // Cache-first for standard explore only — named filter combinations are not cached (backend always refreshes).
       if (!hasNamedFilters) {
         final cacheSection = section ?? 'discovery';
+
+        // Layer 1: SharedPreferences local cache (survives hot restart, no network).
+        final localPlaces = await _loadExplorePlacesFromLocal(
+          cacheSection, location, isLocal, effectiveLang);
+        if (localPlaces != null) return localPlaces;
+
+        // Layer 2: Supabase `places_cache` (shared across devices, single lightweight DB read).
         final cachedPlaces = await PlacesCacheUtils.tryLoadExplorePlaces(
           _supabase,
           cacheSection,
@@ -117,6 +127,8 @@ class MoodyEdgeFunctionService {
           languageCode: effectiveLang,
         );
         if (cachedPlaces != null) {
+          _saveExplorePlacesToLocal(
+            cacheSection, location, isLocal, effectiveLang, cachedPlaces);
           return cachedPlaces;
         }
       }
@@ -205,8 +217,12 @@ class MoodyEdgeFunctionService {
         return PlacesCacheUtils.placeFromMoodyExploreCard(m);
       }).toList();
 
-      // Note: Edge Function already caches the response, so we don't need to cache again here
-      // The Edge Function's cachePlaces() function handles caching automatically
+      // Persist to local storage so hot restart skips all network calls.
+      if (!hasNamedFilters && places.isNotEmpty) {
+        final cacheSection = section ?? 'discovery';
+        _saveExplorePlacesToLocal(
+          cacheSection, location, isLocal, effectiveLang, places);
+      }
 
       if (kDebugMode) {
         debugPrint('✅ Edge Function returned ${places.length} places');
@@ -298,6 +314,70 @@ class MoodyEdgeFunctionService {
       throw Exception(err);
     }
     return data;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Local persistent explore cache (SharedPreferences)
+  // ---------------------------------------------------------------------------
+
+  static const Duration _localExploreTtl = Duration(days: 7);
+
+  static String _localExploreCacheKey(
+    String section, String location, bool isLocal, String? lang,
+  ) {
+    final l = PlacesCacheUtils.normalizeExploreLanguageCode(lang);
+    final m = isLocal ? 'local' : 'travel';
+    return 'explore_local_${m}_${section.toLowerCase()}_${location.toLowerCase().trim()}_$l';
+  }
+
+  Future<List<Place>?> _loadExplorePlacesFromLocal(
+    String section, String location, bool isLocal, String? lang,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = _localExploreCacheKey(section, location, isLocal, lang);
+      final raw = prefs.getString(key);
+      final ts = prefs.getInt('${key}_ts');
+      if (raw == null || ts == null) return null;
+      final age = DateTime.now().difference(
+          DateTime.fromMillisecondsSinceEpoch(ts));
+      if (age > _localExploreTtl) return null;
+      final decoded = json.decode(raw) as List<dynamic>;
+      final places = decoded
+          .map((e) => Place.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList();
+      if (places.isEmpty) return null;
+      if (kDebugMode) {
+        debugPrint(
+          '💾 Explore local cache HIT ($key): ${places.length} places');
+      }
+      return places;
+    } catch (e) {
+      if (kDebugMode) debugPrint('⚠️ Local explore cache read error: $e');
+      return null;
+    }
+  }
+
+  Future<void> _saveExplorePlacesToLocal(
+    String section,
+    String location,
+    bool isLocal,
+    String? lang,
+    List<Place> places,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = _localExploreCacheKey(section, location, isLocal, lang);
+      final encoded = json.encode(places.map((p) => p.toJson()).toList());
+      await prefs.setString(key, encoded);
+      await prefs.setInt('${key}_ts', DateTime.now().millisecondsSinceEpoch);
+      if (kDebugMode) {
+        debugPrint(
+          '💾 Explore local cache SAVED ($key): ${places.length} places');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('⚠️ Local explore cache write error: $e');
+    }
   }
 }
 

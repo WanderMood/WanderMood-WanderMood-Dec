@@ -423,6 +423,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
       notes: _noteController.text.isNotEmpty ? _noteController.text : null,
       completedAt: MoodyClock.now(),
       mood: mood,
+      googlePlaceId: raw['placeId'] as String?,
     );
 
     await ref.read(activityRatingServiceProvider).saveRating(rating);

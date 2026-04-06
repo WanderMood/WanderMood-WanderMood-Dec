@@ -59,7 +59,7 @@ void applyNotificationNavigation(GoRouter router, String? payload) {
     case NotificationNavPayload.mainMoody:
       router.go('/main?tab=2', extra: <String, dynamic>{'tab': 2});
     case NotificationNavPayload.mainProfile:
-      router.go('/main?tab=3', extra: <String, dynamic>{'tab': 3});
+      router.go('/main?tab=4', extra: <String, dynamic>{'tab': 4});
     case NotificationNavPayload.gamification:
       router.go('/gamification');
     case NotificationNavPayload.weather:

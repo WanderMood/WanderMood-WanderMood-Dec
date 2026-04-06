@@ -1604,7 +1604,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileGenderPreferNotToSay => 'Zeg ik liever niet';
 
   @override
-  String get profileEditGenderLabel => 'Geslacht';
+  String get profileEditGenderLabel => 'Hoe identificeer je jezelf?';
 
   @override
   String get profileAgeGroup20s => '20er avonturier';
@@ -2137,7 +2137,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get drawerSavedPlaces => 'Opgeslagen plekken';
 
   @override
-  String get drawerMyAgenda => 'Mijn agenda';
+  String get drawerMyAgenda => 'Mijn Plannen';
 
   @override
   String get drawerMyBookings => 'Mijn boekingen';
@@ -4224,10 +4224,16 @@ class AppLocalizationsNl extends AppLocalizations {
   String get navExplore => 'Ontdek';
 
   @override
+  String get navAgenda => 'Mijn Plannen';
+
+  @override
   String get navProfile => 'Profiel';
 
   @override
   String get navMoody => 'Moody';
+
+  @override
+  String get exploreAlreadyInDayPlan => 'Staat al in je dagplan 👍';
 
   @override
   String get myDayStatusTitleRightNow => 'Nu bezig';
@@ -4965,7 +4971,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get agendaNoActivitiesPlannedYet =>
-      'Je hebt nog geen geplande activiteiten in je agenda';
+      'Je hebt nog geen geplande activiteiten in Mijn Plannen';
 
   @override
   String get agendaDeleteMissingId =>
@@ -5680,7 +5686,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get myDayOpenAppleMaps => 'Apple Maps';
 
   @override
-  String get agendaTitle => 'Mijn Agenda';
+  String get agendaTitle => 'Mijn Plannen';
 
   @override
   String get agendaStatusDone => 'KLAAR';

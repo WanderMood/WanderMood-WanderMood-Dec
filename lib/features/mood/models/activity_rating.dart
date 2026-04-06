@@ -10,7 +10,10 @@ class ActivityRating {
   final String? notes;
   final DateTime completedAt;
   final String mood; // How they felt during/after
-  
+
+  /// Google Place ID for taste profile (not persisted to `activity_ratings`).
+  final String? googlePlaceId;
+
   ActivityRating({
     required this.id,
     required this.userId,
@@ -23,6 +26,7 @@ class ActivityRating {
     this.notes,
     required this.completedAt,
     required this.mood,
+    this.googlePlaceId,
   });
 
   Map<String, dynamic> toJson() {
@@ -54,6 +58,7 @@ class ActivityRating {
       notes: json['notes'] as String?,
       completedAt: DateTime.parse(json['completed_at'] as String),
       mood: json['mood'] as String,
+      googlePlaceId: json['google_place_id'] as String?,
     );
   }
 

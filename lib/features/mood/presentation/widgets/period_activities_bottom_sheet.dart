@@ -73,6 +73,7 @@ class _PeriodActivitiesBottomSheetState extends ConsumerState<PeriodActivitiesBo
         activityId: activityId,
         activityName: activityName,
         placeName: location,
+        googlePlaceId: activity.rawData['placeId'] as String?,
         currentMood: widget.currentMood,
         onRated: () {
           showWanderMoodToast(

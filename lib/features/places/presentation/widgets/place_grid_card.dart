@@ -10,8 +10,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/features/places/services/places_service.dart';
-import 'package:wandermood/features/places/presentation/widgets/place_photo_carousel.dart';
 import 'package:wandermood/core/utils/explore_place_card_copy.dart';
+import 'package:wandermood/core/utils/place_card_photo_index.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_card_moody_description.dart';
 
 const Color _wmWhite = Color(0xFFFFFFFF);
@@ -30,6 +30,7 @@ class PlaceGridCard extends ConsumerWidget {
   final VoidCallback? onAddToMyDayTap;
   final Position? userLocation;
   final String? cityName; // City name for fallback distance calculation
+  final int photoSelectionSeed;
 
   const PlaceGridCard({
     Key? key,
@@ -38,35 +39,8 @@ class PlaceGridCard extends ConsumerWidget {
     this.onAddToMyDayTap,
     this.userLocation,
     this.cityName,
+    this.photoSelectionSeed = 0,
   }) : super(key: key);
-
-  // Helper method to get emoji for energy level
-  String _getEnergyEmoji(String energyLevel) {
-    switch (energyLevel.toLowerCase()) {
-      case 'low':
-        return '🧘‍♀️';
-      case 'medium':
-        return '🚶‍♂️';
-      case 'high':
-        return '🏃‍♂️';
-      default:
-        return '🚶‍♂️';
-    }
-  }
-
-  // Helper method to get color for energy level
-  Color _getEnergyColor(String energyLevel) {
-    switch (energyLevel.toLowerCase()) {
-      case 'low':
-        return Colors.teal;
-      case 'medium':
-        return Colors.amber;
-      case 'high':
-        return Colors.deepOrange;
-      default:
-        return Colors.amber;
-    }
-  }
 
   static const double _kGridImageHeight = 120;
 
@@ -100,12 +74,12 @@ class PlaceGridCard extends ConsumerWidget {
       builder: (context, snapshot) {
         final photos = snapshot.data ?? place.photos;
         if (photos.isEmpty) return _buildFallbackImage();
-        if (photos.length == 1) return buildPhotoAt(0, photos);
-        return PlacePhotoCarousel(
-          height: _kGridImageHeight,
-          photoCount: photos.length,
-          photoBuilder: (i) => buildPhotoAt(i, photos),
+        final idx = placeCardPhotoIndex(
+          place.id,
+          photos.length,
+          refreshSeed: photoSelectionSeed,
         );
+        return buildPhotoAt(idx, photos);
       },
     );
   }
@@ -282,80 +256,39 @@ class PlaceGridCard extends ConsumerWidget {
                   // Main image(s) — swipeable when the gallery has more than one photo
                   _buildPlaceImageArea(ref),
 
-                  // Social signal + open/closed (top-left)
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: Builder(
-                      builder: (context) {
-                        final social = ExplorePlaceCardCopy.socialSignalChipStyle(
-                          place.socialSignal,
-                          l10n,
-                        );
-                        final showOpen = place.openingHours?.isOpen != null;
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (social != null) ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: social.background,
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  social.label,
-                                  style: GoogleFonts.poppins(
-                                    color: social.foreground,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              if (showOpen) const SizedBox(height: 6),
-                            ],
-                            if (showOpen)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: place.openingHours!.isOpen
-                                      ? _wmForest
-                                      : _wmError.withValues(alpha: 0.92),
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  place.openingHours!.isOpen
-                                      ? l10n.dayPlanCardOpenNow
-                                      : l10n.dayPlanCardClosed,
-                                  style: GoogleFonts.poppins(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
+                  // Open/closed only (top-left) — social pills hidden for calmer grid cards.
+                  if (place.openingHours != null)
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: place.openingHours!.isOpen
+                              ? _wmForest
+                              : _wmError.withValues(alpha: 0.92),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
                           ],
-                        );
-                      },
+                        ),
+                        child: Text(
+                          place.openingHours!.isOpen
+                              ? l10n.dayPlanCardOpenNow
+                              : l10n.dayPlanCardClosed,
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
 
                   // Action buttons (directions, share, favorite) - stacked vertically
                   Positioned(
@@ -442,7 +375,7 @@ class PlaceGridCard extends ConsumerWidget {
               ),
             ),
 
-            // Text + chips fill space; full-width CTA pinned to card bottom
+            // Title row fixed; Moody + pills scroll inside remaining space (avoids grid cell overflow).
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
@@ -459,62 +392,43 @@ class PlaceGridCard extends ConsumerWidget {
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                             ),
-                            maxLines: 1,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (place.rating > 0 ||
-                            ExplorePlaceCardCopy.priceLevelEuroSymbols(
-                                    place.priceLevel)
-                                .isNotEmpty) ...[
+                        if (place.rating > 0) ...[
                           const SizedBox(width: 4),
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              if (place.rating > 0) ...[
-                                const Icon(
-                                  Icons.star,
-                                  color: _wmSunset,
-                                  size: 12,
+                              const Icon(
+                                Icons.star,
+                                color: _wmSunset,
+                                size: 12,
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                place.rating.toStringAsFixed(1),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
                                 ),
-                                const SizedBox(width: 2),
+                              ),
+                              if (place.reviewCount > 0) ...[
                                 Text(
-                                  place.rating.toStringAsFixed(1),
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                if (place.reviewCount > 0) ...[
-                                  Text(
-                                    ' · ',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w500,
-                                      color: _wmStone,
-                                    ),
-                                  ),
-                                  Text(
-                                    ExplorePlaceCardCopy.formatReviewCount(
-                                        place.reviewCount),
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w500,
-                                      color: _wmStone,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                              if (ExplorePlaceCardCopy.priceLevelEuroSymbols(
-                                      place.priceLevel)
-                                  .isNotEmpty) ...[
-                                if (place.rating > 0) const SizedBox(width: 6),
-                                Text(
-                                  ExplorePlaceCardCopy.priceLevelEuroSymbols(
-                                      place.priceLevel),
+                                  ' · ',
                                   style: GoogleFonts.poppins(
                                     fontSize: 10,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.w500,
+                                    color: _wmStone,
+                                  ),
+                                ),
+                                Text(
+                                  ExplorePlaceCardCopy.formatReviewCount(
+                                      place.reviewCount),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
                                     color: _wmStone,
                                   ),
                                 ),
@@ -524,92 +438,118 @@ class PlaceGridCard extends ConsumerWidget {
                         ],
                       ],
                     ),
-                    Builder(
-                      builder: (context) {
-                        final pl =
-                            ExplorePlaceCardCopy.primaryTypeLabelForCard(
-                                place, l10n);
-                        if (pl == null) return const SizedBox.shrink();
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: _wmForestTint,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                  color: _wmParchment, width: 0.5),
-                            ),
-                            child: Text(
-                              pl,
-                              style: GoogleFonts.poppins(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: _wmForest,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
                     const SizedBox(height: 4),
-                    PlaceCardMoodyDescription(
-                      place: place,
-                      maxLines: 4,
-                      paddingTop: 0,
-                      textStyle: GoogleFonts.poppins(
-                        fontSize: 11,
-                        height: 1.3,
-                        color: _wmDusk,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Builder(
-                      builder: (context) {
-                        final bestLbl = ExplorePlaceCardCopy
-                            .bestTimeDisplayLabel(place.bestTime, l10n);
-                        return Wrap(
-                          spacing: 4,
-                          runSpacing: 4,
-                          crossAxisAlignment: WrapCrossAlignment.center,
+                    Expanded(
+                      child: SingleChildScrollView(
+                        physics: const ClampingScrollPhysics(),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (bestLbl != null)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: _wmForestTint,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                      color: _wmParchment, width: 1),
-                                ),
-                                child: Text(
-                                  bestLbl,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 10,
-                                    color: _wmForest,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                            PlaceCardMoodyDescription(
+                              place: place,
+                              maxLines: 4,
+                              paddingTop: 0,
+                              useCardStackLayout: true,
+                              structuredTitleFontSize: 11,
+                              structuredBodyFontSize: 11,
+                              textStyle: GoogleFonts.poppins(
+                                fontSize: 11,
+                                height: 1.3,
+                                color: _wmDusk,
                               ),
-                            if (_calculateDistance() != null)
-                              _buildCategoryPill(
-                                icon: Icons.directions_walk,
-                                label: _calculateDistance()!,
-                                color: _wmForest,
-                              ),
-                            if (explorePriceLabel.isNotEmpty)
-                              _buildCategoryPill(
-                                icon: _getCurrencyIcon(),
-                                label: explorePriceLabel,
-                                color:
-                                    ExplorePlaceCardCopy.explorePriceBadgeColor(
-                                        place),
-                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Builder(
+                              builder: (context) {
+                                final primaryLbl =
+                                    ExplorePlaceCardCopy.primaryTypeLabelForCard(
+                                        place, l10n);
+                                final bestLbl = ExplorePlaceCardCopy
+                                    .bestTimeDisplayLabel(place.bestTime, l10n);
+                                final durationLbl = ExplorePlaceCardCopy
+                                    .exploreCardVisitDurationLabel(place, l10n);
+                                return Wrap(
+                                  spacing: 4,
+                                  runSpacing: 4,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    if (primaryLbl != null)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: _wmForestTint,
+                                          borderRadius: BorderRadius.circular(16),
+                                          border: Border.all(
+                                              color: _wmParchment, width: 1),
+                                        ),
+                                        child: Text(
+                                          primaryLbl,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 10,
+                                            color: _wmForest,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    if (bestLbl != null)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: _wmForestTint,
+                                          borderRadius: BorderRadius.circular(16),
+                                          border: Border.all(
+                                              color: _wmParchment, width: 1),
+                                        ),
+                                        child: Text(
+                                          bestLbl,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 10,
+                                            color: _wmForest,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: _wmForestTint,
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                            color: _wmParchment, width: 1),
+                                      ),
+                                      child: Text(
+                                        durationLbl,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 10,
+                                          color: _wmForest,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    if (_calculateDistance() != null)
+                                      _buildCategoryPill(
+                                        icon: Icons.directions_walk,
+                                        label: _calculateDistance()!,
+                                        color: _wmForest,
+                                      ),
+                                    if (explorePriceLabel.isNotEmpty)
+                                      _buildCategoryPill(
+                                        icon: _getCurrencyIcon(),
+                                        label: explorePriceLabel,
+                                        color: ExplorePlaceCardCopy
+                                            .explorePriceBadgeColor(place),
+                                      ),
+                                  ],
+                                );
+                              },
+                            ),
                           ],
-                        );
-                      },
+                        ),
+                      ),
                     ),
                   ],
                 ),

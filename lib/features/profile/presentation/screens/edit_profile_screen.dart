@@ -88,7 +88,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       // Fetch extra fields from profiles (date_of_birth, currently_exploring, travel_vibes)
       final profileResponse = await supabase
           .from('profiles')
-          .select('travel_vibes, currently_exploring, date_of_birth')
+          .select('travel_vibes, currently_exploring, date_of_birth, gender')
           .eq('id', userId)
           .maybeSingle();
 
@@ -115,7 +115,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           _emailController.text = email;
           _bioController.text = currentProfile?.bio ?? '';
           _dateOfBirth = dateOfBirth;
-          _selectedGender = currentProfile?.gender;
+          _selectedGender = (profileResponse?['gender'] as String?) ??
+              currentProfile?.gender;
           _profileImageUrl = avatarUrl;
           // 'local' / 'traveling' / 'traveler' are travel-mode flags, not city names.
           // Show an empty field so the user can type their actual city.
@@ -321,6 +322,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           .update({
             'currently_exploring': _locationController.text.isEmpty ? null : _locationController.text,
             'travel_vibes': _favoriteVibes,
+            'gender': _selectedGender,
             'updated_at': DateTime.now().toIso8601String(),
           })
           .eq('id', userId);
@@ -333,7 +335,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             'user_id': userId,
             'selected_moods': _favoriteVibes,
             'age_group': _deriveAgeGroup(_dateOfBirth),
-            if (_selectedGender != null) 'gender': _selectedGender,
             'dietary_restrictions':
                 normalizeInclusionPreferenceKeys(_dietaryInclusionKeys),
             'updated_at': DateTime.now().toIso8601String(),
@@ -1105,10 +1106,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Widget _buildGenderCard() {
     final l10n = AppLocalizations.of(context)!;
     const options = [
-      ('woman', '👩', null),
-      ('man', '👨', null),
-      ('non_binary', '🧑', null),
-      ('prefer_not_to_say', '🔒', null),
+      'man',
+      'woman',
+      'non_binary',
+      'prefer_not_to_say',
     ];
     return Container(
       padding: const EdgeInsets.all(20),
@@ -1129,49 +1130,50 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: options.map((opt) {
-              final (key, emoji, _) = opt;
-              final label = _genderLabel(l10n, key);
-              final isSelected = _selectedGender == key;
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedGender = isSelected ? null : key;
-                  });
-                  _checkForChanges();
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: isSelected ? _wmForest : const Color(0xFFF9FAFB),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isSelected ? _wmForest : _wmParchment,
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(emoji, style: const TextStyle(fontSize: 15)),
-                      const SizedBox(width: 6),
-                      Text(
-                        label,
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: isSelected ? Colors.white : const Color(0xFF1E1C18),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (var i = 0; i < options.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 8),
+                  Builder(builder: (context) {
+                    final key = options[i];
+                    final label = _genderLabel(l10n, key);
+                    final isSelected = _selectedGender == key;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedGender = isSelected ? null : key;
+                        });
+                        _checkForChanges();
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: isSelected ? _wmForest : _wmForestTint,
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: isSelected ? _wmForest : _wmParchment,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Text(
+                          label,
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color:
+                                isSelected ? Colors.white : const Color(0xFF1E1C18),
+                          ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
+                    );
+                  }),
+                ],
+              ],
+            ),
           ),
         ],
       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/core/services/taste_profile_service.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 import '../models/place.dart';
 
 final savedPlacesServiceProvider = Provider<SavedPlacesService>((ref) {
@@ -127,6 +129,12 @@ class SavedPlacesService {
           'saved_at': DateTime.now().toIso8601String(),
         });
       }
+
+      TasteProfileService.recordFromPlace(
+        place,
+        interactionType: 'saved',
+        timeSlot: TasteProfileService.inferTimeSlotFromHour(MoodyClock.now().hour),
+      );
 
       if (kDebugMode) debugPrint('✅ Place saved: ${place.name}');
     } catch (e) {

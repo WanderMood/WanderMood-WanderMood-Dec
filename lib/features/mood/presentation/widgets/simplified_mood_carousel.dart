@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'dart:math' as math;
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
+import 'package:wandermood/core/services/taste_profile_service.dart';
 
 class SimplifiedMoodCarousel extends ConsumerStatefulWidget {
   final List<Place> places;
@@ -199,6 +200,13 @@ class _SimplifiedMoodCarouselState extends ConsumerState<SimplifiedMoodCarousel>
           _savePlaceForLater(place);
         } else {
           if (!mounted) return false;
+          TasteProfileService.recordFromPlace(
+            place,
+            interactionType: 'skipped',
+            moodContext: widget.mood,
+            timeSlot:
+                TasteProfileService.inferTimeSlotFromHour(MoodyClock.now().hour),
+          );
           setState(() {
             _dismissedPlaces.add(place.id);
           });

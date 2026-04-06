@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import '../../../profile/data/providers/visited_places_provider.dart';
+import '../../../profile/domain/providers/current_user_profile_provider.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 import '../../../home/presentation/screens/dynamic_my_day_provider.dart';
 import '../../providers/daily_mood_state_provider.dart';
@@ -306,7 +307,9 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           country: locationData?['country'],
           placeName: locationData?['placeName'],
         );
-        
+
+        await ref.read(currentUserProfileProvider.notifier).refresh();
+
         // Force refresh the globe data
         ref.invalidate(visitedPlacesProvider);
         
@@ -518,6 +521,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               wouldRecommend: false,
               completedAt: MoodyClock.now(),
               mood: _selectedMood ?? 'neutral',
+              googlePlaceId: activity.rawData['placeId'] as String?,
             ));
           }
         }
@@ -543,6 +547,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           activityId: activity.activityId,
           activityName: activity.activityName,
           placeName: activity.placeName,
+          googlePlaceId: activity.googlePlaceId,
           currentMood: _selectedMood ?? 'neutral',
         ),
       );

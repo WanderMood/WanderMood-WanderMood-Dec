@@ -19,6 +19,7 @@ import 'package:wandermood/l10n/app_localizations.dart';
 import 'dynamic_my_day_provider.dart';
 import 'package:wandermood/features/home/presentation/providers/my_day_free_time_cache_provider.dart';
 import '../../../profile/presentation/widgets/profile_drawer.dart';
+import '../../../profile/domain/providers/current_user_profile_provider.dart';
 import '../../../profile/domain/providers/profile_provider.dart';
 import '../../../weather/providers/weather_provider.dart';
 import '../widgets/day_execution_hero_card.dart';
@@ -39,6 +40,8 @@ import 'package:wandermood/core/utils/offline_feedback.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
+import 'package:wandermood/core/services/taste_profile_service.dart';
+import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class DynamicMyDayScreen extends ConsumerStatefulWidget {
@@ -139,6 +142,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     setState(() {
       _moodStreak = (profile?['mood_streak'] as int?) ?? 0;
     });
+    if (mounted) {
+      unawaited(ref.read(currentUserProfileProvider.notifier).refresh());
+    }
   }
 
   Future<void> _updateMoodStreakFromCompletions() async {
@@ -2359,6 +2365,13 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
     HapticFeedback.mediumImpact();
     ref.read(activityManagerProvider.notifier).markActivityDone(activityId);
+    TasteProfileService.recordFromActivityRaw(
+      activity.rawData,
+      interactionType: 'completed',
+      moodContext: ref.read(dailyMoodStateNotifierProvider).currentMood,
+      timeSlot:
+          TasteProfileService.inferTimeSlotFromHour(MoodyClock.now().hour),
+    );
     final confirmId =
         activity.rawData['placeId'] as String? ??
         activity.rawData['id'] as String? ??

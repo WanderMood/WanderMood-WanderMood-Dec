@@ -5,7 +5,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
@@ -878,119 +877,16 @@ class _ExcitingGetReadySheetContentState
           ),
         ),
         const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: _QuickActionTile(
-                label: l10n.getReadyQuickShare,
-                icon: Icons.ios_share_rounded,
-                onTap: _onShareTap,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _QuickActionTile(
-                label: l10n.getReadyQuickCalendar,
-                icon: Icons.event_rounded,
-                onTap: _onCalendarTap,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _QuickActionTile(
-                label: l10n.getReadyQuickParking,
-                icon: Icons.local_parking_rounded,
-                onTap: _onParkingTap,
-              ),
-            ),
-          ],
+        SizedBox(
+          width: double.infinity,
+          child: _QuickActionTile(
+            label: l10n.dayPlanCardDirections,
+            icon: Icons.directions_rounded,
+            onTap: widget.onOpenDirections,
+          ),
         ),
       ],
     );
-  }
-
-  void _onShareTap() {
-    final title = widget.activity.rawData['title'] as String? ?? 'this place';
-    final time = widget.formatTime(widget.activity.startTime);
-    Share.share('Join me at $title around $time – planned with WanderMood.');
-  }
-
-  Future<void> _onCalendarTap() async {
-    final title =
-        widget.activity.rawData['title'] as String? ?? 'WanderMood activity';
-    final start = widget.activity.startTime.toUtc();
-    final end = widget.activity.endTime.toUtc();
-    final details = widget.activity.rawData['description'] as String? ??
-        'Planned with WanderMood';
-    final location = widget.activity.rawData['address'] as String? ??
-        widget.activity.rawData['location'] as String? ??
-        '';
-
-    final uri = Uri.parse(
-      'https://calendar.google.com/calendar/render?action=TEMPLATE'
-      '&text=${Uri.encodeComponent(title)}'
-      '&dates=${_formatIso8601Utc(start)}/${_formatIso8601Utc(end)}'
-      '&details=${Uri.encodeComponent(details)}'
-      '&location=${Uri.encodeComponent(location.toString())}',
-    );
-
-    try {
-      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-      if (!launched && mounted) {
-        _showCalendarSnackBar();
-      }
-    } catch (_) {
-      if (mounted) _showCalendarSnackBar();
-    }
-  }
-
-  String _formatIso8601Utc(DateTime utc) {
-    final y = utc.year;
-    final m = utc.month.toString().padLeft(2, '0');
-    final d = utc.day.toString().padLeft(2, '0');
-    final h = utc.hour.toString().padLeft(2, '0');
-    final min = utc.minute.toString().padLeft(2, '0');
-    final s = utc.second.toString().padLeft(2, '0');
-    return '$y$m${d}T$h$min${s}Z';
-  }
-
-  void _showCalendarSnackBar() {
-    if (!mounted) return;
-    final l10n = AppLocalizations.of(context)!;
-    showWanderMoodToast(
-      context,
-      message: '${l10n.getReadyQuickCalendar} – open in browser or app',
-    );
-  }
-
-  void _onParkingTap() async {
-    final loc = widget.activity.rawData['location'] as String?;
-    Uri url;
-    if (loc != null && loc.contains(',')) {
-      final parts = loc.split(',');
-      if (parts.length == 2) {
-        final lat = double.tryParse(parts[0]);
-        final lng = double.tryParse(parts[1]);
-        if (lat != null && lng != null) {
-          url = Uri.parse(
-            'https://www.google.com/maps/search/?api=1&query=parking%20near%20$lat,$lng',
-          );
-        } else {
-          url = Uri.parse(
-            'https://www.google.com/maps/search/?api=1&query=parking',
-          );
-        }
-      } else {
-        url = Uri.parse(
-          'https://www.google.com/maps/search/?api=1&query=parking',
-        );
-      }
-    } else {
-      url = Uri.parse(
-        'https://www.google.com/maps/search/?api=1&query=parking',
-      );
-    }
-    await launchUrl(url, mode: LaunchMode.externalApplication);
   }
 
   Future<void> _onPlaylistTap(String themeLabel) async {

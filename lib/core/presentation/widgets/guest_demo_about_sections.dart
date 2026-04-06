@@ -43,10 +43,18 @@ class GuestDemoAboutSectionsView extends StatelessWidget {
     super.key,
     required this.source,
     this.compact = false,
+    /// When [compact] is true, max lines for the first section body (default 5).
+    this.compactBodyMaxLines = 5,
+    /// Optional smaller type for tight cards (e.g. Explore grid).
+    this.compactTitleFontSize,
+    this.compactBodyFontSize,
   });
 
   final String source;
   final bool compact;
+  final int compactBodyMaxLines;
+  final double? compactTitleFontSize;
+  final double? compactBodyFontSize;
 
   static const Color _forest = Color(0xFF2A6049);
   static const Color _charcoal = Color(0xFF374151);
@@ -66,7 +74,7 @@ class GuestDemoAboutSectionsView extends StatelessWidget {
     }
 
     if (compact) {
-      return _buildCompact(sections);
+      return _buildCompact(sections, compactBodyMaxLines);
     }
 
     return Column(
@@ -82,15 +90,20 @@ class GuestDemoAboutSectionsView extends StatelessWidget {
 
   /// Day-plan cards: first section only (e.g. "What kind of place is this?").
   /// Further sections appear on the activity detail screen.
-  Widget _buildCompact(List<GuestDemoAboutSection> sections) {
+  Widget _buildCompact(
+    List<GuestDemoAboutSection> sections,
+    int bodyMaxLines,
+  ) {
     final first = sections.first;
+    final titleFs = compactTitleFontSize ?? 13;
+    final bodyFs = compactBodyFontSize ?? 13;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           first.title,
           style: GoogleFonts.poppins(
-            fontSize: 13,
+            fontSize: titleFs,
             fontWeight: FontWeight.w700,
             color: _forest,
             height: 1.3,
@@ -100,11 +113,11 @@ class GuestDemoAboutSectionsView extends StatelessWidget {
         Text(
           first.body,
           style: GoogleFonts.poppins(
-            fontSize: 13,
+            fontSize: bodyFs,
             color: _charcoal,
             height: 1.45,
           ),
-          maxLines: 5,
+          maxLines: bodyMaxLines.clamp(1, 12),
           overflow: TextOverflow.ellipsis,
         ),
       ],
@@ -146,14 +159,7 @@ class GuestDemoAboutSectionsView extends StatelessWidget {
             const MoodyCharacter(size: 40, mood: 'happy'),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(s.title, style: titleStyle),
-                  const SizedBox(height: 8),
-                  Text(s.body, style: moodyBodyStyle),
-                ],
-              ),
+              child: Text(s.body, style: moodyBodyStyle),
             ),
           ],
         ),

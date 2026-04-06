@@ -1,15 +1,6 @@
 import 'package:flutter/material.dart';
-
-/// Design token `wmError`
-const Color kOfflineSnackColor = Color(0xFFE05C5C);
+import 'package:wandermood/core/utils/moody_toast.dart';
 
 void showOfflineSnackBar(BuildContext context) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text('This feature needs an internet connection'),
-      backgroundColor: kOfflineSnackColor,
-      behavior: SnackBarBehavior.floating,
-      duration: Duration(seconds: 2),
-    ),
-  );
+  showMoodyToast(context, 'This feature needs an internet connection');
 }

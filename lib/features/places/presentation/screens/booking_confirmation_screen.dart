@@ -109,7 +109,7 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
           leading: const Icon(Icons.check_circle, color: Colors.white, size: 20),
           actionLabel: l10n.bookingViewAction,
           onAction: () {
-            dismissWanderMoodToast();
+            dismissWanderMoodToast(context);
             context.go('/agenda');
           },
         );

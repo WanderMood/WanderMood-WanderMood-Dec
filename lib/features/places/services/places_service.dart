@@ -25,6 +25,18 @@ class PlacesService extends _$PlacesService {
   /// Deduped photo URL futures for Explore list/grid cards (avoids repeating details calls).
   final Map<String, Future<List<String>>> _exploreCardPhotoFutures = {};
 
+  /// In-session Place Details by place id + language (avoids duplicate edge/Google calls).
+  final Map<String, Map<String, dynamic>> _placeDetailsMemoryCache = {};
+
+  /// Concurrent [getPlaceDetails] for the same key share one edge invocation.
+  final Map<String, Future<Map<String, dynamic>>> _placeDetailsInflight = {};
+
+  /// 7-day session cache for text-search results (query+lang → Google JSON results).
+  final Map<String, List<PlacesSearchResult>> _searchMemoryCache = {};
+  final Map<String, DateTime> _searchCacheTimestamps = {};
+  final Map<String, Future<List<PlacesSearchResult>>> _searchInflight = {};
+  static const Duration _searchCacheTtl = Duration(days: 7);
+
   @override
   Future<void> build() async {
     await _initializePlaces();
@@ -45,7 +57,20 @@ class PlacesService extends _$PlacesService {
   void clearPlaceCache() {
     _placeCache.clear();
     _exploreCardPhotoFutures.clear();
+    _placeDetailsMemoryCache.clear();
+    _placeDetailsInflight.clear();
+    _searchMemoryCache.clear();
+    _searchCacheTimestamps.clear();
+    _searchInflight.clear();
     debugPrint('🗑️ Cleared place cache');
+  }
+
+  String _normalizedGooglePlaceIdForDetails(String placeId) {
+    final t = placeId.trim();
+    if (t.startsWith('google_')) {
+      return t.substring('google_'.length);
+    }
+    return t;
   }
 
   static List<String> mergeUniquePhotoUrls(
@@ -124,77 +149,133 @@ class PlacesService extends _$PlacesService {
     }
   }
 
-  /// Search for places based on a query string with smart caching
-  Future<List<PlacesSearchResult>> searchPlaces(String query) async {
-    if (!_isInitialized) {
-      debugPrint('⚠️ Service not initialized, initializing now...');
-      await _initializePlaces();
+  /// Search for places via the Supabase `places` edge function (server-side Google call).
+  ///
+  /// Results are cached in memory for 7 days per query+language.
+  /// Concurrent calls for the same query share one edge invocation.
+  Future<List<PlacesSearchResult>> searchPlaces(
+    String query, {
+    String? language,
+  }) async {
+    final lang = language ??
+        PlacesCacheUtils.normalizeExploreLanguageCode(
+          ref.read(localeProvider)?.languageCode ??
+              ui.PlatformDispatcher.instance.locale.languageCode,
+        );
+    final cacheKey = '$query|$lang';
+
+    final ts = _searchCacheTimestamps[cacheKey];
+    if (ts != null && DateTime.now().difference(ts) < _searchCacheTtl) {
+      final cached = _searchMemoryCache[cacheKey];
+      if (cached != null) {
+        if (kDebugMode) debugPrint('💾 searchPlaces cache hit: $query ($lang)');
+        return cached;
+      }
     }
-    
-    // If Places API is disabled (no API key), return empty results
-    if (_places == null) {
-      debugPrint('🚫 Places API disabled - returning empty results for query: $query');
-      return [];
-    }
-    
+
+    final fut = _searchInflight.putIfAbsent(
+      cacheKey,
+      () => _searchPlacesViaEdge(query, lang).then((r) {
+            if (r.isNotEmpty) {
+              _searchMemoryCache[cacheKey] = r;
+              _searchCacheTimestamps[cacheKey] = DateTime.now();
+            }
+            return r;
+          }).whenComplete(() {
+            _searchInflight.remove(cacheKey);
+          }),
+    );
+    return fut;
+  }
+
+  Future<List<PlacesSearchResult>> _searchPlacesViaEdge(
+    String query,
+    String lang,
+  ) async {
+    if (kDebugMode) debugPrint('🔍 searchPlaces via edge: $query ($lang)');
+
     try {
-      debugPrint('🔍 Smart search for places with query: $query');
-      
-      // Add a timeout to prevent long-running API calls
-      final lang = PlacesCacheUtils.normalizeExploreLanguageCode(
-        ref.read(localeProvider)?.languageCode ??
-            ui.PlatformDispatcher.instance.locale.languageCode,
-      );
-      final response = await _places.searchByText(
-        query,
-        type: 'tourist_attraction',
-        language: lang,
-      ).timeout(const Duration(seconds: 5), onTimeout: () {
-        debugPrint('⏱️ API call timed out for query: $query');
-        throw TimeoutException('API call timed out');
+      final supabase = Supabase.instance.client;
+      final fnResponse = await supabase.functions.invoke(
+        'places',
+        body: {
+          'type': 'search',
+          'query': query,
+          'language': lang,
+        },
+      ).timeout(const Duration(seconds: 10), onTimeout: () {
+        throw TimeoutException('Edge search timed out');
       });
 
-      debugPrint('📍 Places API Response Status: ${response.status}');
-      if (response.errorMessage != null) {
-        debugPrint('❌ API Error Message: ${response.errorMessage}');
-      }
-
-      if (response.status == "OK") {
-        debugPrint('✅ Found ${response.results.length} places');
-        for (var place in response.results) {
-          debugPrint('  - ${place.name} (${place.placeId})');
-        }
-        return response.results;
-      } else {
-        debugPrint('❌ Places API Error: ${response.status}');
+      if (fnResponse.status != 200) {
+        debugPrint('❌ Edge search error ${fnResponse.status}');
         return [];
       }
-    } catch (e) {
-      if (e is TimeoutException) {
-        debugPrint('⏱️ Places API request timed out: $e');
-      } else {
-      debugPrint('❌ Error searching places: $e');
+
+      final outer = fnResponse.data as Map<String, dynamic>?;
+      final data = (outer?['data'] as Map<String, dynamic>?) ?? {};
+      final status = data['status'] as String?;
+
+      if (status != 'OK') {
+        if (kDebugMode) debugPrint('❌ Edge search status: $status');
+        return [];
       }
+
+      final parsed = PlacesSearchResponse.fromJson(data);
+      if (kDebugMode) {
+        debugPrint('✅ Edge search: ${parsed.results.length} results for "$query"');
+      }
+      return parsed.results;
+    } catch (e) {
+      debugPrint('❌ searchPlaces edge error: $e');
       return [];
     }
   }
 
   /// Get detailed place information by place ID via the Supabase `places` edge function.
   /// Routes server-side so the Google API key is never exposed on the client.
+  ///
+  /// Deduplicates concurrent calls and caches successful responses in memory for the session
+  /// so one open of place detail (photos + description + reviews + Moody) does not multiply
+  /// billable Google Details requests.
   Future<Map<String, dynamic>> getPlaceDetails(String placeId) async {
-    debugPrint('🏷️ Getting details for place: $placeId');
+    final raw = _normalizedGooglePlaceIdForDetails(placeId);
+    if (raw.isEmpty) return {};
+
+    final lang = PlacesCacheUtils.normalizeExploreLanguageCode(
+      ref.read(localeProvider)?.languageCode ??
+          ui.PlatformDispatcher.instance.locale.languageCode,
+    );
+    final cacheKey = '$raw|$lang';
+
+    final mem = _placeDetailsMemoryCache[cacheKey];
+    if (mem != null) return mem;
+
+    final fut = _placeDetailsInflight.putIfAbsent(
+      cacheKey,
+      () => _getPlaceDetailsFromEdge(raw, lang).then((r) {
+            if (r.isNotEmpty) _placeDetailsMemoryCache[cacheKey] = r;
+            return r;
+          }).whenComplete(() {
+            _placeDetailsInflight.remove(cacheKey);
+          }),
+    );
+    return fut;
+  }
+
+  Future<Map<String, dynamic>> _getPlaceDetailsFromEdge(
+    String rawPlaceId,
+    String lang,
+  ) async {
+    debugPrint('🏷️ Getting details for place: $rawPlaceId');
 
     try {
       final supabase = Supabase.instance.client;
-      final lang = PlacesCacheUtils.normalizeExploreLanguageCode(
-        ref.read(localeProvider)?.languageCode ??
-            ui.PlatformDispatcher.instance.locale.languageCode,
-      );
       final fnResponse = await supabase.functions.invoke(
         'places',
         body: {
           'type': 'details',
-          'placeId': placeId,
+          'placeId': rawPlaceId,
           'language': lang,
         },
       );

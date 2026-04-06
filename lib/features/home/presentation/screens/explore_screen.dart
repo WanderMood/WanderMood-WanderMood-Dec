@@ -36,6 +36,7 @@ import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/core/utils/moody_toast.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
@@ -97,6 +98,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   /// Rotates named-filter fetches so "Load more" adds fresh cards without backend pagination.
   int _exploreMoreRound = 0;
   bool _isLoadingMoreExplore = false;
+
+  /// Changes hero photo index for each place when Explore feed is refreshed.
+  int _explorePlacePhotoRefreshSeed = 0;
 
   /// How many places to show in list/grid (capped by filtered list length).
   int _exploreVisiblePlaceCount = _kExplorePageSize;
@@ -207,6 +211,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       ref.read(locationNotifierProvider.notifier).getCurrentLocation();
       _scheduleLoadSectionsIfReady();
     });
+    _explorePlacePhotoRefreshSeed = math.Random().nextInt(2000000000);
   }
 
   @override
@@ -232,6 +237,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     if (!connected) {
       showOfflineSnackBar(context);
       return;
+    }
+    if (mounted) {
+      setState(() => _explorePlacePhotoRefreshSeed++);
     }
     ref.invalidate(moodyExploreAutoProvider);
     await _loadAllSections();
@@ -979,18 +987,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           matchesCategory;
     }).toList();
 
-    // Sort places: preference matches first, then by rating
-    filteredPlaces.sort((a, b) {
-      final aMatchesPrefs = preferencesService.placeMatchesInterests(a) ||
-          preferencesService.placeMatchesTravelStyles(a);
-      final bMatchesPrefs = preferencesService.placeMatchesInterests(b) ||
-          preferencesService.placeMatchesTravelStyles(b);
-
-      if (aMatchesPrefs && !bMatchesPrefs) return -1;
-      if (!aMatchesPrefs && bMatchesPrefs) return 1;
-
-      return (b.rating ?? 0.0).compareTo(a.rating ?? 0.0);
-    });
+    // Preserve backend / list order (shuffle); do not re-sort here.
 
     // Debug logging
     if (_activeFiltersCount > 0 || _searchQuery.isNotEmpty) {
@@ -1578,6 +1575,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 showOfflineSnackBar(context);
                 return;
               }
+              if (mounted) {
+                setState(() => _explorePlacePhotoRefreshSeed++);
+              }
               ref.invalidate(moodyExploreAutoProvider);
               await _loadAllSections();
               if (isLocationError) {
@@ -1665,9 +1665,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
     if (filteredPlaces.isEmpty) {
       final l10n = AppLocalizations.of(context)!;
-      // While the user is actively typing / search is in-flight, show a
-      // "searching" indicator instead of "no results found".
-      final isTyping = _isSearching || (_searchQuery.trim().length >= 1 && _searchResults == null);
+      // While search is in-flight or sections are refetching (cards cleared), show
+      // loading — not "no results" (filter apply clears section.cards until Moody returns).
+      final sectionsReloadingEmpty =
+          _sections.any((s) => s.isLoading && s.cards.isEmpty);
+      final showLoadingEmpty = sectionsReloadingEmpty ||
+          _isSearching ||
+          (_searchQuery.trim().length >= 1 && _searchResults == null);
       return CustomScrollView(
         slivers: [
           SliverFillRemaining(
@@ -1676,7 +1680,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               children: [
                 Expanded(
                   child: Center(
-                    child: isTyping
+                    child: showLoadingEmpty
                         ? Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -1772,7 +1776,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         ? SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.62,
+              // Slightly taller cells so Moody copy + pill wraps fit without bottom overflow.
+              childAspectRatio: 0.54,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
             ),
@@ -1784,6 +1789,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   place: place,
                   userLocation: ul,
                   cityName: currentCity,
+                  photoSelectionSeed: _explorePlacePhotoRefreshSeed,
                   onTap: () {
                     ref
                         .read(placesServiceProvider.notifier)
@@ -1807,6 +1813,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   place: place,
                   userLocation: ul,
                   cityName: currentCity,
+                  photoSelectionSeed: _explorePlacePhotoRefreshSeed,
                   cardMargin: const EdgeInsets.only(top: 2, bottom: 16),
                   showAddToMyDayButton: true,
                   onAddToMyDayTap: () => _showAddToMyDaySheet(place),
@@ -3595,14 +3602,38 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   // --- Add to My Day ---
 
-  void _showAddToMyDaySheet(Place place) {
+  Future<void> _showAddToMyDaySheet(Place place) async {
+    final l10n = AppLocalizations.of(context)!;
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      if (mounted) {
+        showMoodyToast(context, l10n.myDayAddSignInRequired);
+      }
+      return;
+    }
+
     final selectedDate = ref.read(selectedMyDayDateProvider);
     final planningDate = DateTime(
       selectedDate.year,
       selectedDate.month,
       selectedDate.day,
     );
-    showModalBottomSheet(
+
+    final scheduledActivityService =
+        ref.read(scheduledActivityServiceProvider);
+    final occupied =
+        await scheduledActivityService.getOccupiedTimeSlotKeysForPlaceOnDate(
+      placeId: place.id,
+      date: planningDate,
+    );
+
+    if (!mounted) return;
+    if (occupied.length >= 3) {
+      showMoodyToast(context, l10n.exploreAlreadyInDayPlan);
+      return;
+    }
+
+    await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.white,
       isScrollControlled: true,
@@ -3662,8 +3693,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         }
       }
 
+      final photoIdx = place.photos.isNotEmpty
+          ? (place.id.hashCode.abs() + _explorePlacePhotoRefreshSeed) %
+              place.photos.length
+          : 0;
       final imageUrl = place.photos.isNotEmpty
-          ? place.photos.first
+          ? place.photos[photoIdx]
           : 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80';
 
       final l10n = AppLocalizations.of(context)!;
@@ -3682,12 +3717,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         location: LatLng(place.location.lat, place.location.lng),
         paymentType: paymentType,
         priceLevel: place.priceRange,
+        placeId: place.id,
       );
 
       final scheduledActivityService =
           ref.read(scheduledActivityServiceProvider);
-      await scheduledActivityService
-          .saveScheduledActivities([activity], isConfirmed: false);
+      final inserted = await scheduledActivityService.saveScheduledActivities(
+        [activity],
+        isConfirmed: false,
+      );
+      if (inserted == 0) {
+        if (mounted) {
+          showMoodyToast(context, l10n.exploreAlreadyInDayPlan);
+        }
+        return;
+      }
 
       final selectedDay =
           DateTime(startTime.year, startTime.month, startTime.day);
@@ -3757,7 +3801,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 }
 
 /// Bottom sheet for selecting a time slot when adding a place to My Day.
-class _ExploreAddToMyDaySheet extends StatefulWidget {
+class _ExploreAddToMyDaySheet extends ConsumerStatefulWidget {
   final Place place;
   final DateTime planningDate;
   final void Function(DateTime) onTimeSelected;
@@ -3769,13 +3813,17 @@ class _ExploreAddToMyDaySheet extends StatefulWidget {
   });
 
   @override
-  State<_ExploreAddToMyDaySheet> createState() =>
+  ConsumerState<_ExploreAddToMyDaySheet> createState() =>
       _ExploreAddToMyDaySheetState();
 }
 
-class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
-  int _selectedSlotIndex = 1; // 0 morning, 1 afternoon, 2 evening
+class _ExploreAddToMyDaySheetState extends ConsumerState<_ExploreAddToMyDaySheet> {
+  static const _slotKeys = ['morning', 'afternoon', 'evening'];
+
+  int _selectedSlotIndex = 1;
   late DateTime _selectedDate;
+  Set<String> _occupiedSlots = {};
+  bool _loadingSlots = true;
 
   DateTime _dateOnly(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
 
@@ -3796,8 +3844,31 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
 
   DateTime get _selectedStartTime {
     final d = _selectedDate;
-    final hour = _selectedSlotIndex == 0 ? 9 : (_selectedSlotIndex == 1 ? 14 : 19);
+    final hour =
+        _selectedSlotIndex == 0 ? 9 : (_selectedSlotIndex == 1 ? 14 : 19);
     return DateTime(d.year, d.month, d.day, hour, 0);
+  }
+
+  int _firstFreeSlotIndex() {
+    for (var i = 0; i < 3; i++) {
+      if (!_occupiedSlots.contains(_slotKeys[i])) return i;
+    }
+    return 0;
+  }
+
+  Future<void> _refreshOccupiedSlots() async {
+    setState(() => _loadingSlots = true);
+    final svc = ref.read(scheduledActivityServiceProvider);
+    final o = await svc.getOccupiedTimeSlotKeysForPlaceOnDate(
+      placeId: widget.place.id,
+      date: _selectedDate,
+    );
+    if (!mounted) return;
+    setState(() {
+      _occupiedSlots = o;
+      _loadingSlots = false;
+      _selectedSlotIndex = _firstFreeSlotIndex();
+    });
   }
 
   Future<void> _pickCustomDate() async {
@@ -3815,15 +3886,17 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
       confirmText: l10n.exploreDatePickerConfirm,
     );
     if (picked == null) return;
-    setState(() {
-      _selectedDate = _dateOnly(picked);
-    });
+    setState(() => _selectedDate = _dateOnly(picked));
+    await _refreshOccupiedSlots();
   }
 
   @override
   void initState() {
     super.initState();
     _selectedDate = _dateOnly(widget.planningDate);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_refreshOccupiedSlots());
+    });
   }
 
   @override
@@ -3835,8 +3908,9 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
     final isTodaySelected = _isSameDay(_selectedDate, today);
     final isTomorrowSelected = _isSameDay(_selectedDate, tomorrow);
     final isCustomSelected = !isTodaySelected && !isTomorrowSelected;
+    final allTaken = _occupiedSlots.length >= 3 && !_loadingSlots;
 
-    Widget chip({
+    Widget dayChip({
       required String label,
       required bool selected,
       required VoidCallback onTap,
@@ -3870,6 +3944,71 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
       );
     }
 
+    Widget timeChip({
+      required String label,
+      required int slotIndex,
+    }) {
+      final key = _slotKeys[slotIndex];
+      final taken = _occupiedSlots.contains(key);
+      final selected = _selectedSlotIndex == slotIndex && !taken;
+      return Expanded(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: taken || _loadingSlots
+              ? null
+              : () => setState(() => _selectedSlotIndex = slotIndex),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: taken
+                  ? const Color(0xFFF0EEEB)
+                  : (selected
+                      ? const Color(0xFFEBF3EE)
+                      : const Color(0xFFF5F0E8)),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: taken
+                    ? const Color(0xFFE0DDD8)
+                    : (selected
+                        ? const Color(0xFF2A6049)
+                        : const Color(0xFFE8E2D8)),
+                width: selected ? 1.5 : 1,
+              ),
+            ),
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight:
+                            selected ? FontWeight.w600 : FontWeight.w500,
+                        color: taken
+                            ? const Color(0xFFB0ABA5)
+                            : (selected
+                                ? const Color(0xFF2A6049)
+                                : const Color(0xFF8C8780)),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (taken) ...[
+                    const SizedBox(width: 4),
+                    const Icon(Icons.check_rounded,
+                        size: 16, color: Color(0xFF2A6049)),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: EdgeInsets.fromLTRB(
         20,
@@ -3881,7 +4020,6 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Handle bar
           Center(
             child: Container(
               width: 40,
@@ -3924,19 +4062,25 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
           const SizedBox(height: 10),
           Row(
             children: [
-              chip(
+              dayChip(
                 label: l10n.timeLabelToday,
                 selected: isTodaySelected,
-                onTap: () => setState(() => _selectedDate = today),
+                onTap: () async {
+                  setState(() => _selectedDate = today);
+                  await _refreshOccupiedSlots();
+                },
               ),
               const SizedBox(width: 8),
-              chip(
+              dayChip(
                 label: l10n.timeLabelTomorrow,
                 selected: isTomorrowSelected,
-                onTap: () => setState(() => _selectedDate = tomorrow),
+                onTap: () async {
+                  setState(() => _selectedDate = tomorrow);
+                  await _refreshOccupiedSlots();
+                },
               ),
               const SizedBox(width: 8),
-              chip(
+              dayChip(
                 label: isCustomSelected
                     ? _formatDateShort(_selectedDate)
                     : l10n.exploreAddToMyDayPickDate,
@@ -3954,47 +4098,67 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
             ),
           ),
           const SizedBox(height: 14),
-          Text(
-            l10n.exploreAddToMyDayTimeLabel,
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF8C8780),
+          if (_loadingSlots)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: Color(0xFF2A6049),
+                  ),
+                ),
+              ),
+            )
+          else if (allTaken)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Center(
+                child: Text(
+                  l10n.exploreAlreadyInDayPlan,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1E1C18),
+                  ),
+                ),
+              ),
+            )
+          else ...[
+            Text(
+              l10n.exploreAddToMyDayTimeLabel,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF8C8780),
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              chip(
-                label: l10n.timeLabelMorning,
-                selected: _selectedSlotIndex == 0,
-                onTap: () => setState(() => _selectedSlotIndex = 0),
-              ),
-              const SizedBox(width: 8),
-              chip(
-                label: l10n.timeLabelAfternoon,
-                selected: _selectedSlotIndex == 1,
-                onTap: () => setState(() => _selectedSlotIndex = 1),
-              ),
-              const SizedBox(width: 8),
-              chip(
-                label: l10n.timeLabelEvening,
-                selected: _selectedSlotIndex == 2,
-                onTap: () => setState(() => _selectedSlotIndex = 2),
-              ),
-            ],
-          ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                timeChip(label: l10n.timeLabelMorning, slotIndex: 0),
+                const SizedBox(width: 8),
+                timeChip(label: l10n.timeLabelAfternoon, slotIndex: 1),
+                const SizedBox(width: 8),
+                timeChip(label: l10n.timeLabelEvening, slotIndex: 2),
+              ],
+            ),
+          ],
           const SizedBox(height: 16),
-          // Confirm button
           SizedBox(
             height: 52,
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                final selected = _selectedStartTime;
-                widget.onTimeSelected(selected);
-                Navigator.pop(context);
-              },
+              onPressed: (_loadingSlots || allTaken ||
+                      _occupiedSlots.contains(_slotKeys[_selectedSlotIndex]))
+                  ? null
+                  : () {
+                      widget.onTimeSelected(_selectedStartTime);
+                      Navigator.pop(context);
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2A6049),
                 foregroundColor: Colors.white,
@@ -4017,7 +4181,6 @@ class _ExploreAddToMyDaySheetState extends State<_ExploreAddToMyDaySheet> {
       ),
     );
   }
-
 }
 
 class ChatMessage {

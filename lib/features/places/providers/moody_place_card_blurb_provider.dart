@@ -4,11 +4,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/core/constants/api_constants.dart';
 import 'package:wandermood/core/presentation/providers/language_provider.dart';
+import 'package:wandermood/core/providers/communication_style_provider.dart';
 import 'package:wandermood/core/services/moody_ai_service.dart';
 import 'package:wandermood/core/utils/explore_place_card_copy.dart';
 import 'package:wandermood/features/places/data/moody_place_blurb_cache.dart';
 import 'package:wandermood/features/places/data/moody_place_blurb_edge.dart';
 import 'package:wandermood/features/places/data/moody_place_blurb_facts.dart';
+import 'package:wandermood/features/places/data/moody_place_card_ui_cache.dart';
+import 'package:wandermood/features/places/data/place_card_ui_description.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
@@ -71,7 +74,7 @@ Future<_PlaceBlurbContext> _loadPlaceBlurbContext(
         final rawReviews = details['reviews'];
         if (rawReviews is List<dynamic>) {
           for (final r in rawReviews) {
-            if (snippets.length >= 4) break;
+            if (snippets.length >= 6) break;
             if (r is Map<String, dynamic> && r['text'] is String) {
               var t = (r['text'] as String).trim();
               if (t.length < 20) continue;
@@ -122,82 +125,129 @@ String? _editorialLineFromPlaceOrGoogle(
   return null;
 }
 
-/// Moody + Places grounded short description for cards.
-/// Tries OpenAI on-device when `OPENAI_API_KEY` is set; otherwise Supabase `moody` (`place_card_blurb`).
-/// Returns empty when both fail (widget shows type/editorial fallback).
+/// Unified Explore card copy: tries `place_explore_rich` (sectioned, grounded), then editorial line, then legacy blurb.
+final moodyPlaceCardUiDescriptionProvider =
+    FutureProvider.autoDispose.family<PlaceCardUiDescription, Place>(
+        (ref, place) async {
+  final appLocale = ref.watch(localeProvider);
+  final locale = appLocale ?? ui.PlatformDispatcher.instance.locale;
+  final l10n = _l10nFor(locale);
+
+  final ctx = await _loadPlaceBlurbContext(ref, place, locale);
+  final factsForModel = clampMoodyPlaceBlurbFactsForEdge(ctx.facts);
+
+  final uiKey = MoodyPlaceCardUiCache.cacheKey(
+    place.id,
+    ctx.lang,
+    factsForModel.hashCode,
+  );
+  final uiHit = MoodyPlaceCardUiCache.get(uiKey);
+  if (uiHit != null) return uiHit;
+
+  final uiExisting = MoodyPlaceCardUiCache.inflight(uiKey);
+  if (uiExisting != null) return await uiExisting;
+
+  final comm =
+      ref.read(communicationStyleProvider.notifier).getCurrentStyleString();
+
+  final uiFuture = () async {
+    PlaceCardUiDescription out;
+
+    final rich = await moodyPlaceExploreRichFromEdge(
+      facts: factsForModel,
+      languageCode: ctx.lang,
+      communicationStyle: comm,
+    );
+    if (rich != null && rich.isValid) {
+      out = PlaceCardUiDescription.rich(
+        hook: rich.hook,
+        sectionsSource: rich.sectionsJoined,
+      );
+      MoodyPlaceCardUiCache.put(uiKey, out);
+      if (kDebugMode) {
+        debugPrint(
+          'moodyPlaceCardUiDescriptionProvider: rich place=${place.name} id=${place.id}',
+        );
+      }
+      return out;
+    }
+
+    final syncLine =
+        _editorialLineFromPlaceOrGoogle(place, l10n, ctx.editorial);
+    if (syncLine != null && syncLine.isNotEmpty) {
+      out = PlaceCardUiDescription.plain(syncLine);
+      MoodyPlaceCardUiCache.put(uiKey, out);
+      return out;
+    }
+
+    final g = ctx.editorial?.trim();
+    if (g != null &&
+        g.isNotEmpty &&
+        !ExplorePlaceCardCopy.isBoilerplateDescription(g)) {
+      final sc = ExplorePlaceCardCopy.sentenceCount(g);
+      if (sc >= 3 || g.length >= 360) {
+        final line = ExplorePlaceCardCopy.editorialLineForExploreCard(g);
+        if (line.isNotEmpty) {
+          out = PlaceCardUiDescription.plain(line);
+          MoodyPlaceCardUiCache.put(uiKey, out);
+          return out;
+        }
+      }
+    }
+
+    final legacyKey = MoodyPlaceBlurbCache.cacheKey(
+      place.id,
+      ctx.lang,
+      factsForModel.hashCode,
+      variant: 'card_v5',
+    );
+    var plain = MoodyPlaceBlurbCache.get(legacyKey) ?? '';
+    if (plain.isEmpty) {
+      final ai = ref.read(moodyAIServiceProvider);
+      if (ApiConstants.openAiApiKey.isNotEmpty) {
+        plain = (await ai.generatePlaceCardBlurb(
+          l10n: ctx.l10n,
+          factsBlock: factsForModel,
+          bcp47LanguageCode: ctx.lang,
+        ))
+            .trim();
+      }
+      if (plain.isEmpty) {
+        plain = (await moodyPlaceCardBlurbFromEdge(
+          facts: factsForModel,
+          languageCode: ctx.lang,
+        ))
+            .trim();
+      }
+      if (plain.isNotEmpty) {
+        MoodyPlaceBlurbCache.put(legacyKey, plain);
+      }
+    }
+    if (plain.isEmpty) {
+      plain = ExplorePlaceCardCopy.cardDescription(place, l10n);
+    }
+    out = PlaceCardUiDescription.plain(plain);
+    MoodyPlaceCardUiCache.put(uiKey, out);
+    return out;
+  }();
+
+  MoodyPlaceCardUiCache.setInflight(uiKey, uiFuture);
+  try {
+    return await uiFuture;
+  } finally {
+    MoodyPlaceCardUiCache.clearInflight(uiKey);
+  }
+});
+
+/// Single-line / legacy blurb derived from [moodyPlaceCardUiDescriptionProvider].
 final moodyPlaceCardBlurbProvider =
     FutureProvider.autoDispose.family<String, Place>((ref, place) async {
   final appLocale = ref.watch(localeProvider);
   final locale = appLocale ?? ui.PlatformDispatcher.instance.locale;
   final l10n = _l10nFor(locale);
-
-  final syncLine = _editorialLineFromPlaceOrGoogle(place, l10n, null);
-  if (syncLine != null && syncLine.isNotEmpty) return syncLine;
-
-  final ctx = await _loadPlaceBlurbContext(ref, place, locale);
-
-  // Only skip place_card_blurb when Google/description text is already rich
-  // (same idea as detail). Short snippets look generic on cards — let Moody generate.
-  final g = ctx.editorial?.trim();
-  if (g != null &&
-      g.isNotEmpty &&
-      !ExplorePlaceCardCopy.isBoilerplateDescription(g)) {
-    final sc = ExplorePlaceCardCopy.sentenceCount(g);
-    if (sc >= 3 || g.length >= 360) {
-      final line = ExplorePlaceCardCopy.editorialLineForExploreCard(g);
-      if (line.isNotEmpty) return line;
-    }
-  }
-
-  final factsForModel = clampMoodyPlaceBlurbFactsForEdge(ctx.facts);
-
-  final key = MoodyPlaceBlurbCache.cacheKey(
-    place.id,
-    ctx.lang,
-    factsForModel.hashCode,
-    variant: 'card_v5',
-  );
-  final hit = MoodyPlaceBlurbCache.get(key);
-  if (hit != null) return hit;
-
-  final existing = MoodyPlaceBlurbCache.inflight(key);
-  if (existing != null) return existing;
-
-  final ai = ref.read(moodyAIServiceProvider);
-  final future = () async {
-    var out = '';
-    if (ApiConstants.openAiApiKey.isNotEmpty) {
-      out = (await ai.generatePlaceCardBlurb(
-        l10n: ctx.l10n,
-        factsBlock: factsForModel,
-        bcp47LanguageCode: ctx.lang,
-      ))
-          .trim();
-    }
-    if (out.isEmpty) {
-      out = (await moodyPlaceCardBlurbFromEdge(
-        facts: factsForModel,
-        languageCode: ctx.lang,
-      ))
-          .trim();
-      if (out.isNotEmpty && kDebugMode) {
-        debugPrint(
-          'moodyPlaceCardBlurbProvider: non-empty edge blurb place=${place.name} id=${place.id} len=${out.length}',
-        );
-      }
-    }
-    if (out.isNotEmpty) {
-      MoodyPlaceBlurbCache.put(key, out);
-    }
-    return out;
-  }();
-
-  MoodyPlaceBlurbCache.setInflight(key, future);
-  try {
-    return await future;
-  } finally {
-    MoodyPlaceBlurbCache.clearInflight(key);
-  }
+  final uiDesc =
+      await ref.watch(moodyPlaceCardUiDescriptionProvider(place).future);
+  return uiDesc.asLegacyBlurbLine(l10n, place);
 });
 
 /// Longer Moody blurb for place detail (separate cache from [moodyPlaceCardBlurbProvider]).

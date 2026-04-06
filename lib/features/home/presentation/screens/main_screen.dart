@@ -9,6 +9,7 @@ import 'package:wandermood/features/home/presentation/screens/moody_idle_screen.
 import 'package:wandermood/core/utils/moody_idle_checker.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/features/profile/presentation/screens/user_profile_screen.dart';
+import 'package:wandermood/features/home/presentation/screens/agenda_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart' show scheduledActivitiesForTodayProvider, todayActivitiesProvider, cachedActivitySuggestionsProvider, selectedMyDayDateProvider;
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.dart';
@@ -31,12 +32,10 @@ const Color _wmStone = Color(0xFF8C8780);
 // Create a Provider for the tab controller
 final mainTabProvider = StateProvider<int>((ref) => 0);
 
-/// Bottom tabs: 0 My Day, 1 Explore, 2 Moody, 3 Profile.
-/// Legacy: old Profile was index 4 → 3.
+/// Bottom tabs: 0 My Day, 1 Explore, 2 Moody, 3 Agenda, 4 Profile.
 int normalizeMainTabIndex(int tab) {
   if (tab < 0) return 0;
-  if (tab == 4) return 3;
-  if (tab > 3) return 3;
+  if (tab > 4) return 4;
   return tab;
 }
 
@@ -280,11 +279,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     });
   }
   
-  // Bottom nav: My Day, Explore, Moody hub, Profile
+  // Bottom nav: My Day, Explore, Moody hub, Agenda, Profile
   final List<Widget> screens = [
     const DynamicMyDayScreen(),
     const ExploreScreen(),
     const RedesignedMoodyHub(),
+    const AgendaScreen(),
     const UserProfileScreen(),
   ];
   
@@ -371,7 +371,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           _buildRegularNavItem(context, ref, selectedIndex, 0, l10n.navMyDay, Icons.calendar_today_outlined, Icons.calendar_today, _navWmForest, _navWmForestTint),
                           _buildRegularNavItem(context, ref, selectedIndex, 1, l10n.navExplore, Icons.explore_outlined, Icons.explore, _navWmForest, _navWmForestTint),
                           _buildCenterMoodyButton(context, ref, selectedIndex, l10n.navMoody),
-                          _buildRegularNavItem(context, ref, selectedIndex, 3, l10n.navProfile, Icons.person_outline, Icons.person, _navWmForest, _navWmForestTint),
+                          _buildRegularNavItem(context, ref, selectedIndex, 3, l10n.navAgenda, Icons.calendar_month_outlined, Icons.calendar_month, _navWmForest, _navWmForestTint),
+                          _buildRegularNavItem(context, ref, selectedIndex, 4, l10n.navProfile, Icons.person_outline, Icons.person, _navWmForest, _navWmForestTint),
                         ],
                       ),
                     ),
@@ -502,7 +503,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     };
 
     return SizedBox(
-      width: 72,
+      width: 58,
       child: Material(
         color: Colors.transparent,
         child: InkWell(

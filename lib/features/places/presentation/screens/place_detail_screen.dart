@@ -23,9 +23,11 @@ import 'package:wandermood/core/presentation/providers/language_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:wandermood/core/services/distance_service.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
-import 'package:wandermood/features/places/presentation/widgets/place_card_moody_description.dart';
+import 'package:wandermood/features/places/presentation/widgets/place_detail_about_block.dart';
 import 'package:wandermood/core/utils/places_cache_utils.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
+import 'package:wandermood/core/services/taste_profile_service.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
@@ -194,6 +196,13 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       _descriptionEnrichAttempted.clear();
       _enrichedWebsite = null;
       _enrichedPhone = null;
+      TasteProfileService.recordFromPlace(
+        place,
+        interactionType: 'tapped',
+        moodContext: ref.read(dailyMoodStateNotifierProvider).currentMood,
+        timeSlot:
+            TasteProfileService.inferTimeSlotFromHour(MoodyClock.now().hour),
+      );
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _cachedPlace == null) return;
@@ -760,9 +769,6 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          // Moody tip card (localized label + SVG) appears here (right after title)
-          _buildMoodyTips(place),
           const SizedBox(height: 16),
           // Rich place info card
           _buildPlaceInfoCard(place),
@@ -2048,18 +2054,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             ),
             const SizedBox(height: 12),
           ],
-          // Description — Moody + Places (longer on detail)
-          PlaceCardMoodyDescription(
-            place: place,
-            surface: PlaceCardMoodyDescriptionSurface.detail,
-            paddingTop: 0,
-            textStyle: GoogleFonts.poppins(
-              fontSize: 14,
-              height: 1.6,
-              color: _pdWmCharcoal.withValues(alpha: 0.85),
-              fontWeight: FontWeight.w400,
-            ),
-          ),
+          // Description — sectioned rich copy or long blurb (no misleading loading text)
+          PlaceDetailAboutBlock(place: place),
           // Address
           if (place.address.isNotEmpty) ...[
             const SizedBox(height: 12),

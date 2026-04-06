@@ -8,6 +8,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:wandermood/features/plans/data/services/schema_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
+import 'package:wandermood/core/services/taste_profile_service.dart';
 
 /// Provider for the ScheduledActivityService
 final scheduledActivityServiceProvider = Provider<ScheduledActivityService>((ref) {
@@ -26,8 +27,9 @@ class ScheduledActivityService {
   
   ScheduledActivityService(this._client, this._schemaHelper);
   
-  /// Save a list of activities to the scheduled_activities table
-  Future<void> saveScheduledActivities(List<Activity> activities, {bool isConfirmed = false}) async {
+  /// Save a list of activities to the scheduled_activities table.
+  /// Returns how many rows were inserted (0 if all were duplicates or on auth failure in fallback path).
+  Future<int> saveScheduledActivities(List<Activity> activities, {bool isConfirmed = false}) async {
     try {
       debugPrint('ScheduledActivityService: saveScheduledActivities called with ${activities.length} activities');
       
@@ -39,7 +41,7 @@ class ScheduledActivityService {
       
       debugPrint('ScheduledActivityService: User ID: $userId');
       final activityData = _prepareActivityData(activities, userId, isConfirmed);
-      await _insertActivities(activityData);
+      return await _insertActivities(activityData);
     } catch (e) {
       debugPrint('ScheduledActivityService: Database save failed: $e');
       debugPrint('ScheduledActivityService: Using in-memory fallback storage');
@@ -49,8 +51,49 @@ class ScheduledActivityService {
       _inMemoryActivities.addAll(activities);
       
       debugPrint('ScheduledActivityService: Saved ${activities.length} activities to memory');
-      // Don't rethrow - we have a fallback solution
+      return activities.length;
     }
+  }
+
+  /// Which time-of-day slots (`morning` / `afternoon` / `evening`) already have this [placeId] on [date].
+  Future<Set<String>> getOccupiedTimeSlotKeysForPlaceOnDate({
+    required String placeId,
+    required DateTime date,
+  }) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return {};
+
+    final targetDate = DateTime(date.year, date.month, date.day);
+    final dateStr =
+        '${targetDate.year}-${targetDate.month.toString().padLeft(2, '0')}-${targetDate.day.toString().padLeft(2, '0')}';
+
+    try {
+      final response = await _client
+          .from('scheduled_activities')
+          .select('start_time')
+          .eq('user_id', userId)
+          .eq('place_id', placeId)
+          .eq('scheduled_date', dateStr);
+
+      final out = <String>{};
+      for (final row in response as List) {
+        final map = Map<String, dynamic>.from(row as Map);
+        final st = map['start_time'] as String?;
+        if (st == null) continue;
+        final hour = DateTime.parse(st).hour;
+        out.add(_timeSlotKeyFromHour(hour));
+      }
+      return out;
+    } catch (e) {
+      debugPrint('ScheduledActivityService: getOccupiedTimeSlotKeysForPlaceOnDate failed: $e');
+      return {};
+    }
+  }
+
+  static String _timeSlotKeyFromHour(int hour) {
+    if (hour >= 5 && hour < 12) return 'morning';
+    if (hour >= 12 && hour < 17) return 'afternoon';
+    return 'evening';
   }
   
   /// Clear all scheduled activities for the current user (used when generating new mood-based plans)
@@ -110,7 +153,7 @@ class ScheduledActivityService {
   }
   
   // Helper to insert activities with duplicate checking
-  Future<void> _insertActivities(List<Map<String, dynamic>> activityData) async {
+  Future<int> _insertActivities(List<Map<String, dynamic>> activityData) async {
     try {
       debugPrint('ScheduledActivityService: Inserting ${activityData.length} activities');
       
@@ -135,18 +178,46 @@ class ScheduledActivityService {
             .eq('longitude', activity['longitude'] as double)
             .maybeSingle();
         
-        if (existingActivity == null) {
-          // No duplicate found, add to insert list
-          filteredActivities.add(activity);
-          debugPrint('ScheduledActivityService: Activity "${activity['name']}" is new, will be inserted');
-        } else {
+        if (existingActivity != null) {
           debugPrint('ScheduledActivityService: Duplicate activity "${activity['name']}" found, skipping insert');
+          continue;
         }
+
+        final placeId = activity['place_id'] as String?;
+        final scheduledDate = activity['scheduled_date'] as String?;
+        if (placeId != null && placeId.isNotEmpty && scheduledDate != null) {
+          final newStart = DateTime.parse(activity['start_time'] as String);
+          final newSlot = _timeSlotKeyFromHour(newStart.hour);
+          final samePlaceRows = await _client
+              .from('scheduled_activities')
+              .select('start_time')
+              .eq('user_id', userId)
+              .eq('place_id', placeId)
+              .eq('scheduled_date', scheduledDate);
+          var slotTaken = false;
+          for (final row in samePlaceRows as List) {
+            final map = Map<String, dynamic>.from(row as Map);
+            final st = map['start_time'] as String?;
+            if (st == null) continue;
+            if (_timeSlotKeyFromHour(DateTime.parse(st).hour) == newSlot) {
+              slotTaken = true;
+              break;
+            }
+          }
+          if (slotTaken) {
+            debugPrint(
+                'ScheduledActivityService: Same place+date+slot for "${activity['name']}", skipping');
+            continue;
+          }
+        }
+
+        filteredActivities.add(activity);
+        debugPrint('ScheduledActivityService: Activity "${activity['name']}" is new, will be inserted');
       }
       
       if (filteredActivities.isEmpty) {
         debugPrint('ScheduledActivityService: All activities are duplicates, nothing to insert');
-        return;
+        return 0;
       }
       
       debugPrint('ScheduledActivityService: Inserting ${filteredActivities.length} new activities (${activityData.length - filteredActivities.length} duplicates skipped)');
@@ -171,6 +242,17 @@ class ScheduledActivityService {
       
       await _client.from('scheduled_activities').insert(filteredActivities);
       debugPrint('ScheduledActivityService: Activities inserted successfully');
+      for (final row in filteredActivities) {
+        final pid = row['place_id'] as String?;
+        if (pid == null || pid.isEmpty) continue;
+        final start = DateTime.parse(row['start_time'] as String);
+        TasteProfileService.recordFromActivityRaw(
+          row,
+          interactionType: 'added_to_day',
+          timeSlot: _timeSlotKeyFromHour(start.hour),
+        );
+      }
+      return filteredActivities.length;
     } catch (e) {
       debugPrint('ScheduledActivityService: Failed to save activities to Supabase: $e');
       
@@ -180,8 +262,7 @@ class ScheduledActivityService {
         try {
           await _schemaHelper.createScheduledActivitiesTable();
           debugPrint('ScheduledActivityService: Table created successfully, retrying insert');
-          await _insertActivities(activityData);
-          debugPrint('ScheduledActivityService: Activities inserted successfully after table creation');
+          return await _insertActivities(activityData);
         } catch (tableError) {
           debugPrint('ScheduledActivityService: Failed to create table: $tableError');
           rethrow;

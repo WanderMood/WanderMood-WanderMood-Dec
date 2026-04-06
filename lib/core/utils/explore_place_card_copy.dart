@@ -240,6 +240,19 @@ class ExplorePlaceCardCopy {
     return List.filled(priceLevel, '€').join();
   }
 
+  /// Title-row price tier: real [Place.priceLevel] when present; otherwise `€€`
+  /// for venue types that usually charge (Explore often omits `price_level`).
+  static String exploreCardPriceTierEuros(Place place) {
+    final fromLevel = priceLevelEuroSymbols(place.priceLevel);
+    if (fromLevel.isNotEmpty) return fromLevel;
+    if (_showFreePill(place)) return '';
+    final types = _typesLower(place);
+    if (typesImplyTypicallyPaid(types)) {
+      return '€€';
+    }
+    return '';
+  }
+
   static const Set<String> _genericVenueTypes = {
     'point_of_interest',
     'establishment',
@@ -315,6 +328,53 @@ class ExplorePlaceCardCopy {
       default:
         return null;
     }
+  }
+
+  /// Rough typical visit length for Explore cards (same heuristics as My Day free-time carousel).
+  static int estimateVisitMinutes(Place place) {
+    final types = _typesLower(place);
+    if (types.any((t) =>
+        ['restaurant', 'cafe', 'bakery', 'meal_takeaway', 'food'].contains(t))) {
+      return 90;
+    }
+    if (types.any((t) =>
+        ['gym', 'stadium', 'park', 'natural_feature'].contains(t))) {
+      return 60;
+    }
+    if (types.any((t) => [
+          'shopping_mall',
+          'store',
+          'clothing_store',
+          'shoe_store',
+        ].contains(t))) {
+      return 45;
+    }
+    if (types.any((t) => [
+          'movie_theater',
+          'night_club',
+          'bowling_alley',
+          'casino',
+        ].contains(t))) {
+      return 120;
+    }
+    if (types.any((t) => [
+          'museum',
+          'art_gallery',
+          'tourist_attraction',
+          'church',
+          'place_of_worship',
+        ].contains(t))) {
+      return 60;
+    }
+    return 60;
+  }
+
+  /// Localized "~90 min" style line for cards ([myDayFreeTimeInsightDuration]).
+  static String exploreCardVisitDurationLabel(
+    Place place,
+    AppLocalizations l10n,
+  ) {
+    return l10n.myDayFreeTimeInsightDuration(estimateVisitMinutes(place));
   }
 
   /// Background, foreground, label for explore social signal pill; null if unknown/absent.
@@ -541,6 +601,8 @@ class ExplorePlaceCardCopy {
     final pl = place.priceLevel;
     if (pl != null && pl >= 1 && pl <= 4) return true;
     if (_showFreePill(place)) return true;
+    final types = _typesLower(place);
+    if (typesImplyTypicallyPaid(types) && !_showFreePill(place)) return true;
     return false;
   }
 
@@ -566,6 +628,10 @@ class ExplorePlaceCardCopy {
     if (pl != null && pl >= 1 && pl <= 4) {
       return _priceLevelLabel(pl, currency, l10n);
     }
+    final types = _typesLower(place);
+    if (typesImplyTypicallyPaid(types) && !_showFreePill(place)) {
+      return l10n.placeCardPriceVaries;
+    }
     return '';
   }
 
@@ -587,6 +653,10 @@ class ExplorePlaceCardCopy {
         default:
           return const Color(0xFF4A4640);
       }
+    }
+    final types = _typesLower(place);
+    if (typesImplyTypicallyPaid(types) && !_showFreePill(place)) {
+      return const Color(0xFFFF9800);
     }
     return const Color(0xFF4A4640);
   }

@@ -131,7 +131,11 @@ final weatherProvider = FutureProvider.autoDispose<WeatherData?>((ref) async {
       final url = gpsPosition != null
           ? 'https://api.openweathermap.org/data/2.5/weather?lat=${gpsPosition.latitude}&lon=${gpsPosition.longitude}&appid=$apiKey&units=metric&lang=$lang'
           : 'https://api.openweathermap.org/data/2.5/weather?q=$locationLabel&appid=$apiKey&units=metric&lang=$lang';
-      debugPrint('🌤️ Weather URL: $url');
+      if (kDebugMode) {
+        debugPrint(
+          '🌤️ Weather request: ${gpsPosition != null ? 'lat=${gpsPosition.latitude} lon=${gpsPosition.longitude}' : 'q=$locationLabel'} lang=$lang (appid redacted)',
+        );
+      }
       
       final response = await http.get(Uri.parse(url));
       debugPrint('🌤️ Weather API response code: ${response.statusCode}');

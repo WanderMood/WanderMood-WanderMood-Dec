@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../models/activity_rating.dart';
-import '../../services/activity_rating_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
+import '../../models/activity_rating.dart';
+import '../../services/activity_rating_service.dart';
 
 class ActivityRatingSheet extends ConsumerStatefulWidget {
   final String activityId;
   final String activityName;
   final String? placeName;
+  final String? googlePlaceId;
   final String currentMood;
   final VoidCallback? onRated;
 
@@ -18,6 +20,7 @@ class ActivityRatingSheet extends ConsumerStatefulWidget {
     required this.activityId,
     required this.activityName,
     this.placeName,
+    this.googlePlaceId,
     required this.currentMood,
     this.onRated,
   });
@@ -431,10 +434,20 @@ class _ActivityRatingSheetState extends ConsumerState<ActivityRatingSheet>
       return;
     }
 
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) {
+      showWanderMoodToast(
+        context,
+        message: 'Sign in to save your rating',
+        isError: true,
+      );
+      return;
+    }
+
     final ratingService = ref.read(activityRatingServiceProvider);
     final rating = ActivityRating(
       id: const Uuid().v4(),
-      userId: 'current_user', // TODO: Get from auth
+      userId: userId,
       activityId: widget.activityId,
       activityName: widget.activityName,
       placeName: widget.placeName,
@@ -446,6 +459,7 @@ class _ActivityRatingSheetState extends ConsumerState<ActivityRatingSheet>
           : null,
       completedAt: MoodyClock.now(),
       mood: widget.currentMood,
+      googlePlaceId: widget.googlePlaceId,
     );
 
     await ratingService.saveRating(rating);

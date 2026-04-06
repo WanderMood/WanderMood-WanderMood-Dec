@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
+import 'package:wandermood/core/utils/explore_place_card_copy.dart';
 import 'package:wandermood/core/utils/google_place_photo_device_url.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,14 +12,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
 /// Design tokens — My Day free-time section (v2 spec).
+/// Matches [MyDayTimelineSection] horizontal inset so carousel cards line up with timeline cards.
+const double _kTimelineAlignPadding = 24;
+
 const Color _wmWhite = Color(0xFFFFFFFF);
 const Color _wmCream = Color(0xFFF5F0E8);
 const Color _wmParchment = Color(0xFFE8E2D8);
 const Color _wmForest = Color(0xFF2A6049);
 const Color _wmCharcoal = Color(0xFF1E1C18);
 const Color _wmStone = Color(0xFF8C8780);
+const Color _wmForestTint = Color(0xFFEBF3EE);
+const Color _wmSunset = Color(0xFFE8784A);
 
-class MyDayFreeTimeCarousel extends StatelessWidget {
+class MyDayFreeTimeCarousel extends StatefulWidget {
   final List<Map<String, dynamic>> activities;
   final void Function(Map<String, dynamic>) onActivityTap;
   final void Function(Map<String, dynamic>) onSaveTap;
@@ -39,10 +45,30 @@ class MyDayFreeTimeCarousel extends StatelessWidget {
   });
 
   @override
+  State<MyDayFreeTimeCarousel> createState() => _MyDayFreeTimeCarouselState();
+}
+
+class _MyDayFreeTimeCarouselState extends State<MyDayFreeTimeCarousel> {
+  late final PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    // ~0.78 shows more of the next card (peek) — matches compact My Day spec.
+    _pageController = PageController(viewportFraction: 0.78);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    if (isLoading) {
+    if (widget.isLoading) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -65,15 +91,15 @@ class MyDayFreeTimeCarousel extends StatelessWidget {
       );
     }
 
-    if (loadFailed) {
+    if (widget.loadFailed) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _sectionHeader(l10n),
           const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Text(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: _kTimelineAlignPadding),
+          child: Text(
               l10n.myDayFreeTimeLoadingFailed,
               style: GoogleFonts.poppins(
                 fontSize: 13,
@@ -86,15 +112,15 @@ class MyDayFreeTimeCarousel extends StatelessWidget {
       );
     }
 
-    if (activities.isEmpty) {
+    if (widget.activities.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _sectionHeader(l10n),
           const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Text(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: _kTimelineAlignPadding),
+          child: Text(
               l10n.myDayFreeTimeEmptyHint,
               style: GoogleFonts.poppins(
                 fontSize: 13,
@@ -111,25 +137,37 @@ class MyDayFreeTimeCarousel extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionHeader(l10n),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 384,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            itemCount: activities.length,
-            itemBuilder: (context, index) {
-              final activity = activities[index];
-              return Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: _FreeTimeCard(
-                  activity: activity,
-                  onTap: () => onActivityTap(activity),
-                  onSaveTap: () => onSaveTap(activity),
-                  onDirectionsTap: () => onDirectionsTap(activity),
-                ).animate(delay: (index * 120).ms)
-                    .slideX(begin: 0.2, duration: 500.ms)
-                    .fadeIn(duration: 500.ms),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.only(left: _kTimelineAlignPadding),
+          child: LayoutBuilder(
+            builder: (context, _) {
+              // Taller than fixed 352 so Moody copy + pill wraps + CTAs fit (avoids bottom overflow).
+              final screenH = MediaQuery.sizeOf(context).height;
+              final cardHeight = (screenH * 0.26).clamp(400.0, 520.0);
+              return SizedBox(
+                height: cardHeight,
+                child: PageView.builder(
+              controller: _pageController,
+              clipBehavior: Clip.none,
+              padEnds: false,
+              physics: const BouncingScrollPhysics(),
+              itemCount: widget.activities.length,
+              itemBuilder: (context, index) {
+                final activity = widget.activities[index];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: _FreeTimeCard(
+                    activity: activity,
+                    onTap: () => widget.onActivityTap(activity),
+                    onSaveTap: () => widget.onSaveTap(activity),
+                    onDirectionsTap: () => widget.onDirectionsTap(activity),
+                  ).animate(delay: (index * 120).ms)
+                      .slideX(begin: 0.2, duration: 500.ms)
+                      .fadeIn(duration: 500.ms),
+                );
+              },
+            ),
               );
             },
           ),
@@ -144,7 +182,7 @@ class MyDayFreeTimeCarousel extends StatelessWidget {
       children: [
         const SizedBox(height: 32),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: _kTimelineAlignPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -185,6 +223,142 @@ class MyDayFreeTimeCarousel extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Category / duration / rating / price / distance — aligned with Explore card pills.
+class _FreeTimeMetaPillsRow extends StatelessWidget {
+  const _FreeTimeMetaPillsRow({
+    required this.l10n,
+    required this.place,
+    required this.distanceLabel,
+    this.categoryFallback,
+  });
+
+  final AppLocalizations l10n;
+  final Place place;
+  final String distanceLabel;
+  final String? categoryFallback;
+
+  @override
+  Widget build(BuildContext context) {
+    final children = <Widget>[];
+    final primary = ExplorePlaceCardCopy.primaryTypeLabelForCard(place, l10n);
+    if (primary != null) {
+      children.add(_forestPill(primary));
+    } else if (categoryFallback != null && categoryFallback!.trim().isNotEmpty) {
+      children.add(_forestPill(categoryFallback!.trim()));
+    }
+    children.add(_forestPill(
+      ExplorePlaceCardCopy.exploreCardVisitDurationLabel(place, l10n),
+    ));
+    if (place.rating > 0) {
+      children.add(_ratingPill(place.rating));
+    }
+    if (ExplorePlaceCardCopy.shouldShowExplorePriceBadge(place)) {
+      children.add(_pricePill(place, l10n));
+    }
+    if (distanceLabel.isNotEmpty) {
+      children.add(_walkPill(distanceLabel));
+    }
+
+    return Wrap(
+      spacing: 4,
+      runSpacing: 4,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: children,
+    );
+  }
+
+  Widget _forestPill(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: _wmForestTint,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _wmParchment, width: 1),
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.poppins(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: _wmForest,
+        ),
+      ),
+    );
+  }
+
+  Widget _ratingPill(double rating) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: _wmForestTint,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _wmParchment, width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.star, color: _wmSunset, size: 12),
+          const SizedBox(width: 2),
+          Text(
+            rating.toStringAsFixed(1),
+            style: GoogleFonts.poppins(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: _wmForest,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _pricePill(Place p, AppLocalizations l10n) {
+    final color = ExplorePlaceCardCopy.explorePriceBadgeColor(p);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.55), width: 1.1),
+      ),
+      child: Text(
+        ExplorePlaceCardCopy.explorePriceBadgeText(p, l10n),
+        style: GoogleFonts.poppins(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: color,
+        ),
+      ),
+    );
+  }
+
+  Widget _walkPill(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: _wmForestTint,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _wmParchment, width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.directions_walk_rounded, color: _wmForest, size: 12),
+          const SizedBox(width: 2),
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: _wmForest,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -287,17 +461,17 @@ class _FreeTimeCard extends ConsumerWidget {
         onTap();
       },
       child: Container(
-        width: 312,
-        height: 368,
+        width: double.infinity,
+        height: double.infinity,
         decoration: BoxDecoration(
           color: _wmWhite,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(color: _wmParchment, width: 0.5),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -305,8 +479,9 @@ class _FreeTimeCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Shorter image strip → more vertical room for title / Moody / pills (reduces overflow).
             AspectRatio(
-              aspectRatio: 16 / 9,
+              aspectRatio: 2.35,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -314,8 +489,8 @@ class _FreeTimeCard extends ConsumerWidget {
                     cacheManager: WanderMoodImageCacheManager.instance,
                     imageUrl: imageUrl,
                     fit: BoxFit.cover,
-                    memCacheWidth: 640,
-                    memCacheHeight: 360,
+                    memCacheWidth: 600,
+                    memCacheHeight: 260,
                     placeholder: (context, url) => Container(
                       color: _wmCream,
                       child: const Center(
@@ -363,89 +538,88 @@ class _FreeTimeCard extends ConsumerWidget {
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                padding: const EdgeInsets.fromLTRB(10, 6, 10, 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (category.isNotEmpty)
-                          Row(
-                            children: [
-                              Text(catEmoji,
-                                  style: const TextStyle(fontSize: 14)),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  _categoryLabel(l10n, category).toUpperCase(),
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: _wmStone,
-                                    letterSpacing: 0.05,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                    Expanded(
+                      child: SingleChildScrollView(
+                        physics: const ClampingScrollPhysics(),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.poppins(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: _wmCharcoal,
+                                height: 1.15,
+                              ),
+                            ),
+                            if (activity['place'] is! Place) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                insight,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: _wmForest,
+                                  height: 1.25,
                                 ),
                               ),
                             ],
-                          ),
-                        if (category.isNotEmpty) const SizedBox(height: 6),
-                        Text(
-                          title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.poppins(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                            color: _wmCharcoal,
-                            height: 1.2,
-                          ),
+                            if (activity['place'] is Place) ...[
+                              const SizedBox(height: 4),
+                              PlaceCardMoodyDescription(
+                                place: activity['place'] as Place,
+                                maxLines: 5,
+                                paddingTop: 0,
+                                useCardStackLayout: true,
+                                structuredTitleFontSize: 11,
+                                structuredBodyFontSize: 11,
+                                textStyle: GoogleFonts.poppins(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w400,
+                                  color: _wmCharcoal.withValues(alpha: 0.78),
+                                  height: 1.3,
+                                ),
+                              ),
+                            ] else if (description.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                description,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w400,
+                                  color: _wmCharcoal.withValues(alpha: 0.78),
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
+                            if (activity['place'] is Place) ...[
+                              const SizedBox(height: 6),
+                              _FreeTimeMetaPillsRow(
+                                l10n: l10n,
+                                place: activity['place'] as Place,
+                                distanceLabel: distance,
+                                categoryFallback: category.isNotEmpty
+                                    ? '$catEmoji ${_categoryLabel(l10n, category)}'
+                                    : null,
+                              ),
+                            ],
+                          ],
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          insight,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                            color: _wmForest,
-                            height: 1.3,
-                          ),
-                        ),
-                        if (activity['place'] is Place) ...[
-                          const SizedBox(height: 8),
-                          PlaceCardMoodyDescription(
-                            place: activity['place'] as Place,
-                            maxLines: 4,
-                            paddingTop: 0,
-                            textStyle: GoogleFonts.poppins(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w400,
-                              color: _wmCharcoal.withValues(alpha: 0.78),
-                              height: 1.35,
-                            ),
-                          ),
-                        ] else if (description.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            description,
-                            maxLines: 4,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w400,
-                              color: _wmCharcoal.withValues(alpha: 0.78),
-                              height: 1.35,
-                            ),
-                          ),
-                        ],
-                      ],
+                      ),
                     ),
+                    const SizedBox(height: 10),
                     Row(
                       children: [
                         Expanded(
@@ -457,11 +631,11 @@ class _FreeTimeCard extends ConsumerWidget {
                                   color: _wmForest, width: 1.5),
                               backgroundColor: _wmWhite,
                               padding: const EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 4),
+                                  vertical: 6, horizontal: 4),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(999),
                               ),
-                              minimumSize: const Size(0, 38),
+                              minimumSize: const Size(0, 34),
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
                             child: FittedBox(
@@ -470,7 +644,7 @@ class _FreeTimeCard extends ConsumerWidget {
                                 l10n.prefSave,
                                 maxLines: 1,
                                 style: GoogleFonts.poppins(
-                                  fontSize: 13,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -486,11 +660,11 @@ class _FreeTimeCard extends ConsumerWidget {
                               foregroundColor: _wmWhite,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 4),
+                                  vertical: 6, horizontal: 4),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(999),
                               ),
-                              minimumSize: const Size(0, 38),
+                              minimumSize: const Size(0, 34),
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
                             child: FittedBox(
@@ -499,7 +673,7 @@ class _FreeTimeCard extends ConsumerWidget {
                                 l10n.myDayFreeTimeDirectionsShort,
                                 maxLines: 1,
                                 style: GoogleFonts.poppins(
-                                  fontSize: 13,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),

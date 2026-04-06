@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wandermood/features/mood/services/check_in_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wandermood/features/profile/domain/providers/current_user_profile_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
-/// v2 design tokens — profile stats (check-in streak only; saved places live above).
+/// v2 design tokens — profile stats (mood streak card; saved places live above).
 const Color _wmWhite = Color(0xFFFFFFFF);
 const Color _wmParchment = Color(0xFFE8E2D8);
 const Color _wmCharcoal = Color(0xFF1E1C18);
@@ -25,51 +25,19 @@ List<BoxShadow> _profileStatsShadow() {
   ];
 }
 
-class ProfileStatsCards extends ConsumerStatefulWidget {
+/// Uses [profiles.mood_streak] via [currentUserProfileProvider] so this matches
+/// My Day (activity-completion streak) and the drawer, not only check-in rows.
+class ProfileStatsCards extends ConsumerWidget {
   const ProfileStatsCards({super.key});
 
   @override
-  ConsumerState<ProfileStatsCards> createState() => _ProfileStatsCardsState();
-}
-
-class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
-  int _checkInStreak = 0;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadStats();
-    });
-  }
-
-  Future<void> _loadStats() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final checkInService = ref.read(checkInServiceProvider);
-      final streak = await checkInService.getCheckInStreak();
-
-      setState(() {
-        _checkInStreak = streak;
-        _isLoading = false;
-      });
-    } catch (_) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final profileAsync = ref.watch(currentUserProfileProvider);
 
-    if (_isLoading) {
-      return const SizedBox(
+    return profileAsync.when(
+      data: (profile) => _statsBody(context, l10n, profile?.moodStreak ?? 0),
+      loading: () => const SizedBox(
         height: 88,
         child: Center(
           child: SizedBox(
@@ -81,9 +49,16 @@ class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
             ),
           ),
         ),
-      );
-    }
+      ),
+      error: (_, __) => _statsBody(context, l10n, 0),
+    );
+  }
 
+  Widget _statsBody(
+    BuildContext context,
+    AppLocalizations l10n,
+    int moodStreak,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -125,7 +100,7 @@ class _ProfileStatsCardsState extends ConsumerState<ProfileStatsCards> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '$_checkInStreak',
+                        '$moodStreak',
                         style: GoogleFonts.poppins(
                           fontSize: 28,
                           fontWeight: FontWeight.w700,

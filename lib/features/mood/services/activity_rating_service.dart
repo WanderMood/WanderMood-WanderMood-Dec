@@ -1,7 +1,10 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 import 'dart:convert';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/core/services/taste_profile_service.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 import '../models/activity_rating.dart';
 
@@ -26,13 +29,15 @@ class ActivityRatingService {
     try {
       await _client.from('activity_ratings').insert(rating.toJson());
       print('✅ Activity rating saved: ${rating.activityName} - ${rating.stars} stars');
-      
+      TasteProfileService.recordFromActivityRating(rating);
+
       // Update user patterns after each rating
       await _updateUserPatterns(rating.userId);
     } catch (e) {
       print('⚠️ Failed to save activity rating: $e');
       // Fallback to local storage
       await _saveRatingLocally(rating);
+      TasteProfileService.recordFromActivityRating(rating);
     }
   }
 

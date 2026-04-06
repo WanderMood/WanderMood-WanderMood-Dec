@@ -2951,7 +2951,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileEditGenderLabel.
   ///
   /// In en, this message translates to:
-  /// **'Gender'**
+  /// **'How do you identify?'**
   String get profileEditGenderLabel;
 
   /// No description provided for @profileAgeGroup20s.
@@ -3959,7 +3959,7 @@ abstract class AppLocalizations {
   /// No description provided for @drawerMyAgenda.
   ///
   /// In en, this message translates to:
-  /// **'My Agenda'**
+  /// **'My Plans'**
   String get drawerMyAgenda;
 
   /// No description provided for @drawerMyBookings.
@@ -7658,6 +7658,12 @@ abstract class AppLocalizations {
   /// **'Explore'**
   String get navExplore;
 
+  /// No description provided for @navAgenda.
+  ///
+  /// In en, this message translates to:
+  /// **'My Plans'**
+  String get navAgenda;
+
   /// No description provided for @navProfile.
   ///
   /// In en, this message translates to:
@@ -7669,6 +7675,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Moody'**
   String get navMoody;
+
+  /// No description provided for @exploreAlreadyInDayPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in your day plan 👍'**
+  String get exploreAlreadyInDayPlan;
 
   /// No description provided for @myDayStatusTitleRightNow.
   ///
@@ -8891,7 +8903,7 @@ abstract class AppLocalizations {
   /// No description provided for @agendaNoActivitiesPlannedYet.
   ///
   /// In en, this message translates to:
-  /// **'You do not have any planned activities in your agenda yet'**
+  /// **'You do not have any planned activities in My Plans yet'**
   String get agendaNoActivitiesPlannedYet;
 
   /// No description provided for @agendaDeleteMissingId.
@@ -10193,7 +10205,7 @@ abstract class AppLocalizations {
   /// No description provided for @agendaTitle.
   ///
   /// In en, this message translates to:
-  /// **'My Agenda'**
+  /// **'My Plans'**
   String get agendaTitle;
 
   /// No description provided for @agendaStatusDone.

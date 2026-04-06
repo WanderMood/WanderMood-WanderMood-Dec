@@ -68,7 +68,7 @@ import '../providers/feature_flags_provider.dart';
 import '../../features/onboarding/presentation/screens/app_intro_screen.dart';
 import '../../features/onboarding/presentation/screens/moody_demo_screen.dart';
 import '../../features/onboarding/presentation/screens/guest_day_plan_screen.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, ValueNotifier;
+import 'package:flutter/foundation.dart' show kDebugMode;
 // import '../../admin/admin_screen.dart'; // Removed - debug only
 
 part 'router.g.dart';
@@ -259,20 +259,17 @@ Future<bool> _checkAuthenticationState() async {
   }
 }
 
-@riverpod
+/// [keepAlive]: GoRouter must not be auto-disposed while the app runs — disposing it during
+/// auth [StreamProvider] updates or hot restart can crash the VM worker (e.g. EXC_BAD_ACCESS).
+@Riverpod(keepAlive: true)
 GoRouter router(RouterRef ref) {
-  // Re-run [redirect] when auth resolves; otherwise splash can navigate to /main
-  // while the stream is still loading and redirects never fire again → wrong route / blank UI.
-  final authRefresh = ValueNotifier<int>(0);
-  ref.onDispose(authRefresh.dispose);
-  ref.listen(authStateProvider, (_, __) {
-    authRefresh.value++;
-  });
+  // Drive router reevaluation from Riverpod updates directly.
+  // Keeping this simple avoids notifier/listener lifecycle races on startup/hot-restart.
+  final authStateSnapshot = ref.watch(authStateProvider);
 
   return GoRouter(
     initialLocation: '/',
     debugLogDiagnostics: true,
-    refreshListenable: authRefresh,
     routes: [
       // Splash and Onboarding
       GoRoute(
@@ -860,7 +857,7 @@ GoRouter router(RouterRef ref) {
         return '/main';
       }
 
-      final authState = ref.read(authStateProvider);
+      final authState = authStateSnapshot;
       final currentLocation = state.matchedLocation;
       
       debugPrint('🔍 Router redirect - Location: $currentLocation, Auth State: ${authState.runtimeType}');

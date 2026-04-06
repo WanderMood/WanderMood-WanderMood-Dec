@@ -18,7 +18,6 @@ import 'package:wandermood/core/domain/providers/location_notifier_provider.dart
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/core/localization/localized_mood_labels.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:wandermood/features/mood/services/activity_rating_service.dart';
@@ -1478,6 +1477,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                                   : null,
                               completedAt: MoodyClock.now(),
                               mood: mood,
+                              googlePlaceId: raw['placeId'] as String?,
                             );
 
                             await ref
@@ -2296,124 +2296,17 @@ class _ExcitingGetReadySheetContentState
               color: const Color(0xFF111827)),
         ),
         const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: _GradientActionChip(
-                label: l10n.getReadyQuickShare,
-                icon: Icons.ios_share_rounded,
-                gradient: const [Color(0xFFEA580C), Color(0xFFF59E0B)],
-                onTap: _onShareTap,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _GradientActionChip(
-                label: l10n.getReadyQuickCalendar,
-                icon: Icons.event_rounded,
-                gradient: const [Color(0xFFEC4899), Color(0xFFDB2777)],
-                onTap: _onCalendarTap,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _GradientActionChip(
-                label: l10n.getReadyQuickParking,
-                icon: Icons.local_parking_rounded,
-                gradient: const [Color(0xFF9333EA), Color(0xFF7C3AED)],
-                onTap: _onParkingTap,
-              ),
-            ),
-          ],
+        SizedBox(
+          width: double.infinity,
+          child: _GradientActionChip(
+            label: l10n.dayPlanCardDirections,
+            icon: Icons.directions_rounded,
+            gradient: const [Color(0xFF2A6049), Color(0xFF3D7A5F)],
+            onTap: widget.onOpenDirections,
+          ),
         ),
       ],
     );
-  }
-
-  void _onShareTap() {
-    final l10n = AppLocalizations.of(context)!;
-    final title = widget.activity.rawData['title'] as String? ??
-        l10n.getReadyShareTitleFallback;
-    final time = widget.formatTime(widget.activity.startTime);
-    final message = l10n.getReadyShareInvite(title, time);
-    Share.share(message);
-  }
-
-  Future<void> _onCalendarTap() async {
-    final l10n = AppLocalizations.of(context)!;
-    final title = widget.activity.rawData['title'] as String? ??
-        l10n.getReadyCalendarEventTitleFallback;
-    final start = widget.activity.startTime.toUtc();
-    final end = widget.activity.endTime.toUtc();
-    final startStr = _formatIso8601Utc(start);
-    final endStr = _formatIso8601Utc(end);
-    final details = widget.activity.rawData['description'] as String? ??
-        l10n.getReadyCalendarEventDetailsFallback;
-    final location = widget.activity.rawData['address'] as String? ??
-        widget.activity.rawData['location'] as String? ??
-        '';
-
-    final uri = Uri.parse(
-      'https://calendar.google.com/calendar/render?action=TEMPLATE'
-      '&text=${Uri.encodeComponent(title)}'
-      '&dates=$startStr/$endStr'
-      '&details=${Uri.encodeComponent(details)}'
-      '&location=${Uri.encodeComponent(location.toString())}',
-    );
-    try {
-      final launched =
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-      if (!launched && mounted) {
-        _showCalendarSnackBar();
-      }
-    } catch (_) {
-      if (mounted) _showCalendarSnackBar();
-    }
-  }
-
-  String _formatIso8601Utc(DateTime utc) {
-    final y = utc.year;
-    final m = utc.month.toString().padLeft(2, '0');
-    final d = utc.day.toString().padLeft(2, '0');
-    final h = utc.hour.toString().padLeft(2, '0');
-    final min = utc.minute.toString().padLeft(2, '0');
-    final s = utc.second.toString().padLeft(2, '0');
-    return '$y$m${d}T$h$min${s}Z';
-  }
-
-  void _showCalendarSnackBar() {
-    if (!mounted) return;
-    final l10n = AppLocalizations.of(context)!;
-    showWanderMoodToast(
-      context,
-      message: l10n.getReadyCalendarOpenHint(l10n.getReadyQuickCalendar),
-    );
-  }
-
-  void _onParkingTap() async {
-    final loc = widget.activity.rawData['location'] as String?;
-    Uri url;
-    if (loc != null && loc.contains(',')) {
-      final parts = loc.split(',');
-      if (parts.length == 2) {
-        final lat = double.tryParse(parts[0]);
-        final lng = double.tryParse(parts[1]);
-        if (lat != null && lng != null) {
-          url = Uri.parse(
-              'https://www.google.com/maps/search/?api=1&query=parking%20near%20$lat,$lng');
-        } else {
-          url = Uri.parse(
-              'https://www.google.com/maps/search/?api=1&query=parking');
-        }
-      } else {
-        url = Uri.parse(
-            'https://www.google.com/maps/search/?api=1&query=parking');
-      }
-    } else {
-      url =
-          Uri.parse('https://www.google.com/maps/search/?api=1&query=parking');
-    }
-    await launchUrl(url, mode: LaunchMode.externalApplication);
   }
 
   Future<void> _onPlaylistTap(String themeKey) async {

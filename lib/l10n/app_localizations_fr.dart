@@ -1614,7 +1614,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get profileGenderPreferNotToSay => 'Je préfère ne pas le dire';
 
   @override
-  String get profileEditGenderLabel => 'Genre';
+  String get profileEditGenderLabel => 'Comment t’identifies-tu ?';
 
   @override
   String get profileAgeGroup20s => 'Aventurier 20 ans';
@@ -2148,7 +2148,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get drawerSavedPlaces => 'Lieux enregistrés';
 
   @override
-  String get drawerMyAgenda => 'Mon agenda';
+  String get drawerMyAgenda => 'Mes Plans';
 
   @override
   String get drawerMyBookings => 'Mes réservations';
@@ -4260,10 +4260,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get navExplore => 'Explorer';
 
   @override
+  String get navAgenda => 'Mes Plans';
+
+  @override
   String get navProfile => 'Profil';
 
   @override
   String get navMoody => 'Moody';
+
+  @override
+  String get exploreAlreadyInDayPlan => 'Déjà dans ton programme du jour 👍';
 
   @override
   String get myDayStatusTitleRightNow => 'En cours';
@@ -5005,7 +5011,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get agendaNoActivitiesPlannedYet =>
-      'Tu n\'as encore aucune activité planifiée dans ton agenda';
+      'Tu n\'as encore aucune activité planifiée dans Mes Plans';
 
   @override
   String get agendaDeleteMissingId =>
@@ -5720,7 +5726,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get myDayOpenAppleMaps => 'Apple Maps';
 
   @override
-  String get agendaTitle => 'Mon Agenda';
+  String get agendaTitle => 'Mes Plans';
 
   @override
   String get agendaStatusDone => 'TERMINÉ';
