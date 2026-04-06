@@ -33,11 +33,8 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS profile_visibility TEXT DEFAULT 'p
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS show_email BOOLEAN DEFAULT FALSE;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS show_age BOOLEAN DEFAULT TRUE;
 
--- Location Settings (extend user_preferences)
-ALTER TABLE user_preferences ADD COLUMN IF NOT EXISTS auto_detect_location BOOLEAN DEFAULT TRUE;
-ALTER TABLE user_preferences ADD COLUMN IF NOT EXISTS default_location TEXT;
-ALTER TABLE user_preferences ADD COLUMN IF NOT EXISTS default_latitude DOUBLE PRECISION;
-ALTER TABLE user_preferences ADD COLUMN IF NOT EXISTS default_longitude DOUBLE PRECISION;
+-- Location columns for user_preferences: see 20250713_200000_user_preferences_location_columns.sql
+-- (table is created in 20250713_195440_fix_mood_options.sql, after this migration runs)
 
 -- Subscription/Plan
 CREATE TABLE IF NOT EXISTS subscriptions (
