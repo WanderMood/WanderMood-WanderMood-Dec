@@ -325,7 +325,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'support@wandermood.com',
+              'info@wandermood.com',
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
