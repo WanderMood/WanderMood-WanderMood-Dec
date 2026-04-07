@@ -1,3 +1,15 @@
 {
-  "cleanUrls": true
+  "version": 2,
+  "cleanUrls": true,
+  "builds": [
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    { "src": "^/(en|nl|de|es|fr)(/.*)?$", "status": 308, "headers": { "Location": "/" } },
+    { "src": "^/index\\.html$", "dest": "/index.html" },
+    { "src": "^/(.*)$", "dest": "/index.html" }
+  ]
 }
