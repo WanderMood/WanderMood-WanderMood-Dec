@@ -2,13 +2,14 @@
   "version": 2,
   "cleanUrls": true,
   "builds": [
-    {
-      "src": "index.html",
-      "use": "@vercel/static"
-    }
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "screens/**", "use": "@vercel/static" },
+    { "src": "logo/**", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "^/(en|nl|de|es|fr)(/.*)?$", "status": 308, "headers": { "Location": "/" } },
+    { "src": "^/screens/(.*)$", "dest": "/screens/$1" },
+    { "src": "^/logo/(.*)$", "dest": "/logo/$1" },
     { "src": "^/index\\.html$", "dest": "/index.html" },
     { "src": "^/(.*)$", "dest": "/index.html" }
   ]

@@ -102,6 +102,22 @@ nav { position: sticky; top: 0; z-index: 100; background: rgba(245,240,232,0.94)
 .feature-phone { background: var(--charcoal); border-radius: 36px; padding: 10px; width: 220px; box-shadow: 0 30px 60px rgba(30,28,24,0.2); }
 .feature-screen { border-radius: 28px; overflow: hidden; background: white; height: 440px; position: relative; }
 
+/* Real app screenshots (drop PNGs in /screens/ — see screens/README.md) */
+.screen-cap-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  z-index: 3;
+  pointer-events: none;
+}
+.phone-screen > .screen-cap-img { border-radius: 33px; }
+.feature-screen > .screen-cap-img { border-radius: 28px; }
+.screen-cap-fallback { position: relative; z-index: 1; min-height: 100%; }
+.feature-screen.chat-screen .screen-cap-fallback { display: flex; flex-direction: column; height: 100%; }
+
 /* EXPLORE MOCKUP */
 .explore-header { background: var(--forest); padding: 28px 14px 14px; }
 .explore-header-title { font-family: 'Fraunces', serif; font-size: 15px; color: white; margin-bottom: 10px; }
@@ -251,7 +267,8 @@ footer { background: var(--charcoal); padding: 36px 48px; display: flex; justify
       <div class="phone-outer">
         <div class="phone-notch"></div>
         <div class="phone-screen">
-          <!-- Optional: <img src="screens/my-day.png" style="width:100%;height:100%;object-fit:cover;border-radius:33px;display:block;"> -->
+          <img class="screen-cap-img" src="screens/my-day.png" alt="" loading="eager" fetchpriority="high" decoding="async" width="390" height="844" onerror="this.style.display='none'">
+          <div class="screen-cap-fallback">
           <div class="phone-status"><span>9:41</span><span>●●●</span></div>
           <div class="phone-header">
             <div class="phone-header-row">
@@ -272,6 +289,7 @@ footer { background: var(--charcoal); padding: 36px 48px; display: flex; justify
             <div class="phone-nav-item"><div class="phone-nav-dot">🌀</div><span>Moody</span></div>
             <div class="phone-nav-item"><div class="phone-nav-dot">📅</div><span>Plans</span></div>
             <div class="phone-nav-item"><div class="phone-nav-dot">👤</div><span>Profile</span></div>
+          </div>
           </div>
         </div>
       </div>
@@ -329,6 +347,8 @@ footer { background: var(--charcoal); padding: 36px 48px; display: flex; justify
     <div class="feature-phone-wrap reveal">
       <div class="feature-phone">
         <div class="feature-screen">
+          <img class="screen-cap-img" src="screens/explore.png" alt="" loading="lazy" decoding="async" width="390" height="844" onerror="this.style.display='none'">
+          <div class="screen-cap-fallback">
           <div class="explore-header">
             <div class="explore-header-title">Explore 🔍</div>
             <div class="mood-chips-row">
@@ -364,6 +384,7 @@ footer { background: var(--charcoal); padding: 36px 48px; display: flex; justify
               </div>
             </div>
           </div>
+          </div>
         </div>
       </div>
     </div>
@@ -386,6 +407,8 @@ footer { background: var(--charcoal); padding: 36px 48px; display: flex; justify
     <div class="feature-phone-wrap reveal">
       <div class="feature-phone">
         <div class="feature-screen chat-screen">
+          <img class="screen-cap-img" src="screens/moody-hub.png" alt="" loading="lazy" decoding="async" width="390" height="844" onerror="this.style.display='none'">
+          <div class="screen-cap-fallback">
           <div class="chat-header"><div class="chat-title">Moody Hub 🌀</div></div>
           <div class="chat-messages">
             <div class="chat-msg moody"><div class="chat-name">Moody</div><div class="chat-bubble-moody">Hey 😊 What kind of evening are we planning?</div></div>
@@ -395,6 +418,7 @@ footer { background: var(--charcoal); padding: 36px 48px; display: flex; justify
             <div class="chat-msg moody"><div class="chat-name">Moody</div><div class="chat-bubble-moody">Done ✓ 19:30 locked in. You're welcome 😌</div></div>
           </div>
           <div class="chat-input-bar"><span class="chat-input-text">Ask Moody anything...</span><div class="chat-send-btn">➤</div></div>
+          </div>
         </div>
       </div>
     </div>
@@ -417,6 +441,8 @@ footer { background: var(--charcoal); padding: 36px 48px; display: flex; justify
     <div class="feature-phone-wrap reveal">
       <div class="feature-phone">
         <div class="feature-screen" style="background:var(--cream);">
+          <img class="screen-cap-img" src="screens/my-plans.png" alt="" loading="lazy" decoding="async" width="390" height="844" onerror="this.style.display='none'">
+          <div class="screen-cap-fallback">
           <div style="background:#9B8EC4;padding:28px 14px 14px;">
             <div style="font-family:'Fraunces',serif;font-size:15px;color:white;margin-bottom:10px;">My Plans 📅</div>
             <div style="display:flex;gap:6px;">
@@ -441,6 +467,7 @@ footer { background: var(--charcoal); padding: 36px 48px; display: flex; justify
               <div style="font-size:11px;font-weight:500;color:var(--charcoal);font-family:'DM Sans',sans-serif;">Natural Wine Bar 🍷</div>
               <div style="font-size:10px;color:var(--stone);font-family:'DM Sans',sans-serif;">19:30 · Added by Moody</div>
             </div>
+          </div>
           </div>
         </div>
       </div>
