@@ -62,6 +62,7 @@ import '../../features/social/presentation/screens/edit_social_profile_screen.da
 // Note: social/user_profile_screen.dart removed — all social profile routes use UnifiedProfileScreen
 import '../../features/auth/providers/auth_state_provider.dart';
 import '../../features/auth/presentation/screens/magic_link_signup_screen.dart';
+import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/auth_welcome_screen.dart';
 import '../providers/preferences_provider.dart';
 import '../providers/feature_flags_provider.dart';
@@ -310,7 +311,16 @@ GoRouter router(RouterRef ref) {
         name: 'magic-link',
         builder: (context, state) => const MagicLinkSignupScreen(),
       ),
-      
+      GoRoute(
+        path: '/dev/login',
+        name: 'dev-login',
+        redirect: (context, state) {
+          if (!kDebugMode) return '/auth/magic-link';
+          return null;
+        },
+        builder: (context, state) => const LoginScreen(),
+      ),
+
       // Full Onboarding Flow (Authentication Required)
       GoRoute(
         path: '/preferences/communication',
@@ -875,7 +885,8 @@ GoRouter router(RouterRef ref) {
       final isAuthPage = currentLocation == '/register' ||
                         currentLocation == '/auth/signup' ||
                         currentLocation == '/auth/verify-email' ||
-                        currentLocation == '/auth/magic-link';
+                        currentLocation == '/auth/magic-link' ||
+                        (kDebugMode && currentLocation == '/dev/login');
       
       final useNewFlow = ref.read(useNewOnboardingFlowProvider);
       

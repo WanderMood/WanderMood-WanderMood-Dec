@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -581,6 +582,33 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                                 color: _wmStone,
                               ),
                             ),
+                            if (kDebugMode) ...[
+                              const SizedBox(height: 20),
+                              TextButton(
+                                onPressed: () => context.push('/dev/login'),
+                                child: Text(
+                                  'Developer: sign in with password',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: _wmStone,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                child: Text(
+                                  'Simulator tip: paste from Mac with Cmd+V while the email field is focused, or run:\nxcrun simctl openurl booted "YOUR_MAGIC_LINK_URL"',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    height: 1.35,
+                                    color: _wmStone,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -810,6 +838,33 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                                 ),
                               ],
                             ),
+                            if (kDebugMode) ...[
+                              const SizedBox(height: 20),
+                              TextButton(
+                                onPressed: () => context.push('/dev/login'),
+                                child: Text(
+                                  'Developer: sign in with password',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: _wmStone,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                child: Text(
+                                  'Magic link without pasting: copy the link from Mail on your Mac, then in Terminal:\nxcrun simctl openurl booted "PASTE_URL_HERE"\n(Account needs a Supabase password for the dev sign-in option.)',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    height: 1.35,
+                                    color: _wmStone,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
