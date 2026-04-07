@@ -91,6 +91,9 @@ const _streakMilestones = {7, 14, 30, 60, 90, 180, 365};
 /// Latest notification tap payload to navigate to. Cleared after [applyNotificationNavigation].
 final notificationLaunchPayloadProvider = StateProvider<String?>((ref) => null);
 
+/// When true, [MainScreen] skips the Moody idle gate once (e.g. user opened app from a notification).
+final suppressMoodyIdleOnceProvider = StateProvider<bool>((ref) => false);
+
 final notificationBridgeProvider = Provider<void>((ref) {
   final triggers = ref.watch(notificationTriggersProvider);
 

@@ -881,7 +881,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get demoMoodyResponseRelaxed => 'Taking it easy today? Great plan! 🌿';
 
   @override
-  String get demoMoodyResponseRomantic => 'A romantic day? Moody has you 💕';
+  String get demoMoodyResponseRomantic => 'A romantic day? I\'ve got you 💕';
 
   @override
   String get demoMoodyResponseCultural =>
@@ -4039,9 +4039,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get getReadyCantWait => 'Can\'t wait to see what you discover!';
 
   @override
-  String noPlanDayOpen(String city) {
-    return 'Your day in $city is wide open. Want me to put a plan together, or are you looking for a specific vibe?';
+  String noPlanDayOpenInCity(String city) {
+    return 'Your day in $city is still wide open — I\'ve already got ideas bubbling. Want me to sketch a full flow, or should we chase one vibe first?';
   }
+
+  @override
+  String get noPlanDayOpenAroundYou =>
+      'Your day is still wide open — I\'ve already got ideas bubbling. Want me to sketch a full flow, or should we chase one vibe first?';
+
+  @override
+  String get noPlanDayOpenLocating =>
+      'Hang on… I\'m locking in where you are, then we\'ll pick your next move.';
 
   @override
   String get noPlanPlanMyWholeDay => '✨ Plan my whole day';
@@ -4053,7 +4061,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noPlanGetMeMoving => '🏃 Get me moving';
 
   @override
-  String get noPlanJustChat => 'Just chat';
+  String get noPlanJustChat => '💬 Tell me what\'s on your mind';
 
   @override
   String get noPlanPlanLater => 'Maybe later';
@@ -5086,6 +5094,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get introHeadline2 => 'your adventure';
 
   @override
+  String get onboardingLoadingTitle => 'I\'m getting to know you! 🧠';
+
+  @override
+  String get onboardingLoadingSubtitle0 => 'Saving your interests...';
+
+  @override
+  String get onboardingLoadingSubtitle1 => 'Tuning your style...';
+
+  @override
+  String get onboardingLoadingSubtitle2 => 'Finding places that fit you...';
+
+  @override
+  String get onboardingLoadingSubtitle3 => 'Getting myself ready for you...';
+
+  @override
+  String get onboardingLoadingFooter => 'This\'ll just take a moment ✨';
+
+  @override
   String get demoModeLabel => '▶ Demo mode';
 
   @override
@@ -5156,6 +5182,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get demoMoodReactionDefault => 'Love it—let\'s shape your day.';
+
+  @override
+  String get demoPuttingDayTogether => 'Putting your day together…';
 
   @override
   String get guestDemoResultTitlePicked => 'I picked these for you';
@@ -7954,6 +7983,49 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your saved plans and mood history are here.';
 
   @override
+  String get notifMorningWithPlanFallbackActivity => 'your first stop';
+
+  @override
+  String notifMorningWithPlanEnergeticTitle(String weatherEmoji) {
+    return 'Rise and shine $weatherEmoji';
+  }
+
+  @override
+  String notifMorningWithPlanEnergeticBody(String activityName) {
+    return 'First up: $activityName. Let\'s own today.';
+  }
+
+  @override
+  String notifMorningWithPlanFriendlyTitle(String weatherEmoji) {
+    return 'Good morning $weatherEmoji';
+  }
+
+  @override
+  String notifMorningWithPlanFriendlyBody(String activityName) {
+    return 'We\'re starting with $activityName today — I\'m here if you need me.';
+  }
+
+  @override
+  String notifMorningWithPlanProfessionalTitle(String weatherEmoji) {
+    return 'Good morning $weatherEmoji';
+  }
+
+  @override
+  String notifMorningWithPlanProfessionalBody(String activityName) {
+    return 'Your schedule includes $activityName today.';
+  }
+
+  @override
+  String notifMorningWithPlanDirectTitle(String weatherEmoji) {
+    return 'Today\'s plan $weatherEmoji';
+  }
+
+  @override
+  String notifMorningWithPlanDirectBody(String activityName) {
+    return '$activityName is first. Tap to open.';
+  }
+
+  @override
   String get notifDailyMoodCheckInEnergeticV0Title =>
       'What vibe are we serving today? ✨';
 
@@ -8480,7 +8552,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifCompanionMorningEnergeticV0Title =>
-      'Morning! Moody\'s already plotting ☀️';
+      'Morning! I\'m already plotting ☀️';
 
   @override
   String get notifCompanionMorningEnergeticV0Body =>
@@ -8491,7 +8563,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifCompanionMorningEnergeticV1Body =>
-      'A new day = new adventures. Moody\'s ready when you are.';
+      'A new day = new adventures. I\'m ready when you are.';
 
   @override
   String get notifCompanionMorningEnergeticV2Title =>
@@ -8506,7 +8578,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifCompanionMorningFriendlyV0Body =>
-      'How are you feeling? Let Moody help make today amazing.';
+      'How are you feeling? Let me help make today amazing.';
 
   @override
   String get notifCompanionMorningFriendlyV1Title => 'Morning check-in';
@@ -8517,7 +8589,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifCompanionMorningFriendlyV2Title =>
-      'Moody\'s saying good morning 😊';
+      'I\'m saying good morning 😊';
 
   @override
   String get notifCompanionMorningFriendlyV2Body =>
@@ -8569,7 +8641,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifCompanionAfternoonEnergeticV0Body =>
-      'Tell Moody what you\'re feeling. We can still make today legendary.';
+      'Tell me what you\'re feeling. We can still make today legendary.';
 
   @override
   String get notifCompanionAfternoonEnergeticV1Title =>
@@ -8577,7 +8649,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifCompanionAfternoonEnergeticV1Body =>
-      'Update your mood and Moody will update your picks.';
+      'Update your mood and I\'ll update your picks.';
 
   @override
   String get notifCompanionAfternoonEnergeticV2Title =>
@@ -8585,7 +8657,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifCompanionAfternoonEnergeticV2Body =>
-      'How\'s your energy? Moody\'s got afternoon plans if you need them.';
+      'How\'s your energy? I\'ve got afternoon plans if you need them.';
 
   @override
   String get notifCompanionAfternoonFriendlyV0Title => 'Afternoon check-in! 😊';
@@ -8595,15 +8667,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Hope your day\'s been great — how are you feeling now?';
 
   @override
-  String get notifCompanionAfternoonFriendlyV1Title =>
-      'Moody\'s thinking of you';
+  String get notifCompanionAfternoonFriendlyV1Title => 'I\'m thinking of you';
 
   @override
   String get notifCompanionAfternoonFriendlyV1Body =>
       'How\'s your afternoon going? Update your mood anytime.';
 
   @override
-  String get notifCompanionAfternoonFriendlyV2Title => 'Midday with Moody';
+  String get notifCompanionAfternoonFriendlyV2Title => 'Midday check-in';
 
   @override
   String get notifCompanionAfternoonFriendlyV2Body =>
@@ -8655,7 +8726,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifCompanionEveningEnergeticV0Body =>
-      'Moody wants a full debrief. Any highlights from today?';
+      'Catch me up — any highlights from today?';
 
   @override
   String get notifCompanionEveningEnergeticV1Title => 'Golden hour check ✨';
@@ -8669,14 +8740,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifCompanionEveningEnergeticV2Body =>
-      'Tell Moody about your day — and maybe plan tomorrow.';
+      'Tell me about your day — and maybe plan tomorrow.';
 
   @override
   String get notifCompanionEveningFriendlyV0Title => 'Good evening! 🌙';
 
   @override
   String get notifCompanionEveningFriendlyV0Body =>
-      'How was your day? Share your mood and reflect with Moody.';
+      'How was your day? Share your mood and reflect with me.';
 
   @override
   String get notifCompanionEveningFriendlyV1Title => 'Evening check-in';
@@ -8686,8 +8757,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Wind down time — any adventures to log?';
 
   @override
-  String get notifCompanionEveningFriendlyV2Title =>
-      'Moody\'s evening check-in';
+  String get notifCompanionEveningFriendlyV2Title => 'Evening check-in';
 
   @override
   String get notifCompanionEveningFriendlyV2Body =>

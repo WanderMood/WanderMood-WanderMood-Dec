@@ -12,7 +12,6 @@ import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/guest_demo_about_sections.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/core/presentation/widgets/stylized_map_preview.dart';
-import 'package:wandermood/core/utils/google_place_photo_device_url.dart';
 import 'package:wandermood/core/utils/google_static_map_url.dart';
 
 class ActivityDetailScreen extends ConsumerStatefulWidget {
@@ -103,7 +102,7 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen> {
     return _getRealReviews();
   }
 
-  /// Google Place photos → [WmPlacePhotoNetworkImage]; Unsplash and other HTTPS → [WmNetworkImage].
+  /// Google Place photos vs other HTTPS — same pipeline as planner / My Day cards.
   Widget _activityImageFromUrl(
     String url, {
     BoxFit fit = BoxFit.cover,
@@ -118,22 +117,8 @@ class _ActivityDetailScreenState extends ConsumerState<ActivityDetailScreen> {
           ? errorBuilder(context, Exception('empty'), StackTrace.current)
           : Container(color: Colors.grey[300], child: const Icon(Icons.place, size: 80, color: Colors.grey));
     }
-    final uri = Uri.tryParse(trimmed);
-    final host = uri?.host.toLowerCase() ?? '';
-    final isGooglePlacePhoto = (host == 'maps.googleapis.com' && trimmed.contains('place/photo')) ||
-        (host == 'places.googleapis.com' && trimmed.contains('/media'));
-    if (isGooglePlacePhoto) {
-      return WmPlacePhotoNetworkImage(
-        trimmed,
-        fit: fit,
-        width: width,
-        height: height,
-        progressIndicatorBuilder: progressIndicatorBuilder,
-        errorBuilder: errorBuilder,
-      );
-    }
-    return WmNetworkImage(
-      deviceAccessibleGooglePlacePhotoUrl(trimmed),
+    return WmPlaceOrHttpsNetworkImage(
+      trimmed,
       fit: fit,
       width: width,
       height: height,

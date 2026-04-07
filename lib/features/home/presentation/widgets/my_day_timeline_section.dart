@@ -1,6 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -275,17 +274,19 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      child: CachedNetworkImage(
-                        cacheManager: WanderMoodImageCacheManager.instance,
-                        imageUrl: activity.rawData['imageUrl'] ?? '',
+                      child: WmPlaceOrHttpsNetworkImage(
+                        activity.rawData['imageUrl']?.toString() ?? '',
                         fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
+                        progressIndicatorBuilder: (context, url, progress) => Container(
                           color: Colors.grey[300],
-                          child: const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              value: progress.progress,
+                            ),
                           ),
                         ),
-                        errorWidget: (context, url, error) => Container(
+                        errorBuilder: (context, error, stackTrace) => Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [

@@ -868,7 +868,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get introSeeHowItWorks => 'Schau mal, das macht Spaß!';
 
   @override
-  String get demoMoodyGreeting => 'Hey! 👋 Ich bin Moody, dein Reisebuddy.';
+  String get demoMoodyGreeting => 'Hey… Ich bin Moody 🙂';
 
   @override
   String get demoMoodyAskVibe =>
@@ -4073,9 +4073,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String get getReadyCantWait => 'Wir freuen uns auf deine Entdeckungen!';
 
   @override
-  String noPlanDayOpen(String city) {
-    return 'Dein Tag in $city ist noch offen. Soll ich einen Plan zusammenstellen, oder suchst du eine bestimmte Stimmung?';
+  String noPlanDayOpenInCity(String city) {
+    return 'Dein Tag in $city ist noch offen — mir platzt der Kopf vor Ideen. Soll ich den ganzen Tag ausplotten, oder erst eine Stimmung anziehen?';
   }
+
+  @override
+  String get noPlanDayOpenAroundYou =>
+      'Dein Tag ist noch offen — mir platzt der Kopf vor Ideen. Soll ich den ganzen Tag ausplotten, oder erst eine Stimmung anziehen?';
+
+  @override
+  String get noPlanDayOpenLocating =>
+      'Kurz Geduld… ich pinne deinen Ort, dann wählen wir den nächsten Schritt.';
 
   @override
   String get noPlanPlanMyWholeDay => '✨ Meinen ganzen Tag planen';
@@ -4087,7 +4095,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get noPlanGetMeMoving => '🏃 Bring mich in Bewegung';
 
   @override
-  String get noPlanJustChat => 'Einfach plaudern';
+  String get noPlanJustChat => '💬 Sag mir, was dich umtreibt';
 
   @override
   String get noPlanPlanLater => 'Vielleicht später';
@@ -5127,6 +5135,24 @@ class AppLocalizationsDe extends AppLocalizations {
   String get introHeadline2 => 'dein Abenteuer';
 
   @override
+  String get onboardingLoadingTitle => 'Ich lerne dich kennen! 🧠';
+
+  @override
+  String get onboardingLoadingSubtitle0 => 'Deine Interessen speichern...';
+
+  @override
+  String get onboardingLoadingSubtitle1 => 'Deinen Stil anpassen...';
+
+  @override
+  String get onboardingLoadingSubtitle2 => 'Orte finden, die zu dir passen...';
+
+  @override
+  String get onboardingLoadingSubtitle3 => 'Ich mach mich bereit für dich...';
+
+  @override
+  String get onboardingLoadingFooter => 'Das dauert nur einen Moment ✨';
+
+  @override
   String get demoModeLabel => '▶ Demo-Modus';
 
   @override
@@ -5143,11 +5169,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get demoMoodyGreetingLine2 =>
-      'Tell me what kind of day you\'re after — I\'ll take care of the rest.';
+      'Sag mir, was für einen Tag du willst — ich kümmere mich um den Rest.';
 
   @override
-  String get demoMoodyQuestion =>
-      'Ich helfe dir, tolle Orte basierend auf deiner Stimmung zu entdecken. Wie ist deine Stimmung heute?';
+  String get demoMoodyQuestion => 'Also… was für ein Tag soll\'s heute werden?';
 
   @override
   String get demoUserReplyRelaxed => 'Ich fühle mich entspannt';
@@ -5175,32 +5200,36 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get demoMoodReactionRelaxed =>
-      'Soft mornings and slow moments—I\'ve got you.';
+      'Sanfte Morgen und ruhige Momente — ich bin für dich da.';
 
   @override
-  String get demoMoodReactionFoodie => 'We\'re eating well today.';
+  String get demoMoodReactionFoodie => 'Heute essen wir richtig gut.';
 
   @override
-  String get demoMoodReactionEnergetic => 'High energy—let\'s make it count.';
+  String get demoMoodReactionEnergetic =>
+      'Volle Energie — lass uns den Tag nehmen.';
 
   @override
-  String get demoMoodReactionAdventurous => 'Adventure mode activated.';
+  String get demoMoodReactionAdventurous => 'Abenteuermodus an.';
 
   @override
-  String get demoMoodReactionCultural => 'Curiosity looks good on you.';
+  String get demoMoodReactionCultural => 'Neugier steht dir gut.';
 
   @override
-  String get demoMoodReactionCozy => 'Cozy, quiet, and just right.';
+  String get demoMoodReactionCozy => 'Gemütlich, ruhig, genau richtig.';
 
   @override
   String get demoMoodReactionSurprise =>
-      'A little mystery—I\'ve got ideas for you. ✨';
+      'Ein bisschen Geheimnis — ich habe Ideen für dich. ✨';
 
   @override
-  String get demoMoodReactionDefault => 'Love it—let\'s shape your day.';
+  String get demoMoodReactionDefault => 'Schön — lass uns deinen Tag formen.';
 
   @override
-  String get guestDemoResultTitlePicked => 'I picked these for you';
+  String get demoPuttingDayTogether => 'Ich stelle deinen Tag zusammen…';
+
+  @override
+  String get guestDemoResultTitlePicked => 'Ich habe diese für Sie ausgewählt';
 
   @override
   String guestDemoResultTitleWithMood(String moodLabel) {
@@ -5225,70 +5254,73 @@ class AppLocalizationsDe extends AppLocalizations {
   String get guestDayPlanContinueWithMoody => 'Weiter mit Moody';
 
   @override
-  String get guestDemoMoodyRelaxed0 => 'Trees first, screens later. 🌿';
+  String get guestDemoMoodyRelaxed0 => 'Zuerst Bäume, später Bildschirme. 🌿';
 
   @override
-  String get guestDemoMoodyRelaxed1 => 'You moved — now melt into the chair. ☕';
+  String get guestDemoMoodyRelaxed1 =>
+      'Sie haben sich bewegt – jetzt verschmelzen Sie mit dem Stuhl. ☕';
 
   @override
   String get guestDemoMoodyRelaxed2 =>
-      'Golden hour hits different from this spot 🌅';
+      'Von hier aus trifft die goldene Stunde anders zu 🌅';
 
   @override
   String get guestDemoMoodyFoodie0 =>
-      'Still warm, good coffee — exactly how your day should start ☕';
+      'Noch warm, guter Kaffee – genau so sollte Ihr Tag beginnen ☕';
 
   @override
-  String get guestDemoMoodyFoodie1 => 'Get here early… these sell out fast 🥐';
+  String get guestDemoMoodyFoodie1 =>
+      'Seien Sie rechtzeitig hier, diese sind schnell ausverkauft 🥐';
 
   @override
-  String get guestDemoMoodyFoodie2 => 'Come hungry — portions are generous 🍽️';
+  String get guestDemoMoodyFoodie2 =>
+      'Kommen Sie hungrig – die Portionen sind großzügig 🍽️';
 
   @override
   String get guestDemoMoodySocial0 =>
-      'Easy to slide in solo or with friends — the vibe is welcoming 🎉';
+      'Einfach alleine oder mit Freunden reinzukommen – die Atmosphäre ist einladend 🎉';
 
   @override
   String get guestDemoMoodySocial1 =>
-      'Pull up a bench — someone’s always finishing a story. 🥗';
+      'Ziehen Sie eine Bank hoch – jemand ist immer dabei, eine Geschichte zu Ende zu lesen. 🥗';
 
   @override
   String get guestDemoMoodySocial2 =>
-      'Strike up a chat at the bar; regulars love newcomers 👋';
+      'Kommen Sie an der Bar ins Gespräch; Stammgäste lieben Neulinge 👋';
 
   @override
   String get guestDemoMoodyAdventurous0 =>
-      'Earn the view — then earn lunch. 🥾';
+      'Verdiene dir die Aussicht – und dann verdiene dir das Mittagessen. 🥾';
 
   @override
   String get guestDemoMoodyAdventurous1 =>
-      'You crushed the climb — now let the harbor do the work. 🛥️';
+      'Sie haben den Aufstieg vermasselt – jetzt überlassen Sie dem Hafen die Arbeit. 🛥️';
 
   @override
   String get guestDemoMoodyAdventurous2 =>
-      'Let the day’s noise fade into golden hour. 🌇';
+      'Lassen Sie den Lärm des Tages in die goldene Stunde übergehen. 🌇';
 
   @override
   String get guestDemoMoodyCultural0 =>
-      'Give yourself time to read every plaque 🏛️';
+      'Nehmen Sie sich Zeit, jede Plakette zu lesen 🏛️';
 
   @override
-  String get guestDemoMoodyCultural1 => 'Museum brain off, espresso on. ☕';
+  String get guestDemoMoodyCultural1 => 'Museumshirn aus, Espresso an. ☕';
 
   @override
   String get guestDemoMoodyCultural2 =>
-      'Culture, but make it unbuttoned-collar. 🎷';
+      'Kultur, aber machen Sie es mit aufgeknöpftem Kragen. 🎷';
 
   @override
   String get guestDemoMoodyRomantic0 =>
-      'Low lights, shared plates — keep the phones away 💕';
+      'Schwaches Licht, gemeinsame Teller – halten Sie die Telefone fern 💕';
 
   @override
   String get guestDemoMoodyRomantic1 =>
-      'Ask for a corner table if you can — worth it 🕯️';
+      'Fragen Sie nach einem Ecktisch, wenn Sie können – es lohnt sich 🕯️';
 
   @override
-  String get guestDemoMoodyRomantic2 => 'Split dessert. Non-negotiable 🍰';
+  String get guestDemoMoodyRomantic2 => 'Split-Dessert. Nicht verhandelbar 🍰';
 
   @override
   String get guestDemoTagWalk => 'Spaziergang';
@@ -5372,49 +5404,50 @@ class AppLocalizationsDe extends AppLocalizations {
   String get guestDemoRelaxed1Name => 'Parkside Morning Reset';
 
   @override
-  String get guestDemoRelaxed1Meta => '09:00 • Free';
+  String get guestDemoRelaxed1Meta => '09:00 • Kostenlos';
 
   @override
   String get guestDemoRelaxed1Desc =>
-      'Easy loops under the trees — wake the body without racing.';
+      'Leichte Runden unter den Bäumen – wecken Sie den Körper, ohne zu rasen.';
 
   @override
-  String get guestDemoRelaxed2Name => 'Slow Matcha Counter';
+  String get guestDemoRelaxed2Name => 'Langsamer Matcha-Zähler';
 
   @override
   String get guestDemoRelaxed2Meta => '12:30 • €€';
 
   @override
   String get guestDemoRelaxed2Desc =>
-      'Sit deep, sip slow — let the morning walk settle in.';
+      'Setzen Sie sich tief hin, trinken Sie langsam – lassen Sie den Morgenspaziergang einwirken.';
 
   @override
-  String get guestDemoRelaxed3Name => 'Sunset Terrace';
+  String get guestDemoRelaxed3Name => 'Sonnenuntergangsterrasse';
 
   @override
   String get guestDemoRelaxed3Meta => '18:00 • €€€';
 
   @override
-  String get guestDemoRelaxed3Desc => 'Golden hour, one drink, nowhere to be.';
+  String get guestDemoRelaxed3Desc =>
+      'Goldene Stunde, ein Drink, nirgendwo zu sein.';
 
   @override
-  String get guestDemoFoodie1Name => 'Oven & Oak Bakery';
+  String get guestDemoFoodie1Name => 'Ofen- und Eichenbäckerei';
 
   @override
   String get guestDemoFoodie1Meta => '08:00 • €';
 
   @override
   String get guestDemoFoodie1Desc =>
-      'Fresh pastries and coffee to start the day.';
+      'Frisches Gebäck und Kaffee zum Start in den Tag.';
 
   @override
-  String get guestDemoFoodie2Name => 'Market Hall Bites';
+  String get guestDemoFoodie2Name => 'Markthallen-Häppchen';
 
   @override
   String get guestDemoFoodie2Meta => '12:00 • €€';
 
   @override
-  String get guestDemoFoodie2Desc => 'Tasting trays from local vendors.';
+  String get guestDemoFoodie2Desc => 'Probiertabletts von lokalen Anbietern.';
 
   @override
   String get guestDemoFoodie3Name => 'Chef\'s Table Pop-up';
@@ -5423,45 +5456,48 @@ class AppLocalizationsDe extends AppLocalizations {
   String get guestDemoFoodie3Meta => '19:00 • €€€';
 
   @override
-  String get guestDemoFoodie3Desc => 'Small plates and seasonal specials.';
+  String get guestDemoFoodie3Desc =>
+      'Kleine Gerichte und saisonale Spezialitäten.';
 
   @override
-  String get guestDemoSocial1Name => 'Park Run Meet-up';
+  String get guestDemoSocial1Name => 'Park Run-Treffen';
 
   @override
-  String get guestDemoSocial1Meta => '07:30 • Free';
+  String get guestDemoSocial1Meta => '07:30 • Kostenlos';
 
   @override
-  String get guestDemoSocial1Desc => 'Quick miles with friendly faces.';
+  String get guestDemoSocial1Desc =>
+      'Schnelle Kilometer mit freundlichen Gesichtern.';
 
   @override
-  String get guestDemoSocial2Name => 'Market Hall Long Table';
+  String get guestDemoSocial2Name => 'Langer Tisch in der Markthalle';
 
   @override
   String get guestDemoSocial2Meta => '13:00 • €€';
 
   @override
   String get guestDemoSocial2Desc =>
-      'Shared plates and easy chatter — recover together after the run.';
+      'Gemeinsame Teller und lockeres Plaudern – erholen Sie sich gemeinsam nach dem Lauf.';
 
   @override
-  String get guestDemoSocial3Name => 'Late Live Set';
+  String get guestDemoSocial3Name => 'Spätes Live-Set';
 
   @override
   String get guestDemoSocial3Meta => '21:00 • €€';
 
   @override
-  String get guestDemoSocial3Desc => 'Loud speakers, cold drinks, big vibes.';
+  String get guestDemoSocial3Desc =>
+      'Laute Lautsprecher, kalte Getränke, große Stimmung.';
 
   @override
-  String get guestDemoAdventurous1Name => 'Ridge Sunrise Hike';
+  String get guestDemoAdventurous1Name => 'Grat-Sonnenaufgang-Wanderung';
 
   @override
-  String get guestDemoAdventurous1Meta => '06:00 • Free';
+  String get guestDemoAdventurous1Meta => '06:00 • Kostenlos';
 
   @override
   String get guestDemoAdventurous1Desc =>
-      'Steep trail, wide views, early start.';
+      'Steiler Weg, weite Aussicht, früher Start.';
 
   @override
   String get guestDemoAdventurous2Name => 'Quayside Lunch Deck';
@@ -5471,7 +5507,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get guestDemoAdventurous2Desc =>
-      'Long lunch with harbor views — legs up, calories back, no rush.';
+      'Langes Mittagessen mit Blick auf den Hafen – Beine hoch, Kalorien zurück, keine Hektik.';
 
   @override
   String get guestDemoAdventurous3Name => 'Waterfront Sundown Bar';
@@ -5481,7 +5517,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get guestDemoAdventurous3Desc =>
-      'Golden-hour drinks and small plates — land the day softly.';
+      'Golden-Hour-Drinks und kleine Teller – lassen Sie den Tag sanft beginnen.';
 
   @override
   String get guestDemoCultural1Name => 'Modern Wing Tour';
@@ -5490,126 +5526,129 @@ class AppLocalizationsDe extends AppLocalizations {
   String get guestDemoCultural1Meta => '10:00 • €';
 
   @override
-  String get guestDemoCultural1Desc => 'Guided look at the new exhibition.';
+  String get guestDemoCultural1Desc =>
+      'Geführter Blick in die neue Ausstellung.';
 
   @override
-  String get guestDemoCultural2Name => 'Sculpture Garden Café';
+  String get guestDemoCultural2Name => 'Skulpturengartencafé';
 
   @override
   String get guestDemoCultural2Meta => '14:00 • €';
 
   @override
   String get guestDemoCultural2Desc =>
-      'Espresso between wings — let what you saw sink in.';
+      'Espresso zwischen den Flügeln – lassen Sie das Gesehene auf sich wirken.';
 
   @override
-  String get guestDemoCultural3Name => 'Canal-Side Jazz Room';
+  String get guestDemoCultural3Name => 'Jazzraum am Kanal';
 
   @override
   String get guestDemoCultural3Meta => '20:00 • €€';
 
   @override
   String get guestDemoCultural3Desc =>
-      'Dim lights, small band — culture without the sprint finish.';
+      'Gedämpftes Licht, kleine Band – Kultur ohne Sprint-Finish.';
 
   @override
-  String get guestDemoRomantic1Name => 'Courtyard Café';
+  String get guestDemoRomantic1Name => 'Hofcafé';
 
   @override
   String get guestDemoRomantic1Meta => '10:00 • €€';
 
   @override
-  String get guestDemoRomantic1Desc => 'Quiet corners and shared pastries.';
+  String get guestDemoRomantic1Desc => 'Ruhige Ecken und gemeinsames Gebäck.';
 
   @override
-  String get guestDemoRomantic2Name => 'Independent Bookshop Browse';
+  String get guestDemoRomantic2Name => 'Unabhängige Buchhandlung durchsuchen';
 
   @override
   String get guestDemoRomantic2Meta => '15:00 • €';
 
   @override
-  String get guestDemoRomantic2Desc => 'Piles of reads and vinyl in the back.';
+  String get guestDemoRomantic2Desc =>
+      'Hinten stapeln sich Bücher und Schallplatten.';
 
   @override
-  String get guestDemoRomantic3Name => 'Low-lit Wine Room';
+  String get guestDemoRomantic3Name => 'Schwach beleuchteter Weinraum';
 
   @override
   String get guestDemoRomantic3Meta => '20:00 • €€€';
 
   @override
-  String get guestDemoRomantic3Desc => 'Small pours, soft music, no rush.';
+  String get guestDemoRomantic3Desc =>
+      'Kleine Güsse, sanfte Musik, keine Eile.';
 
   @override
   String get guestDemoRelaxed1MoodyAbout =>
-      '📚 What kind of place is this?\n\nCity park with loops under mature trees—wide gravel paths, a duck pond pinch, and benches every few curves. Locals walk dogs, read on blankets; there is no entry fee.\n\n---\n🗺️ Layout & vibe\n\nMostly flat, stroller-friendly circuits (~2 km on the outer loop). Mornings are misty-quiet; you will hear more birds than traffic from here.\n\n---\n⏱️ Good to know\n\nFree to enter. Washrooms near the main entrance. After rain, shoes that forgive mud are a win.\n\n---\n💬 Moody says\n\nNo pace to hit—if you match steps to breath for one lap, you already won.';
+      '📚 Was ist das für ein Ort?\n\nStadtpark mit Schleifen unter altem Baumbestand – breiten Kieswegen, einem Ententeich und Bänken alle paar Kurven. Einheimische gehen mit Hunden spazieren, lesen auf Decken; Es wird kein Eintritt erhoben.\n\n---\n🗺️ Layout und Atmosphäre\n\nMeist flache, kinderwagenfreundliche Rundwege (ca. 2 km auf der Außenschleife). Der Morgen ist neblig-ruhig; Von hier aus werden Sie mehr Vögel als Verkehr hören.\n\n---\n⏱️Gut zu wissen\n\nDer Eintritt ist frei. Waschräume in der Nähe des Haupteingangs. Nach Regen sind Schuhe, die Schlamm verzeihen, ein Gewinn.\n\n---\n💬 sagt Moody\n\nEs gibt kein Tempo, das man erreichen muss – wenn man eine Runde lang Schritte mit Atem kombiniert, hat man bereits gewonnen.';
 
   @override
   String get guestDemoRelaxed2MoodyAbout =>
-      '📚 What kind of place is this?\n\nJapanese-style matcha bar: stone-ground ceremonial grade, oat and soy milk, and seasonal lattes (think sakura in spring, yuzu in winter). Pastries stay light—mochi muffins, sesame cookies, minimal sugar crash.\n\n---\n🪑 Space & vibe\n\nLow counter, matte ceramics, soft daylight. Baristas explain matcha grades without the lecture. Laptop corners exist, but phones-down regulars get the best foam.\n\n---\n⏱️ Good to know\n\nMid-range spend (snack + drink). Busy 12:00–14:00—slide in a bit earlier for a slower pour.\n\n---\n💬 Moody says\n\nSit until the morning you already had settles in your bones—that is the whole assignment.';
+      '📚 Was ist das für ein Ort?\n\nMatcha-Riegel im japanischen Stil: gemahlener zeremonieller Stein, Hafer- und Sojamilch und saisonale Lattes (denken Sie an Sakura im Frühling, Yuzu im Winter). Das Gebäck bleibt leicht – Mochi-Muffins, Sesamkekse, minimaler Zuckerverlust.\n\n---\n🪑 Raum und Atmosphäre\n\nNiedriger Tresen, matte Keramik, sanftes Tageslicht. Baristas erklären die Matcha-Qualitäten ohne Vorlesung. Laptop-Ecken gibt es, aber Stammkunden, die kein Telefon haben, bekommen den besten Schaumstoff.\n\n---\n⏱️Gut zu wissen\n\nMittelklasse-Ausgaben (Snack + Getränk). Von 12:00 bis 14:00 Uhr ist viel los – für einen langsameren Ausguss etwas früher einsteigen.\n\n---\n💬 sagt Moody\n\nSitzen Sie, bis der Morgen, an dem Sie sich bereits festgesetzt haben, in Ihren Knochen sitzt – das ist die ganze Aufgabe.';
 
   @override
   String get guestDemoRelaxed3MoodyAbout =>
-      '📚 What kind of place is this?\n\nRooftop terrace restaurant: Mediterranean-leaning small plates (mezze, grilled fish, burrata), natural wines by the glass, and bottles that lean Italian + Portuguese.\n\n---\n🌅 Why sunset works here\n\nWest-facing glass rail—the sky does the lighting design. Book ahead; walk-ins sometimes grab bar spots when lucky.\n\n---\n⏱️ Good to know\n\nUpper-mid price tier. Even summer evenings get breezy off the water—bring a light layer.\n\n---\n💬 Moody says\n\nOne drink, one horizon, zero inbox—pretend that is the only notification that matters.';
+      '📚 Was ist das für ein Ort?\n\nRestaurant auf der Dachterrasse: kleine Gerichte mit mediterraner Note (Mezze, gegrillter Fisch, Burrata), natürliche Weine im Glas und Flaschen mit italienischer und portugiesischer Note.\n\n---\n🌅 Warum der Sonnenuntergang hier funktioniert\n\nNach Westen ausgerichtete Glasreling – der Himmel übernimmt die Lichtgestaltung. Buchen Sie im Voraus; Mit etwas Glück ergattern sich Laufkundschafter manchmal einen Platz in der Bar.\n\n---\n⏱️Gut zu wissen\n\nObere mittlere Preisklasse. Selbst an Sommerabenden wird es auf dem Wasser windig – bringen Sie eine leichte Schicht mit.\n\n---\n💬 sagt Moody\n\nEin Getränk, ein Horizont, kein Posteingang – tun Sie so, als wäre das die einzige Benachrichtigung, die zählt.';
 
   @override
   String get guestDemoFoodie1MoodyAbout =>
-      '📚 What kind of place is this?\n\nArtisan bakery + coffee bar: sourdough loaves, butter croissants laminated in-house, seasonal fruit tarts. Espresso rotates single-origin weekly; batch brew if you are sprinting.\n\n---\n🥐 What to order\n\nAsk for whatever left the oven in the last hour. Savory danishes vanish first on Saturdays.\n\n---\n⏱️ Good to know\n\nOpens early; expect a friendly line 09:00–10:30 weekends. Card-only at the counter.\n\n---\n💬 Moody says\n\nCrumbs on your sleeve count as a five-star review—lean in.';
+      '📚 Was ist das für ein Ort?\n\nHandwerkliche Bäckerei + Kaffeebar: Sauerteigbrote, selbst laminierte Buttercroissants, saisonale Obsttörtchen. Espresso wechselt wöchentlich mit einer einzigen Herkunft; Batch Brew, wenn Sie sprinten.\n\n---\n🥐 Was zu bestellen ist\n\nFragen Sie nach dem, was in der letzten Stunde den Ofen verlassen hat. Am Samstag verschwinden zuerst herzhafte Plundergebäcke.\n\n---\n⏱️Gut zu wissen\n\nÖffnet früh; erwarten Sie am Wochenende von 09:00 bis 10:30 Uhr eine freundliche Schlange. Nur Karte am Schalter.\n\n---\n💬 sagt Moody\n\nKrümel auf Ihrem Ärmel zählen als Fünf-Sterne-Bewertung – zögern Sie nicht.';
 
   @override
   String get guestDemoFoodie2MoodyAbout =>
-      '📚 What kind of place is this?\n\nCovered market hall: 30+ stalls—Dutch cheeses, roti, oysters, Korean bowls, and herring if you are feeling brave. Built for tasting: small plates so you can mix countries in one lunch.\n\n---\n🍽️ How it works\n\nOrder from vendors, meet at the long communal tables in the middle. Most stalls are cashless; allergen cards are posted.\n\n---\n⏱️ Good to know\n\nRush hour 12:00–13:30—scout a table first, then divide and conquer.\n\n---\n💬 Moody says\n\nGrab one thing you cannot pronounce—I will be smug when you love it.';
+      '📚 Was ist das für ein Ort?\n\nÜberdachte Markthalle: Über 30 Stände – holländischer Käse, Roti, Austern, koreanische Schüsseln und Hering, wenn Sie mutig sind. Gebaut zum Probieren: kleine Teller, damit Sie in einem Mittagessen verschiedene Länder mischen können.\n\n---\n🍽️ Wie es funktioniert\n\nBestellen Sie bei den Händlern und treffen Sie sich an den langen Gemeinschaftstischen in der Mitte. Die meisten Stände sind bargeldlos; Allergenkarten werden ausgehängt.\n\n---\n⏱️Gut zu wissen\n\nHauptverkehrszeit 12:00–13:30 Uhr – zuerst einen Tisch auskundschaften, dann teilen und erobern.\n\n---\n💬 sagt Moody\n\nSchnappen Sie sich eine Sache, die Sie nicht aussprechen können – ich werde selbstgefällig sein, wenn Sie sie lieben.';
 
   @override
   String get guestDemoFoodie3MoodyAbout =>
-      '📚 What kind of place is this?\n\nEvening chef counter / pop-up dinner: open kitchen, menu that shifts every few weeks, small plates or a set menu. Wine list leans acid-forward whites, light gamay, orange bottles, natural picks.\n\n---\n🔥 Kitchen style\n\nLive fire + local produce call-outs on the board. Vegetarian route exists with a heads-up when you book.\n\n---\n⏱️ Good to know\n\nReservation strongly recommended. Casual-nice dress. Price tier is splurge-okay.\n\n---\n💬 Moody says\n\nSay yes to the server is essential bite—that is where the plot twist lives.';
+      '📚 Was ist das für ein Ort?\n\nAbendliche Cheftheke / Pop-up-Dinner: offene Küche, alle paar Wochen wechselndes Menü, kleine Gerichte oder ein Menü. Die Weinkarte umfasst säurebetonte Weißweine, leichte Gamay-Weine, Orangenflaschen und natürliche Weine.\n\n---\n🔥 Küchenstil\n\nLive-Feuer und Aufrufe zu lokalen Produkten an der Tafel. Es gibt eine vegetarische Route mit einer Vorwarnung bei der Buchung.\n\n---\n⏱️Gut zu wissen\n\nReservierung dringend empfohlen. Lässig-schönes Kleid. Die Preisklasse ist protzig - okay.\n\n---\n💬 sagt Moody\n\nJa zum Server zu sagen, ist ein wesentlicher Biss – darin lebt die Wendung der Handlung.';
 
   @override
   String get guestDemoSocial1MoodyAbout =>
-      '📚 What kind of place is this?\n\nOrganised park run / group jog at a fixed meeting pin—about 5 km, all paces welcome, volunteer hosts. Free to join; barcode timing if you like stats.\n\n---\n👟 Who shows up\n\nFirst-timers, stroller parents, and speedy folks who lap politely. Zero podium pressure unless you want it.\n\n---\n⏱️ Good to know\n\nQuick briefing a few minutes before go-time. Bag drop is honour-system near the flag—travel light if you can.\n\n---\n💬 Moody says\n\nHigh-five a stranger or just nod—both count as social XP today.';
+      '📚 Was ist das für ein Ort?\n\nOrganisierter Parklauf/Gruppenlauf an einem festen Treffpunkt – ca. 5 km, alle Schritte willkommen, ehrenamtliche Gastgeber. Kostenlose Teilnahme; Barcode-Timing, wenn Sie Statistiken mögen.\n\n---\n👟 Wer auftaucht\n\nAnfänger, Kinderwageneltern und flinke Leute, die höflich ihre Runden drehen. Kein Podiumsdruck, es sei denn, Sie möchten es.\n\n---\n⏱️Gut zu wissen\n\nKurze Einweisung ein paar Minuten vor der Abfahrt. Die Gepäckaufgabe in der Nähe der Flagge ist ein Ehrensystem – reisen Sie mit leichtem Gepäck, wenn Sie können.\n\n---\n💬 sagt Moody\n\nEin High-Five mit einem Fremden oder einfach nur nicken – beides zählt heute als soziale XP.';
 
   @override
   String get guestDemoSocial2MoodyAbout =>
-      '📚 What kind of place is this?\n\nMarket-hall communal tables: stalls all around you, shared benches, loud happy chaos. Order small plates from different vendors and trade bites like a very civilised buffet raid.\n\n---\n🍻 The social cheat code\n\nLong tables = easy icebreakers—ask what someone ordered and steal a recommendation.\n\n---\n⏱️ Good to know\n\nPeak 13:00–14:00. Wipe crumbs when you leave—staff quietly love you for it.\n\n---\n💬 Moody says\n\nSteal a fry, share a story, blame me later.';
+      '📚 Was ist das für ein Ort?\n\nGemeinschaftstische in der Markthalle: überall Stände, Gemeinschaftsbänke, lautes, fröhliches Chaos. Bestellen Sie kleine Teller bei verschiedenen Anbietern und tauschen Sie Häppchen wie bei einem sehr zivilisierten Buffet-Raid aus.\n\n---\n🍻 Der Social-Cheat-Code\n\nLange Tische = einfache Eisbrecher – fragen Sie, was jemand bestellt hat, und stehlen Sie eine Empfehlung.\n\n---\n⏱️Gut zu wissen\n\nSpitzenzeit 13:00–14:00 Uhr. Wischen Sie die Krümel ab, wenn Sie gehen – die Mitarbeiter lieben Sie im Stillen dafür.\n\n---\n💬 sagt Moody\n\nStehlen Sie ein Pommes, teilen Sie eine Geschichte und geben Sie mir später die Schuld.';
 
   @override
   String get guestDemoSocial3MoodyAbout =>
-      '📚 What kind of place is this?\n\nLive-music bar: indie bands midweek, louder DJ nights on weekends. Craft beer taps + classic cocktails. Standing room near the stage; booths if you arrive with a plan.\n\n---\n🎶 Sound & scene\n\nSet times often live on socials. Earplugs at the bar if you like your hearing long-term.\n\n---\n⏱️ Good to know\n\nCover charge some Fridays/Saturdays. 18+ after 22:00. Coat check by the door.\n\n---\n💬 Moody says\n\nScratchy voice tomorrow means you did nightlife correctly.';
+      '📚 Was ist das für ein Ort?\n\nLive-Musikbar: Indie-Bands unter der Woche, lautere DJ-Abende am Wochenende. Craft-Bier-Zapfanlagen + klassische Cocktails. Stehplätze in Bühnennähe; Kabinen, wenn Sie mit einem Plan anreisen.\n\n---\n🎶 Ton & Szene\n\nFeste Zeiten leben oft in sozialen Netzwerken. Ohrstöpsel an der Bar, wenn Sie Ihr Gehör langfristig genießen möchten.\n\n---\n⏱️Gut zu wissen\n\nAn manchen Freitagen/Samstagen fällt eine Eintrittsgebühr an. 18+ nach 22:00 Uhr. Garderobe an der Tür.\n\n---\n💬 sagt Moody\n\nEine kratzige Stimme morgen bedeutet, dass Sie das Nachtleben richtig gemacht haben.';
 
   @override
   String get guestDemoAdventurous1MoodyAbout =>
-      '📚 What kind of place is this?\n\nRidge trail loop just outside the city: steep first kilometre, open viewpoints, roots and gravel underfoot. Not climbing ropes—just honest hills most fit hikers finish in 2–3 hours with snacks.\n\n---\n🥾 Gear & safety\n\nTrail shoes or boots, at least 1L water, wind layer at the top. Offline map helps—signal thins on the spine.\n\n---\n⏱️ Good to know\n\nFree access; small parking lot fills by 07:30 on sunny weekends. Sunrise starts are cooler and calmer.\n\n---\n💬 Moody says\n\nSnap the photo, then pocket the phone for ten minutes—the view rented IMAX seats for you.';
+      '📚 Was ist das für ein Ort?\n\nGratweg-Schleife etwas außerhalb der Stadt: steiler erster Kilometer, freie Aussichtspunkte, Wurzeln und Kies unter den Füßen. Keine Kletterseile – nur ehrliche Hügel. Die meisten fitten Wanderer schaffen es mit Snacks in 2–3 Stunden.\n\n---\n🥾 Ausrüstung & Sicherheit\n\nTrail-Schuhe oder Stiefel, mindestens 1L Wasser, Windschicht oben. Offline-Karte hilft – Signalverdünnung auf der Wirbelsäule.\n\n---\n⏱️Gut zu wissen\n\nFreier Zugang; An sonnigen Wochenenden ist der kleine Parkplatz bereits um 07:30 Uhr gefüllt. Der Sonnenaufgang beginnt kühler und ruhiger.\n\n---\n💬 sagt Moody\n\nMachen Sie ein Foto und stecken Sie dann zehn Minuten lang das Telefon ein – die Aussicht hat IMAX-Plätze für Sie gemietet.';
 
   @override
   String get guestDemoAdventurous2MoodyAbout =>
-      '📚 What kind of place is this?\n\nHarbor-front deck restaurant: seafood towers, whole grilled fish, bitterballen for the table, Dutch gin cocktails. Big windows on the water; heaters on the pier when it chills.\n\n---\n⚓ Why it fits after a hike\n\nSalty, high-protein, celebratory—chairs you can sink into for two hours without guilt.\n\n---\n⏱️ Good to know\n\nBook on blue-sky days. Seagulls are professionals—guard your fries like state secrets.\n\n---\n💬 Moody says\n\nOrder the messy thing; napkins exist for exactly this moment.';
+      '📚 Was ist das für ein Ort?\n\nRestaurant auf dem Hafendeck: Meeresfrüchte-Türme, ganzer gegrillter Fisch, Bitterballen für den Tisch, holländische Gin-Cocktails. Große Fenster zum Wasser; Heizungen auf dem Pier, wenn es kalt ist.\n\n---\n⚓ Warum es nach einer Wanderung passt\n\nSalzig, proteinreich, feierlich – Stühle, auf denen man zwei Stunden lang ohne schlechtes Gewissen versinken kann.\n\n---\n⏱️Gut zu wissen\n\nBuchen Sie an Tagen mit blauem Himmel. Möwen sind Profis – hüten Sie Ihre Pommes wie ein Staatsgeheimnis.\n\n---\n💬 sagt Moody\n\nBestellen Sie das Unordentliche; Servietten gibt es genau für diesen Moment.';
 
   @override
   String get guestDemoAdventurous3MoodyAbout =>
-      '📚 What kind of place is this?\n\nWaterfront bar at golden hour: spritz list, local beers, small plates—oysters, charcuterie, croquettes. The room slowly shifts from standing-and-chatting to lounge-and-watch-the-sky.\n\n---\n🍹 Drinks\n\nNatural wine by the glass; negroni riffs on tap in summer.\n\n---\n⏱️ Good to know\n\nHappy hour some weekdays 17:00–19:00. Wind picks up—jacket or borrow a blanket from the host stand.\n\n---\n💬 Moody says\n\nStay for one more round if the sky is still showing off.';
+      '📚 Was ist das für ein Ort?\n\nBar am Wasser zur goldenen Stunde: Spritzkarte, lokale Biere, kleine Gerichte – Austern, Wurstwaren, Kroketten. Der Raum wechselt langsam vom Stehen und Plaudern zum Entspannen und Beobachten des Himmels.\n\n---\n🍹 Getränke\n\nNatürlicher Wein im Glas; Negroni-Riffs vom Fass im Sommer.\n\n---\n⏱️Gut zu wissen\n\nAn manchen Wochentagen Happy Hour von 17:00 bis 19:00 Uhr. Der Wind nimmt zu – Jacke oder leihen Sie sich eine Decke am Stand des Veranstalters.\n\n---\n💬 sagt Moody\n\nBleiben Sie noch eine Runde, wenn der Himmel immer noch sichtbar ist.';
 
   @override
   String get guestDemoCultural1MoodyAbout =>
-      '📚 What kind of place is this?\n\nMuseum new wing with a rotating contemporary show—think large photography, installation, or mixed media. Check the banner at the entrance for this month\'s focus.\n\n---\n🎧 Extras\n\nQR audio guides; Dutch + English wall texts. Gift shop stocks exhibition posters and weirdly good postcards.\n\n---\n⏱️ Good to know\n\nTimed tickets on busy weekends. Café upstairs is a legit reset stop between floors.\n\n---\n💬 Moody says\n\nIf one piece rents space in your head for days, the ticket already paid rent back.';
+      '📚 Was ist das für ein Ort?\n\nNeuer Flügel des Museums mit einer wechselnden zeitgenössischen Ausstellung – denken Sie an große Fotografie, Installation oder gemischte Medien. Schauen Sie sich das Banner am Eingang an, um den Schwerpunkt dieses Monats zu erfahren.\n\n---\n🎧 Extras\n\nQR-Audioguides; Niederländische + englische Wandtexte. Der Geschenkeladen führt Ausstellungsplakate und unheimlich schöne Postkarten.\n\n---\n⏱️Gut zu wissen\n\nZeitgesteuerte Tickets an geschäftigen Wochenenden. Das Café im Obergeschoss ist eine echte Reset-Haltestelle zwischen den Etagen.\n\n---\n💬 sagt Moody\n\nWenn ein Stück tagelang Platz in Ihrem Kopf mietet, wird das Ticket bereits Miete zurückgezahlt.';
 
   @override
   String get guestDemoCultural2MoodyAbout =>
-      '📚 What kind of place is this?\n\nSculpture garden café tucked between museum wings: espresso, filter coffee, cardamom buns, light lunch salads. Glass walls look straight onto bronze pieces and clipped hedges.\n\n---\n🌿 Seating\n\nTerrace when it is dry; mid-century chairs inside when it drizzles—both feel intentional.\n\n---\n⏱️ Good to know\n\nGarden access sometimes needs a museum ticket—read the sign at the gate. Sunday brunch queues; weekday afternoons are softer.\n\n---\n💬 Moody says\n\nStare at the foam, then at a statue—let your brain file what you just saw.';
+      '📚 Was ist das für ein Ort?\n\nSkulpturengartencafé zwischen Museumsflügeln: Espresso, Filterkaffee, Kardamombrötchen, leichte Mittagssalate. Glaswände blicken direkt auf Bronzestücke und geschnittene Hecken.\n\n---\n🌿 Sitzgelegenheiten\n\nTerrasse, wenn es trocken ist; Mid-Century-Stühle drinnen, wenn es nieselt – beides fühlt sich gewollt an.\n\n---\n⏱️Gut zu wissen\n\nFür den Zugang zum Garten ist manchmal ein Museumsticket erforderlich – lesen Sie das Schild am Tor. Warteschlangen beim Sonntagsbrunch; Wochentagsnachmittage sind sanfter.\n\n---\n💬 sagt Moody\n\nStarren Sie auf den Schaum und dann auf eine Statue – lassen Sie Ihr Gehirn das, was Sie gerade gesehen haben, festhalten.';
 
   @override
   String get guestDemoCultural3MoodyAbout =>
-      '📚 What kind of place is this?\n\nIntimate canal-side jazz room: house trio on quieter nights, guest bands weekends. By-the-glass wines from Loire, Alto Adige, and a few skin-contact bottles; classic cocktails; cheese and charcuterie boards.\n\n---\n🎷 Room & sound\n\nAbout 60 seats—close enough to read the bassist\'s face. Two sets with a breather; service goes whisper-quiet during solos.\n\n---\n⏱️ Good to know\n\nReservations strongly recommended after 19:00. Smart-casual dress keeps the room feeling special.\n\n---\n💬 Moody says\n\nHum on the walk home—if you do, I nailed the encore pick.';
+      '📚 Was ist das für ein Ort?\n\nIntimer Jazzraum am Kanal: Haustrio an ruhigeren Abenden, Gastbands am Wochenende. Offene Weine aus der Loire, Südtirol und ein paar Flaschen mit Hautkontakt; klassische Cocktails; Käse- und Wurstbretter.\n\n---\n🎷 Raum & Klang\n\nUngefähr 60 Sitzplätze – nah genug, um das Gesicht des Bassisten lesen zu können. Zwei Sätze mit Verschnaufpause; Bei Soli ist der Service flüsterleise.\n\n---\n⏱️Gut zu wissen\n\nReservierungen nach 19:00 Uhr werden dringend empfohlen. Smart-Casual-Kleidung sorgt dafür, dass sich der Raum besonders anfühlt.\n\n---\n💬 sagt Moody\n\nBrummen Sie auf dem Heimweg – wenn Sie das tun, habe ich die Zugabe-Wahl getroffen.';
 
   @override
   String get guestDemoRomantic1MoodyAbout =>
-      '📚 What kind of place is this?\n\nCourtyard café behind a brick arch: viennoiserie, Dutch apple tart, savory galettes at lunch. Coffee from a small Rotterdam roaster; tea list leans floral and cozy.\n\n---\n🪴 Atmosphere\n\nFountain murmur, ivy walls, a handful of two-tops that feel tucked away. Shared blankets appear on chilly evenings.\n\n---\n⏱️ Good to know\n\nWeekend brunch books fast—walk-in luck often after 14:00. Card and contactless.\n\n---\n💬 Moody says\n\nOrder one pastry to split and fight over the last crumb—I am taking notes.';
+      '📚 Was ist das für ein Ort?\n\nHofcafé hinter einem Backsteinbogen: Viennoiserie, holländischer Apfelkuchen, herzhafte Galettes zum Mittagessen. Kaffee von einer kleinen Rotterdamer Rösterei; Die Teekarte ist blumig und gemütlich.\n\n---\n🪴 Atmosphäre\n\nBrunnenrauschen, Efeuwände, eine Handvoll Zweikreisel, die sich versteckt anfühlen. An kühlen Abenden erscheinen gemeinsame Decken.\n\n---\n⏱️Gut zu wissen\n\nWochenend-Brunch ist schnell gebucht – das Glück, dass man oft erst nach 14:00 Uhr eintrifft. Karte und kontaktlos.\n\n---\n💬 sagt Moody\n\nLassen Sie einen Teigteil aufteilen und streiten Sie sich um den letzten Krümel – ich mache mir Notizen.';
 
   @override
   String get guestDemoRomantic2MoodyAbout =>
-      '📚 What kind of place is this?\n\nIndependent bookshop—not a chain. Front tables: new fiction and translated lit. Middle aisles: essays, design, travel. Back room: curated used stacks plus a vinyl corner (jazz, soul, small Dutch indie labels).\n\n---\n🎧 Listen & browse\n\nPreview headphones at the counter. Staff shelf tags are spicy opinions, not corporate blurbs. Friday readings sometimes—chalkboard by the stairs has the schedule.\n\n---\n⏱️ Good to know\n\nPhones on quiet, please. Bags at the door. Monthly discount cart lives by the stairs—treasure hunt energy.\n\n---\n💬 Moody says\n\nHunt the title that feels like it waited for you—I will take full credit if you find it.';
+      '📚 Was ist das für ein Ort?\n\nUnabhängige Buchhandlung – keine Kette. Vordertische: Neue Belletristik und übersetzte Literatur. Mittelgänge: Essays, Design, Reisen. Hinterzimmer: kuratierte gebrauchte Regale sowie eine Vinyl-Ecke (Jazz, Soul, kleine niederländische Indie-Labels).\n\n---\n🎧 Hören und stöbern\n\nHören Sie sich die Kopfhörer an der Theke an. Mitarbeiterregal-Tags sind scharfsinnige Meinungen, keine Unternehmenstexte. Manchmal gibt es Freitagslesungen – auf der Tafel neben der Treppe steht der Terminplan.\n\n---\n⏱️Gut zu wissen\n\nTelefone bitte leise. Taschen an der Tür. Der monatliche Rabattwagen befindet sich neben der Treppe – Energie für die Schatzsuche.\n\n---\n💬 sagt Moody\n\nSuchen Sie nach dem Titel, der scheinbar auf Sie gewartet hat – ich übernehme die volle Anerkennung, wenn Sie ihn finden.';
 
   @override
   String get guestDemoRomantic3MoodyAbout =>
-      '📚 What kind of place is this?\n\nLow-lit wine room with 80+ bottles on display—Italy (Barbera, Etna, Chianti riserva), France (Beaujolais, Loire Chenin, modest Bordeaux), Spain (Rioja, Priorat), plus orange wines and pet-nat from small Dutch importers. Coravin pours on pricier labels.\n\n---\n🍷 How drinking works\n\nRotating by-the-glass list (roughly 6 whites, 6 reds, 2 skin-contact). Bottles pair with small plates: olives, anchovies, burrata, charcuterie. Corkage waived with a food order on many nights—ask when you sit.\n\n---\n⏱️ Good to know\n\nSommelier does table rounds—say surprise us and mean it. Reservations after 19:30; smart-casual keeps the glow right.\n\n---\n💬 Moody says\n\nPick one bottle you cannot pronounce—we will toast to courage and pretend we are sommeliers.';
+      '📚 Was ist das für ein Ort?\n\nSchwach beleuchteter Weinraum mit über 80 ausgestellten Flaschen – Italien (Barbera, Ätna, Chianti Riserva), Frankreich (Beaujolais, Loire Chenin, bescheidenes Bordeaux), Spanien (Rioja, Priorat) sowie Orangeweine und Pet-Nat von kleinen niederländischen Importeuren. Coravin setzt auf teurere Etiketten.\n\n---\n🍷 Wie Trinken funktioniert\n\nRotierende, nach Gläsern sortierte Liste (ungefähr 6 Weiße, 6 Rote, 2 Hautkontakt). Flaschen passen zu kleinen Tellern: Oliven, Sardellen, Burrata, Wurstwaren. An vielen Abenden wird bei einer Essensbestellung auf Korkgeld verzichtet – fragen Sie, wann Sie Platz nehmen.\n\n---\n⏱️Gut zu wissen\n\nSommelier macht Tischrunden – sagen Sie uns, überraschen Sie uns und meinen Sie es ernst. Reservierungen nach 19:30 Uhr; Smart-Casual sorgt für den richtigen Glanz.\n\n---\n💬 sagt Moody\n\nSuchen Sie sich eine Flasche aus, die Sie nicht aussprechen können – wir stoßen auf Ihren Mut an und tun so, als wären wir Sommeliers.';
 
   @override
   String get dayMon => 'Montag';
@@ -8010,6 +8049,49 @@ class AppLocalizationsDe extends AppLocalizations {
       'Deine gespeicherten Pläne und der Stimmungsverlauf sind hier.';
 
   @override
+  String get notifMorningWithPlanFallbackActivity => 'dein erster Stopp';
+
+  @override
+  String notifMorningWithPlanEnergeticTitle(String weatherEmoji) {
+    return 'Aufstehen und strahlen $weatherEmoji';
+  }
+
+  @override
+  String notifMorningWithPlanEnergeticBody(String activityName) {
+    return 'Zuerst: $activityName. Heute gehört uns.';
+  }
+
+  @override
+  String notifMorningWithPlanFriendlyTitle(String weatherEmoji) {
+    return 'Guten Morgen $weatherEmoji';
+  }
+
+  @override
+  String notifMorningWithPlanFriendlyBody(String activityName) {
+    return 'Wir starten heute mit $activityName — ich bin für dich da.';
+  }
+
+  @override
+  String notifMorningWithPlanProfessionalTitle(String weatherEmoji) {
+    return 'Guten Morgen $weatherEmoji';
+  }
+
+  @override
+  String notifMorningWithPlanProfessionalBody(String activityName) {
+    return 'Dein Kalender enthält heute $activityName.';
+  }
+
+  @override
+  String notifMorningWithPlanDirectTitle(String weatherEmoji) {
+    return 'Heute geplant $weatherEmoji';
+  }
+
+  @override
+  String notifMorningWithPlanDirectBody(String activityName) {
+    return '$activityName steht zuerst. Tippe zum Öffnen.';
+  }
+
+  @override
   String get notifDailyMoodCheckInEnergeticV0Title =>
       'Welchen Vibe liefern wir heute? ✨';
 
@@ -8547,7 +8629,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get notifCompanionMorningEnergeticV0Title =>
-      'Morgen! Moody plant schon ☀️';
+      'Morgen! Ich plane schon ☀️';
 
   @override
   String get notifCompanionMorningEnergeticV0Body =>
@@ -8559,7 +8641,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get notifCompanionMorningEnergeticV1Body =>
-      'Neuer Tag = neue Abenteuer. Moody ist bereit.';
+      'Neuer Tag = neue Abenteuer. Ich bin bereit.';
 
   @override
   String get notifCompanionMorningEnergeticV2Title =>
@@ -8574,7 +8656,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get notifCompanionMorningFriendlyV0Body =>
-      'Wie geht es dir? Lass Moody den heutigen Tag großartig machen.';
+      'Wie geht es dir? Lass mich den heutigen Tag großartig machen.';
 
   @override
   String get notifCompanionMorningFriendlyV1Title => 'Morgendlicher Check-in';
@@ -8584,8 +8666,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Starte den Tag mit deiner Stimmung.';
 
   @override
-  String get notifCompanionMorningFriendlyV2Title =>
-      'Moody sagt guten Morgen 😊';
+  String get notifCompanionMorningFriendlyV2Title => 'Ich sag guten Morgen 😊';
 
   @override
   String get notifCompanionMorningFriendlyV2Body =>
@@ -8638,7 +8719,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get notifCompanionAfternoonEnergeticV0Body =>
-      'Sag Moody, was du fühlst. Wir können den Tag noch legendär machen.';
+      'Sag mir, was du fühlst. Wir können den Tag noch legendär machen.';
 
   @override
   String get notifCompanionAfternoonEnergeticV1Title =>
@@ -8646,14 +8727,14 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get notifCompanionAfternoonEnergeticV1Body =>
-      'Aktualisiere deine Stimmung und Moody aktualisiert deine Picks.';
+      'Aktualisiere deine Stimmung und ich aktualisiere deine Picks.';
 
   @override
   String get notifCompanionAfternoonEnergeticV2Title => 'Halbzeit';
 
   @override
   String get notifCompanionAfternoonEnergeticV2Body =>
-      'Wie ist deine Energie? Moody hat Nachmittagspläne parat.';
+      'Wie ist deine Energie? Ich hab Nachmittagspläne parat.';
 
   @override
   String get notifCompanionAfternoonFriendlyV0Title =>
@@ -8664,14 +8745,14 @@ class AppLocalizationsDe extends AppLocalizations {
       'Hoffe, dein Tag war toll — wie geht es dir jetzt?';
 
   @override
-  String get notifCompanionAfternoonFriendlyV1Title => 'Moody denkt an dich';
+  String get notifCompanionAfternoonFriendlyV1Title => 'Ich denk an dich';
 
   @override
   String get notifCompanionAfternoonFriendlyV1Body =>
       'Wie läuft dein Nachmittag? Aktualisiere deine Stimmung.';
 
   @override
-  String get notifCompanionAfternoonFriendlyV2Title => 'Mittags mit Moody';
+  String get notifCompanionAfternoonFriendlyV2Title => 'Mittags-Check-in';
 
   @override
   String get notifCompanionAfternoonFriendlyV2Body =>
@@ -8726,7 +8807,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get notifCompanionEveningEnergeticV0Body =>
-      'Moody möchte ein volles Debriefing. Highlights vom Tag?';
+      'Erzähl — Highlights vom Tag?';
 
   @override
   String get notifCompanionEveningEnergeticV1Title => 'Goldstunden-Check ✨';
@@ -8740,14 +8821,14 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get notifCompanionEveningEnergeticV2Body =>
-      'Erzähl Moody von deinem Tag — und plane vielleicht morgen.';
+      'Erzähl mir von deinem Tag — und plane vielleicht morgen.';
 
   @override
   String get notifCompanionEveningFriendlyV0Title => 'Guten Abend! 🌙';
 
   @override
   String get notifCompanionEveningFriendlyV0Body =>
-      'Wie war dein Tag? Teile deine Stimmung und reflektiere mit Moody.';
+      'Wie war dein Tag? Teile deine Stimmung und reflektiere mit mir.';
 
   @override
   String get notifCompanionEveningFriendlyV1Title => 'Abendlicher Check-in';
@@ -8757,8 +8838,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Ausklingzeit — irgendwelche Abenteuer zu loggen?';
 
   @override
-  String get notifCompanionEveningFriendlyV2Title =>
-      'Moodys abendlicher Check-in';
+  String get notifCompanionEveningFriendlyV2Title => 'Abendlicher Check-in';
 
   @override
   String get notifCompanionEveningFriendlyV2Body =>

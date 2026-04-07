@@ -80,6 +80,37 @@ class NotificationCopyProvider {
     }
   }
 
+  /// Morning reminder when the user already has [scheduled_activities] for that day.
+  NotificationCopy morningWithPlanCopy(
+    CommunicationStyle style,
+    AppLocalizations l10n, {
+    required String weatherEmoji,
+    required String activityName,
+  }) {
+    switch (style) {
+      case CommunicationStyle.energetic:
+        return NotificationCopy(
+          title: l10n.notifMorningWithPlanEnergeticTitle(weatherEmoji),
+          body: l10n.notifMorningWithPlanEnergeticBody(activityName),
+        );
+      case CommunicationStyle.friendly:
+        return NotificationCopy(
+          title: l10n.notifMorningWithPlanFriendlyTitle(weatherEmoji),
+          body: l10n.notifMorningWithPlanFriendlyBody(activityName),
+        );
+      case CommunicationStyle.professional:
+        return NotificationCopy(
+          title: l10n.notifMorningWithPlanProfessionalTitle(weatherEmoji),
+          body: l10n.notifMorningWithPlanProfessionalBody(activityName),
+        );
+      case CommunicationStyle.direct:
+        return NotificationCopy(
+          title: l10n.notifMorningWithPlanDirectTitle(weatherEmoji),
+          body: l10n.notifMorningWithPlanDirectBody(activityName),
+        );
+    }
+  }
+
   /// Returns the next rotating variant and persists the new index.
   Future<NotificationCopy> nextCopy(
     NotificationCategory category,

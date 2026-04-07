@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:wandermood/core/constants/api_keys.dart';
+import 'package:wandermood/core/utils/weather_condition_emoji.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/core/presentation/providers/language_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
@@ -146,7 +147,9 @@ final weatherProvider = FutureProvider.autoDispose<WeatherData?>((ref) async {
         final resolvedLocation = (data['name'] as String?)?.trim().isNotEmpty == true
             ? (data['name'] as String).trim()
             : locationLabel;
-        return WeatherData.fromOpenWeatherMap(data, resolvedLocation);
+        final weather = WeatherData.fromOpenWeatherMap(data, resolvedLocation);
+        await persistOpenWeatherMainForNotifications(weather.condition);
+        return weather;
       } else {
         debugPrint('🌤️ Weather API error: ${response.body}');
         throw Exception('Failed to load weather data: ${response.statusCode}');

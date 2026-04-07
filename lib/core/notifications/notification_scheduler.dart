@@ -3,6 +3,7 @@ import 'package:wandermood/l10n/app_localizations.dart';
 
 import 'package:wandermood/core/providers/communication_style_provider.dart';
 import 'package:wandermood/core/services/notification_service.dart';
+import 'morning_daily_notification_resolver.dart';
 import 'notification_category.dart';
 import 'notification_copy_provider.dart';
 import 'notification_ids.dart';
@@ -72,12 +73,13 @@ class NotificationScheduler {
   /// Daily mood check-in at 09:00.
   Future<void> scheduleDailyMoodCheckIn() async {
     await _svc.cancel(NotificationIds.dailyMoodCheckIn);
-    final copy = await _copy.nextCopy(
-      NotificationCategory.dailyMoodCheckIn,
-      _style,
-      _prefs,
-      _l10n,
+    final copy = await MorningDailyNotificationResolver.resolve(
+      copyProvider: _copy,
+      style: _style,
+      prefs: _prefs,
+      l10n: _l10n,
     );
+    if (copy == null) return;
     await _svc.scheduleDailyAt(
       NotificationIds.dailyMoodCheckIn,
       copy,
@@ -86,21 +88,12 @@ class NotificationScheduler {
     );
   }
 
-  /// Three companion check-ins: morning 08:00, afternoon 13:00, evening 20:00.
+  /// One companion check-in: evening 20:00 (day wrap-up). Morning/afternoon
+  /// slots are cancelled so users are not nudged multiple times per day.
   Future<void> scheduleCompanionCheckIns() async {
     await Future.wait([
-      _scheduleCompanion(
-        NotificationIds.companionMorning,
-        NotificationCategory.companionCheckInMorning,
-        hour: 8,
-        minute: 0,
-      ),
-      _scheduleCompanion(
-        NotificationIds.companionAfternoon,
-        NotificationCategory.companionCheckInAfternoon,
-        hour: 13,
-        minute: 0,
-      ),
+      _svc.cancel(NotificationIds.companionMorning),
+      _svc.cancel(NotificationIds.companionAfternoon),
       _scheduleCompanion(
         NotificationIds.companionEvening,
         NotificationCategory.companionCheckInEvening,

@@ -1,6 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/core/presentation/widgets/moody_avatar_compact.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
@@ -205,13 +204,13 @@ class _DetailsPane extends StatelessWidget {
           child: SizedBox(
             height: 200,
             width: double.infinity,
-            child: CachedNetworkImage(
-              cacheManager: WanderMoodImageCacheManager.instance,
-              imageUrl: activity['imageUrl']?.toString() ??
+            child: WmPlaceOrHttpsNetworkImage(
+              activity['imageUrl']?.toString() ??
                   'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80',
               fit: BoxFit.cover,
-              placeholder: (_, __) => Container(color: Colors.grey[200]),
-              errorWidget: (_, __, ___) => Container(
+              progressIndicatorBuilder: (context, url, progress) =>
+                  Container(color: Colors.grey[200]),
+              errorBuilder: (context, error, stackTrace) => Container(
                 color: _wmForest.withValues(alpha: 0.15),
                 child: const Icon(Icons.image, color: _wmForest, size: 48),
               ),
@@ -427,13 +426,13 @@ class _PhotosPane extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: CachedNetworkImage(
-              cacheManager: WanderMoodImageCacheManager.instance,
-              imageUrl: urls[i],
+            child: WmPlaceOrHttpsNetworkImage(
+              urls[i],
               fit: BoxFit.cover,
               width: double.infinity,
-              placeholder: (_, __) => Container(color: Colors.grey[200]),
-              errorWidget: (_, __, ___) => Container(
+              progressIndicatorBuilder: (context, url, progress) =>
+                  Container(color: Colors.grey[200]),
+              errorBuilder: (context, error, stackTrace) => Container(
                 color: _wmForest.withValues(alpha: 0.12),
                 child: const Center(
                   child: Icon(Icons.broken_image_outlined, size: 48),

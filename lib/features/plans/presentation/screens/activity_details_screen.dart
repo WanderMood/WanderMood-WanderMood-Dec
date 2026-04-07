@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
+import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 
 class ActivityDetailsScreen extends StatefulWidget {
@@ -44,6 +44,13 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
     _scrollController.dispose();
     _imagePreviewController.dispose();
     super.dispose();
+  }
+
+  String _heroImageSrc(Map<String, dynamic> activity) {
+    final raw = activity['image']?.toString() ?? '';
+    if (raw.isEmpty) return '';
+    if (isGooglePlacePhotoHttpUrl(raw)) return raw;
+    return raw.contains('?') ? raw : '$raw?auto=format&fit=crop&w=1000&q=80';
   }
 
   void _onScroll() {
@@ -230,9 +237,9 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                     background: Stack(
                       fit: StackFit.expand,
                       children: [
-                        // Hero image
-                        WmNetworkImage(
-                          '${activity['image']}?auto=format&fit=crop&w=1000&q=80',
+                        // Hero image (Google Place vs Unsplash — do not append Unsplash params to Google URLs)
+                        WmPlaceOrHttpsNetworkImage(
+                          _heroImageSrc(activity),
                           fit: BoxFit.cover,
                         ),
                         // Gradient overlay

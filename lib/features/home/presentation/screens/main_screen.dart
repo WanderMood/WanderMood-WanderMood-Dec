@@ -18,6 +18,7 @@ import 'package:wandermood/features/home/presentation/widgets/moody_character.da
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/services/connectivity_service.dart';
+import 'package:wandermood/core/providers/notification_provider.dart';
 
 // v2 bottom nav — Screen 11 (active = wmForest, pill bg = wmForestTint)
 const Color _navWmForest = Color(0xFF2A6049);
@@ -70,6 +71,7 @@ class MainScreen extends ConsumerStatefulWidget {
 
 class _MainScreenState extends ConsumerState<MainScreen> {
   bool _idleGateCompleted = false;
+  bool _moodCheckInDeepLinkConsumed = false;
   bool _showWeekendBanner = false;
   DateTime? _weekendSaturday;
   DateTime? _weekendSunday;
@@ -88,6 +90,19 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     if (hasExplicitOverride || currentTab == 0) {
       ref.read(mainTabProvider.notifier).state = finalTab;
     }
+  }
+
+  void _tryConsumeMoodCheckInDeepLink() {
+    final action = widget.extra?['moodAction'] as String?;
+    if (action != 'moodCheckIn' || _moodCheckInDeepLinkConsumed) return;
+    if (!mounted) return;
+    final tab = normalizeMainTabIndex(ref.read(mainTabProvider));
+    if (tab != 2) return;
+    _moodCheckInDeepLinkConsumed = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.pushNamed('moody-standalone');
+    });
   }
 
   void _applyTargetDateFromExtra() {
@@ -120,6 +135,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       if (!mounted) return;
       _applyMainTabFromRoute();
       _applyTargetDateFromExtra();
+      _tryConsumeMoodCheckInDeepLink();
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -134,6 +150,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   /// After 30+ min away, full-screen Moody idle; then timestamps next session baseline.
   Future<void> _showMoodyIdleGateIfNeeded() async {
     if (!mounted || _idleGateCompleted) return;
+
+    if (ref.read(suppressMoodyIdleOnceProvider)) {
+      ref.read(suppressMoodyIdleOnceProvider.notifier).state = false;
+      await MoodyIdleChecker.recordAppOpen();
+      _idleGateCompleted = true;
+      return;
+    }
 
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
@@ -248,6 +271,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   void didUpdateWidget(MainScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final oldMoodAction = oldWidget.extra?['moodAction'] as String?;
+    final newMoodAction = widget.extra?['moodAction'] as String?;
+    if (oldMoodAction != newMoodAction && newMoodAction == 'moodCheckIn') {
+      _moodCheckInDeepLinkConsumed = false;
+    }
     final tabRouteChanged = oldWidget.initialTabIndex != widget.initialTabIndex ||
         _tabExtraChanged(oldWidget.extra, widget.extra);
 
@@ -276,6 +304,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         ref.invalidate(cachedActivitySuggestionsProvider);
         ref.invalidate(todayActivitiesProvider);
       }
+
+      _tryConsumeMoodCheckInDeepLink();
     });
   }
   

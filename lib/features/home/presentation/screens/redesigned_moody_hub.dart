@@ -13,7 +13,8 @@ import 'package:wandermood/features/home/presentation/widgets/moody_chat_sheet.d
 import 'package:wandermood/features/home/presentation/widgets/moody_feedback_prompt_card.dart';
 import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
-import 'package:wandermood/features/plans/presentation/screens/plan_loading_screen.dart';
+import 'package:wandermood/features/plans/presentation/screens/plan_loading_screen.dart'
+    show PlanLoadingScreen, DayPlanQuickPick;
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/core/localization/localized_mood_labels.dart';
@@ -61,16 +62,14 @@ class _RedesignedMoodyHubState extends ConsumerState<RedesignedMoodyHub> {
     return '🌙';
   }
 
-  String _getCityName() {
-    final city = ref.read(locationNotifierProvider).value;
-    return city ?? 'Rotterdam';
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final todayActivities = ref.watch(todayActivitiesProvider);
     final dailyMoodState = ref.watch(dailyMoodStateNotifierProvider);
+    final locationAsync = ref.watch(locationNotifierProvider);
+    final cityLabel = locationAsync.valueOrNull?.trim();
+    final cityLoading = locationAsync.isLoading;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F0E8), // wmCream — QA / design system
@@ -89,18 +88,21 @@ class _RedesignedMoodyHubState extends ConsumerState<RedesignedMoodyHub> {
           return _MoodyHubNoPlan(
             greeting: _timeGreeting(l10n),
             emoji: _getTimeEmoji(),
-            city: _getCityName(),
+            cityLabel: cityLabel != null && cityLabel.isNotEmpty ? cityLabel : null,
+            cityLoading: cityLoading,
           );
         },
         loading: () => _MoodyHubNoPlan(
           greeting: _timeGreeting(l10n),
           emoji: _getTimeEmoji(),
-          city: _getCityName(),
+          cityLabel: cityLabel != null && cityLabel.isNotEmpty ? cityLabel : null,
+          cityLoading: cityLoading,
         ),
         error: (_, __) => _MoodyHubNoPlan(
           greeting: _timeGreeting(l10n),
           emoji: _getTimeEmoji(),
-          city: _getCityName(),
+          cityLabel: cityLabel != null && cityLabel.isNotEmpty ? cityLabel : null,
+          cityLoading: false,
         ),
       ),
     );
@@ -754,12 +756,15 @@ class _JouwDagVandaagCard extends StatelessWidget {
 class _MoodyHubNoPlan extends ConsumerStatefulWidget {
   final String greeting;
   final String emoji;
-  final String city;
+  /// Resolved locality (e.g. city) when known; null → copy without a hard-coded place name.
+  final String? cityLabel;
+  final bool cityLoading;
 
   const _MoodyHubNoPlan({
     required this.greeting,
     required this.emoji,
-    required this.city,
+    required this.cityLabel,
+    required this.cityLoading,
   });
 
   @override
@@ -785,9 +790,17 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan>
     super.dispose();
   }
 
+  String _noPlanBody(AppLocalizations l10n) {
+    if (widget.cityLoading) return l10n.noPlanDayOpenLocating;
+    final c = widget.cityLabel?.trim();
+    if (c != null && c.isNotEmpty) return l10n.noPlanDayOpenInCity(c);
+    return l10n.noPlanDayOpenAroundYou;
+  }
+
   Future<void> _openPlanLoadingAfterMood({
     required String mood,
     required List<String> selectedMoods,
+    DayPlanQuickPick? quickPick,
   }) async {
     ref.read(dailyMoodStateNotifierProvider.notifier).setMoodSelection(
           mood: mood,
@@ -802,7 +815,10 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => PlanLoadingScreen(selectedMoods: selectedMoods),
+        builder: (_) => PlanLoadingScreen(
+          selectedMoods: selectedMoods,
+          quickPick: quickPick,
+        ),
       ),
     );
   }
@@ -905,8 +921,7 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan>
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        AppLocalizations.of(context)!
-                            .noPlanDayOpen(widget.city),
+                        _noPlanBody(AppLocalizations.of(context)!),
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           fontSize: 15,
@@ -960,8 +975,9 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan>
                             ],
                             onTap: () {
                               unawaited(_openPlanLoadingAfterMood(
-                                mood: 'Relaxed',
-                                selectedMoods: const ['Relaxed'],
+                                mood: 'Foodie',
+                                selectedMoods: const ['Foodie'],
+                                quickPick: DayPlanQuickPick.coffee,
                               ));
                             },
                           ).animate().fadeIn(delay: 700.ms).slideY(

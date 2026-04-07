@@ -1828,18 +1828,20 @@
     }
   },
   "getReadyCantWait": "Can't wait to see what you discover!",
-  "noPlanDayOpen": "Your day in {city} is wide open. Want me to put a plan together, or are you looking for a specific vibe?",
-  "@noPlanDayOpen": {
+  "noPlanDayOpenInCity": "Your day in {city} is still wide open — I've already got ideas bubbling. Want me to sketch a full flow, or should we chase one vibe first?",
+  "@noPlanDayOpenInCity": {
     "placeholders": {
       "city": {
         "type": "String"
       }
     }
   },
+  "noPlanDayOpenAroundYou": "Your day is still wide open — I've already got ideas bubbling. Want me to sketch a full flow, or should we chase one vibe first?",
+  "noPlanDayOpenLocating": "Hang on… I'm locking in where you are, then we'll pick your next move.",
   "noPlanPlanMyWholeDay": "✨ Plan my whole day",
   "noPlanFindMeCoffee": "☕ Find me coffee",
   "noPlanGetMeMoving": "🏃 Get me moving",
-  "noPlanJustChat": "Just chat",
+  "noPlanJustChat": "💬 Tell me what's on your mind",
   "noPlanPlanLater": "Maybe later",
   "dayPlanNoLinkedPlaceAlternative": "No high-quality linked-place alternative found yet. Try again.",
   "myDayCheckInPrompt": "You're here! Tap Done when you're finished.",
@@ -2530,6 +2532,13 @@
   "introTagline": "This takes only 10 seconds, I promise.",
   "introSeeHowItWorks": "Take a look, this is fun!",
 
+  "onboardingLoadingTitle": "I'm getting to know you! 🧠",
+  "onboardingLoadingSubtitle0": "Saving your interests...",
+  "onboardingLoadingSubtitle1": "Tuning your style...",
+  "onboardingLoadingSubtitle2": "Finding places that fit you...",
+  "onboardingLoadingSubtitle3": "Getting myself ready for you...",
+  "onboardingLoadingFooter": "This'll just take a moment ✨",
+
   "demoModeLabel": "▶ Demo mode",
   "demoSkip": "Skip",
   "demoMoodyName": "Moody",
@@ -2542,7 +2551,6 @@
   "demoMoodFoodie": "Foodie",
   "demoMoodSocial": "Social",
   "demoMoodSurpriseMe": "Surprise me",
-  "demoMoodyGreeting": "Hey… I'm Moody 🙂",
   "demoMoodyGreetingLine2": "Tell me what kind of day you're after — I'll take care of the rest.",
   "demoMoodyQuestion": "So… what kind of day are we having?",
   "demoUserReplyRelaxed": "I'm feeling relaxed",
@@ -2561,12 +2569,13 @@
   "demoMoodReactionCozy": "Cozy, quiet, and just right.",
   "demoMoodReactionSurprise": "A little mystery—I've got ideas for you. ✨",
   "demoMoodReactionDefault": "Love it—let's shape your day.",
+  "demoPuttingDayTogether": "Putting your day together…",
   "demoMoodyResponseRelaxed": "Taking it easy today? Great plan! 🌿",
   "demoMoodyResponseAdventurous": "Time for adventure! I know exactly what you need 🔥",
   "demoMoodyResponseFoodie": "I know the best spots in the city 🍽",
   "demoMoodyResponseSocial": "Looking for fun? I've got you! 👥",
   "demoMoodyResponseCultural": "The city's culture scene is waiting for you 🎭",
-  "demoMoodyResponseRomantic": "A romantic day? Moody has you 💕",
+  "demoMoodyResponseRomantic": "A romantic day? I've got you 💕",
   "demoMoodyResponseDefault": "Nice! Let's go explore ✨",
 
   "guestDemoResultTitlePicked": "I picked these for you",
@@ -3782,6 +3791,56 @@
   "notifReEngagementDirectV2Title": "Back when you're ready",
   "notifReEngagementDirectV2Body": "Your saved plans and mood history are here.",
 
+  "notifMorningWithPlanFallbackActivity": "your first stop",
+  "notifMorningWithPlanEnergeticTitle": "Rise and shine {weatherEmoji}",
+  "@notifMorningWithPlanEnergeticTitle": {
+    "placeholders": {
+      "weatherEmoji": {"type": "String"}
+    }
+  },
+  "notifMorningWithPlanEnergeticBody": "First up: {activityName}. Let's own today.",
+  "@notifMorningWithPlanEnergeticBody": {
+    "placeholders": {
+      "activityName": {"type": "String"}
+    }
+  },
+  "notifMorningWithPlanFriendlyTitle": "Good morning {weatherEmoji}",
+  "@notifMorningWithPlanFriendlyTitle": {
+    "placeholders": {
+      "weatherEmoji": {"type": "String"}
+    }
+  },
+  "notifMorningWithPlanFriendlyBody": "We're starting with {activityName} today — I'm here if you need me.",
+  "@notifMorningWithPlanFriendlyBody": {
+    "placeholders": {
+      "activityName": {"type": "String"}
+    }
+  },
+  "notifMorningWithPlanProfessionalTitle": "Good morning {weatherEmoji}",
+  "@notifMorningWithPlanProfessionalTitle": {
+    "placeholders": {
+      "weatherEmoji": {"type": "String"}
+    }
+  },
+  "notifMorningWithPlanProfessionalBody": "Your schedule includes {activityName} today.",
+  "@notifMorningWithPlanProfessionalBody": {
+    "placeholders": {
+      "activityName": {"type": "String"}
+    }
+  },
+  "notifMorningWithPlanDirectTitle": "Today's plan {weatherEmoji}",
+  "@notifMorningWithPlanDirectTitle": {
+    "placeholders": {
+      "weatherEmoji": {"type": "String"}
+    }
+  },
+  "notifMorningWithPlanDirectBody": "{activityName} is first. Tap to open.",
+  "@notifMorningWithPlanDirectBody": {
+    "placeholders": {
+      "activityName": {"type": "String"}
+    }
+  },
+
   "notifDailyMoodCheckInEnergeticV0Title": "What vibe are we serving today? ✨",
   "notifDailyMoodCheckInEnergeticV0Body": "Log your mood and let Moody find your perfect match.",
   "notifDailyMoodCheckInEnergeticV1Title": "Mood check! Go.",
@@ -3932,17 +3991,17 @@
   "notifFestivalEventDirectV2Title": "Upcoming event",
   "notifFestivalEventDirectV2Body": "Event near you this week.",
 
-  "notifCompanionMorningEnergeticV0Title": "Morning! Moody's already plotting ☀️",
+  "notifCompanionMorningEnergeticV0Title": "Morning! I'm already plotting ☀️",
   "notifCompanionMorningEnergeticV0Body": "What are we doing today? Drop your mood and let's go.",
   "notifCompanionMorningEnergeticV1Title": "Rise and explore! ✨",
-  "notifCompanionMorningEnergeticV1Body": "A new day = new adventures. Moody's ready when you are.",
+  "notifCompanionMorningEnergeticV1Body": "A new day = new adventures. I'm ready when you are.",
   "notifCompanionMorningEnergeticV2Title": "Your travel bestie is awake",
   "notifCompanionMorningEnergeticV2Body": "And honestly a little too excited about today's possibilities.",
   "notifCompanionMorningFriendlyV0Title": "Good morning! ☀️",
-  "notifCompanionMorningFriendlyV0Body": "How are you feeling? Let Moody help make today amazing.",
+  "notifCompanionMorningFriendlyV0Body": "How are you feeling? Let me help make today amazing.",
   "notifCompanionMorningFriendlyV1Title": "Morning check-in",
   "notifCompanionMorningFriendlyV1Body": "Start the day with your mood and let's plan something great.",
-  "notifCompanionMorningFriendlyV2Title": "Moody's saying good morning 😊",
+  "notifCompanionMorningFriendlyV2Title": "I'm saying good morning 😊",
   "notifCompanionMorningFriendlyV2Body": "Share how you're feeling and let's make today count.",
   "notifCompanionMorningProfessionalV0Title": "Good morning",
   "notifCompanionMorningProfessionalV0Body": "Check in with today's mood to get personalised suggestions.",
@@ -3958,16 +4017,16 @@
   "notifCompanionMorningDirectV2Body": "Log your mood.",
 
   "notifCompanionAfternoonEnergeticV0Title": "Midday report — how's it going? 🌞",
-  "notifCompanionAfternoonEnergeticV0Body": "Tell Moody what you're feeling. We can still make today legendary.",
+  "notifCompanionAfternoonEnergeticV0Body": "Tell me what you're feeling. We can still make today legendary.",
   "notifCompanionAfternoonEnergeticV1Title": "Afternoon check! Still thriving? ✨",
-  "notifCompanionAfternoonEnergeticV1Body": "Update your mood and Moody will update your picks.",
+  "notifCompanionAfternoonEnergeticV1Body": "Update your mood and I'll update your picks.",
   "notifCompanionAfternoonEnergeticV2Title": "Halfway through the day",
-  "notifCompanionAfternoonEnergeticV2Body": "How's your energy? Moody's got afternoon plans if you need them.",
+  "notifCompanionAfternoonEnergeticV2Body": "How's your energy? I've got afternoon plans if you need them.",
   "notifCompanionAfternoonFriendlyV0Title": "Afternoon check-in! 😊",
   "notifCompanionAfternoonFriendlyV0Body": "Hope your day's been great — how are you feeling now?",
-  "notifCompanionAfternoonFriendlyV1Title": "Moody's thinking of you",
+  "notifCompanionAfternoonFriendlyV1Title": "I'm thinking of you",
   "notifCompanionAfternoonFriendlyV1Body": "How's your afternoon going? Update your mood anytime.",
-  "notifCompanionAfternoonFriendlyV2Title": "Midday with Moody",
+  "notifCompanionAfternoonFriendlyV2Title": "Midday check-in",
   "notifCompanionAfternoonFriendlyV2Body": "Check in with how you're feeling and see what's nearby.",
   "notifCompanionAfternoonProfessionalV0Title": "Afternoon check-in",
   "notifCompanionAfternoonProfessionalV0Body": "Update your mood for afternoon recommendations.",
@@ -3983,16 +4042,16 @@
   "notifCompanionAfternoonDirectV2Body": "Tap to log your mood.",
 
   "notifCompanionEveningEnergeticV0Title": "Evening! What did you get up to? 🌙",
-  "notifCompanionEveningEnergeticV0Body": "Moody wants a full debrief. Any highlights from today?",
+  "notifCompanionEveningEnergeticV0Body": "Catch me up — any highlights from today?",
   "notifCompanionEveningEnergeticV1Title": "Golden hour check ✨",
   "notifCompanionEveningEnergeticV1Body": "Wind down, reflect, share. What was the best bit?",
   "notifCompanionEveningEnergeticV2Title": "Night mode activated",
-  "notifCompanionEveningEnergeticV2Body": "Tell Moody about your day — and maybe plan tomorrow.",
+  "notifCompanionEveningEnergeticV2Body": "Tell me about your day — and maybe plan tomorrow.",
   "notifCompanionEveningFriendlyV0Title": "Good evening! 🌙",
-  "notifCompanionEveningFriendlyV0Body": "How was your day? Share your mood and reflect with Moody.",
+  "notifCompanionEveningFriendlyV0Body": "How was your day? Share your mood and reflect with me.",
   "notifCompanionEveningFriendlyV1Title": "Evening check-in",
   "notifCompanionEveningFriendlyV1Body": "Wind down time — any adventures to log?",
-  "notifCompanionEveningFriendlyV2Title": "Moody's evening check-in",
+  "notifCompanionEveningFriendlyV2Title": "Evening check-in",
   "notifCompanionEveningFriendlyV2Body": "How are you feeling as the day wraps up?",
   "notifCompanionEveningProfessionalV0Title": "Evening check-in",
   "notifCompanionEveningProfessionalV0Body": "Reflect on today and log your end-of-day mood.",

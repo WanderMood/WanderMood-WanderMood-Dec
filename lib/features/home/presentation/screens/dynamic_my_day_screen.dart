@@ -8,8 +8,6 @@ import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -1447,17 +1445,17 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             children: [
               // Background Image
               Positioned.fill(
-                child: CachedNetworkImage(
-                  cacheManager: WanderMoodImageCacheManager.instance,
-                  imageUrl: status['imageUrl'] ?? 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80',
+                child: WmPlaceOrHttpsNetworkImage(
+                  status['imageUrl']?.toString() ??
+                      'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80',
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
+                  progressIndicatorBuilder: (context, url, progress) => Container(
                     color: Colors.grey[300],
                     child: const Center(
                       child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                   ),
-                  errorWidget: (context, url, error) => Container(
+                  errorBuilder: (context, error, stackTrace) => Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -2161,12 +2159,13 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           child: Stack(
             children: [
               Positioned.fill(
-                child: CachedNetworkImage(
-                  cacheManager: WanderMoodImageCacheManager.instance,
-                  imageUrl: imageUrl,
+                child: WmPlaceOrHttpsNetworkImage(
+                  imageUrl,
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(color: Colors.grey.shade200),
-                  errorWidget: (context, url, error) => Container(color: Colors.grey.shade200),
+                  progressIndicatorBuilder: (context, url, progress) =>
+                      Container(color: Colors.grey.shade200),
+                  errorBuilder: (context, error, stackTrace) =>
+                      Container(color: Colors.grey.shade200),
                 ),
               ),
               Positioned.fill(

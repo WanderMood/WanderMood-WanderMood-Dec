@@ -1631,7 +1631,7 @@ abstract class AppLocalizations {
   /// No description provided for @demoMoodyResponseRomantic.
   ///
   /// In en, this message translates to:
-  /// **'A romantic day? Moody has you 💕'**
+  /// **'A romantic day? I\'ve got you 💕'**
   String get demoMoodyResponseRomantic;
 
   /// No description provided for @demoMoodyResponseCultural.
@@ -7358,11 +7358,23 @@ abstract class AppLocalizations {
   /// **'Can\'t wait to see what you discover!'**
   String get getReadyCantWait;
 
-  /// No description provided for @noPlanDayOpen.
+  /// No description provided for @noPlanDayOpenInCity.
   ///
   /// In en, this message translates to:
-  /// **'Your day in {city} is wide open. Want me to put a plan together, or are you looking for a specific vibe?'**
-  String noPlanDayOpen(String city);
+  /// **'Your day in {city} is still wide open — I\'ve already got ideas bubbling. Want me to sketch a full flow, or should we chase one vibe first?'**
+  String noPlanDayOpenInCity(String city);
+
+  /// No description provided for @noPlanDayOpenAroundYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Your day is still wide open — I\'ve already got ideas bubbling. Want me to sketch a full flow, or should we chase one vibe first?'**
+  String get noPlanDayOpenAroundYou;
+
+  /// No description provided for @noPlanDayOpenLocating.
+  ///
+  /// In en, this message translates to:
+  /// **'Hang on… I\'m locking in where you are, then we\'ll pick your next move.'**
+  String get noPlanDayOpenLocating;
 
   /// No description provided for @noPlanPlanMyWholeDay.
   ///
@@ -7385,7 +7397,7 @@ abstract class AppLocalizations {
   /// No description provided for @noPlanJustChat.
   ///
   /// In en, this message translates to:
-  /// **'Just chat'**
+  /// **'💬 Tell me what\'s on your mind'**
   String get noPlanJustChat;
 
   /// No description provided for @noPlanPlanLater.
@@ -9140,6 +9152,42 @@ abstract class AppLocalizations {
   /// **'your adventure'**
   String get introHeadline2;
 
+  /// No description provided for @onboardingLoadingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m getting to know you! 🧠'**
+  String get onboardingLoadingTitle;
+
+  /// No description provided for @onboardingLoadingSubtitle0.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving your interests...'**
+  String get onboardingLoadingSubtitle0;
+
+  /// No description provided for @onboardingLoadingSubtitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Tuning your style...'**
+  String get onboardingLoadingSubtitle1;
+
+  /// No description provided for @onboardingLoadingSubtitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding places that fit you...'**
+  String get onboardingLoadingSubtitle2;
+
+  /// No description provided for @onboardingLoadingSubtitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting myself ready for you...'**
+  String get onboardingLoadingSubtitle3;
+
+  /// No description provided for @onboardingLoadingFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'This\'ll just take a moment ✨'**
+  String get onboardingLoadingFooter;
+
   /// No description provided for @demoModeLabel.
   ///
   /// In en, this message translates to:
@@ -9277,6 +9325,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Love it—let\'s shape your day.'**
   String get demoMoodReactionDefault;
+
+  /// No description provided for @demoPuttingDayTogether.
+  ///
+  /// In en, this message translates to:
+  /// **'Putting your day together…'**
+  String get demoPuttingDayTogether;
 
   /// No description provided for @guestDemoResultTitlePicked.
   ///
@@ -14349,6 +14403,60 @@ abstract class AppLocalizations {
   /// **'Your saved plans and mood history are here.'**
   String get notifReEngagementDirectV2Body;
 
+  /// No description provided for @notifMorningWithPlanFallbackActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'your first stop'**
+  String get notifMorningWithPlanFallbackActivity;
+
+  /// No description provided for @notifMorningWithPlanEnergeticTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rise and shine {weatherEmoji}'**
+  String notifMorningWithPlanEnergeticTitle(String weatherEmoji);
+
+  /// No description provided for @notifMorningWithPlanEnergeticBody.
+  ///
+  /// In en, this message translates to:
+  /// **'First up: {activityName}. Let\'s own today.'**
+  String notifMorningWithPlanEnergeticBody(String activityName);
+
+  /// No description provided for @notifMorningWithPlanFriendlyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning {weatherEmoji}'**
+  String notifMorningWithPlanFriendlyTitle(String weatherEmoji);
+
+  /// No description provided for @notifMorningWithPlanFriendlyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'re starting with {activityName} today — I\'m here if you need me.'**
+  String notifMorningWithPlanFriendlyBody(String activityName);
+
+  /// No description provided for @notifMorningWithPlanProfessionalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning {weatherEmoji}'**
+  String notifMorningWithPlanProfessionalTitle(String weatherEmoji);
+
+  /// No description provided for @notifMorningWithPlanProfessionalBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your schedule includes {activityName} today.'**
+  String notifMorningWithPlanProfessionalBody(String activityName);
+
+  /// No description provided for @notifMorningWithPlanDirectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s plan {weatherEmoji}'**
+  String notifMorningWithPlanDirectTitle(String weatherEmoji);
+
+  /// No description provided for @notifMorningWithPlanDirectBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{activityName} is first. Tap to open.'**
+  String notifMorningWithPlanDirectBody(String activityName);
+
   /// No description provided for @notifDailyMoodCheckInEnergeticV0Title.
   ///
   /// In en, this message translates to:
@@ -15216,7 +15324,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifCompanionMorningEnergeticV0Title.
   ///
   /// In en, this message translates to:
-  /// **'Morning! Moody\'s already plotting ☀️'**
+  /// **'Morning! I\'m already plotting ☀️'**
   String get notifCompanionMorningEnergeticV0Title;
 
   /// No description provided for @notifCompanionMorningEnergeticV0Body.
@@ -15234,7 +15342,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifCompanionMorningEnergeticV1Body.
   ///
   /// In en, this message translates to:
-  /// **'A new day = new adventures. Moody\'s ready when you are.'**
+  /// **'A new day = new adventures. I\'m ready when you are.'**
   String get notifCompanionMorningEnergeticV1Body;
 
   /// No description provided for @notifCompanionMorningEnergeticV2Title.
@@ -15258,7 +15366,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifCompanionMorningFriendlyV0Body.
   ///
   /// In en, this message translates to:
-  /// **'How are you feeling? Let Moody help make today amazing.'**
+  /// **'How are you feeling? Let me help make today amazing.'**
   String get notifCompanionMorningFriendlyV0Body;
 
   /// No description provided for @notifCompanionMorningFriendlyV1Title.
@@ -15276,7 +15384,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifCompanionMorningFriendlyV2Title.
   ///
   /// In en, this message translates to:
-  /// **'Moody\'s saying good morning 😊'**
+  /// **'I\'m saying good morning 😊'**
   String get notifCompanionMorningFriendlyV2Title;
 
   /// No description provided for @notifCompanionMorningFriendlyV2Body.
@@ -15366,7 +15474,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifCompanionAfternoonEnergeticV0Body.
   ///
   /// In en, this message translates to:
-  /// **'Tell Moody what you\'re feeling. We can still make today legendary.'**
+  /// **'Tell me what you\'re feeling. We can still make today legendary.'**
   String get notifCompanionAfternoonEnergeticV0Body;
 
   /// No description provided for @notifCompanionAfternoonEnergeticV1Title.
@@ -15378,7 +15486,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifCompanionAfternoonEnergeticV1Body.
   ///
   /// In en, this message translates to:
-  /// **'Update your mood and Moody will update your picks.'**
+  /// **'Update your mood and I\'ll update your picks.'**
   String get notifCompanionAfternoonEnergeticV1Body;
 
   /// No description provided for @notifCompanionAfternoonEnergeticV2Title.
@@ -15390,7 +15498,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifCompanionAfternoonEnergeticV2Body.
   ///
   /// In en, this message translates to:
-  /// **'How\'s your energy? Moody\'s got afternoon plans if you need them.'**
+  /// **'How\'s your energy? I\'ve got afternoon plans if you need them.'**
   String get notifCompanionAfternoonEnergeticV2Body;
 
   /// No description provided for @notifCompanionAfternoonFriendlyV0Title.
@@ -15408,7 +15516,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifCompanionAfternoonFriendlyV1Title.
   ///
   /// In en, this message translates to:
-  /// **'Moody\'s thinking of you'**
+  /// **'I\'m thinking of you'**
   String get notifCompanionAfternoonFriendlyV1Title;
 
   /// No description provided for @notifCompanionAfternoonFriendlyV1Body.
@@ -15420,7 +15528,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifCompanionAfternoonFriendlyV2Title.
   ///
   /// In en, this message translates to:
-  /// **'Midday with Moody'**
+  /// **'Midday check-in'**
   String get notifCompanionAfternoonFriendlyV2Title;
 
   /// No description provided for @notifCompanionAfternoonFriendlyV2Body.
@@ -15510,7 +15618,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifCompanionEveningEnergeticV0Body.
   ///
   /// In en, this message translates to:
-  /// **'Moody wants a full debrief. Any highlights from today?'**
+  /// **'Catch me up — any highlights from today?'**
   String get notifCompanionEveningEnergeticV0Body;
 
   /// No description provided for @notifCompanionEveningEnergeticV1Title.
@@ -15534,7 +15642,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifCompanionEveningEnergeticV2Body.
   ///
   /// In en, this message translates to:
-  /// **'Tell Moody about your day — and maybe plan tomorrow.'**
+  /// **'Tell me about your day — and maybe plan tomorrow.'**
   String get notifCompanionEveningEnergeticV2Body;
 
   /// No description provided for @notifCompanionEveningFriendlyV0Title.
@@ -15546,7 +15654,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifCompanionEveningFriendlyV0Body.
   ///
   /// In en, this message translates to:
-  /// **'How was your day? Share your mood and reflect with Moody.'**
+  /// **'How was your day? Share your mood and reflect with me.'**
   String get notifCompanionEveningFriendlyV0Body;
 
   /// No description provided for @notifCompanionEveningFriendlyV1Title.
@@ -15564,7 +15672,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifCompanionEveningFriendlyV2Title.
   ///
   /// In en, this message translates to:
-  /// **'Moody\'s evening check-in'**
+  /// **'Evening check-in'**
   String get notifCompanionEveningFriendlyV2Title;
 
   /// No description provided for @notifCompanionEveningFriendlyV2Body.

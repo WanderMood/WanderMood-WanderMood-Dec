@@ -567,7 +567,7 @@ class _MoodyDemoScreenState extends ConsumerState<MoodyDemoScreen>
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  l10n.planLoadingRotating2,
+                  l10n.demoPuttingDayTogether,
                   style: GoogleFonts.poppins(
                     fontSize: 15,
                     height: 1.45,

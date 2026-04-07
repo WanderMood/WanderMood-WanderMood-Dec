@@ -22,14 +22,19 @@ import 'package:wandermood/core/utils/offline_feedback.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'dart:async';
 
+/// Narrow plan intents that change backend behaviour (e.g. coffee = now + this part of day).
+enum DayPlanQuickPick { coffee }
+
 class PlanLoadingScreen extends ConsumerStatefulWidget {
   final List<String> selectedMoods;
   final DateTime? targetDate;
+  final DayPlanQuickPick? quickPick;
 
   const PlanLoadingScreen({
     super.key,
     required this.selectedMoods,
     this.targetDate,
+    this.quickPick,
   });
 
   @override
@@ -223,6 +228,8 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
             'lat': position.latitude,
             'lng': position.longitude,
           },
+          if (widget.quickPick == DayPlanQuickPick.coffee)
+            'quick_pick': 'coffee',
           if (widget.targetDate != null)
             'target_date': DateTime(
               widget.targetDate!.year,

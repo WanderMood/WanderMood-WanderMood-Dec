@@ -612,16 +612,25 @@ GoRouter router(RouterRef ref) {
         path: '/main',
         name: 'main',
         builder: (context, state) {
-          // Get tab index from query parameters or extra data
+          // Tab index: query wins; default 0 when absent (do not force extra.tab or
+          // MainScreen resets the bottom nav on every rebuild).
           final tabIndexStr = state.uri.queryParameters['tab'];
           final tabIndex = tabIndexStr != null ? int.tryParse(tabIndexStr) ?? 0 : 0;
-          
-          // Get extra data if provided
-          final extra = state.extra as Map<String, dynamic>?;
-          
+
+          final mergedExtra = Map<String, dynamic>.from(
+            (state.extra as Map<String, dynamic>?) ?? {},
+          );
+          if (state.uri.queryParameters.containsKey('tab')) {
+            mergedExtra['tab'] = tabIndex;
+          }
+          final moodAction = state.uri.queryParameters['moodAction'];
+          if (moodAction != null && moodAction.isNotEmpty) {
+            mergedExtra['moodAction'] = moodAction;
+          }
+
           return MainScreen(
             initialTabIndex: tabIndex,
-            extra: extra,
+            extra: mergedExtra.isEmpty ? null : mergedExtra,
           );
         },
       ),

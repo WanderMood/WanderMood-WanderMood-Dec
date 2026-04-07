@@ -20,13 +20,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 const Color _wmForest = Color(0xFF2A6049);
 const Color _wmWhite = Color(0xFFFFFFFF);
 
-const List<String> _kRotatingSubtitles = [
-  'Jouw interesses opslaan...',
-  'Jouw stijl verwerken...',
-  'Plekken zoeken die bij je passen...',
-  'Jouw Moody klaarzetten...',
-];
-
 class OnboardingLoadingScreen extends ConsumerStatefulWidget {
   const OnboardingLoadingScreen({super.key});
 
@@ -51,6 +44,13 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
 
   Timer? _subtitleTimer;
   int _subtitleIndex = 0;
+
+  List<String> _rotatingSubtitles(AppLocalizations l10n) => [
+        l10n.onboardingLoadingSubtitle0,
+        l10n.onboardingLoadingSubtitle1,
+        l10n.onboardingLoadingSubtitle2,
+        l10n.onboardingLoadingSubtitle3,
+      ];
 
   @override
   void initState() {
@@ -100,8 +100,9 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
       _barController.forward();
       _subtitleTimer = Timer.periodic(const Duration(milliseconds: 1200), (_) {
         if (!mounted) return;
+        final len = _rotatingSubtitles(AppLocalizations.of(context)!).length;
         setState(() {
-          _subtitleIndex = (_subtitleIndex + 1) % _kRotatingSubtitles.length;
+          _subtitleIndex = (_subtitleIndex + 1) % len;
         });
       });
       Future.microtask(() {
@@ -286,7 +287,11 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
           child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
+              child: Builder(
+                builder: (context) {
+                  final l10n = AppLocalizations.of(context)!;
+                  final subtitles = _rotatingSubtitles(l10n);
+                  return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Spacer(),
@@ -315,7 +320,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Moody leert je kennen! 🧠',
+                    l10n.onboardingLoadingTitle,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
                       fontSize: 26,
@@ -336,7 +341,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
                       );
                     },
                     child: Text(
-                      _kRotatingSubtitles[_subtitleIndex],
+                      subtitles[_subtitleIndex % subtitles.length],
                       key: ValueKey<int>(_subtitleIndex),
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
@@ -381,7 +386,7 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Dit duurt maar een moment ✨',
+                    l10n.onboardingLoadingFooter,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
                       fontSize: 13,
@@ -391,6 +396,8 @@ class _OnboardingLoadingScreenState extends ConsumerState<OnboardingLoadingScree
                   ),
                   const Spacer(),
                 ],
+                  );
+                },
               ),
             ),
           ),

@@ -252,58 +252,44 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
   }
 
   Widget _buildMoodyMessageCard(BuildContext context) {
+    const wmSky = Color(0xFFA8C8DC);
+    const wmSkyTint = Color(0xFFEDF5F9);
     final primaryMessage = _firstSentence(
       widget.moodyMessage.isNotEmpty ? widget.moodyMessage : widget.moodyReasoning,
     );
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: const Color(0xFFE8E2D8),
-          width: 0.5,
-        ),
-        boxShadow: const [],
-      ),
+    // Demo-style: character on the canvas + speech bubble (no name label / white card).
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const MoodyCharacter(
-                size: 36,
-                mood: 'happy',
-                currentFeature: MoodyFeature.none,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  AppLocalizations.of(context)!.dayPlanMoodyCardTitle,
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF2A6049),
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-            ],
+          const MoodyCharacter(
+            size: 88,
+            mood: 'happy',
+            currentFeature: MoodyFeature.none,
           ),
-          const SizedBox(height: 10),
-          Text(
-            primaryMessage,
-            style: GoogleFonts.poppins(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF1E293B),
-              height: 1.35,
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: wmSkyTint,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: wmSky, width: 0.5),
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+            child: Text(
+              primaryMessage,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF1E293B),
+                height: 1.45,
+              ),
+              maxLines: 5,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),

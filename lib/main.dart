@@ -422,7 +422,7 @@ class WanderMoodApp extends ConsumerWidget {
       if (next == null || next.isEmpty) return;
       final router = ref.read(routerProvider);
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        applyNotificationNavigation(router, next);
+        applyNotificationNavigation(router, next, ref);
         ref.read(notificationLaunchPayloadProvider.notifier).state = null;
       });
     });

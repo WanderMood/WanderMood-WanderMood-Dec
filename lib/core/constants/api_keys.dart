@@ -8,7 +8,13 @@ class ApiKeys {
   static const String _defaultGooglePlacesKey =
       'AIzaSyDOZgpNquJFfd2Hqp_DUd8xQJc-W-lbRXs';
 
-  /// Google Places API Key
+  /// Google Places API Key (used for place photo URLs on device — see [deviceAccessibleGooglePlacePhotoUrl]).
+  ///
+  /// **Release / TestFlight:** run `scripts/build_testflight_ipa.sh` or
+  /// `flutter build ipa --release --dart-define-from-file=release_defines.json`
+  /// (copy `release_defines.json.example` to `release_defines.json`). Xcode-only Archive
+  /// without those flags uses [_defaultGooglePlacesKey]; ensure that key (or the one in the JSON)
+  /// has Places Photo + iOS bundle `com.edviennemer.wandermood` in Google Cloud, or images fail.
   static String get googlePlacesKey {
     const buildKey = String.fromEnvironment(
       'GOOGLE_PLACES_API_KEY',
