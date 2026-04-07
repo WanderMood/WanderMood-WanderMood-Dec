@@ -676,7 +676,9 @@ async function handleCreateDayPlan(supabase: any, userId: string, params: any): 
   try {
     if (!params.location?.trim()) return new Response(JSON.stringify({ success: false, error: 'Location required', activities: [], total_found: 0 }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     if (!params.coordinates?.lat || !params.coordinates?.lng) return new Response(JSON.stringify({ success: false, error: 'Coordinates required', activities: [], total_found: 0 }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    const moods: string[] = params.moods || ['adventurous'], location = params.location.trim(), coordinates = params.coordinates
+    const quickPick = typeof params.quick_pick === 'string' ? params.quick_pick.trim().toLowerCase() : ''
+    const moods: string[] = quickPick === 'coffee' ? ['foodie'] : (params.moods || ['adventurous'])
+    const location = params.location.trim(), coordinates = params.coordinates
     const userContext = await fetchUserContext(supabase, userId)
     const lang = clientOutputLang(params), placesLang = googlePlacesLanguageFromRequest(params), timeCtx = getTimeOfDayContext()
     const aiQueries = await getMoodySearchQueries(moods, location, userContext, lang, timeCtx.timeSlot)
@@ -685,7 +687,9 @@ async function handleCreateDayPlan(supabase: any, userId: string, params: any): 
     if (qualified.length === 0) qualified = await enrichAndFilter(places, { minRating: 3.5, minReviews: 8 })
     if (qualified.length === 0) return new Response(JSON.stringify({ success: false, activities: [], location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: 0, error: 'No places found' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     const ranked = rankPlaces(qualified, moods[0] || 'adventurous', !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile)
-    const activities = convertPlacesToActivities(ranked, moods, location, coordinates, lang)
+    const activities = quickPick === 'coffee'
+      ? convertPlacesToActivitiesQuickCoffee(ranked, moods, location, coordinates, lang, timeCtx.timeSlot)
+      : convertPlacesToActivities(ranked, moods, location, coordinates, lang)
     if (activities.length === 0) return new Response(JSON.stringify({ success: false, activities: [], location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: 0, error: 'No activities generated' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     const { moodyMessage, reasoning } = await getMoodyPersonalityResponse(moods, activities, location, userContext, lang)
     return new Response(JSON.stringify({ success: true, activities, location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: activities.length, moodyMessage, reasoning }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -930,6 +934,35 @@ async function handleGenerateHubMessage(supabase: any, userId: string, params: R
 }
 
 // ── DAY PLAN CONVERSION ───────────────────────────────────
+
+/** One cafe-ish pick for the current part of the day, starting soon (same day) — used by quick_pick=coffee from the app. */
+function convertPlacesToActivitiesQuickCoffee(
+  places: PlaceCard[],
+  moods: string[],
+  location: string,
+  coordinates: { lat: number; lng: number },
+  lang: 'nl' | 'en',
+  slot: 'morning' | 'afternoon' | 'evening',
+): Activity[] {
+  const isCafeish = (p: PlaceCard) => {
+    const types = (p.types || []).map((t: string) => t.toLowerCase())
+    const primary = (p.primaryType || '').toLowerCase()
+    const n = p.name.toLowerCase()
+    return types.some((t) => ['cafe', 'bakery', 'coffee_shop', 'tea_house'].includes(t) || primary === 'cafe')
+      || n.includes('coffee') || n.includes('koffie') || n.includes('café') || n.includes('espresso')
+  }
+  const inSlot = (p: PlaceCard) => getTimeSlotsForPlace(p).includes(slot)
+  let pool = places.filter((p) => isCafeish(p) && inSlot(p))
+  if (!pool.length) pool = places.filter(isCafeish)
+  if (!pool.length) pool = places.filter(inSlot)
+  if (!pool.length) pool = places.slice(0, 5)
+  const p = pool[0]
+  if (!p) return []
+  const now = new Date()
+  const st = new Date(now.getTime() + (14 + Math.floor(Math.random() * 18)) * 60 * 1000)
+  st.setSeconds(0, 0)
+  return [createActivity(p, slot, st, moods.length ? moods : ['foodie'], lang)]
+}
 
 function convertPlacesToActivities(places: PlaceCard[], moods: string[], location: string, coordinates: { lat: number; lng: number }, lang: 'nl' | 'en'): Activity[] {
   const activities: Activity[] = [], used = new Set<string>()
