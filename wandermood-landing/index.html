@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WanderMood — Plan your perfect day</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #F5F0E8;
+  --forest: #2A6049;
+  --forest-tint: #EBF3EE;
+  --forest-light: #5DCAA5;
+  --sunset: #E8784A;
+  --sky: #A8C8DC;
+  --charcoal: #1E1C18;
+  --dusk: #4A4640;
+  --stone: #8C8780;
+  --parchment: #E8E2D8;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--charcoal); overflow-x: hidden; }
+
+/* NAV */
+nav { position: sticky; top: 0; z-index: 100; background: rgba(245,240,232,0.94); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(30,28,24,0.07); padding: 0 48px; height: 68px; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo img { width: 34px; height: 34px; border-radius: 10px; object-fit: contain; }
+.nav-logo-fallback { width: 34px; height: 34px; background: var(--forest); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.nav-logo-text { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 600; color: var(--forest); letter-spacing: -0.02em; }
+.nav-links { display: flex; gap: 36px; list-style: none; }
+.nav-links a { font-size: 14px; color: var(--dusk); text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover { color: var(--forest); }
+.nav-cta { background: var(--forest); color: white; border: none; padding: 10px 22px; border-radius: 100px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity 0.2s, transform 0.15s; text-decoration: none; display: inline-block; }
+.nav-cta:hover { opacity: 0.88; transform: translateY(-1px); }
+
+/* HERO */
+.hero { min-height: calc(100vh - 68px); display: grid; grid-template-columns: 1fr 400px; gap: 40px; align-items: center; padding: 60px 48px 80px; max-width: 1160px; margin: 0 auto; }
+.hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--forest-tint); color: var(--forest); font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: 100px; margin-bottom: 28px; letter-spacing: 0.02em; opacity: 0; animation: fadeUp 0.6s ease forwards 0.1s; }
+.hero h1 { font-family: 'Fraunces', serif; font-size: clamp(44px, 5vw, 64px); line-height: 1.05; font-weight: 300; color: var(--charcoal); margin-bottom: 24px; letter-spacing: -0.02em; opacity: 0; animation: fadeUp 0.6s ease forwards 0.2s; }
+.hero h1 em { font-style: italic; color: var(--forest); }
+.hero-sub { font-size: 17px; color: var(--dusk); line-height: 1.75; margin-bottom: 40px; max-width: 460px; opacity: 0; animation: fadeUp 0.6s ease forwards 0.3s; }
+.hero-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; opacity: 0; animation: fadeUp 0.6s ease forwards 0.4s; }
+.btn-primary { background: var(--forest); color: white; border: none; padding: 15px 30px; border-radius: 100px; font-size: 15px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity 0.2s, transform 0.15s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+.btn-primary:hover { opacity: 0.88; transform: translateY(-2px); }
+.btn-secondary { background: transparent; color: var(--forest); border: 1.5px solid var(--forest); padding: 14px 30px; border-radius: 100px; font-size: 15px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; text-decoration: none; }
+.btn-secondary:hover { background: var(--forest); color: white; transform: translateY(-2px); }
+.phone-wrap { display: flex; justify-content: center; align-items: center; opacity: 0; animation: fadeUp 0.7s ease forwards 0.5s; }
+.phone-outer { background: var(--charcoal); border-radius: 44px; padding: 13px; width: 256px; box-shadow: 0 40px 80px rgba(30,28,24,0.22), 0 0 0 1px rgba(255,255,255,0.06); position: relative; }
+.phone-notch { position: absolute; top: 13px; left: 50%; transform: translateX(-50%); width: 88px; height: 26px; background: var(--charcoal); border-radius: 0 0 18px 18px; z-index: 2; }
+.phone-screen { background: var(--cream); border-radius: 33px; overflow: hidden; height: 510px; position: relative; }
+.phone-status { display: flex; justify-content: space-between; padding: 34px 18px 8px; font-size: 11px; font-weight: 500; color: white; background: var(--forest); }
+.phone-header { background: var(--forest); padding: 0 18px 16px; }
+.phone-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.phone-greeting { font-size: 11px; color: rgba(255,255,255,0.65); font-family: 'DM Sans', sans-serif; margin-bottom: 2px; }
+.phone-title { font-size: 17px; font-weight: 500; color: white; font-family: 'Fraunces', serif; }
+.phone-avatar { width: 30px; height: 30px; background: rgba(255,255,255,0.2); border-radius: 50%; }
+.phone-moody-bubble { background: rgba(255,255,255,0.14); border-radius: 12px; padding: 10px 12px; font-size: 11px; line-height: 1.5; color: white; font-family: 'DM Sans', sans-serif; }
+.phone-body { padding: 14px 14px 60px; }
+.phone-label { font-size: 10px; font-weight: 500; color: var(--stone); letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 10px; font-family: 'DM Sans', sans-serif; }
+.phone-card { background: white; border-radius: 14px; padding: 11px; margin-bottom: 8px; display: flex; gap: 10px; align-items: flex-start; box-shadow: 0 2px 8px rgba(30,28,24,0.06); }
+.phone-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+.phone-card-name { font-size: 12px; font-weight: 500; color: var(--charcoal); font-family: 'DM Sans', sans-serif; margin-bottom: 2px; }
+.phone-card-time { font-size: 10px; color: var(--stone); font-family: 'DM Sans', sans-serif; margin-bottom: 3px; }
+.phone-card-desc { font-size: 10px; color: var(--dusk); line-height: 1.4; font-family: 'DM Sans', sans-serif; }
+.phone-navbar { position: absolute; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--parchment); display: flex; justify-content: space-around; padding: 8px 0 12px; border-radius: 0 0 33px 33px; }
+.phone-nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 9px; color: var(--stone); font-family: 'DM Sans', sans-serif; }
+.phone-nav-item.active { color: var(--forest); }
+.phone-nav-dot { width: 20px; height: 20px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+.phone-nav-item.active .phone-nav-dot { background: var(--forest-tint); }
+
+/* DIVIDER */
+.divider { height: 1px; background: rgba(30,28,24,0.07); margin: 0 48px; }
+
+/* SECTIONS */
+.section { padding: 100px 48px; max-width: 1160px; margin: 0 auto; }
+.section-eyebrow { font-size: 12px; font-weight: 500; color: var(--forest); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+.section h2 { font-family: 'Fraunces', serif; font-size: clamp(36px, 4vw, 52px); font-weight: 300; line-height: 1.1; margin-bottom: 20px; letter-spacing: -0.02em; }
+.section h2 em { font-style: italic; color: var(--forest); }
+.section-sub { font-size: 16px; color: var(--dusk); line-height: 1.75; max-width: 500px; margin-bottom: 56px; }
+.steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.step-card { background: white; border-radius: 24px; padding: 32px; border: 1px solid rgba(30,28,24,0.06); transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.step-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(30,28,24,0.1); }
+.step-number { font-family: 'Fraunces', serif; font-size: 56px; font-weight: 300; color: var(--parchment); line-height: 1; margin-bottom: 20px; letter-spacing: -0.03em; }
+.step-card h3 { font-size: 17px; font-weight: 500; color: var(--charcoal); margin-bottom: 10px; }
+.step-card p { font-size: 14px; color: var(--dusk); line-height: 1.7; }
+.step-moody { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--cream); font-size: 13.5px; color: var(--forest); font-style: italic; font-family: 'Fraunces', serif; line-height: 1.5; }
+
+/* FEATURE ROWS */
+.feature-row { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; padding: 80px 48px; max-width: 1160px; margin: 0 auto; }
+.feature-row.reverse { direction: rtl; }
+.feature-row.reverse > * { direction: ltr; }
+.feature-eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+.feature-content h2 { font-family: 'Fraunces', serif; font-size: clamp(32px, 3.5vw, 44px); font-weight: 300; line-height: 1.12; margin-bottom: 16px; letter-spacing: -0.02em; }
+.feature-content h2 em { font-style: italic; }
+.feature-content p { font-size: 16px; color: var(--dusk); line-height: 1.75; margin-bottom: 24px; }
+.feature-pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
+.feature-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 500; }
+.feature-phone-wrap { display: flex; justify-content: center; }
+.feature-phone { background: var(--charcoal); border-radius: 36px; padding: 10px; width: 220px; box-shadow: 0 30px 60px rgba(30,28,24,0.2); }
+.feature-screen { border-radius: 28px; overflow: hidden; background: white; height: 440px; position: relative; }
+
+/* EXPLORE MOCKUP */
+.explore-header { background: var(--forest); padding: 28px 14px 14px; }
+.explore-header-title { font-family: 'Fraunces', serif; font-size: 15px; color: white; margin-bottom: 10px; }
+.mood-chips-row { display: flex; gap: 6px; overflow: hidden; }
+.mood-chip-sm { padding: 4px 10px; border-radius: 100px; font-size: 10px; font-family: 'DM Sans', sans-serif; font-weight: 500; white-space: nowrap; border: 1px solid rgba(255,255,255,0.25); color: white; background: rgba(255,255,255,0.12); }
+.mood-chip-sm.active { background: white; color: var(--forest); }
+.explore-cards { padding: 10px; display: flex; flex-direction: column; gap: 8px; background: var(--cream); height: calc(440px - 90px); overflow: hidden; }
+.explore-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(30,28,24,0.08); }
+.explore-card-img { height: 70px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+.explore-card-body { padding: 8px 10px 10px; }
+.explore-card-name { font-size: 11.5px; font-weight: 500; color: var(--charcoal); font-family: 'DM Sans', sans-serif; }
+.explore-card-desc { font-size: 9.5px; color: var(--dusk); line-height: 1.4; margin-top: 3px; font-family: 'DM Sans', sans-serif; }
+.explore-card-tag { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: 9px; font-weight: 500; margin-top: 4px; font-family: 'DM Sans', sans-serif; }
+
+/* CHAT MOCKUP */
+.chat-screen { background: var(--cream); display: flex; flex-direction: column; height: 440px; }
+.chat-header { background: var(--forest); padding: 28px 14px 14px; }
+.chat-title { font-family: 'Fraunces', serif; font-size: 15px; color: white; }
+.chat-messages { flex: 1; padding: 10px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+.chat-msg { max-width: 80%; }
+.chat-msg.moody { align-self: flex-start; }
+.chat-msg.user { align-self: flex-end; }
+.chat-bubble-moody { background: white; border-radius: 12px 12px 12px 4px; padding: 9px 11px; font-size: 10.5px; line-height: 1.5; color: var(--charcoal); font-family: 'DM Sans', sans-serif; box-shadow: 0 2px 6px rgba(30,28,24,0.07); }
+.chat-bubble-user { background: var(--forest); border-radius: 12px 12px 4px 12px; padding: 9px 11px; font-size: 10.5px; line-height: 1.5; color: white; font-family: 'DM Sans', sans-serif; }
+.chat-name { font-size: 9px; color: var(--stone); margin-bottom: 3px; font-family: 'DM Sans', sans-serif; }
+.chat-input-bar { margin: 8px 10px 10px; background: white; border-radius: 18px; padding: 7px 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 6px rgba(30,28,24,0.07); }
+.chat-input-text { font-size: 10px; color: var(--stone); font-family: 'DM Sans', sans-serif; }
+.chat-send-btn { width: 22px; height: 22px; background: var(--forest); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; }
+
+/* MOODS */
+.moods-section { background: var(--charcoal); padding: 100px 48px; }
+.moods-inner { max-width: 1160px; margin: 0 auto; }
+.moods-section .section-eyebrow { color: var(--forest-light); }
+.moods-section h2 { font-family: 'Fraunces', serif; font-size: clamp(36px, 4vw, 52px); font-weight: 300; color: var(--cream); margin-bottom: 16px; line-height: 1.1; letter-spacing: -0.02em; }
+.moods-section h2 em { font-style: italic; color: var(--forest-light); }
+.moods-section-sub { font-size: 16px; color: rgba(245,240,232,0.6); line-height: 1.7; max-width: 500px; margin-bottom: 48px; }
+.moods-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.mood-tile { border-radius: 20px; padding: 20px 12px; text-align: center; cursor: pointer; transition: all 0.25s ease; }
+.mood-tile:hover { transform: translateY(-4px) scale(1.03); }
+.mood-tile-emoji { font-size: 28px; display: block; margin-bottom: 8px; line-height: 1; }
+.mood-tile-name { font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; }
+.mood-tile-desc { font-size: 10px; margin-top: 4px; opacity: 0.75; font-family: 'DM Sans', sans-serif; line-height: 1.3; }
+
+/* B2B */
+.b2b-section { background: var(--forest-tint); padding: 100px 48px; }
+.b2b-inner { max-width: 1160px; margin: 0 auto; display: grid; grid-template-columns: 1fr 400px; gap: 72px; align-items: center; }
+.b2b-inner .section-eyebrow { color: var(--forest); }
+.b2b-inner h2 { font-family: 'Fraunces', serif; font-size: clamp(34px, 3.5vw, 48px); font-weight: 300; line-height: 1.12; margin-bottom: 20px; letter-spacing: -0.02em; color: var(--charcoal); }
+.b2b-inner h2 em { font-style: italic; color: var(--forest); }
+.b2b-desc { font-size: 16px; color: var(--dusk); line-height: 1.75; margin-bottom: 16px; }
+.b2b-small { font-size: 13px; color: var(--stone); line-height: 1.6; }
+.b2b-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 32px; }
+.b2b-stat { background: white; border-radius: 16px; padding: 16px 20px; border: 1px solid rgba(42,96,73,0.1); }
+.b2b-stat-icon { font-size: 24px; margin-bottom: 6px; }
+.b2b-stat-label { font-size: 12px; color: var(--stone); line-height: 1.4; }
+.pricing-card { background: white; border-radius: 24px; padding: 32px; border: 1px solid rgba(42,96,73,0.12); box-shadow: 0 8px 32px rgba(42,96,73,0.08); }
+.pricing-price { font-family: 'Fraunces', serif; font-size: 60px; font-weight: 300; color: var(--forest); line-height: 1; letter-spacing: -0.03em; margin-bottom: 4px; }
+.pricing-note { font-size: 13px; color: var(--stone); margin-bottom: 28px; }
+.pricing-features { list-style: none; margin-bottom: 28px; }
+.pricing-features li { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; color: var(--charcoal); padding: 10px 0; border-bottom: 1px solid var(--cream); line-height: 1.5; }
+.pricing-features li:last-child { border-bottom: none; }
+.check-circle { width: 20px; height: 20px; background: var(--forest-tint); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.btn-trial { width: 100%; background: var(--forest); color: white; border: none; padding: 16px; border-radius: 14px; font-size: 15px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity 0.2s, transform 0.15s; text-decoration: none; display: block; text-align: center; }
+.btn-trial:hover { opacity: 0.88; transform: translateY(-2px); }
+
+/* CTA */
+.cta-section { padding: 120px 48px; text-align: center; max-width: 680px; margin: 0 auto; }
+.cta-section h2 { font-family: 'Fraunces', serif; font-size: clamp(40px, 5vw, 60px); font-weight: 300; line-height: 1.1; margin-bottom: 20px; letter-spacing: -0.02em; }
+.cta-section h2 em { font-style: italic; color: var(--forest); }
+.cta-section p { font-size: 17px; color: var(--dusk); line-height: 1.75; margin-bottom: 44px; }
+.cta-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+/* FOOTER */
+footer { background: var(--charcoal); padding: 36px 48px; display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
+.footer-logo { font-family: 'Fraunces', serif; font-size: 18px; color: var(--cream); font-weight: 300; }
+.footer-links { display: flex; gap: 28px; list-style: none; }
+.footer-links a { font-size: 13px; color: rgba(245,240,232,0.4); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: rgba(245,240,232,0.8); }
+.footer-copy { font-size: 12px; color: rgba(245,240,232,0.25); }
+
+/* ANIMATIONS */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  nav { padding: 0 24px; }
+  .nav-links { display: none; }
+  .hero { grid-template-columns: 1fr; padding: 48px 24px 60px; text-align: center; gap: 48px; }
+  .hero-sub { margin: 0 auto 40px; }
+  .hero-actions { justify-content: center; }
+  .section { padding: 72px 24px; }
+  .steps-grid { grid-template-columns: 1fr; }
+  .feature-row { grid-template-columns: 1fr; padding: 60px 24px; gap: 40px; }
+  .feature-row.reverse { direction: ltr; }
+  .moods-section { padding: 72px 24px; }
+  .moods-grid { grid-template-columns: repeat(3, 1fr); }
+  .b2b-section { padding: 72px 24px; }
+  .b2b-inner { grid-template-columns: 1fr; gap: 40px; }
+  .cta-section { padding: 80px 24px; }
+  footer { padding: 28px 24px; flex-direction: column; text-align: center; gap: 16px; }
+  .divider { margin: 0 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <!-- Moody icon: add wandermood-landing/logo/moody-icon.png (or update src below) -->
+    <img src="logo/moody-icon.png" alt="Moody" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div class="nav-logo-fallback" style="display:none;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="10" r="4.5" fill="white" opacity="0.9"/>
+        <path d="M10 3C10 3 16 6 16 10C16 14 10 17 10 17C10 17 4 14 4 10C4 6 10 3 10 3Z" stroke="white" stroke-width="1.2" fill="none" opacity="0.45"/>
+      </svg>
+    </div>
+    <span class="nav-logo-text">WanderMood</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#moods">Moods</a></li>
+    <li><a href="#business">For businesses</a></li>
+  </ul>
+  <a href="#download" class="nav-cta">Download free 🚀</a>
+</nav>
+
+<!-- HERO -->
+<section>
+  <div class="hero">
+    <div>
+      <div class="hero-badge">✨ Meet Moody — your city's best friend</div>
+      <h1>Your city.<br><em>Your mood.</em><br>Your day. 🗺️</h1>
+      <p class="hero-sub">Tell Moody how you're feeling and he'll plan your perfect day — morning, afternoon, evening. No searching, no scrolling. Just your vibe, turned into a plan.</p>
+      <div class="hero-actions">
+        <a href="#download" class="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11 2H5C4.4 2 4 2.4 4 3v10c0 .6.4 1 1 1h6c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1zm-3 10.5a.75.75 0 110-1.5.75.75 0 010 1.5z" fill="white"/></svg>
+          Download on App Store
+        </a>
+        <a href="#how" class="btn-secondary">See how it works</a>
+      </div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone-outer">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <!-- Optional: <img src="screens/my-day.png" style="width:100%;height:100%;object-fit:cover;border-radius:33px;display:block;"> -->
+          <div class="phone-status"><span>9:41</span><span>●●●</span></div>
+          <div class="phone-header">
+            <div class="phone-header-row">
+              <div><div class="phone-greeting">Good morning ☀️</div><div class="phone-title">My Day</div></div>
+              <div class="phone-avatar"></div>
+            </div>
+            <div class="phone-moody-bubble">Hey! I planned your whole afternoon. You're welcome 😌</div>
+          </div>
+          <div class="phone-body">
+            <div class="phone-label">Today's plan</div>
+            <div class="phone-card"><div class="phone-dot" style="background:#E8784A;"></div><div><div class="phone-card-name">Matcha Bar ☕</div><div class="phone-card-time">09:00 · Morning</div><div class="phone-card-desc">No noise, good matcha, nobody bothering you 🍵</div></div></div>
+            <div class="phone-card"><div class="phone-dot" style="background:#2A6049;"></div><div><div class="phone-card-name">Waterfront Walk 🌿</div><div class="phone-card-time">13:30 · Afternoon</div><div class="phone-card-desc">Pick a bench, watch the water 🌿</div></div></div>
+            <div class="phone-card"><div class="phone-dot" style="background:#A8C8DC;"></div><div><div class="phone-card-name">Natural Wine Bar 🍷</div><div class="phone-card-time">19:30 · Evening</div><div class="phone-card-desc">An hour turns into three 🍷</div></div></div>
+          </div>
+          <div class="phone-navbar">
+            <div class="phone-nav-item active"><div class="phone-nav-dot">🏠</div><span>My Day</span></div>
+            <div class="phone-nav-item"><div class="phone-nav-dot">🔍</div><span>Explore</span></div>
+            <div class="phone-nav-item"><div class="phone-nav-dot">🌀</div><span>Moody</span></div>
+            <div class="phone-nav-item"><div class="phone-nav-dot">📅</div><span>Plans</span></div>
+            <div class="phone-nav-item"><div class="phone-nav-dot">👤</div><span>Profile</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section">
+    <p class="section-eyebrow reveal">How it works</p>
+    <h2 class="reveal">From mood to plan<br><em>in seconds.</em> ⚡</h2>
+    <p class="section-sub reveal">Moody is your city-savvy best friend. Tell him how you're feeling. He handles the rest.</p>
+    <div class="steps-grid">
+      <div class="step-card reveal">
+        <div class="step-number">01</div>
+        <h3>😊 Tell Moody your vibe</h3>
+        <p>One tap. No forms. Just pick how you're feeling right now — relaxed, foodie, adventurous, whatever you've got.</p>
+        <div class="step-moody">"So… what kind of day are we having?"</div>
+      </div>
+      <div class="step-card reveal">
+        <div class="step-number">02</div>
+        <h3>🗺️ I put your day together</h3>
+        <p>Moody picks three places — morning, afternoon, evening — based on your mood, the weather, and your city.</p>
+        <div class="step-moody">"Give me a second… putting something together for you"</div>
+      </div>
+      <div class="step-card reveal">
+        <div class="step-number">03</div>
+        <h3>✨ Go. I picked these for you.</h3>
+        <p>Navigate directly, add to your day, or ask Moody for something different. Your city, your way.</p>
+        <div class="step-moody">"I made this for you 🙂"</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FEATURE 1: EXPLORE -->
+<section id="features">
+  <div class="feature-row">
+    <div class="feature-content">
+      <p class="feature-eyebrow reveal" style="color:#E8784A;">🔍 Explore</p>
+      <h2 class="reveal" style="color:var(--charcoal);">Discover places <em style="color:#E8784A;">made for your mood</em></h2>
+      <p class="reveal">Scroll through curated places for your city — cafés, restaurants, bars, museums, parks. Every card is written by Moody in his own voice. No generic descriptions, no star rating spam. Just real places, real talk.</p>
+      <div class="feature-pill-row reveal">
+        <span class="feature-pill" style="background:#FFF0E8;color:#E8784A;">🔥 Trending</span>
+        <span class="feature-pill" style="background:#EBF3EE;color:#2A6049;">💎 Hidden gem</span>
+        <span class="feature-pill" style="background:#E8F4DC;color:#3A7D2C;">❤️ Loved by locals</span>
+        <span class="feature-pill" style="background:#EDE7F6;color:#6B4FA0;">⭐ Popular</span>
+      </div>
+    </div>
+    <div class="feature-phone-wrap reveal">
+      <div class="feature-phone">
+        <div class="feature-screen">
+          <div class="explore-header">
+            <div class="explore-header-title">Explore 🔍</div>
+            <div class="mood-chips-row">
+              <span class="mood-chip-sm active">All</span>
+              <span class="mood-chip-sm">😌 Relaxed</span>
+              <span class="mood-chip-sm">🍴 Foodie</span>
+              <span class="mood-chip-sm">🔥 Energy</span>
+            </div>
+          </div>
+          <div class="explore-cards">
+            <div class="explore-card">
+              <div class="explore-card-img" style="background:#FFF0E8;">☕</div>
+              <div class="explore-card-body">
+                <div class="explore-card-name">Slow Pour Coffee</div>
+                <div class="explore-card-desc">No queue, no noise. Really good single origin 🍵</div>
+                <span class="explore-card-tag" style="background:#FFF0E8;color:#E8784A;">🔥 Trending</span>
+              </div>
+            </div>
+            <div class="explore-card">
+              <div class="explore-card-img" style="background:#EBF3EE;">🍜</div>
+              <div class="explore-card-body">
+                <div class="explore-card-name">Ramen Bar Takumi</div>
+                <div class="explore-card-desc">Deep broth, soft noodles. The lunch that fixes everything 🍜</div>
+                <span class="explore-card-tag" style="background:#EBF3EE;color:#2A6049;">💎 Hidden gem</span>
+              </div>
+            </div>
+            <div class="explore-card">
+              <div class="explore-card-img" style="background:#EDE7F6;">🎷</div>
+              <div class="explore-card-body">
+                <div class="explore-card-name">Jazz Bar Noir</div>
+                <div class="explore-card-desc">Dark, intimate, proper jazz 🎷</div>
+                <span class="explore-card-tag" style="background:#EDE7F6;color:#6B4FA0;">❤️ Loved by locals</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURE 2: MOODY HUB -->
+<div style="background:white;">
+  <div class="feature-row reverse">
+    <div class="feature-content">
+      <p class="feature-eyebrow reveal" style="color:var(--forest);">🌀 Moody Hub</p>
+      <h2 class="reveal" style="color:var(--charcoal);">Talk to Moody.<br><em style="color:var(--forest);">He actually listens.</em></h2>
+      <p class="reveal">Ask him anything. "Find me something quiet near water." "I don't feel like going far." He remembers what you've liked before and gets smarter with every conversation. Like a friend who knows your city.</p>
+      <div class="feature-pill-row reveal">
+        <span class="feature-pill" style="background:#EBF3EE;color:#2A6049;">🧠 Learns your taste</span>
+        <span class="feature-pill" style="background:#EBF3EE;color:#2A6049;">💬 Remembers you</span>
+        <span class="feature-pill" style="background:#EBF3EE;color:#2A6049;">🌍 Any city</span>
+      </div>
+    </div>
+    <div class="feature-phone-wrap reveal">
+      <div class="feature-phone">
+        <div class="feature-screen chat-screen">
+          <div class="chat-header"><div class="chat-title">Moody Hub 🌀</div></div>
+          <div class="chat-messages">
+            <div class="chat-msg moody"><div class="chat-name">Moody</div><div class="chat-bubble-moody">Hey 😊 What kind of evening are we planning?</div></div>
+            <div class="chat-msg user"><div class="chat-bubble-user">Something quiet, near water, not too far</div></div>
+            <div class="chat-msg moody"><div class="chat-name">Moody</div><div class="chat-bubble-moody">I know exactly the spot 🌿 Small wine bar, waterfront, max 10 min walk. You'll stay for hours.</div></div>
+            <div class="chat-msg user"><div class="chat-bubble-user">Perfect, add it to my evening 🙂</div></div>
+            <div class="chat-msg moody"><div class="chat-name">Moody</div><div class="chat-bubble-moody">Done ✓ 19:30 locked in. You're welcome 😌</div></div>
+          </div>
+          <div class="chat-input-bar"><span class="chat-input-text">Ask Moody anything...</span><div class="chat-send-btn">➤</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURE 3: MY PLANS -->
+<div style="background:var(--cream);">
+  <div class="feature-row">
+    <div class="feature-content">
+      <p class="feature-eyebrow reveal" style="color:#9B8EC4;">📅 My Plans</p>
+      <h2 class="reveal" style="color:var(--charcoal);">Your whole week,<br><em style="color:#9B8EC4;">planned around you.</em></h2>
+      <p class="reveal">Add places to any day — today, tomorrow, next weekend. See your morning, afternoon and evening at a glance. Moody even detects when you arrive at a place and asks how it was.</p>
+      <div class="feature-pill-row reveal">
+        <span class="feature-pill" style="background:#F3F0FA;color:#9B8EC4;">🗓️ Multi-day planning</span>
+        <span class="feature-pill" style="background:#F3F0FA;color:#9B8EC4;">📍 Smart arrival detection</span>
+        <span class="feature-pill" style="background:#F3F0FA;color:#9B8EC4;">⭐ Rate & review</span>
+      </div>
+    </div>
+    <div class="feature-phone-wrap reveal">
+      <div class="feature-phone">
+        <div class="feature-screen" style="background:var(--cream);">
+          <div style="background:#9B8EC4;padding:28px 14px 14px;">
+            <div style="font-family:'Fraunces',serif;font-size:15px;color:white;margin-bottom:10px;">My Plans 📅</div>
+            <div style="display:flex;gap:6px;">
+              <div style="background:white;color:#9B8EC4;border-radius:8px;padding:5px 10px;font-size:10px;font-weight:500;font-family:'DM Sans',sans-serif;">Today</div>
+              <div style="background:rgba(255,255,255,0.2);color:white;border-radius:8px;padding:5px 10px;font-size:10px;font-family:'DM Sans',sans-serif;">Tomorrow</div>
+              <div style="background:rgba(255,255,255,0.2);color:white;border-radius:8px;padding:5px 10px;font-size:10px;font-family:'DM Sans',sans-serif;">Weekend</div>
+            </div>
+          </div>
+          <div style="padding:12px;display:flex;flex-direction:column;gap:8px;">
+            <div style="font-size:10px;font-weight:500;color:var(--stone);letter-spacing:0.07em;text-transform:uppercase;font-family:'DM Sans',sans-serif;">☀️ Morning</div>
+            <div style="background:white;border-radius:10px;padding:10px;border-left:3px solid #E8784A;box-shadow:0 2px 6px rgba(30,28,24,0.06);">
+              <div style="font-size:11px;font-weight:500;color:var(--charcoal);font-family:'DM Sans',sans-serif;">Sourdough Bakery ☕</div>
+              <div style="font-size:10px;color:var(--stone);font-family:'DM Sans',sans-serif;">09:30 · 45 min</div>
+            </div>
+            <div style="font-size:10px;font-weight:500;color:var(--stone);letter-spacing:0.07em;text-transform:uppercase;font-family:'DM Sans',sans-serif;margin-top:4px;">🌤 Afternoon</div>
+            <div style="background:white;border-radius:10px;padding:10px;border-left:3px solid #9B8EC4;box-shadow:0 2px 6px rgba(30,28,24,0.06);">
+              <div style="font-size:11px;font-weight:500;color:var(--charcoal);font-family:'DM Sans',sans-serif;">Vinyl & Coffee Shop 🎵</div>
+              <div style="font-size:10px;color:var(--stone);font-family:'DM Sans',sans-serif;">14:30 · 90 min</div>
+            </div>
+            <div style="font-size:10px;font-weight:500;color:var(--stone);letter-spacing:0.07em;text-transform:uppercase;font-family:'DM Sans',sans-serif;margin-top:4px;">🌙 Evening</div>
+            <div style="background:white;border-radius:10px;padding:10px;border-left:3px solid var(--forest);box-shadow:0 2px 6px rgba(30,28,24,0.06);">
+              <div style="font-size:11px;font-weight:500;color:var(--charcoal);font-family:'DM Sans',sans-serif;">Natural Wine Bar 🍷</div>
+              <div style="font-size:10px;color:var(--stone);font-family:'DM Sans',sans-serif;">19:30 · Added by Moody</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MOODS -->
+<section id="moods" class="moods-section">
+  <div class="moods-inner">
+    <p class="section-eyebrow reveal">12 moods</p>
+    <h2 class="reveal">Every mood.<br><em>Every city.</em> 🌍</h2>
+    <p class="moods-section-sub reveal">Whatever you're feeling today — Moody has a plan for it. Pick one, mix two, or let him surprise you completely.</p>
+    <div class="moods-grid">
+      <div class="mood-tile reveal" style="background:rgba(168,200,220,0.15);border:1px solid rgba(168,200,220,0.25);"><span class="mood-tile-emoji">😌</span><span class="mood-tile-name" style="color:#A8C8DC;">Relaxed</span><span class="mood-tile-desc" style="color:rgba(168,200,220,0.7);">Slow & easy</span></div>
+      <div class="mood-tile reveal" style="background:rgba(232,120,74,0.15);border:1px solid rgba(232,120,74,0.25);"><span class="mood-tile-emoji">🍴</span><span class="mood-tile-name" style="color:#E8784A;">Foodie</span><span class="mood-tile-desc" style="color:rgba(232,120,74,0.7);">Eat everything</span></div>
+      <div class="mood-tile reveal" style="background:rgba(244,185,66,0.15);border:1px solid rgba(244,185,66,0.25);"><span class="mood-tile-emoji">🔥</span><span class="mood-tile-name" style="color:#F4B942;">Energetic</span><span class="mood-tile-desc" style="color:rgba(244,185,66,0.7);">Full send</span></div>
+      <div class="mood-tile reveal" style="background:rgba(124,184,122,0.15);border:1px solid rgba(124,184,122,0.25);"><span class="mood-tile-emoji">🏕️</span><span class="mood-tile-name" style="color:#7CB87A;">Adventurous</span><span class="mood-tile-desc" style="color:rgba(124,184,122,0.7);">Off the map</span></div>
+      <div class="mood-tile reveal" style="background:rgba(155,142,196,0.15);border:1px solid rgba(155,142,196,0.25);"><span class="mood-tile-emoji">🎨</span><span class="mood-tile-name" style="color:#9B8EC4;">Cultural</span><span class="mood-tile-desc" style="color:rgba(155,142,196,0.7);">Art & soul</span></div>
+      <div class="mood-tile reveal" style="background:rgba(212,149,106,0.15);border:1px solid rgba(212,149,106,0.25);"><span class="mood-tile-emoji">🧘</span><span class="mood-tile-name" style="color:#D4956A;">Cozy</span><span class="mood-tile-desc" style="color:rgba(212,149,106,0.7);">Warm & quiet</span></div>
+      <div class="mood-tile reveal" style="background:rgba(232,143,160,0.15);border:1px solid rgba(232,143,160,0.25);"><span class="mood-tile-emoji">💕</span><span class="mood-tile-name" style="color:#E88FA0;">Romantic</span><span class="mood-tile-desc" style="color:rgba(232,143,160,0.7);">Just the two</span></div>
+      <div class="mood-tile reveal" style="background:rgba(93,202,165,0.15);border:1px solid rgba(93,202,165,0.25);"><span class="mood-tile-emoji">👥</span><span class="mood-tile-name" style="color:#5DCAA5;">Social</span><span class="mood-tile-desc" style="color:rgba(93,202,165,0.7);">Good company</span></div>
+      <div class="mood-tile reveal" style="background:rgba(107,174,214,0.15);border:1px solid rgba(107,174,214,0.25);"><span class="mood-tile-emoji">🔍</span><span class="mood-tile-name" style="color:#6BAED6;">Curious</span><span class="mood-tile-desc" style="color:rgba(107,174,214,0.7);">Down the rabbit hole</span></div>
+      <div class="mood-tile reveal" style="background:rgba(244,162,97,0.15);border:1px solid rgba(244,162,97,0.25);"><span class="mood-tile-emoji">🌟</span><span class="mood-tile-name" style="color:#F4A261;">Excited</span><span class="mood-tile-desc" style="color:rgba(244,162,97,0.7);">Let's go!</span></div>
+      <div class="mood-tile reveal" style="background:rgba(255,209,102,0.15);border:1px solid rgba(255,209,102,0.25);"><span class="mood-tile-emoji">😊</span><span class="mood-tile-name" style="color:#C9A000;">Happy</span><span class="mood-tile-desc" style="color:rgba(201,160,0,0.7);">Good vibes only</span></div>
+      <div class="mood-tile reveal" style="background:rgba(199,125,255,0.15);border:1px solid rgba(199,125,255,0.25);"><span class="mood-tile-emoji">😲</span><span class="mood-tile-name" style="color:#C77DFF;">Surprise</span><span class="mood-tile-desc" style="color:rgba(199,125,255,0.7);">Trust Moody</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- B2B -->
+<section id="business" class="b2b-section">
+  <div class="b2b-inner">
+    <div>
+      <p class="section-eyebrow reveal">🏢 For businesses</p>
+      <h2 class="reveal">Get your place in front of the <em>right people.</em></h2>
+      <p class="b2b-desc reveal">WanderMood users plan their day around their mood. I make sure your place is part of that plan — at exactly the right moment, for exactly the right vibe.</p>
+      <p class="b2b-small reveal">No banners. No interruptions. Moody recommends your place when it genuinely fits — so users actually show up.</p>
+      <div class="b2b-stats reveal">
+        <div class="b2b-stat"><div class="b2b-stat-icon">📍</div><div class="b2b-stat-label">Featured in day plans for your city</div></div>
+        <div class="b2b-stat"><div class="b2b-stat-icon">📊</div><div class="b2b-stat-label">Monthly report with confirmed visits</div></div>
+        <div class="b2b-stat"><div class="b2b-stat-icon">🎯</div><div class="b2b-stat-label">Matched to the right moods</div></div>
+        <div class="b2b-stat"><div class="b2b-stat-icon">✅</div><div class="b2b-stat-label">Cancel anytime, no contract</div></div>
+      </div>
+    </div>
+    <div class="pricing-card reveal">
+      <div class="pricing-price">€79</div>
+      <div class="pricing-note">per month · first 30 days free 🎁</div>
+      <ul class="pricing-features">
+        <li><div class="check-circle"><svg width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" stroke="#2A6049" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Featured in Moody's day plans for your city</li>
+        <li><div class="check-circle"><svg width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" stroke="#2A6049" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Prioritised in Explore for matching moods</li>
+        <li><div class="check-circle"><svg width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" stroke="#2A6049" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Monthly report: views, taps and confirmed visits</li>
+        <li><div class="check-circle"><svg width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" stroke="#2A6049" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Cancel anytime, no contract</li>
+      </ul>
+      <a href="mailto:info@wandermood.com?subject=WanderMood business — 30-day trial" class="btn-trial">Start free 30-day trial 🚀</a>
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOAD CTA -->
+<section id="download">
+  <div class="cta-section">
+    <p class="section-eyebrow reveal" style="text-align:center;">Download the app</p>
+    <h2 class="reveal">Let's make some<br><em>memories.</em> 🌍</h2>
+    <p class="reveal">Your city is waiting. Tell Moody your mood and let him take it from there. Free to download.</p>
+    <div class="cta-buttons reveal">
+      <a href="#" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11 2H5C4.4 2 4 2.4 4 3v10c0 .6.4 1 1 1h6c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1zm-3 10.5a.75.75 0 110-1.5.75.75 0 010 1.5z" fill="white"/></svg>
+        App Store
+      </a>
+      <a href="#" class="btn-secondary" style="opacity:0.5;pointer-events:none;">Google Play (coming soon)</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">WanderMood 🌀</div>
+  <ul class="footer-links">
+    <li><a href="/en/privacy">Privacy</a></li>
+    <li><a href="/en/terms">Terms</a></li>
+    <li><a href="mailto:info@wandermood.com">Contact</a></li>
+    <li><a href="#business">For businesses</a></li>
+  </ul>
+  <div class="footer-copy">© 2026 WanderMood</div>
+</footer>
+
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80)
+      observer.unobserve(entry.target)
+    }
+  })
+}, { threshold: 0.1 })
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el))
+</script>
+</body>
+</html>

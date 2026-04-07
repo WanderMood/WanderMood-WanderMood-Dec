@@ -41,6 +41,9 @@ migrate_working_dir/
 
 # Web related
 wandermood-landing/node_modules/
+.vercel/
+wandermood-landing/.vercel/
+wandermood-landing/.next/
 
 # Erroneous / local Flutter tool output at repo root (not ios/Flutter)
 Flutter/ephemeral/
