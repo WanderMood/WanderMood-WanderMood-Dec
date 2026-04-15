@@ -117,7 +117,7 @@ Rules:
 }
 
 interface MoodyRequest {
-  action: 'get_explore' | 'create_day_plan' | 'chat' | 'generate_hub_message' | 'search' | 'place_card_blurb' | 'place_detail_blurb' | 'place_explore_rich'
+  action: 'get_explore' | 'create_day_plan' | 'chat' | 'generate_hub_message' | 'group_match_moody_message' | 'search' | 'place_card_blurb' | 'place_detail_blurb' | 'place_explore_rich'
   mood?: string
   location?: string
   coordinates?: { lat: number; lng: number }
@@ -215,6 +215,7 @@ Deno.serve(async (req) => {
           case 'create_day_plan': return await handleCreateDayPlan(supabaseWithAuth, authUser.id, params)
           case 'chat': return await handleChat(supabaseWithAuth, authUser.id, params)
           case 'generate_hub_message': return await handleGenerateHubMessage(supabaseWithAuth, authUser.id, params)
+          case 'group_match_moody_message': return await handleGroupMatchMoodyMessage(supabaseWithAuth, authUser.id, params)
           case 'search': return await handleSearch(supabaseWithAuth, authUser.id, params)
           case 'place_card_blurb': return await handlePlaceCardBlurb(params)
           case 'place_detail_blurb': return await handlePlaceDetailBlurb(params)
@@ -820,6 +821,73 @@ async function getMoodyPersonalityResponse(moods: string[], activities: Activity
     const parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}')
     return { moodyMessage: parsed.moodyMessage || fallback.moodyMessage, reasoning: parsed.reasoning || fallback.reasoning }
   } catch { return fallback }
+}
+
+/** Short Mood Match reveal line: two moods, compatibility score, caller's language + communication style. */
+async function handleGroupMatchMoodyMessage(_supabase: any, _userId: string, params: any): Promise<Response> {
+  const moods = Array.isArray(params.moods) ? params.moods.map((x: any) => String(x).trim()).filter(Boolean) : []
+  if (moods.length === 0) {
+    return new Response(JSON.stringify({ error: 'moods required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  }
+  const compatibilityScore = Math.max(0, Math.min(100, Math.round(Number(params.compatibility_score ?? params.compatibilityScore ?? 72))))
+  const rawLang = String(params.language || params.lang || 'en').toLowerCase()
+  const langCode = (rawLang.split(/[-_]/)[0] || 'en').slice(0, 8)
+  const supported = new Set(['en', 'nl', 'de', 'es', 'fr'])
+  const lang = supported.has(langCode) ? langCode : 'en'
+  const rawStyle = String(params.communication_style ?? params.communicationStyle ?? 'friendly').toLowerCase()
+  const style = ['friendly', 'professional', 'energetic', 'direct'].includes(rawStyle) ? rawStyle : 'friendly'
+
+  const langName: Record<string, string> = { en: 'English', nl: 'Dutch', de: 'German', es: 'Spanish', fr: 'French' }
+  const styleHint: Record<string, string> = {
+    friendly: 'Warm and playful; one emoji is fine if it feels natural.',
+    professional: 'Clear, concise, neutral; no slang; avoid emoji unless essential.',
+    energetic: 'High energy, punchy; exclamation marks welcome.',
+    direct: 'Very brief and factual; minimal flourish; aim under 140 characters.',
+  }
+  const moodLine = moods.join(' + ')
+  const userContent =
+    `Two friends finished Mood Match together. Their mood tags: ${moodLine}. Compatibility score: ${compatibilityScore} (0–100; higher = more aligned).\n` +
+    `Write ONE short paragraph as Moody (first person "I") reacting to how their moods mesh and that they now share one day plan. ${styleHint[style]}\n` +
+    `Output language: ${langName[lang] || 'English'} only.`
+
+  const openaiKey = Deno.env.get('OPENAI_API_KEY')
+  if (!openaiKey?.trim()) {
+    return new Response(JSON.stringify({ moodyMessage: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  }
+
+  try {
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content:
+              `${MOODY_CORE_IDENTITY}\n\nYou write ONE short post-plan message for Mood Match (two people, one shared plan). ` +
+              `Return JSON only: {"moodyMessage":"<string, max ~280 characters>"}. No markdown.`,
+          },
+          { role: 'user', content: userContent },
+        ],
+        max_tokens: 140,
+        temperature: style === 'energetic' ? 0.95 : 0.78,
+        response_format: { type: 'json_object' },
+      }),
+    })
+    if (!resp.ok) {
+      console.warn('group_match_moody_message OpenAI', resp.status)
+      return new Response(JSON.stringify({ moodyMessage: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    const data = await resp.json()
+    const raw = data.choices?.[0]?.message?.content || '{}'
+    const parsed = JSON.parse(raw)
+    const moodyMessage = String(parsed.moodyMessage || '').trim().slice(0, 400)
+    return new Response(JSON.stringify({ moodyMessage }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  } catch (e) {
+    console.warn('group_match_moody_message', e)
+    return new Response(JSON.stringify({ moodyMessage: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  }
 }
 
 // ── CHAT (NOW WITH CROSS-SESSION MEMORY) ──────────────────
