@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -37,11 +38,13 @@ import '../../../plans/domain/enums/time_slot.dart';
 import '../../../plans/domain/enums/payment_type.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../home/presentation/screens/main_screen.dart';
+import '../../../home/presentation/widgets/moody_suggested_places_row.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
 import '../../../../core/presentation/widgets/wm_toast.dart';
 import '../../../profile/domain/providers/profile_provider.dart';
 import 'dart:ui';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 // Day hero state for Moody Hub hero card (My Day)
 enum _DayHeroState {
@@ -96,6 +99,8 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
   bool _hasShownInitialGreeting = false; // Track if initial greeting was shown (no API call)
   bool _isSendingMessage = false; // Prevent duplicate sends
   bool _showIntroOverlay = false; // Track if intro overlay should be shown
+
+  static const String _kMoodyChatConversationIdKey = 'moody_chat_conversation_id_v1';
 
   @override
   void initState() {
@@ -194,8 +199,22 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     }
   }
 
-  /// Load or create a persistent conversation ID
+  /// Load conversation ID from disk first so the backend can restore history.
   Future<void> _loadConversationId() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_kMoodyChatConversationIdKey)?.trim();
+      if (saved != null && saved.isNotEmpty) {
+        if (mounted) {
+          setState(() => _conversationId = saved);
+        }
+        return;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Error reading saved conversation ID: $e');
+      }
+    }
     try {
       final convId = await WanderMoodAIService.getOrCreateConversationId();
       if (mounted) {
@@ -203,17 +222,79 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           _conversationId = convId;
         });
       }
+      await _persistConversationId(convId);
     } catch (e) {
       if (kDebugMode) {
         debugPrint('⚠️ Error loading conversation ID: $e');
       }
-      // Fallback to generating a new one
       if (mounted) {
         setState(() {
-          _conversationId = MoodyClock.now().millisecondsSinceEpoch.toString();
+          _conversationId = WanderMoodAIService.newChatConversationId();
         });
       }
     }
+  }
+
+  Future<void> _persistConversationId(String id) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_kMoodyChatConversationIdKey, id);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Error saving conversation ID: $e');
+      }
+    }
+  }
+
+  Future<void> _hydrateChatHistoryFromBackend() async {
+    final id = _conversationId?.trim();
+    if (id == null || id.isEmpty) return;
+    try {
+      final rows = await WanderMoodAIService.getConversationHistory(id);
+      if (!mounted || rows.isEmpty) return;
+      setState(() {
+        _chatMessages
+          ..clear()
+          ..addAll(
+            rows.map(
+              (m) => {
+                'role': m.role,
+                'content': m.content,
+                'timestamp': m.createdAt,
+              },
+            ),
+          );
+        _hasShownInitialGreeting = true;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Chat history hydrate skipped: $e');
+      }
+    }
+  }
+
+  Future<void> _startNewConversation(StateSetter? setModalState) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_kMoodyChatConversationIdKey);
+    } catch (_) {}
+    final newId = WanderMoodAIService.newChatConversationId();
+    if (!mounted) return;
+    setState(() {
+      _conversationId = newId;
+      _chatMessages
+        ..clear()
+        ..add({
+          'role': 'assistant',
+          'content': _getMoodyGreeting(),
+          'timestamp': MoodyClock.now(),
+          'quickReplies': _getDefaultQuickReplies(),
+        });
+      _hasShownInitialGreeting = true;
+    });
+    setModalState?.call(() {});
+    await _persistConversationId(newId);
+    _scrollToBottom();
   }
   
   Future<void> _incrementVisitCount() async {
@@ -222,21 +303,23 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
   }
 
   // Show chat bottom sheet
-  void _showChatBottomSheet(BuildContext context, {
+  Future<void> _showChatBottomSheet(BuildContext context, {
     TrendingActivity? contextualActivity,
     String? contextualGreeting,
     bool autoRespond = false, // Auto-respond from Moody when opening
-  }) {
+  }) async {
     _contextualActivity = contextualActivity;
-    
+
+    await _hydrateChatHistoryFromBackend();
+
     // Only clear messages if this is a fresh chat session
     // If chat was already open, keep existing messages
-    if (!_hasShownInitialGreeting) {
+    if (!_hasShownInitialGreeting && _chatMessages.isEmpty) {
       _chatMessages.clear();
     }
 
     // Show initial greeting ONLY on first open (no API call)
-    if (!_hasShownInitialGreeting) {
+    if (!_hasShownInitialGreeting && _chatMessages.isEmpty) {
       if (contextualGreeting != null) {
         // User provided greeting - add as user message but DON'T auto-send
         _chatMessages.add({
@@ -275,6 +358,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       });
     }
 
+    if (!mounted) return;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -436,6 +520,21 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                               ),
                             ),
                         ],
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: _isAILoading
+                          ? null
+                          : () async {
+                              await _startNewConversation(setModalState);
+                            },
+                      child: Text(
+                        AppLocalizations.of(context)!.moodyHubNewConversation,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF2A6049),
+                        ),
                       ),
                     ),
                     Container(
@@ -685,125 +784,161 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     );
   }
 
+  static const double _hubChatAvatarBlockWidth = 36 + 10;
+
+  List<Place>? _suggestedPlacesFromMessage(Map<String, dynamic> message) {
+    final raw = message['suggestedPlaces'];
+    if (raw is List<Place>) {
+      return raw.isEmpty ? null : raw;
+    }
+    if (raw is List) {
+      final out = <Place>[];
+      for (final e in raw) {
+        if (e is Place) out.add(e);
+      }
+      return out.isEmpty ? null : out;
+    }
+    return null;
+  }
+
   Widget _buildChatMessage(Map<String, dynamic> message) {
     final isUser = message['role'] == 'user';
+    final suggested = _suggestedPlacesFromMessage(message);
+    final showSuggested =
+        !isUser && suggested != null && suggested.isNotEmpty;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
-      child: Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Column(
+        crossAxisAlignment:
+            isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          if (!isUser) ...[
-            // Moody's avatar
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFA8C8DC),
-                    Color(0xFFA8C8DC),
-                  ],
-                ),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFA8C8DC).withOpacity(0.35),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-              ),
-                ],
-              ),
-              child: Center(
-                child: MoodyCharacter(
-                  size: 26,
-                  mood: ref.watch(dailyMoodStateNotifierProvider).currentMood ?? 'exploring',
-            ),
-              ),
-            ),
-            const SizedBox(width: 10),
-          ],
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-              decoration: BoxDecoration(
-                gradient: isUser 
-                    ? const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color(0xFF2A6049),
-                          Color(0xFF2A6049),
-                        ],
-                      )
-                    : null,
-                color: isUser ? null : Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(isUser ? 20 : 8),
-                  topRight: Radius.circular(isUser ? 8 : 20),
-                  bottomLeft: const Radius.circular(20),
-                  bottomRight: const Radius.circular(20),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: isUser 
-                        ? const Color(0xFF2A6049).withOpacity(0.3)
-                        : Colors.black.withOpacity(0.08),
-                    blurRadius: 12,
-                    spreadRadius: 0,
-                    offset: const Offset(0, 4),
-                  ),
-                  if (!isUser)
-                    BoxShadow(
-                      color: Colors.white.withOpacity(0.8),
-                      blurRadius: 8,
-                      spreadRadius: -4,
-                      offset: const Offset(0, -2),
+          Row(
+            mainAxisAlignment:
+                isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!isUser) ...[
+                // Moody's avatar
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFFA8C8DC),
+                        Color(0xFFA8C8DC),
+                      ],
                     ),
-                ],
-              ),
-              child: Text(
-                message['content'] as String? ?? '',
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  color: isUser ? Colors.white : const Color(0xFF1A202C),
-                  height: 1.5,
-                  fontWeight: isUser ? FontWeight.w500 : FontWeight.normal,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFA8C8DC).withOpacity(0.35),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: MoodyCharacter(
+                      size: 26,
+                      mood: ref.watch(dailyMoodStateNotifierProvider).currentMood ??
+                          'exploring',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+              ],
+              Flexible(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  decoration: BoxDecoration(
+                    gradient: isUser
+                        ? const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color(0xFF2A6049),
+                              Color(0xFF2A6049),
+                            ],
+                          )
+                        : null,
+                    color: isUser ? null : Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(isUser ? 20 : 8),
+                      topRight: Radius.circular(isUser ? 8 : 20),
+                      bottomLeft: const Radius.circular(20),
+                      bottomRight: const Radius.circular(20),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isUser
+                            ? const Color(0xFF2A6049).withOpacity(0.3)
+                            : Colors.black.withOpacity(0.08),
+                        blurRadius: 12,
+                        spreadRadius: 0,
+                        offset: const Offset(0, 4),
+                      ),
+                      if (!isUser)
+                        BoxShadow(
+                          color: Colors.white.withOpacity(0.8),
+                          blurRadius: 8,
+                          spreadRadius: -4,
+                          offset: const Offset(0, -2),
+                        ),
+                    ],
+                  ),
+                  child: Text(
+                    message['content'] as String? ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: isUser ? Colors.white : const Color(0xFF1A202C),
+                      height: 1.5,
+                      fontWeight: isUser ? FontWeight.w500 : FontWeight.normal,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-          if (isUser) ...[
-            const SizedBox(width: 10),
-            // User avatar with profile picture
-            Consumer(
-              builder: (context, ref, child) {
-                final profileAsync = ref.watch(profileProvider);
-                return profileAsync.when(
-                  data: (profile) {
-                    final imageUrl = profile?.imageUrl;
-                    if (imageUrl != null && imageUrl.isNotEmpty) {
-                      return ClipRRect(
-                        borderRadius: BorderRadius.circular(18),
-                        child: WmNetworkImage(
-                          imageUrl,
-                          width: 36,
-                          height: 36,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => _buildDefaultUserAvatar(),
-                        ),
-                      );
-                    }
-                    return _buildDefaultUserAvatar();
+              if (isUser) ...[
+                const SizedBox(width: 10),
+                // User avatar with profile picture
+                Consumer(
+                  builder: (context, ref, child) {
+                    final profileAsync = ref.watch(profileProvider);
+                    return profileAsync.when(
+                      data: (profile) {
+                        final imageUrl = profile?.imageUrl;
+                        if (imageUrl != null && imageUrl.isNotEmpty) {
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(18),
+                            child: WmNetworkImage(
+                              imageUrl,
+                              width: 36,
+                              height: 36,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  _buildDefaultUserAvatar(),
+                            ),
+                          );
+                        }
+                        return _buildDefaultUserAvatar();
+                      },
+                      loading: () => _buildDefaultUserAvatar(),
+                      error: (_, __) => _buildDefaultUserAvatar(),
+                    );
                   },
-                  loading: () => _buildDefaultUserAvatar(),
-                  error: (_, __) => _buildDefaultUserAvatar(),
-                );
-              },
+                ),
+              ],
+            ],
+          ),
+          if (showSuggested)
+            MoodySuggestedPlacesRow(
+              places: suggested,
+              leftInset: _hubChatAvatarBlockWidth,
             ),
-          ],
         ],
       ),
     );
@@ -972,15 +1107,21 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
 
       if (response.conversationId != null) {
         _conversationId = response.conversationId;
+        await _persistConversationId(response.conversationId!);
       }
 
       if (mounted) {
         setState(() {
-          _chatMessages.add({
+          final entry = <String, dynamic>{
             'role': 'assistant',
             'content': response.message,
             'timestamp': MoodyClock.now(),
-          });
+          };
+          final places = response.suggestedPlaces;
+          if (places != null && places.isNotEmpty) {
+            entry['suggestedPlaces'] = places;
+          }
+          _chatMessages.add(entry);
           _isAILoading = false;
           _isSendingMessage = false;
         });
@@ -2030,10 +2171,12 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       onTap: () {
         // Open chat with contextual message based on moment
         if (momentCard != null) {
-          _showChatBottomSheet(context, 
-            contextualGreeting: _getContextualChatStarter(momentCard));
+          unawaited(_showChatBottomSheet(
+            context,
+            contextualGreeting: _getContextualChatStarter(momentCard),
+          ));
         } else {
-          _showChatBottomSheet(context);
+          unawaited(_showChatBottomSheet(context));
         }
       },
       child: _floatController != null
@@ -2129,37 +2272,37 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         buttonText = 'Show me this';
         onTap = () {
           // TODO: Navigate to explore or place detail
-          _showChatBottomSheet(context, 
-            contextualGreeting: _getContextualChatStarter(momentCard));
+          unawaited(_showChatBottomSheet(context,
+              contextualGreeting: _getContextualChatStarter(momentCard)));
         };
         break;
       case ContentPillar.eventFestival:
         buttonText = "Talk to me";
         onTap = () {
-          _showChatBottomSheet(context, 
-            contextualGreeting: null, // Don't pre-fill, just open chat
-            autoRespond: true); // Auto-respond from Moody
+          unawaited(_showChatBottomSheet(context,
+              contextualGreeting: null, // Don't pre-fill, just open chat
+              autoRespond: true)); // Auto-respond from Moody
         };
         break;
       case ContentPillar.softReflection:
         buttonText = "Let's talk about it";
         onTap = () {
-          _showChatBottomSheet(context, 
-            contextualGreeting: _getContextualChatStarter(momentCard));
+          unawaited(_showChatBottomSheet(context,
+              contextualGreeting: _getContextualChatStarter(momentCard)));
         };
         break;
       case ContentPillar.packingPrep:
         buttonText = 'See checklist';
         onTap = () {
-          _showChatBottomSheet(context, 
-            contextualGreeting: _getContextualChatStarter(momentCard));
+          unawaited(_showChatBottomSheet(context,
+              contextualGreeting: _getContextualChatStarter(momentCard)));
         };
         break;
       case ContentPillar.socialNudge:
         buttonText = 'Tell me more';
         onTap = () {
-          _showChatBottomSheet(context, 
-            contextualGreeting: _getContextualChatStarter(momentCard));
+          unawaited(_showChatBottomSheet(context,
+              contextualGreeting: _getContextualChatStarter(momentCard)));
         };
         break;
     }
@@ -2271,8 +2414,8 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         children: [
           // Large animated character
           GestureDetector(
-        onTap: () => _showChatBottomSheet(context),
-        child: Container(
+            onTap: () => unawaited(_showChatBottomSheet(context)),
+            child: Container(
               width: 140,
               height: 140,
           decoration: BoxDecoration(
@@ -2296,9 +2439,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               child: Center(
                 child: MoodyCharacter(
                   size: 120,
-                mood: currentMood,
-                onTap: () => _showChatBottomSheet(context),
-              ),
+                  mood: currentMood,
+                  onTap: () => unawaited(_showChatBottomSheet(context)),
+                ),
               ),
             ),
           ),
@@ -5027,7 +5170,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       final activity = Activity(
         id: 'place_${place.id}_${MoodyClock.now().millisecondsSinceEpoch}',
         name: place.name,
-        description: place.address ?? 'Visit ${place.name}',
+        description: place.address.isNotEmpty
+            ? place.address
+            : 'Visit ${place.name}',
         imageUrl: imageUrl,
         rating: place.rating > 0 ? place.rating : 4.5,
         startTime: startTime,

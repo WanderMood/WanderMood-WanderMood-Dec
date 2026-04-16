@@ -1,3 +1,5 @@
+import 'package:wandermood/features/places/models/place.dart';
+
 class AIRecommendationResponse {
   final bool success;
   final String action;
@@ -103,6 +105,7 @@ class AIChatResponse {
   final String message;
   final String? conversationId;
   final Map<String, dynamic> contextUsed;
+  final List<Place>? suggestedPlaces;
 
   AIChatResponse({
     required this.success,
@@ -111,6 +114,7 @@ class AIChatResponse {
     required this.message,
     this.conversationId,
     required this.contextUsed,
+    this.suggestedPlaces,
   });
 
   factory AIChatResponse.fromJson(Map<String, dynamic> json) {
@@ -121,6 +125,10 @@ class AIChatResponse {
       message: json['message'] ?? '',
       conversationId: json['conversationId'],
       contextUsed: json['contextUsed'] as Map<String, dynamic>? ?? {},
+      suggestedPlaces: (json['suggested_places'] as List<dynamic>?)
+          ?.whereType<Map>()
+          .map((e) => Place.fromJson(Map<String, dynamic>.from(e)))
+          .toList(),
     );
   }
 
@@ -132,6 +140,8 @@ class AIChatResponse {
       'message': message,
       'conversationId': conversationId,
       'contextUsed': contextUsed,
+      if (suggestedPlaces != null)
+        'suggested_places': suggestedPlaces!.map((p) => p.toJson()).toList(),
     };
   }
 }

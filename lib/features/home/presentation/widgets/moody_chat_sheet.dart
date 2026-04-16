@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:ui';
 
@@ -18,6 +20,11 @@ import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
 import 'package:wandermood/core/utils/wandermood_tts_presentation.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_suggested_places_row.dart';
+import 'package:wandermood/features/places/models/place.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/features/settings/presentation/providers/user_preferences_provider.dart';
 
 // WanderMood v2 — Moody chat (Screen 9)
 const Color _wmSkyTint = Color(0xFFF1F7FB);
@@ -61,8 +68,12 @@ class _ChatMsg {
   final String message;
   final bool isUser;
   final DateTime timestamp;
+  final List<Place>? suggestedPlaces;
   _ChatMsg(
-      {required this.message, required this.isUser, required this.timestamp});
+      {required this.message,
+      required this.isUser,
+      required this.timestamp,
+      this.suggestedPlaces});
 }
 
 class _DailyMoodyChatCache {
@@ -72,6 +83,11 @@ class _DailyMoodyChatCache {
 
   static String _keyFor(DateTime dt) =>
       '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+
+  static String _prefsKey(DateTime now) {
+    final uid = Supabase.instance.client.auth.currentUser?.id ?? 'guest';
+    return 'wm_moody_chat_sheet_v1_${uid}_${_keyFor(now)}';
+  }
 
   static void _resetIfNeeded(DateTime now) {
     final key = _keyFor(now);
@@ -88,10 +104,90 @@ class _DailyMoodyChatCache {
     return _conversationId!;
   }
 
+  static void setConversationIdFromServer(String? id) {
+    final t = id?.trim();
+    if (t == null || t.isEmpty) return;
+    _conversationId = t;
+  }
+
   static List<_ChatMsg> getMessages(DateTime now) {
     _resetIfNeeded(now);
     return _messages;
   }
+
+  static Future<void> hydrateFromPrefs(SharedPreferences prefs, DateTime now) async {
+    _resetIfNeeded(now);
+    if (_messages.isNotEmpty) return;
+
+    final raw = prefs.getString(_prefsKey(now));
+    if (raw == null || raw.isEmpty) return;
+
+    try {
+      final o = jsonDecode(raw) as Map<String, dynamic>;
+      final cid = o['conversationId']?.toString().trim();
+      if (cid != null && cid.isNotEmpty) {
+        _conversationId = cid;
+      }
+      final arr = o['messages'] as List<dynamic>?;
+      if (arr == null) return;
+      for (final e in arr) {
+        if (e is! Map) continue;
+        _messages.add(_chatMsgFromJson(Map<String, dynamic>.from(e)));
+      }
+    } catch (_) {}
+  }
+
+  static Future<void> persistToPrefs(
+    SharedPreferences prefs,
+    DateTime now,
+  ) async {
+    _resetIfNeeded(now);
+    if (_messages.isNotEmpty) {
+      _conversationId ??= 'conv_${now.millisecondsSinceEpoch}';
+    }
+    const maxMessages = 100;
+    final slice = _messages.length > maxMessages
+        ? _messages.sublist(_messages.length - maxMessages)
+        : List<_ChatMsg>.from(_messages);
+
+    final payload = <String, dynamic>{
+      'conversationId': _conversationId ?? '',
+      'messages': slice.map(_chatMsgToJson).toList(),
+    };
+    await prefs.setString(_prefsKey(now), jsonEncode(payload));
+  }
+}
+
+Map<String, dynamic> _chatMsgToJson(_ChatMsg m) {
+  return {
+    'message': m.message,
+    'isUser': m.isUser,
+    'timestamp': m.timestamp.toIso8601String(),
+    'suggestedPlaces': m.suggestedPlaces?.map((e) => e.toJson()).toList(),
+  };
+}
+
+_ChatMsg _chatMsgFromJson(Map<String, dynamic> j) {
+  List<Place>? suggested;
+  final raw = j['suggestedPlaces'];
+  if (raw is List && raw.isNotEmpty) {
+    final out = <Place>[];
+    for (final e in raw) {
+      if (e is Map) {
+        try {
+          out.add(Place.fromJson(Map<String, dynamic>.from(e)));
+        } catch (_) {}
+      }
+    }
+    if (out.isNotEmpty) suggested = out;
+  }
+  return _ChatMsg(
+    message: j['message'] as String? ?? '',
+    isUser: j['isUser'] as bool? ?? false,
+    timestamp: DateTime.tryParse(j['timestamp'] as String? ?? '') ??
+        MoodyClock.now(),
+    suggestedPlaces: suggested,
+  );
 }
 
 void _scheduleMoodyChatScroll(
@@ -119,9 +215,13 @@ void _scheduleMoodyChatScroll(
 
 /// Opens the Moody chat bottom sheet — the same UI from the original MoodHomeScreen.
 /// Can be called from any screen that has access to a [BuildContext] and a [WidgetRef].
-void showMoodyChatSheet(BuildContext context, WidgetRef ref) {
+Future<void> showMoodyChatSheet(BuildContext context, WidgetRef ref) async {
   final moods = ref.read(dailyMoodStateNotifierProvider).selectedMoods;
   final now = MoodyClock.now();
+  final prefs = ref.read(sharedPreferencesProvider);
+  await _DailyMoodyChatCache.hydrateFromPrefs(prefs, now);
+  if (!context.mounted) return;
+
   final conversationId = _DailyMoodyChatCache.getConversationId(now);
   final chatMessages = _DailyMoodyChatCache.getMessages(now);
 
@@ -133,6 +233,7 @@ void showMoodyChatSheet(BuildContext context, WidgetRef ref) {
     // Root route gets reliable viewInsets on iOS when the keyboard opens.
     useRootNavigator: true,
     useSafeArea: false,
+    enableDrag: false,
     builder: (context) => _MoodyChatSheetContent(
       chatMessages: chatMessages,
       conversationId: conversationId,
@@ -167,6 +268,15 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
   bool _isAILoading = false;
   bool _ttsConfigured = false;
   bool _ttsEnabled = true;
+
+  Future<void> _persistChat() async {
+    try {
+      await _DailyMoodyChatCache.persistToPrefs(
+        ref.read(sharedPreferencesProvider),
+        MoodyClock.now(),
+      );
+    } catch (_) {}
+  }
 
   @override
   void initState() {
@@ -214,6 +324,7 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
 
   @override
   void dispose() {
+    unawaited(_persistChat());
     if (!kIsWeb) {
       _flutterTts.stop();
     }
@@ -247,12 +358,14 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
           message: text.trim(), isUser: true, timestamp: MoodyClock.now()));
       _isAILoading = true;
     });
+    await _persistChat();
     _scheduleMoodyChatScroll(_scrollController);
     _chatController.clear();
 
     try {
       final loc = await _getLocation();
       if (!mounted) return;
+      final convId = _DailyMoodyChatCache.getConversationId(MoodyClock.now());
       final msgs = widget.chatMessages;
       final priorTurns = msgs.length > 1
           ? msgs
@@ -265,7 +378,7 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
           : null;
       final response = await WanderMoodAIService.chat(
         message: text.trim(),
-        conversationId: widget.conversationId,
+        conversationId: convId,
         moods: widget.moods,
         latitude: loc.lat,
         longitude: loc.lng,
@@ -275,13 +388,17 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
       );
 
       if (!mounted) return;
+      _DailyMoodyChatCache.setConversationIdFromServer(response.conversationId);
       setState(() {
         widget.chatMessages.add(_ChatMsg(
-            message: response.message,
-            isUser: false,
-            timestamp: MoodyClock.now()));
+          message: response.message,
+          isUser: false,
+          timestamp: MoodyClock.now(),
+          suggestedPlaces: response.suggestedPlaces,
+        ));
         _isAILoading = false;
       });
+      await _persistChat();
       _scheduleMoodyChatScroll(_scrollController);
       _speakAssistantReply(response.message);
     } catch (e) {
@@ -295,6 +412,7 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
         ));
         _isAILoading = false;
       });
+      await _persistChat();
       _scheduleMoodyChatScroll(_scrollController);
     }
   }
@@ -373,6 +491,10 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
                                           Expanded(
                                             child: ListView.builder(
                                               controller: _scrollController,
+                                              physics:
+                                                  const AlwaysScrollableScrollPhysics(
+                                                parent: BouncingScrollPhysics(),
+                                              ),
                                               padding:
                                                   const EdgeInsets.symmetric(
                                                       vertical: 12),
@@ -471,7 +593,14 @@ class _ScrollChatWhenMetricsChangeState extends State<_ScrollChatWhenMetricsChan
 
   @override
   void didChangeMetrics() {
-    _scheduleMoodyChatScroll(widget.scrollController, animate: false);
+    final c = widget.scrollController;
+    if (!c.hasClients) return;
+    final pos = c.position;
+    const stickiness = 120.0;
+    final nearBottom = pos.maxScrollExtent - pos.pixels <= stickiness;
+    if (nearBottom) {
+      _scheduleMoodyChatScroll(c, animate: false);
+    }
   }
 
   @override
@@ -754,69 +883,89 @@ class _MessageBubble extends StatelessWidget {
   final _ChatMsg msg;
   const _MessageBubble({required this.msg});
 
+  static const double _avatarBlockWidth = 36 + 10;
+
   @override
   Widget build(BuildContext context) {
+    final places = msg.suggestedPlaces;
+    final showPlaces =
+        !msg.isUser && places != null && places.isNotEmpty;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-      child: Row(
-        mainAxisAlignment:
-            msg.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Column(
+        crossAxisAlignment: msg.isUser
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
-          if (!msg.isUser) ...[
-            Container(
-              width: 36,
-              height: 36,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: _wmSky,
-                boxShadow: [],
-              ),
-              child: const Center(child: MoodyCharacter(size: 20)),
-            ),
-            const SizedBox(width: 10),
-          ],
-          Flexible(
-            child: Container(
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.72,
-                minWidth: 80,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-              decoration: BoxDecoration(
-                gradient: msg.isUser
-                    ? const LinearGradient(
-                        colors: [_wmForest, Color(0xFF347558)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : const LinearGradient(
-                        colors: [_wmForestTint, _wmSkyTint],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(20),
-                  topRight: const Radius.circular(20),
-                  bottomLeft: msg.isUser
-                      ? const Radius.circular(20)
-                      : const Radius.circular(4),
-                  bottomRight: msg.isUser
-                      ? const Radius.circular(4)
-                      : const Radius.circular(20),
+          Row(
+            mainAxisAlignment: msg.isUser
+                ? MainAxisAlignment.end
+                : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!msg.isUser) ...[
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _wmSky,
+                    boxShadow: [],
+                  ),
+                  child: const Center(child: MoodyCharacter(size: 20)),
                 ),
-                boxShadow: const [],
-              ),
-              child: Text(
-                msg.message,
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  color: msg.isUser ? Colors.white : _wmCharcoal,
-                  height: 1.4,
+                const SizedBox(width: 10),
+              ],
+              Flexible(
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.72,
+                    minWidth: 80,
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  decoration: BoxDecoration(
+                    gradient: msg.isUser
+                        ? const LinearGradient(
+                            colors: [_wmForest, Color(0xFF347558)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          )
+                        : const LinearGradient(
+                            colors: [_wmForestTint, _wmSkyTint],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(20),
+                      topRight: const Radius.circular(20),
+                      bottomLeft: msg.isUser
+                          ? const Radius.circular(20)
+                          : const Radius.circular(4),
+                      bottomRight: msg.isUser
+                          ? const Radius.circular(4)
+                          : const Radius.circular(20),
+                    ),
+                    boxShadow: const [],
+                  ),
+                  child: Text(
+                    msg.message,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: msg.isUser ? Colors.white : _wmCharcoal,
+                      height: 1.4,
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
+          if (showPlaces)
+            MoodySuggestedPlacesRow(
+              places: places,
+              leftInset: 20 + _avatarBlockWidth,
+            ),
         ],
       ),
     );

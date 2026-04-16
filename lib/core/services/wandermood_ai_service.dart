@@ -4,6 +4,7 @@ import 'package:wandermood/core/models/ai_recommendation.dart';
 import 'package:wandermood/core/models/ai_chat_message.dart';
 import 'package:wandermood/core/services/ai_chat_quota_service.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
+import 'package:wandermood/features/places/models/place.dart';
 
 /// @deprecated - All methods now route through the moody
 /// edge function. This class will be removed in a future
@@ -213,6 +214,42 @@ class WanderMoodAIService {
     }
   }
 
+  /// Mood Match reveal copy: localized + communication style via **`moody`** (`group_match_moody_message`).
+  /// Returns empty string on failure so the client can fall back to tier strings.
+  static Future<String> getGroupMatchMoodyMessage({
+    required List<String> moods,
+    required int compatibilityScore,
+    required String languageCode,
+    required String communicationStyle,
+  }) async {
+    final lang = languageCode.toLowerCase().split(RegExp(r'[-_]')).first;
+    try {
+      final response = await _supabase.functions.invoke(
+        _moodyFunctionName,
+        body: {
+          'action': 'group_match_moody_message',
+          'moods': moods,
+          'compatibility_score': compatibilityScore,
+          'language': lang,
+          'communication_style': communicationStyle,
+        },
+      );
+      if (response.status != 200) {
+        debugPrint(
+          'Moody group_match_moody_message: HTTP ${response.status} ${response.data}',
+        );
+        return '';
+      }
+      final raw = response.data;
+      if (raw is! Map) return '';
+      final msg = raw['moodyMessage']?.toString().trim();
+      return (msg != null && msg.isNotEmpty) ? msg : '';
+    } catch (e) {
+      debugPrint('❌ getGroupMatchMoodyMessage: $e');
+      return '';
+    }
+  }
+
   /// Start or continue a chat conversation with the AI.
   /// Routes through the `moody` edge function (action: chat) so the
   /// OpenAI key stays server-side and never needs to be baked into the app.
@@ -265,6 +302,12 @@ class WanderMoodAIService {
       debugPrint('📚 Using ${history.length} client turns for context');
     }
 
+    final resolvedLat = latitude ?? 51.9225;
+    final resolvedLng = longitude ?? 4.4792;
+    final resolvedCity = (city != null && city.trim().isNotEmpty)
+        ? city.trim()
+        : 'Rotterdam';
+
     try {
       final response = await _supabase.functions.invoke(
         _moodyFunctionName,
@@ -273,11 +316,10 @@ class WanderMoodAIService {
           'message': message,
           'history': history,
           'conversationId': convId,
-          // Location context so Moody knows where the user is
-          if (city != null && city.isNotEmpty) 'location': city,
-          if (latitude != null && longitude != null) 'coordinates': {
-            'lat': latitude,
-            'lng': longitude,
+          'location': resolvedCity,
+          'coordinates': {
+            'lat': resolvedLat,
+            'lng': resolvedLng,
           },
           'language_code': languageCode,
         },
@@ -295,6 +337,36 @@ class WanderMoodAIService {
       final reply = (data['reply'] as String?)?.trim() ?? '';
       if (reply.isEmpty) throw Exception('Empty reply from moody');
 
+      List<Place>? suggestedPlaces;
+      final rawPlaces = data['suggested_places'];
+      if (rawPlaces is List) {
+        final out = <Place>[];
+        for (final e in rawPlaces) {
+          if (e is Map) {
+            try {
+              final m = Map<String, dynamic>.from(e);
+
+              // The API's PlaceCard shape often provides a single `photo_url` string.
+              // Our `Place` model expects `photos: List<String>`.
+              final photos = m['photos'];
+              final hasPhotosList = photos is List && photos.isNotEmpty;
+              if (!hasPhotosList) {
+                final photoUrl =
+                    (m['photo_url'] ?? m['photoUrl'] ?? m['image_url'])
+                        ?.toString()
+                        .trim();
+                if (photoUrl != null && photoUrl.isNotEmpty) {
+                  m['photos'] = [photoUrl];
+                }
+              }
+
+              out.add(Place.fromJson(m));
+            } catch (_) {}
+          }
+        }
+        if (out.isNotEmpty) suggestedPlaces = out;
+      }
+
       debugPrint('✅ Moody chat response received');
 
       await AiChatQuotaService.recordSuccessfulChat(_supabase);
@@ -307,8 +379,9 @@ class WanderMoodAIService {
         conversationId: data['conversationId'] as String? ?? convId,
         contextUsed: {
           'moods': moods ?? [],
-          'location': city ?? 'Unknown',
+          'location': resolvedCity,
         },
+        suggestedPlaces: suggestedPlaces,
       );
     } catch (e) {
       debugPrint('❌ Moody chat error: $e — using fallback');
@@ -321,7 +394,7 @@ class WanderMoodAIService {
           message,
           moods?.first ?? 'exploring',
           hasPriorExchanges: history.isNotEmpty,
-          city: city,
+          city: resolvedCity,
         ),
         conversationId: convId,
         contextUsed: {},
@@ -600,10 +673,13 @@ class WanderMoodAIService {
     }
   }
 
-  /// Generate a unique conversation ID
+  /// Generate a unique conversation ID (new chat thread).
   static String _generateConversationId() {
     return 'conv_${MoodyClock.now().millisecondsSinceEpoch}_${_supabase.auth.currentUser?.id.substring(0, 8) ?? 'anon'}';
   }
+
+  /// Public wrapper for starting a fresh Moody chat session.
+  static String newChatConversationId() => _generateConversationId();
 
   /// Get or create a persistent conversation ID for the current user
   /// This ensures conversations persist across app sessions

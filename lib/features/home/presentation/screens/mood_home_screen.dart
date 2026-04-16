@@ -37,6 +37,9 @@ import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
 import 'package:intl/intl.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
+import 'package:wandermood/features/home/presentation/widgets/mood_hub_style_mood_tile.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_suggested_places_row.dart';
+import 'package:wandermood/features/places/models/place.dart';
 
 // WanderMood v2 — Moody chat modal (Screen 9), aligned with moody_chat_sheet.dart
 const Color _mcSkyTint = Color(0xFFEDF5F9);
@@ -996,6 +999,11 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
 
   // Build message bubble widget with modern iMessage-like style
   Widget _buildMessageBubble(ChatMessage message) {
+    final suggested = message.suggestedPlaces;
+    final showSuggested = !message.isUser &&
+        suggested != null &&
+        suggested.isNotEmpty;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
       child: Row(
@@ -1075,6 +1083,12 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                     ),
                   ),
                 ),
+
+                if (showSuggested)
+                  MoodySuggestedPlacesRow(
+                    places: suggested,
+                    leftInset: 0,
+                  ),
 
                 // Timestamp with modern styling
                 Padding(
@@ -1211,6 +1225,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
           message: response.message,
           isUser: false,
           timestamp: MoodyClock.now(),
+          suggestedPlaces: response.suggestedPlaces,
         ));
         _isAILoading = false;
       });
@@ -1286,6 +1301,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
             message: response.message,
             isUser: false,
             timestamp: MoodyClock.now(),
+            suggestedPlaces: response.suggestedPlaces,
           ));
         });
       }
@@ -1755,25 +1771,26 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                 }
 
                                 return GridView.count(
-                                  crossAxisCount:
-                                      4, // Back to 4 columns for balanced proportions
+                                  crossAxisCount: 3,
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 20, vertical: 16),
-                                  mainAxisSpacing:
-                                      14, // Slightly increased from original 12
-                                  crossAxisSpacing:
-                                      14, // Slightly increased from original 16
-                                  childAspectRatio:
-                                      0.95, // Slightly taller cards (was 1.0)
+                                  mainAxisSpacing: 12,
+                                  crossAxisSpacing: 12,
+                                  childAspectRatio: 0.92,
                                   children: finalMoodOptions.map((mood) {
                                     final isSelected =
                                         _selectedMoods.contains(mood.label);
-                                    return GestureDetector(
+                                    return MoodHubStyleMoodTile(
+                                      emoji: mood.emoji,
+                                      pastelBase: mood.color,
+                                      title: _localizedMoodLabel(
+                                          context, mood.label),
+                                      isSelected: isSelected,
+                                      dimmed: _selectedMoods.isNotEmpty &&
+                                          !isSelected,
                                       onTap: () => _toggleMood(mood),
-                                      child: _buildMoodTile(
-                                          context, mood, isSelected),
                                     );
                                   }).toList(),
                                 );
@@ -2137,118 +2154,6 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     return localizedMoodDisplayLabel(l10n, label);
   }
 
-  /// Builds a single mood tile with pastel base, frosted-glass overlay, and soft floating shadow.
-  Widget _buildMoodTile(
-      BuildContext context, MoodOption mood, bool isSelected) {
-    const double tileRadius = 20;
-    // Use mood color as-is (pastel palette); glass overlay adds the sheen
-    final Color pastelBase = mood.color;
-
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(tileRadius),
-        color: pastelBase,
-        border: Border.all(
-          color: isSelected
-              ? mood.color.withOpacity(0.7)
-              : Colors.white.withOpacity(0.6),
-          width: isSelected ? 2.5 : 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 18,
-            offset: const Offset(3, 4),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(1, 2),
-            spreadRadius: 0,
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(tileRadius),
-        child: Stack(
-          children: [
-            // Frosted glass overlay with top-left sheen
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withOpacity(0.35),
-                      Colors.white.withOpacity(0.08),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(mood.emoji, style: const TextStyle(fontSize: 32)),
-                  const SizedBox(height: 5),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Text(
-                      _localizedMoodLabel(context, mood.label),
-                      style: GoogleFonts.poppins(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (isSelected)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  width: 18,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: mood.color.withOpacity(0.8),
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 2,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.check,
-                      size: 12,
-                      color: Color(0xFF2A6049),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // Fallback mood options when database fails (pastel palette with glassy tiles)
   List<MoodOption> _getFallbackMoodOptions() {
     return [
@@ -2380,18 +2285,22 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     final fallbackMoodOptions = _getFallbackMoodOptions();
 
     return GridView.count(
-      crossAxisCount: 4, // Back to 4 columns for balanced proportions
+      crossAxisCount: 3,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      mainAxisSpacing: 14, // Slightly increased from original 12
-      crossAxisSpacing: 14, // Slightly increased from original 16
-      childAspectRatio: 0.95, // Slightly taller cards (was 1.0)
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 0.92,
       children: fallbackMoodOptions.map((mood) {
         final isSelected = _selectedMoods.contains(mood.label);
-        return GestureDetector(
+        return MoodHubStyleMoodTile(
+          emoji: mood.emoji,
+          pastelBase: mood.color,
+          title: _localizedMoodLabel(context, mood.label),
+          isSelected: isSelected,
+          dimmed: _selectedMoods.isNotEmpty && !isSelected,
           onTap: () => _toggleMood(mood),
-          child: _buildMoodTile(context, mood, isSelected),
         );
       }).toList(),
     );
@@ -2445,10 +2354,12 @@ class ChatMessage {
   final String message;
   final bool isUser;
   final DateTime timestamp;
+  final List<Place>? suggestedPlaces;
 
   ChatMessage({
     required this.message,
     required this.isUser,
     required this.timestamp,
+    this.suggestedPlaces,
   });
 }
