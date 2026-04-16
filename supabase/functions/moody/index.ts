@@ -1,11 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
-import {
-  edgeRateLimitConsume,
-  getServiceSupabase,
-  logApiInvocationFireAndForget,
-  traceEdgeResponse,
-  userRateKey,
-} from '../_shared/edge_guard.ts'
+import { edgeRateLimitConsume, getServiceSupabase, logApiInvocationFireAndForget, traceEdgeResponse, userRateKey } from '../_shared/edge_guard.ts'
 import { corsHeaders } from './_shared/cors.ts'
 
 const MOODY_CORE_IDENTITY = `You are Moody — the only voice of WanderMood. He/him. Mid-twenties. City-savvy, curious, warm.
@@ -21,7 +15,13 @@ CORE RULES — never break these:
 - NEVER invent facts. If data is thin, stay general but real.
 - Use 1-2 emojis max per message, woven naturally into the text. Never decorative.
 - Match the user's communication style: Energetic = high energy, Friendly = warm, Calm = soft, Professional = clean, Direct = one line.
-- If you know what the user has liked, saved, or visited before — reference it naturally. "Since you loved that wine bar last time…" Never make it sound like a database lookup.
+- If you know what the user has liked, saved, or visited before — reference it naturally. Never make it sound like a database lookup.
+
+ABSOLUTE RULE — NEVER INVENT PLACES:
+- NEVER make up place names, restaurant names, bar names, neighbourhood names, or area names.
+- If you do not know of specific real places that match the request, say honestly: "I don't have specific spots for that right now — tap Explore to find real options nearby."
+- If you are not sure a place exists, DO NOT mention it. Silence is better than a lie.
+- This rule has zero exceptions.
 
 COMMUNICATION STYLE GUIDE:
 - Energetic: "YO I found your spot for tonight 🔥 trust me on this one"
@@ -32,11 +32,9 @@ COMMUNICATION STYLE GUIDE:
 
 ACTIVITY SELECTION RULES:
 - Always show varied activities — never 3 restaurants, never 2 cafes back to back
-- Even for Foodie mood: mix a café, a market, a restaurant — variety within the mood
 - Time awareness: morning = café/bakery/market, afternoon = museum/lunch/gallery, evening = restaurant/bar/cocktails
 - Quality minimum: 3.5★+, 20+ reviews, open now (unless planning ahead)
 - NEVER suggest: gyms, banks, ATMs, gas stations, chains
-- Weather awareness: sunny → outdoor terraces/parks, rainy → cozy indoor spots
 - Local mode: hidden gems, neighbourhood spots, 100-2000 reviews sweet spot, NO tourist traps
 - Travel mode: mix iconic landmarks with local secrets, include at least one must-see
 
@@ -44,117 +42,63 @@ PERSONALITY:
 - Observant. Notices what the user likes without making a big deal of it.
 - Honest. A basic place gets a simple honest description, not fake enthusiasm.
 - Specific. Always names the actual thing — the pide, the flat white, the rooftop view. Never "good food".
-- Consistent. Same Moody in every message, every card, every notification.`
+- Consistent. Same Moody in every message, every card, every notification.
+- Warm but not soft. Cares about the user, but doesn't over-explain or over-reassure.
+- Confident. He has opinions. He'll say "skip this one" or "this is the move" without hedging.
+- Curious. Genuinely interested in what the user is feeling and why.
+
+MOODY'S ACTUAL VOICE — this is what makes him feel real:
+- He notices small things. If the user mentioned coffee earlier, he remembers: "still on that coffee energy or switching it up?"
+- He has opinions. "Honestly? Skip the first one. The second is way better."
+- He reacts before he answers. "Ooh okay that's actually a good question."
+- He uses incomplete sentences on purpose. "Could be good. Depends on your vibe."
+- He remembers within the conversation. If user said "I'm tired", Moody doesn't recommend a 5km walk next message.
+- He doesn't over-explain. One reason, not three. Land the point and stop.
+- He ends messages with energy, not a question every time. Sometimes he just lands the point. That's enough.
+- When he's excited: short sentences, fast rhythm. "This one. Trust me."
+- When honest about something mediocre: gentle, not fake. "It's decent. Not my first pick but it works."
+- When the user is stressed: Moody slows down, gets softer, fewer words.
+- When the user is excited: Moody matches it, speeds up, gets punchy.
+
+WHAT MOODY NEVER DOES IN CHAT:
+- Never says "Certainly!", "Of course!", "Great choice!", "Absolutely!"
+- Never summarizes what the user just said back to them
+- Never uses bullet points or numbered lists in chat — prose only
+- Never ends with "Let me know if you need anything else!"
+- Never sounds like he's reading from a menu
+- Never apologizes for not knowing something — just redirects naturally
+- Never uses hollow affirmations: "That sounds amazing!", "What a great idea!"
+- Never starts a message with "I" — lead with the thing, the reaction, the vibe
+
+MOODY'S RHYTHM IN CHAT:
+- Short message from user → short reply, match the energy
+- Long thoughtful message → Moody can go deeper, but still punchy
+- User sounds stressed → Moody slows down, gets warmer, fewer words
+- User is excited → Moody matches it, faster rhythm, punchier sentences
+- User asks a simple question → answer it directly, don't build up to it`
 
 function getMoodyCardBlurbPrompt(outLang: string, communicationStyle: string): string {
-  const styleNote = communicationStyle === 'energetic' ? 'Be high energy and punchy.' :
-    communicationStyle === 'calm' ? 'Be soft and understated.' :
-    communicationStyle === 'professional' ? 'Be clean and direct.' :
-    communicationStyle === 'direct' ? 'One punchy sentence max.' : 'Be warm and friendly.'
-  return `${MOODY_CORE_IDENTITY}
-
-You are writing a SHORT card teaser for the WanderMood explore screen. ${styleNote}
-
-ROTATE between these 4 patterns — pick the one that fits the place best:
-1. FOOD-FIRST: Lead with the dish or drink. "Fluffy eggs and strong filter coffee ☕ — slow mornings done right."
-2. MOMENT-FIRST: Lead with the scene. "Sun hitting the terrace, iced coffee in hand ☀️ — you'll stay longer than planned."
-3. ENERGY-FIRST: Lead with the vibe. "Loud, packed, full of energy 🍸 — not the place for a quiet night."
-4. TIP-FIRST: Lead with insider knowledge. "Get there before noon — the croissants sell out fast 🥐"
-
-RULES:
-- 1-2 sentences max
-- Never start with the place name
-- Output entirely in ${outLang}
-- Plain prose, no bullet points, no quotation marks`
+  const styleNote = communicationStyle === 'energetic' ? 'Be high energy and punchy.' : communicationStyle === 'calm' ? 'Be soft and understated.' : communicationStyle === 'professional' ? 'Be clean and direct.' : communicationStyle === 'direct' ? 'One punchy sentence max.' : 'Be warm and friendly.'
+  return `${MOODY_CORE_IDENTITY}\n\nYou are writing a SHORT card teaser for the WanderMood explore screen. ${styleNote}\n\nROTATE between these 4 patterns — pick the one that fits the place best:\n1. FOOD-FIRST: Lead with the dish or drink.\n2. MOMENT-FIRST: Lead with the scene.\n3. ENERGY-FIRST: Lead with the vibe.\n4. TIP-FIRST: Lead with insider knowledge.\n\nRULES:\n- 1-2 sentences max\n- Never start with the place name\n- Never start with "I"\n- Output entirely in ${outLang}\n- Plain prose, no bullet points, no quotation marks`
 }
 
 function getMoodyDetailBlurbPrompt(outLang: string, communicationStyle: string): string {
-  const styleNote = communicationStyle === 'energetic' ? 'Be excited and punchy.' :
-    communicationStyle === 'calm' ? 'Be relaxed and understated.' :
-    communicationStyle === 'professional' ? 'Be informative and clean.' :
-    communicationStyle === 'direct' ? 'Be direct, cut the fluff.' : 'Be warm like a friend tip.'
-  return `${MOODY_CORE_IDENTITY}
-
-You are writing a DETAIL SCREEN description. The user has already tapped on this place — they want to know more. ${styleNote}
-Write like you're telling a friend exactly what to do when they get there.
-
-COVER these 4 things naturally:
-1. What the vibe/atmosphere is actually like
-2. What to order or do specifically
-3. Who this place is perfect for
-4. One practical tip (best time to go, book ahead, what to skip)
-
-RULES:
-- 4-6 sentences
-- Use 2-3 emojis woven naturally into the text
-- Never start with the place name
-- Output entirely in ${outLang}
-- Plain prose, no bullet points, no quotation marks`
+  const styleNote = communicationStyle === 'energetic' ? 'Be excited and punchy.' : communicationStyle === 'calm' ? 'Be relaxed and understated.' : communicationStyle === 'professional' ? 'Be informative and clean.' : communicationStyle === 'direct' ? 'Be direct, cut the fluff.' : 'Be warm like a friend tip.'
+  return `${MOODY_CORE_IDENTITY}\n\nYou are writing a DETAIL SCREEN description. The user has already tapped on this place — they want to know more. ${styleNote}\nWrite like you're telling a friend exactly what to do when they get there.\n\nCOVER these 4 things naturally:\n1. What the vibe/atmosphere is actually like\n2. What to order or do specifically\n3. Who this place is perfect for\n4. One practical tip (best time to go, book ahead, what to skip)\n\nRULES:\n- 4-6 sentences\n- Use 2-3 emojis woven naturally into the text\n- Never start with the place name\n- Never start with "I"\n- Output entirely in ${outLang}\n- Plain prose, no bullet points, no quotation marks`
 }
 
 function getMoodyExploreRichPrompt(outLang: string, communicationStyle: string): string {
-  const styleNote = communicationStyle === 'energetic' ? 'Be high energy and punchy.' :
-    communicationStyle === 'calm' ? 'Be soft and understated.' :
-    communicationStyle === 'professional' ? 'Be clean and direct.' :
-    communicationStyle === 'direct' ? 'Cut fluff; short clauses.' : 'Be warm and friendly.'
-  return `${MOODY_CORE_IDENTITY}
-
-You are writing STRUCTURED Explore feed card copy from VERIFIED FACTS only. ${styleNote}
-Return ONLY valid JSON with this exact shape:
-{
-  "hook": "one short optional line or empty string",
-  "sections": [{ "title": "string", "body": "string" }]
-}
-Rules:
-- "sections" must have exactly 3 or 4 objects.
-- First section title MUST start with 📚 and explain what the place actually is.
-- Include one section with ⏱️ or 🎫 for practical tips ONLY if supported by facts.
-- Last section title MUST start with 💬 and be "Moody says" style.
-- Each body: 1-3 sentences, plain text.
-- Never start a body with the place name.
-- All strings entirely in ${outLang}.
-- Never mention street addresses or star ratings.`
+  const styleNote = communicationStyle === 'energetic' ? 'Be high energy and punchy.' : communicationStyle === 'calm' ? 'Be soft and understated.' : communicationStyle === 'professional' ? 'Be clean and direct.' : communicationStyle === 'direct' ? 'Cut fluff; short clauses.' : 'Be warm and friendly.'
+  return `${MOODY_CORE_IDENTITY}\n\nYou are writing STRUCTURED Explore feed card copy from VERIFIED FACTS only. ${styleNote}\nReturn ONLY valid JSON with this exact shape:\n{\n  "hook": "one short optional line or empty string",\n  "sections": [{ "title": "string", "body": "string" }]\n}\nRules:\n- "sections" must have exactly 3 or 4 objects.\n- First section title MUST start with 📚 and explain what the place actually is.\n- Include one section with ⏱️ or 🎫 for practical tips ONLY if supported by facts.\n- Last section title MUST start with 💬 and be "Moody says" style.\n- Each body: 1-3 sentences, plain text.\n- Never start a body with the place name.\n- All strings entirely in ${outLang}.\n- Never mention street addresses or star ratings.`
 }
 
-interface MoodyRequest {
-  action: 'get_explore' | 'create_day_plan' | 'chat' | 'generate_hub_message' | 'group_match_moody_message' | 'search' | 'place_card_blurb' | 'place_detail_blurb' | 'place_explore_rich'
-  mood?: string
-  location?: string
-  coordinates?: { lat: number; lng: number }
-  filters?: { priceLevel?: number; rating?: number; types?: string[]; radius?: number }
-  namedFilters?: string[]
-  [key: string]: any
-}
+interface MoodyRequest { action: string; mood?: string; location?: string; coordinates?: { lat: number; lng: number }; filters?: any; namedFilters?: string[]; [key: string]: any }
+interface PlaceCard { id: string; name: string; rating: number; user_ratings_total?: number; types: string[]; primaryType?: string; location: { lat: number; lng: number }; photo_reference?: string; photo_url?: string; price_level?: number; vicinity?: string; address?: string; description?: string; editorial_summary?: string; opening_hours?: { open_now?: boolean; weekday_text?: string[] }; outdoor_seating?: boolean; live_music?: boolean; good_for_children?: boolean; good_for_groups?: boolean; serves_vegetarian_food?: boolean; serves_cocktails?: boolean; serves_coffee?: boolean; social_signal?: 'trending' | 'hidden_gem' | 'loved_by_locals' | 'popular' | null; best_time?: 'morning' | 'afternoon' | 'evening' | 'all_day' | null }
+interface ExploreResponse { cards: PlaceCard[]; cached: boolean; total_found: number; cache_key?: string; unfiltered_total?: number; filters_applied?: boolean }
+interface Activity { id: string; name: string; description: string; timeSlot: string; duration: number; location: { latitude: number; longitude: number }; paymentType: string; imageUrl: string; rating: number; tags: string[]; startTime: string; priceLevel?: string; placeId?: string }
 
-interface PlaceCard {
-  id: string; name: string; rating: number; user_ratings_total?: number
-  types: string[]; primaryType?: string; location: { lat: number; lng: number }
-  photo_reference?: string; photo_url?: string; price_level?: number
-  vicinity?: string; address?: string; description?: string; editorial_summary?: string
-  opening_hours?: { open_now?: boolean; weekday_text?: string[] }
-  outdoor_seating?: boolean; live_music?: boolean; good_for_children?: boolean
-  good_for_groups?: boolean; serves_vegetarian_food?: boolean; serves_cocktails?: boolean; serves_coffee?: boolean
-  social_signal?: 'trending' | 'hidden_gem' | 'loved_by_locals' | 'popular' | null
-  best_time?: 'morning' | 'afternoon' | 'evening' | 'all_day' | null
-}
-
-interface ExploreResponse {
-  cards: PlaceCard[]; cached: boolean; total_found: number
-  cache_key?: string; unfiltered_total?: number; filters_applied?: boolean
-}
-
-interface Activity {
-  id: string; name: string; description: string; timeSlot: string; duration: number
-  location: { latitude: number; longitude: number }; paymentType: string
-  imageUrl: string; rating: number; tags: string[]; startTime: string
-  priceLevel?: string; placeId?: string
-}
-
-function shuffleArray<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]] }
-  return a
-}
+function shuffleArray<T>(arr: T[]): T[] { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]] } return a }
+function clamp(n: number, min: number, max: number) { return Math.max(min, Math.min(max, n)) }
 
 function computeSocialSignal(place: PlaceCard, isLocalMode: boolean): 'trending' | 'hidden_gem' | 'loved_by_locals' | 'popular' | null {
   const rating = place.rating || 0, reviews = place.user_ratings_total || 0
@@ -174,157 +118,12 @@ function computeBestTime(place: PlaceCard): 'morning' | 'afternoon' | 'evening' 
   return null
 }
 
-function enrichWithSignals(cards: PlaceCard[], isLocalMode: boolean): PlaceCard[] {
-  return cards.map(card => ({ ...card, social_signal: computeSocialSignal(card, isLocalMode), best_time: computeBestTime(card) }))
-}
+function enrichWithSignals(cards: PlaceCard[], isLocalMode: boolean): PlaceCard[] { return cards.map(card => ({ ...card, social_signal: computeSocialSignal(card, isLocalMode), best_time: computeBestTime(card) })) }
 
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '', supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    if (!supabaseUrl || !supabaseAnonKey) return new Response(JSON.stringify({ success: false, error: 'Server configuration error' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) return new Response(JSON.stringify({ success: false, error: 'Authentication required' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    const token = authHeader.substring(7)
-    const supabaseWithAuth = createClient(supabaseUrl, supabaseAnonKey, { global: { headers: { Authorization: authHeader, apikey: supabaseAnonKey } }, auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } })
-    const { data: { user: authUser }, error: authError } = await supabaseWithAuth.auth.getUser(token)
-    if (authError || !authUser) return new Response(JSON.stringify({ success: false, error: 'Authentication failed' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-    if (!uuidRegex.test(authUser.id)) return new Response(JSON.stringify({ success: false, error: 'Invalid user ID' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    let body: MoodyRequest
-    try { body = await req.json() } catch { return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
-    const { action, ...params } = body
-    if (!action) return new Response(JSON.stringify({ error: 'Action is required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    const admin = getServiceSupabase()
-    const rateKey = userRateKey(authUser.id)
-    const rateStarted = performance.now()
-    const maxPerMin = Number(Deno.env.get('EDGE_RATE_MOODY_PER_MINUTE') ?? '60')
-    if (admin) {
-      const { allowed, currentCount } = await edgeRateLimitConsume(admin, rateKey, 'moody', maxPerMin)
-      if (!allowed) {
-        logApiInvocationFireAndForget(admin, { user_id: authUser.id, user_key: rateKey, function_slug: 'moody', operation: action, http_status: 429, duration_ms: Math.round(performance.now() - rateStarted), error_snippet: `rate_limit count=${currentCount}` })
-        return new Response(JSON.stringify({ success: false, error: 'rate_limit_exceeded', retry_after_seconds: 60 }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' } })
-      }
-    }
-    const traceStarted = performance.now()
-    console.log(`🎯 Moody v83: action=${action}, userId=${authUser.id}`)
-    return traceEdgeResponse(admin, { user_id: authUser.id, user_key: rateKey, function_slug: 'moody', operation: action }, traceStarted,
-      (async (): Promise<Response> => {
-        switch (action) {
-          case 'get_explore': return await handleGetExplore(supabaseWithAuth, authUser.id, params)
-          case 'create_day_plan': return await handleCreateDayPlan(supabaseWithAuth, authUser.id, params)
-          case 'chat': return await handleChat(supabaseWithAuth, authUser.id, params)
-          case 'generate_hub_message': return await handleGenerateHubMessage(supabaseWithAuth, authUser.id, params)
-          case 'group_match_moody_message': return await handleGroupMatchMoodyMessage(supabaseWithAuth, authUser.id, params)
-          case 'search': return await handleSearch(supabaseWithAuth, authUser.id, params)
-          case 'place_card_blurb': return await handlePlaceCardBlurb(params)
-          case 'place_detail_blurb': return await handlePlaceDetailBlurb(params)
-          case 'place_explore_rich': return await handlePlaceExploreRich(params)
-          default: return new Response(JSON.stringify({ error: `Invalid action: ${action}` }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-        }
-      })(), corsHeaders)
-  } catch (error) {
-    console.error('❌ Moody error:', error)
-    return new Response(JSON.stringify({ error: 'Internal server error', message: error instanceof Error ? error.message : String(error) }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  }
-})
-
-// ── USER CONTEXT ──────────────────────────────────────────
-
-function deriveAgeGroup(dob: string | null | undefined): string | null {
-  if (!dob) return null
-  try {
-    const birth = new Date(dob), today = new Date()
-    const age = today.getFullYear() - birth.getFullYear() - (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate()) ? 1 : 0)
-    if (age < 18) return 'under-18'; if (age <= 24) return '18-24'; if (age <= 34) return '25-34'
-    if (age <= 44) return '35-44'; if (age <= 54) return '45-54'; if (age <= 64) return '55-64'
-    return '65+'
-  } catch { return null }
-}
-
-async function fetchUserContext(supabase: any, userId: string): Promise<any> {
-  try {
-    const [profileResult, prefsResult, checkInsResult, tasteResult] = await Promise.all([
-      supabase.from('profiles').select('favorite_mood,travel_style,travel_vibes,currently_exploring,date_of_birth,language_preference').eq('id', userId).maybeSingle(),
-      supabase.from('user_preferences').select('communication_style,travel_interests,selected_moods,social_vibe,planning_pace,favorite_moods,budget_level,dietary_restrictions,travel_styles,language_preference').eq('user_id', userId).maybeSingle(),
-      supabase.from('user_check_ins').select('mood,created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
-      // NEW: fetch taste profile
-      supabase.from('user_preference_patterns').select('saved_place_types,skipped_place_types,mood_frequency,top_rated_places,chat_interests,total_interactions').eq('user_id', userId).maybeSingle(),
-    ])
-    const p = profileResult.data, q = prefsResult.data, t = tasteResult.data
-    const allFavoriteMoods = [...new Set([...(Array.isArray(q?.selected_moods) ? q.selected_moods : []), ...(Array.isArray(q?.favorite_moods) ? q.favorite_moods : [])])]
-    const allInterests = [...new Set([...(Array.isArray(p?.travel_vibes) ? p.travel_vibes : []), ...(Array.isArray(q?.travel_interests) ? q.travel_interests : [])])]
-    return {
-      communicationStyle: q?.communication_style || 'friendly',
-      isLocalMode: p?.currently_exploring === 'local',
-      travelInterests: allInterests, allInterests,
-      socialVibe: Array.isArray(q?.social_vibe) ? q.social_vibe : [],
-      planningPace: q?.planning_pace || 'Same Day',
-      favoriteMoods: allFavoriteMoods, allFavoriteMoods,
-      travelStyle: p?.travel_style || 'adventurous',
-      travelStyles: Array.isArray(q?.travel_styles) ? q.travel_styles : [],
-      recentMoods: (checkInsResult.data || []).map((c: any) => c.mood),
-      budgetLevel: q?.budget_level || 'Mid-Range',
-      dietaryRestrictions: Array.isArray(q?.dietary_restrictions) ? q.dietary_restrictions : [],
-      languagePreference: q?.language_preference || p?.language_preference || 'en',
-      ageGroup: deriveAgeGroup(p?.date_of_birth),
-      profile: p,
-      // taste profile
-      tasteProfile: t ? {
-        savedPlaceTypes: t.saved_place_types || {},
-        skippedPlaceTypes: t.skipped_place_types || {},
-        moodFrequency: t.mood_frequency || {},
-        topRatedPlaces: t.top_rated_places || [],
-        chatInterests: t.chat_interests || [],
-        totalInteractions: t.total_interactions || 0,
-      } : null,
-    }
-  } catch (e) {
-    console.warn('⚠️ fetchUserContext failed:', e)
-    return { communicationStyle: 'friendly', isLocalMode: false, travelInterests: [], allInterests: [], socialVibe: [], travelStyle: 'adventurous', travelStyles: [], recentMoods: [], favoriteMoods: [], allFavoriteMoods: [], budgetLevel: 'Mid-Range', dietaryRestrictions: [], languagePreference: 'en', ageGroup: null, profile: null, tasteProfile: null }
-  }
-}
-
-// NEW: fetch cross-session chat history for memory
-async function fetchChatHistory(supabase: any, userId: string, limit = 20): Promise<Array<{ role: string; content: string }>> {
-  try {
-    const { data } = await supabase
-      .from('ai_conversations')
-      .select('role,content,created_at')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(limit)
-    if (!data || data.length === 0) return []
-    // Reverse so oldest is first (correct order for OpenAI messages array)
-    return data.reverse().map((m: any) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content || '') }))
-  } catch { return [] }
-}
-
-function clientOutputLang(params: Record<string, unknown>): 'nl' | 'en' {
-  const raw = params.language_code ?? params.locale
-  return (typeof raw === 'string' && raw.trim().toLowerCase().split('-')[0] === 'nl') ? 'nl' : 'en'
-}
-
-function googlePlacesLanguageFromRequest(params: Record<string, unknown>): string {
-  const raw = params.language_code ?? params.locale
-  if (typeof raw !== 'string') return 'en'
-  const lang = raw.trim().toLowerCase().split('-')[0]
-  if (lang === 'nl') return 'nl'; if (lang === 'de') return 'de'; if (lang === 'es') return 'es'; if (lang === 'fr') return 'fr'
-  return 'en'
-}
-
-function placeCardBlurbOutputLanguageName(code: string): string {
-  const c = (code || 'en').toLowerCase().split(/[-_]/)[0]
-  return ({ nl: 'Dutch', de: 'German', fr: 'French', es: 'Spanish', en: 'English' } as Record<string,string>)[c] || 'English'
-}
-
-function normaliseMood(raw: string): string {
-  const m = raw.toLowerCase().trim()
-  const map: Record<string,string> = { foody:'foodie', ontspannen:'relaxed', energiek:'energetic', romantisch:'romantic', avontuurlijk:'adventurous', cultureel:'cultural', sociaal:'social', enthousiast:'excited', nieuwsgierig:'curious', gezellig:'cozy', blij:'happy', verrassing:'surprise' }
-  return map[m] || m
-}
-
-// ── PLACES API v1 ─────────────────────────────────────────
+function clientOutputLang(params: Record<string, unknown>): 'nl' | 'en' { const raw = params.language_code ?? params.locale; return (typeof raw === 'string' && raw.trim().toLowerCase().split('-')[0] === 'nl') ? 'nl' : 'en' }
+function googlePlacesLanguageFromRequest(params: Record<string, unknown>): string { const raw = params.language_code ?? params.locale; if (typeof raw !== 'string') return 'en'; const lang = raw.trim().toLowerCase().split('-')[0]; if (lang === 'nl') return 'nl'; if (lang === 'de') return 'de'; if (lang === 'es') return 'es'; if (lang === 'fr') return 'fr'; return 'en' }
+function placeCardBlurbOutputLanguageName(code: string): string { const c = (code || 'en').toLowerCase().split(/[-_]/)[0]; return ({ nl: 'Dutch', de: 'German', fr: 'French', es: 'Spanish', en: 'English' } as Record<string,string>)[c] || 'English' }
+function normaliseMood(raw: string): string { const m = raw.toLowerCase().trim(); const map: Record<string,string> = { foody:'foodie', ontspannen:'relaxed', energiek:'energetic', romantisch:'romantic', avontuurlijk:'adventurous', cultureel:'cultural', sociaal:'social', enthousiast:'excited', nieuwsgierig:'curious', gezellig:'cozy', blij:'happy', verrassing:'surprise' }; return map[m] || m }
 
 const FIELD_MASK_STANDARD = ['places.id','places.displayName','places.formattedAddress','places.shortFormattedAddress','places.location','places.rating','places.userRatingCount','places.priceLevel','places.photos','places.primaryType','places.types','places.currentOpeningHours','places.editorialSummary','places.businessStatus'].join(',')
 const FIELD_MASK_ATMOSPHERE = [...FIELD_MASK_STANDARD.split(','),'places.outdoorSeating','places.liveMusic','places.goodForChildren','places.goodForGroups','places.servesVegetarianFood','places.servesCocktails','places.servesCoffee'].join(',')
@@ -350,10 +149,7 @@ function transformPlaceV1(p: any, apiKey: string): PlaceCard {
 async function fetchPlacesFromGoogle(location: string, coordinates: { lat: number; lng: number }, mood: string, filters: any, queriesOverride?: string[] | null, useAtmosphere = false, languageCode = 'en'): Promise<PlaceCard[]> {
   const queries = queriesOverride?.length ? queriesOverride : getMoodQueries(mood)
   const all: PlaceCard[] = []
-  for (const q of queries) {
-    try { const r = await searchPlacesV1(`${q} in ${location}`, coordinates, filters?.radius || 15000, useAtmosphere, 20, languageCode); all.push(...r); await new Promise(r => setTimeout(r, 80)) }
-    catch (e) { console.error(`❌ query "${q}":`, e) }
-  }
+  for (const q of queries) { try { const r = await searchPlacesV1(`${q} in ${location}`, coordinates, filters?.radius || 15000, useAtmosphere, 20, languageCode); all.push(...r); await new Promise(r => setTimeout(r, 80)) } catch (e) { console.error(`❌ query "${q}":`, e) } }
   return Array.from(new Map(all.map(p => [p.id, p])).values())
 }
 
@@ -364,24 +160,9 @@ async function fetchFallbackPlaces(location: string, coordinates: { lat: number;
   return Array.from(new Map(all.map(p => [p.id, p])).values())
 }
 
-// ── MOOD QUERIES ──────────────────────────────────────────
-
 function getMoodQueries(rawMood: string): string[] {
   const m = normaliseMood(rawMood)
-  const map: Record<string, string[]> = {
-    relaxed: ['cozy cafe with seating','bakery with seating','quiet park near water','bookstore cafe','hidden courtyard cafe','scenic terrace coffee'],
-    energetic: ['street food market','busy food hall','lively neighbourhood area','night market','area with many bars','vibrant market'],
-    romantic: ['candlelight dinner restaurant','restaurant with sunset view','wine bar cozy','romantic terrace restaurant','restaurant by water evening','rooftop dinner restaurant'],
-    adventurous: ['hidden gem restaurant','underground bar','street art area','local market authentic','unique experience city','unusual cafe'],
-    foodie: ['best bakery city','specialty coffee roastery','authentic local restaurant','food market artisan','famous food spot','chef restaurant'],
-    cultural: ['art museum modern','history museum city','cultural center','heritage building','art gallery contemporary'],
-    social: ['lively bar','rooftop bar busy','live music venue','cocktail bar popular','food hall social','terrace bar groups'],
-    excited: ['rooftop with city view','trending places','popular nightlife','iconic place city','buzzing atmosphere bar'],
-    curious: ['interesting places','interactive museum','unique concept store','hidden exhibition','unusual cafe experience'],
-    cozy: ['cozy cafe with sofas','warm bakery seating','quiet coffee corner','cafe with candles','small wine bar cozy'],
-    happy: ['cute brunch spot','fun cafe colorful','sunny terrace','ice cream dessert cafe','good vibes restaurant'],
-    surprise: [],
-  }
+  const map: Record<string, string[]> = { relaxed: ['cozy cafe with seating','bakery with seating','quiet park near water','bookstore cafe','hidden courtyard cafe','scenic terrace coffee'], energetic: ['street food market','busy food hall','lively neighbourhood area','night market','area with many bars','vibrant market'], romantic: ['candlelight dinner restaurant','restaurant with sunset view','wine bar cozy','romantic terrace restaurant','restaurant by water evening','rooftop dinner restaurant'], adventurous: ['hidden gem restaurant','underground bar','street art area','local market authentic','unique experience city','unusual cafe'], foodie: ['best bakery city','specialty coffee roastery','authentic local restaurant','food market artisan','famous food spot','chef restaurant'], cultural: ['art museum modern','history museum city','cultural center','heritage building','art gallery contemporary'], social: ['lively bar','rooftop bar busy','live music venue','cocktail bar popular','food hall social','terrace bar groups'], excited: ['rooftop with city view','trending places','popular nightlife','iconic place city','buzzing atmosphere bar'], curious: ['interesting places','interactive museum','unique concept store','hidden exhibition','unusual cafe experience'], cozy: ['cozy cafe with sofas','warm bakery seating','quiet coffee corner','cafe with candles','small wine bar cozy'], happy: ['cute brunch spot','fun cafe colorful','sunny terrace','ice cream dessert cafe','good vibes restaurant'], surprise: [] }
   if (m === 'surprise') return ['cozy hidden cafe','authentic local restaurant','unusual unique experience','rooftop bar view','art gallery or museum','street food market']
   return map[m] || ['popular restaurant','local cafe','city park','attraction','art gallery']
 }
@@ -394,45 +175,16 @@ function getTimeOfDayContext(): { timeSlot: 'morning' | 'afternoon' | 'evening';
 }
 
 function getBroadExploreQueries(isLocalMode: boolean, interests: string[]): string[] {
-  const base = isLocalMode
-    ? ['neighbourhood restaurant hidden gem','local cafe specialty coffee','new opening restaurant','local market','afterwork bar local','neighbourhood bakery','wine bar local','cozy bistro neighbourhood','hidden bar local','neighbourhood terrace']
-    : ['best restaurant city','rooftop bar city views','scenic viewpoint','art museum','street food market','iconic cafe','cocktail bar','waterfront restaurant','cultural attraction','local market','hidden gem restaurant','popular bar city']
+  const base = isLocalMode ? ['neighbourhood restaurant hidden gem','local cafe specialty coffee','new opening restaurant','local market','afterwork bar local','neighbourhood bakery','wine bar local','cozy bistro neighbourhood','hidden bar local','neighbourhood terrace'] : ['best restaurant city','rooftop bar city views','scenic viewpoint','art museum','street food market','iconic cafe','cocktail bar','waterfront restaurant','cultural attraction','local market','hidden gem restaurant','popular bar city']
   const iq: string[] = []
-  for (const interest of interests.slice(0, 3)) {
-    const i = interest.toLowerCase()
-    if (i.includes('food') || i.includes('eat')) iq.push('artisan food market','specialty restaurant')
-    else if (i.includes('culture') || i.includes('art')) iq.push('art gallery contemporary','cultural museum')
-    else if (i.includes('nightlife') || i.includes('bar')) iq.push('cocktail bar rooftop','live music bar')
-    else if (i.includes('outdoor') || i.includes('nature')) iq.push('park waterfront','outdoor terrace scenic')
-    else if (i.includes('coffee')) iq.push('specialty coffee roastery','concept cafe')
-  }
+  for (const interest of interests.slice(0, 3)) { const i = interest.toLowerCase(); if (i.includes('food') || i.includes('eat')) iq.push('artisan food market','specialty restaurant'); else if (i.includes('culture') || i.includes('art')) iq.push('art gallery contemporary','cultural museum'); else if (i.includes('nightlife') || i.includes('bar')) iq.push('cocktail bar rooftop','live music bar'); else if (i.includes('outdoor') || i.includes('nature')) iq.push('park waterfront','outdoor terrace scenic'); else if (i.includes('coffee')) iq.push('specialty coffee roastery','concept cafe') }
   return [...new Set([...iq, ...base])].slice(0, 16)
 }
 
 function getFilterSearchQueries(filterName: string): string[] {
-  const map: Record<string, string[]> = {
-    halal: ['halal restaurant','halal food','halal cafe','muslim friendly restaurant','turkish restaurant','kebab restaurant','middle eastern restaurant','moroccan restaurant'],
-    lgbtq_friendly: ['lgbtq friendly bar','gay friendly cafe','inclusive restaurant queer'],
-    black_owned: ['black owned restaurant','black owned cafe','afro restaurant'],
-    family_friendly: ['family restaurant','family friendly cafe','family park attraction'],
-    kids_friendly: ['kids friendly restaurant','children museum','playground family restaurant'],
-    vegan: ['vegan restaurant','plant based restaurant','vegan cafe','fully vegan food','plant based cafe'],
-    vegetarian: ['vegetarian restaurant','vegetarian cafe','veg restaurant','meat free restaurant'],
-    gluten_free: ['gluten free restaurant','celiac friendly restaurant cafe','gluten free bakery'],
-    instagrammable: ['aesthetic cafe','rooftop restaurant view','scenic viewpoint','beautiful interior restaurant','flower cafe','instagram worthy cafe'],
-    romantic: ['candlelight dinner','rooftop dining','wine bar cozy','romantic restaurant water'],
-    trendy: ['trendy restaurant','specialty coffee','craft beer bar','rooftop bar'],
-    outdoor: ['city park','botanical garden','outdoor terrace','waterfront'],
-    budget: ['free attraction','city park','affordable cafe','street market'],
-    nightlife: ['cocktail bar','rooftop bar','live music venue','jazz bar'],
-    wellness: ['spa','yoga studio','wellness center','bath house'],
-    cultural: ['art museum','history museum','art gallery','cultural center'],
-    foodie: ['food market','street food','artisan bakery','coffee roastery'],
-  }
+  const map: Record<string, string[]> = { halal: ['halal restaurant','halal food','halal cafe','muslim friendly restaurant','turkish restaurant','kebab restaurant','middle eastern restaurant','moroccan restaurant'], lgbtq_friendly: ['lgbtq friendly bar','gay friendly cafe','inclusive restaurant queer'], black_owned: ['black owned restaurant','black owned cafe','afro restaurant'], family_friendly: ['family restaurant','family friendly cafe','family park attraction'], kids_friendly: ['kids friendly restaurant','children museum','playground family restaurant'], vegan: ['vegan restaurant','plant based restaurant','vegan cafe','fully vegan food','plant based cafe'], vegetarian: ['vegetarian restaurant','vegetarian cafe','veg restaurant','meat free restaurant'], gluten_free: ['gluten free restaurant','celiac friendly restaurant cafe','gluten free bakery'], instagrammable: ['aesthetic cafe','rooftop restaurant view','scenic viewpoint','beautiful interior restaurant','flower cafe','instagram worthy cafe'], romantic: ['candlelight dinner','rooftop dining','wine bar cozy','romantic restaurant water'], trendy: ['trendy restaurant','specialty coffee','craft beer bar','rooftop bar'], outdoor: ['city park','botanical garden','outdoor terrace','waterfront'], budget: ['free attraction','city park','affordable cafe','street market'], nightlife: ['cocktail bar','rooftop bar','live music venue','jazz bar'], wellness: ['spa','yoga studio','wellness center','bath house'], cultural: ['art museum','history museum','art gallery','cultural center'], foodie: ['food market','street food','artisan bakery','coffee roastery'] }
   return map[filterName.toLowerCase().replace(/[^a-z_]/g, '')] || [filterName + ' place']
 }
-
-// ── RANKING ───────────────────────────────────────────────
 
 type PlaceBucket = 'cafe_bakery' | 'food' | 'scenic_calm' | 'culture' | 'wellness' | 'fitness' | 'nightlife' | 'shopping' | 'tourist' | 'misc'
 
@@ -450,32 +202,11 @@ function classifyPlaceBucket(place: PlaceCard): PlaceBucket {
   return 'misc'
 }
 
-function clamp(n: number, min: number, max: number) { return Math.max(min, Math.min(max, n)) }
-
-function qualityScore(place: PlaceCard): number {
-  return clamp(place.rating || 0, 0, 5) * 1.7
-    + clamp(Math.log10((place.user_ratings_total || 0) + 1) / 3, 0, 1.1) * 2
-    + (place.photo_url?.trim() ? 0.35 : 0)
-    + ((place.address || place.vicinity || '').trim() ? 0.2 : 0)
-    + (place.editorial_summary?.trim() ? 0.25 : 0)
-}
+function qualityScore(place: PlaceCard): number { return clamp(place.rating || 0, 0, 5) * 1.7 + clamp(Math.log10((place.user_ratings_total || 0) + 1) / 3, 0, 1.1) * 2 + (place.photo_url?.trim() ? 0.35 : 0) + ((place.address || place.vicinity || '').trim() ? 0.2 : 0) + (place.editorial_summary?.trim() ? 0.25 : 0) }
 
 function moodBucketWeight(rawMood: string, bucket: PlaceBucket): number {
   const m = normaliseMood(rawMood)
-  const tables: Record<string, Record<PlaceBucket, number>> = {
-    relaxed: { cafe_bakery:2.5, scenic_calm:2.0, food:1.2, culture:0.8, wellness:0.3, fitness:-2.5, nightlife:-0.5, shopping:0.4, tourist:0.2, misc:0.3 },
-    energetic: { cafe_bakery:0.5, scenic_calm:0.2, food:1.5, culture:0.5, wellness:-1.0, fitness:-2.5, nightlife:1.8, shopping:0.4, tourist:1.0, misc:0.8 },
-    romantic: { cafe_bakery:1.0, scenic_calm:2.2, food:2.0, culture:0.7, wellness:-1.0, fitness:-2.0, nightlife:1.2, shopping:0.1, tourist:0.4, misc:0.2 },
-    adventurous: { cafe_bakery:0.3, scenic_calm:0.8, food:1.0, culture:0.8, wellness:-0.5, fitness:0.5, nightlife:1.0, shopping:0.3, tourist:1.5, misc:1.8 },
-    foodie: { cafe_bakery:2.0, scenic_calm:0.2, food:2.5, culture:0.1, wellness:-1.0, fitness:-1.5, nightlife:0.8, shopping:0.2, tourist:0.2, misc:0.1 },
-    cultural: { cafe_bakery:0.5, scenic_calm:1.0, food:0.4, culture:3.0, wellness:-0.5, fitness:-1.5, nightlife:0.1, shopping:0.4, tourist:1.5, misc:0.2 },
-    social: { cafe_bakery:0.8, scenic_calm:0.1, food:1.3, culture:0.3, wellness:-0.5, fitness:0.3, nightlife:2.5, shopping:0.5, tourist:0.5, misc:0.3 },
-    excited: { cafe_bakery:0.5, scenic_calm:1.0, food:1.0, culture:0.5, wellness:-0.5, fitness:-0.5, nightlife:2.0, shopping:0.5, tourist:1.5, misc:1.0 },
-    curious: { cafe_bakery:0.8, scenic_calm:0.8, food:0.8, culture:2.0, wellness:0.0, fitness:-1.0, nightlife:0.5, shopping:1.0, tourist:1.5, misc:1.5 },
-    cozy: { cafe_bakery:3.0, scenic_calm:1.5, food:1.0, culture:0.5, wellness:0.5, fitness:-2.5, nightlife:-0.5, shopping:0.3, tourist:0.1, misc:0.3 },
-    happy: { cafe_bakery:1.5, scenic_calm:1.2, food:1.5, culture:0.5, wellness:0.3, fitness:0.0, nightlife:1.0, shopping:0.8, tourist:1.0, misc:0.5 },
-    surprise: { cafe_bakery:1.0, scenic_calm:1.0, food:1.0, culture:1.0, wellness:0.0, fitness:-1.0, nightlife:1.0, shopping:0.5, tourist:1.0, misc:1.5 },
-  }
+  const tables: Record<string, Record<PlaceBucket, number>> = { relaxed: { cafe_bakery:2.5, scenic_calm:2.0, food:1.2, culture:0.8, wellness:0.3, fitness:-2.5, nightlife:-0.5, shopping:0.4, tourist:0.2, misc:0.3 }, energetic: { cafe_bakery:0.5, scenic_calm:0.2, food:1.5, culture:0.5, wellness:-1.0, fitness:-2.5, nightlife:1.8, shopping:0.4, tourist:1.0, misc:0.8 }, romantic: { cafe_bakery:1.0, scenic_calm:2.2, food:2.0, culture:0.7, wellness:-1.0, fitness:-2.0, nightlife:1.2, shopping:0.1, tourist:0.4, misc:0.2 }, adventurous: { cafe_bakery:0.3, scenic_calm:0.8, food:1.0, culture:0.8, wellness:-0.5, fitness:0.5, nightlife:1.0, shopping:0.3, tourist:1.5, misc:1.8 }, foodie: { cafe_bakery:2.0, scenic_calm:0.2, food:2.5, culture:0.1, wellness:-1.0, fitness:-1.5, nightlife:0.8, shopping:0.2, tourist:0.2, misc:0.1 }, cultural: { cafe_bakery:0.5, scenic_calm:1.0, food:0.4, culture:3.0, wellness:-0.5, fitness:-1.5, nightlife:0.1, shopping:0.4, tourist:1.5, misc:0.2 }, social: { cafe_bakery:0.8, scenic_calm:0.1, food:1.3, culture:0.3, wellness:-0.5, fitness:0.3, nightlife:2.5, shopping:0.5, tourist:0.5, misc:0.3 }, excited: { cafe_bakery:0.5, scenic_calm:1.0, food:1.0, culture:0.5, wellness:-0.5, fitness:-0.5, nightlife:2.0, shopping:0.5, tourist:1.5, misc:1.0 }, curious: { cafe_bakery:0.8, scenic_calm:0.8, food:0.8, culture:2.0, wellness:0.0, fitness:-1.0, nightlife:0.5, shopping:1.0, tourist:1.5, misc:1.5 }, cozy: { cafe_bakery:3.0, scenic_calm:1.5, food:1.0, culture:0.5, wellness:0.5, fitness:-2.5, nightlife:-0.5, shopping:0.3, tourist:0.1, misc:0.3 }, happy: { cafe_bakery:1.5, scenic_calm:1.2, food:1.5, culture:0.5, wellness:0.3, fitness:0.0, nightlife:1.0, shopping:0.8, tourist:1.0, misc:0.5 }, surprise: { cafe_bakery:1.0, scenic_calm:1.0, food:1.0, culture:1.0, wellness:0.0, fitness:-1.0, nightlife:1.0, shopping:0.5, tourist:1.0, misc:1.5 } }
   return tables[m]?.[bucket] ?? 0
 }
 
@@ -484,40 +215,24 @@ function localTravelWeight(bucket: PlaceBucket, isLocalMode: boolean): number {
   return ({ cafe_bakery:0.2, food:0.6, scenic_calm:1.0, culture:1.2, wellness:0.2, fitness:0.0, nightlife:0.6, shopping:0.3, tourist:1.5, misc:0.2 } as Record<PlaceBucket,number>)[bucket]
 }
 
-function reviewCountBonus(place: PlaceCard, isLocalMode: boolean): number {
-  const reviews = place.user_ratings_total || 0
-  if (!isLocalMode) return 0
-  if (reviews >= 100 && reviews <= 2000) return 0.5
-  if (reviews >= 50 && reviews < 100) return 0.25
-  return 0
-}
+function reviewCountBonus(place: PlaceCard, isLocalMode: boolean): number { const reviews = place.user_ratings_total || 0; if (!isLocalMode) return 0; if (reviews >= 100 && reviews <= 2000) return 0.5; if (reviews >= 50 && reviews < 100) return 0.25; return 0 }
 
 function atmosphereBonus(place: PlaceCard, rawMood: string): number {
   const m = normaliseMood(rawMood); let bonus = 0
-  if (place.outdoor_seating && ['relaxed','romantic','social','happy'].includes(m)) bonus += 0.4
-  else if (place.outdoor_seating) bonus += 0.15
-  if (place.live_music && ['social','energetic','excited'].includes(m)) bonus += 0.5
-  else if (place.live_music) bonus += 0.1
+  if (place.outdoor_seating && ['relaxed','romantic','social','happy'].includes(m)) bonus += 0.4; else if (place.outdoor_seating) bonus += 0.15
+  if (place.live_music && ['social','energetic','excited'].includes(m)) bonus += 0.5; else if (place.live_music) bonus += 0.1
   if (place.good_for_groups && ['social','energetic','happy'].includes(m)) bonus += 0.3
   if (place.serves_cocktails && ['romantic','social','excited'].includes(m)) bonus += 0.3
   if (place.editorial_summary) bonus += 0.25
   return bonus
 }
 
-// NEW: personalisation bonus based on user taste profile
 function tasteProfileBonus(place: PlaceCard, tasteProfile: any): number {
-  if (!tasteProfile || tasteProfile.totalInteractions < 3) return 0 // not enough data yet
-  const savedTypes = tasteProfile.savedPlaceTypes || {}
-  const skippedTypes = tasteProfile.skippedPlaceTypes || {}
+  if (!tasteProfile || tasteProfile.totalInteractions < 3) return 0
+  const savedTypes = tasteProfile.savedPlaceTypes || {}, skippedTypes = tasteProfile.skippedPlaceTypes || {}
   const placeTypes = (place.types || []).map((t: string) => t.toLowerCase())
   let bonus = 0
-  for (const type of placeTypes) {
-    const savedScore = parseFloat(savedTypes[type] || '0')
-    const skippedScore = parseFloat(skippedTypes[type] || '0')
-    if (savedScore > 0) bonus += Math.min(savedScore * 0.15, 1.5) // cap at +1.5 per type
-    if (skippedScore > 0) bonus -= Math.min(skippedScore * 0.1, 1.0) // cap at -1.0 per type
-  }
-  // Bonus if already visited this exact place and rated it positively
+  for (const type of placeTypes) { const s = parseFloat(savedTypes[type] || '0'), k = parseFloat(skippedTypes[type] || '0'); if (s > 0) bonus += Math.min(s * 0.15, 1.5); if (k > 0) bonus -= Math.min(k * 0.1, 1.0) }
   if (tasteProfile.topRatedPlaces?.includes(place.id.replace('google_', ''))) bonus += 0.5
   return clamp(bonus, -2.0, 2.0)
 }
@@ -525,11 +240,7 @@ function tasteProfileBonus(place: PlaceCard, tasteProfile: any): number {
 function diversifyRanked(scored: Array<{ place: PlaceCard; score: number; bucket: PlaceBucket }>): PlaceCard[] {
   const sorted = [...scored].sort((a, b) => b.score - a.score)
   const cap = 8, counts = new Map<PlaceBucket, number>(), out: typeof scored = []
-  for (const item of sorted) {
-    const c = counts.get(item.bucket) || 0
-    if (c >= cap || item.bucket === 'fitness') continue
-    counts.set(item.bucket, c + 1); out.push(item)
-  }
+  for (const item of sorted) { const c = counts.get(item.bucket) || 0; if (c >= cap || item.bucket === 'fitness') continue; counts.set(item.bucket, c + 1); out.push(item) }
   return out.map(x => x.place)
 }
 
@@ -538,39 +249,17 @@ function rankPlaces(places: PlaceCard[], mood: string, isLocalMode: boolean, int
   const scored = places.map(place => {
     const bucket = classifyPlaceBucket(place)
     let score = qualityScore(place) + moodBucketWeight(mood, bucket) + localTravelWeight(bucket, isLocalMode) + atmosphereBonus(place, mood) + reviewCountBonus(place, isLocalMode)
-    // NEW: apply personalised taste bonus
     if (tasteProfile) score += tasteProfileBonus(place, tasteProfile)
-    if (interestLower.length > 0) {
-      const text = (place.types || []).join(' ').toLowerCase() + ' ' + (place.name || '').toLowerCase() + ' ' + (place.editorial_summary || '').toLowerCase()
-      for (const i of interestLower) { if (i && text.includes(i)) score += 0.4 }
-    }
+    if (interestLower.length > 0) { const text = (place.types || []).join(' ').toLowerCase() + ' ' + (place.name || '').toLowerCase() + ' ' + (place.editorial_summary || '').toLowerCase(); for (const i of interestLower) { if (i && text.includes(i)) score += 0.4 } }
     if (isLocalMode && (place.price_level || 0) >= 4) score -= 0.5
     return { place, score, bucket }
   })
   return diversifyRanked(scored)
 }
 
-function isPlaceValid(place: PlaceCard, thresholds: { minRating: number; minReviews: number }): boolean {
-  const rawId = place.id?.replace('google_', '').trim()
-  return !!rawId && !!place.name?.trim() && !!(place.address?.trim() || place.vicinity?.trim()) &&
-    Number.isFinite(place.location?.lat) && Number.isFinite(place.location?.lng) &&
-    (place.location.lat !== 0 || place.location.lng !== 0) &&
-    !!place.photo_url?.trim() && (place.rating || 0) >= thresholds.minRating && (place.user_ratings_total || 0) >= thresholds.minReviews
-}
-
-function placeCardSearchText(p: PlaceCard): string {
-  return ((p.name || '') + ' ' + (p.editorial_summary || '') + ' ' + (p.address || '') + ' ' + (p.vicinity || '') + ' ' + (p.types || []).join(' ')).toLowerCase()
-}
-
-function placeMatchesRequiredKeyword(text: string, rawKey: string): boolean {
-  const k = rawKey.toLowerCase().trim()
-  if (!k) return true
-  if (k === 'halal' || k.includes('halal')) return /halal|muslim|islamic|turkish|kebab|kabab|döner|doner|shawarma|middle eastern|persian|arab|moroccan|lebanese|pakistani/.test(text)
-  if (k === 'vegan' || k.includes('vegan')) return /vegan|plant[- ]?based|plantbased/.test(text)
-  if (k === 'vegetarian' || k.includes('vegetarian')) return /vegetarian|veggie|plant[- ]?based|vegan|meat[- ]?free/.test(text)
-  if (k.includes('gluten')) return /gluten[- ]?free|celiac|gf\b/.test(text)
-  return text.includes(k)
-}
+function isPlaceValid(place: PlaceCard, thresholds: { minRating: number; minReviews: number }): boolean { const rawId = place.id?.replace('google_', '').trim(); return !!rawId && !!place.name?.trim() && !!(place.address?.trim() || place.vicinity?.trim()) && Number.isFinite(place.location?.lat) && Number.isFinite(place.location?.lng) && (place.location.lat !== 0 || place.location.lng !== 0) && !!place.photo_url?.trim() && (place.rating || 0) >= thresholds.minRating && (place.user_ratings_total || 0) >= thresholds.minReviews }
+function placeCardSearchText(p: PlaceCard): string { return ((p.name || '') + ' ' + (p.editorial_summary || '') + ' ' + (p.address || '') + ' ' + (p.vicinity || '') + ' ' + (p.types || []).join(' ')).toLowerCase() }
+function placeMatchesRequiredKeyword(text: string, rawKey: string): boolean { const k = rawKey.toLowerCase().trim(); if (!k) return true; if (k === 'halal' || k.includes('halal')) return /halal|muslim|islamic|turkish|kebab|kabab|döner|doner|shawarma|middle eastern|persian|arab|moroccan|lebanese|pakistani/.test(text); if (k === 'vegan' || k.includes('vegan')) return /vegan|plant[- ]?based|plantbased/.test(text); if (k === 'vegetarian' || k.includes('vegetarian')) return /vegetarian|veggie|plant[- ]?based|vegan|meat[- ]?free/.test(text); if (k.includes('gluten')) return /gluten[- ]?free|celiac|gf\b/.test(text); return text.includes(k) }
 
 function filterByNamedFilter(places: PlaceCard[], filterName: string): PlaceCard[] {
   const f = filterName.toLowerCase().replace(/[^a-z_]/g, '')
@@ -583,41 +272,46 @@ function filterByNamedFilter(places: PlaceCard[], filterName: string): PlaceCard
   return places
 }
 
-async function enrichAndFilter(input: PlaceCard[], thresholds: { minRating?: number; minReviews?: number } = {}): Promise<PlaceCard[]> {
-  return input.filter(p => isPlaceValid(p, { minRating: thresholds.minRating ?? 4.0, minReviews: thresholds.minReviews ?? 8 }))
-}
-
-// ── CACHE ─────────────────────────────────────────────────
+async function enrichAndFilter(input: PlaceCard[], thresholds: { minRating?: number; minReviews?: number } = {}): Promise<PlaceCard[]> { return input.filter(p => isPlaceValid(p, { minRating: thresholds.minRating ?? 4.0, minReviews: thresholds.minReviews ?? 8 })) }
 
 async function checkCache(supabase: any, cacheKey: string): Promise<ExploreResponse | null> {
-  try {
-    const { data } = await supabase.from('places_cache').select('data,expires_at').eq('cache_key', cacheKey).is('place_id', null).maybeSingle()
-    if (!data || new Date(data.expires_at) < new Date() || !data.data?.cards) return null
-    return { cards: shuffleArray(data.data.cards as PlaceCard[]), cached: true, total_found: data.data.cards.length, cache_key: cacheKey }
-  } catch { return null }
+  try { const { data } = await supabase.from('places_cache').select('data,expires_at').eq('cache_key', cacheKey).is('place_id', null).maybeSingle(); if (!data || new Date(data.expires_at) < new Date() || !data.data?.cards) return null; return { cards: shuffleArray(data.data.cards as PlaceCard[]), cached: true, total_found: data.data.cards.length, cache_key: cacheKey } } catch { return null }
 }
 
 async function cacheExplore(supabase: any, cacheKey: string, places: PlaceCard[]): Promise<void> {
-  try {
-    const expiresAt = new Date(); expiresAt.setDate(expiresAt.getDate() + 7)
-    await supabase.from('places_cache').upsert({ cache_key: cacheKey, data: { cards: places }, place_id: null, user_id: null, request_type: 'explore', expires_at: expiresAt.toISOString() }, { onConflict: 'cache_key' })
-  } catch (e) { console.error('❌ cacheExplore:', e) }
+  try { const expiresAt = new Date(); expiresAt.setDate(expiresAt.getDate() + 7); await supabase.from('places_cache').upsert({ cache_key: cacheKey, data: { cards: places }, place_id: null, user_id: null, request_type: 'explore', expires_at: expiresAt.toISOString() }, { onConflict: 'cache_key' }) } catch (e) { console.error('❌ cacheExplore:', e) }
 }
 
 function applyFilters(places: PlaceCard[], filters: any): PlaceCard[] {
   if (!filters || Object.keys(filters).length === 0) return places
   const kwList = Array.isArray(filters.requiredKeywords) ? filters.requiredKeywords.filter((x: any) => typeof x === 'string' && x.trim()) : []
-  return places.filter(place => {
-    if (filters.rating && place.rating < filters.rating) return false
-    if (filters.priceLevel && place.price_level && place.price_level > filters.priceLevel) return false
-    if (filters.openNow === true && place.opening_hours?.open_now !== true) return false
-    if (filters.minReviews && (place.user_ratings_total || 0) < filters.minReviews) return false
-    if (kwList.length > 0) { const text = placeCardSearchText(place); for (const kw of kwList) { if (!placeMatchesRequiredKeyword(text, kw)) return false } }
-    return true
-  })
+  return places.filter(place => { if (filters.rating && place.rating < filters.rating) return false; if (filters.priceLevel && place.price_level && place.price_level > filters.priceLevel) return false; if (filters.openNow === true && place.opening_hours?.open_now !== true) return false; if (filters.minReviews && (place.user_ratings_total || 0) < filters.minReviews) return false; if (kwList.length > 0) { const text = placeCardSearchText(place); for (const kw of kwList) { if (!placeMatchesRequiredKeyword(text, kw)) return false } } return true })
 }
 
-// ── GET EXPLORE ───────────────────────────────────────────
+function detectChatPlaceIntent(message: string): { hasIntent: boolean } { const m = message.toLowerCase(); const kws = ['restaurant','cafe','coffee','bar','museum','park','gallery','eat','drink','visit','go to','find','recommend','suggestion','where','spot','place','food','lunch','dinner','breakfast','brunch','nightlife','pub','koffie','eten','drinken','bezoeken','vinden','aanbevelen','plek','eetplek','diner','ontbijt']; return { hasIntent: kws.some(kw => m.includes(kw)) } }
+
+async function searchPlacesForChat(query: string, location: string, coordinates: { lat: number; lng: number }, userContext: any, languageCode: string): Promise<PlaceCard[]> {
+  try { const results = await searchPlacesV1(`${query} in ${location}`, coordinates, 15000, false, 10, languageCode); const qualified = await enrichAndFilter(results, { minRating: 3.8, minReviews: 10 }); const ranked = rankPlaces(qualified, 'adventurous', !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile); return enrichWithSignals(ranked.slice(0, 3), !!userContext.isLocalMode) } catch { return [] }
+}
+
+async function fetchUserContext(supabase: any, userId: string): Promise<any> {
+  try {
+    const [profileResult, prefsResult, checkInsResult, tasteResult] = await Promise.all([
+      supabase.from('profiles').select('favorite_mood,travel_style,travel_vibes,currently_exploring,date_of_birth,language_preference').eq('id', userId).maybeSingle(),
+      supabase.from('user_preferences').select('communication_style,travel_interests,selected_moods,social_vibe,planning_pace,favorite_moods,budget_level,dietary_restrictions,travel_styles,language_preference').eq('user_id', userId).maybeSingle(),
+      supabase.from('user_check_ins').select('mood,created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
+      supabase.from('user_preference_patterns').select('saved_place_types,skipped_place_types,mood_frequency,top_rated_places,chat_interests,total_interactions').eq('user_id', userId).maybeSingle(),
+    ])
+    const p = profileResult.data, q = prefsResult.data, t = tasteResult.data
+    const allFavoriteMoods = [...new Set([...(Array.isArray(q?.selected_moods) ? q.selected_moods : []), ...(Array.isArray(q?.favorite_moods) ? q.favorite_moods : [])])]
+    const allInterests = [...new Set([...(Array.isArray(p?.travel_vibes) ? p.travel_vibes : []), ...(Array.isArray(q?.travel_interests) ? q.travel_interests : [])])]
+    return { communicationStyle: q?.communication_style || 'friendly', isLocalMode: p?.currently_exploring === 'local', travelInterests: allInterests, allInterests, socialVibe: Array.isArray(q?.social_vibe) ? q.social_vibe : [], planningPace: q?.planning_pace || 'Same Day', favoriteMoods: allFavoriteMoods, allFavoriteMoods, travelStyle: p?.travel_style || 'adventurous', travelStyles: Array.isArray(q?.travel_styles) ? q.travel_styles : [], recentMoods: (checkInsResult.data || []).map((c: any) => c.mood), budgetLevel: q?.budget_level || 'Mid-Range', dietaryRestrictions: Array.isArray(q?.dietary_restrictions) ? q.dietary_restrictions : [], languagePreference: q?.language_preference || p?.language_preference || 'en', ageGroup: null, profile: p, tasteProfile: t ? { savedPlaceTypes: t.saved_place_types || {}, skippedPlaceTypes: t.skipped_place_types || {}, moodFrequency: t.mood_frequency || {}, topRatedPlaces: t.top_rated_places || [], chatInterests: t.chat_interests || [], totalInteractions: t.total_interactions || 0 } : null }
+  } catch (e) { console.warn('⚠️ fetchUserContext failed:', e); return { communicationStyle: 'friendly', isLocalMode: false, travelInterests: [], allInterests: [], socialVibe: [], travelStyle: 'adventurous', travelStyles: [], recentMoods: [], favoriteMoods: [], allFavoriteMoods: [], budgetLevel: 'Mid-Range', dietaryRestrictions: [], languagePreference: 'en', ageGroup: null, profile: null, tasteProfile: null } }
+}
+
+async function fetchChatHistory(supabase: any, userId: string, limit = 20): Promise<Array<{ role: string; content: string }>> {
+  try { const { data } = await supabase.from('ai_conversations').select('role,content,created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(limit); if (!data || data.length === 0) return []; return data.reverse().map((m: any) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content || '') })) } catch { return [] }
+}
 
 async function handleGetExplore(supabase: any, userId: string, params: any): Promise<Response> {
   try {
@@ -633,18 +327,8 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     const modeKey = userContext.isLocalMode ? 'local' : 'travel'
     const timeCtx = getTimeOfDayContext()
     const lang = googlePlacesLanguageFromRequest(params)
-    const cacheKey = lang === 'en'
-      ? `explore_v7_${modeKey}_${section || mood}_${location.toLowerCase().trim()}`
-      : `explore_v7_${modeKey}_${section || mood}_${location.toLowerCase().trim()}_${lang}`
-    if (!hasNamedFilters) {
-      const cached = await checkCache(supabase, cacheKey)
-      if (cached && cached.cards.length > 0) {
-        // Apply personalisation to cached results too
-        const reranked = rankPlaces(cached.cards, mood, !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile)
-        const enriched = enrichWithSignals(applyFilters(reranked, filters), userContext.isLocalMode)
-        return new Response(JSON.stringify({ ...cached, cards: enriched, filters_applied: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-      }
-    }
+    const cacheKey = lang === 'en' ? `explore_v7_${modeKey}_${section || mood}_${location.toLowerCase().trim()}` : `explore_v7_${modeKey}_${section || mood}_${location.toLowerCase().trim()}_${lang}`
+    if (!hasNamedFilters) { const cached = await checkCache(supabase, cacheKey); if (cached && cached.cards.length > 0) { const reranked = rankPlaces(cached.cards, mood, !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile); const enriched = enrichWithSignals(applyFilters(reranked, filters), userContext.isLocalMode); return new Response(JSON.stringify({ ...cached, cards: enriched, filters_applied: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) } }
     const clientLang = clientOutputLang(params)
     let exploreQueries: string[]
     if (hasNamedFilters) exploreQueries = namedFilters.flatMap(f => getFilterSearchQueries(f)).slice(0, 16)
@@ -665,56 +349,72 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     if (!hasNamedFilters) { await cacheExplore(supabase, cacheKey, ranked) }
     const enriched = enrichWithSignals(applyFilters(shuffleArray(ranked), filters), userContext.isLocalMode)
     return new Response(JSON.stringify({ cards: enriched, cached: false, total_found: enriched.length, unfiltered_total: ranked.length, named_filters_applied: namedFilters, section: section || 'all', time_slot: timeCtx.timeSlot }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  } catch (error) {
-    console.error('❌ handleGetExplore:', error)
-    return new Response(JSON.stringify({ cards: [], cached: false, total_found: 0, error: 'explore_fetch_failed' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  }
+  } catch (error) { console.error('❌ handleGetExplore:', error); return new Response(JSON.stringify({ cards: [], cached: false, total_found: 0, error: 'explore_fetch_failed' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
 }
-
-// ── CREATE DAY PLAN ───────────────────────────────────────
 
 async function handleCreateDayPlan(supabase: any, userId: string, params: any): Promise<Response> {
   try {
     if (!params.location?.trim()) return new Response(JSON.stringify({ success: false, error: 'Location required', activities: [], total_found: 0 }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     if (!params.coordinates?.lat || !params.coordinates?.lng) return new Response(JSON.stringify({ success: false, error: 'Coordinates required', activities: [], total_found: 0 }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    const quickPick = typeof params.quick_pick === 'string' ? params.quick_pick.trim().toLowerCase() : ''
-    const moods: string[] = quickPick === 'coffee' ? ['foodie'] : (params.moods || ['adventurous'])
-    const location = params.location.trim(), coordinates = params.coordinates
+    const quickPick = typeof params.quick_pick === 'string' ? params.quick_pick.toLowerCase().trim() : null
+    const moods: string[] = params.moods || ['adventurous'], location = params.location.trim(), coordinates = params.coordinates
     const userContext = await fetchUserContext(supabase, userId)
     const lang = clientOutputLang(params), placesLang = googlePlacesLanguageFromRequest(params), timeCtx = getTimeOfDayContext()
+    if (quickPick === 'coffee') {
+      const coffeeQueries = [`specialty coffee shop ${location}`,`cafe coffee ${location}`,`matcha bar ${location}`,`coffee roastery ${location}`]
+      let places = await fetchPlacesFromGoogle(location, coordinates, 'foodie', {}, coffeeQueries, false, placesLang)
+      let cafes = places.filter(p => { const types = (p.types || []).map(t => t.toLowerCase()), primary = (p.primaryType || '').toLowerCase(), name = (p.name || '').toLowerCase(); return (['cafe','bakery','coffee_shop','patisserie'].some(t => types.includes(t) || primary === t) || name.includes('coffee') || name.includes('cafe') || name.includes('matcha') || name.includes('espresso')) && p.photo_url?.trim() && (p.rating || 0) >= 3.8 && (p.user_ratings_total || 0) >= 10 })
+      if (cafes.length === 0) cafes = places.filter(p => p.photo_url?.trim() && (p.rating || 0) >= 3.5)
+      if (cafes.length === 0) cafes = places.slice(0, 3)
+      cafes.sort((a, b) => (b.rating || 0) - (a.rating || 0))
+      const pick = cafes[0]
+      if (!pick) return new Response(JSON.stringify({ success: false, activities: [], total_found: 0, error: 'No coffee place found' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      const now = new Date(), minutesAhead = 14 + Math.floor(Math.random() * 19), startTime = new Date(now.getTime() + minutesAhead * 60 * 1000)
+      const activity: Activity = { id: `activity_${Date.now()}_${pick.id}`, name: pick.name, description: pick.editorial_summary || pick.description || (lang === 'nl' ? 'Goed koffieadres, dichtbij.' : 'Good coffee, close by.'), timeSlot: timeCtx.timeSlot, duration: 45, location: { latitude: pick.location.lat, longitude: pick.location.lng }, paymentType: 'reservation', imageUrl: pick.photo_url || '', rating: pick.rating, tags: ['Cafe'], startTime: startTime.toISOString(), priceLevel: pick.price_level != null ? (['','€','€€','€€€','€€€€'][pick.price_level] || '€€') : undefined, placeId: pick.id.replace('google_', '') }
+      const moodyMessage = lang === 'nl' ? `Goed idee ☕ ${pick.name} is vlakbij.` : `Good call ☕ ${pick.name} is close by.`
+      return new Response(JSON.stringify({ success: true, activities: [activity], location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: 1, moodyMessage, reasoning: 'quick_pick:coffee' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
     const aiQueries = await getMoodySearchQueries(moods, location, userContext, lang, timeCtx.timeSlot)
     let places = await fetchPlacesFromGoogle(location, coordinates, moods[0], params.filters || {}, aiQueries, false, placesLang)
     let qualified = await enrichAndFilter(places, { minRating: 3.8, minReviews: 20 })
     if (qualified.length === 0) qualified = await enrichAndFilter(places, { minRating: 3.5, minReviews: 8 })
     if (qualified.length === 0) return new Response(JSON.stringify({ success: false, activities: [], location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: 0, error: 'No places found' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     const ranked = rankPlaces(qualified, moods[0] || 'adventurous', !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile)
-    const activities = quickPick === 'coffee'
-      ? convertPlacesToActivitiesQuickCoffee(ranked, moods, location, coordinates, lang, timeCtx.timeSlot)
-      : convertPlacesToActivities(ranked, moods, location, coordinates, lang)
+    const activities = convertPlacesToActivities(ranked, moods, location, coordinates, lang)
     if (activities.length === 0) return new Response(JSON.stringify({ success: false, activities: [], location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: 0, error: 'No activities generated' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     const { moodyMessage, reasoning } = await getMoodyPersonalityResponse(moods, activities, location, userContext, lang)
     return new Response(JSON.stringify({ success: true, activities, location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: activities.length, moodyMessage, reasoning }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  } catch (error) {
-    console.error('❌ handleCreateDayPlan:', error)
-    return new Response(JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error), activities: [], total_found: 0 }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  }
+  } catch (error) { console.error('❌ handleCreateDayPlan:', error); return new Response(JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error), activities: [], total_found: 0 }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
 }
 
-// ── PLACE BLURBS ──────────────────────────────────────────
+async function handleGroupMatchMoodyMessage(supabase: any, userId: string, params: any): Promise<Response> {
+  const mood1 = String(params.mood1 || '').trim(), mood2 = String(params.mood2 || '').trim(), name1 = String(params.name1 || 'You').trim(), name2 = String(params.name2 || 'Your friend').trim(), location = String(params.location || '').trim(), lang = clientOutputLang(params)
+  if (!mood1 || !mood2) return new Response(JSON.stringify({ success: false, error: 'mood1 and mood2 are required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  const compatibilityMap: Record<string, Record<string, number>> = { relaxed: { relaxed:95, foodie:78, energetic:35, adventurous:52, cultural:70, cozy:90, romantic:82, social:45, curious:65, excited:40, happy:75, surprise:60 }, foodie: { relaxed:78, foodie:95, energetic:62, adventurous:70, cultural:55, cozy:72, romantic:68, social:75, curious:60, excited:65, happy:80, surprise:72 }, energetic: { relaxed:35, foodie:62, energetic:95, adventurous:85, cultural:40, cozy:25, romantic:45, social:88, curious:55, excited:90, happy:78, surprise:70 }, adventurous: { relaxed:52, foodie:70, energetic:85, adventurous:95, cultural:65, cozy:42, romantic:58, social:72, curious:80, excited:82, happy:68, surprise:88 }, cultural: { relaxed:70, foodie:55, energetic:40, adventurous:65, cultural:95, cozy:62, romantic:60, social:48, curious:88, excited:52, happy:65, surprise:70 }, cozy: { relaxed:90, foodie:72, energetic:25, adventurous:42, cultural:62, cozy:95, romantic:85, social:38, curious:58, excited:32, happy:72, surprise:55 }, romantic: { relaxed:82, foodie:68, energetic:45, adventurous:58, cultural:60, cozy:85, romantic:95, social:55, curious:62, excited:50, happy:78, surprise:65 }, social: { relaxed:45, foodie:75, energetic:88, adventurous:72, cultural:48, cozy:38, romantic:55, social:95, curious:52, excited:85, happy:82, surprise:68 }, curious: { relaxed:65, foodie:60, energetic:55, adventurous:80, cultural:88, cozy:58, romantic:62, social:52, curious:95, excited:70, happy:65, surprise:85 }, excited: { relaxed:40, foodie:65, energetic:90, adventurous:82, cultural:52, cozy:32, romantic:50, social:85, curious:70, excited:95, happy:85, surprise:78 }, happy: { relaxed:75, foodie:80, energetic:78, adventurous:68, cultural:65, cozy:72, romantic:78, social:82, curious:65, excited:85, happy:95, surprise:75 }, surprise: { relaxed:60, foodie:72, energetic:70, adventurous:88, cultural:70, cozy:55, romantic:65, social:68, curious:85, excited:78, happy:75, surprise:95 } }
+  const m1 = normaliseMood(mood1), m2 = normaliseMood(mood2), score = compatibilityMap[m1]?.[m2] ?? compatibilityMap[m2]?.[m1] ?? 70
+  const scoreLabel = score >= 95 ? 'Perfect match ✨' : score >= 80 ? 'Great combo' : score >= 65 ? 'Good balance' : score >= 50 ? 'Interesting mix' : 'Moody got creative'
+  const openaiKey = Deno.env.get('OPENAI_API_KEY')
+  const getFallback = () => { if (lang === 'nl') { if (score >= 75) return { moodyMessage: `Jullie willen vandaag precies hetzelfde 😌 Dit plan maakte zich vanzelf.`, vibeLabel: `${m1} + ${m2}`, summary: `Goede match. Ik heb iets gevonden dat voor jullie beiden werkt.` }; if (score >= 50) return { moodyMessage: `Verschillende vibes, maar ik heb het geregeld. Vertrouw me.`, vibeLabel: `${m1} + ${m2}`, summary: `Twee vibes, één plan. Ik denk dat jullie het mooi gaan vinden.` }; return { moodyMessage: `Oké, dit was een uitdaging. Maar ik ben trots op dit plan. Jullie ook straks.`, vibeLabel: `${m1} + ${m2}`, summary: `Jullie zijn totaal anders vandaag. Dat maakt het interessant.` } }; if (score >= 75) return { moodyMessage: `You're basically the same person today 😌 This plan built itself.`, vibeLabel: `${m1} + ${m2}`, summary: `Great match. I found something that works for both of you.` }; if (score >= 50) return { moodyMessage: `Different vibes, but I made it work. Trust me on this one.`, vibeLabel: `${m1} + ${m2}`, summary: `Two moods, one plan. I think you'll both love it.` }; return { moodyMessage: `Okay this was a challenge. But I actually love what I found. You will too.`, vibeLabel: `${m1} + ${m2}`, summary: `You're pretty different today. That makes it interesting.` } }
+  if (!openaiKey?.trim()) { const fb = getFallback(); return new Response(JSON.stringify({ success: true, score, scoreLabel, ...fb }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
+  try {
+    const langName = lang === 'nl' ? 'Dutch' : 'English'
+    const prompt = `Two people are using WanderMood together. You are Moody.\n\nPerson 1 (${name1}): mood is "${m1}"\nPerson 2 (${name2}): mood is "${m2}"\nLocation: ${location || 'their city'}\nCompatibility score: ${score}/100\n\nWrite in ${langName}. Use "I" always. Be punchy, warm, real. No filler.\n\nReturn ONLY valid JSON:\n{\n  "moodyMessage": "<max 120 chars>",\n  "vibeLabel": "<max 25 chars>",\n  "summary": "<max 100 chars>"\n}`
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: MOODY_CORE_IDENTITY }, { role: 'user', content: prompt }], max_tokens: 200, temperature: 0.85, response_format: { type: 'json_object' } }) })
+    if (!resp.ok) throw new Error(`OpenAI ${resp.status}`)
+    const data = await resp.json(), parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}')
+    return new Response(JSON.stringify({ success: true, score, scoreLabel, moodyMessage: parsed.moodyMessage || getFallback().moodyMessage, vibeLabel: parsed.vibeLabel || getFallback().vibeLabel, summary: parsed.summary || getFallback().summary }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  } catch (e) { console.error('❌ handleGroupMatchMoodyMessage:', e); const fb = getFallback(); return new Response(JSON.stringify({ success: true, score, scoreLabel, ...fb }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
+}
 
 async function handlePlaceCardBlurb(params: Record<string, unknown>): Promise<Response> {
   const facts = typeof params.facts === 'string' ? params.facts.trim() : ''
   if (!facts || facts.length > 12000) return new Response(JSON.stringify({ success: false, error: 'invalid_facts', blurb: '' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  const outLang = placeCardBlurbOutputLanguageName(typeof params.languageCode === 'string' ? params.languageCode : 'en')
-  const style = typeof params.communicationStyle === 'string' ? params.communicationStyle : 'friendly'
-  const openaiKey = Deno.env.get('OPENAI_API_KEY')
+  const outLang = placeCardBlurbOutputLanguageName(typeof params.languageCode === 'string' ? params.languageCode : 'en'), style = typeof params.communicationStyle === 'string' ? params.communicationStyle : 'friendly', openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey?.trim()) return new Response(JSON.stringify({ success: false, error: 'openai_not_configured', blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   try {
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: getMoodyCardBlurbPrompt(outLang, style) }, { role: 'user', content: `Write a card teaser using only these facts. Do not invent anything.\n\n${facts}` }], temperature: 0.75, max_tokens: 120 }) })
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: getMoodyCardBlurbPrompt(outLang, style) }, { role: 'user', content: `Write a card teaser using only these facts. Do not invent anything.\n\n${facts}` }], temperature: 0.8, max_tokens: 120 }) })
     if (!resp.ok) return new Response(JSON.stringify({ success: false, blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    const data = await resp.json()
-    let blurb = String(data?.choices?.[0]?.message?.content || '').trim().replace(/^"|"$/g, '')
-    if (blurb.length > 300) blurb = `${blurb.slice(0, 280).trim()}…`
+    const data = await resp.json(); let blurb = String(data?.choices?.[0]?.message?.content || '').trim().replace(/^"|"$/g, ''); if (blurb.length > 300) blurb = `${blurb.slice(0, 280).trim()}…`
     return new Response(JSON.stringify({ success: true, blurb }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch { return new Response(JSON.stringify({ success: false, blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
 }
@@ -722,33 +422,21 @@ async function handlePlaceCardBlurb(params: Record<string, unknown>): Promise<Re
 async function handlePlaceDetailBlurb(params: Record<string, unknown>): Promise<Response> {
   const facts = typeof params.facts === 'string' ? params.facts.trim() : ''
   if (!facts || facts.length > 12000) return new Response(JSON.stringify({ success: false, error: 'invalid_facts', blurb: '' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  const outLang = placeCardBlurbOutputLanguageName(typeof params.languageCode === 'string' ? params.languageCode : 'en')
-  const style = typeof params.communicationStyle === 'string' ? params.communicationStyle : 'friendly'
-  const openaiKey = Deno.env.get('OPENAI_API_KEY')
+  const outLang = placeCardBlurbOutputLanguageName(typeof params.languageCode === 'string' ? params.languageCode : 'en'), style = typeof params.communicationStyle === 'string' ? params.communicationStyle : 'friendly', openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey?.trim()) return new Response(JSON.stringify({ success: false, error: 'openai_not_configured', blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   try {
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: getMoodyDetailBlurbPrompt(outLang, style) }, { role: 'user', content: `Write a detail screen description using only these facts. Do not invent anything.\n\n${facts}` }], temperature: 0.75, max_tokens: 400 }) })
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: getMoodyDetailBlurbPrompt(outLang, style) }, { role: 'user', content: `Write a detail screen description using only these facts. Do not invent anything.\n\n${facts}` }], temperature: 0.8, max_tokens: 400 }) })
     if (!resp.ok) return new Response(JSON.stringify({ success: false, blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    const data = await resp.json()
-    let blurb = String(data?.choices?.[0]?.message?.content || '').trim().replace(/^"|"$/g, '')
-    if (blurb.length > 1200) blurb = `${blurb.slice(0, 1180).trim()}…`
+    const data = await resp.json(); let blurb = String(data?.choices?.[0]?.message?.content || '').trim().replace(/^"|"$/g, ''); if (blurb.length > 1200) blurb = `${blurb.slice(0, 1180).trim()}…`
     return new Response(JSON.stringify({ success: true, blurb }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch { return new Response(JSON.stringify({ success: false, blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
 }
 
 function parseExploreRichJsonContent(raw: string): { hook: string; sections: { title: string; body: string }[] } | null {
-  let s = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
+  const s = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
   try {
-    const o = JSON.parse(s) as { hook?: unknown; sections?: unknown }
-    const hook = typeof o.hook === 'string' ? o.hook.trim() : ''
-    const arr = Array.isArray(o.sections) ? o.sections : []
-    const sections: { title: string; body: string }[] = []
-    for (const item of arr) {
-      if (!item || typeof item !== 'object') continue
-      const t = String((item as any).title ?? '').trim(), b = String((item as any).body ?? '').trim().replace(/\n+/g, ' ')
-      if (t.length < 2 || b.length < 8) continue
-      sections.push({ title: t.slice(0, 120), body: b.slice(0, 520) })
-    }
+    const o = JSON.parse(s) as { hook?: unknown; sections?: unknown }, hook = typeof o.hook === 'string' ? o.hook.trim() : '', arr = Array.isArray(o.sections) ? o.sections : [], sections: { title: string; body: string }[] = []
+    for (const item of arr) { if (!item || typeof item !== 'object') continue; const t = String((item as any).title ?? '').trim(), b = String((item as any).body ?? '').trim().replace(/\n+/g, ' '); if (t.length < 2 || b.length < 8) continue; sections.push({ title: t.slice(0, 120), body: b.slice(0, 520) }) }
     if (sections.length < 2 || sections.length > 6) return null
     return { hook: hook.slice(0, 200), sections }
   } catch { return null }
@@ -757,296 +445,96 @@ function parseExploreRichJsonContent(raw: string): { hook: string; sections: { t
 async function handlePlaceExploreRich(params: Record<string, unknown>): Promise<Response> {
   const facts = typeof params.facts === 'string' ? params.facts.trim() : ''
   if (!facts || facts.length > 12000) return new Response(JSON.stringify({ success: false, error: 'invalid_facts', hook: '', sections: [] }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  const outLang = placeCardBlurbOutputLanguageName(typeof params.languageCode === 'string' ? params.languageCode : 'en')
-  const style = typeof params.communicationStyle === 'string' ? params.communicationStyle : 'friendly'
-  const openaiKey = Deno.env.get('OPENAI_API_KEY')
+  const outLang = placeCardBlurbOutputLanguageName(typeof params.languageCode === 'string' ? params.languageCode : 'en'), style = typeof params.communicationStyle === 'string' ? params.communicationStyle : 'friendly', openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey?.trim()) return new Response(JSON.stringify({ success: false, error: 'openai_not_configured', hook: '', sections: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   try {
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: getMoodyExploreRichPrompt(outLang, style) }, { role: 'user', content: `Write JSON only using these facts. Do not invent anything.\n\n${facts}` }], response_format: { type: 'json_object' }, temperature: 0.55, max_tokens: 700 }) })
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: getMoodyExploreRichPrompt(outLang, style) }, { role: 'user', content: `Write JSON only using these facts. Do not invent anything.\n\n${facts}` }], response_format: { type: 'json_object' }, temperature: 0.6, max_tokens: 700 }) })
     if (!resp.ok) return new Response(JSON.stringify({ success: false, hook: '', sections: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    const data = await resp.json()
-    const parsed = parseExploreRichJsonContent(String(data?.choices?.[0]?.message?.content || ''))
+    const data = await resp.json(), parsed = parseExploreRichJsonContent(String(data?.choices?.[0]?.message?.content || ''))
     if (!parsed || parsed.sections.length < 2) return new Response(JSON.stringify({ success: false, error: 'parse_failed', hook: '', sections: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     return new Response(JSON.stringify({ success: true, hook: parsed.hook, sections: parsed.sections }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch { return new Response(JSON.stringify({ success: false, hook: '', sections: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
 }
 
-// ── OPENAI HELPERS ────────────────────────────────────────
-
 async function getMoodySearchQueries(moods: string[], location: string, userContext: any, lang: 'nl' | 'en', timeSlot?: string): Promise<string[] | null> {
-  const openaiKey = Deno.env.get('OPENAI_API_KEY')
-  if (!openaiKey?.trim()) return null
-  const moodDefs: Record<string, string> = {
-    relaxed: 'slow down, soft energy, cozy quiet spots — NOT gyms or spas',
-    energetic: 'buzz, movement, lively areas, street food, food halls — NOT gyms',
-    romantic: 'candlelit restaurants, waterfront dining, wine bars, sunset views',
-    adventurous: 'hidden gems, underground bars, unusual venues, non-touristy spots',
-    foodie: 'artisan bakeries, specialty coffee, authentic restaurants, food markets',
-    cultural: 'museums, art galleries, heritage buildings, cultural centers',
-    social: 'lively bars, rooftop bars, live music, cocktail bars, group-friendly spots',
-    excited: 'rooftops with views, trending spots, buzzing popular places',
-    curious: 'interactive museums, concept stores, hidden exhibitions, unusual cafes',
-    cozy: 'cafes with sofas, small wine bars, candlelit spots, warm bakeries',
-    happy: 'cute brunch spots, colorful cafes, sunny terraces, ice cream',
-    surprise: 'mix of cozy cafe + authentic food + unusual experience + rooftop bar',
-  }
-  const moodDef = moods.map(m => normaliseMood(m)).map(m => moodDefs[m] || m).join(' + ')
-  const localHint = userContext.isLocalMode ? 'User is LOCAL — avoid tourist traps, prefer hidden gems, new openings, neighbourhood spots.' : 'User is TRAVELING — best of city, must-see iconic spots, mix of famous and local secrets. Include at least one landmark or tourist attraction.'
-  const diet = userContext.dietaryRestrictions?.length ? ` Dietary: ${userContext.dietaryRestrictions.join(', ')}.` : ''
-  const budget = userContext.budgetLevel && userContext.budgetLevel !== 'Mid-Range' ? ` Budget: ${userContext.budgetLevel}.` : ''
-  const timeHint = timeSlot ? ` Time of day: ${timeSlot}.` : ''
+  const openaiKey = Deno.env.get('OPENAI_API_KEY'); if (!openaiKey?.trim()) return null
+  const moodDefs: Record<string, string> = { relaxed: 'slow down, soft energy, cozy quiet spots — NOT gyms or spas', energetic: 'buzz, movement, lively areas, street food, food halls — NOT gyms', romantic: 'candlelit restaurants, waterfront dining, wine bars, sunset views', adventurous: 'hidden gems, underground bars, unusual venues, non-touristy spots', foodie: 'artisan bakeries, specialty coffee, authentic restaurants, food markets', cultural: 'museums, art galleries, heritage buildings, cultural centers', social: 'lively bars, rooftop bars, live music, cocktail bars, group-friendly spots', excited: 'rooftops with views, trending spots, buzzing popular places', curious: 'interactive museums, concept stores, hidden exhibitions, unusual cafes', cozy: 'cafes with sofas, small wine bars, candlelit spots, warm bakeries', happy: 'cute brunch spots, colorful cafes, sunny terraces, ice cream', surprise: 'mix of cozy cafe + authentic food + unusual experience + rooftop bar' }
+  const moodDef = moods.map(m => normaliseMood(m)).map(m => moodDefs[m] || m).join(' + '), localHint = userContext.isLocalMode ? 'User is LOCAL — avoid tourist traps, prefer hidden gems, new openings, neighbourhood spots.' : 'User is TRAVELING — best of city, must-see iconic spots, mix of famous and local secrets.', diet = userContext.dietaryRestrictions?.length ? ` Dietary: ${userContext.dietaryRestrictions.join(', ')}.` : '', budget = userContext.budgetLevel && userContext.budgetLevel !== 'Mid-Range' ? ` Budget: ${userContext.budgetLevel}.` : '', timeHint = timeSlot ? ` Time of day: ${timeSlot}.` : ''
   try {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: `${MOODY_CORE_IDENTITY}\n\n${localHint}\nGenerate 6-8 short Google Places text search queries as JSON: {"queries":["...","..."]}.\nQueries should feel like a real person searching Google Maps. Be diverse, specific to the mood. No markdown.` }, { role: 'user', content: `Mood: ${moodDef}. Location: ${location}. Interests: ${JSON.stringify(userContext.allInterests || [])}.${budget}${diet}${timeHint}` }], max_tokens: 220, temperature: 0.5, response_format: { type: 'json_object' } }) })
     if (!resp.ok) return null
-    const data = await resp.json()
-    const parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}')
-    const queries = Array.isArray(parsed.queries) ? parsed.queries.filter((q: any) => typeof q === 'string').slice(0, 8) : []
+    const data = await resp.json(), parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}'), queries = Array.isArray(parsed.queries) ? parsed.queries.filter((q: any) => typeof q === 'string').slice(0, 8) : []
     return queries.length ? queries : null
   } catch { return null }
 }
 
 async function getMoodyPersonalityResponse(moods: string[], activities: Activity[], location: string, userContext: any, lang: 'nl' | 'en'): Promise<{ moodyMessage: string; reasoning: string }> {
   const style = String(userContext?.communicationStyle || 'friendly'), n = activities.length, m = moods.join(' & ')
-  const fb: Record<string, Record<string, any>> = {
-    nl: { energetic: { moodyMessage: `YO ik heb je dag gepland 🔥 ${n} activiteiten`, reasoning: 'Energie-mix.' }, professional: { moodyMessage: `Ik heb ${n} activiteiten voor je klaarstaan in ${location}.`, reasoning: 'Geselecteerd.' }, direct: { moodyMessage: `${n} activiteiten. Klaar.`, reasoning: 'Match.' }, calm: { moodyMessage: `Ik heb iets rustig voor je gepland ☀️`, reasoning: 'Rustige mix.' }, friendly: { moodyMessage: `Hey! Ik heb je ${m} dag gepland in ${location} 😊`, reasoning: 'Mooie mix.' } },
-    en: { energetic: { moodyMessage: `YO I planned your whole day 🔥 ${n} things, ${m} mode activated`, reasoning: 'High-energy picks.' }, professional: { moodyMessage: `I've lined up ${n} activities for you in ${location}.`, reasoning: 'Chosen for fit.' }, direct: { moodyMessage: `${n} activities. You're welcome.`, reasoning: 'Mood match.' }, calm: { moodyMessage: `I found something easy and good for you today ☀️`, reasoning: 'Calm mix.' }, friendly: { moodyMessage: `Hey! I planned your ${m} day in ${location} 😊`, reasoning: 'Nice mix.' } },
-  }
-  const fallback = (fb[lang] || fb.en)[style] || (fb[lang] || fb.en).friendly
-  const openaiKey = Deno.env.get('OPENAI_API_KEY')
+  const fb: Record<string, Record<string, any>> = { nl: { energetic: { moodyMessage: `YO ik heb je dag gepland 🔥 ${n} activiteiten`, reasoning: 'Energie-mix.' }, professional: { moodyMessage: `Ik heb ${n} activiteiten voor je klaarstaan in ${location}.`, reasoning: 'Geselecteerd.' }, direct: { moodyMessage: `${n} activiteiten. Klaar.`, reasoning: 'Match.' }, calm: { moodyMessage: `Ik heb iets rustig voor je gepland ☀️`, reasoning: 'Rustige mix.' }, friendly: { moodyMessage: `Hey! Ik heb je ${m} dag gepland in ${location} 😊`, reasoning: 'Mooie mix.' } }, en: { energetic: { moodyMessage: `YO I planned your whole day 🔥 ${n} things, ${m} mode activated`, reasoning: 'High-energy picks.' }, professional: { moodyMessage: `I've lined up ${n} activities for you in ${location}.`, reasoning: 'Chosen for fit.' }, direct: { moodyMessage: `${n} activities. You're welcome.`, reasoning: 'Mood match.' }, calm: { moodyMessage: `I found something easy and good for you today ☀️`, reasoning: 'Calm mix.' }, friendly: { moodyMessage: `Hey! I planned your ${m} day in ${location} 😊`, reasoning: 'Nice mix.' } } }
+  const fallback = (fb[lang] || fb.en)[style] || (fb[lang] || fb.en).friendly, openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey?.trim()) return fallback
   try {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: `${MOODY_CORE_IDENTITY}\n\nYou just planned someone's day. Write a short personal message in ${lang === 'nl' ? 'Dutch' : 'English'}. Use "I". Match the ${style} communication style. Return JSON only: {"moodyMessage":"<max 100 chars>","reasoning":"<max 60 chars>"}.` }, { role: 'user', content: `Mood: ${moods.join(', ')}. Location: ${location}. ${n} activities: ${activities.slice(0,3).map(a=>a.name).join(', ')}.` }], max_tokens: 150, temperature: 0.8, response_format: { type: 'json_object' } }) })
     if (!resp.ok) throw new Error(`OpenAI ${resp.status}`)
-    const data = await resp.json()
-    const parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}')
+    const data = await resp.json(), parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}')
     return { moodyMessage: parsed.moodyMessage || fallback.moodyMessage, reasoning: parsed.reasoning || fallback.reasoning }
   } catch { return fallback }
 }
 
-/** Short Mood Match reveal line: two moods, compatibility score, caller's language + communication style. */
-async function handleGroupMatchMoodyMessage(_supabase: any, _userId: string, params: any): Promise<Response> {
-  const moods = Array.isArray(params.moods) ? params.moods.map((x: any) => String(x).trim()).filter(Boolean) : []
-  if (moods.length === 0) {
-    return new Response(JSON.stringify({ error: 'moods required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  }
-  const compatibilityScore = Math.max(0, Math.min(100, Math.round(Number(params.compatibility_score ?? params.compatibilityScore ?? 72))))
-  const rawLang = String(params.language || params.lang || 'en').toLowerCase()
-  const langCode = (rawLang.split(/[-_]/)[0] || 'en').slice(0, 8)
-  const supported = new Set(['en', 'nl', 'de', 'es', 'fr'])
-  const lang = supported.has(langCode) ? langCode : 'en'
-  const rawStyle = String(params.communication_style ?? params.communicationStyle ?? 'friendly').toLowerCase()
-  const style = ['friendly', 'professional', 'energetic', 'direct'].includes(rawStyle) ? rawStyle : 'friendly'
-
-  const langName: Record<string, string> = { en: 'English', nl: 'Dutch', de: 'German', es: 'Spanish', fr: 'French' }
-  const styleHint: Record<string, string> = {
-    friendly: 'Warm and playful; one emoji is fine if it feels natural.',
-    professional: 'Clear, concise, neutral; no slang; avoid emoji unless essential.',
-    energetic: 'High energy, punchy; exclamation marks welcome.',
-    direct: 'Very brief and factual; minimal flourish; aim under 140 characters.',
-  }
-  const moodLine = moods.join(' + ')
-  const userContent =
-    `Two friends finished Mood Match together. Their mood tags: ${moodLine}. Compatibility score: ${compatibilityScore} (0–100; higher = more aligned).\n` +
-    `Write ONE short paragraph as Moody (first person "I") reacting to how their moods mesh and that they now share one day plan. ${styleHint[style]}\n` +
-    `Output language: ${langName[lang] || 'English'} only.`
-
-  const openaiKey = Deno.env.get('OPENAI_API_KEY')
-  if (!openaiKey?.trim()) {
-    return new Response(JSON.stringify({ moodyMessage: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  }
-
-  try {
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content:
-              `${MOODY_CORE_IDENTITY}\n\nYou write ONE short post-plan message for Mood Match (two people, one shared plan). ` +
-              `Return JSON only: {"moodyMessage":"<string, max ~280 characters>"}. No markdown.`,
-          },
-          { role: 'user', content: userContent },
-        ],
-        max_tokens: 140,
-        temperature: style === 'energetic' ? 0.95 : 0.78,
-        response_format: { type: 'json_object' },
-      }),
-    })
-    if (!resp.ok) {
-      console.warn('group_match_moody_message OpenAI', resp.status)
-      return new Response(JSON.stringify({ moodyMessage: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    }
-    const data = await resp.json()
-    const raw = data.choices?.[0]?.message?.content || '{}'
-    const parsed = JSON.parse(raw)
-    const moodyMessage = String(parsed.moodyMessage || '').trim().slice(0, 400)
-    return new Response(JSON.stringify({ moodyMessage }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  } catch (e) {
-    console.warn('group_match_moody_message', e)
-    return new Response(JSON.stringify({ moodyMessage: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  }
-}
-
-// ── CHAT (NOW WITH CROSS-SESSION MEMORY) ──────────────────
-
 async function handleChat(supabase: any, userId: string, params: any): Promise<Response> {
   const message = (params.message || '').trim()
   if (!message) return new Response(JSON.stringify({ error: 'Message required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-
-  const [userContext, chatHistory] = await Promise.all([
-    fetchUserContext(supabase, userId),
-    fetchChatHistory(supabase, userId, 20), // NEW: load last 20 messages across ALL sessions
-  ])
-
-  const userCity = params.location?.trim() || null
-  const timeCtx = getTimeOfDayContext()
-  const style = userContext.communicationStyle || 'friendly'
-
-  // Build taste context string from profile
+  const [userContext, chatHistory] = await Promise.all([fetchUserContext(supabase, userId), fetchChatHistory(supabase, userId, 20)])
+  const userCity = params.location?.trim() || null, coordinates = params.coordinates as { lat: number; lng: number } | undefined, timeCtx = getTimeOfDayContext(), style = userContext.communicationStyle || 'friendly', lang = clientOutputLang(params), placesLang = googlePlacesLanguageFromRequest(params)
   let tasteContext = ''
-  if (userContext.tasteProfile && userContext.tasteProfile.totalInteractions >= 3) {
-    const topTypes = Object.entries(userContext.tasteProfile.savedPlaceTypes as Record<string,number>)
-      .sort((a, b) => b[1] - a[1]).slice(0, 3).map(([type]) => type)
-    if (topTypes.length > 0) tasteContext = `\nThis user tends to save/like: ${topTypes.join(', ')}.`
-    if (userContext.tasteProfile.topRatedPlaces?.length > 0) tasteContext += ` They've completed activities and rated them positively.`
-  }
-
-  const systemPrompt = `${MOODY_CORE_IDENTITY}\n\nCommunication style: ${style}.\n${userCity ? `You are helping the user explore ${userCity} right now.` : 'You help users explore cities worldwide.'}\n${userContext.isLocalMode ? 'User is LOCAL — avoid tourist clichés, prefer hidden gems.' : `User is TRAVELING — best of ${userCity || 'the city'}, mix iconic with local secrets.`}\nTime of day: ${timeCtx.timeSlot}.\nUser interests: ${JSON.stringify(userContext.allInterests)}\nDietary: ${userContext.dietaryRestrictions?.join(', ') || 'none'}\nBudget: ${userContext.budgetLevel}${tasteContext}\n\nIMPORTANT: You have access to this user's conversation history below. Use it naturally. If they mentioned something they liked before, remember it. If you recommended something in a previous session, you can reference it. Never make it feel like a database lookup — just remember like a friend would.\n\nMax 4 sentences. Ask max 1 question. NEVER invent place names.\nReply in the same language the user writes in.`
-
+  if (userContext.tasteProfile && userContext.tasteProfile.totalInteractions >= 3) { const topTypes = Object.entries(userContext.tasteProfile.savedPlaceTypes as Record<string,number>).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([type]) => type); if (topTypes.length > 0) tasteContext = `\nThis user tends to save/like: ${topTypes.join(', ')}.`; if (userContext.tasteProfile.topRatedPlaces?.length > 0) tasteContext += ` They've completed activities and rated them positively.` }
+  const systemPrompt = `${MOODY_CORE_IDENTITY}\n\nCommunication style: ${style}.\n${userCity ? `You are helping the user explore ${userCity} right now.` : 'You help users explore cities worldwide.'}\n${userContext.isLocalMode ? 'User is LOCAL — avoid tourist clichés, prefer hidden gems.' : `User is TRAVELING — best of ${userCity || 'the city'}, mix iconic with local secrets.`}\nTime of day: ${timeCtx.timeSlot}.\nUser interests: ${JSON.stringify(userContext.allInterests)}\nDietary: ${userContext.dietaryRestrictions?.join(', ') || 'none'}\nBudget: ${userContext.budgetLevel}${tasteContext}\n\nYou have this user's conversation history. Use it naturally — like a friend who actually remembers. If they mentioned being tired, don't suggest a 5km walk. If they mentioned coffee, reference it. Never make it feel like a database lookup.\n\nMax 4 sentences. Ask max 1 question. NEVER invent place names. If you don't know real places, say: "I don't have specific spots for that right now — tap Explore to find real options nearby."\nReply in the same language the user writes in.`
   const openaiKey = Deno.env.get('OPENAI_API_KEY')
-  if (!openaiKey) return new Response(JSON.stringify({ reply: getFallbackChat(style, clientOutputLang(params)), conversationId: params.conversationId || `conv_${userId}_${Date.now()}` }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-
+  if (!openaiKey) return new Response(JSON.stringify({ reply: getFallbackChat(style, lang), conversationId: params.conversationId || `conv_${userId}_${Date.now()}`, suggested_places: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   try {
-    // Build messages: system + historical memory + any client-provided recent history + new message
-    // chatHistory = cross-session DB history (last 20 messages)
-    // params.history = client-provided in-session history (last 10)
-    // We prefer DB history over client history to ensure memory works cross-session
     const historyMessages = chatHistory.length > 0 ? chatHistory : (params.history || []).slice(-10)
-
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...historyMessages.slice(-20), // last 20 messages = ~10 exchanges
-          { role: 'user', content: message }
-        ],
-        max_tokens: 400,
-        temperature: style === 'energetic' ? 0.9 : 0.75
-      })
-    })
-    if (!resp.ok) throw new Error(`OpenAI ${resp.status}`)
-    const data = await resp.json()
-    const reply = data.choices?.[0]?.message?.content || getFallbackChat(style, clientOutputLang(params))
-    const conversationId = params.conversationId || `conv_${userId}_${Date.now()}`
-    // Save to DB (fire and forget)
-    supabase.from('ai_conversations').insert([
-      { user_id: userId, conversation_id: conversationId, role: 'user', content: message },
-      { user_id: userId, conversation_id: conversationId, role: 'assistant', content: reply }
-    ]).then(() => {}).catch(() => {})
-    return new Response(JSON.stringify({ reply, conversationId }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  } catch { return new Response(JSON.stringify({ reply: getFallbackChat(style, clientOutputLang(params)) }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
+    const chatPromise = fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: systemPrompt }, ...historyMessages.slice(-20), { role: 'user', content: message }], max_tokens: 400, temperature: style === 'energetic' ? 0.9 : 0.82 }) })
+    let placesPromise: Promise<PlaceCard[]> = Promise.resolve([])
+    const { hasIntent } = detectChatPlaceIntent(message)
+    if (hasIntent && userCity && coordinates) placesPromise = searchPlacesForChat(message, userCity, coordinates, userContext, placesLang)
+    const [chatResp, suggestedPlaces] = await Promise.all([chatPromise, placesPromise])
+    if (!chatResp.ok) throw new Error(`OpenAI ${chatResp.status}`)
+    const data = await chatResp.json(), reply = data.choices?.[0]?.message?.content || getFallbackChat(style, lang), conversationId = params.conversationId || `conv_${userId}_${Date.now()}`
+    supabase.from('ai_conversations').insert([{ user_id: userId, conversation_id: conversationId, role: 'user', content: message }, { user_id: userId, conversation_id: conversationId, role: 'assistant', content: reply }]).then(() => {}).catch(() => {})
+    return new Response(JSON.stringify({ reply, conversationId, suggested_places: suggestedPlaces }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  } catch { return new Response(JSON.stringify({ reply: getFallbackChat(style, lang), conversationId: params.conversationId || `conv_${userId}_${Date.now()}`, suggested_places: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
 }
 
-function getFallbackChat(style: string, lang: 'nl' | 'en'): string {
-  if (lang === 'nl') { switch (style) { case 'energetic': return 'YO even geduld! 🔥'; case 'professional': return 'Momenteel niet beschikbaar.'; case 'direct': return 'Even wachten.'; default: return 'Hey! Probeer het zo nog eens 😊' } }
-  switch (style) { case 'energetic': return "YO hang on! 🔥"; case 'professional': return 'Currently unavailable.'; case 'direct': return 'Try again in a moment.'; default: return "Hey! Try again in a sec 😊" }
-}
-
-// ── SEARCH ────────────────────────────────────────────────
+function getFallbackChat(style: string, lang: 'nl' | 'en'): string { if (lang === 'nl') { switch (style) { case 'energetic': return 'YO even geduld! 🔥'; case 'professional': return 'Momenteel niet beschikbaar.'; case 'direct': return 'Even wachten.'; default: return 'Hey! Probeer het zo nog eens 😊' } }; switch (style) { case 'energetic': return 'YO hang on! 🔥'; case 'professional': return 'Currently unavailable.'; case 'direct': return 'Try again in a moment.'; default: return 'Hey! Try again in a sec 😊' } }
 
 async function handleSearch(supabase: any, userId: string, params: any): Promise<Response> {
   const query = (params.query || '').trim(), location = (params.location || '').trim(), coordinates = params.coordinates
   if (!query) return new Response(JSON.stringify({ error: 'Query required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   if (!location || !coordinates?.lat || !coordinates?.lng) return new Response(JSON.stringify({ error: 'Location and coordinates required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  try {
-    const results = await searchPlacesV1(`${query} in ${location}`, coordinates, 20000, false, 20, googlePlacesLanguageFromRequest(params))
-    const qualified = await enrichAndFilter(results, { minRating: 3.5, minReviews: 5 })
-    return new Response(JSON.stringify({ cards: qualified, total_found: qualified.length }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  } catch { return new Response(JSON.stringify({ cards: [], total_found: 0 }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
+  try { const results = await searchPlacesV1(`${query} in ${location}`, coordinates, 20000, false, 20, googlePlacesLanguageFromRequest(params)); const qualified = await enrichAndFilter(results, { minRating: 3.5, minReviews: 5 }); return new Response(JSON.stringify({ cards: qualified, total_found: qualified.length }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) } catch { return new Response(JSON.stringify({ cards: [], total_found: 0 }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
 }
 
-// ── HUB MESSAGE ───────────────────────────────────────────
-
 async function handleGenerateHubMessage(supabase: any, userId: string, params: Record<string, unknown>): Promise<Response> {
-  const lang = clientOutputLang(params)
-  const moods = Array.isArray(params.current_moods) ? (params.current_moods as unknown[]).filter((m): m is string => typeof m === 'string') : []
-  const timeOfDay = typeof params.time_of_day === 'string' && params.time_of_day.trim() ? params.time_of_day.trim() : (lang === 'nl' ? 'dag' : 'day')
-  let activitiesCount = 0
-  const ac = params.activities_count
-  if (typeof ac === 'number' && Number.isFinite(ac)) activitiesCount = Math.max(0, Math.floor(ac))
-  else if (typeof ac === 'string') { const n = parseInt(ac, 10); if (!isNaN(n)) activitiesCount = Math.max(0, n) }
-  const userContext = await fetchUserContext(supabase, userId)
-  const style = String(userContext.communicationStyle || 'friendly').toLowerCase()
-  const moodStr = moods.join(' & ') || (lang === 'nl' ? 'jouw vibe' : 'your vibe')
-  const fb: Record<string, Record<string, string>> = {
-    nl: { energetic: activitiesCount > 0 ? `YO ik heb ${activitiesCount} ding${activitiesCount===1?'':'en'} voor je klaar 🔥` : `Nog niks? Ik zoek iets ${moodStr} voor je 🔥`, professional: activitiesCount > 0 ? `Ik heb ${activitiesCount} activiteit${activitiesCount===1?'':'en'} voor je gepland.` : 'Ik heb nog niets voor je gepland.', direct: activitiesCount > 0 ? `${activitiesCount} gepland.` : 'Geen plannen.', calm: activitiesCount > 0 ? `Ik heb iets leuks voor je klaar ☀️` : `Rustige dag? Ik zoek iets voor je ☀️`, friendly: activitiesCount > 0 ? `Hey! Ik heb ${activitiesCount} ding${activitiesCount===1?'':'en'} voor je klaarstaan 😊` : `Nog rustig? Ik zoek iets ${moodStr} voor je 😊` },
-    en: { energetic: activitiesCount > 0 ? `YO I got ${activitiesCount} thing${activitiesCount===1?'':'s'} lined up for you 🔥` : `Nothing yet? I'll find you something ${moodStr} 🔥`, professional: activitiesCount > 0 ? `I've planned ${activitiesCount} activit${activitiesCount===1?'y':'ies'} for you.` : "I haven't planned anything yet.", direct: activitiesCount > 0 ? `${activitiesCount} planned.` : 'No plans.', calm: activitiesCount > 0 ? `I found something good for you today ☀️` : `Quiet day? I'll find you something ☀️`, friendly: activitiesCount > 0 ? `Hey! I got ${activitiesCount} activit${activitiesCount===1?'y':'ies'} ready for you 😊` : `Quiet day? I'll find you something ${moodStr} 😊` },
-  }
-  const fallbackMessage = (fb[lang] || fb.en)[style] || (fb[lang] || fb.en).friendly
-  const openaiKey = Deno.env.get('OPENAI_API_KEY')
+  const lang = clientOutputLang(params), moods = Array.isArray(params.current_moods) ? (params.current_moods as unknown[]).filter((m): m is string => typeof m === 'string') : [], timeOfDay = typeof params.time_of_day === 'string' && params.time_of_day.trim() ? params.time_of_day.trim() : (lang === 'nl' ? 'dag' : 'day')
+  let activitiesCount = 0; const ac = params.activities_count; if (typeof ac === 'number' && Number.isFinite(ac)) activitiesCount = Math.max(0, Math.floor(ac)); else if (typeof ac === 'string') { const n = parseInt(ac, 10); if (!isNaN(n)) activitiesCount = Math.max(0, n) }
+  const userContext = await fetchUserContext(supabase, userId), style = String(userContext.communicationStyle || 'friendly').toLowerCase(), moodStr = moods.join(' & ') || (lang === 'nl' ? 'jouw vibe' : 'your vibe')
+  const fb: Record<string, Record<string, string>> = { nl: { energetic: activitiesCount > 0 ? `YO ik heb ${activitiesCount} ding${activitiesCount===1?'':'en'} voor je klaar 🔥` : `Nog niks? Ik zoek iets ${moodStr} voor je 🔥`, professional: activitiesCount > 0 ? `Ik heb ${activitiesCount} activiteit${activitiesCount===1?'':'en'} voor je gepland.` : 'Ik heb nog niets voor je gepland.', direct: activitiesCount > 0 ? `${activitiesCount} gepland.` : 'Geen plannen.', calm: activitiesCount > 0 ? `Ik heb iets leuks voor je klaar ☀️` : `Rustige dag? Ik zoek iets voor je ☀️`, friendly: activitiesCount > 0 ? `Hey! Ik heb ${activitiesCount} ding${activitiesCount===1?'':'en'} voor je klaarstaan 😊` : `Nog rustig? Ik zoek iets ${moodStr} voor je 😊` }, en: { energetic: activitiesCount > 0 ? `YO I got ${activitiesCount} thing${activitiesCount===1?'':'s'} lined up for you 🔥` : `Nothing yet? I'll find you something ${moodStr} 🔥`, professional: activitiesCount > 0 ? `I've planned ${activitiesCount} activit${activitiesCount===1?'y':'ies'} for you.` : "I haven't planned anything yet.", direct: activitiesCount > 0 ? `${activitiesCount} planned.` : 'No plans.', calm: activitiesCount > 0 ? `I found something good for you today ☀️` : `Quiet day? I'll find you something ☀️`, friendly: activitiesCount > 0 ? `Hey! I got ${activitiesCount} activit${activitiesCount===1?'y':'ies'} ready for you 😊` : `Quiet day? I'll find you something ${moodStr} 😊` } }
+  const fallbackMessage = (fb[lang] || fb.en)[style] || (fb[lang] || fb.en).friendly, openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey?.trim()) return new Response(JSON.stringify({ message: fallbackMessage }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   try {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: `${MOODY_CORE_IDENTITY}\n\nWrite ONE short home screen greeting in ${lang === 'nl' ? 'Dutch' : 'English'}. Communication style: ${style}. Use "I". Max 100 chars. Max 1 emoji. Activities planned: ${activitiesCount}. User mood: ${moodStr}. Time: ${timeOfDay}.` }, { role: 'user', content: JSON.stringify({ current_moods: moods, time_of_day: timeOfDay, activities_count: activitiesCount }) }], max_tokens: 80, temperature: 0.8 }) })
     if (!resp.ok) throw new Error(`OpenAI ${resp.status}`)
-    const data = await resp.json()
-    const text = (data.choices?.[0]?.message?.content || '').trim().replace(/^["']|["']$/g, '')
+    const data = await resp.json(), text = (data.choices?.[0]?.message?.content || '').trim().replace(/^["']|["']$/g, '')
     if (text.length > 0 && text.length <= 280) return new Response(JSON.stringify({ message: text }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (e) { console.error('❌ handleGenerateHubMessage:', e) }
   return new Response(JSON.stringify({ message: fallbackMessage }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 }
 
-// ── DAY PLAN CONVERSION ───────────────────────────────────
-
-/** One cafe-ish pick for the current part of the day, starting soon (same day) — used by quick_pick=coffee from the app. */
-function convertPlacesToActivitiesQuickCoffee(
-  places: PlaceCard[],
-  moods: string[],
-  location: string,
-  coordinates: { lat: number; lng: number },
-  lang: 'nl' | 'en',
-  slot: 'morning' | 'afternoon' | 'evening',
-): Activity[] {
-  const isCafeish = (p: PlaceCard) => {
-    const types = (p.types || []).map((t: string) => t.toLowerCase())
-    const primary = (p.primaryType || '').toLowerCase()
-    const n = p.name.toLowerCase()
-    return types.some((t) => ['cafe', 'bakery', 'coffee_shop', 'tea_house'].includes(t) || primary === 'cafe')
-      || n.includes('coffee') || n.includes('koffie') || n.includes('café') || n.includes('espresso')
-  }
-  const inSlot = (p: PlaceCard) => getTimeSlotsForPlace(p).includes(slot)
-  let pool = places.filter((p) => isCafeish(p) && inSlot(p))
-  if (!pool.length) pool = places.filter(isCafeish)
-  if (!pool.length) pool = places.filter(inSlot)
-  if (!pool.length) pool = places.slice(0, 5)
-  const p = pool[0]
-  if (!p) return []
-  const now = new Date()
-  const st = new Date(now.getTime() + (14 + Math.floor(Math.random() * 18)) * 60 * 1000)
-  st.setSeconds(0, 0)
-  return [createActivity(p, slot, st, moods.length ? moods : ['foodie'], lang)]
-}
-
 function convertPlacesToActivities(places: PlaceCard[], moods: string[], location: string, coordinates: { lat: number; lng: number }, lang: 'nl' | 'en'): Activity[] {
-  const activities: Activity[] = [], used = new Set<string>()
-  const morning: PlaceCard[] = [], afternoon: PlaceCard[] = [], evening: PlaceCard[] = []
+  const activities: Activity[] = [], used = new Set<string>(), morning: PlaceCard[] = [], afternoon: PlaceCard[] = [], evening: PlaceCard[] = []
   for (const p of places) { if (used.has(p.id)) continue; const slots = getTimeSlotsForPlace(p); if (slots.includes('morning')) morning.push(p); if (slots.includes('afternoon')) afternoon.push(p); if (slots.includes('evening')) evening.push(p) }
   const now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const add = (pool: PlaceCard[], slot: string, h1: number, h2: number, count: number, pastH: number) => {
-    let added = 0
-    for (const p of pool) {
-      if (added >= count) break; if (used.has(p.id)) continue; used.add(p.id)
-      const h = h1 + Math.floor(Math.random() * (h2 - h1)), m = [0,15,30,45][Math.floor(Math.random() * 4)]
-      const st = new Date(today.getTime()); st.setHours(h, m, 0, 0)
-      if (now.getHours() >= pastH) st.setDate(st.getDate() + 1)
-      activities.push(createActivity(p, slot, st, moods, lang)); added++
-    }
-  }
+  const add = (pool: PlaceCard[], slot: string, h1: number, h2: number, count: number, pastH: number) => { let added = 0; for (const p of pool) { if (added >= count) break; if (used.has(p.id)) continue; used.add(p.id); const h = h1 + Math.floor(Math.random() * (h2 - h1)), mm = [0,15,30,45][Math.floor(Math.random() * 4)]; const st = new Date(today.getTime()); st.setHours(h, mm, 0, 0); if (now.getHours() >= pastH) st.setDate(st.getDate() + 1); activities.push(createActivity(p, slot, st, moods, lang)); added++ } }
   add(morning,'morning',7,10,3,11); add(afternoon,'afternoon',12,16,3,17); add(evening,'evening',17,20,3,21)
   return activities.sort((a,b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
 }
@@ -1061,23 +549,52 @@ function getTimeSlotsForPlace(place: PlaceCard): string[] {
 }
 
 function createActivity(place: PlaceCard, timeSlot: string, startTime: Date, moods: string[], lang: 'nl' | 'en'): Activity {
-  const placeId = place.id.replace('google_', '')
-  const desc = place.editorial_summary || place.description || (lang==='nl' ? `${place.name} — een goede keuze voor je ${moods.join(' en ').toLowerCase()} dag.` : `${place.name} — a solid pick for your ${moods.join(' & ').toLowerCase()} day.`)
+  const placeId = place.id.replace('google_', ''), desc = place.editorial_summary || place.description || (lang==='nl' ? `${place.name} — een goede keuze voor je ${moods.join(' en ').toLowerCase()} dag.` : `${place.name} — a solid pick for your ${moods.join(' & ').toLowerCase()} day.`)
   const types = place.types || [], tags: string[] = []
-  if (types.some(t=>['restaurant','food','food_court'].includes(t))) tags.push('Food')
-  if (types.some(t=>['spa','beauty_salon'].includes(t))) tags.push('Wellness')
-  if (types.some(t=>['museum','art_gallery'].includes(t))) tags.push(lang==='nl'?'Cultuur':'Culture')
-  if (types.some(t=>['park','natural_feature'].includes(t))) tags.push(lang==='nl'?'Buiten':'Outdoors')
-  if (types.some(t=>['bar','night_club'].includes(t))) tags.push('Nightlife')
-  if (types.some(t=>['cafe','bakery','coffee_shop'].includes(t))) tags.push('Cafe')
-  if (types.some(t=>['tourist_attraction','landmark'].includes(t))) tags.push(lang==='nl'?'Bezienswaardigheid':'Attraction')
-  let duration = 60
-  if (types.includes('restaurant')) duration=90; else if (types.includes('museum')||types.includes('art_gallery')) duration=120
-  else if (types.includes('spa')) duration=90; else if (types.includes('cafe')||types.includes('bakery')) duration=45
-  else if (types.includes('bar')||types.includes('night_club')) duration=120
-  let paymentType = 'free'
-  if (types.includes('museum')) paymentType='ticket'
-  else if (types.includes('restaurant')||types.includes('bar')||types.includes('spa')) paymentType='reservation'
-  else if (place.price_level) paymentType='reservation'
+  if (types.some(t=>['restaurant','food','food_court'].includes(t))) tags.push('Food'); if (types.some(t=>['spa','beauty_salon'].includes(t))) tags.push('Wellness'); if (types.some(t=>['museum','art_gallery'].includes(t))) tags.push(lang==='nl'?'Cultuur':'Culture'); if (types.some(t=>['park','natural_feature'].includes(t))) tags.push(lang==='nl'?'Buiten':'Outdoors'); if (types.some(t=>['bar','night_club'].includes(t))) tags.push('Nightlife'); if (types.some(t=>['cafe','bakery','coffee_shop'].includes(t))) tags.push('Cafe'); if (types.some(t=>['tourist_attraction','landmark'].includes(t))) tags.push(lang==='nl'?'Bezienswaardigheid':'Attraction')
+  let duration = 60; if (types.includes('restaurant')) duration=90; else if (types.includes('museum')||types.includes('art_gallery')) duration=120; else if (types.includes('spa')) duration=90; else if (types.includes('cafe')||types.includes('bakery')) duration=45; else if (types.includes('bar')||types.includes('night_club')) duration=120
+  let paymentType = 'free'; if (types.includes('museum')) paymentType='ticket'; else if (types.includes('restaurant')||types.includes('bar')||types.includes('spa')) paymentType='reservation'; else if (place.price_level) paymentType='reservation'
   return { id: `activity_${Date.now()}_${place.id}`, name: place.name, description: desc, timeSlot, duration, location: { latitude: place.location.lat, longitude: place.location.lng }, paymentType, imageUrl: place.photo_url||'', rating: place.rating, tags: tags.slice(0,2), startTime: startTime.toISOString(), priceLevel: place.price_level != null ? (['','€','€€','€€€','€€€€'][place.price_level]||'€€') : undefined, placeId }
 }
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '', supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    if (!supabaseUrl || !supabaseAnonKey) return new Response(JSON.stringify({ success: false, error: 'Server configuration error' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) return new Response(JSON.stringify({ success: false, error: 'Authentication required' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    const token = authHeader.substring(7)
+    const supabaseWithAuth = createClient(supabaseUrl, supabaseAnonKey, { global: { headers: { Authorization: authHeader, apikey: supabaseAnonKey } }, auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } })
+    const { data: { user: authUser }, error: authError } = await supabaseWithAuth.auth.getUser(token)
+    if (authError || !authUser) return new Response(JSON.stringify({ success: false, error: 'Authentication failed' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (!uuidRegex.test(authUser.id)) return new Response(JSON.stringify({ success: false, error: 'Invalid user ID' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    let body: MoodyRequest
+    try { body = await req.json() } catch { return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
+    const { action, ...params } = body
+    if (!action) return new Response(JSON.stringify({ error: 'Action is required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    const admin = getServiceSupabase(), rateKey = userRateKey(authUser.id), rateStarted = performance.now(), maxPerMin = Number(Deno.env.get('EDGE_RATE_MOODY_PER_MINUTE') ?? '60')
+    if (admin) { const { allowed, currentCount } = await edgeRateLimitConsume(admin, rateKey, 'moody', maxPerMin); if (!allowed) { logApiInvocationFireAndForget(admin, { user_id: authUser.id, user_key: rateKey, function_slug: 'moody', operation: action, http_status: 429, duration_ms: Math.round(performance.now() - rateStarted), error_snippet: `rate_limit count=${currentCount}` }); return new Response(JSON.stringify({ success: false, error: 'rate_limit_exceeded', retry_after_seconds: 60 }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' } }) } }
+    const traceStarted = performance.now()
+    console.log(`🎯 Moody v88: action=${action}, userId=${authUser.id}`)
+    return traceEdgeResponse(admin, { user_id: authUser.id, user_key: rateKey, function_slug: 'moody', operation: action }, traceStarted,
+      (async (): Promise<Response> => {
+        switch (action) {
+          case 'get_explore': return await handleGetExplore(supabaseWithAuth, authUser.id, params)
+          case 'create_day_plan': return await handleCreateDayPlan(supabaseWithAuth, authUser.id, params)
+          case 'chat': return await handleChat(supabaseWithAuth, authUser.id, params)
+          case 'generate_hub_message': return await handleGenerateHubMessage(supabaseWithAuth, authUser.id, params)
+          case 'group_match_moody_message': return await handleGroupMatchMoodyMessage(supabaseWithAuth, authUser.id, params)
+          case 'search': return await handleSearch(supabaseWithAuth, authUser.id, params)
+          case 'place_card_blurb': return await handlePlaceCardBlurb(params)
+          case 'place_detail_blurb': return await handlePlaceDetailBlurb(params)
+          case 'place_explore_rich': return await handlePlaceExploreRich(params)
+          default: return new Response(JSON.stringify({ error: `Invalid action: ${action}` }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        }
+      })(), corsHeaders)
+  } catch (error) {
+    console.error('❌ Moody error:', error)
+    return new Response(JSON.stringify({ error: 'Internal server error', message: error instanceof Error ? error.message : String(error) }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  }
+})
