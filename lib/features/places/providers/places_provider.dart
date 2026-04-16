@@ -15,10 +15,10 @@ class PlacesNotifier extends _$PlacesNotifier {
     state = const AsyncValue.loading();
     
     try {
-      final service = ref.read(placesServiceProvider);
+      final service = ref.read(placesServiceProvider.notifier);
       final predictions = await service.searchPlaces(query);
       
-      final places = await Future.wait(
+      final places = await Future.wait<Place>(
         predictions.map((prediction) async {
           final details = await service.getPlaceDetails(prediction.placeId!);
           return Place(
@@ -43,7 +43,7 @@ class PlacesNotifier extends _$PlacesNotifier {
   }
 
   String getPhotoUrl(String photoReference) {
-    final service = ref.read(placesServiceProvider);
+    final service = ref.read(placesServiceProvider.notifier);
     return service.getPhotoUrl(photoReference);
   }
 } 

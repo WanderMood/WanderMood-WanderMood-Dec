@@ -1,17 +1,15 @@
-import 'dart:async' show unawaited;
+import 'dart:async';
 
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/router/router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/config/supabase_config.dart';
 import 'core/constants/api_keys.dart';
-import 'features/auth/providers/user_provider.dart';
-import 'features/auth/providers/auth_provider.dart';
 import 'core/domain/providers/location_notifier_provider.dart';
 import 'features/location/services/location_service.dart';
 import 'features/plans/data/services/schema_helper.dart';
@@ -27,12 +25,15 @@ import 'package:wandermood/core/presentation/providers/language_provider.dart';
 import 'package:wandermood/core/notifications/notification_navigation.dart';
 import 'package:wandermood/core/services/notification_service.dart';
 import 'package:wandermood/core/providers/notification_provider.dart';
+import 'package:wandermood/features/group_planning/domain/group_planning_deep_link.dart';
 
 // Provider to initialize app data on startup
 final appInitializerProvider = FutureProvider<bool>((ref) async {
-  // Start listening to auth state changes 
-  ref.watch(authStateChangesProvider);
-  
+  // Do not [ref.watch] authStateChangesProvider here: that stream fires multiple
+  // times during cold start (session restore, etc.) and would invalidate this
+  // [FutureProvider], re-running notifications/location/DB init in parallel and
+  // risking native crashes (EXC_BAD_ACCESS). Session restore is handled below;
+  // [authStateChangesProvider] is already watched from profile/auth providers.
   // **CRITICAL**: Synchronize SharedPreferences with Supabase auth state
   await _synchronizeAuthState();
   
@@ -213,98 +214,89 @@ Future<void> _synchronizeAuthState() async {
   }
 }
 
-Future<void> main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  try {
-    // Use --dart-define for API keys (never bundle .env in release)
-    if (kDebugMode) {
-      debugPrint('🔑 API keys loaded from --dart-define (release) or ApiKeys fallbacks (debug)');
-    }
-    
-    // **CRITICAL**: Validate required API keys BEFORE initializing Supabase
-    await _validateApiKeys();
-    
-    // Initialize Supabase with loaded environment variables
-    await SupabaseConfig.initialize();
-    
-    // Initialize SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    final magicLinkEmailCache = CachedMagicLinkEmailService(prefs);
+  // Single [runApp]: on iOS (implicit engine), a second [runApp] after async init
+  // often never replaces the first tree — users stayed on the green placeholder.
+  runApp(const _WanderMoodBootstrap());
+}
 
-    // Magic-link email cache: extend TTL while session is active; clear on sign-out.
-    Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
-      final event = data.event;
-      if (event == AuthChangeEvent.signedIn ||
-          event == AuthChangeEvent.tokenRefreshed) {
-        final email = data.session?.user.email;
-        if (email != null && email.isNotEmpty) {
-          if (event == AuthChangeEvent.signedIn) {
-            debugPrint('✅ User signed in — magic-link email cache extended');
-          }
-          await magicLinkEmailCache.remember(email);
-        }
-      } else if (event == AuthChangeEvent.signedOut) {
-        await magicLinkEmailCache.clear();
-        await AiChatQuotaService.clearPremiumCache();
+/// Boots async (Supabase, prefs), then swaps in [ProviderScope] + [WanderMoodApp].
+class _WanderMoodBootstrap extends StatefulWidget {
+  const _WanderMoodBootstrap();
+
+  @override
+  State<_WanderMoodBootstrap> createState() => _WanderMoodBootstrapState();
+}
+
+class _WanderMoodBootstrapState extends State<_WanderMoodBootstrap> {
+  Widget? _root;
+
+  @override
+  void initState() {
+    super.initState();
+    _bootstrap();
+  }
+
+  Future<void> _bootstrap() async {
+    try {
+      if (kDebugMode) {
+        debugPrint(
+          '🔑 API keys loaded from --dart-define (release) or ApiKeys fallbacks (debug)',
+        );
       }
-    });
 
-    debugPrint('App initialized with Rotterdam as default location: ${LocationService.defaultLocation}');
-    
-    runApp(
-      ProviderScope(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-          gamification.sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
-        child: const WanderMoodApp(),
-      ),
-    );
-  } catch (e, stackTrace) {
-    debugPrint('❌ Error initializing app: $e');
-    debugPrint('Stack trace: $stackTrace');
-    
-    // Show user-friendly error in debug, fail fast in release
-    if (kDebugMode) {
-      runApp(
-        MaterialApp(
-          home: Scaffold(
-            body: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'App Initialization Error',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      e.toString(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Check console for details',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+      await _validateApiKeys();
+
+      await SupabaseConfig.initialize().timeout(
+        const Duration(seconds: 45),
+        onTimeout: () => throw TimeoutException(
+          'Supabase.initialize() took longer than 45s. '
+          'Check network, clock, and Supabase project status.',
         ),
       );
-    } else {
-      // Release: still run Flutter so users see an error instead of a blank launch screen
-      // (rethrowing here leaves the native splash / white frame with no UI).
-      runApp(
-        MaterialApp(
+
+      final prefs = await SharedPreferences.getInstance();
+      final magicLinkEmailCache = CachedMagicLinkEmailService(prefs);
+
+      Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
+        final event = data.event;
+        if (event == AuthChangeEvent.signedIn ||
+            event == AuthChangeEvent.tokenRefreshed) {
+          final email = data.session?.user.email;
+          if (email != null && email.isNotEmpty) {
+            if (event == AuthChangeEvent.signedIn) {
+              debugPrint('✅ User signed in — magic-link email cache extended');
+            }
+            await magicLinkEmailCache.remember(email);
+          }
+        } else if (event == AuthChangeEvent.signedOut) {
+          await magicLinkEmailCache.clear();
+          await AiChatQuotaService.clearPremiumCache();
+        }
+      });
+
+      debugPrint(
+        'App initialized with Rotterdam as default location: ${LocationService.defaultLocation}',
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _root = ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            gamification.sharedPreferencesProvider.overrideWithValue(prefs),
+          ],
+          child: const WanderMoodApp(),
+        );
+      });
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error initializing app: $e');
+      debugPrint('Stack trace: $stackTrace');
+      if (!mounted) return;
+      setState(() {
+        _root = MaterialApp(
+          debugShowCheckedModeBanner: false,
           home: Scaffold(
             body: Center(
               child: Padding(
@@ -314,10 +306,12 @@ Future<void> main() async {
                   children: [
                     const Icon(Icons.error_outline, size: 64, color: Colors.red),
                     const SizedBox(height: 16),
-                    const Text(
-                      'WanderMood couldn\'t start',
+                    Text(
+                      kDebugMode
+                          ? 'App Initialization Error'
+                          : 'WanderMood couldn\'t start',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -328,14 +322,54 @@ Future<void> main() async {
                       textAlign: TextAlign.center,
                       style: const TextStyle(fontSize: 13),
                     ),
+                    if (kDebugMode) ...[
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Check console for details',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
                   ],
                 ),
               ),
             ),
           ),
-        ),
-      );
+        );
+      });
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _root ??
+        const MaterialApp(
+          debugShowCheckedModeBanner: false,
+          home: _EngineWarmupPlaceholder(),
+        );
+  }
+}
+
+/// Same forest tone as [SplashScreen] — shown until bootstrap finishes.
+class _EngineWarmupPlaceholder extends StatelessWidget {
+  const _EngineWarmupPlaceholder();
+
+  static const Color _wmForest = Color(0xFF2A6049);
+
+  @override
+  Widget build(BuildContext context) {
+    return const ColoredBox(
+      color: _wmForest,
+      child: Center(
+        child: SizedBox(
+          width: 36,
+          height: 36,
+          child: CircularProgressIndicator(
+            color: Colors.white,
+            strokeWidth: 3,
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -410,11 +444,56 @@ SUPABASE_ANON_KEY=your_key
   }
 }
 
-class WanderMoodApp extends ConsumerWidget {
+class WanderMoodApp extends ConsumerStatefulWidget {
   const WanderMoodApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WanderMoodApp> createState() => _WanderMoodAppState();
+}
+
+class _WanderMoodAppState extends ConsumerState<WanderMoodApp> {
+  StreamSubscription<Uri>? _appLinkSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _initGroupPlanningDeepLinks());
+  }
+
+  Future<void> _initGroupPlanningDeepLinks() async {
+    final appLinks = AppLinks();
+    try {
+      final initial = await appLinks.getInitialLink();
+      _handleGroupPlanningUri(initial);
+    } catch (e) {
+      debugPrint('AppLinks getInitialLink: $e');
+    }
+    _appLinkSubscription = appLinks.uriLinkStream.listen(
+      _handleGroupPlanningUri,
+      onError: (Object e) => debugPrint('AppLinks stream: $e'),
+    );
+  }
+
+  void _handleGroupPlanningUri(Uri? uri) {
+    if (uri == null || !mounted) return;
+    final location = groupPlanningJoinLocationFromUri(uri);
+    if (location == null) return;
+    final router = ref.read(routerProvider);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      debugPrint('🔗 Deep link → $location');
+      router.go(location);
+    });
+  }
+
+  @override
+  void dispose() {
+    _appLinkSubscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // Start app initialization
     ref.watch(appInitializerProvider);
 
@@ -440,16 +519,11 @@ class WanderMoodApp extends ConsumerWidget {
         }
       }));
     });
-    
-    // Get the router instance
+
     final router = ref.watch(routerProvider);
-    
-    // Get user preferences for theme
     final userPrefs = ref.watch(userPreferencesProvider);
-    
-    // Get locale from locale provider
     final locale = ref.watch(localeProvider);
-    
+
     return MaterialApp.router(
       title: 'WanderMood',
       debugShowCheckedModeBanner: false,
@@ -460,24 +534,38 @@ class WanderMoodApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: userPrefs.getThemeMode(),
-      // Localization configuration
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      locale: locale, // null means use system locale
+      locale: locale,
+      // During go_router transitions the child can be null briefly (splash → main,
+      // hot restart, shell rebuilds). [SizedBox.shrink] left a bare cream layer that
+      // users read as a stuck white/blank screen — show a tiny loader instead.
+      builder: (context, child) {
+        return ColoredBox(
+          color: AppTheme.cream,
+          child: child ??
+              const Center(
+                child: SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    color: Color(0xFF2A6049),
+                  ),
+                ),
+              ),
+        );
+      },
       localeResolutionCallback: (locale, supportedLocales) {
-        // If locale is null (system default), use device locale
         if (locale == null) {
           final deviceLocale = WidgetsBinding.instance.platformDispatcher.locale;
-          // Check if device locale is supported
           for (var supportedLocale in supportedLocales) {
             if (supportedLocale.languageCode == deviceLocale.languageCode) {
               return supportedLocale;
             }
           }
-          // Fallback to English if device locale not supported
           return const Locale('en');
         }
-        // Use the provided locale
         return locale;
       },
       routerConfig: router,

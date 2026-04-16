@@ -36,7 +36,7 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
           .from('profiles')
           // Some environments don't have `avatar_url` in the profiles table.
           // Select only `image_url` to avoid 42703 errors.
-          .select('id, email, username, full_name, image_url, date_of_birth, bio, favorite_mood, mood_streak, is_public, created_at, updated_at')
+          .select('id, email, username, full_name, image_url, date_of_birth, bio, favorite_mood, mood_streak, is_public, language_preference, created_at, updated_at')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -118,6 +118,18 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
           .from('profiles')
           .update(updatedProfile.toSupabase())
           .eq('id', user.id);
+
+      try {
+        await supabase.from('user_preferences').upsert({
+          'user_id': user.id,
+          'language_preference': updatedProfile.languagePreference,
+          'updated_at': DateTime.now().toIso8601String(),
+        }, onConflict: 'user_id');
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('⚠️ user_preferences language sync skipped: $e');
+        }
+      }
 
       state = AsyncValue.data(updatedProfile);
     } catch (error, stackTrace) {

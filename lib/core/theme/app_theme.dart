@@ -106,7 +106,9 @@ class AppTheme {
         seedColor: const Color(0xFF2A6049),
         brightness: Brightness.light,
       ),
-      scaffoldBackgroundColor: Colors.transparent,
+      // Opaque default: transparent scaffolds read as black behind the Flutter view
+      // (startup, transitions, any screen that omits backgroundColor).
+      scaffoldBackgroundColor: cream,
       textTheme: GoogleFonts.poppinsTextTheme(),
       drawerTheme: DrawerThemeData(
         scrimColor: Colors.black.withValues(alpha: 0.4),
@@ -123,7 +125,7 @@ class AppTheme {
         seedColor: const Color(0xFF4CAF50), // Green primary color for dark mode
         brightness: Brightness.dark,
       ),
-      scaffoldBackgroundColor: Colors.transparent,
+      scaffoldBackgroundColor: const Color(0xFF0D1117),
       drawerTheme: DrawerThemeData(
         scrimColor: Colors.black.withValues(alpha: 0.4),
         elevation: 0,

@@ -3,6 +3,11 @@
 ## PROJECT OVERVIEW
 You are working on WanderMood, a Flutter travel app that creates personalized day plans based on user mood, weather, and location. The app includes social features for sharing travel experiences.
 
+## PRESERVE EXISTING FLOWS (CRITICAL)
+- **Do not** change onboarding, auth (including magic link), splash, `main()` startup order, or `GoRouter` redirect/navigation logic unless the user **explicitly** asked for that change in the current task.
+- **No** drive-by refactors or “cleanup” of flows that already work. Prefer diagnosis first; minimal diffs only when the user confirms they want behavior changed.
+- Full wording: `.cursor/rules/preserve-existing-flows.mdc` (always applied).
+
 ## TECH STACK
 - Frontend: Flutter/Dart
 - Backend: Supabase (Auth, Database, Storage)

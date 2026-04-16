@@ -14,7 +14,7 @@
   "moodHomeCtxReturnNight": "Late-night energie — laten we zien wat je aanspreekt.",
   "moodHomeCtxFallback": "Laten we de juiste vibe voor vandaag vinden.",
   "splashTagline": "Je reisgezel op basis van je mood",
-  "splashPlanYourDayByFeeling": "Plan je dag op je gevoel",
+  "splashPlanYourDayByFeeling": "Plan je dag op basis van je gevoel",
   "welcome": "Welkom",
   "hello": "Hallo",
   "goodMorning": "Goedemorgen",
@@ -150,14 +150,12 @@
   "introTitleLine2": "jouw avontuur",
   "introSkip": "Overslaan",
   "introSeeHowItWorks": "Kijk even, dit is leuk!",
-
   "onboardingLoadingTitle": "Ik leer je kennen! 🧠",
   "onboardingLoadingSubtitle0": "Je interesses opslaan...",
   "onboardingLoadingSubtitle1": "Je stijl verwerken...",
   "onboardingLoadingSubtitle2": "Plekken zoeken die bij je passen...",
   "onboardingLoadingSubtitle3": "Ik zet me voor je klaar...",
   "onboardingLoadingFooter": "Dit duurt maar een moment ✨",
-
   "demoMoodyGreeting": "Hé… Ik ben Moody 🙂",
   "demoMoodyAskVibe": "Ik help je geweldige plekken ontdekken op basis van hoe je je voelt. Wat is je mood vandaag?",
   "demoMoodyGreetingLine2": "Vertel me wat voor dag je wilt — ik regel de rest.",
@@ -633,7 +631,10 @@
   "profileEditProfilePhoto": "Profielfoto",
   "profileEditProfilePhotoTap": "Tik om te wijzigen",
   "profileEditNameLabel": "Volledige naam",
-  "profileEditUsernameLabel": "Gebruikersnaam",
+  "profileEditUsernameLabel": "Gebruikersnaam *",
+  "profileEditUsernameRequiredError": "Gebruikersnaam is verplicht.",
+  "profileEditUsernameFormatError": "Gebruik 3–30 tekens: alleen letters, cijfers of liggende streepjes.",
+  "profileEditUsernameTakenError": "Die gebruikersnaam is al bezet. Kies een andere.",
   "profileEditEmailLabel": "E-mail",
   "profileEditBioLabel": "Bio",
   "profileEditSelectDate": "Selecteer datum",
@@ -1404,6 +1405,9 @@
   "moodHubBannerAfternoon": "Middag — tijd om je vibe te matchen.",
   "moodHubBannerEvening": "Avond — wat is je vibe?",
   "moodHubBannerNight": "Late avond — laten we iets passends vinden.",
+  "moodyIdleWakeOpenPlan": "Laten we je plan van vandaag openen.",
+  "moodyIdleWakeChooseMood": "Wat doen we vandaag? Kies je mood en we bouwen de dag.",
+  "moodyHubNewConversation": "Nieuw gesprek",
   "moodHubCreatePlan": "Maak je perfecte plan! 🎯",
   "moodHubBackToHub": "Terug naar Hub",
   "moodHubSelectUpTo": "Je kunt maximaal {max} moods kiezen",
@@ -2275,13 +2279,11 @@
   "gamificationCategoryMood": "Stemming",
   "gamificationCategorySpecial": "Speciaal",
   "gamificationCategoryOther": "Overig",
-
   "achievementExplorer": "Ontdekker",
   "achievementEarlyBird": "Vroege vogel",
   "achievementStreakMaster": "Streak-meester",
   "achievementMoodTracker": "Stemming bijhouden",
   "achievementAdventurer": "Avonturier",
-
   "prefScreenTitle": "Jouw voorkeuren",
   "prefSave": "Opslaan",
   "prefSavedSuccess": "Voorkeuren opgeslagen",
@@ -2941,49 +2943,65 @@
   "notifMorningWithPlanEnergeticTitle": "Opstaan en stralen {weatherEmoji}",
   "@notifMorningWithPlanEnergeticTitle": {
     "placeholders": {
-      "weatherEmoji": {"type": "String"}
+      "weatherEmoji": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanEnergeticBody": "Eerst: {activityName}. We pakken deze dag.",
   "@notifMorningWithPlanEnergeticBody": {
     "placeholders": {
-      "activityName": {"type": "String"}
+      "activityName": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanFriendlyTitle": "Goedemorgen {weatherEmoji}",
   "@notifMorningWithPlanFriendlyTitle": {
     "placeholders": {
-      "weatherEmoji": {"type": "String"}
+      "weatherEmoji": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanFriendlyBody": "We beginnen vandaag met {activityName} — ik ben er als je me nodig hebt.",
   "@notifMorningWithPlanFriendlyBody": {
     "placeholders": {
-      "activityName": {"type": "String"}
+      "activityName": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanProfessionalTitle": "Goedemorgen {weatherEmoji}",
   "@notifMorningWithPlanProfessionalTitle": {
     "placeholders": {
-      "weatherEmoji": {"type": "String"}
+      "weatherEmoji": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanProfessionalBody": "In je planning staat vandaag {activityName}.",
   "@notifMorningWithPlanProfessionalBody": {
     "placeholders": {
-      "activityName": {"type": "String"}
+      "activityName": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanDirectTitle": "Plan van vandaag {weatherEmoji}",
   "@notifMorningWithPlanDirectTitle": {
     "placeholders": {
-      "weatherEmoji": {"type": "String"}
+      "weatherEmoji": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanDirectBody": "{activityName} staat als eerste. Tik om te openen.",
   "@notifMorningWithPlanDirectBody": {
     "placeholders": {
-      "activityName": {"type": "String"}
+      "activityName": {
+        "type": "String"
+      }
     }
   },
   "notifDailyMoodCheckInEnergeticV0Title": "Hoe voel je je vandaag? 🎉",
@@ -4023,7 +4041,6 @@
   "weatherHistoryInvalid": "Geen geldige historische gegevens",
   "moodHistoryEmpty": "Geen stemminggeschiedenis beschikbaar",
   "periodActivitiesSwipeComplete": "Voltooien",
-
   "exploreLoadMoreIdeas": "Meer ideeën laden",
   "agendaPaymentBadgeFree": "Gratis",
   "agendaPaymentBadgePaid": "Betaald",
@@ -4036,5 +4053,486 @@
         "type": "String"
       }
     }
-  }
+  },
+  "groupPlanWithFriendMenu": "Samen plannen",
+  "groupPlanTogetherTitle": "Samen plannen",
+  "groupPlanHubBody": "Combineer stemmingen met je reisgenoot. Jullie gebruiken allebei je eigen telefoon — deel een korte code of open de link uit een bericht.",
+  "groupPlanTileStartTitle": "Start een sessie",
+  "groupPlanTileStartSubtitle": "Je krijgt een code om naar je match te sturen",
+  "groupPlanTileJoinTitle": "Meedoen met code",
+  "groupPlanTileJoinSubtitle": "Voer de code van je match in",
+  "groupPlanCreateTitle": "Plan met je match",
+  "groupPlanCreateBody": "Maak een gedeelde sessie. Je krijgt een korte code om naar je reisgenoot te sturen — zij voeren die op hun telefoon in.",
+  "groupPlanCreateOptionalTitleLabel": "Optionele titel (bijv. Vandaag in Lissabon)",
+  "groupPlanCreateButton": "Maken & code delen",
+  "groupPlanShareSubject": "WanderMood groepsplan",
+  "groupPlanInviteShare": "Doe mee met mijn WanderMood-dagplan! Code: {code}\n(Open WanderMood → Mood Match → Code invoeren)",
+  "@groupPlanInviteShare": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanJoinTitle": "Meedoen met een plan",
+  "groupPlanJoinBody": "Scan de QR-code die je hebt gekregen, of voer de code hieronder in.",
+  "groupPlanJoinCodeLabel": "Deelnamecode",
+  "groupPlanJoinCodeHint": "bijv. A1B2C3",
+  "groupPlanJoinButton": "Deelnemen aan sessie",
+  "groupPlanJoinSnackEnterCode": "Voer de code in die je hebt gekregen.",
+  "groupPlanJoinError": "Kon niet deelnemen: {error}",
+  "@groupPlanJoinError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanShareQrTitle": "Laat dit aan je match zien",
+  "groupPlanShareQrOrCode": "of voer code in: {code}",
+  "@groupPlanShareQrOrCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanShareViaMessage": "Delen via bericht",
+  "groupPlanShareContinueLobby": "Verder naar lobby",
+  "groupPlanShareScreenTitle": "Match uitnodigen",
+  "groupPlanJoinScanQr": "QR-code scannen",
+  "groupPlanJoinEnterInstead": "In plaats daarvan code invoeren",
+  "groupPlanJoinScanInstead": "In plaats daarvan QR scannen",
+  "groupPlanScanTitle": "QR-code scannen",
+  "groupPlanCreateError": "Kon sessie niet maken: {error}",
+  "@groupPlanCreateError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanLobbyTitle": "Groepsplan",
+  "groupPlanLobbyShareCode": "Deel deze code",
+  "groupPlanLobbyMoodsProgress": "{locked} / {total} stemmingen vastgezet",
+  "@groupPlanLobbyMoodsProgress": {
+    "placeholders": {
+      "locked": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "groupPlanLobbyWaitingFriend": "Wachten tot je match meedoet…",
+  "groupPlanLobbyWhosIn": "Wie doet mee",
+  "groupPlanLobbyMoodLine": "Stemming: {mood}",
+  "@groupPlanLobbyMoodLine": {
+    "placeholders": {
+      "mood": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanLobbyStillChoosing": "Nog aan het kiezen…",
+  "groupPlanLobbyYourMood": "Jouw stemming vandaag",
+  "groupPlanLobbyLockMood": "Stemming vastzetten",
+  "groupPlanLobbyBuilding": "Moody bouwt jullie gedeelde plan…",
+  "groupPlanLobbyPlanFailed": "Plan genereren mislukt. Trek om te vernieuwen of probeer het zo opnieuw.",
+  "groupPlanLobbyPickMoodSnack": "Kies eerst een stemming.",
+  "groupPlanLobbySubmitError": "Er ging iets mis: {error}",
+  "@groupPlanLobbySubmitError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanMoodAdventurous": "Avontuurlijk",
+  "groupPlanMoodRelaxed": "Ontspannen",
+  "groupPlanMoodSocial": "Sociaal",
+  "groupPlanMoodCultural": "Cultureel",
+  "groupPlanMoodRomantic": "Romantisch",
+  "groupPlanMoodEnergetic": "Energiek",
+  "groupPlanMoodFoody": "Foodie",
+  "groupPlanMoodCreative": "Creatief",
+  "groupPlanResultTitle": "Jullie gedeelde plan",
+  "groupPlanResultNoPlan": "Nog geen plan gevonden.",
+  "groupPlanResultBackToApp": "Terug naar app",
+  "groupPlanResultMoodsLine": "Stemmingen: {moods}",
+  "@groupPlanResultMoodsLine": {
+    "placeholders": {
+      "moods": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanResultIdeasTitle": "Ideeën voor vandaag",
+  "groupPlanResultAddHint": "Toevoegen gebruikt de datum die je op Mijn dag hebt gekozen (standaard vandaag). Open Mijn dag eerst als je een andere dag wilt.",
+  "groupPlanResultAddToMyDay": "Toevoegen aan Mijn dag",
+  "groupPlanResultAdded": "Toegevoegd",
+  "groupPlanResultFooter": "Iedereen voegt stops toe aan de eigen Mijn dag. Hetzelfde plan, twee agenda’s.",
+  "groupPlanResultAddedToast": "\"{name}\" toegevoegd aan Mijn dag",
+  "@groupPlanResultAddedToast": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanResultDuplicateToast": "Kon niet toevoegen (dubbel of dezelfde tijd). Probeer een ander idee.",
+  "groupPlanResultAddFailedToast": "Toevoegen mislukt: {error}",
+  "@groupPlanResultAddFailedToast": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanResultViewMyDay": "Bekijk",
+  "groupPlanInviteOpenLink": "Open in de app: {url}",
+  "@groupPlanInviteOpenLink": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanHubHeroTitle": "Plan met vrienden",
+  "groupPlanHubHeroSubtitle": "Twee stemmingen, één gedeelde dag. Moody vindt iets dat voor jullie allebei werkt.",
+  "groupPlanHubStartCardTitle": "Start een groepsplan",
+  "groupPlanHubStartCardSub": "Krijg een code om met je match te delen",
+  "groupPlanHubJoinCardTitle": "Doe mee met een plan",
+  "groupPlanHubJoinCardSub": "Voer de code van je match in",
+  "groupPlanHowItWorksTitle": "Zo werkt het",
+  "groupPlanHowItWorksBody": "Jullie kiezen elk onafhankelijk je stemming. Ik meng ze tot één plan waar jullie allebei blij van worden.",
+  "groupPlanCreateHeaderSubtitle": "Jij + je match",
+  "groupPlanCreateHeaderCaption": "Kies apart jullie stemming, krijg één gedeeld plan",
+  "groupPlanSessionNameLabel": "Sessienaam (optioneel)",
+  "groupPlanSessionNamePlaceholder": "bijv. Weekend in Amsterdam",
+  "groupPlanCreateCta": "Maken & link delen",
+  "groupPlanCreateShareHint": "Daarna zie je een QR-code om te laten zien, of je deelt de link via een bericht.",
+  "groupPlanLobbyTitleWaitingFriend": "Wachten op je match…",
+  "groupPlanLobbyTitleWaitingName": "Wachten op {name}…",
+  "@groupPlanLobbyTitleWaitingName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanLobbyTitleEveryoneReady": "Iedereen is er klaar voor!",
+  "groupPlanLobbyShareCodeUpper": "Deel deze code",
+  "groupPlanLobbyShareLinkCta": "Link delen",
+  "groupPlanLobbyStatusLocked": "Vast",
+  "groupPlanLobbyStatusWaiting": "Wachten",
+  "groupPlanMoodSectionUppercase": "Jouw stemming vandaag",
+  "groupPlanLobbyLockCta": "Stemming vastzetten",
+  "groupPlanLobbyWaitingLockIn": "Wachten tot {name} vastzet…",
+  "@groupPlanLobbyWaitingLockIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanLobbyGenerateCta": "Genereer ons plan",
+  "groupPlanLobbyLockingIn": "🔒 Bezig met vastzetten…",
+  "groupPlanLobbyWaitingFriendJoin": "Wachten tot je match meedoet…",
+  "groupPlanResultBlendKicker": "Moody mengde jullie stemmingen ✨",
+  "groupPlanResultIdeasTitleEmoji": "Ideeën voor vandaag 💡",
+  "groupPlanResultLoadingMoody": "Moody bouwt jullie plan… ✨",
+  "groupPlanResultFooterPhones": "Jullie voegen toe wat je wilt aan je eigen Mijn dag — twee telefoons, hetzelfde plan 📱📱",
+  "groupPlanResultMoodChipYou": "{emoji} {mood} (jij)",
+  "@groupPlanResultMoodChipYou": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      },
+      "mood": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanResultMoodChipName": "{emoji} {mood} ({name})",
+  "@groupPlanResultMoodChipName": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      },
+      "mood": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanYouShort": "Jij",
+  "groupPlanMoodCozy": "Gezellig",
+  "groupPlanMoodSurprise": "Verrassing",
+  "moodMatchTitle": "Mood Match",
+  "moodMatchTagline": "Twee stemmingen. Één perfecte dag.",
+  "moodMatchTaglineHub": "Twee stemmingen. Één perfecte dag. Voor jullie samen.",
+  "moodMatchStartBtn": "Start een Mood Match",
+  "moodMatchStartBtnSub": "Nodig iemand uit, kies stemmingen, krijg één gedeeld plan",
+  "moodMatchJoinBtn": "Doe mee met Mood Match",
+  "moodMatchJoinBtnSub": "Voer een code in of scan een QR",
+  "moodMatchHubMoodyIntroFriendly": "Okaaay, plannen met iemand anders?\nDit is mijn favoriete ding om te doen 😏",
+  "moodMatchHubMoodyIntroProfessional": "Mood Match brengt twee privé stemmingen samen in één gedeeld dagplan—duidelijk en eerlijk voor jullie allebei.",
+  "moodMatchHubMoodyIntroEnergetic": "Samen een dag plannen?! YES—ik sta helemaal klaar om jullie te helpen!",
+  "moodMatchHubMoodyIntroDirect": "Jullie kiezen elk apart een stemming op jullie telefoon. Ik maak daar één gedeeld plan van. Start of doe mee wanneer je wilt.",
+  "moodMatchHubMoodyIntroWaitingFriendly": "Je zit al in een Mood Match—je match moet nog meedoen. Tik op Open plan om terug te gaan, of stuur een vriendelijke herinnering.",
+  "moodMatchHubMoodyIntroWaitingProfessional": "Er is een actieve Mood Match die wacht op de andere deelnemer. Gebruik Open plan om terug te gaan naar de lobby, of deel een herinnering.",
+  "moodMatchHubMoodyIntroWaitingEnergetic": "We zijn er bijna—je match moet nog instappen! Open het plan om door te gaan, of geef ze een nudge.",
+  "moodMatchHubMoodyIntroWaitingDirect": "Sessie actief; je match nog niet binnen. Open plan of nudge.",
+  "moodMatchHubPendingTitle": "Sessie bezig",
+  "moodMatchHubPendingStory": "We wachten nog tot je match meedoet.",
+  "moodMatchHubPendingCodeSmall": "Code {code}",
+  "@moodMatchHubPendingCodeSmall": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubPendingCode": "Code: {code}",
+  "@moodMatchHubPendingCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubPendingWaiting": "Wachten tot je match meedoet…",
+  "moodMatchHubPendingBuilding": "Ik bouw jullie gedeelde dag…",
+  "moodMatchHubCancelSession": "Annuleren",
+  "moodMatchHubReadyTitle": "Je Mood Match is klaar!",
+  "moodMatchHubReadySubtitle": "Ik heb jullie gedeelde dag klaar",
+  "moodMatchHubSeePlanCta": "Bekijk het plan",
+  "moodMatchHubUntitledSession": "Mood Match",
+  "moodMatchCreateAlreadyWaiting": "Je hebt al een sessie die wacht. Open die vanaf het hub-scherm.",
+  "moodMatchHubCancelError": "Annuleren mislukt: {error}",
+  "@moodMatchHubCancelError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchNewFeatureBadge": "Nieuw",
+  "moodMatchGoodMorning": "Goedemorgen, {name}",
+  "@moodMatchGoodMorning": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHowItWorksOneLiner": "Jullie kiezen elk privé je stemming; ik meng ze tot één plan waar jullie allebei blij van worden.",
+  "moodMatchStepYourMood": "Stap 1 van 2 · Jouw stemming",
+  "moodMatchFeelQuestion": "Hoe voel je je vanochtend?",
+  "moodMatchPrivateHint": "{name} ziet dit pas als jullie allebei vastgezet hebben",
+  "@moodMatchPrivateHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchMoodyPickQuoteFriendly": "Kies wat echt voelt. Ik maak het werkend voor jullie samen.",
+  "moodMatchMoodyPickQuoteProfessional": "Kies de stemming die het beste bij je past vandaag. Ik zet beide keuzes om in één helder, gedeeld plan.",
+  "moodMatchMoodyPickQuoteEnergetic": "Ga voor je gevoel—lief, wild, whatever! Ik maak er iets van waar jullie allebei blij van worden.",
+  "moodMatchMoodyPickQuoteDirect": "Kies je stemming. Je match ziet hem pas als jullie allebei vastzetten.",
+  "moodMatchSelectMoodButton": "Kies je stemming",
+  "moodMatchLockBtn": "Vastzetten: {mood}",
+  "@moodMatchLockBtn": {
+    "placeholders": {
+      "mood": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyEveryoneReadyTitle": "Iedereen is er klaar voor! 🎉",
+  "moodMatchLobbyEveryoneReadySubtitle": "Moody mengt jullie vibes…",
+  "moodMatchLobbyWaitingSubtitle": "Nog even geduld — jullie match is bijna klaar.",
+  "moodMatchLobbyBuildingSubtitle": "Zoeken naar plekken die bij jullie allebei passen…",
+  "moodMatchLobbyCommentaryWaiting": "Wachten tot {name} de vibe vindt… 👀",
+  "@moodMatchLobbyCommentaryWaiting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyCommentaryFriendLocked": "{name} heeft vastgezet! Ik ben er klaar voor wanneer jij het bent 🎯",
+  "@moodMatchLobbyCommentaryFriendLocked": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyCommentaryBothLocked": "Beide vibes binnen. Jullie match bouwen…",
+  "moodMatchWhileYouWaitHint": "Moody laat jullie matchingscore zien wanneer {name} vastzet",
+  "@moodMatchWhileYouWaitHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchRevealScore": "Vibe-match vandaag",
+  "moodMatchRevealCta": "Bekijk ons plan",
+  "moodMatchRevealCopyHighFriendly": "Jullie willen vandaag precies hetzelfde 😌 \nDit plan maakte zich vanzelf.",
+  "moodMatchRevealCopyHighProfessional": "Jullie stemmingen sluiten vandaag nauw op elkaar aan. Het gedeelde plan volgt logisch uit jullie keuzes.",
+  "moodMatchRevealCopyHighEnergetic": "Dezelfde vibe, dubbel feest! 🔥 Dit plan rolde zo uit—geniet ervan!",
+  "moodMatchRevealCopyHighDirect": "Zeer vergelijkbare stemmingen. Plan is voor jullie allebei strak afgestemd.",
+  "moodMatchRevealCopyGoodFriendly": "Verschillende vibes, maar ik heb het geregeld. \nVertrouw me.",
+  "moodMatchRevealCopyGoodProfessional": "Verschillende stemmingen; ik heb beide voorkeuren in één haalbaar dagschema verwerkt.",
+  "moodMatchRevealCopyGoodEnergetic": "Andere moods? Uitdaging geaccepteerd—dit wordt leuk voor jullie samen!",
+  "moodMatchRevealCopyGoodDirect": "Stemmingen verschillen; de route verbindt ze. Bekijk de stops samen.",
+  "moodMatchRevealCopyCreativeFriendly": "Oké, dit was een uitdaging. Maar ik ben trots \nop dit plan. Jullie ook straks.",
+  "moodMatchRevealCopyCreativeProfessional": "De stemmingen lopen ver uiteen; ik zocht overlap die vandaag voor jullie allebei werkt.",
+  "moodMatchRevealCopyCreativeEnergetic": "Pittige combo op papier—maar ik vond parels die samen nog steeds leuk aanvoelen!",
+  "moodMatchRevealCopyCreativeDirect": "Weinig overlap. Plan focust op brede, veilige favorieten.",
+  "moodMatchScoreLabelPerfect": "Perfecte match ✨",
+  "moodMatchScoreLabelGreat": "Sterke combo",
+  "moodMatchScoreLabelGoodBalance": "Goede balans",
+  "moodMatchScoreLabelInteresting": "Interessante mix",
+  "moodMatchScoreLabelCreative": "Moody werd creatief",
+  "moodMatchRevealMoodyFallback": "Jullie {moodA}- en {moodB}-kanten zijn een verrassend goed team — ik vind het leuk.",
+  "@moodMatchRevealMoodyFallback": {
+    "placeholders": {
+      "moodA": {
+        "type": "String"
+      },
+      "moodB": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchResultCompatLine": "{percent}% match · {label}",
+  "@moodMatchResultCompatLine": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchResultCompatGreat": "Sterke combo ✓",
+  "moodMatchResultFooterStrip": "Jullie voegen elk toe wat je wilt aan je eigen My Day",
+  "moodMatchLobbyChoosingBadge": "Kiest",
+  "moodMatchLobbyReadyBadge": "Klaar",
+  "moodMatchSeePlanShareA11y": "Delen",
+  "moodMatchMoodTileSublabel": "Tik om te kiezen",
+  "moodMatchBlendChip": "{emoji} {label}",
+  "@moodMatchBlendChip": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchWithFriendMenu": "Mood Match",
+  "moodMatchInviteShare": "Doe mee met mijn Mood Match in WanderMood! Code: {code}",
+  "@moodMatchInviteShare": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchShareMoodyPrompt": "Top—je match heeft vaak al WanderMood 💚 Tik eerst op Uitnodigen op WanderMood, dan help ik je zoeken 👀 Link en QR zitten hieronder als je ze nodig hebt 📎✨",
+  "moodMatchShareFriendCodeIntro": "Jouw match heeft deze code alleen nodig als ze WanderMood openen zonder de link—dat is voor hun telefoon, niet de jouwe.",
+  "moodMatchShareLinkQrFoldTitle": "Liever een link of QR?",
+  "moodMatchShareLinkQrFoldSubtitle": "Voor andere apps, of als ze WanderMood nog niet hebben.",
+  "moodMatchShareBottomHint": "Tip: met meldingen aan krijg je een seintje wanneer ze meedoen. Je kunt altijd naar de lobby.",
+  "moodMatchPartnerJoinedNotifTitle": "{name} is mee",
+  "@moodMatchPartnerJoinedNotifTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchPartnerJoinedNotifBody": "Open je Mood Match-lobby om verder te gaan.",
+  "moodMatchPartnerJoinedNotifNameFallback": "Iemand",
+  "moodMatchInviteWanderMoodCta": "Uitnodigen op WanderMood",
+  "moodMatchInviteTitle": "Nodig iemand op WanderMood uit",
+  "moodMatchInviteSubtitle": "Stuur eerst je joinlink — die werkt in elke chat. Zoek hier optioneel op gebruikersnaam om iemand op WanderMood een duwtje te geven.",
+  "moodMatchInviteJoinLinkCardTitle": "Jouw joinlink",
+  "moodMatchInviteJoinLinkCardSubtitle": "Kopieer deze https-link en stuur hem door. Zo blijft het betrouwbaar als een in-app ping niet aankomt.",
+  "moodMatchInviteCopyLinkAction": "Link kopiëren",
+  "moodMatchInviteLinkCopied": "Joinlink gekopieerd",
+  "moodMatchInviteSearchHint": "Gebruikersnaam",
+  "moodMatchInviteSearchEmpty": "Typ minstens 2 tekens",
+  "moodMatchInviteNoResults": "Geen profielen gevonden",
+  "moodMatchInviteButton": "Uitnodigen",
+  "moodMatchInviteSent": "In-app uitnodiging verstuurd",
+  "moodMatchInviteFailed": "In-app uitnodiging lukte niet (server). Kopieer je joinlink en stuur die in elke chat — dat werkt altijd.",
+  "moodMatchInviteNotDeliveredInApp": "Geen in-app melding — misschien staan in-app meldingen uit. Stuur je joinlink in plaats daarvan.",
+  "moodMatchInviteNotifTitle": "Mood Match-uitnodiging",
+  "moodMatchInviteNotifMessage": "{inviter} nodigt je uit voor Mood Match.\nCode: {code}\n{link}",
+  "@moodMatchInviteNotifMessage": {
+    "placeholders": {
+      "inviter": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      },
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchShareShareLink": "Deel link",
+  "moodMatchShareCopyLink": "Kopieer link",
+  "moodMatchShareWhatsApp": "WhatsApp",
+  "moodMatchShareCopiedToast": "Link gekopieerd",
+  "moodMatchFriendThey": "je match",
+  "moodMatchHubOpenPlan": "Open plan",
+  "moodMatchHubNudgeFriend": "Herinner je match",
+  "moodMatchLobbyWaitTease0": "Wachten op {name}… geen haast 👀",
+  "@moodMatchLobbyWaitTease0": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyWaitTease1": "Nog steeds niets van {name}… typisch 😭",
+  "@moodMatchLobbyWaitTease1": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyWaitTease2": "Ik heb al een heel plan klaar. Zomaar gezegd. 🌀",
+  "moodMatchLobbyWaitTease3": "{name} doet er even over… maar het wordt het waard, geloof me",
+  "@moodMatchLobbyWaitTease3": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyFriendJoinedLine": "{name} is binnen! 🎯 Kies nu je stemming.",
+  "@moodMatchLobbyFriendJoinedLine": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyBothLockedHold": "Twee vibes binnen. Geef me een seconde… 🤔"
 }

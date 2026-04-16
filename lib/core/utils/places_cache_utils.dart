@@ -9,6 +9,26 @@ import 'package:wandermood/core/services/distance_service.dart';
 import 'package:wandermood/core/utils/explore_place_card_copy.dart';
 import 'package:wandermood/features/places/models/place.dart';
 
+/// Result of reading an aggregate Explore row from `places_cache`.
+class ExplorePlacesCacheHit {
+  ExplorePlacesCacheHit({
+    required this.places,
+    required this.expiresAt,
+  });
+
+  final List<Place> places;
+  final DateTime expiresAt;
+
+  /// Moody's explore cache TTL is 7 days from upsert — approximate last refresh time.
+  static const Duration _moodyExploreTtl = Duration(days: 7);
+
+  /// When true, UI may refresh via Edge in the background (fire-and-forget).
+  bool get shouldRefreshInBackground {
+    final approxLastWrite = expiresAt.subtract(_moodyExploreTtl);
+    return DateTime.now().difference(approxLastWrite) >= const Duration(hours: 6);
+  }
+}
+
 /// Supabase `places_cache` helpers — cache-first for Explore (`get_explore`).
 ///
 /// Cache keys must stay aligned with `supabase/functions/moody` (aggregate explore row).
@@ -57,7 +77,8 @@ class PlacesCacheUtils {
     return normalizeExploreLanguageCode(raw);
   }
 
-  /// Canonical aggregate key — moody v7: `explore_v7_{local|travel}_{mood|section}_{city}_{lang}`.
+  /// Canonical aggregate key — aligned with moody `handleGetExplore` (`index.ts`):
+  /// English omits the `_en` suffix; other languages use `_nl`, `_es`, etc.
   static String exploreAggregateCacheKey(
     bool isLocalMode,
     String section,
@@ -68,6 +89,9 @@ class PlacesCacheUtils {
     final loc = location.toLowerCase().trim();
     final sec = section.toLowerCase().trim();
     final lang = normalizeExploreLanguageCode(languageCode);
+    if (lang == 'en') {
+      return 'explore_${exploreCacheSchemaVersion}_${modeKey}_${sec}_$loc';
+    }
     return 'explore_${exploreCacheSchemaVersion}_${modeKey}_${sec}_${loc}_$lang';
   }
 
@@ -83,20 +107,26 @@ class PlacesCacheUtils {
     final sec = section.toLowerCase().trim();
     final lang = normalizeExploreLanguageCode(languageCode);
     final v7 = exploreAggregateCacheKey(isLocalMode, section, location, languageCode: languageCode);
-    final v7AllLang = 'explore_${exploreCacheSchemaVersion}_${modeKey}_all_${loc}_$lang';
+    final v7AllLang = lang == 'en'
+        ? 'explore_${exploreCacheSchemaVersion}_${modeKey}_all_$loc'
+        : 'explore_${exploreCacheSchemaVersion}_${modeKey}_all_${loc}_$lang';
     final v7NoLang = 'explore_${exploreCacheSchemaVersion}_${modeKey}_${sec}_$loc';
     final v7AllNoLang = 'explore_${exploreCacheSchemaVersion}_${modeKey}_all_$loc';
     final broadDiscovery =
         sec == 'discovery' || sec == 'all' || sec == 'discover' || sec.isEmpty;
-    final primary = <String>[
-      v7,
-      if (broadDiscovery) v7AllLang,
-      v7NoLang,
-      if (broadDiscovery) v7AllNoLang,
-    ];
+    final primary = <String>[];
+    void addKey(String k) {
+      if (!primary.contains(k)) primary.add(k);
+    }
+
+    addKey(v7);
+    if (broadDiscovery) addKey(v7AllLang);
+    addKey(v7NoLang);
+    if (broadDiscovery) addKey(v7AllNoLang);
     // Legacy keys are English-era aggregates; using them for nl/de/fr/es returns
     // stale English copy and small sets (~14) while blocking a fresh Edge call.
     if (lang == 'en') {
+      addKey('explore_${exploreCacheSchemaVersion}_${modeKey}_${sec}_${loc}_en');
       primary.addAll([
         'explore_v6_${modeKey}_adventurous_$loc',
         'explore_v6_${modeKey}_relaxed_$loc',
@@ -216,12 +246,81 @@ class PlacesCacheUtils {
     return (u != null && u.isNotEmpty) ? u : null;
   }
 
+  /// One aggregate `places_cache` row for Explore — direct PostgREST read (no Edge Function).
+  ///
+  /// Moody's `cacheExplore` uses a 7-day [expiresAt]; we approximate last refresh as
+  /// [expiresAt] − 7 days to decide [shouldRefreshInBackground] (6 hours).
+  static Future<ExplorePlacesCacheHit?> getExploreCardsFromCache(
+    SupabaseClient client,
+    String cacheKey,
+  ) async {
+    try {
+      final row = await client
+          .from('places_cache')
+          .select('data, expires_at')
+          .eq('cache_key', cacheKey)
+          .isFilter('place_id', null)
+          .maybeSingle();
+
+      if (row == null) {
+        if (kDebugMode) {
+          debugPrint('🔴 Cache MISS (no row) — $cacheKey');
+        }
+        return null;
+      }
+
+      final expiresRaw = row['expires_at'];
+      if (expiresRaw == null) return null;
+      final expiresAt = DateTime.parse(expiresRaw as String);
+      if (!expiresAt.isAfter(DateTime.now())) {
+        if (kDebugMode) {
+          debugPrint('🔴 Cache MISS (expired) — $cacheKey');
+        }
+        return null;
+      }
+
+      final raw = row['data'];
+      if (raw is! Map) {
+        if (kDebugMode) {
+          debugPrint('🔴 Cache MISS (bad data shape) — $cacheKey');
+        }
+        return null;
+      }
+      final data = Map<String, dynamic>.from(raw);
+      final cards = data['cards'] as List<dynamic>?;
+      if (cards == null || cards.isEmpty) {
+        if (kDebugMode) {
+          debugPrint('🔴 Cache MISS (no cards) — $cacheKey');
+        }
+        return null;
+      }
+
+      if (kDebugMode) {
+        debugPrint(
+          '🟢 Cache HIT — explore ($cacheKey, ${cards.length} cards)',
+        );
+      }
+
+      final mapped = cards.map((c) {
+        final m = c is Map<String, dynamic> ? c : Map<String, dynamic>.from(c as Map);
+        return placeFromMoodyExploreCard(m);
+      }).toList();
+      mapped.shuffle(Random());
+      return ExplorePlacesCacheHit(places: mapped, expiresAt: expiresAt);
+    } catch (e, st) {
+      if (kDebugMode) {
+        debugPrint('⚠️ places_cache explore read error ($cacheKey): $e\n$st');
+      }
+      return null;
+    }
+  }
+
   /// Loads Explore cards from `places_cache` when the aggregate row exists and is not expired.
   /// Does not filter by `user_id` (shared cache rows use NULL).
   ///
   /// [isLocalMode] must match moody `fetchUserContext` (`currently_exploring === 'local'`).
   /// When null, reads from `profiles` for the signed-in user (travel when unknown / guest).
-  static Future<List<Place>?> tryLoadExplorePlaces(
+  static Future<ExplorePlacesCacheHit?> tryLoadExplorePlacesHit(
     SupabaseClient client,
     String section,
     String location, {
@@ -232,66 +331,27 @@ class PlacesCacheUtils {
     final keys = exploreAggregateCacheKeyCandidates(local, section, location, languageCode: languageCode);
 
     for (final cacheKey in keys) {
-      try {
-        final row = await client
-            .from('places_cache')
-            .select('data, expires_at')
-            .eq('cache_key', cacheKey)
-            .isFilter('place_id', null)
-            .maybeSingle();
-
-        if (row == null) {
-          if (kDebugMode) {
-            debugPrint('🔴 Cache MISS (no row) — $cacheKey');
-          }
-          continue;
-        }
-
-        final expiresRaw = row['expires_at'];
-        if (expiresRaw == null) continue;
-        final expiresAt = DateTime.parse(expiresRaw as String);
-        if (!expiresAt.isAfter(DateTime.now())) {
-          if (kDebugMode) {
-            debugPrint('🔴 Cache MISS (expired) — $cacheKey');
-          }
-          continue;
-        }
-
-        final raw = row['data'];
-        if (raw is! Map) {
-          if (kDebugMode) {
-            debugPrint('🔴 Cache MISS (bad data shape) — $cacheKey');
-          }
-          continue;
-        }
-        final data = Map<String, dynamic>.from(raw);
-        final cards = data['cards'] as List<dynamic>?;
-        if (cards == null || cards.isEmpty) {
-          if (kDebugMode) {
-            debugPrint('🔴 Cache MISS (no cards) — $cacheKey');
-          }
-          continue;
-        }
-
-        if (kDebugMode) {
-          debugPrint(
-            '🟢 Cache HIT — skip Edge call for explore ($cacheKey, ${cards.length} cards)',
-          );
-        }
-
-        final mapped = cards.map((c) {
-          final m = c is Map<String, dynamic> ? c : Map<String, dynamic>.from(c as Map);
-          return placeFromMoodyExploreCard(m);
-        }).toList();
-        mapped.shuffle(Random());
-        return mapped;
-      } catch (e, st) {
-        if (kDebugMode) {
-          debugPrint('⚠️ places_cache explore read error ($cacheKey): $e\n$st');
-        }
-      }
+      final hit = await getExploreCardsFromCache(client, cacheKey);
+      if (hit != null) return hit;
     }
     return null;
+  }
+
+  static Future<List<Place>?> tryLoadExplorePlaces(
+    SupabaseClient client,
+    String section,
+    String location, {
+    bool? isLocalMode,
+    String? languageCode,
+  }) async {
+    final hit = await tryLoadExplorePlacesHit(
+      client,
+      section,
+      location,
+      isLocalMode: isLocalMode,
+      languageCode: languageCode,
+    );
+    return hit?.places;
   }
 
   /// Maps a Moody `get_explore` card to [Place] (same shape as Edge Function JSON).

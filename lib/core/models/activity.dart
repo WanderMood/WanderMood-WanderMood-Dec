@@ -90,12 +90,15 @@ class Activity {
   int get hashCode => id.hashCode;
 
   // Helper method to check if this activity is a restaurant or dining-related
-  bool get isRestaurant => 
-    tags.contains('restaurant') || 
-    tags.contains('dining') || 
-    place.name.toLowerCase().contains('restaurant') ||
-    place.name.toLowerCase().contains('dining') ||
-    place.type.toLowerCase().contains('restaurant') ||
-    place.type.toLowerCase().contains('dining') ||
-    place.type.toLowerCase().contains('food');
+  bool get isRestaurant {
+    final typeBlob =
+        place.types.map((e) => e.toLowerCase()).join(' ');
+    return tags.contains('restaurant') ||
+        tags.contains('dining') ||
+        place.name.toLowerCase().contains('restaurant') ||
+        place.name.toLowerCase().contains('dining') ||
+        typeBlob.contains('restaurant') ||
+        typeBlob.contains('dining') ||
+        typeBlob.contains('food');
+  }
 } 

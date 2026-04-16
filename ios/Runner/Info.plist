@@ -73,7 +73,7 @@
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>WanderMood needs access to location to find perfect spots near you and provide personalized recommendations.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>WanderMood needs access to camera to capture and share your travel moments.</string>
+	<string>WanderMood uses your camera to scan a friend's QR code and join their day plan.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>WanderMood needs access to photo library to share your existing travel photos.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
@@ -90,6 +90,14 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>io.supabase.wandermood</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>wandermood-app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>wandermood</string>
 			</array>
 		</dict>
 	</array>

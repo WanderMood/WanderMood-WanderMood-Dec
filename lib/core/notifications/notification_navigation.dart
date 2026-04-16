@@ -1,16 +1,38 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:wandermood/core/providers/notification_provider.dart';
+import 'package:wandermood/features/group_planning/data/mood_match_session_prefs.dart';
 
 import 'notification_category.dart';
+
+Future<void> _goMoodMatchLobbyFromPrefs(
+    GoRouter router, String sessionId) async {
+  final r = await MoodMatchSessionPrefs.read();
+  final code = (r.sessionId == sessionId &&
+          r.joinCode != null &&
+          r.joinCode!.trim().isNotEmpty)
+      ? r.joinCode!.trim().toUpperCase()
+      : null;
+  if (code != null && code.isNotEmpty) {
+    router.go(
+      '/group-planning/lobby/$sessionId',
+      extra: <String, dynamic>{'joinCode': code},
+    );
+  } else {
+    router.go('/group-planning/lobby/$sessionId');
+  }
+}
 
 /// Stable payload strings attached to local notifications for deep linking.
 abstract class NotificationNavPayload {
   static const mainMyDay = 'wm_nav_main_0';
   static const mainExplore = 'wm_nav_main_1';
   static const mainMoody = 'wm_nav_main_2';
+
   /// Opens Moody tab and pushes standalone mood selection (`/moody`).
   static const mainMoodyMoodCheckIn = 'wm_nav_main_2_checkin';
   static const mainProfile = 'wm_nav_main_3';
@@ -102,6 +124,13 @@ void applyNotificationNavigation(
       router.go('/agenda');
       break;
     default:
+      if (payload.startsWith('wm_nav_mm_lobby:')) {
+        final sessionId = payload.substring('wm_nav_mm_lobby:'.length).trim();
+        if (sessionId.isNotEmpty) {
+          unawaited(_goMoodMatchLobbyFromPrefs(router, sessionId));
+        }
+        break;
+      }
       if (kDebugMode) {
         debugPrint('Unknown notification payload: $payload');
       }

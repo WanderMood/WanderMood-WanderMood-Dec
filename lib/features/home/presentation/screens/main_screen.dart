@@ -77,6 +77,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   DateTime? _weekendSunday;
   bool _weekendBannerDismissed = false;
 
+  /// Tabs the user has opened at least once — kept in the tree with [Offstage]
+  /// so switching back (e.g. Moody) does not rebuild from scratch every tap.
+  final Set<int> _mountedTabIndices = <int>{};
+
   /// Align [mainTabProvider] with [widget.initialTabIndex] / [widget.extra]
   /// without clobbering an in-session tab (e.g. Profile) when GoRouter
   /// rebuilds [MainScreen] with default `initialTabIndex: 0`.
@@ -129,6 +133,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   void initState() {
     super.initState();
+    final initialTab = normalizeMainTabIndex(
+      widget.extra?['tab'] as int? ?? widget.initialTabIndex,
+    );
+    _mountedTabIndices.add(initialTab);
     // Defer provider writes: Riverpod forbids modifying providers during
     // mount/build (throws from StateNotifier). didUpdateWidget uses the same pattern.
     Future.microtask(() {
@@ -170,15 +178,25 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
     if (showIdle) {
       final idleState = MoodyIdleChecker.getIdleState();
+      final l10n = AppLocalizations.of(context)!;
+      var hasPlan = false;
+      try {
+        final acts = await ref.read(scheduledActivitiesForTodayProvider.future);
+        hasPlan = acts.isNotEmpty;
+      } catch (_) {}
+      final wakeMessage =
+          hasPlan ? l10n.moodyIdleWakeOpenPlan : l10n.moodyIdleWakeChooseMood;
       String? topInterest;
       try {
         final row = await Supabase.instance.client
             .from('user_preference_patterns')
-            .select('top_rated_activities')
+            // Avoid hardcoding columns; some environments may diverge.
+            .select('*')
             .eq('user_id', user.id)
             .maybeSingle();
         if (row != null) {
-          final list = row['top_rated_activities'] as List<dynamic>?;
+          final v = row['top_rated_activities'];
+          final list = v is List ? v : null;
           if (list != null && list.isNotEmpty) {
             topInterest = list.first.toString();
           }
@@ -206,9 +224,17 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               fullscreenDialog: true,
               pageBuilder: (ctx, _, __) => MoodyIdleScreen(
                 idleState: idleState,
+                wakeMessage: wakeMessage,
                 userPreferences: prefsMap,
                 topInterest: topInterest,
-                onComplete: () => Navigator.of(ctx).pop(),
+                onComplete: () {
+                  Navigator.of(ctx).pop();
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (!mounted) return;
+                    ref.read(mainTabProvider.notifier).state =
+                        hasPlan ? 0 : 2;
+                  });
+                },
               ),
             ),
           );
@@ -323,6 +349,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final l10n = AppLocalizations.of(context)!;
     final rawTabIndex = ref.watch(mainTabProvider);
     final selectedIndex = normalizeMainTabIndex(rawTabIndex);
+    _mountedTabIndices.add(selectedIndex);
     final dailyMoodState = ref.watch(dailyMoodStateNotifierProvider);
     final hasSeenIntroAsync = ref.watch(hasSeenIntroProvider);
     
@@ -377,7 +404,21 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     ],
                   ),
                 ),
-              Expanded(child: screens[selectedIndex]),
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    for (final i in _mountedTabIndices)
+                      Offstage(
+                        offstage: selectedIndex != i,
+                        child: TickerMode(
+                          enabled: selectedIndex == i,
+                          child: screens[i],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ],
           ),
           bottomNavigationBar: shouldHideBottomNav
@@ -396,13 +437,20 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         boxShadow: const [],
                       ),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _buildRegularNavItem(context, ref, selectedIndex, 0, l10n.navMyDay, Icons.calendar_today_outlined, Icons.calendar_today, _navWmForest, _navWmForestTint),
-                          _buildRegularNavItem(context, ref, selectedIndex, 1, l10n.navExplore, Icons.explore_outlined, Icons.explore, _navWmForest, _navWmForestTint),
+                          Expanded(
+                            child: _buildRegularNavItem(context, ref, selectedIndex, 0, l10n.navMyDay, Icons.calendar_today_outlined, Icons.calendar_today, _navWmForest, _navWmForestTint),
+                          ),
+                          Expanded(
+                            child: _buildRegularNavItem(context, ref, selectedIndex, 1, l10n.navExplore, Icons.explore_outlined, Icons.explore, _navWmForest, _navWmForestTint),
+                          ),
                           _buildCenterMoodyButton(context, ref, selectedIndex, l10n.navMoody),
-                          _buildRegularNavItem(context, ref, selectedIndex, 3, l10n.navAgenda, Icons.calendar_month_outlined, Icons.calendar_month, _navWmForest, _navWmForestTint),
-                          _buildRegularNavItem(context, ref, selectedIndex, 4, l10n.navProfile, Icons.person_outline, Icons.person, _navWmForest, _navWmForestTint),
+                          Expanded(
+                            child: _buildRegularNavItem(context, ref, selectedIndex, 3, l10n.navAgenda, Icons.calendar_month_outlined, Icons.calendar_month, _navWmForest, _navWmForestTint),
+                          ),
+                          Expanded(
+                            child: _buildRegularNavItem(context, ref, selectedIndex, 4, l10n.navProfile, Icons.person_outline, Icons.person, _navWmForest, _navWmForestTint),
+                          ),
                         ],
                       ),
                     ),
@@ -532,13 +580,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       }
     };
 
-    return SizedBox(
-      width: 58,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(999),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -569,8 +617,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               const SizedBox(height: 2),
               Text(
                 label,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.poppins(
                   fontSize: 9,
+                  height: 1.05,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   color: isSelected ? activeColor : Colors.grey.shade500,
                 ),
@@ -589,42 +641,48 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     String moodyLabel,
   ) {
     final isSelected = selectedIndex == 2;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => ref.read(mainTabProvider.notifier).state = 2,
-        customBorder: const CircleBorder(),
-        child: Transform.translate(
-          offset: const Offset(0, -6),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isSelected ? _navWmForestTint : Colors.grey.shade100,
-                  border: isSelected ? Border.all(color: _navWmForest.withOpacity(0.4), width: 1.5) : null,
-                  boxShadow: const [],
-                ),
-                child: Center(
-                  child: MoodyCharacter(
-                    size: 28,
-                    mood: isSelected ? 'happy' : 'default',
+    return SizedBox(
+      width: 56,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => ref.read(mainTabProvider.notifier).state = 2,
+          customBorder: const CircleBorder(),
+          child: Transform.translate(
+            offset: const Offset(0, -6),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSelected ? _navWmForestTint : Colors.grey.shade100,
+                    border: isSelected ? Border.all(color: _navWmForest.withOpacity(0.4), width: 1.5) : null,
+                    boxShadow: const [],
+                  ),
+                  child: Center(
+                    child: MoodyCharacter(
+                      size: 28,
+                      mood: isSelected ? 'happy' : 'default',
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                moodyLabel,
-                style: GoogleFonts.poppins(
-                  fontSize: 9,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? _navWmForest : Colors.grey.shade500,
+                const SizedBox(height: 2),
+                Text(
+                  moodyLabel,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 9,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected ? _navWmForest : Colors.grey.shade500,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

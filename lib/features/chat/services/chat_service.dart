@@ -38,18 +38,13 @@ class ChatService {
   }) async {
     try {
       final userId = _supabase.auth.currentUser!.id;
-      var query = _supabase
-          .from('chat_messages')
-          .select()
-          .eq('user_id', userId)
-          .order('created_at', ascending: false)
-          .limit(limit);
-
+      var query = _supabase.from('chat_messages').select().eq('user_id', userId);
       if (before != null) {
         query = query.lt('created_at', before.toIso8601String());
       }
-
-      final response = await query;
+      final response = await query
+          .order('created_at', ascending: false)
+          .limit(limit);
       return (response as List)
           .map((json) => ChatMessage.fromJson(json))
           .toList()

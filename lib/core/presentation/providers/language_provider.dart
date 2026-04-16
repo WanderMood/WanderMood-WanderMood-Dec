@@ -1,3 +1,5 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,64 +12,74 @@ final localeProvider = StateNotifierProvider<LocaleNotifier, Locale?>((ref) {
 });
 
 class LocaleNotifier extends StateNotifier<Locale?> {
-  final Ref _ref;
-  static const String _localeKey = 'app_locale';
-  static const String _useSystemKey = 'use_system_locale';
-  
-  LocaleNotifier(this._ref) : super(null) { // Start with null (system default)
+  LocaleNotifier(this._ref) : super(null) {
     _loadLocale();
-    // Only apply profile language when the user has explicitly set a language in the app.
-    // Otherwise keep device locale so the app follows the phone language (e.g. Dutch on a Dutch phone).
+    // When profile loads and the user has never chosen a language locally,
+    // adopt the server preference once (multi-device). Never clobber explicit prefs.
     _ref.listen(profileProvider, (previous, next) {
       next.whenData((profile) async {
-        if (profile?.languagePreference == null) return;
+        final lang = profile?.languagePreference;
+        if (lang == null) return;
         final prefs = await SharedPreferences.getInstance();
+        if (prefs.containsKey(_localeKey)) return;
         final useSystem = prefs.getBool(_useSystemKey) ?? false;
-        final hasSetLanguage = prefs.containsKey(_localeKey);
-        if (!hasSetLanguage || useSystem) return; // Prefer device locale until user chooses in app
-        _updateLocaleFromProfile(profile!.languagePreference!);
+        if (useSystem) return;
+        _updateLocaleFromProfile(lang);
       });
     });
   }
 
+  final Ref _ref;
+  static const String _localeKey = 'app_locale';
+  static const String _useSystemKey = 'use_system_locale';
+
+  static const Set<String> _supported = {'en', 'nl', 'es', 'fr', 'de'};
+
+  static String _primaryTag(String code) =>
+      code.toLowerCase().split(RegExp(r'[-_]')).first;
+
   Future<void> _loadLocale() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
-      // Check if user explicitly wants to use system locale
       final useSystem = prefs.getBool(_useSystemKey) ?? false;
       if (useSystem) {
-        state = null; // Use system locale
+        state = null;
         return;
       }
-      
-      // Check if user has ever set a language preference
+
       final hasSetLanguage = prefs.containsKey(_localeKey);
-      
+
       if (hasSetLanguage) {
-        // User has set a preference - use it
-        final profileAsync = _ref.read(profileProvider);
-        profileAsync.whenData((profile) {
-          if (profile?.languagePreference != null) {
-            _updateLocaleFromProfile(profile!.languagePreference!);
-            return;
-          }
-        });
-        
-        // Fallback to SharedPreferences
-        final localeCode = prefs.getString(_localeKey) ?? 'en';
-        state = Locale(localeCode);
+        final raw = prefs.getString(_localeKey);
+        if (raw != null && raw.isNotEmpty) {
+          final tag = _primaryTag(raw);
+          state = Locale(tag);
+        } else {
+          state = null;
+        }
+        return;
+      }
+
+      // First install: follow device (never force English).
+      final deviceTag =
+          _primaryTag(PlatformDispatcher.instance.locale.languageCode);
+      if (deviceTag == 'nl') {
+        await prefs.setString(_localeKey, 'nl');
+        await prefs.setBool(_useSystemKey, false);
+        state = const Locale('nl');
+      } else if (_supported.contains(deviceTag)) {
+        await prefs.setString(_localeKey, deviceTag);
+        await prefs.setBool(_useSystemKey, false);
+        state = Locale(deviceTag);
       } else {
-        // First install - use system locale (null)
         state = null;
       }
-    } catch (e) {
-      state = null; // Default to system locale on error
+    } catch (_) {
+      state = null;
     }
   }
 
   void _updateLocaleFromProfile(String languageCode) {
-    // Map language codes from profile to Flutter Locale
     final localeMap = {
       'en': const Locale('en'),
       'nl': const Locale('nl'),
@@ -75,39 +87,33 @@ class LocaleNotifier extends StateNotifier<Locale?> {
       'fr': const Locale('fr'),
       'de': const Locale('de'),
     };
-    
-    state = localeMap[languageCode.toLowerCase()] ?? const Locale('en');
-    
-    // Also save to SharedPreferences for offline access
+
+    final tag = _primaryTag(languageCode);
+    state = localeMap[tag] ?? Locale(_supported.contains(tag) ? tag : 'en');
+
     SharedPreferences.getInstance().then((prefs) {
-      prefs.setString(_localeKey, languageCode);
+      prefs.setString(_localeKey, tag);
       prefs.setBool(_useSystemKey, false);
     });
   }
 
   Future<void> setLocale(Locale? locale) async {
     state = locale;
-    
+
     final prefs = await SharedPreferences.getInstance();
-    
+
     if (locale == null) {
-      // User selected "System default"
       await prefs.setBool(_useSystemKey, true);
       await prefs.remove(_localeKey);
     } else {
-      // User selected a specific language
       await prefs.setBool(_useSystemKey, false);
       await prefs.setString(_localeKey, locale.languageCode);
-      
-      // Try to sync with profile (optional, works offline)
+
       try {
         await _ref.read(profileProvider.notifier).updateProfile(
-          languagePreference: locale.languageCode,
-        );
-      } catch (e) {
-        // Continue - local preference still works
-      }
+              languagePreference: locale.languageCode,
+            );
+      } catch (_) {}
     }
   }
 }
-

@@ -204,30 +204,34 @@ class RealtimeService extends _$RealtimeService {
   }
 
   /// Handle presence sync events
-  void _handlePresenceSync(List<Map<String, dynamic>> presences) {
+  void _handlePresenceSync(RealtimePresenceSyncPayload payload) {
     try {
-      print('Presence sync: ${presences.length} users online');
-      _presenceController.add({'type': 'sync', 'presences': presences});
+      print('Presence sync: ${payload.event}');
+      _presenceController.add({'type': 'sync', 'event': payload.event.name});
     } catch (e) {
       print('Error handling presence sync: $e');
     }
   }
 
   /// Handle user joining presence
-  void _handlePresenceJoin(Map<String, dynamic> presence) {
+  void _handlePresenceJoin(RealtimePresenceJoinPayload payload) {
     try {
-      print('User joined: ${presence['user_id']}');
-      _presenceController.add({'type': 'join', 'presence': presence});
+      final presences =
+          payload.newPresences.map((p) => p.payload).toList();
+      print('Presence join: ${presences.length} new');
+      _presenceController.add({'type': 'join', 'presences': presences});
     } catch (e) {
       print('Error handling presence join: $e');
     }
   }
 
   /// Handle user leaving presence
-  void _handlePresenceLeave(Map<String, dynamic> presence) {
+  void _handlePresenceLeave(RealtimePresenceLeavePayload payload) {
     try {
-      print('User left: ${presence['user_id']}');
-      _presenceController.add({'type': 'leave', 'presence': presence});
+      final presences =
+          payload.leftPresences.map((p) => p.payload).toList();
+      print('Presence leave: ${presences.length} left');
+      _presenceController.add({'type': 'leave', 'presences': presences});
     } catch (e) {
       print('Error handling presence leave: $e');
     }

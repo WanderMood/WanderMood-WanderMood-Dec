@@ -23,20 +23,16 @@ class SupabaseRecommendationRepository {
     final response = await _client
         .from(_table)
         .select()
-        .order('created_at', ascending: false)
-        .execute();
+        .order('created_at', ascending: false);
 
-    if (response.error != null) {
-      throw response.error!;
-    }
-
-    return (response.data as List)
-        .map((json) => Recommendation.fromJson(json))
+    return (response as List<dynamic>)
+        .map((json) =>
+            Recommendation.fromJson(Map<String, dynamic>.from(json as Map)))
         .toList();
   }
 
   Future<void> saveRecommendation(Recommendation recommendation) async {
-    final response = await _client.from(_table).upsert({
+    await _client.from(_table).upsert({
       'id': recommendation.id,
       'title': recommendation.title,
       'description': recommendation.description,
@@ -47,32 +43,24 @@ class SupabaseRecommendationRepository {
       'current_mood': recommendation.currentMood?.toJson(),
       'current_weather': recommendation.currentWeather?.toJson(),
       'is_completed': recommendation.isCompleted,
-    }).execute();
-
-    if (response.error != null) {
-      throw response.error!;
-    }
+    });
   }
 
   Future<void> markAsCompleted(String recommendationId) async {
-    final response = await _client
+    await _client
         .from(_table)
         .update({'is_completed': true})
-        .eq('id', recommendationId)
-        .execute();
-
-    if (response.error != null) {
-      throw response.error!;
-    }
+        .eq('id', recommendationId);
   }
 
   Stream<List<Recommendation>> watchRecommendations() {
     return _client
         .from(_table)
-        .stream(['id'])
+        .stream(primaryKey: ['id'])
         .order('created_at', ascending: false)
-        .execute()
-        .map((records) =>
-            records.map((record) => Recommendation.fromJson(record)).toList());
+        .map((records) => records
+            .map((record) =>
+                Recommendation.fromJson(Map<String, dynamic>.from(record)))
+            .toList());
   }
-} 
+}

@@ -13,6 +13,7 @@ import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
+import 'package:wandermood/features/location/services/location_service.dart' as wm_location;
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:go_router/go_router.dart';
@@ -169,24 +170,26 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
 
       debugPrint('🔗 Calling moody Edge Function: create_day_plan...');
       
-      // CRITICAL: Get location and coordinates (required by Edge Function)
+      // Location and coordinates are required by the Edge Function.
+      // Don't hard-block when GPS is denied (App Review / first run / privacy-conscious users):
+      // fall back to the app default city + coords so we can still generate a plan.
       final locationAsync = ref.read(locationNotifierProvider);
-      final location = locationAsync.value;
-      
-      // CRITICAL: Validate location exists - no defaults allowed
-      if (location == null || location.isEmpty || location.trim().isEmpty) {
-        throw const ExploreLocationException(ExploreLocationReason.missingCity);
-      }
+      final rawCity = locationAsync.value?.trim();
+      final city = (rawCity != null && rawCity.isNotEmpty)
+          ? rawCity
+          : (wm_location.LocationService.defaultLocation['name'] as String);
 
-      // CRITICAL: Get GPS coordinates - use .future to get the Future directly
       final position = await ref.read(userLocationProvider.future);
+      final lat = position?.latitude ??
+          (wm_location.LocationService.defaultLocation['latitude'] as double);
+      final lng = position?.longitude ??
+          (wm_location.LocationService.defaultLocation['longitude'] as double);
 
-      if (position == null) {
-        throw const ExploreLocationException(
-            ExploreLocationReason.missingCoordinates);
+      if (rawCity == null || rawCity.isEmpty || position == null) {
+        debugPrint('📍 Location unavailable; using default city: $city at ($lat, $lng)');
+      } else {
+        debugPrint('📍 Using location: $city at ($lat, $lng)');
       }
-      
-      debugPrint('📍 Using location: $location at (${position.latitude}, ${position.longitude})');
       
       // FIX #1: Explicitly pass Authorization header
       final session = Supabase.instance.client.auth.currentSession;
@@ -221,12 +224,12 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
         data: {
           'action': 'create_day_plan',
           'moods': widget.selectedMoods,
-          'location': location.trim(),
+          'location': city.trim(),
           'is_local': isLocal,
           'language_code': languageCode,
           'coordinates': {
-            'lat': position.latitude,
-            'lng': position.longitude,
+            'lat': lat,
+            'lng': lng,
           },
           if (widget.quickPick == DayPlanQuickPick.coffee)
             'quick_pick': 'coffee',

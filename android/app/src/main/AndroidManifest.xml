@@ -52,6 +52,13 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="io.supabase.wandermood" />
             </intent-filter>
+            <!-- Group planning join: wandermood:/group-planning/join?code=… -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="wandermood" />
+            </intent-filter>
         </activity>
         <!-- flutter_local_notifications: receiver for scheduled notifications -->
         <receiver android:exported="false"

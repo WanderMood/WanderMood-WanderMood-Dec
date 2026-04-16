@@ -14,6 +14,8 @@ import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_card.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_grid_card.dart';
+import 'package:wandermood/features/places/presentation/widgets/add_place_to_my_day_sheet.dart';
+import 'package:wandermood/features/places/presentation/utils/save_explore_place_to_my_day.dart';
 import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/core/errors/explore_location_exception.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
@@ -31,15 +33,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/presentation/providers/language_provider.dart';
 import 'package:wandermood/core/utils/places_cache_utils.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
-import 'package:wandermood/features/plans/domain/models/activity.dart';
-import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
-import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
-import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/core/utils/moody_toast.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
+import 'package:wandermood/core/providers/explore_session_anchor_provider.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
 class _ExploreSectionData {
   _ExploreSectionData({required this.id, List<Place>? cards})
@@ -104,6 +103,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   /// How many places to show in list/grid (capped by filtered list length).
   int _exploreVisiblePlaceCount = _kExplorePageSize;
+
+  bool _backgroundExploreRefresh = false;
 
   late final List<_ExploreSectionData> _sections = [
     _ExploreSectionData(id: 'food'),
@@ -200,13 +201,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   @override
   void initState() {
     super.initState();
-    for (final s in _sections) {
-      s.isLoading = true;
-    }
     _searchController.addListener(_onSearchChanged);
     _scrollController.addListener(_onScrollChanged);
 
-    // Refresh location; keep Supabase/SharedPreferences explore caches (cache-first).
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       ref.read(locationNotifierProvider.notifier).getCurrentLocation();
       _scheduleLoadSectionsIfReady();
@@ -242,16 +239,102 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       setState(() => _explorePlacePhotoRefreshSeed++);
     }
     ref.invalidate(moodyExploreAutoProvider);
-    await _loadAllSections();
+    await _onUserPulledToRefresh();
   }
 
   void _scheduleLoadSectionsIfReady() {
     if (!mounted) return;
-    final city = ref.read(locationNotifierProvider).value?.trim();
-    final pos = ref.read(userLocationProvider).value;
-    if (city != null && city.isNotEmpty && pos != null) {
+    unawaited(_maybeLockSessionAnchor());
+    final anchor = ref.read(exploreSessionAnchorProvider);
+    final city = anchor?.city ?? ref.read(locationNotifierProvider).value?.trim();
+    final hasPos =
+        anchor != null || ref.read(userLocationProvider).value != null;
+    if (city != null && city.isNotEmpty && hasPos) {
       unawaited(_loadAllSections());
     }
+  }
+
+  Future<void> _maybeLockSessionAnchor() async {
+    if (ref.read(exploreSessionAnchorProvider) != null) return;
+    final city = ref.read(locationNotifierProvider).valueOrNull?.trim();
+    final pos = ref.read(userLocationProvider).valueOrNull;
+    if (city == null || city.isEmpty || pos == null) return;
+    ref.read(exploreSessionAnchorProvider.notifier).state = ExploreSessionAnchor(
+      city: city,
+      latitude: pos.latitude,
+      longitude: pos.longitude,
+    );
+  }
+
+  Position _positionForExploreLoad() {
+    final anchor = ref.read(exploreSessionAnchorProvider);
+    if (anchor != null) {
+      return Position(
+        latitude: anchor.latitude,
+        longitude: anchor.longitude,
+        timestamp: MoodyClock.now(),
+        accuracy: 500,
+        altitude: 0,
+        altitudeAccuracy: 0,
+        heading: 0,
+        headingAccuracy: 0,
+        speed: 0,
+        speedAccuracy: 0,
+        isMocked: false,
+      );
+    }
+    final pos = ref.read(userLocationProvider).value!;
+    return pos;
+  }
+
+  Future<void> _onManualCityChangedExplore() async {
+    await ref.read(userLocationProvider.notifier).refreshLocation();
+    await ref.read(locationNotifierProvider.future);
+    final city = ref.read(locationNotifierProvider).valueOrNull?.trim();
+    final pos = ref.read(userLocationProvider).valueOrNull;
+    if (city == null || city.isEmpty || pos == null) return;
+    ref.read(exploreSessionAnchorProvider.notifier).state = ExploreSessionAnchor(
+      city: city,
+      latitude: pos.latitude,
+      longitude: pos.longitude,
+    );
+    if (!mounted) return;
+    await _loadAllSections(forceNetwork: true);
+  }
+
+  Future<void> _onUserPulledToRefresh() async {
+    await ref.read(userLocationProvider.notifier).refreshLocation();
+    await ref.read(locationNotifierProvider.future);
+    final pos = ref.read(userLocationProvider).valueOrNull;
+    final anchor = ref.read(exploreSessionAnchorProvider);
+    final city = ref.read(locationNotifierProvider).valueOrNull?.trim();
+    if (pos != null && anchor != null) {
+      final moved = Geolocator.distanceBetween(
+        anchor.latitude,
+        anchor.longitude,
+        pos.latitude,
+        pos.longitude,
+      );
+      if (moved >= 5000 &&
+          city != null &&
+          city.isNotEmpty) {
+        ref.read(exploreSessionAnchorProvider.notifier).state =
+            ExploreSessionAnchor(
+          city: city,
+          latitude: pos.latitude,
+          longitude: pos.longitude,
+        );
+      }
+    } else if (pos != null && city != null && city.isNotEmpty) {
+      ref.read(exploreSessionAnchorProvider.notifier).state =
+          ExploreSessionAnchor(
+        city: city,
+        latitude: pos.latitude,
+        longitude: pos.longitude,
+      );
+    }
+    ref.invalidate(moodyExploreAutoProvider);
+    await _loadAllSections(forceNetwork: true);
   }
 
   List<Place> _mergePlaces(List<Place> existing, List<Place> incoming) {
@@ -267,8 +350,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   /// Extra Explore rows via moody `namedFilters` (skips Flutter cache read).
   Future<void> _loadMoreExploreIdeas() async {
     if (_isLoadingMoreExplore || _isMapView) return;
-    final city = ref.read(locationNotifierProvider).value?.trim();
-    final pos = ref.read(userLocationProvider).value;
+    await _maybeLockSessionAnchor();
+    final anchor = ref.read(exploreSessionAnchorProvider);
+    final city = anchor?.city ?? ref.read(locationNotifierProvider).value?.trim();
+    final pos =
+        anchor != null ? _positionForExploreLoad() : ref.read(userLocationProvider).value;
     if (city == null || city.isEmpty || pos == null) return;
     final connected = await ref.read(connectivityServiceProvider).isConnected;
     if (!connected) {
@@ -339,22 +425,110 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     });
   }
 
-  Future<void> _loadAllSections() async {
+  Future<void> _loadAllSections({bool forceNetwork = false}) async {
     if (!mounted) return;
+    await _maybeLockSessionAnchor();
+    final anchor = ref.read(exploreSessionAnchorProvider);
+    final cityForCache =
+        anchor?.city ?? ref.read(locationNotifierProvider).valueOrNull?.trim() ?? '';
+
     final connected = await ref.read(connectivityServiceProvider).isConnected;
     if (!connected) {
       await _loadAllSectionsOffline();
       return;
     }
 
+    final filters = ref.read(moodyExploreBackendFiltersProvider);
+    final namedFilters = ref.read(moodyExploreBackendNamedFiltersProvider);
+    final skipPlacesCacheFirstPass =
+        filters.isNotEmpty || namedFilters.isNotEmpty;
+
+    if (!forceNetwork &&
+        !skipPlacesCacheFirstPass &&
+        cityForCache.isNotEmpty &&
+        mounted) {
+      final client = Supabase.instance.client;
+      final exploreLang = PlacesCacheUtils.effectiveExploreLanguageTag(
+        appLocale: ref.read(localeProvider),
+      );
+      final isLocal = await PlacesCacheUtils.readExploreIsLocalMode(client);
+
+      final hits = await Future.wait(
+        _sections.map(
+          (s) => PlacesCacheUtils.tryLoadExplorePlacesHit(
+            client,
+            s.id,
+            cityForCache,
+            isLocalMode: isLocal,
+            languageCode: exploreLang,
+          ),
+        ),
+      );
+
+      if (!mounted) return;
+
+      final anyHit = hits.any((h) => h != null && h.places.isNotEmpty);
+      if (anyHit) {
+        final needBackground =
+            hits.any((h) => h?.shouldRefreshInBackground == true);
+        setState(() {
+          _exploreVisiblePlaceCount = _kExplorePageSize;
+          for (var i = 0; i < _sections.length; i++) {
+            final hit = hits[i];
+            final list = hit?.places ?? const <Place>[];
+            _sections[i].cards = List<Place>.from(list);
+            _sections[i].hasError = false;
+            _sections[i].isLoading = list.isEmpty;
+            for (final p in list) {
+              ref.read(placesServiceProvider.notifier).cachePlaceObject(p);
+            }
+          }
+        });
+        final allFilled = _sections.every((s) => !s.isLoading);
+        if (allFilled) {
+          if (needBackground) {
+            unawaited(_refreshExploreStaleInBackground());
+          }
+          return;
+        }
+        if (needBackground) {
+          unawaited(_refreshExploreStaleInBackground());
+        }
+        await Future.wait(
+          _sections.where((s) => s.isLoading).map((s) => _loadSection(s)),
+        );
+        return;
+      }
+    }
+
+    if (!mounted) return;
     setState(() {
       _exploreVisiblePlaceCount = _kExplorePageSize;
       for (final s in _sections) {
-        s.isLoading = true;
+        final keepCards = s.cards.isNotEmpty;
+        s.isLoading = !keepCards;
         s.hasError = false;
       }
     });
-    await Future.wait(_sections.map((s) => _loadSection(s)));
+    await Future.wait(
+      _sections.map(
+        (s) => _loadSection(s, skipPlacesCache: forceNetwork),
+      ),
+    );
+  }
+
+  Future<void> _refreshExploreStaleInBackground() async {
+    if (_backgroundExploreRefresh || !mounted) return;
+    _backgroundExploreRefresh = true;
+    try {
+      await Future.wait(
+        _sections.map(
+          (s) => _loadSection(s, silent: true, skipPlacesCache: true),
+        ),
+      );
+    } finally {
+      _backgroundExploreRefresh = false;
+    }
   }
 
   Future<void> _loadAllSectionsOffline() async {
@@ -390,10 +564,18 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   Future<void> _loadSection(
     _ExploreSectionData section, {
     bool append = false,
+    bool silent = false,
+    bool skipPlacesCache = false,
   }) async {
     if (!mounted) return;
-    final city = ref.read(locationNotifierProvider).value?.trim() ?? '';
-    final position = ref.read(userLocationProvider).value;
+    await _maybeLockSessionAnchor();
+    final anchor = ref.read(exploreSessionAnchorProvider);
+    final city = anchor?.city ??
+        ref.read(locationNotifierProvider).value?.trim() ??
+        '';
+    final position = anchor != null
+        ? _positionForExploreLoad()
+        : ref.read(userLocationProvider).value;
     if (city.isEmpty || position == null) {
       setState(() {
         section.isLoading = false;
@@ -428,11 +610,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       return;
     }
 
-    setState(() {
-      section.isLoading = true;
-      section.hasError = false;
-      if (!append) section.cards = [];
-    });
+    if (!silent) {
+      setState(() {
+        section.isLoading = true;
+        section.hasError = false;
+        if (!append) section.cards = [];
+      });
+    }
 
     final filters = ref.read(moodyExploreBackendFiltersProvider);
     final namedFilters = ref.read(moodyExploreBackendNamedFiltersProvider);
@@ -446,6 +630,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         filters: filters.isEmpty ? null : filters,
         namedFilters: namedFilters.isEmpty ? null : namedFilters,
         languageCode: exploreLang,
+        bypassPlacesCache: skipPlacesCache,
       );
       if (!mounted) return;
       final notifier = ref.read(placesServiceProvider.notifier);
@@ -1673,6 +1858,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           _isSearching ||
           (_searchQuery.trim().length >= 1 && _searchResults == null);
       return CustomScrollView(
+        primary: true,
+        physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverFillRemaining(
             hasScrollBody: false,
@@ -1832,6 +2019,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           );
 
     return CustomScrollView(
+      primary: true,
+      physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         if (explanationSliver != null) explanationSliver,
         SliverPadding(
@@ -1875,16 +2064,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   @override
   Widget build(BuildContext context) {
     ref.watch(preferencesProvider);
-    ref.listen(locationNotifierProvider, (prev, next) {
-      final a = prev?.value?.trim();
-      final b = next.value?.trim();
-      if (b != null && b.isNotEmpty && a != b) {
-        _scheduleLoadSectionsIfReady();
-      }
-    });
-    ref.listen(userLocationProvider, (prev, next) {
-      if (prev?.valueOrNull != next.valueOrNull) {
-        _scheduleLoadSectionsIfReady();
+    ref.listen<int>(exploreManualCityPickTickProvider, (prev, next) {
+      if (prev != null && prev != next) {
+        ref.read(exploreSessionAnchorProvider.notifier).state = null;
+        unawaited(_onManualCityChangedExplore());
       }
     });
 
@@ -1916,15 +2099,32 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F0E8),
       body: userLocAsync.when(
-        loading: () => _wrapExploreStack(
-          NestedScrollView(
-            controller: _scrollController,
-            headerSliverBuilder: (context, innerBoxIsScrolled) => [
-              _buildExploreSliverAppBar(0),
-            ],
-            body: const Center(child: CircularProgressIndicator()),
-          ),
-        ),
+        loading: () {
+          final hasCached = _sections.any((s) => s.cards.isNotEmpty);
+          if (hasCached) {
+            return _wrapExploreStack(
+              NestedScrollView(
+                controller: _scrollController,
+                headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                  _buildExploreSliverAppBar(0),
+                ],
+                body: RefreshIndicator(
+                  onRefresh: _onUserPulledToRefresh,
+                  child: _buildExploreListGridBody(_allCards),
+                ),
+              ),
+            );
+          }
+          return _wrapExploreStack(
+            NestedScrollView(
+              controller: _scrollController,
+              headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                _buildExploreSliverAppBar(0),
+              ],
+              body: const Center(child: CircularProgressIndicator()),
+            ),
+          );
+        },
         error: (e, st) => _wrapExploreStack(
           NestedScrollView(
             controller: _scrollController,
@@ -1976,7 +2176,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             );
           }
 
-          final inner = _buildExploreListGridBody(_allCards);
+          final inner = RefreshIndicator(
+            onRefresh: _onUserPulledToRefresh,
+            child: _buildExploreListGridBody(_allCards),
+          );
 
           return _wrapExploreStack(
             NestedScrollView(
@@ -3640,7 +3843,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => _ExploreAddToMyDaySheet(
+      builder: (_) => AddPlaceToMyDaySheet(
         place: place,
         planningDate: planningDate,
         onTimeSelected: (DateTime startTime) =>
@@ -3650,123 +3853,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   Future<void> _addActivityToMyDay(Place place, DateTime startTime) async {
-    try {
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user == null) {
-        if (mounted) {
-          showWanderMoodToast(
-            context,
-            message: AppLocalizations.of(context)!.myDayAddSignInRequired,
-            isError: true,
-          );
-        }
-        return;
-      }
-
-      final hour = startTime.hour;
-      final timeOfDay = (hour >= 6 && hour < 12)
-          ? 'morning'
-          : (hour >= 12 && hour < 17)
-              ? 'afternoon'
-              : 'evening';
-      final timeSlotEnum = timeOfDay == 'morning'
-          ? TimeSlot.morning
-          : timeOfDay == 'afternoon'
-              ? TimeSlot.afternoon
-              : TimeSlot.evening;
-
-      PaymentType paymentType = PaymentType.free;
-      if (place.types.any((t) =>
-          ['restaurant', 'spa', 'museum', 'tourist_attraction'].contains(t))) {
-        paymentType = PaymentType.reservation;
-      }
-
-      int duration = 60;
-      for (final type in place.types) {
-        final t = type.toLowerCase();
-        if (['museum', 'tourist_attraction', 'amusement_park'].contains(t)) {
-          duration = 120;
-          break;
-        } else if (['store', 'shopping_mall'].contains(t)) {
-          duration = 90;
-          break;
-        }
-      }
-
-      final photoIdx = place.photos.isNotEmpty
-          ? (place.id.hashCode.abs() + _explorePlacePhotoRefreshSeed) %
-              place.photos.length
-          : 0;
-      final imageUrl = place.photos.isNotEmpty
-          ? place.photos[photoIdx]
-          : 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80';
-
-      final l10n = AppLocalizations.of(context)!;
-      final activity = Activity(
-        id: 'place_${place.id}_${DateTime.now().millisecondsSinceEpoch}',
-        name: place.name,
-        description: place.description ??
-            l10n.explorePlaceDescriptionFallback(place.name),
-        imageUrl: imageUrl,
-        rating: place.rating > 0 ? place.rating : 4.5,
-        startTime: startTime,
-        duration: duration,
-        timeSlot: timeOfDay,
-        timeSlotEnum: timeSlotEnum,
-        tags: place.types.isNotEmpty ? place.types : ['explore'],
-        location: LatLng(place.location.lat, place.location.lng),
-        paymentType: paymentType,
-        priceLevel: place.priceRange,
-        placeId: place.id,
-      );
-
-      final scheduledActivityService =
-          ref.read(scheduledActivityServiceProvider);
-      final inserted = await scheduledActivityService.saveScheduledActivities(
-        [activity],
-        isConfirmed: false,
-      );
-      if (inserted == 0) {
-        if (mounted) {
-          showMoodyToast(context, l10n.exploreAlreadyInDayPlan);
-        }
-        return;
-      }
-
-      final selectedDay =
-          DateTime(startTime.year, startTime.month, startTime.day);
-      ref.read(selectedMyDayDateProvider.notifier).state = selectedDay;
-      ref.invalidate(scheduledActivityServiceProvider);
-      ref.invalidate(scheduledActivitiesForTodayProvider);
-      ref.invalidate(todayActivitiesProvider);
-      ref.invalidate(cachedActivitySuggestionsProvider);
-
-      if (mounted) {
-        showWanderMoodToast(
-          context,
-          message: AppLocalizations.of(context)!.dayPlanCardAddedToMyDay(place.name),
-          duration: const Duration(seconds: 3),
-          actionLabel: AppLocalizations.of(context)!.activityOptionsViewAction,
-          onAction: () {
-            if (mounted)
-              context.go('/main', extra: {
-                'tab': 0,
-                'refresh': true,
-                'targetDate': selectedDay.toIso8601String(),
-              });
-          },
-        );
-      }
-    } catch (e) {
-      debugPrint('Error adding to My Day: $e');
-      if (mounted) {
-        showWanderMoodToast(
-          context,
-          message: AppLocalizations.of(context)!.myDayAddFailedTryAgain,
-          isError: true,
-        );
-      }
-    }
+    await saveExplorePlaceToMyDay(
+      context: context,
+      ref: ref,
+      place: place,
+      startTime: startTime,
+      photoSelectionSeed: _explorePlacePhotoRefreshSeed,
+    );
   }
 
   // Build quick filter chip for map view
@@ -3795,389 +3888,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             color: isActive ? const Color(0xFF2A6049) : Colors.grey[800],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Bottom sheet for selecting a time slot when adding a place to My Day.
-class _ExploreAddToMyDaySheet extends ConsumerStatefulWidget {
-  final Place place;
-  final DateTime planningDate;
-  final void Function(DateTime) onTimeSelected;
-
-  const _ExploreAddToMyDaySheet({
-    required this.place,
-    required this.planningDate,
-    required this.onTimeSelected,
-  });
-
-  @override
-  ConsumerState<_ExploreAddToMyDaySheet> createState() =>
-      _ExploreAddToMyDaySheetState();
-}
-
-class _ExploreAddToMyDaySheetState extends ConsumerState<_ExploreAddToMyDaySheet> {
-  static const _slotKeys = ['morning', 'afternoon', 'evening'];
-
-  int _selectedSlotIndex = 1;
-  late DateTime _selectedDate;
-  Set<String> _occupiedSlots = {};
-  bool _loadingSlots = true;
-
-  DateTime _dateOnly(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
-
-  bool _isSameDay(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month && a.day == b.day;
-
-  String _formatDateShort(DateTime date) {
-    final dd = date.day.toString().padLeft(2, '0');
-    final mm = date.month.toString().padLeft(2, '0');
-    return '$dd/$mm';
-  }
-
-  String _formatDateLong(DateTime date) {
-    final dd = date.day.toString().padLeft(2, '0');
-    final mm = date.month.toString().padLeft(2, '0');
-    return '$dd/$mm/${date.year}';
-  }
-
-  DateTime get _selectedStartTime {
-    final d = _selectedDate;
-    final hour =
-        _selectedSlotIndex == 0 ? 9 : (_selectedSlotIndex == 1 ? 14 : 19);
-    return DateTime(d.year, d.month, d.day, hour, 0);
-  }
-
-  int _firstFreeSlotIndex() {
-    for (var i = 0; i < 3; i++) {
-      if (!_occupiedSlots.contains(_slotKeys[i])) return i;
-    }
-    return 0;
-  }
-
-  Future<void> _refreshOccupiedSlots() async {
-    setState(() => _loadingSlots = true);
-    final svc = ref.read(scheduledActivityServiceProvider);
-    final o = await svc.getOccupiedTimeSlotKeysForPlaceOnDate(
-      placeId: widget.place.id,
-      date: _selectedDate,
-    );
-    if (!mounted) return;
-    setState(() {
-      _occupiedSlots = o;
-      _loadingSlots = false;
-      _selectedSlotIndex = _firstFreeSlotIndex();
-    });
-  }
-
-  Future<void> _pickCustomDate() async {
-    final l10n = AppLocalizations.of(context)!;
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate.isBefore(_dateOnly(now))
-          ? _dateOnly(now)
-          : _selectedDate,
-      firstDate: _dateOnly(now),
-      lastDate: DateTime(now.year + 1, 12, 31),
-      helpText: l10n.exploreDatePickerHelp,
-      cancelText: l10n.cancel,
-      confirmText: l10n.exploreDatePickerConfirm,
-    );
-    if (picked == null) return;
-    setState(() => _selectedDate = _dateOnly(picked));
-    await _refreshOccupiedSlots();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedDate = _dateOnly(widget.planningDate);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      unawaited(_refreshOccupiedSlots());
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final now = DateTime.now();
-    final today = _dateOnly(now);
-    final tomorrow = today.add(const Duration(days: 1));
-    final isTodaySelected = _isSameDay(_selectedDate, today);
-    final isTomorrowSelected = _isSameDay(_selectedDate, tomorrow);
-    final isCustomSelected = !isTodaySelected && !isTomorrowSelected;
-    final allTaken = _occupiedSlots.length >= 3 && !_loadingSlots;
-
-    Widget dayChip({
-      required String label,
-      required bool selected,
-      required VoidCallback onTap,
-    }) {
-      return Expanded(
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              color: selected ? const Color(0xFFEBF3EE) : const Color(0xFFF5F0E8),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: selected ? const Color(0xFF2A6049) : const Color(0xFFE8E2D8),
-                width: selected ? 1.5 : 1,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                label,
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                  color: selected ? const Color(0xFF2A6049) : const Color(0xFF8C8780),
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    Widget timeChip({
-      required String label,
-      required int slotIndex,
-    }) {
-      final key = _slotKeys[slotIndex];
-      final taken = _occupiedSlots.contains(key);
-      final selected = _selectedSlotIndex == slotIndex && !taken;
-      return Expanded(
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: taken || _loadingSlots
-              ? null
-              : () => setState(() => _selectedSlotIndex = slotIndex),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              color: taken
-                  ? const Color(0xFFF0EEEB)
-                  : (selected
-                      ? const Color(0xFFEBF3EE)
-                      : const Color(0xFFF5F0E8)),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: taken
-                    ? const Color(0xFFE0DDD8)
-                    : (selected
-                        ? const Color(0xFF2A6049)
-                        : const Color(0xFFE8E2D8)),
-                width: selected ? 1.5 : 1,
-              ),
-            ),
-            child: Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Text(
-                      label,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight:
-                            selected ? FontWeight.w600 : FontWeight.w500,
-                        color: taken
-                            ? const Color(0xFFB0ABA5)
-                            : (selected
-                                ? const Color(0xFF2A6049)
-                                : const Color(0xFF8C8780)),
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  if (taken) ...[
-                    const SizedBox(width: 4),
-                    const Icon(Icons.check_rounded,
-                        size: 16, color: Color(0xFF2A6049)),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        20,
-        20,
-        20 + MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE8E2D8),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            l10n.myDayQuickAddActivity,
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF1E1C18),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            widget.place.name,
-            style: GoogleFonts.poppins(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF8C8780),
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            l10n.exploreAddToMyDayDayLabel,
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF8C8780),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              dayChip(
-                label: l10n.timeLabelToday,
-                selected: isTodaySelected,
-                onTap: () async {
-                  setState(() => _selectedDate = today);
-                  await _refreshOccupiedSlots();
-                },
-              ),
-              const SizedBox(width: 8),
-              dayChip(
-                label: l10n.timeLabelTomorrow,
-                selected: isTomorrowSelected,
-                onTap: () async {
-                  setState(() => _selectedDate = tomorrow);
-                  await _refreshOccupiedSlots();
-                },
-              ),
-              const SizedBox(width: 8),
-              dayChip(
-                label: isCustomSelected
-                    ? _formatDateShort(_selectedDate)
-                    : l10n.exploreAddToMyDayPickDate,
-                selected: isCustomSelected,
-                onTap: _pickCustomDate,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            l10n.exploreAddToMyDaySelectedDate(_formatDateLong(_selectedDate)),
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: const Color(0xFF8C8780),
-            ),
-          ),
-          const SizedBox(height: 14),
-          if (_loadingSlots)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Center(
-                child: SizedBox(
-                  width: 28,
-                  height: 28,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    color: Color(0xFF2A6049),
-                  ),
-                ),
-              ),
-            )
-          else if (allTaken)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Center(
-                child: Text(
-                  l10n.exploreAlreadyInDayPlan,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1E1C18),
-                  ),
-                ),
-              ),
-            )
-          else ...[
-            Text(
-              l10n.exploreAddToMyDayTimeLabel,
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF8C8780),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                timeChip(label: l10n.timeLabelMorning, slotIndex: 0),
-                const SizedBox(width: 8),
-                timeChip(label: l10n.timeLabelAfternoon, slotIndex: 1),
-                const SizedBox(width: 8),
-                timeChip(label: l10n.timeLabelEvening, slotIndex: 2),
-              ],
-            ),
-          ],
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 52,
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: (_loadingSlots || allTaken ||
-                      _occupiedSlots.contains(_slotKeys[_selectedSlotIndex]))
-                  ? null
-                  : () {
-                      widget.onTimeSelected(_selectedStartTime);
-                      Navigator.pop(context);
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2A6049),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                l10n.myDayQuickAddActivity,
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-        ],
       ),
     );
   }

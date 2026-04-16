@@ -1650,7 +1650,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileEditNameLabel => 'Full Name';
 
   @override
-  String get profileEditUsernameLabel => 'Username';
+  String get profileEditUsernameLabel => 'Username *';
+
+  @override
+  String get profileEditUsernameRequiredError => 'Username is required.';
+
+  @override
+  String get profileEditUsernameFormatError =>
+      'Use 3–30 characters: letters, numbers, or underscores only.';
+
+  @override
+  String get profileEditUsernameTakenError =>
+      'That username is already taken. Try another.';
 
   @override
   String get profileEditEmailLabel => 'Email';
@@ -3640,6 +3651,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get moodHubBannerNight =>
       'Late night energy — let\'s find something that fits.';
+
+  @override
+  String get moodyIdleWakeOpenPlan => 'Let\'s open your plan for today.';
+
+  @override
+  String get moodyIdleWakeChooseMood =>
+      'What are we doing today? Pick your mood and we\'ll build the day.';
+
+  @override
+  String get moodyHubNewConversation => 'New conversation';
 
   @override
   String get moodHubCreatePlan => 'Let\'s create your perfect plan! 🎯';
@@ -10010,4 +10031,780 @@ class AppLocalizationsEn extends AppLocalizations {
   String agendaDurationShort(String minutes) {
     return '$minutes min';
   }
+
+  @override
+  String get groupPlanWithFriendMenu => 'Plan with a friend';
+
+  @override
+  String get groupPlanTogetherTitle => 'Plan together';
+
+  @override
+  String get groupPlanHubBody =>
+      'Combine moods with a travel partner. Both of you use your own phone — share a short code or open it from a message.';
+
+  @override
+  String get groupPlanTileStartTitle => 'Start a session';
+
+  @override
+  String get groupPlanTileStartSubtitle =>
+      'You’ll get a code to send your friend';
+
+  @override
+  String get groupPlanTileJoinTitle => 'Join with code';
+
+  @override
+  String get groupPlanTileJoinSubtitle => 'Enter the code from your friend';
+
+  @override
+  String get groupPlanCreateTitle => 'Plan with a friend';
+
+  @override
+  String get groupPlanCreateBody =>
+      'Create a shared session. You’ll get a short code to send your travel partner — they enter it on their phone.';
+
+  @override
+  String get groupPlanCreateOptionalTitleLabel =>
+      'Optional title (e.g. Today in Lisbon)';
+
+  @override
+  String get groupPlanCreateButton => 'Create & share code';
+
+  @override
+  String get groupPlanShareSubject => 'WanderMood group plan';
+
+  @override
+  String groupPlanInviteShare(String code) {
+    return 'Join my WanderMood day plan! Code: $code\n(Open WanderMood → Plan with a friend → Enter code)';
+  }
+
+  @override
+  String get groupPlanJoinTitle => 'Join a friend';
+
+  @override
+  String get groupPlanJoinBody =>
+      'Scan your friend\'s QR code together, or enter their code below.';
+
+  @override
+  String get groupPlanJoinCodeLabel => 'Join code';
+
+  @override
+  String get groupPlanJoinCodeHint => 'e.g. A1B2C3';
+
+  @override
+  String get groupPlanJoinButton => 'Join session';
+
+  @override
+  String get groupPlanJoinSnackEnterCode =>
+      'Enter the code your friend shared.';
+
+  @override
+  String groupPlanJoinError(String error) {
+    return 'Could not join: $error';
+  }
+
+  @override
+  String get groupPlanShareQrTitle => 'Show this to your friend';
+
+  @override
+  String groupPlanShareQrOrCode(String code) {
+    return 'or enter code $code';
+  }
+
+  @override
+  String get groupPlanShareViaMessage => 'Share via message';
+
+  @override
+  String get groupPlanShareContinueLobby => 'Continue to lobby';
+
+  @override
+  String get groupPlanShareScreenTitle => 'Invite your friend';
+
+  @override
+  String get groupPlanJoinScanQr => 'Scan QR code';
+
+  @override
+  String get groupPlanJoinEnterInstead => 'Enter code instead';
+
+  @override
+  String get groupPlanJoinScanInstead => 'Scan QR code instead';
+
+  @override
+  String get groupPlanScanTitle => 'Scan QR code';
+
+  @override
+  String groupPlanCreateError(String error) {
+    return 'Could not create session: $error';
+  }
+
+  @override
+  String get groupPlanLobbyTitle => 'Group plan';
+
+  @override
+  String get groupPlanLobbyShareCode => 'Share this code';
+
+  @override
+  String groupPlanLobbyMoodsProgress(int locked, int total) {
+    return '$locked / $total moods locked in';
+  }
+
+  @override
+  String get groupPlanLobbyWaitingFriend => 'Waiting for your friend to join…';
+
+  @override
+  String get groupPlanLobbyWhosIn => 'Who’s in';
+
+  @override
+  String groupPlanLobbyMoodLine(String mood) {
+    return 'Mood: $mood';
+  }
+
+  @override
+  String get groupPlanLobbyStillChoosing => 'Still choosing…';
+
+  @override
+  String get groupPlanLobbyYourMood => 'Your mood today';
+
+  @override
+  String get groupPlanLobbyLockMood => 'Lock in my mood';
+
+  @override
+  String get groupPlanLobbyBuilding => 'Moody is building your shared plan…';
+
+  @override
+  String get groupPlanLobbyPlanFailed =>
+      'Plan generation failed. Pull to refresh or try again in a moment.';
+
+  @override
+  String get groupPlanLobbyPickMoodSnack => 'Pick a mood first.';
+
+  @override
+  String groupPlanLobbySubmitError(String error) {
+    return 'Something went wrong: $error';
+  }
+
+  @override
+  String get groupPlanMoodAdventurous => 'Adventurous';
+
+  @override
+  String get groupPlanMoodRelaxed => 'Relaxed';
+
+  @override
+  String get groupPlanMoodSocial => 'Social';
+
+  @override
+  String get groupPlanMoodCultural => 'Cultural';
+
+  @override
+  String get groupPlanMoodRomantic => 'Romantic';
+
+  @override
+  String get groupPlanMoodEnergetic => 'Energetic';
+
+  @override
+  String get groupPlanMoodFoody => 'Foody';
+
+  @override
+  String get groupPlanMoodCreative => 'Creative';
+
+  @override
+  String get groupPlanResultTitle => 'Your shared plan';
+
+  @override
+  String get groupPlanResultNoPlan => 'No plan found yet.';
+
+  @override
+  String get groupPlanResultBackToApp => 'Back to app';
+
+  @override
+  String groupPlanResultMoodsLine(String moods) {
+    return 'Moods: $moods';
+  }
+
+  @override
+  String get groupPlanResultIdeasTitle => 'Ideas for today';
+
+  @override
+  String get groupPlanResultAddHint =>
+      'Adds use the date selected on My Day (defaults to today). Open My Day first if you want another day.';
+
+  @override
+  String get groupPlanResultAddToMyDay => 'Add to My Day';
+
+  @override
+  String get groupPlanResultAdded => 'Added';
+
+  @override
+  String get groupPlanResultFooter =>
+      'Each person adds stops to their own My Day. Same plan, two calendars.';
+
+  @override
+  String groupPlanResultAddedToast(String name) {
+    return 'Added \"$name\" to My Day';
+  }
+
+  @override
+  String get groupPlanResultDuplicateToast =>
+      'Could not add (duplicate or same time slot). Try another idea.';
+
+  @override
+  String groupPlanResultAddFailedToast(String error) {
+    return 'Add failed: $error';
+  }
+
+  @override
+  String get groupPlanResultViewMyDay => 'View';
+
+  @override
+  String groupPlanInviteOpenLink(String url) {
+    return 'Open in the app: $url';
+  }
+
+  @override
+  String get groupPlanHubHeroTitle => 'Plan with friends';
+
+  @override
+  String get groupPlanHubHeroSubtitle =>
+      'Two moods, one shared day. Moody figures out what works for both.';
+
+  @override
+  String get groupPlanHubStartCardTitle => 'Start a group plan';
+
+  @override
+  String get groupPlanHubStartCardSub => 'Get a code to share with your friend';
+
+  @override
+  String get groupPlanHubJoinCardTitle => 'Join a plan';
+
+  @override
+  String get groupPlanHubJoinCardSub => 'Enter a code from your friend';
+
+  @override
+  String get groupPlanHowItWorksTitle => 'How it works';
+
+  @override
+  String get groupPlanHowItWorksBody =>
+      'You each pick your mood independently. I\'ll blend them into one plan you both love.';
+
+  @override
+  String get groupPlanCreateHeaderSubtitle => 'You + a friend';
+
+  @override
+  String get groupPlanCreateHeaderCaption =>
+      'Pick your moods separately, get one shared plan';
+
+  @override
+  String get groupPlanSessionNameLabel => 'Session name (optional)';
+
+  @override
+  String get groupPlanSessionNamePlaceholder => 'e.g. Weekend in Amsterdam';
+
+  @override
+  String get groupPlanCreateCta => 'Create & share link';
+
+  @override
+  String get groupPlanCreateShareHint =>
+      'Next you will see a QR code to show in person, or you can share a link by message.';
+
+  @override
+  String get groupPlanLobbyTitleWaitingFriend => 'Waiting for your friend…';
+
+  @override
+  String groupPlanLobbyTitleWaitingName(String name) {
+    return 'Waiting for $name…';
+  }
+
+  @override
+  String get groupPlanLobbyTitleEveryoneReady => 'Everyone\'s ready!';
+
+  @override
+  String get groupPlanLobbyShareCodeUpper => 'Share this code';
+
+  @override
+  String get groupPlanLobbyShareLinkCta => 'Share link';
+
+  @override
+  String get groupPlanLobbyStatusLocked => 'Locked';
+
+  @override
+  String get groupPlanLobbyStatusWaiting => 'Waiting';
+
+  @override
+  String get groupPlanMoodSectionUppercase => 'Your mood today';
+
+  @override
+  String get groupPlanLobbyLockCta => 'Lock in my mood';
+
+  @override
+  String groupPlanLobbyWaitingLockIn(String name) {
+    return 'Waiting for $name to lock in…';
+  }
+
+  @override
+  String get groupPlanLobbyGenerateCta => 'Generate our plan';
+
+  @override
+  String get groupPlanLobbyLockingIn => '🔒 Locking in…';
+
+  @override
+  String get groupPlanLobbyWaitingFriendJoin =>
+      'Waiting for your friend to join…';
+
+  @override
+  String get groupPlanResultBlendKicker => 'Moody blended your moods ✨';
+
+  @override
+  String get groupPlanResultIdeasTitleEmoji => 'Ideas for today 💡';
+
+  @override
+  String get groupPlanResultLoadingMoody => 'Moody is building your plan… ✨';
+
+  @override
+  String get groupPlanResultFooterPhones =>
+      'Each of you adds what you want to your own My Day — two phones, same plan 📱📱';
+
+  @override
+  String groupPlanResultMoodChipYou(String emoji, String mood) {
+    return '$emoji $mood (you)';
+  }
+
+  @override
+  String groupPlanResultMoodChipName(String emoji, String mood, String name) {
+    return '$emoji $mood ($name)';
+  }
+
+  @override
+  String get groupPlanYouShort => 'You';
+
+  @override
+  String get groupPlanMoodCozy => 'Cozy';
+
+  @override
+  String get groupPlanMoodSurprise => 'Surprise';
+
+  @override
+  String get moodMatchTitle => 'Mood Match';
+
+  @override
+  String get moodMatchTagline => 'Two moods. One perfect day.';
+
+  @override
+  String get moodMatchTaglineHub =>
+      'Two moods. One perfect day. Built for both of you.';
+
+  @override
+  String get moodMatchStartBtn => 'Start a Mood Match';
+
+  @override
+  String get moodMatchStartBtnSub =>
+      'Invite someone, pick moods, get a shared plan';
+
+  @override
+  String get moodMatchJoinBtn => 'Join a Mood Match';
+
+  @override
+  String get moodMatchJoinBtnSub => 'Enter a code or scan QR';
+
+  @override
+  String get moodMatchHubMoodyIntroFriendly =>
+      'Okaaay, planning with someone else?\nThis is my favourite thing to do 😏';
+
+  @override
+  String get moodMatchHubMoodyIntroProfessional =>
+      'Mood Match aligns two private mood picks into one shared day plan—clear, fair, and built for both of you.';
+
+  @override
+  String get moodMatchHubMoodyIntroEnergetic =>
+      'Planning a day together?! I’m SO here for this—let’s make it unforgettable.';
+
+  @override
+  String get moodMatchHubMoodyIntroDirect =>
+      'You each pick a mood on your own phone. I\'ll turn that into one shared plan. Start or join when you’re ready.';
+
+  @override
+  String get moodMatchHubMoodyIntroWaitingFriendly =>
+      'You’re already in a Mood Match—your friend still needs to join. Open the plan to jump back in, or send a gentle nudge.';
+
+  @override
+  String get moodMatchHubMoodyIntroWaitingProfessional =>
+      'You have an active Mood Match awaiting the other guest. Use Open plan to return to the lobby, or share a reminder.';
+
+  @override
+  String get moodMatchHubMoodyIntroWaitingEnergetic =>
+      'We’re this close—your friend still has to hop in! Open the plan to keep the vibe going, or nudge them (they’ll love it).';
+
+  @override
+  String get moodMatchHubMoodyIntroWaitingDirect =>
+      'Session in progress; friend not in yet. Open plan to continue or nudge.';
+
+  @override
+  String get moodMatchHubPendingTitle => 'Continue your plan 👀';
+
+  @override
+  String get moodMatchHubPendingStory => 'We just need your friend.';
+
+  @override
+  String moodMatchHubPendingCodeSmall(String code) {
+    return 'Code $code';
+  }
+
+  @override
+  String moodMatchHubPendingCode(String code) {
+    return 'Code: $code';
+  }
+
+  @override
+  String get moodMatchHubPendingWaiting => 'Waiting for your friend to join…';
+
+  @override
+  String get moodMatchHubPendingBuilding => 'I\'m building your shared plan…';
+
+  @override
+  String get moodMatchHubCancelSession => 'Cancel';
+
+  @override
+  String get moodMatchHubReadyTitle => 'Your Mood Match is ready!';
+
+  @override
+  String get moodMatchHubReadySubtitle => 'I\'ve built your shared plan';
+
+  @override
+  String get moodMatchHubSeePlanCta => 'See the plan';
+
+  @override
+  String get moodMatchHubUntitledSession => 'Mood Match';
+
+  @override
+  String get moodMatchCreateAlreadyWaiting =>
+      'You already have a session waiting. Open it from the hub.';
+
+  @override
+  String moodMatchHubCancelError(String error) {
+    return 'Could not cancel: $error';
+  }
+
+  @override
+  String get moodMatchNewFeatureBadge => 'New feature';
+
+  @override
+  String moodMatchGoodMorning(String name) {
+    return 'Good morning, $name';
+  }
+
+  @override
+  String get moodMatchHowItWorksOneLiner =>
+      'You each pick your mood privately; I\'ll blend them into one plan you both love.';
+
+  @override
+  String get moodMatchStepYourMood => 'Step 1 of 2 · Your mood';
+
+  @override
+  String get moodMatchFeelQuestion => 'How are you feeling this morning?';
+
+  @override
+  String moodMatchPrivateHint(String name) {
+    return '$name won\'t see this until you both lock in';
+  }
+
+  @override
+  String get moodMatchMoodyPickQuoteFriendly =>
+      'Pick whatever\'s real. I\'ll make it work for both of you.';
+
+  @override
+  String get moodMatchMoodyPickQuoteProfessional =>
+      'Choose the mood that best reflects you today. I will reconcile both selections into one coherent plan.';
+
+  @override
+  String get moodMatchMoodyPickQuoteEnergetic =>
+      'Go with your gut—bold, soft, whatever! I’ll turn both picks into something you’ll both love.';
+
+  @override
+  String get moodMatchMoodyPickQuoteDirect =>
+      'Select your mood. Your friend won’t see it until you both lock in.';
+
+  @override
+  String get moodMatchSelectMoodButton => 'Select your mood';
+
+  @override
+  String moodMatchLockBtn(String mood) {
+    return 'Lock in $mood';
+  }
+
+  @override
+  String get moodMatchLobbyEveryoneReadyTitle => 'Everyone\'s ready! 🎉';
+
+  @override
+  String get moodMatchLobbyEveryoneReadySubtitle =>
+      'Moody is blending your vibes…';
+
+  @override
+  String get moodMatchLobbyWaitingSubtitle =>
+      'Hang tight — your match is almost ready.';
+
+  @override
+  String get moodMatchLobbyBuildingSubtitle =>
+      'Finding places that fit both of you…';
+
+  @override
+  String moodMatchLobbyCommentaryWaiting(String name) {
+    return 'Waiting for $name to figure out their vibe… 👀';
+  }
+
+  @override
+  String moodMatchLobbyCommentaryFriendLocked(String name) {
+    return '$name locked in! I\'m ready whenever you are 🎯';
+  }
+
+  @override
+  String get moodMatchLobbyCommentaryBothLocked =>
+      'Got both vibes. Building your match…';
+
+  @override
+  String moodMatchWhileYouWaitHint(String name) {
+    return 'Moody will reveal your compatibility score when $name locks in';
+  }
+
+  @override
+  String get moodMatchRevealScore => 'Vibe match today';
+
+  @override
+  String get moodMatchRevealCta => 'See our plan';
+
+  @override
+  String get moodMatchRevealCopyHighFriendly =>
+      'You\'re basically the same person today 😌 \nThis plan built itself.';
+
+  @override
+  String get moodMatchRevealCopyHighProfessional =>
+      'Your mood inputs align closely. The shared itinerary follows logically from both selections.';
+
+  @override
+  String get moodMatchRevealCopyHighEnergetic =>
+      'Twin vibe energy today! 🔥 This plan basically assembled itself—you\'re going to love it.';
+
+  @override
+  String get moodMatchRevealCopyHighDirect =>
+      'Very similar moods. The plan reflects both of you with minimal compromise.';
+
+  @override
+  String get moodMatchRevealCopyGoodFriendly =>
+      'Different vibes, but I made it work. \nTrust me on this one.';
+
+  @override
+  String get moodMatchRevealCopyGoodProfessional =>
+      'You chose different moods; I balanced both in one practical shared itinerary.';
+
+  @override
+  String get moodMatchRevealCopyGoodEnergetic =>
+      'Different moods? I turned that into a win—this lineup still feels exciting for both of you!';
+
+  @override
+  String get moodMatchRevealCopyGoodDirect =>
+      'Moods differed; the itinerary bridges both. Review the stops together.';
+
+  @override
+  String get moodMatchRevealCopyCreativeFriendly =>
+      'Okay this was a challenge. But I actually love \nwhat I found. You will too.';
+
+  @override
+  String get moodMatchRevealCopyCreativeProfessional =>
+      'Your moods diverged more than usual; I prioritized overlap you can both enjoy today.';
+
+  @override
+  String get moodMatchRevealCopyCreativeEnergetic =>
+      'Spicy combo on paper—but I found gems that still feel fun together. Let\'s go!';
+
+  @override
+  String get moodMatchRevealCopyCreativeDirect =>
+      'Low overlap between moods. The plan emphasizes neutral, crowd-pleasing picks.';
+
+  @override
+  String get moodMatchScoreLabelPerfect => 'Perfect match ✨';
+
+  @override
+  String get moodMatchScoreLabelGreat => 'Great combo';
+
+  @override
+  String get moodMatchScoreLabelGoodBalance => 'Good balance';
+
+  @override
+  String get moodMatchScoreLabelInteresting => 'Interesting mix';
+
+  @override
+  String get moodMatchScoreLabelCreative => 'Moody got creative';
+
+  @override
+  String moodMatchRevealMoodyFallback(String moodA, String moodB) {
+    return 'Your $moodA and $moodB sides are a surprisingly good team — I\'m into it.';
+  }
+
+  @override
+  String moodMatchResultCompatLine(int percent, String label) {
+    return '$percent% match · $label';
+  }
+
+  @override
+  String get moodMatchResultCompatGreat => 'Great combo ✓';
+
+  @override
+  String get moodMatchResultFooterStrip =>
+      'You each add what you want to your own My Day';
+
+  @override
+  String get moodMatchLobbyChoosingBadge => 'Choosing';
+
+  @override
+  String get moodMatchLobbyReadyBadge => 'Ready';
+
+  @override
+  String get moodMatchSeePlanShareA11y => 'Share';
+
+  @override
+  String get moodMatchMoodTileSublabel => 'Tap to choose';
+
+  @override
+  String moodMatchBlendChip(String emoji, String label) {
+    return '$emoji $label';
+  }
+
+  @override
+  String get moodMatchWithFriendMenu => 'Mood Match';
+
+  @override
+  String moodMatchInviteShare(String code) {
+    return 'Join my Mood Match on WanderMood! Code: $code';
+  }
+
+  @override
+  String get moodMatchShareMoodyPrompt =>
+      'Nice—your match probably has WanderMood already 💚 Tap Invite on WanderMood first and I will help you find them 👀 Link & QR are tucked below if you need them 📎✨';
+
+  @override
+  String get moodMatchShareFriendCodeIntro =>
+      'Your match only needs this code if they open WanderMood without the link—it is for their phone, not yours.';
+
+  @override
+  String get moodMatchShareLinkQrFoldTitle => 'Need a link or QR instead?';
+
+  @override
+  String get moodMatchShareLinkQrFoldSubtitle =>
+      'For other chats, or if they are not on WanderMood yet.';
+
+  @override
+  String get moodMatchShareBottomHint =>
+      'Tip: notifications can alert you when they join. You can go to the lobby anytime.';
+
+  @override
+  String moodMatchPartnerJoinedNotifTitle(String name) {
+    return '$name joined';
+  }
+
+  @override
+  String get moodMatchPartnerJoinedNotifBody =>
+      'Open your Mood Match lobby to keep going.';
+
+  @override
+  String get moodMatchPartnerJoinedNotifNameFallback => 'Someone';
+
+  @override
+  String get moodMatchInviteWanderMoodCta => 'Invite on WanderMood';
+
+  @override
+  String get moodMatchInviteTitle => 'Invite a WanderMood friend';
+
+  @override
+  String get moodMatchInviteSubtitle =>
+      'Send your join link first — it works in any chat. Search a username here to nudge someone already on WanderMood (optional).';
+
+  @override
+  String get moodMatchInviteJoinLinkCardTitle => 'Your join link';
+
+  @override
+  String get moodMatchInviteJoinLinkCardSubtitle =>
+      'Copy this https link and send it. It stays reliable if an in-app ping can’t be delivered.';
+
+  @override
+  String get moodMatchInviteCopyLinkAction => 'Copy link';
+
+  @override
+  String get moodMatchInviteLinkCopied => 'Join link copied';
+
+  @override
+  String get moodMatchInviteSearchHint => 'Username';
+
+  @override
+  String get moodMatchInviteSearchEmpty => 'Type at least 2 characters';
+
+  @override
+  String get moodMatchInviteNoResults => 'No profiles match that search';
+
+  @override
+  String get moodMatchInviteButton => 'Invite';
+
+  @override
+  String get moodMatchInviteSent => 'In-app invite sent';
+
+  @override
+  String get moodMatchInviteFailed =>
+      'Couldn’t send the in-app invite (server). Copy your join link and send it in any chat—that always works.';
+
+  @override
+  String get moodMatchInviteNotDeliveredInApp =>
+      'No in-app ping delivered — they may have in-app notifications off. Send your join link instead.';
+
+  @override
+  String get moodMatchInviteNotifTitle => 'Mood Match invite';
+
+  @override
+  String moodMatchInviteNotifMessage(String inviter, String code, String link) {
+    return '$inviter invited you to Mood Match.\nCode: $code\n$link';
+  }
+
+  @override
+  String get moodMatchShareShareLink => 'Share link';
+
+  @override
+  String get moodMatchShareCopyLink => 'Copy link';
+
+  @override
+  String get moodMatchShareWhatsApp => 'WhatsApp';
+
+  @override
+  String get moodMatchShareCopiedToast => 'Link copied';
+
+  @override
+  String get moodMatchFriendThey => 'your friend';
+
+  @override
+  String get moodMatchHubOpenPlan => 'Open plan';
+
+  @override
+  String get moodMatchHubNudgeFriend => 'Nudge friend';
+
+  @override
+  String moodMatchLobbyWaitTease0(String name) {
+    return 'Waiting on $name… no pressure 👀';
+  }
+
+  @override
+  String moodMatchLobbyWaitTease1(String name) {
+    return 'Still nothing from $name… typical 😭';
+  }
+
+  @override
+  String get moodMatchLobbyWaitTease2 =>
+      'I have a whole plan ready. Just saying. 🌀';
+
+  @override
+  String moodMatchLobbyWaitTease3(String name) {
+    return '$name is taking their time… worth it though, trust me';
+  }
+
+  @override
+  String moodMatchLobbyFriendJoinedLine(String name) {
+    return '$name just joined! 🎯 Now pick your mood.';
+  }
+
+  @override
+  String get moodMatchLobbyBothLockedHold =>
+      'Got both vibes. Give me a second… 🤔';
 }

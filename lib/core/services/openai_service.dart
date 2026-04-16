@@ -55,7 +55,7 @@ class OpenAIService {
     }
   }
 
-  Future<Map<String, double>> analyzePlaceForMood({
+  Future<Map<String, dynamic>> analyzePlaceForMood({
     required String mood,
     required Map<String, dynamic> place,
   }) async {

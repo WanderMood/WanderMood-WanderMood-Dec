@@ -510,14 +510,18 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           onPageChanged: (index) => setState(() => _currentPhotoIndex = index),
           itemCount: place.photos.length,
           itemBuilder: (context, index) {
+            final photoUrl = place.photos[index].trim();
+            if (!place.isAsset && photoUrl.isEmpty) {
+              return _buildImageFallback();
+            }
             return place.isAsset
                 ? Image.asset(
                     place.photos[index],
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => _buildImageFallback(),
                   )
-                : WmPlacePhotoNetworkImage(
-                    place.photos[index],
+                : WmPlacePhotoHeroNetworkImage(
+                    photoUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => _buildImageFallback(),
                   );

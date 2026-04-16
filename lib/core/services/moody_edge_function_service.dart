@@ -1,7 +1,4 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/utils/auth_helper.dart';
 import 'package:wandermood/features/places/models/place.dart';
@@ -61,6 +58,9 @@ class MoodyEdgeFunctionService {
   ///
   /// [section] — `food` | `trending` | `solo` | `different` | null (broad discovery).
   /// When non-empty, [namedFilters] skips Flutter cache read — backend fetches fresh.
+  ///
+  /// [bypassPlacesCache] — when true, skips the direct `places_cache` read so the
+  /// Edge Function can refresh (pull-to-refresh, background revalidation).
   Future<List<Place>> getExplore({
     required String location,
     required double latitude,
@@ -70,37 +70,12 @@ class MoodyEdgeFunctionService {
     List<String>? namedFilters,
     /// BCP-47 primary tag (`en`, `nl`, `es`, …). Matches moody `normalizeAppLang`.
     String? languageCode,
+    bool bypassPlacesCache = false,
   }) async {
     try {
-      // CRITICAL: Ensure session is valid before calling Edge Function
-      await AuthHelper.ensureValidSession();
-      
-      // CRITICAL FIX: Wait for session to be fully established (not just valid)
-      // This prevents race conditions during email verification
-      await _waitForSessionReady();
-      
-      // CRITICAL: Validate location before calling Edge Function
       if (location.isEmpty || location.trim().isEmpty) {
         throw const ExploreLocationException(ExploreLocationReason.missingCity);
       }
-
-      // CRITICAL: Validate coordinates
-      if (latitude == 0.0 && longitude == 0.0) {
-        throw const ExploreLocationException(
-            ExploreLocationReason.invalidCoordinates);
-      }
-
-      // FIX #1: Get token explicitly and verify it exists
-      final session = _supabase.auth.currentSession;
-      final token = session?.accessToken;
-      final user = _supabase.auth.currentUser;
-      
-      // CRITICAL: All 3 must be true - user, session, and token
-      if (user == null || session == null || token == null) {
-        throw Exception('Session not ready. Please wait a moment and try again.');
-      }
-
-      final isLocal = await _readIsLocalMode();
 
       final hasNamedFilters =
           namedFilters != null && namedFilters.isNotEmpty;
@@ -109,29 +84,40 @@ class MoodyEdgeFunctionService {
           ? languageCode.toLowerCase().split(RegExp(r'[-_]')).first
           : null;
 
-      // Cache-first for standard explore only — named filter combinations are not cached (backend always refreshes).
-      if (!hasNamedFilters) {
+      final isLocal = await _readIsLocalMode();
+
+      // Supabase `places_cache` first — no session wait, no Edge cold start.
+      // Named-filter requests skip cache (moody always recomputes).
+      if (!hasNamedFilters && !bypassPlacesCache) {
         final cacheSection = section ?? 'discovery';
-
-        // Layer 1: SharedPreferences local cache (survives hot restart, no network).
-        final localPlaces = await _loadExplorePlacesFromLocal(
-          cacheSection, location, isLocal, effectiveLang);
-        if (localPlaces != null) return localPlaces;
-
-        // Layer 2: Supabase `places_cache` (shared across devices, single lightweight DB read).
-        final cachedPlaces = await PlacesCacheUtils.tryLoadExplorePlaces(
+        final cachedHit = await PlacesCacheUtils.tryLoadExplorePlacesHit(
           _supabase,
           cacheSection,
           location,
           isLocalMode: isLocal,
           languageCode: effectiveLang,
         );
-        if (cachedPlaces != null) {
-          _saveExplorePlacesToLocal(
-            cacheSection, location, isLocal, effectiveLang, cachedPlaces);
-          return cachedPlaces;
+        if (cachedHit != null && cachedHit.places.isNotEmpty) {
+          return cachedHit.places;
         }
       }
+
+      await AuthHelper.ensureValidSession();
+      await _waitForSessionReady();
+
+      if (latitude == 0.0 && longitude == 0.0) {
+        throw const ExploreLocationException(
+            ExploreLocationReason.invalidCoordinates);
+      }
+
+      final session = _supabase.auth.currentSession;
+      final token = session?.accessToken;
+      final user = _supabase.auth.currentUser;
+
+      if (user == null || session == null || token == null) {
+        throw Exception('Session not ready. Please wait a moment and try again.');
+      }
+
       if (kDebugMode) {
         debugPrint('🔴 moody get_explore via network');
         debugPrint(
@@ -216,13 +202,6 @@ class MoodyEdgeFunctionService {
             : Map<String, dynamic>.from(card as Map);
         return PlacesCacheUtils.placeFromMoodyExploreCard(m);
       }).toList();
-
-      // Persist to local storage so hot restart skips all network calls.
-      if (!hasNamedFilters && places.isNotEmpty) {
-        final cacheSection = section ?? 'discovery';
-        _saveExplorePlacesToLocal(
-          cacheSection, location, isLocal, effectiveLang, places);
-      }
 
       if (kDebugMode) {
         debugPrint('✅ Edge Function returned ${places.length} places');
@@ -316,68 +295,5 @@ class MoodyEdgeFunctionService {
     return data;
   }
 
-  // ---------------------------------------------------------------------------
-  // Local persistent explore cache (SharedPreferences)
-  // ---------------------------------------------------------------------------
-
-  static const Duration _localExploreTtl = Duration(days: 7);
-
-  static String _localExploreCacheKey(
-    String section, String location, bool isLocal, String? lang,
-  ) {
-    final l = PlacesCacheUtils.normalizeExploreLanguageCode(lang);
-    final m = isLocal ? 'local' : 'travel';
-    return 'explore_local_${m}_${section.toLowerCase()}_${location.toLowerCase().trim()}_$l';
-  }
-
-  Future<List<Place>?> _loadExplorePlacesFromLocal(
-    String section, String location, bool isLocal, String? lang,
-  ) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final key = _localExploreCacheKey(section, location, isLocal, lang);
-      final raw = prefs.getString(key);
-      final ts = prefs.getInt('${key}_ts');
-      if (raw == null || ts == null) return null;
-      final age = DateTime.now().difference(
-          DateTime.fromMillisecondsSinceEpoch(ts));
-      if (age > _localExploreTtl) return null;
-      final decoded = json.decode(raw) as List<dynamic>;
-      final places = decoded
-          .map((e) => Place.fromJson(Map<String, dynamic>.from(e as Map)))
-          .toList();
-      if (places.isEmpty) return null;
-      if (kDebugMode) {
-        debugPrint(
-          '💾 Explore local cache HIT ($key): ${places.length} places');
-      }
-      return places;
-    } catch (e) {
-      if (kDebugMode) debugPrint('⚠️ Local explore cache read error: $e');
-      return null;
-    }
-  }
-
-  Future<void> _saveExplorePlacesToLocal(
-    String section,
-    String location,
-    bool isLocal,
-    String? lang,
-    List<Place> places,
-  ) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final key = _localExploreCacheKey(section, location, isLocal, lang);
-      final encoded = json.encode(places.map((p) => p.toJson()).toList());
-      await prefs.setString(key, encoded);
-      await prefs.setInt('${key}_ts', DateTime.now().millisecondsSinceEpoch);
-      if (kDebugMode) {
-        debugPrint(
-          '💾 Explore local cache SAVED ($key): ${places.length} places');
-      }
-    } catch (e) {
-      if (kDebugMode) debugPrint('⚠️ Local explore cache write error: $e');
-    }
-  }
 }
 

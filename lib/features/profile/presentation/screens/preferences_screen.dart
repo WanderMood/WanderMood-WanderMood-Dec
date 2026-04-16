@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
+import 'package:wandermood/core/utils/canonical_communication_style.dart'
+    show canonicalCommunicationStyleKey, profileCommunicationStyleChipLabel;
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
@@ -102,7 +104,9 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
           (drRaw ?? const []).map((e) => e.toString()),
         );
         setState(() {
-          _communicationStyle = response?['communication_style'] as String?;
+          _communicationStyle = profileCommunicationStyleChipLabel(
+            response?['communication_style'] as String?,
+          );
           _travelInterests =
               List<String>.from((response?['travel_interests'] as List?) ?? const []);
           _socialVibe =
@@ -132,7 +136,9 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
       if (userId == null) return;
 
       final updateData = <String, dynamic>{
-        'communication_style': _communicationStyle,
+        'communication_style': _communicationStyle == null
+            ? null
+            : canonicalCommunicationStyleKey(_communicationStyle),
         'travel_interests': _travelInterests,
         'social_vibe': _socialVibe,
         'travel_styles': _travelStyles,

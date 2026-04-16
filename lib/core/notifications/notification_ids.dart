@@ -23,6 +23,8 @@ abstract class NotificationIds {
   static const int trendingInYourCity   = 504;
   static const int festivalEvent        = 505;
   static const int locationDiscovery    = 506;
+  /// Host: friend joined the Mood Match session (one-shot per session).
+  static const int moodMatchPartnerJoined = 507;
 
   // ── Event-triggered per-item ranges ──────────────────────────────────────
   // streak milestones  : 100 – 109  (10 milestone levels)

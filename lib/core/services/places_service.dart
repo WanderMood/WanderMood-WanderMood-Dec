@@ -10,7 +10,7 @@ class PlacesService {
     required String mood,
     required double lat,
     required double lng,
-    required int radius = 5000,  // 5km radius
+    int radius = 5000, // 5km radius
   }) async {
     final placeTypes = ApiConstants.moodPlaceTypes[mood.toLowerCase()] ?? [];
     List<Map<String, dynamic>> allPlaces = [];

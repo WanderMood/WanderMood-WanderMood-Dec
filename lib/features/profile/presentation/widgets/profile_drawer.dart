@@ -115,6 +115,14 @@ class ProfileDrawer extends ConsumerWidget {
                     },
                   ),
                   _DrawerMenuItem(
+                    icon: Icons.groups_outlined,
+                    label: l10n.moodMatchWithFriendMenu,
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push('/group-planning');
+                    },
+                  ),
+                  _DrawerMenuItem(
                     icon: Icons.calendar_month_outlined,
                     label: l10n.drawerMyAgenda,
                     onTap: () {

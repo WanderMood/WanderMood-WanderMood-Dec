@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wandermood/core/utils/canonical_communication_style.dart';
+
 import 'communication_style_provider.dart';
 
 part 'preferences_provider.freezed.dart';
@@ -90,7 +92,9 @@ class UserPreferencesHelper {
 
   static UserPreferences fromSupabaseJson(Map<String, dynamic> json) {
     return UserPreferences(
-      communicationStyle: json['communication_style'] ?? 'friendly',
+      communicationStyle: canonicalCommunicationStyleKey(
+        json['communication_style'] as String?,
+      ),
       selectedMoods: _normalizeListField(json['moods']),
       travelInterests: _normalizeListField(json['interests']),
       homeBase: json['home_base'] ?? 'Local Explorer',
@@ -253,13 +257,14 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
 
   // Communication Style
   void updateCommunicationStyle(String style) {
-    debugPrint('Updating communication style to: $style');
-    state = state.copyWith(communicationStyle: style);
+    final canonical = canonicalCommunicationStyleKey(style);
+    debugPrint('Updating communication style to: $canonical (raw: $style)');
+    state = state.copyWith(communicationStyle: canonical);
     _savePreferences();
     
     // Also update the communication style provider for UI consistency
     try {
-      _ref.read(communicationStyleProvider.notifier).setCommunicationStyle(style);
+      _ref.read(communicationStyleProvider.notifier).setCommunicationStyle(canonical);
     } catch (e) {
       debugPrint('⚠️ Could not update communication style provider: $e');
     }

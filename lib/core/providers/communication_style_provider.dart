@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wandermood/core/utils/canonical_communication_style.dart';
 
 enum CommunicationStyle {
   energetic,
@@ -34,7 +35,8 @@ class CommunicationStyleNotifier extends StateNotifier<CommunicationStyleState> 
   ));
 
   void setCommunicationStyle(String styleKey) {
-    final style = _getStyleFromKey(styleKey);
+    final canonical = canonicalCommunicationStyleKey(styleKey);
+    final style = _getStyleFromKey(canonical);
     state = state.copyWith(style: style);
   }
 
@@ -44,7 +46,7 @@ class CommunicationStyleNotifier extends StateNotifier<CommunicationStyleState> 
   }
 
   CommunicationStyle _getStyleFromKey(String key) {
-    switch (key) {
+    switch (canonicalCommunicationStyleKey(key)) {
       case 'energetic':
         return CommunicationStyle.energetic;
       case 'friendly':

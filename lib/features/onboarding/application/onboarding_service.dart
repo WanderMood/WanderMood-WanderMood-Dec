@@ -9,7 +9,7 @@ import 'dart:convert';
 import 'dart:async';
 import '../../../../core/config/supabase_config.dart';
 import '../../../../core/constants/api_keys.dart';
-import 'preferences_provider.dart';
+import 'package:wandermood/core/providers/preferences_provider.dart';
 
 part 'onboarding_service.g.dart';
 

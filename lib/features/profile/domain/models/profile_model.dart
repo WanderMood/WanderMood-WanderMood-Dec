@@ -82,6 +82,7 @@ class Profile with _$Profile {
     if (imageUrl != null && imageUrl!.isNotEmpty) {
       map['image_url'] = imageUrl;
     }
+    map['language_preference'] = languagePreference;
     return map;
   }
 } 

@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -82,6 +81,9 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+
+  static const String _demoEmail = 'demo@wandermood.com';
+  static const String _demoPassword = 'WanderMood2025!';
 
   bool _isLoading = false;
   bool _emailSent = false;
@@ -166,6 +168,8 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
     try {
       final email = _emailController.text.trim();
       
+      // `emailRedirectTo` must appear under Supabase Dashboard → Authentication →
+      // URL Configuration (Redirect URLs) together with the app Site URL.
       await Supabase.instance.client.auth.signInWithOtp(
         email: email,
         emailRedirectTo: 'io.supabase.wandermood://auth-callback',
@@ -186,33 +190,32 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
     } on AuthException catch (e) {
       if (!mounted) return;
 
-      // Supabase sometimes returns a JSON string like:
-      // {"code":"unexpected_failure","message":"Error sending magic link email"}
-      // Parse it and show a friendly, localized error instead of raw JSON.
-      String friendlyMessage;
-      try {
-        final raw = e.message;
-        if (raw.isEmpty) {
-          friendlyMessage = AppLocalizations.of(context)!.signupErrorGeneric;
-        } else {
-          final dynamic decoded = jsonDecode(raw);
-          if (decoded is Map<String, dynamic>) {
-            final code = decoded['code'] as String?;
-            final serverMessage = decoded['message'] as String?;
-
-            if (code == 'unexpected_failure') {
-              friendlyMessage = AppLocalizations.of(context)!.signupErrorGeneric;
-            } else if (serverMessage != null && serverMessage.isNotEmpty) {
-              friendlyMessage = serverMessage;
-            } else {
-              friendlyMessage = AppLocalizations.of(context)!.signupErrorGeneric;
-            }
-          } else {
-            friendlyMessage = AppLocalizations.of(context)!.signupErrorGeneric;
-          }
-        }
-      } catch (_) {
+      // Supabase may return JSON in [message] or plain text (rate limits, redirect URL, etc.).
+      String friendlyMessage = e.message.trim();
+      if (friendlyMessage.isEmpty) {
         friendlyMessage = AppLocalizations.of(context)!.signupErrorGeneric;
+      } else {
+        final lower = friendlyMessage.toLowerCase();
+        if (lower.contains('rate limit') ||
+            lower.contains('too many') ||
+            lower.contains('email rate limit')) {
+          friendlyMessage =
+              '${friendlyMessage}\n\nTip: wait a few minutes before requesting another link.';
+        }
+        try {
+          final dynamic decoded = jsonDecode(friendlyMessage);
+          if (decoded is Map<String, dynamic>) {
+            final serverMessage = (decoded['message'] as String?)?.trim();
+            final code = decoded['code'] as String?;
+            if (serverMessage != null && serverMessage.isNotEmpty) {
+              friendlyMessage = serverMessage;
+            } else if (code != null && code.isNotEmpty) {
+              friendlyMessage = '$code: ${friendlyMessage}';
+            }
+          }
+        } catch (_) {
+          // Keep plain-text [e.message] (e.g. "Invalid Redirect URL").
+        }
       }
 
       setState(() {
@@ -223,7 +226,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = AppLocalizations.of(context)!.signupErrorGeneric;
+          _errorMessage = e.toString();
         });
       }
     }
@@ -298,6 +301,35 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
 
   Future<void> _resendMagicLink() async {
     await _sendMagicLink();
+  }
+
+  Future<void> _handleDemoLogin() async {
+    if (_isLoading) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      await Supabase.instance.client.auth.signInWithPassword(
+        email: _demoEmail,
+        password: _demoPassword,
+      );
+      final prefs = ref.read(sharedPreferencesProvider);
+      await prefs.setBool('has_seen_onboarding', true);
+      await prefs.setBool('hasCompletedPreferences', true);
+      await prefs.setBool('has_completed_first_plan', true);
+      if (!mounted) return;
+      context.go('/');
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Demo sign-in failed. Please try again.'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   void _goBack() {
@@ -582,33 +614,6 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                                 color: _wmStone,
                               ),
                             ),
-                            if (kDebugMode) ...[
-                              const SizedBox(height: 20),
-                              TextButton(
-                                onPressed: () => context.push('/dev/login'),
-                                child: Text(
-                                  'Developer: sign in with password',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: _wmStone,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
-                                child: Text(
-                                  'Simulator tip: paste from Mac with Cmd+V while the email field is focused, or run:\nxcrun simctl openurl booted "YOUR_MAGIC_LINK_URL"',
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 11,
-                                    height: 1.35,
-                                    color: _wmStone,
-                                  ),
-                                ),
-                              ),
-                            ],
                           ],
                         ),
                       ),
@@ -620,6 +625,29 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                   ),
                 );
                   },
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+              child: Center(
+                child: TextButton(
+                  onPressed: _isLoading ? null : _handleDemoLogin,
+                  style: TextButton.styleFrom(
+                    foregroundColor: _wmStone,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    'App Store reviewer? Tap here',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: _wmStone,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -838,33 +866,6 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                                 ),
                               ],
                             ),
-                            if (kDebugMode) ...[
-                              const SizedBox(height: 20),
-                              TextButton(
-                                onPressed: () => context.push('/dev/login'),
-                                child: Text(
-                                  'Developer: sign in with password',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: _wmStone,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
-                                child: Text(
-                                  'Magic link without pasting: copy the link from Mail on your Mac, then in Terminal:\nxcrun simctl openurl booted "PASTE_URL_HERE"\n(Account needs a Supabase password for the dev sign-in option.)',
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 11,
-                                    height: 1.35,
-                                    color: _wmStone,
-                                  ),
-                                ),
-                              ),
-                            ],
                           ],
                         ),
                       ),

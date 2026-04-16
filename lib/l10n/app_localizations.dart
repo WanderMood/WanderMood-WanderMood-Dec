@@ -3065,8 +3065,26 @@ abstract class AppLocalizations {
   /// No description provided for @profileEditUsernameLabel.
   ///
   /// In en, this message translates to:
-  /// **'Username'**
+  /// **'Username *'**
   String get profileEditUsernameLabel;
+
+  /// No description provided for @profileEditUsernameRequiredError.
+  ///
+  /// In en, this message translates to:
+  /// **'Username is required.'**
+  String get profileEditUsernameRequiredError;
+
+  /// No description provided for @profileEditUsernameFormatError.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 3–30 characters: letters, numbers, or underscores only.'**
+  String get profileEditUsernameFormatError;
+
+  /// No description provided for @profileEditUsernameTakenError.
+  ///
+  /// In en, this message translates to:
+  /// **'That username is already taken. Try another.'**
+  String get profileEditUsernameTakenError;
 
   /// No description provided for @profileEditEmailLabel.
   ///
@@ -6655,6 +6673,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Late night energy — let\'s find something that fits.'**
   String get moodHubBannerNight;
+
+  /// No description provided for @moodyIdleWakeOpenPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s open your plan for today.'**
+  String get moodyIdleWakeOpenPlan;
+
+  /// No description provided for @moodyIdleWakeChooseMood.
+  ///
+  /// In en, this message translates to:
+  /// **'What are we doing today? Pick your mood and we\'ll build the day.'**
+  String get moodyIdleWakeChooseMood;
+
+  /// No description provided for @moodyHubNewConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'New conversation'**
+  String get moodyHubNewConversation;
 
   /// No description provided for @moodHubCreatePlan.
   ///
@@ -17732,6 +17768,1302 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{minutes} min'**
   String agendaDurationShort(String minutes);
+
+  /// No description provided for @groupPlanWithFriendMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan with a friend'**
+  String get groupPlanWithFriendMenu;
+
+  /// No description provided for @groupPlanTogetherTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan together'**
+  String get groupPlanTogetherTitle;
+
+  /// No description provided for @groupPlanHubBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Combine moods with a travel partner. Both of you use your own phone — share a short code or open it from a message.'**
+  String get groupPlanHubBody;
+
+  /// No description provided for @groupPlanTileStartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a session'**
+  String get groupPlanTileStartTitle;
+
+  /// No description provided for @groupPlanTileStartSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You’ll get a code to send your friend'**
+  String get groupPlanTileStartSubtitle;
+
+  /// No description provided for @groupPlanTileJoinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join with code'**
+  String get groupPlanTileJoinTitle;
+
+  /// No description provided for @groupPlanTileJoinSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the code from your friend'**
+  String get groupPlanTileJoinSubtitle;
+
+  /// No description provided for @groupPlanCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan with a friend'**
+  String get groupPlanCreateTitle;
+
+  /// No description provided for @groupPlanCreateBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a shared session. You’ll get a short code to send your travel partner — they enter it on their phone.'**
+  String get groupPlanCreateBody;
+
+  /// No description provided for @groupPlanCreateOptionalTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional title (e.g. Today in Lisbon)'**
+  String get groupPlanCreateOptionalTitleLabel;
+
+  /// No description provided for @groupPlanCreateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create & share code'**
+  String get groupPlanCreateButton;
+
+  /// No description provided for @groupPlanShareSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'WanderMood group plan'**
+  String get groupPlanShareSubject;
+
+  /// No description provided for @groupPlanInviteShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Join my WanderMood day plan! Code: {code}\n(Open WanderMood → Plan with a friend → Enter code)'**
+  String groupPlanInviteShare(String code);
+
+  /// No description provided for @groupPlanJoinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join a friend'**
+  String get groupPlanJoinTitle;
+
+  /// No description provided for @groupPlanJoinBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan your friend\'s QR code together, or enter their code below.'**
+  String get groupPlanJoinBody;
+
+  /// No description provided for @groupPlanJoinCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Join code'**
+  String get groupPlanJoinCodeLabel;
+
+  /// No description provided for @groupPlanJoinCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. A1B2C3'**
+  String get groupPlanJoinCodeHint;
+
+  /// No description provided for @groupPlanJoinButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Join session'**
+  String get groupPlanJoinButton;
+
+  /// No description provided for @groupPlanJoinSnackEnterCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the code your friend shared.'**
+  String get groupPlanJoinSnackEnterCode;
+
+  /// No description provided for @groupPlanJoinError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not join: {error}'**
+  String groupPlanJoinError(String error);
+
+  /// No description provided for @groupPlanShareQrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show this to your friend'**
+  String get groupPlanShareQrTitle;
+
+  /// No description provided for @groupPlanShareQrOrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'or enter code {code}'**
+  String groupPlanShareQrOrCode(String code);
+
+  /// No description provided for @groupPlanShareViaMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Share via message'**
+  String get groupPlanShareViaMessage;
+
+  /// No description provided for @groupPlanShareContinueLobby.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue to lobby'**
+  String get groupPlanShareContinueLobby;
+
+  /// No description provided for @groupPlanShareScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite your friend'**
+  String get groupPlanShareScreenTitle;
+
+  /// No description provided for @groupPlanJoinScanQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR code'**
+  String get groupPlanJoinScanQr;
+
+  /// No description provided for @groupPlanJoinEnterInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter code instead'**
+  String get groupPlanJoinEnterInstead;
+
+  /// No description provided for @groupPlanJoinScanInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR code instead'**
+  String get groupPlanJoinScanInstead;
+
+  /// No description provided for @groupPlanScanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR code'**
+  String get groupPlanScanTitle;
+
+  /// No description provided for @groupPlanCreateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create session: {error}'**
+  String groupPlanCreateError(String error);
+
+  /// No description provided for @groupPlanLobbyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Group plan'**
+  String get groupPlanLobbyTitle;
+
+  /// No description provided for @groupPlanLobbyShareCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this code'**
+  String get groupPlanLobbyShareCode;
+
+  /// No description provided for @groupPlanLobbyMoodsProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{locked} / {total} moods locked in'**
+  String groupPlanLobbyMoodsProgress(int locked, int total);
+
+  /// No description provided for @groupPlanLobbyWaitingFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for your friend to join…'**
+  String get groupPlanLobbyWaitingFriend;
+
+  /// No description provided for @groupPlanLobbyWhosIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Who’s in'**
+  String get groupPlanLobbyWhosIn;
+
+  /// No description provided for @groupPlanLobbyMoodLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood: {mood}'**
+  String groupPlanLobbyMoodLine(String mood);
+
+  /// No description provided for @groupPlanLobbyStillChoosing.
+  ///
+  /// In en, this message translates to:
+  /// **'Still choosing…'**
+  String get groupPlanLobbyStillChoosing;
+
+  /// No description provided for @groupPlanLobbyYourMood.
+  ///
+  /// In en, this message translates to:
+  /// **'Your mood today'**
+  String get groupPlanLobbyYourMood;
+
+  /// No description provided for @groupPlanLobbyLockMood.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock in my mood'**
+  String get groupPlanLobbyLockMood;
+
+  /// No description provided for @groupPlanLobbyBuilding.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody is building your shared plan…'**
+  String get groupPlanLobbyBuilding;
+
+  /// No description provided for @groupPlanLobbyPlanFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan generation failed. Pull to refresh or try again in a moment.'**
+  String get groupPlanLobbyPlanFailed;
+
+  /// No description provided for @groupPlanLobbyPickMoodSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a mood first.'**
+  String get groupPlanLobbyPickMoodSnack;
+
+  /// No description provided for @groupPlanLobbySubmitError.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong: {error}'**
+  String groupPlanLobbySubmitError(String error);
+
+  /// No description provided for @groupPlanMoodAdventurous.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventurous'**
+  String get groupPlanMoodAdventurous;
+
+  /// No description provided for @groupPlanMoodRelaxed.
+  ///
+  /// In en, this message translates to:
+  /// **'Relaxed'**
+  String get groupPlanMoodRelaxed;
+
+  /// No description provided for @groupPlanMoodSocial.
+  ///
+  /// In en, this message translates to:
+  /// **'Social'**
+  String get groupPlanMoodSocial;
+
+  /// No description provided for @groupPlanMoodCultural.
+  ///
+  /// In en, this message translates to:
+  /// **'Cultural'**
+  String get groupPlanMoodCultural;
+
+  /// No description provided for @groupPlanMoodRomantic.
+  ///
+  /// In en, this message translates to:
+  /// **'Romantic'**
+  String get groupPlanMoodRomantic;
+
+  /// No description provided for @groupPlanMoodEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Energetic'**
+  String get groupPlanMoodEnergetic;
+
+  /// No description provided for @groupPlanMoodFoody.
+  ///
+  /// In en, this message translates to:
+  /// **'Foody'**
+  String get groupPlanMoodFoody;
+
+  /// No description provided for @groupPlanMoodCreative.
+  ///
+  /// In en, this message translates to:
+  /// **'Creative'**
+  String get groupPlanMoodCreative;
+
+  /// No description provided for @groupPlanResultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shared plan'**
+  String get groupPlanResultTitle;
+
+  /// No description provided for @groupPlanResultNoPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'No plan found yet.'**
+  String get groupPlanResultNoPlan;
+
+  /// No description provided for @groupPlanResultBackToApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to app'**
+  String get groupPlanResultBackToApp;
+
+  /// No description provided for @groupPlanResultMoodsLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Moods: {moods}'**
+  String groupPlanResultMoodsLine(String moods);
+
+  /// No description provided for @groupPlanResultIdeasTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ideas for today'**
+  String get groupPlanResultIdeasTitle;
+
+  /// No description provided for @groupPlanResultAddHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Adds use the date selected on My Day (defaults to today). Open My Day first if you want another day.'**
+  String get groupPlanResultAddHint;
+
+  /// No description provided for @groupPlanResultAddToMyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to My Day'**
+  String get groupPlanResultAddToMyDay;
+
+  /// No description provided for @groupPlanResultAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get groupPlanResultAdded;
+
+  /// No description provided for @groupPlanResultFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Each person adds stops to their own My Day. Same plan, two calendars.'**
+  String get groupPlanResultFooter;
+
+  /// No description provided for @groupPlanResultAddedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Added \"{name}\" to My Day'**
+  String groupPlanResultAddedToast(String name);
+
+  /// No description provided for @groupPlanResultDuplicateToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add (duplicate or same time slot). Try another idea.'**
+  String get groupPlanResultDuplicateToast;
+
+  /// No description provided for @groupPlanResultAddFailedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Add failed: {error}'**
+  String groupPlanResultAddFailedToast(String error);
+
+  /// No description provided for @groupPlanResultViewMyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get groupPlanResultViewMyDay;
+
+  /// No description provided for @groupPlanInviteOpenLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in the app: {url}'**
+  String groupPlanInviteOpenLink(String url);
+
+  /// No description provided for @groupPlanHubHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan with friends'**
+  String get groupPlanHubHeroTitle;
+
+  /// No description provided for @groupPlanHubHeroSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Two moods, one shared day. Moody figures out what works for both.'**
+  String get groupPlanHubHeroSubtitle;
+
+  /// No description provided for @groupPlanHubStartCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a group plan'**
+  String get groupPlanHubStartCardTitle;
+
+  /// No description provided for @groupPlanHubStartCardSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a code to share with your friend'**
+  String get groupPlanHubStartCardSub;
+
+  /// No description provided for @groupPlanHubJoinCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join a plan'**
+  String get groupPlanHubJoinCardTitle;
+
+  /// No description provided for @groupPlanHubJoinCardSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a code from your friend'**
+  String get groupPlanHubJoinCardSub;
+
+  /// No description provided for @groupPlanHowItWorksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How it works'**
+  String get groupPlanHowItWorksTitle;
+
+  /// No description provided for @groupPlanHowItWorksBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You each pick your mood independently. I\'ll blend them into one plan you both love.'**
+  String get groupPlanHowItWorksBody;
+
+  /// No description provided for @groupPlanCreateHeaderSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You + a friend'**
+  String get groupPlanCreateHeaderSubtitle;
+
+  /// No description provided for @groupPlanCreateHeaderCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick your moods separately, get one shared plan'**
+  String get groupPlanCreateHeaderCaption;
+
+  /// No description provided for @groupPlanSessionNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Session name (optional)'**
+  String get groupPlanSessionNameLabel;
+
+  /// No description provided for @groupPlanSessionNamePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Weekend in Amsterdam'**
+  String get groupPlanSessionNamePlaceholder;
+
+  /// No description provided for @groupPlanCreateCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Create & share link'**
+  String get groupPlanCreateCta;
+
+  /// No description provided for @groupPlanCreateShareHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Next you will see a QR code to show in person, or you can share a link by message.'**
+  String get groupPlanCreateShareHint;
+
+  /// No description provided for @groupPlanLobbyTitleWaitingFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for your friend…'**
+  String get groupPlanLobbyTitleWaitingFriend;
+
+  /// No description provided for @groupPlanLobbyTitleWaitingName.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {name}…'**
+  String groupPlanLobbyTitleWaitingName(String name);
+
+  /// No description provided for @groupPlanLobbyTitleEveryoneReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone\'s ready!'**
+  String get groupPlanLobbyTitleEveryoneReady;
+
+  /// No description provided for @groupPlanLobbyShareCodeUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this code'**
+  String get groupPlanLobbyShareCodeUpper;
+
+  /// No description provided for @groupPlanLobbyShareLinkCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Share link'**
+  String get groupPlanLobbyShareLinkCta;
+
+  /// No description provided for @groupPlanLobbyStatusLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get groupPlanLobbyStatusLocked;
+
+  /// No description provided for @groupPlanLobbyStatusWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get groupPlanLobbyStatusWaiting;
+
+  /// No description provided for @groupPlanMoodSectionUppercase.
+  ///
+  /// In en, this message translates to:
+  /// **'Your mood today'**
+  String get groupPlanMoodSectionUppercase;
+
+  /// No description provided for @groupPlanLobbyLockCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock in my mood'**
+  String get groupPlanLobbyLockCta;
+
+  /// No description provided for @groupPlanLobbyWaitingLockIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {name} to lock in…'**
+  String groupPlanLobbyWaitingLockIn(String name);
+
+  /// No description provided for @groupPlanLobbyGenerateCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate our plan'**
+  String get groupPlanLobbyGenerateCta;
+
+  /// No description provided for @groupPlanLobbyLockingIn.
+  ///
+  /// In en, this message translates to:
+  /// **'🔒 Locking in…'**
+  String get groupPlanLobbyLockingIn;
+
+  /// No description provided for @groupPlanLobbyWaitingFriendJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for your friend to join…'**
+  String get groupPlanLobbyWaitingFriendJoin;
+
+  /// No description provided for @groupPlanResultBlendKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody blended your moods ✨'**
+  String get groupPlanResultBlendKicker;
+
+  /// No description provided for @groupPlanResultIdeasTitleEmoji.
+  ///
+  /// In en, this message translates to:
+  /// **'Ideas for today 💡'**
+  String get groupPlanResultIdeasTitleEmoji;
+
+  /// No description provided for @groupPlanResultLoadingMoody.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody is building your plan… ✨'**
+  String get groupPlanResultLoadingMoody;
+
+  /// No description provided for @groupPlanResultFooterPhones.
+  ///
+  /// In en, this message translates to:
+  /// **'Each of you adds what you want to your own My Day — two phones, same plan 📱📱'**
+  String get groupPlanResultFooterPhones;
+
+  /// No description provided for @groupPlanResultMoodChipYou.
+  ///
+  /// In en, this message translates to:
+  /// **'{emoji} {mood} (you)'**
+  String groupPlanResultMoodChipYou(String emoji, String mood);
+
+  /// No description provided for @groupPlanResultMoodChipName.
+  ///
+  /// In en, this message translates to:
+  /// **'{emoji} {mood} ({name})'**
+  String groupPlanResultMoodChipName(String emoji, String mood, String name);
+
+  /// No description provided for @groupPlanYouShort.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get groupPlanYouShort;
+
+  /// No description provided for @groupPlanMoodCozy.
+  ///
+  /// In en, this message translates to:
+  /// **'Cozy'**
+  String get groupPlanMoodCozy;
+
+  /// No description provided for @groupPlanMoodSurprise.
+  ///
+  /// In en, this message translates to:
+  /// **'Surprise'**
+  String get groupPlanMoodSurprise;
+
+  /// No description provided for @moodMatchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood Match'**
+  String get moodMatchTitle;
+
+  /// No description provided for @moodMatchTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Two moods. One perfect day.'**
+  String get moodMatchTagline;
+
+  /// No description provided for @moodMatchTaglineHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Two moods. One perfect day. Built for both of you.'**
+  String get moodMatchTaglineHub;
+
+  /// No description provided for @moodMatchStartBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a Mood Match'**
+  String get moodMatchStartBtn;
+
+  /// No description provided for @moodMatchStartBtnSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite someone, pick moods, get a shared plan'**
+  String get moodMatchStartBtnSub;
+
+  /// No description provided for @moodMatchJoinBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Join a Mood Match'**
+  String get moodMatchJoinBtn;
+
+  /// No description provided for @moodMatchJoinBtnSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a code or scan QR'**
+  String get moodMatchJoinBtnSub;
+
+  /// No description provided for @moodMatchHubMoodyIntroFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Okaaay, planning with someone else?\nThis is my favourite thing to do 😏'**
+  String get moodMatchHubMoodyIntroFriendly;
+
+  /// No description provided for @moodMatchHubMoodyIntroProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood Match aligns two private mood picks into one shared day plan—clear, fair, and built for both of you.'**
+  String get moodMatchHubMoodyIntroProfessional;
+
+  /// No description provided for @moodMatchHubMoodyIntroEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Planning a day together?! I’m SO here for this—let’s make it unforgettable.'**
+  String get moodMatchHubMoodyIntroEnergetic;
+
+  /// No description provided for @moodMatchHubMoodyIntroDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'You each pick a mood on your own phone. I\'ll turn that into one shared plan. Start or join when you’re ready.'**
+  String get moodMatchHubMoodyIntroDirect;
+
+  /// No description provided for @moodMatchHubMoodyIntroWaitingFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'You’re already in a Mood Match—your friend still needs to join. Open the plan to jump back in, or send a gentle nudge.'**
+  String get moodMatchHubMoodyIntroWaitingFriendly;
+
+  /// No description provided for @moodMatchHubMoodyIntroWaitingProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'You have an active Mood Match awaiting the other guest. Use Open plan to return to the lobby, or share a reminder.'**
+  String get moodMatchHubMoodyIntroWaitingProfessional;
+
+  /// No description provided for @moodMatchHubMoodyIntroWaitingEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'We’re this close—your friend still has to hop in! Open the plan to keep the vibe going, or nudge them (they’ll love it).'**
+  String get moodMatchHubMoodyIntroWaitingEnergetic;
+
+  /// No description provided for @moodMatchHubMoodyIntroWaitingDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Session in progress; friend not in yet. Open plan to continue or nudge.'**
+  String get moodMatchHubMoodyIntroWaitingDirect;
+
+  /// No description provided for @moodMatchHubPendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue your plan 👀'**
+  String get moodMatchHubPendingTitle;
+
+  /// No description provided for @moodMatchHubPendingStory.
+  ///
+  /// In en, this message translates to:
+  /// **'We just need your friend.'**
+  String get moodMatchHubPendingStory;
+
+  /// No description provided for @moodMatchHubPendingCodeSmall.
+  ///
+  /// In en, this message translates to:
+  /// **'Code {code}'**
+  String moodMatchHubPendingCodeSmall(String code);
+
+  /// No description provided for @moodMatchHubPendingCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Code: {code}'**
+  String moodMatchHubPendingCode(String code);
+
+  /// No description provided for @moodMatchHubPendingWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for your friend to join…'**
+  String get moodMatchHubPendingWaiting;
+
+  /// No description provided for @moodMatchHubPendingBuilding.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m building your shared plan…'**
+  String get moodMatchHubPendingBuilding;
+
+  /// No description provided for @moodMatchHubCancelSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get moodMatchHubCancelSession;
+
+  /// No description provided for @moodMatchHubReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Mood Match is ready!'**
+  String get moodMatchHubReadyTitle;
+
+  /// No description provided for @moodMatchHubReadySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ve built your shared plan'**
+  String get moodMatchHubReadySubtitle;
+
+  /// No description provided for @moodMatchHubSeePlanCta.
+  ///
+  /// In en, this message translates to:
+  /// **'See the plan'**
+  String get moodMatchHubSeePlanCta;
+
+  /// No description provided for @moodMatchHubUntitledSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood Match'**
+  String get moodMatchHubUntitledSession;
+
+  /// No description provided for @moodMatchCreateAlreadyWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'You already have a session waiting. Open it from the hub.'**
+  String get moodMatchCreateAlreadyWaiting;
+
+  /// No description provided for @moodMatchHubCancelError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not cancel: {error}'**
+  String moodMatchHubCancelError(String error);
+
+  /// No description provided for @moodMatchNewFeatureBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'New feature'**
+  String get moodMatchNewFeatureBadge;
+
+  /// No description provided for @moodMatchGoodMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning, {name}'**
+  String moodMatchGoodMorning(String name);
+
+  /// No description provided for @moodMatchHowItWorksOneLiner.
+  ///
+  /// In en, this message translates to:
+  /// **'You each pick your mood privately; I\'ll blend them into one plan you both love.'**
+  String get moodMatchHowItWorksOneLiner;
+
+  /// No description provided for @moodMatchStepYourMood.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 1 of 2 · Your mood'**
+  String get moodMatchStepYourMood;
+
+  /// No description provided for @moodMatchFeelQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'How are you feeling this morning?'**
+  String get moodMatchFeelQuestion;
+
+  /// No description provided for @moodMatchPrivateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} won\'t see this until you both lock in'**
+  String moodMatchPrivateHint(String name);
+
+  /// No description provided for @moodMatchMoodyPickQuoteFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick whatever\'s real. I\'ll make it work for both of you.'**
+  String get moodMatchMoodyPickQuoteFriendly;
+
+  /// No description provided for @moodMatchMoodyPickQuoteProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the mood that best reflects you today. I will reconcile both selections into one coherent plan.'**
+  String get moodMatchMoodyPickQuoteProfessional;
+
+  /// No description provided for @moodMatchMoodyPickQuoteEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Go with your gut—bold, soft, whatever! I’ll turn both picks into something you’ll both love.'**
+  String get moodMatchMoodyPickQuoteEnergetic;
+
+  /// No description provided for @moodMatchMoodyPickQuoteDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your mood. Your friend won’t see it until you both lock in.'**
+  String get moodMatchMoodyPickQuoteDirect;
+
+  /// No description provided for @moodMatchSelectMoodButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your mood'**
+  String get moodMatchSelectMoodButton;
+
+  /// No description provided for @moodMatchLockBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock in {mood}'**
+  String moodMatchLockBtn(String mood);
+
+  /// No description provided for @moodMatchLobbyEveryoneReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone\'s ready! 🎉'**
+  String get moodMatchLobbyEveryoneReadyTitle;
+
+  /// No description provided for @moodMatchLobbyEveryoneReadySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody is blending your vibes…'**
+  String get moodMatchLobbyEveryoneReadySubtitle;
+
+  /// No description provided for @moodMatchLobbyWaitingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hang tight — your match is almost ready.'**
+  String get moodMatchLobbyWaitingSubtitle;
+
+  /// No description provided for @moodMatchLobbyBuildingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding places that fit both of you…'**
+  String get moodMatchLobbyBuildingSubtitle;
+
+  /// No description provided for @moodMatchLobbyCommentaryWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {name} to figure out their vibe… 👀'**
+  String moodMatchLobbyCommentaryWaiting(String name);
+
+  /// No description provided for @moodMatchLobbyCommentaryFriendLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} locked in! I\'m ready whenever you are 🎯'**
+  String moodMatchLobbyCommentaryFriendLocked(String name);
+
+  /// No description provided for @moodMatchLobbyCommentaryBothLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Got both vibes. Building your match…'**
+  String get moodMatchLobbyCommentaryBothLocked;
+
+  /// No description provided for @moodMatchWhileYouWaitHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody will reveal your compatibility score when {name} locks in'**
+  String moodMatchWhileYouWaitHint(String name);
+
+  /// No description provided for @moodMatchRevealScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibe match today'**
+  String get moodMatchRevealScore;
+
+  /// No description provided for @moodMatchRevealCta.
+  ///
+  /// In en, this message translates to:
+  /// **'See our plan'**
+  String get moodMatchRevealCta;
+
+  /// No description provided for @moodMatchRevealCopyHighFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re basically the same person today 😌 \nThis plan built itself.'**
+  String get moodMatchRevealCopyHighFriendly;
+
+  /// No description provided for @moodMatchRevealCopyHighProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'Your mood inputs align closely. The shared itinerary follows logically from both selections.'**
+  String get moodMatchRevealCopyHighProfessional;
+
+  /// No description provided for @moodMatchRevealCopyHighEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Twin vibe energy today! 🔥 This plan basically assembled itself—you\'re going to love it.'**
+  String get moodMatchRevealCopyHighEnergetic;
+
+  /// No description provided for @moodMatchRevealCopyHighDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Very similar moods. The plan reflects both of you with minimal compromise.'**
+  String get moodMatchRevealCopyHighDirect;
+
+  /// No description provided for @moodMatchRevealCopyGoodFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Different vibes, but I made it work. \nTrust me on this one.'**
+  String get moodMatchRevealCopyGoodFriendly;
+
+  /// No description provided for @moodMatchRevealCopyGoodProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'You chose different moods; I balanced both in one practical shared itinerary.'**
+  String get moodMatchRevealCopyGoodProfessional;
+
+  /// No description provided for @moodMatchRevealCopyGoodEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Different moods? I turned that into a win—this lineup still feels exciting for both of you!'**
+  String get moodMatchRevealCopyGoodEnergetic;
+
+  /// No description provided for @moodMatchRevealCopyGoodDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Moods differed; the itinerary bridges both. Review the stops together.'**
+  String get moodMatchRevealCopyGoodDirect;
+
+  /// No description provided for @moodMatchRevealCopyCreativeFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Okay this was a challenge. But I actually love \nwhat I found. You will too.'**
+  String get moodMatchRevealCopyCreativeFriendly;
+
+  /// No description provided for @moodMatchRevealCopyCreativeProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'Your moods diverged more than usual; I prioritized overlap you can both enjoy today.'**
+  String get moodMatchRevealCopyCreativeProfessional;
+
+  /// No description provided for @moodMatchRevealCopyCreativeEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Spicy combo on paper—but I found gems that still feel fun together. Let\'s go!'**
+  String get moodMatchRevealCopyCreativeEnergetic;
+
+  /// No description provided for @moodMatchRevealCopyCreativeDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Low overlap between moods. The plan emphasizes neutral, crowd-pleasing picks.'**
+  String get moodMatchRevealCopyCreativeDirect;
+
+  /// No description provided for @moodMatchScoreLabelPerfect.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfect match ✨'**
+  String get moodMatchScoreLabelPerfect;
+
+  /// No description provided for @moodMatchScoreLabelGreat.
+  ///
+  /// In en, this message translates to:
+  /// **'Great combo'**
+  String get moodMatchScoreLabelGreat;
+
+  /// No description provided for @moodMatchScoreLabelGoodBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Good balance'**
+  String get moodMatchScoreLabelGoodBalance;
+
+  /// No description provided for @moodMatchScoreLabelInteresting.
+  ///
+  /// In en, this message translates to:
+  /// **'Interesting mix'**
+  String get moodMatchScoreLabelInteresting;
+
+  /// No description provided for @moodMatchScoreLabelCreative.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody got creative'**
+  String get moodMatchScoreLabelCreative;
+
+  /// No description provided for @moodMatchRevealMoodyFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {moodA} and {moodB} sides are a surprisingly good team — I\'m into it.'**
+  String moodMatchRevealMoodyFallback(String moodA, String moodB);
+
+  /// No description provided for @moodMatchResultCompatLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% match · {label}'**
+  String moodMatchResultCompatLine(int percent, String label);
+
+  /// No description provided for @moodMatchResultCompatGreat.
+  ///
+  /// In en, this message translates to:
+  /// **'Great combo ✓'**
+  String get moodMatchResultCompatGreat;
+
+  /// No description provided for @moodMatchResultFooterStrip.
+  ///
+  /// In en, this message translates to:
+  /// **'You each add what you want to your own My Day'**
+  String get moodMatchResultFooterStrip;
+
+  /// No description provided for @moodMatchLobbyChoosingBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Choosing'**
+  String get moodMatchLobbyChoosingBadge;
+
+  /// No description provided for @moodMatchLobbyReadyBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get moodMatchLobbyReadyBadge;
+
+  /// No description provided for @moodMatchSeePlanShareA11y.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get moodMatchSeePlanShareA11y;
+
+  /// No description provided for @moodMatchMoodTileSublabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to choose'**
+  String get moodMatchMoodTileSublabel;
+
+  /// No description provided for @moodMatchBlendChip.
+  ///
+  /// In en, this message translates to:
+  /// **'{emoji} {label}'**
+  String moodMatchBlendChip(String emoji, String label);
+
+  /// No description provided for @moodMatchWithFriendMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood Match'**
+  String get moodMatchWithFriendMenu;
+
+  /// No description provided for @moodMatchInviteShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Join my Mood Match on WanderMood! Code: {code}'**
+  String moodMatchInviteShare(String code);
+
+  /// No description provided for @moodMatchShareMoodyPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Nice—your match probably has WanderMood already 💚 Tap Invite on WanderMood first and I will help you find them 👀 Link & QR are tucked below if you need them 📎✨'**
+  String get moodMatchShareMoodyPrompt;
+
+  /// No description provided for @moodMatchShareFriendCodeIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Your match only needs this code if they open WanderMood without the link—it is for their phone, not yours.'**
+  String get moodMatchShareFriendCodeIntro;
+
+  /// No description provided for @moodMatchShareLinkQrFoldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Need a link or QR instead?'**
+  String get moodMatchShareLinkQrFoldTitle;
+
+  /// No description provided for @moodMatchShareLinkQrFoldSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'For other chats, or if they are not on WanderMood yet.'**
+  String get moodMatchShareLinkQrFoldSubtitle;
+
+  /// No description provided for @moodMatchShareBottomHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip: notifications can alert you when they join. You can go to the lobby anytime.'**
+  String get moodMatchShareBottomHint;
+
+  /// No description provided for @moodMatchPartnerJoinedNotifTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} joined'**
+  String moodMatchPartnerJoinedNotifTitle(String name);
+
+  /// No description provided for @moodMatchPartnerJoinedNotifBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open your Mood Match lobby to keep going.'**
+  String get moodMatchPartnerJoinedNotifBody;
+
+  /// No description provided for @moodMatchPartnerJoinedNotifNameFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone'**
+  String get moodMatchPartnerJoinedNotifNameFallback;
+
+  /// No description provided for @moodMatchInviteWanderMoodCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite on WanderMood'**
+  String get moodMatchInviteWanderMoodCta;
+
+  /// No description provided for @moodMatchInviteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite a WanderMood friend'**
+  String get moodMatchInviteTitle;
+
+  /// No description provided for @moodMatchInviteSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send your join link first — it works in any chat. Search a username here to nudge someone already on WanderMood (optional).'**
+  String get moodMatchInviteSubtitle;
+
+  /// No description provided for @moodMatchInviteJoinLinkCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your join link'**
+  String get moodMatchInviteJoinLinkCardTitle;
+
+  /// No description provided for @moodMatchInviteJoinLinkCardSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy this https link and send it. It stays reliable if an in-app ping can’t be delivered.'**
+  String get moodMatchInviteJoinLinkCardSubtitle;
+
+  /// No description provided for @moodMatchInviteCopyLinkAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy link'**
+  String get moodMatchInviteCopyLinkAction;
+
+  /// No description provided for @moodMatchInviteLinkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Join link copied'**
+  String get moodMatchInviteLinkCopied;
+
+  /// No description provided for @moodMatchInviteSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get moodMatchInviteSearchHint;
+
+  /// No description provided for @moodMatchInviteSearchEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Type at least 2 characters'**
+  String get moodMatchInviteSearchEmpty;
+
+  /// No description provided for @moodMatchInviteNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No profiles match that search'**
+  String get moodMatchInviteNoResults;
+
+  /// No description provided for @moodMatchInviteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite'**
+  String get moodMatchInviteButton;
+
+  /// No description provided for @moodMatchInviteSent.
+  ///
+  /// In en, this message translates to:
+  /// **'In-app invite sent'**
+  String get moodMatchInviteSent;
+
+  /// No description provided for @moodMatchInviteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t send the in-app invite (server). Copy your join link and send it in any chat—that always works.'**
+  String get moodMatchInviteFailed;
+
+  /// No description provided for @moodMatchInviteNotDeliveredInApp.
+  ///
+  /// In en, this message translates to:
+  /// **'No in-app ping delivered — they may have in-app notifications off. Send your join link instead.'**
+  String get moodMatchInviteNotDeliveredInApp;
+
+  /// No description provided for @moodMatchInviteNotifTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood Match invite'**
+  String get moodMatchInviteNotifTitle;
+
+  /// No description provided for @moodMatchInviteNotifMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{inviter} invited you to Mood Match.\nCode: {code}\n{link}'**
+  String moodMatchInviteNotifMessage(String inviter, String code, String link);
+
+  /// No description provided for @moodMatchShareShareLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Share link'**
+  String get moodMatchShareShareLink;
+
+  /// No description provided for @moodMatchShareCopyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy link'**
+  String get moodMatchShareCopyLink;
+
+  /// No description provided for @moodMatchShareWhatsApp.
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp'**
+  String get moodMatchShareWhatsApp;
+
+  /// No description provided for @moodMatchShareCopiedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied'**
+  String get moodMatchShareCopiedToast;
+
+  /// No description provided for @moodMatchFriendThey.
+  ///
+  /// In en, this message translates to:
+  /// **'your friend'**
+  String get moodMatchFriendThey;
+
+  /// No description provided for @moodMatchHubOpenPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Open plan'**
+  String get moodMatchHubOpenPlan;
+
+  /// No description provided for @moodMatchHubNudgeFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Nudge friend'**
+  String get moodMatchHubNudgeFriend;
+
+  /// No description provided for @moodMatchLobbyWaitTease0.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting on {name}… no pressure 👀'**
+  String moodMatchLobbyWaitTease0(String name);
+
+  /// No description provided for @moodMatchLobbyWaitTease1.
+  ///
+  /// In en, this message translates to:
+  /// **'Still nothing from {name}… typical 😭'**
+  String moodMatchLobbyWaitTease1(String name);
+
+  /// No description provided for @moodMatchLobbyWaitTease2.
+  ///
+  /// In en, this message translates to:
+  /// **'I have a whole plan ready. Just saying. 🌀'**
+  String get moodMatchLobbyWaitTease2;
+
+  /// No description provided for @moodMatchLobbyWaitTease3.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is taking their time… worth it though, trust me'**
+  String moodMatchLobbyWaitTease3(String name);
+
+  /// No description provided for @moodMatchLobbyFriendJoinedLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} just joined! 🎯 Now pick your mood.'**
+  String moodMatchLobbyFriendJoinedLine(String name);
+
+  /// No description provided for @moodMatchLobbyBothLockedHold.
+  ///
+  /// In en, this message translates to:
+  /// **'Got both vibes. Give me a second… 🤔'**
+  String get moodMatchLobbyBothLockedHold;
 }
 
 class _AppLocalizationsDelegate

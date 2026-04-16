@@ -34,6 +34,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   String? _passwordError;
   bool _isLoading = false;
 
+  static const String _demoEmail = 'demo@wandermood.com';
+  static const String _demoPassword = 'WanderMood2025!';
+
   @override
   void initState() {
     super.initState();
@@ -86,6 +89,70 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
   }
 
+  Future<void> _postLoginSuccess() async {
+    if (!mounted) return;
+
+    // Track auth timestamp for router cache clearing logic
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(
+      'last_auth_timestamp',
+      DateTime.now().millisecondsSinceEpoch,
+    );
+    debugPrint('✅ Login successful');
+
+    // CRITICAL: Check database for completed preferences to avoid re-onboarding
+    // When user logs out, local SharedPreferences is cleared, but database isn't
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        final response = await Supabase.instance.client
+            .from('user_preferences')
+            .select('has_completed_preferences')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+        if (response != null && response['has_completed_preferences'] == true) {
+          // User has completed preferences in database - sync to local
+          await prefs.setBool('hasCompletedPreferences', true);
+          debugPrint('✅ Synced preferences completion from database');
+        } else {
+          debugPrint('ℹ️ User has not completed preferences');
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ Could not check preferences: $e');
+      // Non-critical - router will handle redirect
+    }
+
+    // Let the router handle redirect logic
+    // Router will check both local flag and database
+    if (mounted) {
+      context.go('/');
+    }
+  }
+
+  Future<void> _handleDemoLogin() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+    try {
+      await Supabase.instance.client.auth.signInWithPassword(
+        email: _demoEmail,
+        password: _demoPassword,
+      );
+      await _postLoginSuccess();
+    } catch (e) {
+      if (!mounted) return;
+      showWanderMoodToast(
+        context,
+        message: 'Demo sign-in failed. Please try again.',
+        isError: true,
+        duration: const Duration(seconds: 4),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
@@ -94,40 +161,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
           onSuccess: () async {
-            if (mounted) {
-              // Track auth timestamp for router cache clearing logic
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setInt('last_auth_timestamp', DateTime.now().millisecondsSinceEpoch);
-              debugPrint('✅ Login successful');
-              
-              // CRITICAL: Check database for completed preferences to avoid re-onboarding
-              // When user logs out, local SharedPreferences is cleared, but database isn't
-              try {
-                final user = Supabase.instance.client.auth.currentUser;
-                if (user != null) {
-                  final response = await Supabase.instance.client
-                      .from('user_preferences')
-                      .select('has_completed_preferences')
-                      .eq('user_id', user.id)
-                      .maybeSingle();
-                  
-                  if (response != null && response['has_completed_preferences'] == true) {
-                    // User has completed preferences in database - sync to local
-                    await prefs.setBool('hasCompletedPreferences', true);
-                    debugPrint('✅ Synced preferences completion from database');
-                  } else {
-                    debugPrint('ℹ️ User has not completed preferences');
-                  }
-                }
-              } catch (e) {
-                debugPrint('⚠️ Could not check preferences: $e');
-                // Non-critical - router will handle redirect
-              }
-              
-              // Let the router handle redirect logic
-              // Router will check both local flag and database
-              context.go('/');
-            }
+            await _postLoginSuccess();
           },
           onError: (error) {
             if (mounted) {
@@ -435,13 +469,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   ),
                                 ),
                                 _buildSocialButton(
-                                  icon: FontAwesomeIcons.facebook,
-                                  iconColor: const Color(0xFF1877F2),
-                                  onPressed: () => _handleSocialSignIn(
-                                    () => ref.read(socialAuthServiceProvider).signInWithFacebook(),
-                                  ),
-                                ),
-                                _buildSocialButton(
                                   icon: FontAwesomeIcons.apple,
                                   iconColor: Colors.black,
                                   onPressed: () => _handleSocialSignIn(
@@ -477,6 +504,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                     ],
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  // App Store review helper (subtle)
+                  Center(
+                    child: TextButton(
+                      onPressed: _isLoading ? null : _handleDemoLogin,
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.black54,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        'App Store reviewer? Tap here',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ),
                   ),
                   
                   SizedBox(height: MediaQuery.of(context).padding.bottom + 24),

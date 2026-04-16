@@ -4,5 +4,6 @@
   "GOOGLE_PLACES_API_KEY": "your-key",
   "OPENWEATHER_API_KEY": "your-key",
   "GOOGLE_MAPS_API_KEY": "your-key",
-  "OPENAI_API_KEY": ""
+  "OPENAI_API_KEY": "",
+  "WANDERMOOD_UNIVERSAL_LINK_BASE": "https://wandermood-landing.vercel.app"
 }

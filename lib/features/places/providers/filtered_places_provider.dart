@@ -96,11 +96,8 @@ class FilteredPlaces extends _$FilteredPlaces {
   double _calculateTimeScore(Place place) {
     if (place.openingHours == null) return 0.5; // Neutral score if unknown
     
-    final now = DateTime.now();
-    final currentHour = now.hour;
-    
     // Check if place is open now
-    if (place.isOpen ?? place.openingHours?['openNow'] == true) {
+    if (place.openingHours?.isOpen == true) {
       return 1.0;
     }
     
@@ -108,15 +105,8 @@ class FilteredPlaces extends _$FilteredPlaces {
   }
 
   double _calculateDistanceScore(Place place) {
-    final distance = place.distance ?? double.infinity;
-    
-    // Convert distance to a 0-1 score where closer is better
-    if (distance == double.infinity) return 0.0;
-    
-    // Assume 20km is the maximum reasonable distance
-    const maxDistance = 20.0;
-    
-    if (distance > maxDistance) return 0.0;
-    return 1.0 - (distance / maxDistance);
+    // [Place] has no cached distance here; keep a neutral contribution until
+    // caller passes user-relative distances into scoring.
+    return 0.5;
   }
 } 

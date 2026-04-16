@@ -306,13 +306,13 @@
       }
     }
   },
-  "demoMoodyResponseAdventurous": "Love that energy! 🔥 Here are some exciting spots that match your adventurous spirit...",
-  "demoMoodyResponseRelaxed": "Ah, a chill day! ☕ Let me find you some peaceful spots to unwind...",
-  "demoMoodyResponseRomantic": "How lovely! 💕 I've got some beautiful places perfect for romance...",
-  "demoMoodyResponseCultural": "A curious explorer! 🎨 Check out these fascinating cultural gems...",
-  "demoMoodyResponseFoodie": "Yum! 🍕 Here are some delicious spots that'll satisfy your taste buds...",
-  "demoMoodyResponseSocial": "Let's go! 🎉 I've got some fun places perfect for hanging out with friends...",
-  "demoMoodyResponseDefault": "Great choice! 🌟 Here are some perfect spots for your mood...",
+  "demoMoodyResponseAdventurous": "Time for adventure! I know exactly what you need 🔥",
+  "demoMoodyResponseRelaxed": "Taking it easy today? Great plan! 🌿",
+  "demoMoodyResponseRomantic": "A romantic day? I've got you 💕",
+  "demoMoodyResponseCultural": "The city's culture scene is waiting for you 🎭",
+  "demoMoodyResponseFoodie": "I know the best spots in the city 🍽",
+  "demoMoodyResponseSocial": "Looking for fun? I've got you! 👥",
+  "demoMoodyResponseDefault": "Nice! Let's go explore ✨",
   "demoMoodAdventurous": "Adventurous",
   "demoMoodRelaxed": "Relaxed",
   "demoMoodRomantic": "Romantic",
@@ -606,7 +606,10 @@
   "profileEditProfilePhoto": "Profile Photo",
   "profileEditProfilePhotoTap": "Tap to change",
   "profileEditNameLabel": "Full Name",
-  "profileEditUsernameLabel": "Username",
+  "profileEditUsernameLabel": "Username *",
+  "profileEditUsernameRequiredError": "Username is required.",
+  "profileEditUsernameFormatError": "Use 3–30 characters: letters, numbers, or underscores only.",
+  "profileEditUsernameTakenError": "That username is already taken. Try another.",
   "profileEditEmailLabel": "Email",
   "profileEditBioLabel": "Bio",
   "profileEditSelectDate": "Select date",
@@ -672,11 +675,11 @@
   "profileEditLocationHintExamples": "e.g. Rotterdam, Amsterdam...",
   "preferencesScreenTitle": "Edit preferences",
   "prefSectionCommunicationStyle": "Communication style",
-  "prefSectionInterests": "Interests",
-  "prefSectionSocialVibe": "Social vibe",
+  "prefSectionInterests": "Your Interests",
+  "prefSectionSocialVibe": "Social Vibe",
   "prefSectionTravelStyles": "Travel styles",
   "prefSectionFavoriteMoods": "Favorite moods",
-  "prefSectionPlanningPace": "Planning pace",
+  "prefSectionPlanningPace": "Planning Pace ⏰",
   "prefSectionSelectedMoods": "Selected moods",
   "prefSectionDietaryInclusion": "Dietary & inclusion",
   "prefDietaryInclusionSubtitle": "Moody uses these for recommendations across the app. Select any that apply.",
@@ -1365,11 +1368,11 @@
   "prefMultipleHintDirect": "Multiple selections allowed",
   "prefInterestStays": "Stays & Getaways",
   "prefInterestStaysDesc": "Charming hotels and dreamy places",
-  "prefInterestFood": "Food & Dining",
+  "prefInterestFood": "Food & Drink",
   "prefInterestFoodDesc": "Local cuisine and unique restaurants",
   "prefInterestArts": "Arts & Culture",
   "prefInterestArtsDesc": "Museums, galleries, and theaters",
-  "prefInterestShopping": "Shopping & Markets",
+  "prefInterestShopping": "Shopping",
   "prefInterestShoppingDesc": "Local markets and shopping districts",
   "prefInterestSports": "Sports & Activities",
   "prefInterestSportsDesc": "Active experiences and sports venues",
@@ -1389,8 +1392,6 @@
   "prefTravelSubtitleEnergetic": "A few quick questions to personalize your experience",
   "prefTravelSubtitleProfessional": "A few quick questions to personalize your experience",
   "prefTravelSubtitleDirect": "A few quick questions to personalize your experience",
-  "prefSectionSocialVibe": "Social Vibe 👥",
-  "prefSectionPlanningPace": "Planning Pace ⏰",
   "prefSectionTravelStyle": "Travel Style 🎯",
   "prefSelectUpToStyles": "Select up to {count} styles",
   "@prefSelectUpToStyles": {
@@ -1601,6 +1602,9 @@
   "moodHubBannerAfternoon": "Afternoon's here — time to match your vibe.",
   "moodHubBannerEvening": "Evening's here — what's your vibe?",
   "moodHubBannerNight": "Late night energy — let's find something that fits.",
+  "moodyIdleWakeOpenPlan": "Let's open your plan for today.",
+  "moodyIdleWakeChooseMood": "What are we doing today? Pick your mood and we'll build the day.",
+  "moodyHubNewConversation": "New conversation",
   "moodHubCreatePlan": "Let's create your perfect plan! 🎯",
   "moodHubBackToHub": "Back to Hub",
   "moodHubSelectUpTo": "You can select up to {max} moods",
@@ -2525,31 +2529,18 @@
   "signupInboxFooterResend": "Resend",
   "signupInboxFooterOr": " or ",
   "signupInboxFooterChangeEmail": "change email",
-
-  "introSkip": "Skip",
   "introHeadline1": "Your mood,",
   "introHeadline2": "your adventure",
-  "introTagline": "This takes only 10 seconds, I promise.",
-  "introSeeHowItWorks": "Take a look, this is fun!",
-
   "onboardingLoadingTitle": "I'm getting to know you! 🧠",
   "onboardingLoadingSubtitle0": "Saving your interests...",
   "onboardingLoadingSubtitle1": "Tuning your style...",
   "onboardingLoadingSubtitle2": "Finding places that fit you...",
   "onboardingLoadingSubtitle3": "Getting myself ready for you...",
   "onboardingLoadingFooter": "This'll just take a moment ✨",
-
   "demoModeLabel": "▶ Demo mode",
   "demoSkip": "Skip",
-  "demoMoodyName": "Moody",
   "demoTapToChooseMood": "Tap to choose your mood:",
   "demoDiscoverMore": "Discover more →",
-  "demoMoodAdventurous": "Adventurous",
-  "demoMoodRelaxed": "Relaxed",
-  "demoMoodRomantic": "Romantic",
-  "demoMoodCultural": "Cultural",
-  "demoMoodFoodie": "Foodie",
-  "demoMoodSocial": "Social",
   "demoMoodSurpriseMe": "Surprise me",
   "demoMoodyGreetingLine2": "Tell me what kind of day you're after — I'll take care of the rest.",
   "demoMoodyQuestion": "So… what kind of day are we having?",
@@ -2570,14 +2561,6 @@
   "demoMoodReactionSurprise": "A little mystery—I've got ideas for you. ✨",
   "demoMoodReactionDefault": "Love it—let's shape your day.",
   "demoPuttingDayTogether": "Putting your day together…",
-  "demoMoodyResponseRelaxed": "Taking it easy today? Great plan! 🌿",
-  "demoMoodyResponseAdventurous": "Time for adventure! I know exactly what you need 🔥",
-  "demoMoodyResponseFoodie": "I know the best spots in the city 🍽",
-  "demoMoodyResponseSocial": "Looking for fun? I've got you! 👥",
-  "demoMoodyResponseCultural": "The city's culture scene is waiting for you 🎭",
-  "demoMoodyResponseRomantic": "A romantic day? I've got you 💕",
-  "demoMoodyResponseDefault": "Nice! Let's go explore ✨",
-
   "guestDemoResultTitlePicked": "I picked these for you",
   "guestDemoResultTitleWithMood": "{moodLabel}",
   "@guestDemoResultTitleWithMood": {
@@ -2610,7 +2593,6 @@
   "guestDemoMoodyRomantic0": "Low lights, shared plates — keep the phones away 💕",
   "guestDemoMoodyRomantic1": "Ask for a corner table if you can — worth it 🕯️",
   "guestDemoMoodyRomantic2": "Split dessert. Non-negotiable 🍰",
-
   "guestDemoTagWalk": "Walk",
   "guestDemoTagNature": "Nature",
   "guestDemoTagCafe": "Cafe",
@@ -2637,7 +2619,6 @@
   "guestDemoTagQuiet": "Quiet",
   "guestDemoTagDrinks": "Drinks",
   "guestDemoTagEvening": "Evening",
-
   "guestDemoRelaxed1Name": "Parkside Morning Reset",
   "guestDemoRelaxed1Meta": "09:00 • Free",
   "guestDemoRelaxed1Desc": "Easy loops under the trees — wake the body without racing.",
@@ -2647,7 +2628,6 @@
   "guestDemoRelaxed3Name": "Sunset Terrace",
   "guestDemoRelaxed3Meta": "18:00 • €€€",
   "guestDemoRelaxed3Desc": "Golden hour, one drink, nowhere to be.",
-
   "guestDemoFoodie1Name": "Oven & Oak Bakery",
   "guestDemoFoodie1Meta": "08:00 • €",
   "guestDemoFoodie1Desc": "Fresh pastries and coffee to start the day.",
@@ -2657,7 +2637,6 @@
   "guestDemoFoodie3Name": "Chef's Table Pop-up",
   "guestDemoFoodie3Meta": "19:00 • €€€",
   "guestDemoFoodie3Desc": "Small plates and seasonal specials.",
-
   "guestDemoSocial1Name": "Park Run Meet-up",
   "guestDemoSocial1Meta": "07:30 • Free",
   "guestDemoSocial1Desc": "Quick miles with friendly faces.",
@@ -2667,7 +2646,6 @@
   "guestDemoSocial3Name": "Late Live Set",
   "guestDemoSocial3Meta": "21:00 • €€",
   "guestDemoSocial3Desc": "Loud speakers, cold drinks, big vibes.",
-
   "guestDemoAdventurous1Name": "Ridge Sunrise Hike",
   "guestDemoAdventurous1Meta": "06:00 • Free",
   "guestDemoAdventurous1Desc": "Steep trail, wide views, early start.",
@@ -2677,7 +2655,6 @@
   "guestDemoAdventurous3Name": "Waterfront Sundown Bar",
   "guestDemoAdventurous3Meta": "19:00 • €€",
   "guestDemoAdventurous3Desc": "Golden-hour drinks and small plates — land the day softly.",
-
   "guestDemoCultural1Name": "Modern Wing Tour",
   "guestDemoCultural1Meta": "10:00 • €",
   "guestDemoCultural1Desc": "Guided look at the new exhibition.",
@@ -2687,7 +2664,6 @@
   "guestDemoCultural3Name": "Canal-Side Jazz Room",
   "guestDemoCultural3Meta": "20:00 • €€",
   "guestDemoCultural3Desc": "Dim lights, small band — culture without the sprint finish.",
-
   "guestDemoRomantic1Name": "Courtyard Café",
   "guestDemoRomantic1Meta": "10:00 • €€",
   "guestDemoRomantic1Desc": "Quiet corners and shared pastries.",
@@ -2697,7 +2673,6 @@
   "guestDemoRomantic3Name": "Low-lit Wine Room",
   "guestDemoRomantic3Meta": "20:00 • €€€",
   "guestDemoRomantic3Desc": "Small pours, soft music, no rush.",
-
   "guestDemoRelaxed1MoodyAbout": "📚 What kind of place is this?\n\nCity park with loops under mature trees—wide gravel paths, a duck pond pinch, and benches every few curves. Locals walk dogs, read on blankets; there is no entry fee.\n\n---\n🗺️ Layout & vibe\n\nMostly flat, stroller-friendly circuits (~2 km on the outer loop). Mornings are misty-quiet; you will hear more birds than traffic from here.\n\n---\n⏱️ Good to know\n\nFree to enter. Washrooms near the main entrance. After rain, shoes that forgive mud are a win.\n\n---\n💬 Moody says\n\nNo pace to hit—if you match steps to breath for one lap, you already won.",
   "guestDemoRelaxed2MoodyAbout": "📚 What kind of place is this?\n\nJapanese-style matcha bar: stone-ground ceremonial grade, oat and soy milk, and seasonal lattes (think sakura in spring, yuzu in winter). Pastries stay light—mochi muffins, sesame cookies, minimal sugar crash.\n\n---\n🪑 Space & vibe\n\nLow counter, matte ceramics, soft daylight. Baristas explain matcha grades without the lecture. Laptop corners exist, but phones-down regulars get the best foam.\n\n---\n⏱️ Good to know\n\nMid-range spend (snack + drink). Busy 12:00–14:00—slide in a bit earlier for a slower pour.\n\n---\n💬 Moody says\n\nSit until the morning you already had settles in your bones—that is the whole assignment.",
   "guestDemoRelaxed3MoodyAbout": "📚 What kind of place is this?\n\nRooftop terrace restaurant: Mediterranean-leaning small plates (mezze, grilled fish, burrata), natural wines by the glass, and bottles that lean Italian + Portuguese.\n\n---\n🌅 Why sunset works here\n\nWest-facing glass rail—the sky does the lighting design. Book ahead; walk-ins sometimes grab bar spots when lucky.\n\n---\n⏱️ Good to know\n\nUpper-mid price tier. Even summer evenings get breezy off the water—bring a light layer.\n\n---\n💬 Moody says\n\nOne drink, one horizon, zero inbox—pretend that is the only notification that matters.",
@@ -2716,7 +2691,6 @@
   "guestDemoRomantic1MoodyAbout": "📚 What kind of place is this?\n\nCourtyard café behind a brick arch: viennoiserie, Dutch apple tart, savory galettes at lunch. Coffee from a small Rotterdam roaster; tea list leans floral and cozy.\n\n---\n🪴 Atmosphere\n\nFountain murmur, ivy walls, a handful of two-tops that feel tucked away. Shared blankets appear on chilly evenings.\n\n---\n⏱️ Good to know\n\nWeekend brunch books fast—walk-in luck often after 14:00. Card and contactless.\n\n---\n💬 Moody says\n\nOrder one pastry to split and fight over the last crumb—I am taking notes.",
   "guestDemoRomantic2MoodyAbout": "📚 What kind of place is this?\n\nIndependent bookshop—not a chain. Front tables: new fiction and translated lit. Middle aisles: essays, design, travel. Back room: curated used stacks plus a vinyl corner (jazz, soul, small Dutch indie labels).\n\n---\n🎧 Listen & browse\n\nPreview headphones at the counter. Staff shelf tags are spicy opinions, not corporate blurbs. Friday readings sometimes—chalkboard by the stairs has the schedule.\n\n---\n⏱️ Good to know\n\nPhones on quiet, please. Bags at the door. Monthly discount cart lives by the stairs—treasure hunt energy.\n\n---\n💬 Moody says\n\nHunt the title that feels like it waited for you—I will take full credit if you find it.",
   "guestDemoRomantic3MoodyAbout": "📚 What kind of place is this?\n\nLow-lit wine room with 80+ bottles on display—Italy (Barbera, Etna, Chianti riserva), France (Beaujolais, Loire Chenin, modest Bordeaux), Spain (Rioja, Priorat), plus orange wines and pet-nat from small Dutch importers. Coravin pours on pricier labels.\n\n---\n🍷 How drinking works\n\nRotating by-the-glass list (roughly 6 whites, 6 reds, 2 skin-contact). Bottles pair with small plates: olives, anchovies, burrata, charcuterie. Corkage waived with a food order on many nights—ask when you sit.\n\n---\n⏱️ Good to know\n\nSommelier does table rounds—say surprise us and mean it. Reservations after 19:30; smart-casual keeps the glow right.\n\n---\n💬 Moody says\n\nPick one bottle you cannot pronounce—we will toast to courage and pretend we are sommeliers.",
-
   "dayMon": "Monday",
   "dayTue": "Tuesday",
   "dayWed": "Wednesday",
@@ -2736,7 +2710,6 @@
   "monthOct": "oct",
   "monthNov": "nov",
   "monthDec": "dec",
-
   "myDayEmptyDayTitle": "Your day is empty ✨",
   "myDayEmptyDaySubtitle": "Let Moody make a plan for your mood today",
   "myDayPlanWithMoodyButton": "Plan my day with Moody",
@@ -2749,7 +2722,6 @@
   "myDayStatusUnableToLoad": "Unable to load status",
   "myDayOpenGoogleMaps": "Google Maps",
   "myDayOpenAppleMaps": "Apple Maps",
-
   "agendaTitle": "My Plans",
   "agendaStatusDone": "DONE",
   "agendaStatusNow": "NOW",
@@ -2764,11 +2736,19 @@
   "agendaTomorrowSubtitle": "Plan what you want to do tomorrow",
   "agendaDayEmpty": "{dayName} is still empty",
   "@agendaDayEmpty": {
-    "placeholders": { "dayName": { "type": "String" } }
+    "placeholders": {
+      "dayName": {
+        "type": "String"
+      }
+    }
   },
   "agendaDaySubtitle": "Want to plan for {dayName}?",
   "@agendaDaySubtitle": {
-    "placeholders": { "dayName": { "type": "String" } }
+    "placeholders": {
+      "dayName": {
+        "type": "String"
+      }
+    }
   },
   "agendaFarFutureEmpty": "Nothing planned yet",
   "agendaFarFutureSubtitle": "Plan activities for this day",
@@ -2780,7 +2760,6 @@
   "agendaDeleteDialogBody": "“{title}” will be removed from your planner.",
   "agendaDeleteDialogBack": "Back",
   "agendaDeleteDialogConfirm": "Delete",
-
   "exploreCategoryAll": "All",
   "exploreCategoryPopular": "Popular",
   "exploreCategoryAccommodations": "Accommodations",
@@ -2807,7 +2786,6 @@
   "timeLabelMorning": "Morning",
   "timeLabelAfternoon": "Afternoon",
   "timeLabelEvening": "Evening",
-
   "exploreFilterIndoorOnly": "Indoor Only",
   "exploreFilterOutdoorOnly": "Outdoor Only",
   "exploreFilterWeatherSafe": "Weather-Safe",
@@ -2927,7 +2905,6 @@
       }
     }
   },
-
   "chatSheetMoodyName": "Moody",
   "chatSheetErrorMessage": "Oops! I'm having trouble connecting right now. Can you try again? 🤔",
   "chatSheetEmptyStateBody": "I know the city like the back of my hand! Tell me your mood, and I'll craft the perfect day just for you. Whether you're feeling adventurous, romantic, or need some chill vibes - I've got you covered! 🎯",
@@ -2939,7 +2916,6 @@
   "moodyConversationListening": "Listening...",
   "moodyConversationThinking": "Thinking...",
   "moodyConversationTypeMessage": "Type your message...",
-
   "homeSelectLocation": "Select Location",
   "homeCurrentLocation": "Current Location",
   "homeUsingGps": "Using GPS",
@@ -2954,7 +2930,6 @@
   },
   "homeLocationNotFound": "Could not get location",
   "homeChatErrorRetry": "Sorry, I couldn't respond right now. Try again! 😅",
-
   "checkInQ1Title": "How was your day?",
   "checkInQ1Subtitle": "Moody wants to get to know you better 🌙",
   "checkInQ1Question": "What was the best moment of today?",
@@ -2985,7 +2960,6 @@
   "checkInDoneSubtitle": "Moody will remember this for next time",
   "checkInSaveError": "Save failed. Please try again.",
   "checkInClose": "Close",
-
   "dagSheetOpener1": "You're home! How was your day?",
   "dagSheetOpener2": "Tell me! How was it today?",
   "dagSheetOpener3": "How did it go today?",
@@ -3012,7 +2986,6 @@
   "dagSheetReflectionPrompt": "Anything else on your mind? All good — or leave it empty and go sleep. ✨",
   "dagSheetReflectionHint": "Type here… (optional)",
   "dagSheetGoodnight": "Goodnight Moody 🌙",
-
   "carouselPerfectMatches": "{count} perfect matches",
   "@carouselPerfectMatches": {
     "placeholders": {
@@ -3032,7 +3005,6 @@
   "carouselNotInterested": "Not interested",
   "carouselNoRecommendations": "No recommendations yet",
   "carouselCheckBackSoon": "Check back soon for personalized suggestions!",
-
   "prefBack": "Back",
   "interestsPrompt": "What do you like? I'll find it for you! 🔍",
   "interestsTitle": "What are your interests?",
@@ -3081,7 +3053,6 @@
   "prefStyleOffSubtitle": "Hidden gems and local favorites.",
   "prefStyleTouristTitle": "Tourist Highlights",
   "prefStyleTouristSubtitle": "Iconic places you want to have seen.",
-
   "gamificationTitle": "Achievements",
   "gamificationYourProgress": "Your Progress",
   "gamificationCompleteToUnlock": "Complete activities to unlock achievements",
@@ -3104,13 +3075,11 @@
   "gamificationCategoryMood": "Mood",
   "gamificationCategorySpecial": "Special",
   "gamificationCategoryOther": "Other",
-
   "achievementExplorer": "Explorer",
   "achievementEarlyBird": "Early Bird",
   "achievementStreakMaster": "Streak Master",
   "achievementMoodTracker": "Mood Tracker",
   "achievementAdventurer": "Adventurer",
-
   "prefScreenTitle": "Your Preferences",
   "prefSave": "Save",
   "prefSavedSuccess": "Preferences saved successfully",
@@ -3119,13 +3088,11 @@
   "prefSectionAgeGroupSub": "Helps us recommend age-appropriate activities",
   "prefSectionBudget": "Budget Comfort",
   "prefSectionBudgetSub": "Your typical spending range for activities",
-  "prefSectionSocialVibe": "Social Vibe",
   "prefSectionSocialVibeSub": "Do you prefer solo activities or social scenes?",
   "prefSectionActivityPace": "Activity Pace",
   "prefSectionActivityPaceSub": "How energetic do you like your day?",
   "prefSectionTimeAvailable": "Typical Time Available",
   "prefSectionTimeAvailableSub": "How much time do you usually have for activities?",
-  "prefSectionInterests": "Your Interests",
   "prefSectionInterestsSub": "Select all that apply (helps personalize recommendations)",
   "prefAge1824Label": "Early 20s",
   "prefAge1824Desc": "Budget-friendly, social",
@@ -3162,15 +3129,12 @@
   "prefQuickVisitLabel": "Quick Visit",
   "prefHalfDayLabel": "Half Day",
   "prefFullDayLabel": "Full Day",
-  "prefInterestFood": "Food & Drink",
   "prefInterestCulture": "Culture & Arts",
   "prefInterestNature": "Nature & Outdoors",
-  "prefInterestShopping": "Shopping",
   "prefInterestNightlife": "Nightlife",
   "prefInterestWellness": "Wellness",
   "prefInterestAdventure": "Adventure",
   "prefInterestHistory": "History",
-
   "achievementsUnlocked": "Achievements Unlocked",
   "deleteAccountTitle": "Delete Account",
   "deleteAccountAreYouSure": "Are you sure?",
@@ -3190,14 +3154,12 @@
   "deleteAccountDeleteButton": "Delete My Account Forever",
   "deleteAccountSuccess": "Account deleted successfully",
   "deleteAccountError": "Error deleting account",
-
   "settingsNotificationsSectionTitle": "NOTIFICATIONS",
   "settingsNotificationsTripRemindersLabel": "Trip reminders",
   "settingsNotificationsTripRemindersSubtitle": "Reminders for planned activities",
   "settingsNotificationsWeatherUpdatesLabel": "Weather updates",
   "settingsNotificationsWeatherUpdatesSubtitle": "Updates about the weather at your destination",
   "settingsNotificationsLocalDeviceFootnote": "These options apply to notifications on this device (including scheduled reminders). They are not separate cloud push messages.",
-
   "premiumComingSoonTitle": "Premium — coming soon",
   "premiumComingSoonBody": "Subscriptions will be offered with Apple In-App Purchase in a future update. WanderMood is free to use in this version.",
   "premiumComingSoonFootnote": "We do not collect card details, Apple Pay, or other payments in this build.",
@@ -3235,7 +3197,6 @@
   "premiumValidationInvalidCardNumber": "Invalid card number",
   "premiumValidationInvalidCvv": "Invalid CVV",
   "premiumValidationNameRequired": "Name is required",
-
   "placeDetailAboutThisPlace": "About this place",
   "placeDetailBlurbExtraAddress": "Address and quick actions are listed just below this section.",
   "placeDetailBlurbExtraRatingCount": "Public listings average about {rating} out of 5 across {count} ratings.",
@@ -3617,7 +3578,6 @@
     }
   },
   "moodyChatSubtitleDirectNoCity": "Straight-up travel bestie",
-
   "moodyHubYourDayToday": "Your day today",
   "moodyHubChangeMood": "Change mood",
   "moodyHubNoMoodChosen": "No mood selected yet",
@@ -3702,8 +3662,7 @@
   "moodHomeViewPlan": "View plan",
   "moodHomePlanAgain": "Plan again",
   "planLoadingRotating2": "Putting your day together…",
-  "planLoadingRotating3": "Almost there — your plan is almost ready ✨"
-,
+  "planLoadingRotating3": "Almost there — your plan is almost ready ✨",
   "settingsTravelModeHelpLabel": "Travel mode help",
   "settingsTravelModeHelpSubtitle": "Reopen Local vs Travel guide",
   "placeDetailOpeningHours": "Opening Hours",
@@ -3751,21 +3710,106 @@
   "placeDescAttractionWithRating": "{name} is a top-rated attraction with {rating} stars, offering unique and memorable experiences.",
   "placeDescSpa": "{name} is a premium wellness destination offering relaxing treatments and rejuvenating experiences.",
   "placeDescGeneric": "{name} is a wonderful place to discover, with great atmosphere and excellent vibes.",
-  "placeDescGenericWithRating": "{name} is a highly-rated local gem with {rating} stars, offering a unique experience worth exploring."
-,
-  "@placeDescFood": {"placeholders": {"name": {"type": "String"}}},
-  "@placeDescFoodWithReviews": {"placeholders": {"name": {"type": "String"}, "rating": {"type": "String"}, "reviewCount": {"type": "String"}}},
-  "@placeDescCafe": {"placeholders": {"name": {"type": "String"}}},
-  "@placeDescCafeWithRating": {"placeholders": {"name": {"type": "String"}, "rating": {"type": "String"}}},
-  "@placeDescBar": {"placeholders": {"name": {"type": "String"}}},
-  "@placeDescMuseum": {"placeholders": {"name": {"type": "String"}}},
-  "@placeDescPark": {"placeholders": {"name": {"type": "String"}}},
-  "@placeDescAttraction": {"placeholders": {"name": {"type": "String"}}},
-  "@placeDescAttractionWithRating": {"placeholders": {"name": {"type": "String"}, "rating": {"type": "String"}}},
-  "@placeDescSpa": {"placeholders": {"name": {"type": "String"}}},
-  "@placeDescGeneric": {"placeholders": {"name": {"type": "String"}}},
-  "@placeDescGenericWithRating": {"placeholders": {"name": {"type": "String"}, "rating": {"type": "String"}}},
-
+  "placeDescGenericWithRating": "{name} is a highly-rated local gem with {rating} stars, offering a unique experience worth exploring.",
+  "@placeDescFood": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@placeDescFoodWithReviews": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "rating": {
+        "type": "String"
+      },
+      "reviewCount": {
+        "type": "String"
+      }
+    }
+  },
+  "@placeDescCafe": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@placeDescCafeWithRating": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "@placeDescBar": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@placeDescMuseum": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@placeDescPark": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@placeDescAttraction": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@placeDescAttractionWithRating": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "@placeDescSpa": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@placeDescGeneric": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@placeDescGenericWithRating": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
   "notifReEngagementEnergeticV0Title": "Psst... Moody misses you 👀",
   "notifReEngagementEnergeticV0Body": "The world's been waiting. Ready to explore again?",
   "notifReEngagementEnergeticV1Title": "Your wanderlust called",
@@ -3790,57 +3834,71 @@
   "notifReEngagementDirectV1Body": "Tap to continue.",
   "notifReEngagementDirectV2Title": "Back when you're ready",
   "notifReEngagementDirectV2Body": "Your saved plans and mood history are here.",
-
   "notifMorningWithPlanFallbackActivity": "your first stop",
   "notifMorningWithPlanEnergeticTitle": "Rise and shine {weatherEmoji}",
   "@notifMorningWithPlanEnergeticTitle": {
     "placeholders": {
-      "weatherEmoji": {"type": "String"}
+      "weatherEmoji": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanEnergeticBody": "First up: {activityName}. Let's own today.",
   "@notifMorningWithPlanEnergeticBody": {
     "placeholders": {
-      "activityName": {"type": "String"}
+      "activityName": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanFriendlyTitle": "Good morning {weatherEmoji}",
   "@notifMorningWithPlanFriendlyTitle": {
     "placeholders": {
-      "weatherEmoji": {"type": "String"}
+      "weatherEmoji": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanFriendlyBody": "We're starting with {activityName} today — I'm here if you need me.",
   "@notifMorningWithPlanFriendlyBody": {
     "placeholders": {
-      "activityName": {"type": "String"}
+      "activityName": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanProfessionalTitle": "Good morning {weatherEmoji}",
   "@notifMorningWithPlanProfessionalTitle": {
     "placeholders": {
-      "weatherEmoji": {"type": "String"}
+      "weatherEmoji": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanProfessionalBody": "Your schedule includes {activityName} today.",
   "@notifMorningWithPlanProfessionalBody": {
     "placeholders": {
-      "activityName": {"type": "String"}
+      "activityName": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanDirectTitle": "Today's plan {weatherEmoji}",
   "@notifMorningWithPlanDirectTitle": {
     "placeholders": {
-      "weatherEmoji": {"type": "String"}
+      "weatherEmoji": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanDirectBody": "{activityName} is first. Tap to open.",
   "@notifMorningWithPlanDirectBody": {
     "placeholders": {
-      "activityName": {"type": "String"}
+      "activityName": {
+        "type": "String"
+      }
     }
   },
-
   "notifDailyMoodCheckInEnergeticV0Title": "What vibe are we serving today? ✨",
   "notifDailyMoodCheckInEnergeticV0Body": "Log your mood and let Moody find your perfect match.",
   "notifDailyMoodCheckInEnergeticV1Title": "Mood check! Go.",
@@ -3865,7 +3923,6 @@
   "notifDailyMoodCheckInDirectV1Body": "How are you feeling today?",
   "notifDailyMoodCheckInDirectV2Title": "Mood reminder",
   "notifDailyMoodCheckInDirectV2Body": "Log your mood to keep your streak alive.",
-
   "notifGenerateMyDayEnergeticV0Title": "Let Moody cook today 🔥",
   "notifGenerateMyDayEnergeticV0Body": "Your perfect day is one tap away — trust the algorithm.",
   "notifGenerateMyDayEnergeticV1Title": "Blank day? Not on Moody's watch",
@@ -3890,7 +3947,6 @@
   "notifGenerateMyDayDirectV1Body": "Create today's itinerary now.",
   "notifGenerateMyDayDirectV2Title": "Today's plan",
   "notifGenerateMyDayDirectV2Body": "Tap to build your schedule.",
-
   "notifWeatherNudgeEnergeticV0Title": "The weather just got interesting ☀️",
   "notifWeatherNudgeEnergeticV0Body": "Moody's already updating your picks. Check what's good.",
   "notifWeatherNudgeEnergeticV1Title": "Weather alert: perfect adventure conditions",
@@ -3915,7 +3971,6 @@
   "notifWeatherNudgeDirectV1Body": "Tap for weather-matched plans.",
   "notifWeatherNudgeDirectV2Title": "Today's conditions",
   "notifWeatherNudgeDirectV2Body": "Updated picks based on the weather.",
-
   "notifLocationDiscoveryEnergeticV0Title": "You're surrounded by hidden gems 💎",
   "notifLocationDiscoveryEnergeticV0Body": "Moody spotted something amazing near you. Go look.",
   "notifLocationDiscoveryEnergeticV1Title": "Plot twist: your next fave spot is 5 mins away",
@@ -3940,7 +3995,6 @@
   "notifLocationDiscoveryDirectV1Body": "New spot near you.",
   "notifLocationDiscoveryDirectV2Title": "Nearby activity",
   "notifLocationDiscoveryDirectV2Body": "Check what's close.",
-
   "notifSavedActivityReminderEnergeticV0Title": "Your saved spots are feeling ignored 👀",
   "notifSavedActivityReminderEnergeticV0Body": "You saved it for a reason. Time to actually go.",
   "notifSavedActivityReminderEnergeticV1Title": "That thing on your list? Still there.",
@@ -3965,7 +4019,6 @@
   "notifSavedActivityReminderDirectV1Body": "Check and plan a visit.",
   "notifSavedActivityReminderDirectV2Title": "Saved spots reminder",
   "notifSavedActivityReminderDirectV2Body": "Schedule a visit to a saved activity.",
-
   "notifFestivalEventEnergeticV0Title": "Something epic is happening near you 🎉",
   "notifFestivalEventEnergeticV0Body": "Moody can't keep quiet about this. You need to see it.",
   "notifFestivalEventEnergeticV1Title": "An event just dropped that has your name on it",
@@ -3990,7 +4043,6 @@
   "notifFestivalEventDirectV1Body": "Check event details.",
   "notifFestivalEventDirectV2Title": "Upcoming event",
   "notifFestivalEventDirectV2Body": "Event near you this week.",
-
   "notifCompanionMorningEnergeticV0Title": "Morning! I'm already plotting ☀️",
   "notifCompanionMorningEnergeticV0Body": "What are we doing today? Drop your mood and let's go.",
   "notifCompanionMorningEnergeticV1Title": "Rise and explore! ✨",
@@ -4015,7 +4067,6 @@
   "notifCompanionMorningDirectV1Body": "Tap to check in.",
   "notifCompanionMorningDirectV2Title": "Start your day",
   "notifCompanionMorningDirectV2Body": "Log your mood.",
-
   "notifCompanionAfternoonEnergeticV0Title": "Midday report — how's it going? 🌞",
   "notifCompanionAfternoonEnergeticV0Body": "Tell me what you're feeling. We can still make today legendary.",
   "notifCompanionAfternoonEnergeticV1Title": "Afternoon check! Still thriving? ✨",
@@ -4040,7 +4091,6 @@
   "notifCompanionAfternoonDirectV1Body": "Update your mood.",
   "notifCompanionAfternoonDirectV2Title": "Afternoon",
   "notifCompanionAfternoonDirectV2Body": "Tap to log your mood.",
-
   "notifCompanionEveningEnergeticV0Title": "Evening! What did you get up to? 🌙",
   "notifCompanionEveningEnergeticV0Body": "Catch me up — any highlights from today?",
   "notifCompanionEveningEnergeticV1Title": "Golden hour check ✨",
@@ -4065,81 +4115,222 @@
   "notifCompanionEveningDirectV1Body": "Log your mood.",
   "notifCompanionEveningDirectV2Title": "Good evening",
   "notifCompanionEveningDirectV2Body": "Tap to check in.",
-
   "notifStreakMilestoneEnergeticV0Title": "{days} days straight — Moody is SHOOK 🔥",
-  "@notifStreakMilestoneEnergeticV0Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneEnergeticV0Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneEnergeticV0Body": "You're basically a WanderMood legend at this point. Keep going.",
   "notifStreakMilestoneEnergeticV1Title": "Alert: {days}-day streak detected ⚡",
-  "@notifStreakMilestoneEnergeticV1Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneEnergeticV1Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneEnergeticV1Body": "This is extremely impressive and Moody is not chill about it.",
   "notifStreakMilestoneEnergeticV2Title": "{days}-day streak! You're on fire!",
-  "@notifStreakMilestoneEnergeticV2Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneEnergeticV2Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneEnergeticV2Body": "The world needs more explorers like you. Don't stop now.",
   "notifStreakMilestoneFriendlyV0Title": "Wow, {days} days in a row! 🎉",
-  "@notifStreakMilestoneFriendlyV0Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneFriendlyV0Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneFriendlyV0Body": "You've been so consistent — Moody is really proud of you!",
   "notifStreakMilestoneFriendlyV1Title": "{days}-day streak reached!",
-  "@notifStreakMilestoneFriendlyV1Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneFriendlyV1Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneFriendlyV1Body": "You're doing amazing. Keep that travel energy going!",
   "notifStreakMilestoneFriendlyV2Title": "You're on a {days}-day streak 🔥",
-  "@notifStreakMilestoneFriendlyV2Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneFriendlyV2Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneFriendlyV2Body": "What an achievement — here's to the next milestone!",
   "notifStreakMilestoneProfessionalV0Title": "{days}-day streak milestone",
-  "@notifStreakMilestoneProfessionalV0Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneProfessionalV0Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneProfessionalV0Body": "Consistent engagement. Your streak continues.",
   "notifStreakMilestoneProfessionalV1Title": "Streak milestone reached",
   "notifStreakMilestoneProfessionalV1Body": "{days} consecutive days. Keep it going.",
-  "@notifStreakMilestoneProfessionalV1Body": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneProfessionalV1Body": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneProfessionalV2Title": "{days} days",
-  "@notifStreakMilestoneProfessionalV2Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneProfessionalV2Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneProfessionalV2Body": "Streak milestone achieved.",
   "notifStreakMilestoneDirectV0Title": "{days}-day streak",
-  "@notifStreakMilestoneDirectV0Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneDirectV0Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneDirectV0Body": "Keep going.",
   "notifStreakMilestoneDirectV1Title": "Streak milestone: {days} days",
-  "@notifStreakMilestoneDirectV1Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneDirectV1Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneDirectV1Body": "Don't break it now.",
   "notifStreakMilestoneDirectV2Title": "{days} consecutive days",
-  "@notifStreakMilestoneDirectV2Title": {"placeholders": {"days": {"type": "String"}}},
+  "@notifStreakMilestoneDirectV2Title": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "notifStreakMilestoneDirectV2Body": "Streak milestone reached.",
-
   "notifAchievementUnlockedEnergeticV0Title": "🏆 YOU JUST EARNED '{achievementTitle}'!",
-  "@notifAchievementUnlockedEnergeticV0Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedEnergeticV0Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedEnergeticV0Body": "Moody is doing an actual happy dance right now. You legend.",
   "notifAchievementUnlockedEnergeticV1Title": "Badge unlocked: {achievementTitle} ✨",
-  "@notifAchievementUnlockedEnergeticV1Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedEnergeticV1Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedEnergeticV1Body": "This one's got your name all over it. Well deserved.",
   "notifAchievementUnlockedEnergeticV2Title": "Achievement get: {achievementTitle} 🎉",
-  "@notifAchievementUnlockedEnergeticV2Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedEnergeticV2Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedEnergeticV2Body": "Added to your collection. Moody knew you could do it.",
   "notifAchievementUnlockedFriendlyV0Title": "New achievement unlocked! 🏆",
   "notifAchievementUnlockedFriendlyV0Body": "You earned the '{achievementTitle}' badge — that's amazing!",
-  "@notifAchievementUnlockedFriendlyV0Body": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedFriendlyV0Body": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedFriendlyV1Title": "Congrats! '{achievementTitle}' is yours 🌟",
-  "@notifAchievementUnlockedFriendlyV1Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedFriendlyV1Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedFriendlyV1Body": "You worked for this one. Enjoy the milestone!",
   "notifAchievementUnlockedFriendlyV2Title": "You unlocked '{achievementTitle}'!",
-  "@notifAchievementUnlockedFriendlyV2Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedFriendlyV2Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedFriendlyV2Body": "Achievement added to your profile — you're on a roll!",
   "notifAchievementUnlockedProfessionalV0Title": "Achievement unlocked: {achievementTitle}",
-  "@notifAchievementUnlockedProfessionalV0Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedProfessionalV0Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedProfessionalV0Body": "Badge earned and added to your profile.",
   "notifAchievementUnlockedProfessionalV1Title": "New badge: {achievementTitle}",
-  "@notifAchievementUnlockedProfessionalV1Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedProfessionalV1Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedProfessionalV1Body": "Achievement milestone reached.",
   "notifAchievementUnlockedProfessionalV2Title": "{achievementTitle}",
-  "@notifAchievementUnlockedProfessionalV2Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedProfessionalV2Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedProfessionalV2Body": "Achievement unlocked.",
   "notifAchievementUnlockedDirectV0Title": "Badge earned: {achievementTitle}",
-  "@notifAchievementUnlockedDirectV0Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedDirectV0Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedDirectV0Body": "Achievement unlocked.",
   "notifAchievementUnlockedDirectV1Title": "{achievementTitle} unlocked",
-  "@notifAchievementUnlockedDirectV1Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedDirectV1Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedDirectV1Body": "New achievement added.",
   "notifAchievementUnlockedDirectV2Title": "Achievement: {achievementTitle}",
-  "@notifAchievementUnlockedDirectV2Title": {"placeholders": {"achievementTitle": {"type": "String"}}},
+  "@notifAchievementUnlockedDirectV2Title": {
+    "placeholders": {
+      "achievementTitle": {
+        "type": "String"
+      }
+    }
+  },
   "notifAchievementUnlockedDirectV2Body": "Earned.",
-
   "notifWeeklyMoodRecapEnergeticV0Title": "Your week in moods just dropped 📊",
   "notifWeeklyMoodRecapEnergeticV0Body": "Plot twist: you contain multitudes. Want to see the data?",
   "notifWeeklyMoodRecapEnergeticV1Title": "Weekly mood report — and it's giving a lot",
@@ -4164,7 +4355,6 @@
   "notifWeeklyMoodRecapDirectV1Body": "Check your week.",
   "notifWeeklyMoodRecapDirectV2Title": "Weekly report",
   "notifWeeklyMoodRecapDirectV2Body": "7-day mood data ready.",
-
   "notifPostTripReflectionEnergeticV0Title": "You just did a whole thing! 🗺️",
   "notifPostTripReflectionEnergeticV0Body": "We need ALL the details. How was the adventure?",
   "notifPostTripReflectionEnergeticV1Title": "Trip complete — debrief time",
@@ -4189,44 +4379,114 @@
   "notifPostTripReflectionDirectV1Body": "Reflect on how it went.",
   "notifPostTripReflectionDirectV2Title": "Post-trip check-in",
   "notifPostTripReflectionDirectV2Body": "Log your experience.",
-
   "notifMoodFollowUpEnergeticV0Title": "Still feeling {moodType}? 💡",
-  "@notifMoodFollowUpEnergeticV0Title": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpEnergeticV0Title": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpEnergeticV0Body": "Moody found something that matches your energy perfectly.",
   "notifMoodFollowUpEnergeticV1Title": "Your {moodType} vibe deserves an outlet",
-  "@notifMoodFollowUpEnergeticV1Title": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpEnergeticV1Title": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpEnergeticV1Body": "Here's exactly where to take that energy. You'll love it.",
   "notifMoodFollowUpEnergeticV2Title": "{moodType} energy + this place = chef's kiss",
-  "@notifMoodFollowUpEnergeticV2Title": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpEnergeticV2Title": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpEnergeticV2Body": "Moody did the math. Trust the algorithm.",
   "notifMoodFollowUpFriendlyV0Title": "Based on your {moodType} mood 💛",
-  "@notifMoodFollowUpFriendlyV0Title": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpFriendlyV0Title": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpFriendlyV0Body": "Moody found something nearby that fits perfectly. Want to see?",
   "notifMoodFollowUpFriendlyV1Title": "A suggestion for your {moodType} vibe",
-  "@notifMoodFollowUpFriendlyV1Title": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpFriendlyV1Title": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpFriendlyV1Body": "Something close by that matches how you're feeling.",
   "notifMoodFollowUpFriendlyV2Title": "Still feeling {moodType}?",
-  "@notifMoodFollowUpFriendlyV2Title": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpFriendlyV2Title": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpFriendlyV2Body": "Here's a great match for your current energy.",
   "notifMoodFollowUpProfessionalV0Title": "Mood-matched suggestion",
   "notifMoodFollowUpProfessionalV0Body": "Activity recommendation based on your {moodType} check-in.",
-  "@notifMoodFollowUpProfessionalV0Body": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpProfessionalV0Body": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpProfessionalV1Title": "Based on your mood",
   "notifMoodFollowUpProfessionalV1Body": "Curated suggestion aligned with your {moodType} preference.",
-  "@notifMoodFollowUpProfessionalV1Body": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpProfessionalV1Body": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpProfessionalV2Title": "Activity match",
   "notifMoodFollowUpProfessionalV2Body": "Suggestion tailored to your {moodType} mood.",
-  "@notifMoodFollowUpProfessionalV2Body": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpProfessionalV2Body": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpDirectV0Title": "Suggestion for your {moodType} mood",
-  "@notifMoodFollowUpDirectV0Title": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpDirectV0Title": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpDirectV0Body": "Tap to see what matches.",
   "notifMoodFollowUpDirectV1Title": "Activity match",
   "notifMoodFollowUpDirectV1Body": "Based on your {moodType} check-in.",
-  "@notifMoodFollowUpDirectV1Body": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpDirectV1Body": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpDirectV2Title": "{moodType} mood match ready",
-  "@notifMoodFollowUpDirectV2Title": {"placeholders": {"moodType": {"type": "String"}}},
+  "@notifMoodFollowUpDirectV2Title": {
+    "placeholders": {
+      "moodType": {
+        "type": "String"
+      }
+    }
+  },
   "notifMoodFollowUpDirectV2Body": "Tap to see.",
-
   "notifSocialEngagementEnergeticV0Title": "Someone's vibing with your post 👀",
   "notifSocialEngagementEnergeticV0Body": "Go see who's feeling your adventure energy.",
   "notifSocialEngagementEnergeticV1Title": "Your mood post got attention!",
@@ -4251,7 +4511,6 @@
   "notifSocialEngagementDirectV1Body": "Someone reacted to your post.",
   "notifSocialEngagementDirectV2Title": "New comment",
   "notifSocialEngagementDirectV2Body": "Your post has a new comment.",
-
   "notifFriendActivityEnergeticV0Title": "Your travel buddy is making moves 🗺️",
   "notifFriendActivityEnergeticV0Body": "Someone in your network just did something worth knowing about.",
   "notifFriendActivityEnergeticV1Title": "Plot twist: your crew is exploring",
@@ -4276,7 +4535,6 @@
   "notifFriendActivityDirectV1Body": "Someone you follow has new content.",
   "notifFriendActivityDirectV2Title": "Network update",
   "notifFriendActivityDirectV2Body": "Friend activity available.",
-
   "notifWeekendPlanningNudgeEnergeticV0Title": "The weekend is almost here and you have zero plans",
   "notifWeekendPlanningNudgeEnergeticV0Body": "Moody to the rescue. Tap to fix that immediately.",
   "notifWeekendPlanningNudgeEnergeticV1Title": "Blank weekend detected 🎨",
@@ -4301,7 +4559,6 @@
   "notifWeekendPlanningNudgeDirectV1Body": "Add plans for the upcoming weekend.",
   "notifWeekendPlanningNudgeDirectV2Title": "Weekend ahead",
   "notifWeekendPlanningNudgeDirectV2Body": "Tap to plan.",
-
   "notifTrendingInYourCityEnergeticV0Title": "Something is TRENDING near you right now 🔥",
   "notifTrendingInYourCityEnergeticV0Body": "Everyone in your city is doing this and Moody can't keep quiet.",
   "notifTrendingInYourCityEnergeticV1Title": "Hot take: this is blowing up in your area",
@@ -4326,17 +4583,13 @@
   "notifTrendingInYourCityDirectV1Body": "Tap to see what's trending.",
   "notifTrendingInYourCityDirectV2Title": "What's popular now",
   "notifTrendingInYourCityDirectV2Body": "Trending activity near you.",
-
   "commPrefChooseStyleTitle": "Choose your Moody style",
   "commPrefChooseStyleSubtitle": "So I can match my tone perfectly to you.",
   "commPrefSpeechBubble": "How do you want me to talk to you? 😊",
-
   "authWelcomeTitle": "You're in! Welcome 🎉",
   "authCallbackConfirmingEmail": "Confirming your email…",
   "authCallbackVerificationFailed": "Email verification failed. Please try again.",
-
   "dialogClose": "Close",
-
   "supportHowCanWeHelp": "How can we help you?",
   "supportContactUsCard": "Contact Us",
   "supportSendFeedbackCard": "Send Feedback",
@@ -4363,7 +4616,6 @@
   "supportToastOpeningFeedback": "Opening feedback form…",
   "supportToastOpeningTutorial": "Opening app tutorial…",
   "supportToastOpeningIssue": "Opening issue report…",
-
   "recListTitle": "Travel Recommendations",
   "recErrorPrefix": "Error:",
   "recTryAgain": "Try Again",
@@ -4393,7 +4645,6 @@
       }
     }
   },
-
   "recDetailTitle": "Recommendation details",
   "recDetailMarkCompleteTooltip": "Mark as complete",
   "recDetailStatusCompleted": "Completed",
@@ -4423,7 +4674,6 @@
       }
     }
   },
-
   "adventurePlanTitleYour": "Your ",
   "adventurePlanTitleHighlight": "Adventure Plan",
   "adventurePlanTitleForToday": " for today",
@@ -4435,12 +4685,9 @@
       }
     }
   },
-
   "receiptDownloadPdf": "Download PDF",
   "receiptShare": "Share Receipt",
-
   "placePhotoTapToView": "Tap to view",
-
   "periodActivitiesRemoveTitle": "Remove activity?",
   "periodActivitiesRemoveBody": "Are you sure you want to remove \"{name}\"?",
   "@periodActivitiesRemoveBody": {
@@ -4453,15 +4700,12 @@
   "periodActivitiesRemoveCta": "Remove",
   "periodActivitiesSwipeDelete": "Delete",
   "periodActivitiesSwipeComplete": "Complete",
-
   "weatherFailedLoadCurrent": "Failed to load weather",
   "weatherFailedLoadForecast": "Failed to load forecast",
   "weatherNoDataAvailable": "No weather data available",
   "weatherShowMore": "Show More",
   "weatherShowLess": "Show Less",
-
   "locationPickerSelectTitle": "Select Location",
-
   "weatherLoadError": "Error loading weather data: {error}",
   "@weatherLoadError": {
     "placeholders": {
@@ -4479,7 +4723,6 @@
   "weatherNoForecasts": "No forecasts available",
   "weatherAlertsTitle": "Weather alerts",
   "weatherNoActiveAlerts": "No active alerts",
-
   "myDayWeatherDialogTitle": "Weather in {city}",
   "@myDayWeatherDialogTitle": {
     "placeholders": {
@@ -4511,12 +4754,9 @@
   "weatherMainSquall": "Squall",
   "weatherMainTornado": "Tornado",
   "weatherMainOther": "Weather",
-
   "weatherHistoryEmpty": "No historical data available",
   "weatherHistoryInvalid": "No valid historical data available",
-
   "moodHistoryEmpty": "No mood history available",
-
   "exploreLoadMoreIdeas": "Load more ideas",
   "agendaPaymentBadgeFree": "Free",
   "agendaPaymentBadgePaid": "Paid",
@@ -4529,5 +4769,486 @@
         "type": "String"
       }
     }
-  }
+  },
+  "groupPlanWithFriendMenu": "Plan with a friend",
+  "groupPlanTogetherTitle": "Plan together",
+  "groupPlanHubBody": "Combine moods with a travel partner. Both of you use your own phone — share a short code or open it from a message.",
+  "groupPlanTileStartTitle": "Start a session",
+  "groupPlanTileStartSubtitle": "You’ll get a code to send your friend",
+  "groupPlanTileJoinTitle": "Join with code",
+  "groupPlanTileJoinSubtitle": "Enter the code from your friend",
+  "groupPlanCreateTitle": "Plan with a friend",
+  "groupPlanCreateBody": "Create a shared session. You’ll get a short code to send your travel partner — they enter it on their phone.",
+  "groupPlanCreateOptionalTitleLabel": "Optional title (e.g. Today in Lisbon)",
+  "groupPlanCreateButton": "Create & share code",
+  "groupPlanShareSubject": "WanderMood group plan",
+  "groupPlanInviteShare": "Join my WanderMood day plan! Code: {code}\n(Open WanderMood → Plan with a friend → Enter code)",
+  "@groupPlanInviteShare": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanJoinTitle": "Join a friend",
+  "groupPlanJoinBody": "Scan your friend's QR code together, or enter their code below.",
+  "groupPlanJoinCodeLabel": "Join code",
+  "groupPlanJoinCodeHint": "e.g. A1B2C3",
+  "groupPlanJoinButton": "Join session",
+  "groupPlanJoinSnackEnterCode": "Enter the code your friend shared.",
+  "groupPlanJoinError": "Could not join: {error}",
+  "@groupPlanJoinError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanShareQrTitle": "Show this to your friend",
+  "groupPlanShareQrOrCode": "or enter code {code}",
+  "@groupPlanShareQrOrCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanShareViaMessage": "Share via message",
+  "groupPlanShareContinueLobby": "Continue to lobby",
+  "groupPlanShareScreenTitle": "Invite your friend",
+  "groupPlanJoinScanQr": "Scan QR code",
+  "groupPlanJoinEnterInstead": "Enter code instead",
+  "groupPlanJoinScanInstead": "Scan QR code instead",
+  "groupPlanScanTitle": "Scan QR code",
+  "groupPlanCreateError": "Could not create session: {error}",
+  "@groupPlanCreateError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanLobbyTitle": "Group plan",
+  "groupPlanLobbyShareCode": "Share this code",
+  "groupPlanLobbyMoodsProgress": "{locked} / {total} moods locked in",
+  "@groupPlanLobbyMoodsProgress": {
+    "placeholders": {
+      "locked": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "groupPlanLobbyWaitingFriend": "Waiting for your friend to join…",
+  "groupPlanLobbyWhosIn": "Who’s in",
+  "groupPlanLobbyMoodLine": "Mood: {mood}",
+  "@groupPlanLobbyMoodLine": {
+    "placeholders": {
+      "mood": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanLobbyStillChoosing": "Still choosing…",
+  "groupPlanLobbyYourMood": "Your mood today",
+  "groupPlanLobbyLockMood": "Lock in my mood",
+  "groupPlanLobbyBuilding": "Moody is building your shared plan…",
+  "groupPlanLobbyPlanFailed": "Plan generation failed. Pull to refresh or try again in a moment.",
+  "groupPlanLobbyPickMoodSnack": "Pick a mood first.",
+  "groupPlanLobbySubmitError": "Something went wrong: {error}",
+  "@groupPlanLobbySubmitError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanMoodAdventurous": "Adventurous",
+  "groupPlanMoodRelaxed": "Relaxed",
+  "groupPlanMoodSocial": "Social",
+  "groupPlanMoodCultural": "Cultural",
+  "groupPlanMoodRomantic": "Romantic",
+  "groupPlanMoodEnergetic": "Energetic",
+  "groupPlanMoodFoody": "Foody",
+  "groupPlanMoodCreative": "Creative",
+  "groupPlanResultTitle": "Your shared plan",
+  "groupPlanResultNoPlan": "No plan found yet.",
+  "groupPlanResultBackToApp": "Back to app",
+  "groupPlanResultMoodsLine": "Moods: {moods}",
+  "@groupPlanResultMoodsLine": {
+    "placeholders": {
+      "moods": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanResultIdeasTitle": "Ideas for today",
+  "groupPlanResultAddHint": "Adds use the date selected on My Day (defaults to today). Open My Day first if you want another day.",
+  "groupPlanResultAddToMyDay": "Add to My Day",
+  "groupPlanResultAdded": "Added",
+  "groupPlanResultFooter": "Each person adds stops to their own My Day. Same plan, two calendars.",
+  "groupPlanResultAddedToast": "Added \"{name}\" to My Day",
+  "@groupPlanResultAddedToast": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanResultDuplicateToast": "Could not add (duplicate or same time slot). Try another idea.",
+  "groupPlanResultAddFailedToast": "Add failed: {error}",
+  "@groupPlanResultAddFailedToast": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanResultViewMyDay": "View",
+  "groupPlanInviteOpenLink": "Open in the app: {url}",
+  "@groupPlanInviteOpenLink": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanHubHeroTitle": "Plan with friends",
+  "groupPlanHubHeroSubtitle": "Two moods, one shared day. Moody figures out what works for both.",
+  "groupPlanHubStartCardTitle": "Start a group plan",
+  "groupPlanHubStartCardSub": "Get a code to share with your friend",
+  "groupPlanHubJoinCardTitle": "Join a plan",
+  "groupPlanHubJoinCardSub": "Enter a code from your friend",
+  "groupPlanHowItWorksTitle": "How it works",
+  "groupPlanHowItWorksBody": "You each pick your mood independently. I'll blend them into one plan you both love.",
+  "groupPlanCreateHeaderSubtitle": "You + a friend",
+  "groupPlanCreateHeaderCaption": "Pick your moods separately, get one shared plan",
+  "groupPlanSessionNameLabel": "Session name (optional)",
+  "groupPlanSessionNamePlaceholder": "e.g. Weekend in Amsterdam",
+  "groupPlanCreateCta": "Create & share link",
+  "groupPlanCreateShareHint": "Next you will see a QR code to show in person, or you can share a link by message.",
+  "groupPlanLobbyTitleWaitingFriend": "Waiting for your friend…",
+  "groupPlanLobbyTitleWaitingName": "Waiting for {name}…",
+  "@groupPlanLobbyTitleWaitingName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanLobbyTitleEveryoneReady": "Everyone's ready!",
+  "groupPlanLobbyShareCodeUpper": "Share this code",
+  "groupPlanLobbyShareLinkCta": "Share link",
+  "groupPlanLobbyStatusLocked": "Locked",
+  "groupPlanLobbyStatusWaiting": "Waiting",
+  "groupPlanMoodSectionUppercase": "Your mood today",
+  "groupPlanLobbyLockCta": "Lock in my mood",
+  "groupPlanLobbyWaitingLockIn": "Waiting for {name} to lock in…",
+  "@groupPlanLobbyWaitingLockIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanLobbyGenerateCta": "Generate our plan",
+  "groupPlanLobbyLockingIn": "🔒 Locking in…",
+  "groupPlanLobbyWaitingFriendJoin": "Waiting for your friend to join…",
+  "groupPlanResultBlendKicker": "Moody blended your moods ✨",
+  "groupPlanResultIdeasTitleEmoji": "Ideas for today 💡",
+  "groupPlanResultLoadingMoody": "Moody is building your plan… ✨",
+  "groupPlanResultFooterPhones": "Each of you adds what you want to your own My Day — two phones, same plan 📱📱",
+  "groupPlanResultMoodChipYou": "{emoji} {mood} (you)",
+  "@groupPlanResultMoodChipYou": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      },
+      "mood": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanResultMoodChipName": "{emoji} {mood} ({name})",
+  "@groupPlanResultMoodChipName": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      },
+      "mood": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanYouShort": "You",
+  "groupPlanMoodCozy": "Cozy",
+  "groupPlanMoodSurprise": "Surprise",
+  "moodMatchTitle": "Mood Match",
+  "moodMatchTagline": "Two moods. One perfect day.",
+  "moodMatchTaglineHub": "Two moods. One perfect day. Built for both of you.",
+  "moodMatchStartBtn": "Start a Mood Match",
+  "moodMatchStartBtnSub": "Invite someone, pick moods, get a shared plan",
+  "moodMatchJoinBtn": "Join a Mood Match",
+  "moodMatchJoinBtnSub": "Enter a code or scan QR",
+  "moodMatchHubMoodyIntroFriendly": "Okaaay, planning with someone else?\nThis is my favourite thing to do 😏",
+  "moodMatchHubMoodyIntroProfessional": "Mood Match aligns two private mood picks into one shared day plan—clear, fair, and built for both of you.",
+  "moodMatchHubMoodyIntroEnergetic": "Planning a day together?! I’m SO here for this—let’s make it unforgettable.",
+  "moodMatchHubMoodyIntroDirect": "You each pick a mood on your own phone. I'll turn that into one shared plan. Start or join when you’re ready.",
+  "moodMatchHubMoodyIntroWaitingFriendly": "You’re already in a Mood Match—your friend still needs to join. Open the plan to jump back in, or send a gentle nudge.",
+  "moodMatchHubMoodyIntroWaitingProfessional": "You have an active Mood Match awaiting the other guest. Use Open plan to return to the lobby, or share a reminder.",
+  "moodMatchHubMoodyIntroWaitingEnergetic": "We’re this close—your friend still has to hop in! Open the plan to keep the vibe going, or nudge them (they’ll love it).",
+  "moodMatchHubMoodyIntroWaitingDirect": "Session in progress; friend not in yet. Open plan to continue or nudge.",
+  "moodMatchHubPendingTitle": "Continue your plan 👀",
+  "moodMatchHubPendingStory": "We just need your friend.",
+  "moodMatchHubPendingCodeSmall": "Code {code}",
+  "@moodMatchHubPendingCodeSmall": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubPendingCode": "Code: {code}",
+  "@moodMatchHubPendingCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubPendingWaiting": "Waiting for your friend to join…",
+  "moodMatchHubPendingBuilding": "I'm building your shared plan…",
+  "moodMatchHubCancelSession": "Cancel",
+  "moodMatchHubReadyTitle": "Your Mood Match is ready!",
+  "moodMatchHubReadySubtitle": "I've built your shared plan",
+  "moodMatchHubSeePlanCta": "See the plan",
+  "moodMatchHubUntitledSession": "Mood Match",
+  "moodMatchCreateAlreadyWaiting": "You already have a session waiting. Open it from the hub.",
+  "moodMatchHubCancelError": "Could not cancel: {error}",
+  "@moodMatchHubCancelError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchNewFeatureBadge": "New feature",
+  "moodMatchGoodMorning": "Good morning, {name}",
+  "@moodMatchGoodMorning": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHowItWorksOneLiner": "You each pick your mood privately; I'll blend them into one plan you both love.",
+  "moodMatchStepYourMood": "Step 1 of 2 · Your mood",
+  "moodMatchFeelQuestion": "How are you feeling this morning?",
+  "moodMatchPrivateHint": "{name} won't see this until you both lock in",
+  "@moodMatchPrivateHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchMoodyPickQuoteFriendly": "Pick whatever's real. I'll make it work for both of you.",
+  "moodMatchMoodyPickQuoteProfessional": "Choose the mood that best reflects you today. I will reconcile both selections into one coherent plan.",
+  "moodMatchMoodyPickQuoteEnergetic": "Go with your gut—bold, soft, whatever! I’ll turn both picks into something you’ll both love.",
+  "moodMatchMoodyPickQuoteDirect": "Select your mood. Your friend won’t see it until you both lock in.",
+  "moodMatchSelectMoodButton": "Select your mood",
+  "moodMatchLockBtn": "Lock in {mood}",
+  "@moodMatchLockBtn": {
+    "placeholders": {
+      "mood": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyEveryoneReadyTitle": "Everyone's ready! 🎉",
+  "moodMatchLobbyEveryoneReadySubtitle": "Moody is blending your vibes…",
+  "moodMatchLobbyWaitingSubtitle": "Hang tight — your match is almost ready.",
+  "moodMatchLobbyBuildingSubtitle": "Finding places that fit both of you…",
+  "moodMatchLobbyCommentaryWaiting": "Waiting for {name} to figure out their vibe… 👀",
+  "@moodMatchLobbyCommentaryWaiting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyCommentaryFriendLocked": "{name} locked in! I'm ready whenever you are 🎯",
+  "@moodMatchLobbyCommentaryFriendLocked": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyCommentaryBothLocked": "Got both vibes. Building your match…",
+  "moodMatchWhileYouWaitHint": "Moody will reveal your compatibility score when {name} locks in",
+  "@moodMatchWhileYouWaitHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchRevealScore": "Vibe match today",
+  "moodMatchRevealCta": "See our plan",
+  "moodMatchRevealCopyHighFriendly": "You're basically the same person today 😌 \nThis plan built itself.",
+  "moodMatchRevealCopyHighProfessional": "Your mood inputs align closely. The shared itinerary follows logically from both selections.",
+  "moodMatchRevealCopyHighEnergetic": "Twin vibe energy today! 🔥 This plan basically assembled itself—you're going to love it.",
+  "moodMatchRevealCopyHighDirect": "Very similar moods. The plan reflects both of you with minimal compromise.",
+  "moodMatchRevealCopyGoodFriendly": "Different vibes, but I made it work. \nTrust me on this one.",
+  "moodMatchRevealCopyGoodProfessional": "You chose different moods; I balanced both in one practical shared itinerary.",
+  "moodMatchRevealCopyGoodEnergetic": "Different moods? I turned that into a win—this lineup still feels exciting for both of you!",
+  "moodMatchRevealCopyGoodDirect": "Moods differed; the itinerary bridges both. Review the stops together.",
+  "moodMatchRevealCopyCreativeFriendly": "Okay this was a challenge. But I actually love \nwhat I found. You will too.",
+  "moodMatchRevealCopyCreativeProfessional": "Your moods diverged more than usual; I prioritized overlap you can both enjoy today.",
+  "moodMatchRevealCopyCreativeEnergetic": "Spicy combo on paper—but I found gems that still feel fun together. Let's go!",
+  "moodMatchRevealCopyCreativeDirect": "Low overlap between moods. The plan emphasizes neutral, crowd-pleasing picks.",
+  "moodMatchScoreLabelPerfect": "Perfect match ✨",
+  "moodMatchScoreLabelGreat": "Great combo",
+  "moodMatchScoreLabelGoodBalance": "Good balance",
+  "moodMatchScoreLabelInteresting": "Interesting mix",
+  "moodMatchScoreLabelCreative": "Moody got creative",
+  "moodMatchRevealMoodyFallback": "Your {moodA} and {moodB} sides are a surprisingly good team — I'm into it.",
+  "@moodMatchRevealMoodyFallback": {
+    "placeholders": {
+      "moodA": {
+        "type": "String"
+      },
+      "moodB": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchResultCompatLine": "{percent}% match · {label}",
+  "@moodMatchResultCompatLine": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchResultCompatGreat": "Great combo ✓",
+  "moodMatchResultFooterStrip": "You each add what you want to your own My Day",
+  "moodMatchLobbyChoosingBadge": "Choosing",
+  "moodMatchLobbyReadyBadge": "Ready",
+  "moodMatchSeePlanShareA11y": "Share",
+  "moodMatchMoodTileSublabel": "Tap to choose",
+  "moodMatchBlendChip": "{emoji} {label}",
+  "@moodMatchBlendChip": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchWithFriendMenu": "Mood Match",
+  "moodMatchInviteShare": "Join my Mood Match on WanderMood! Code: {code}",
+  "@moodMatchInviteShare": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchShareMoodyPrompt": "Nice—your match probably has WanderMood already 💚 Tap Invite on WanderMood first and I will help you find them 👀 Link & QR are tucked below if you need them 📎✨",
+  "moodMatchShareFriendCodeIntro": "Your match only needs this code if they open WanderMood without the link—it is for their phone, not yours.",
+  "moodMatchShareLinkQrFoldTitle": "Need a link or QR instead?",
+  "moodMatchShareLinkQrFoldSubtitle": "For other chats, or if they are not on WanderMood yet.",
+  "moodMatchShareBottomHint": "Tip: notifications can alert you when they join. You can go to the lobby anytime.",
+  "moodMatchPartnerJoinedNotifTitle": "{name} joined",
+  "@moodMatchPartnerJoinedNotifTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchPartnerJoinedNotifBody": "Open your Mood Match lobby to keep going.",
+  "moodMatchPartnerJoinedNotifNameFallback": "Someone",
+  "moodMatchInviteWanderMoodCta": "Invite on WanderMood",
+  "moodMatchInviteTitle": "Invite a WanderMood friend",
+  "moodMatchInviteSubtitle": "Send your join link first — it works in any chat. Search a username here to nudge someone already on WanderMood (optional).",
+  "moodMatchInviteJoinLinkCardTitle": "Your join link",
+  "moodMatchInviteJoinLinkCardSubtitle": "Copy this https link and send it. It stays reliable if an in-app ping can’t be delivered.",
+  "moodMatchInviteCopyLinkAction": "Copy link",
+  "moodMatchInviteLinkCopied": "Join link copied",
+  "moodMatchInviteSearchHint": "Username",
+  "moodMatchInviteSearchEmpty": "Type at least 2 characters",
+  "moodMatchInviteNoResults": "No profiles match that search",
+  "moodMatchInviteButton": "Invite",
+  "moodMatchInviteSent": "In-app invite sent",
+  "moodMatchInviteFailed": "Couldn’t send the in-app invite (server). Copy your join link and send it in any chat—that always works.",
+  "moodMatchInviteNotDeliveredInApp": "No in-app ping delivered — they may have in-app notifications off. Send your join link instead.",
+  "moodMatchInviteNotifTitle": "Mood Match invite",
+  "moodMatchInviteNotifMessage": "{inviter} invited you to Mood Match.\nCode: {code}\n{link}",
+  "@moodMatchInviteNotifMessage": {
+    "placeholders": {
+      "inviter": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      },
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchShareShareLink": "Share link",
+  "moodMatchShareCopyLink": "Copy link",
+  "moodMatchShareWhatsApp": "WhatsApp",
+  "moodMatchShareCopiedToast": "Link copied",
+  "moodMatchFriendThey": "your friend",
+  "moodMatchHubOpenPlan": "Open plan",
+  "moodMatchHubNudgeFriend": "Nudge friend",
+  "moodMatchLobbyWaitTease0": "Waiting on {name}… no pressure 👀",
+  "@moodMatchLobbyWaitTease0": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyWaitTease1": "Still nothing from {name}… typical 😭",
+  "@moodMatchLobbyWaitTease1": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyWaitTease2": "I have a whole plan ready. Just saying. 🌀",
+  "moodMatchLobbyWaitTease3": "{name} is taking their time… worth it though, trust me",
+  "@moodMatchLobbyWaitTease3": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyFriendJoinedLine": "{name} just joined! 🎯 Now pick your mood.",
+  "@moodMatchLobbyFriendJoinedLine": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyBothLockedHold": "Got both vibes. Give me a second… 🤔"
 }

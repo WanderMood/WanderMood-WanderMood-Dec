@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/config/supabase_config.dart';
 
 /// Service that enforces privacy settings (profile visibility)
 class PrivacyService {
-  final SupabaseConfig _supabase = SupabaseConfig.client;
+  final SupabaseClient _supabase = SupabaseConfig.client;
 
   /// Check if a user's profile is visible to the current user
   /// Returns true if:

@@ -27,6 +27,7 @@ class MoodyIdleScreen extends StatefulWidget {
   const MoodyIdleScreen({
     super.key,
     required this.idleState,
+    required this.wakeMessage,
     this.afternoonInterestCategory,
     this.userPreferences,
     this.topInterest,
@@ -34,6 +35,9 @@ class MoodyIdleScreen extends StatefulWidget {
   });
 
   final MoodyIdleState idleState;
+
+  /// Shown after the wake animation — must align with [onComplete] (plan vs mood).
+  final String wakeMessage;
 
   /// Drives afternoon floating props per spec (outdoor / food / culture / social).
   final String? afternoonInterestCategory;
@@ -101,7 +105,7 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
     )..repeat(reverse: true);
     _fetchIdleLine();
 
-    _copy = _IdleCopy.forState(widget.idleState);
+    _copy = _IdleCopy.forState(widget.idleState, wakeMessage: widget.wakeMessage);
     _visuals = _IdleVisuals.forState(
       widget.idleState,
       afternoonEmoji: MoodyIdleScreen.afternoonPropForInterest(
@@ -202,12 +206,15 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
     await Future<void>.delayed(const Duration(milliseconds: 2500));
     if (!mounted) return;
 
+    // Prefer handing off (pop) while this route is still opaque. Fading to 0
+    // *before* pop matched the splash issue: a blank frame on some iOS builds.
+    if (widget.onComplete != null) {
+      widget.onComplete!();
+      return;
+    }
     await _exitFadeController.forward();
     if (!mounted) return;
-    widget.onComplete?.call();
-    if (widget.onComplete == null && mounted) {
-      Navigator.of(context).maybePop();
-    }
+    Navigator.of(context).maybePop();
   }
 
   Widget _buildIdleMoodyBody() {
@@ -369,6 +376,7 @@ class MoodySleepScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MoodyIdleScreen(
       idleState: MoodyIdleState.sleeping,
+      wakeMessage: 'Welcome back!',
       onComplete: onComplete,
     );
   }
@@ -393,58 +401,57 @@ class _IdleCopy {
   final String awakeMoodLabel;
   final double awakeMouthScale;
 
-  static _IdleCopy forState(MoodyIdleState s) {
+  static _IdleCopy forState(MoodyIdleState s, {required String wakeMessage}) {
     switch (s) {
       case MoodyIdleState.sleeping:
-        return const _IdleCopy(
+        return _IdleCopy(
           fallbackMessage: 'Sshhh... Moody was aan het slapen 😴',
-          wakeMessage: 'Oh! Ben je er al? Laten we je dag plannen ☀️',
+          wakeMessage: wakeMessage,
           preWakeMoodLabel: 'sleeping',
           preWakeMouthScale: 1.0,
           awakeMoodLabel: 'idle',
           awakeMouthScale: 1.0,
         );
       case MoodyIdleState.morning:
-        return const _IdleCopy(
+        return _IdleCopy(
           fallbackMessage: 'Moody was een koffietje aan het doen ☕',
-          wakeMessage: 'Goedemorgen! Wat staat er vandaag op het programma?',
+          wakeMessage: wakeMessage,
           preWakeMoodLabel: 'idle',
           preWakeMouthScale: 1.0,
           awakeMoodLabel: 'idle',
           awakeMouthScale: 1.0,
         );
       case MoodyIdleState.lunch:
-        return const _IdleCopy(
+        return _IdleCopy(
           fallbackMessage: 'Moody was even aan het lunchen 🍽',
-          wakeMessage: 'Lekker gegeten! Wat gaan we vanmiddag doen?',
+          wakeMessage: wakeMessage,
           preWakeMoodLabel: 'idle',
           preWakeMouthScale: 1.0,
           awakeMoodLabel: 'idle',
           awakeMouthScale: 1.0,
         );
       case MoodyIdleState.afternoon:
-        return const _IdleCopy(
+        return _IdleCopy(
           fallbackMessage: 'Moody was even bezig, maar is er weer voor je ✨',
-          wakeMessage: 'Goed dat je er bent! Hoe loopt je dag?',
+          wakeMessage: wakeMessage,
           preWakeMoodLabel: 'idle',
           preWakeMouthScale: 1.15,
           awakeMoodLabel: 'idle',
           awakeMouthScale: 1.0,
         );
       case MoodyIdleState.evening:
-        return const _IdleCopy(
+        return _IdleCopy(
           fallbackMessage: 'Moody was even aan het ontspannen 🌙',
-          wakeMessage: 'Goedenavond! Hoe was je dag tot nu toe?',
+          wakeMessage: wakeMessage,
           preWakeMoodLabel: 'idle',
           preWakeMouthScale: 1.0,
           awakeMoodLabel: 'idle',
           awakeMouthScale: 1.0,
         );
       case MoodyIdleState.lateNight:
-        return const _IdleCopy(
+        return _IdleCopy(
           fallbackMessage: 'Het wordt laat... Moody was bijna aan het slapen ⭐',
-          wakeMessage:
-              'Nog even laat actief? Laten we kijken wat er nog mogelijk is.',
+          wakeMessage: wakeMessage,
           preWakeMoodLabel: 'idle',
           preWakeMouthScale: 1.0,
           awakeMoodLabel: 'idle',

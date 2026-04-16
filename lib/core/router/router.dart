@@ -51,6 +51,15 @@ import '../../features/home/presentation/screens/main_screen.dart';
 import '../../features/home/presentation/screens/agenda_screen.dart';
 import '../../features/home/presentation/screens/view_receipt_screen.dart';
 import '../../features/gamification/presentation/screens/gamification_screen.dart';
+import '../../features/group_planning/presentation/group_planning_hub_screen.dart';
+import '../../features/group_planning/presentation/group_planning_create_screen.dart';
+import '../../features/group_planning/presentation/group_planning_join_screen.dart';
+import '../../features/group_planning/presentation/group_planning_lobby_screen.dart';
+import '../../features/group_planning/presentation/group_planning_page_transitions.dart';
+import '../../features/group_planning/presentation/group_planning_result_screen.dart';
+import '../../features/group_planning/presentation/group_planning_reveal_screen.dart';
+import '../../features/group_planning/presentation/group_planning_scan_screen.dart';
+import '../../features/group_planning/presentation/group_planning_invite_wanderer_screen.dart';
 import '../../features/social/presentation/screens/create_post_screen.dart';
 import '../../features/social/presentation/screens/create_story_screen.dart';
 import '../../features/social/presentation/screens/post_detail_screen.dart';
@@ -62,7 +71,6 @@ import '../../features/social/presentation/screens/edit_social_profile_screen.da
 // Note: social/user_profile_screen.dart removed — all social profile routes use UnifiedProfileScreen
 import '../../features/auth/providers/auth_state_provider.dart';
 import '../../features/auth/presentation/screens/magic_link_signup_screen.dart';
-import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/auth_welcome_screen.dart';
 import '../providers/preferences_provider.dart';
 import '../providers/feature_flags_provider.dart';
@@ -311,16 +319,7 @@ GoRouter router(RouterRef ref) {
         name: 'magic-link',
         builder: (context, state) => const MagicLinkSignupScreen(),
       ),
-      GoRoute(
-        path: '/dev/login',
-        name: 'dev-login',
-        redirect: (context, state) {
-          if (!kDebugMode) return '/auth/magic-link';
-          return null;
-        },
-        builder: (context, state) => const LoginScreen(),
-      ),
-
+      
       // Full Onboarding Flow (Authentication Required)
       GoRoute(
         path: '/preferences/communication',
@@ -619,6 +618,111 @@ GoRouter router(RouterRef ref) {
         builder: (context, state) => const GamificationScreen(),
       ),
       GoRoute(
+        path: '/group-planning',
+        name: 'group-planning',
+        pageBuilder: (context, state) => moodMatchTransitionPage<void>(
+          key: state.pageKey,
+          child: const GroupPlanningHubScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/group-planning/create',
+        name: 'group-planning-create',
+        pageBuilder: (context, state) => moodMatchTransitionPage<void>(
+          key: state.pageKey,
+          child: const GroupPlanningCreateScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/group-planning/lobby/:sessionId',
+        name: 'group-planning-lobby',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['sessionId']!;
+          final extra = state.extra;
+          final joinCode = extra is Map<String, dynamic>
+              ? extra['joinCode'] as String?
+              : null;
+          final autoShowInvite = extra is Map<String, dynamic>
+              ? extra['autoShowInvite'] as bool? ?? false
+              : false;
+          return moodMatchTransitionPage<void>(
+            key: state.pageKey,
+            child: GroupPlanningLobbyScreen(
+              sessionId: id,
+              joinCode: joinCode,
+              autoShowInvite: autoShowInvite,
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/group-planning/invite-wm/:sessionId',
+        name: 'group-planning-invite-wm',
+        redirect: (context, state) {
+          final extra = state.extra;
+          final joinCode = extra is Map<String, dynamic>
+              ? extra['joinCode'] as String?
+              : null;
+          if (joinCode == null || joinCode.trim().isEmpty) {
+            return '/group-planning';
+          }
+          return null;
+        },
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['sessionId']!;
+          final joinCode =
+              (state.extra as Map<String, dynamic>)['joinCode'] as String;
+          return moodMatchTransitionPage<void>(
+            key: state.pageKey,
+            child: GroupPlanningInviteWandererScreen(
+              sessionId: id,
+              joinCode: joinCode.trim(),
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/group-planning/scan',
+        name: 'group-planning-scan',
+        pageBuilder: (context, state) => moodMatchTransitionPage<void>(
+          key: state.pageKey,
+          child: const GroupPlanningScanScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/group-planning/join',
+        name: 'group-planning-join',
+        pageBuilder: (context, state) {
+          final code = state.uri.queryParameters['code'];
+          return moodMatchTransitionPage<void>(
+            key: state.pageKey,
+            child: GroupPlanningJoinScreen(initialCode: code),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/group-planning/reveal/:sessionId',
+        name: 'group-planning-reveal',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['sessionId']!;
+          return moodMatchTransitionPage<void>(
+            key: state.pageKey,
+            child: GroupPlanningRevealScreen(sessionId: id),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/group-planning/result/:sessionId',
+        name: 'group-planning-result',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['sessionId']!;
+          return moodMatchTransitionPage<void>(
+            key: state.pageKey,
+            child: GroupPlanningResultScreen(sessionId: id),
+          );
+        },
+      ),
+      GoRoute(
         path: '/main',
         name: 'main',
         builder: (context, state) {
@@ -885,8 +989,7 @@ GoRouter router(RouterRef ref) {
       final isAuthPage = currentLocation == '/register' ||
                         currentLocation == '/auth/signup' ||
                         currentLocation == '/auth/verify-email' ||
-                        currentLocation == '/auth/magic-link' ||
-                        (kDebugMode && currentLocation == '/dev/login');
+                        currentLocation == '/auth/magic-link';
       
       final useNewFlow = ref.read(useNewOnboardingFlowProvider);
       
@@ -898,7 +1001,9 @@ GoRouter router(RouterRef ref) {
                                   currentLocation == '/guest-day-plan' ||
                                   currentLocation == '/auth/magic-link';
       
-      final isSplashPage = currentLocation == '/';
+      // Treat root reliably if matchedLocation and uri.path disagree (edge cases).
+      final uriPath = state.uri.path.isEmpty ? '/' : state.uri.path;
+      final isSplashPage = currentLocation == '/' || uriPath == '/';
       
       final isMainAppPage = currentLocation == '/home' || 
                            currentLocation == '/main' ||
@@ -908,7 +1013,8 @@ GoRouter router(RouterRef ref) {
                            currentLocation.startsWith('/profile') ||
                            currentLocation.startsWith('/settings') ||
                            currentLocation.startsWith('/place') ||
-                           currentLocation.startsWith('/social');
+                           currentLocation.startsWith('/social') ||
+                           currentLocation.startsWith('/group-planning');
       
       // Always allow splash screen
       if (isSplashPage) {

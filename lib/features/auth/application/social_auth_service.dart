@@ -1,4 +1,3 @@
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -54,46 +53,6 @@ class SocialAuthService {
         throw Exception('Sign-in cancelled by user.');
       } else {
         throw Exception('Google Sign-In failed: ${e.toString()}');
-      }
-    }
-  }
-
-  Future<AuthResponse?> signInWithFacebook() async {
-    try {
-      print('🔍 Facebook Sign-In: Starting sign-in process...');
-      final result = await FacebookAuth.instance.login();
-      
-      if (result.status != LoginStatus.success) {
-        print('❌ Facebook Sign-In: ${result.status} - ${result.message}');
-        if (result.status == LoginStatus.cancelled) {
-          throw Exception('Facebook sign-in cancelled by user.');
-        }
-        return null;
-      }
-
-      final accessToken = result.accessToken?.toJson()['token'] as String?;
-      if (accessToken == null) {
-        print('❌ Facebook Sign-In: No access token received');
-        return null;
-      }
-
-      print('🔐 Facebook Sign-In: Authenticating with Supabase...');
-      final response = await _supabase.auth.signInWithIdToken(
-        provider: OAuthProvider.facebook,
-        idToken: accessToken,
-      );
-
-      print('✅ Facebook Sign-In: Successfully authenticated with Supabase');
-      return response;
-    } catch (e) {
-      print('❌ Facebook Sign-In Error: $e');
-      if (e.toString().contains('not configured') || 
-          e.toString().contains('Invalid key hash')) {
-        throw Exception('Facebook Sign-In not configured. Please add Facebook App ID to your iOS project.');
-      } else if (e.toString().contains('network_error')) {
-        throw Exception('Network error. Please check your internet connection.');
-      } else {
-        throw Exception('Facebook Sign-In failed: ${e.toString()}');
       }
     }
   }

@@ -347,6 +347,18 @@ class DynamicGroupingService {
       return {};
     }
   }
+
+  static Map<String, dynamic> _activityPrefs(Map<String, dynamic> userPreferences) {
+    final raw = userPreferences['activity_preferences'];
+    if (raw is Map<String, dynamic>) return raw;
+    if (raw is Map) return Map<String, dynamic>.from(raw);
+    return <String, dynamic>{};
+  }
+
+  static List<String> _stringList(dynamic v) {
+    if (v is List) return v.map((e) => e.toString()).toList();
+    return const <String>[];
+  }
   
   /// Apply user preference boost to scores
   static Map<String, double> _applyUserPreferenceBoost(
@@ -357,7 +369,8 @@ class DynamicGroupingService {
     final boostedScores = Map<String, double>.from(scores);
     
     // Boost based on preferred activity types
-    final preferredActivities = userPreferences['preferred_activities'] as List<dynamic>? ?? [];
+    final prefs = _activityPrefs(userPreferences);
+    final preferredActivities = _stringList(prefs['preferred_activities']);
     for (final activity in preferredActivities) {
       if (place.activities.any((a) => a.toLowerCase().contains(activity.toString().toLowerCase()))) {
         boostedScores.updateAll((key, value) => value + 0.2);
@@ -365,7 +378,7 @@ class DynamicGroupingService {
     }
     
     // Boost based on preferred venue types
-    final preferredVenues = userPreferences['preferred_venues'] as List<dynamic>? ?? [];
+    final preferredVenues = _stringList(prefs['preferred_venues']);
     for (final venue in preferredVenues) {
       if (place.name.toLowerCase().contains(venue.toString().toLowerCase()) ||
           (place.description ?? '').toLowerCase().contains(venue.toString().toLowerCase())) {
@@ -378,15 +391,16 @@ class DynamicGroupingService {
   
   static double _getUserPreferenceBonus(Place place, Map<String, dynamic> userPreferences) {
     double bonus = 0.0;
+    final prefs = _activityPrefs(userPreferences);
     
     // Check visit history
-    final visitedPlaces = userPreferences['visited_places'] as List<dynamic>? ?? [];
+    final visitedPlaces = _stringList(prefs['visited_places']);
     if (visitedPlaces.contains(place.id)) {
       bonus += 0.1; // Small boost for previously visited places
     }
     
     // Check saved places
-    final savedPlaces = userPreferences['saved_places'] as List<dynamic>? ?? [];
+    final savedPlaces = _stringList(prefs['saved_places']);
     if (savedPlaces.contains(place.id)) {
       bonus += 0.3; // Bigger boost for saved places
     }
@@ -428,10 +442,12 @@ class DynamicGroupingService {
     try {
       await _supabase.from('user_preferences').insert({
         'user_id': userId,
-        'preferred_activities': <String>[],
-        'preferred_venues': <String>[],
-        'visited_places': <String>[],
-        'saved_places': <String>[],
+        'activity_preferences': <String, dynamic>{
+          'preferred_activities': <String>[],
+          'preferred_venues': <String>[],
+          'visited_places': <String>[],
+          'saved_places': <String>[],
+        },
         'created_at': DateTime.now().toIso8601String(),
       });
     } catch (e) {
@@ -448,31 +464,32 @@ class DynamicGroupingService {
   }) async {
     try {
       final updates = <String, dynamic>{};
+      final current = await _getUserPreferences(userId);
+      final prefs = Map<String, dynamic>.from(_activityPrefs(current));
       
       if (visitedPlaceId != null) {
         // Add to visited places
-        final current = await _getUserPreferences(userId);
-        final visited = List<String>.from(current['visited_places'] ?? []);
+        final visited = _stringList(prefs['visited_places']).toList();
         if (!visited.contains(visitedPlaceId)) {
           visited.add(visitedPlaceId);
-          updates['visited_places'] = visited;
+          prefs['visited_places'] = visited;
         }
       }
       
       if (savedPlaceId != null) {
         // Add to saved places
-        final current = await _getUserPreferences(userId);
-        final saved = List<String>.from(current['saved_places'] ?? []);
+        final saved = _stringList(prefs['saved_places']).toList();
         if (!saved.contains(savedPlaceId)) {
           saved.add(savedPlaceId);
-          updates['saved_places'] = saved;
+          prefs['saved_places'] = saved;
         }
       }
       
       if (preferredActivities != null) {
-        updates['preferred_activities'] = preferredActivities;
+        prefs['preferred_activities'] = preferredActivities;
       }
       
+      updates['activity_preferences'] = prefs;
       if (updates.isNotEmpty) {
         await _supabase
           .from('user_preferences')

@@ -62,7 +62,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get splashTagline => 'Je reisgezel op basis van je mood';
 
   @override
-  String get splashPlanYourDayByFeeling => 'Plan je dag op je gevoel';
+  String get splashPlanYourDayByFeeling => 'Plan je dag op basis van je gevoel';
 
   @override
   String get welcome => 'Welkom';
@@ -1663,7 +1663,18 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileEditNameLabel => 'Volledige naam';
 
   @override
-  String get profileEditUsernameLabel => 'Gebruikersnaam';
+  String get profileEditUsernameLabel => 'Gebruikersnaam *';
+
+  @override
+  String get profileEditUsernameRequiredError => 'Gebruikersnaam is verplicht.';
+
+  @override
+  String get profileEditUsernameFormatError =>
+      'Gebruik 3–30 tekens: alleen letters, cijfers of liggende streepjes.';
+
+  @override
+  String get profileEditUsernameTakenError =>
+      'Die gebruikersnaam is al bezet. Kies een andere.';
 
   @override
   String get profileEditEmailLabel => 'E-mail';
@@ -3655,6 +3666,16 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get moodHubBannerNight =>
       'Late avond — laten we iets passends vinden.';
+
+  @override
+  String get moodyIdleWakeOpenPlan => 'Laten we je plan van vandaag openen.';
+
+  @override
+  String get moodyIdleWakeChooseMood =>
+      'Wat doen we vandaag? Kies je mood en we bouwen de dag.';
+
+  @override
+  String get moodyHubNewConversation => 'Nieuw gesprek';
 
   @override
   String get moodHubCreatePlan => 'Maak je perfecte plan! 🎯';
@@ -10056,4 +10077,780 @@ class AppLocalizationsNl extends AppLocalizations {
   String agendaDurationShort(String minutes) {
     return '$minutes min';
   }
+
+  @override
+  String get groupPlanWithFriendMenu => 'Samen plannen';
+
+  @override
+  String get groupPlanTogetherTitle => 'Samen plannen';
+
+  @override
+  String get groupPlanHubBody =>
+      'Combineer stemmingen met je reisgenoot. Jullie gebruiken allebei je eigen telefoon — deel een korte code of open de link uit een bericht.';
+
+  @override
+  String get groupPlanTileStartTitle => 'Start een sessie';
+
+  @override
+  String get groupPlanTileStartSubtitle =>
+      'Je krijgt een code om naar je match te sturen';
+
+  @override
+  String get groupPlanTileJoinTitle => 'Meedoen met code';
+
+  @override
+  String get groupPlanTileJoinSubtitle => 'Voer de code van je match in';
+
+  @override
+  String get groupPlanCreateTitle => 'Plan met je match';
+
+  @override
+  String get groupPlanCreateBody =>
+      'Maak een gedeelde sessie. Je krijgt een korte code om naar je reisgenoot te sturen — zij voeren die op hun telefoon in.';
+
+  @override
+  String get groupPlanCreateOptionalTitleLabel =>
+      'Optionele titel (bijv. Vandaag in Lissabon)';
+
+  @override
+  String get groupPlanCreateButton => 'Maken & code delen';
+
+  @override
+  String get groupPlanShareSubject => 'WanderMood groepsplan';
+
+  @override
+  String groupPlanInviteShare(String code) {
+    return 'Doe mee met mijn WanderMood-dagplan! Code: $code\n(Open WanderMood → Mood Match → Code invoeren)';
+  }
+
+  @override
+  String get groupPlanJoinTitle => 'Meedoen met een plan';
+
+  @override
+  String get groupPlanJoinBody =>
+      'Scan de QR-code die je hebt gekregen, of voer de code hieronder in.';
+
+  @override
+  String get groupPlanJoinCodeLabel => 'Deelnamecode';
+
+  @override
+  String get groupPlanJoinCodeHint => 'bijv. A1B2C3';
+
+  @override
+  String get groupPlanJoinButton => 'Deelnemen aan sessie';
+
+  @override
+  String get groupPlanJoinSnackEnterCode =>
+      'Voer de code in die je hebt gekregen.';
+
+  @override
+  String groupPlanJoinError(String error) {
+    return 'Kon niet deelnemen: $error';
+  }
+
+  @override
+  String get groupPlanShareQrTitle => 'Laat dit aan je match zien';
+
+  @override
+  String groupPlanShareQrOrCode(String code) {
+    return 'of voer code in: $code';
+  }
+
+  @override
+  String get groupPlanShareViaMessage => 'Delen via bericht';
+
+  @override
+  String get groupPlanShareContinueLobby => 'Verder naar lobby';
+
+  @override
+  String get groupPlanShareScreenTitle => 'Match uitnodigen';
+
+  @override
+  String get groupPlanJoinScanQr => 'QR-code scannen';
+
+  @override
+  String get groupPlanJoinEnterInstead => 'In plaats daarvan code invoeren';
+
+  @override
+  String get groupPlanJoinScanInstead => 'In plaats daarvan QR scannen';
+
+  @override
+  String get groupPlanScanTitle => 'QR-code scannen';
+
+  @override
+  String groupPlanCreateError(String error) {
+    return 'Kon sessie niet maken: $error';
+  }
+
+  @override
+  String get groupPlanLobbyTitle => 'Groepsplan';
+
+  @override
+  String get groupPlanLobbyShareCode => 'Deel deze code';
+
+  @override
+  String groupPlanLobbyMoodsProgress(int locked, int total) {
+    return '$locked / $total stemmingen vastgezet';
+  }
+
+  @override
+  String get groupPlanLobbyWaitingFriend => 'Wachten tot je match meedoet…';
+
+  @override
+  String get groupPlanLobbyWhosIn => 'Wie doet mee';
+
+  @override
+  String groupPlanLobbyMoodLine(String mood) {
+    return 'Stemming: $mood';
+  }
+
+  @override
+  String get groupPlanLobbyStillChoosing => 'Nog aan het kiezen…';
+
+  @override
+  String get groupPlanLobbyYourMood => 'Jouw stemming vandaag';
+
+  @override
+  String get groupPlanLobbyLockMood => 'Stemming vastzetten';
+
+  @override
+  String get groupPlanLobbyBuilding => 'Moody bouwt jullie gedeelde plan…';
+
+  @override
+  String get groupPlanLobbyPlanFailed =>
+      'Plan genereren mislukt. Trek om te vernieuwen of probeer het zo opnieuw.';
+
+  @override
+  String get groupPlanLobbyPickMoodSnack => 'Kies eerst een stemming.';
+
+  @override
+  String groupPlanLobbySubmitError(String error) {
+    return 'Er ging iets mis: $error';
+  }
+
+  @override
+  String get groupPlanMoodAdventurous => 'Avontuurlijk';
+
+  @override
+  String get groupPlanMoodRelaxed => 'Ontspannen';
+
+  @override
+  String get groupPlanMoodSocial => 'Sociaal';
+
+  @override
+  String get groupPlanMoodCultural => 'Cultureel';
+
+  @override
+  String get groupPlanMoodRomantic => 'Romantisch';
+
+  @override
+  String get groupPlanMoodEnergetic => 'Energiek';
+
+  @override
+  String get groupPlanMoodFoody => 'Foodie';
+
+  @override
+  String get groupPlanMoodCreative => 'Creatief';
+
+  @override
+  String get groupPlanResultTitle => 'Jullie gedeelde plan';
+
+  @override
+  String get groupPlanResultNoPlan => 'Nog geen plan gevonden.';
+
+  @override
+  String get groupPlanResultBackToApp => 'Terug naar app';
+
+  @override
+  String groupPlanResultMoodsLine(String moods) {
+    return 'Stemmingen: $moods';
+  }
+
+  @override
+  String get groupPlanResultIdeasTitle => 'Ideeën voor vandaag';
+
+  @override
+  String get groupPlanResultAddHint =>
+      'Toevoegen gebruikt de datum die je op Mijn dag hebt gekozen (standaard vandaag). Open Mijn dag eerst als je een andere dag wilt.';
+
+  @override
+  String get groupPlanResultAddToMyDay => 'Toevoegen aan Mijn dag';
+
+  @override
+  String get groupPlanResultAdded => 'Toegevoegd';
+
+  @override
+  String get groupPlanResultFooter =>
+      'Iedereen voegt stops toe aan de eigen Mijn dag. Hetzelfde plan, twee agenda’s.';
+
+  @override
+  String groupPlanResultAddedToast(String name) {
+    return '\"$name\" toegevoegd aan Mijn dag';
+  }
+
+  @override
+  String get groupPlanResultDuplicateToast =>
+      'Kon niet toevoegen (dubbel of dezelfde tijd). Probeer een ander idee.';
+
+  @override
+  String groupPlanResultAddFailedToast(String error) {
+    return 'Toevoegen mislukt: $error';
+  }
+
+  @override
+  String get groupPlanResultViewMyDay => 'Bekijk';
+
+  @override
+  String groupPlanInviteOpenLink(String url) {
+    return 'Open in de app: $url';
+  }
+
+  @override
+  String get groupPlanHubHeroTitle => 'Plan met vrienden';
+
+  @override
+  String get groupPlanHubHeroSubtitle =>
+      'Twee stemmingen, één gedeelde dag. Moody vindt iets dat voor jullie allebei werkt.';
+
+  @override
+  String get groupPlanHubStartCardTitle => 'Start een groepsplan';
+
+  @override
+  String get groupPlanHubStartCardSub =>
+      'Krijg een code om met je match te delen';
+
+  @override
+  String get groupPlanHubJoinCardTitle => 'Doe mee met een plan';
+
+  @override
+  String get groupPlanHubJoinCardSub => 'Voer de code van je match in';
+
+  @override
+  String get groupPlanHowItWorksTitle => 'Zo werkt het';
+
+  @override
+  String get groupPlanHowItWorksBody =>
+      'Jullie kiezen elk onafhankelijk je stemming. Ik meng ze tot één plan waar jullie allebei blij van worden.';
+
+  @override
+  String get groupPlanCreateHeaderSubtitle => 'Jij + je match';
+
+  @override
+  String get groupPlanCreateHeaderCaption =>
+      'Kies apart jullie stemming, krijg één gedeeld plan';
+
+  @override
+  String get groupPlanSessionNameLabel => 'Sessienaam (optioneel)';
+
+  @override
+  String get groupPlanSessionNamePlaceholder => 'bijv. Weekend in Amsterdam';
+
+  @override
+  String get groupPlanCreateCta => 'Maken & link delen';
+
+  @override
+  String get groupPlanCreateShareHint =>
+      'Daarna zie je een QR-code om te laten zien, of je deelt de link via een bericht.';
+
+  @override
+  String get groupPlanLobbyTitleWaitingFriend => 'Wachten op je match…';
+
+  @override
+  String groupPlanLobbyTitleWaitingName(String name) {
+    return 'Wachten op $name…';
+  }
+
+  @override
+  String get groupPlanLobbyTitleEveryoneReady => 'Iedereen is er klaar voor!';
+
+  @override
+  String get groupPlanLobbyShareCodeUpper => 'Deel deze code';
+
+  @override
+  String get groupPlanLobbyShareLinkCta => 'Link delen';
+
+  @override
+  String get groupPlanLobbyStatusLocked => 'Vast';
+
+  @override
+  String get groupPlanLobbyStatusWaiting => 'Wachten';
+
+  @override
+  String get groupPlanMoodSectionUppercase => 'Jouw stemming vandaag';
+
+  @override
+  String get groupPlanLobbyLockCta => 'Stemming vastzetten';
+
+  @override
+  String groupPlanLobbyWaitingLockIn(String name) {
+    return 'Wachten tot $name vastzet…';
+  }
+
+  @override
+  String get groupPlanLobbyGenerateCta => 'Genereer ons plan';
+
+  @override
+  String get groupPlanLobbyLockingIn => '🔒 Bezig met vastzetten…';
+
+  @override
+  String get groupPlanLobbyWaitingFriendJoin => 'Wachten tot je match meedoet…';
+
+  @override
+  String get groupPlanResultBlendKicker => 'Moody mengde jullie stemmingen ✨';
+
+  @override
+  String get groupPlanResultIdeasTitleEmoji => 'Ideeën voor vandaag 💡';
+
+  @override
+  String get groupPlanResultLoadingMoody => 'Moody bouwt jullie plan… ✨';
+
+  @override
+  String get groupPlanResultFooterPhones =>
+      'Jullie voegen toe wat je wilt aan je eigen Mijn dag — twee telefoons, hetzelfde plan 📱📱';
+
+  @override
+  String groupPlanResultMoodChipYou(String emoji, String mood) {
+    return '$emoji $mood (jij)';
+  }
+
+  @override
+  String groupPlanResultMoodChipName(String emoji, String mood, String name) {
+    return '$emoji $mood ($name)';
+  }
+
+  @override
+  String get groupPlanYouShort => 'Jij';
+
+  @override
+  String get groupPlanMoodCozy => 'Gezellig';
+
+  @override
+  String get groupPlanMoodSurprise => 'Verrassing';
+
+  @override
+  String get moodMatchTitle => 'Mood Match';
+
+  @override
+  String get moodMatchTagline => 'Twee stemmingen. Één perfecte dag.';
+
+  @override
+  String get moodMatchTaglineHub =>
+      'Twee stemmingen. Één perfecte dag. Voor jullie samen.';
+
+  @override
+  String get moodMatchStartBtn => 'Start een Mood Match';
+
+  @override
+  String get moodMatchStartBtnSub =>
+      'Nodig iemand uit, kies stemmingen, krijg één gedeeld plan';
+
+  @override
+  String get moodMatchJoinBtn => 'Doe mee met Mood Match';
+
+  @override
+  String get moodMatchJoinBtnSub => 'Voer een code in of scan een QR';
+
+  @override
+  String get moodMatchHubMoodyIntroFriendly =>
+      'Okaaay, plannen met iemand anders?\nDit is mijn favoriete ding om te doen 😏';
+
+  @override
+  String get moodMatchHubMoodyIntroProfessional =>
+      'Mood Match brengt twee privé stemmingen samen in één gedeeld dagplan—duidelijk en eerlijk voor jullie allebei.';
+
+  @override
+  String get moodMatchHubMoodyIntroEnergetic =>
+      'Samen een dag plannen?! YES—ik sta helemaal klaar om jullie te helpen!';
+
+  @override
+  String get moodMatchHubMoodyIntroDirect =>
+      'Jullie kiezen elk apart een stemming op jullie telefoon. Ik maak daar één gedeeld plan van. Start of doe mee wanneer je wilt.';
+
+  @override
+  String get moodMatchHubMoodyIntroWaitingFriendly =>
+      'Je zit al in een Mood Match—je match moet nog meedoen. Tik op Open plan om terug te gaan, of stuur een vriendelijke herinnering.';
+
+  @override
+  String get moodMatchHubMoodyIntroWaitingProfessional =>
+      'Er is een actieve Mood Match die wacht op de andere deelnemer. Gebruik Open plan om terug te gaan naar de lobby, of deel een herinnering.';
+
+  @override
+  String get moodMatchHubMoodyIntroWaitingEnergetic =>
+      'We zijn er bijna—je match moet nog instappen! Open het plan om door te gaan, of geef ze een nudge.';
+
+  @override
+  String get moodMatchHubMoodyIntroWaitingDirect =>
+      'Sessie actief; je match nog niet binnen. Open plan of nudge.';
+
+  @override
+  String get moodMatchHubPendingTitle => 'Sessie bezig';
+
+  @override
+  String get moodMatchHubPendingStory => 'We wachten nog tot je match meedoet.';
+
+  @override
+  String moodMatchHubPendingCodeSmall(String code) {
+    return 'Code $code';
+  }
+
+  @override
+  String moodMatchHubPendingCode(String code) {
+    return 'Code: $code';
+  }
+
+  @override
+  String get moodMatchHubPendingWaiting => 'Wachten tot je match meedoet…';
+
+  @override
+  String get moodMatchHubPendingBuilding => 'Ik bouw jullie gedeelde dag…';
+
+  @override
+  String get moodMatchHubCancelSession => 'Annuleren';
+
+  @override
+  String get moodMatchHubReadyTitle => 'Je Mood Match is klaar!';
+
+  @override
+  String get moodMatchHubReadySubtitle => 'Ik heb jullie gedeelde dag klaar';
+
+  @override
+  String get moodMatchHubSeePlanCta => 'Bekijk het plan';
+
+  @override
+  String get moodMatchHubUntitledSession => 'Mood Match';
+
+  @override
+  String get moodMatchCreateAlreadyWaiting =>
+      'Je hebt al een sessie die wacht. Open die vanaf het hub-scherm.';
+
+  @override
+  String moodMatchHubCancelError(String error) {
+    return 'Annuleren mislukt: $error';
+  }
+
+  @override
+  String get moodMatchNewFeatureBadge => 'Nieuw';
+
+  @override
+  String moodMatchGoodMorning(String name) {
+    return 'Goedemorgen, $name';
+  }
+
+  @override
+  String get moodMatchHowItWorksOneLiner =>
+      'Jullie kiezen elk privé je stemming; ik meng ze tot één plan waar jullie allebei blij van worden.';
+
+  @override
+  String get moodMatchStepYourMood => 'Stap 1 van 2 · Jouw stemming';
+
+  @override
+  String get moodMatchFeelQuestion => 'Hoe voel je je vanochtend?';
+
+  @override
+  String moodMatchPrivateHint(String name) {
+    return '$name ziet dit pas als jullie allebei vastgezet hebben';
+  }
+
+  @override
+  String get moodMatchMoodyPickQuoteFriendly =>
+      'Kies wat echt voelt. Ik maak het werkend voor jullie samen.';
+
+  @override
+  String get moodMatchMoodyPickQuoteProfessional =>
+      'Kies de stemming die het beste bij je past vandaag. Ik zet beide keuzes om in één helder, gedeeld plan.';
+
+  @override
+  String get moodMatchMoodyPickQuoteEnergetic =>
+      'Ga voor je gevoel—lief, wild, whatever! Ik maak er iets van waar jullie allebei blij van worden.';
+
+  @override
+  String get moodMatchMoodyPickQuoteDirect =>
+      'Kies je stemming. Je match ziet hem pas als jullie allebei vastzetten.';
+
+  @override
+  String get moodMatchSelectMoodButton => 'Kies je stemming';
+
+  @override
+  String moodMatchLockBtn(String mood) {
+    return 'Vastzetten: $mood';
+  }
+
+  @override
+  String get moodMatchLobbyEveryoneReadyTitle =>
+      'Iedereen is er klaar voor! 🎉';
+
+  @override
+  String get moodMatchLobbyEveryoneReadySubtitle => 'Moody mengt jullie vibes…';
+
+  @override
+  String get moodMatchLobbyWaitingSubtitle =>
+      'Nog even geduld — jullie match is bijna klaar.';
+
+  @override
+  String get moodMatchLobbyBuildingSubtitle =>
+      'Zoeken naar plekken die bij jullie allebei passen…';
+
+  @override
+  String moodMatchLobbyCommentaryWaiting(String name) {
+    return 'Wachten tot $name de vibe vindt… 👀';
+  }
+
+  @override
+  String moodMatchLobbyCommentaryFriendLocked(String name) {
+    return '$name heeft vastgezet! Ik ben er klaar voor wanneer jij het bent 🎯';
+  }
+
+  @override
+  String get moodMatchLobbyCommentaryBothLocked =>
+      'Beide vibes binnen. Jullie match bouwen…';
+
+  @override
+  String moodMatchWhileYouWaitHint(String name) {
+    return 'Moody laat jullie matchingscore zien wanneer $name vastzet';
+  }
+
+  @override
+  String get moodMatchRevealScore => 'Vibe-match vandaag';
+
+  @override
+  String get moodMatchRevealCta => 'Bekijk ons plan';
+
+  @override
+  String get moodMatchRevealCopyHighFriendly =>
+      'Jullie willen vandaag precies hetzelfde 😌 \nDit plan maakte zich vanzelf.';
+
+  @override
+  String get moodMatchRevealCopyHighProfessional =>
+      'Jullie stemmingen sluiten vandaag nauw op elkaar aan. Het gedeelde plan volgt logisch uit jullie keuzes.';
+
+  @override
+  String get moodMatchRevealCopyHighEnergetic =>
+      'Dezelfde vibe, dubbel feest! 🔥 Dit plan rolde zo uit—geniet ervan!';
+
+  @override
+  String get moodMatchRevealCopyHighDirect =>
+      'Zeer vergelijkbare stemmingen. Plan is voor jullie allebei strak afgestemd.';
+
+  @override
+  String get moodMatchRevealCopyGoodFriendly =>
+      'Verschillende vibes, maar ik heb het geregeld. \nVertrouw me.';
+
+  @override
+  String get moodMatchRevealCopyGoodProfessional =>
+      'Verschillende stemmingen; ik heb beide voorkeuren in één haalbaar dagschema verwerkt.';
+
+  @override
+  String get moodMatchRevealCopyGoodEnergetic =>
+      'Andere moods? Uitdaging geaccepteerd—dit wordt leuk voor jullie samen!';
+
+  @override
+  String get moodMatchRevealCopyGoodDirect =>
+      'Stemmingen verschillen; de route verbindt ze. Bekijk de stops samen.';
+
+  @override
+  String get moodMatchRevealCopyCreativeFriendly =>
+      'Oké, dit was een uitdaging. Maar ik ben trots \nop dit plan. Jullie ook straks.';
+
+  @override
+  String get moodMatchRevealCopyCreativeProfessional =>
+      'De stemmingen lopen ver uiteen; ik zocht overlap die vandaag voor jullie allebei werkt.';
+
+  @override
+  String get moodMatchRevealCopyCreativeEnergetic =>
+      'Pittige combo op papier—maar ik vond parels die samen nog steeds leuk aanvoelen!';
+
+  @override
+  String get moodMatchRevealCopyCreativeDirect =>
+      'Weinig overlap. Plan focust op brede, veilige favorieten.';
+
+  @override
+  String get moodMatchScoreLabelPerfect => 'Perfecte match ✨';
+
+  @override
+  String get moodMatchScoreLabelGreat => 'Sterke combo';
+
+  @override
+  String get moodMatchScoreLabelGoodBalance => 'Goede balans';
+
+  @override
+  String get moodMatchScoreLabelInteresting => 'Interessante mix';
+
+  @override
+  String get moodMatchScoreLabelCreative => 'Moody werd creatief';
+
+  @override
+  String moodMatchRevealMoodyFallback(String moodA, String moodB) {
+    return 'Jullie $moodA- en $moodB-kanten zijn een verrassend goed team — ik vind het leuk.';
+  }
+
+  @override
+  String moodMatchResultCompatLine(int percent, String label) {
+    return '$percent% match · $label';
+  }
+
+  @override
+  String get moodMatchResultCompatGreat => 'Sterke combo ✓';
+
+  @override
+  String get moodMatchResultFooterStrip =>
+      'Jullie voegen elk toe wat je wilt aan je eigen My Day';
+
+  @override
+  String get moodMatchLobbyChoosingBadge => 'Kiest';
+
+  @override
+  String get moodMatchLobbyReadyBadge => 'Klaar';
+
+  @override
+  String get moodMatchSeePlanShareA11y => 'Delen';
+
+  @override
+  String get moodMatchMoodTileSublabel => 'Tik om te kiezen';
+
+  @override
+  String moodMatchBlendChip(String emoji, String label) {
+    return '$emoji $label';
+  }
+
+  @override
+  String get moodMatchWithFriendMenu => 'Mood Match';
+
+  @override
+  String moodMatchInviteShare(String code) {
+    return 'Doe mee met mijn Mood Match in WanderMood! Code: $code';
+  }
+
+  @override
+  String get moodMatchShareMoodyPrompt =>
+      'Top—je match heeft vaak al WanderMood 💚 Tik eerst op Uitnodigen op WanderMood, dan help ik je zoeken 👀 Link en QR zitten hieronder als je ze nodig hebt 📎✨';
+
+  @override
+  String get moodMatchShareFriendCodeIntro =>
+      'Jouw match heeft deze code alleen nodig als ze WanderMood openen zonder de link—dat is voor hun telefoon, niet de jouwe.';
+
+  @override
+  String get moodMatchShareLinkQrFoldTitle => 'Liever een link of QR?';
+
+  @override
+  String get moodMatchShareLinkQrFoldSubtitle =>
+      'Voor andere apps, of als ze WanderMood nog niet hebben.';
+
+  @override
+  String get moodMatchShareBottomHint =>
+      'Tip: met meldingen aan krijg je een seintje wanneer ze meedoen. Je kunt altijd naar de lobby.';
+
+  @override
+  String moodMatchPartnerJoinedNotifTitle(String name) {
+    return '$name is mee';
+  }
+
+  @override
+  String get moodMatchPartnerJoinedNotifBody =>
+      'Open je Mood Match-lobby om verder te gaan.';
+
+  @override
+  String get moodMatchPartnerJoinedNotifNameFallback => 'Iemand';
+
+  @override
+  String get moodMatchInviteWanderMoodCta => 'Uitnodigen op WanderMood';
+
+  @override
+  String get moodMatchInviteTitle => 'Nodig iemand op WanderMood uit';
+
+  @override
+  String get moodMatchInviteSubtitle =>
+      'Stuur eerst je joinlink — die werkt in elke chat. Zoek hier optioneel op gebruikersnaam om iemand op WanderMood een duwtje te geven.';
+
+  @override
+  String get moodMatchInviteJoinLinkCardTitle => 'Jouw joinlink';
+
+  @override
+  String get moodMatchInviteJoinLinkCardSubtitle =>
+      'Kopieer deze https-link en stuur hem door. Zo blijft het betrouwbaar als een in-app ping niet aankomt.';
+
+  @override
+  String get moodMatchInviteCopyLinkAction => 'Link kopiëren';
+
+  @override
+  String get moodMatchInviteLinkCopied => 'Joinlink gekopieerd';
+
+  @override
+  String get moodMatchInviteSearchHint => 'Gebruikersnaam';
+
+  @override
+  String get moodMatchInviteSearchEmpty => 'Typ minstens 2 tekens';
+
+  @override
+  String get moodMatchInviteNoResults => 'Geen profielen gevonden';
+
+  @override
+  String get moodMatchInviteButton => 'Uitnodigen';
+
+  @override
+  String get moodMatchInviteSent => 'In-app uitnodiging verstuurd';
+
+  @override
+  String get moodMatchInviteFailed =>
+      'In-app uitnodiging lukte niet (server). Kopieer je joinlink en stuur die in elke chat — dat werkt altijd.';
+
+  @override
+  String get moodMatchInviteNotDeliveredInApp =>
+      'Geen in-app melding — misschien staan in-app meldingen uit. Stuur je joinlink in plaats daarvan.';
+
+  @override
+  String get moodMatchInviteNotifTitle => 'Mood Match-uitnodiging';
+
+  @override
+  String moodMatchInviteNotifMessage(String inviter, String code, String link) {
+    return '$inviter nodigt je uit voor Mood Match.\nCode: $code\n$link';
+  }
+
+  @override
+  String get moodMatchShareShareLink => 'Deel link';
+
+  @override
+  String get moodMatchShareCopyLink => 'Kopieer link';
+
+  @override
+  String get moodMatchShareWhatsApp => 'WhatsApp';
+
+  @override
+  String get moodMatchShareCopiedToast => 'Link gekopieerd';
+
+  @override
+  String get moodMatchFriendThey => 'je match';
+
+  @override
+  String get moodMatchHubOpenPlan => 'Open plan';
+
+  @override
+  String get moodMatchHubNudgeFriend => 'Herinner je match';
+
+  @override
+  String moodMatchLobbyWaitTease0(String name) {
+    return 'Wachten op $name… geen haast 👀';
+  }
+
+  @override
+  String moodMatchLobbyWaitTease1(String name) {
+    return 'Nog steeds niets van $name… typisch 😭';
+  }
+
+  @override
+  String get moodMatchLobbyWaitTease2 =>
+      'Ik heb al een heel plan klaar. Zomaar gezegd. 🌀';
+
+  @override
+  String moodMatchLobbyWaitTease3(String name) {
+    return '$name doet er even over… maar het wordt het waard, geloof me';
+  }
+
+  @override
+  String moodMatchLobbyFriendJoinedLine(String name) {
+    return '$name is binnen! 🎯 Kies nu je stemming.';
+  }
+
+  @override
+  String get moodMatchLobbyBothLockedHold =>
+      'Twee vibes binnen. Geef me een seconde… 🤔';
 }

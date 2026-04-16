@@ -17,6 +17,7 @@ import '../widgets/edit_favorite_vibes.dart'
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/core/constants/inclusion_preference_options.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
+import 'package:wandermood/core/utils/profile_username.dart';
 import '../widgets/inclusion_dietary_preference_field.dart';
 
 // WanderMood v2 — Edit Profile (Screen 12)
@@ -292,6 +293,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   Future<void> _saveProfile() async {
     if (!_hasChanges) return;
+    final l10n = AppLocalizations.of(context)!;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() => _isSaving = true);
 
@@ -299,6 +302,35 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       final supabase = Supabase.instance.client;
       final userId = supabase.auth.currentUser?.id;
       if (userId == null) return;
+
+      final normalizedUsername = normalizeProfileUsername(_usernameController.text);
+      if (normalizedUsername == null || normalizedUsername.isEmpty) {
+        if (mounted) {
+          showWanderMoodToast(
+            context,
+            message: l10n.profileEditUsernameRequiredError,
+            isError: true,
+          );
+        }
+        return;
+      }
+
+      final takenRows = await supabase
+          .from('profiles')
+          .select('id')
+          .ilike('username', normalizedUsername)
+          .neq('id', userId)
+          .limit(1);
+      if ((takenRows as List<dynamic>).isNotEmpty) {
+        if (mounted) {
+          showWanderMoodToast(
+            context,
+            message: l10n.profileEditUsernameTakenError,
+            isError: true,
+          );
+        }
+        return;
+      }
 
       String? imageUrl = _profileImageUrl;
       
@@ -310,7 +342,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       // Update profile
       await ref.read(profileProvider.notifier).updateProfile(
         fullName: _nameController.text,
-        username: _usernameController.text,
+        username: normalizedUsername,
         imageUrl: imageUrl,
         dateOfBirth: _dateOfBirth,
         bio: _bioController.text,
@@ -355,13 +387,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       await ref.read(currentUserProfileProvider.notifier).refresh();
 
       if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
         showWanderMoodToast(context, message: l10n.profileEditUpdated);
         Navigator.pop(context);
       }
+    } on PostgrestException catch (e) {
+      if (mounted) {
+        final msg = e.code == '23505'
+            ? l10n.profileEditUsernameTakenError
+            : l10n.profileEditUpdateFailed(e.message);
+        showWanderMoodToast(context, message: msg, isError: true);
+      }
     } catch (e) {
       if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
         showWanderMoodToast(
           context,
           message: l10n.profileEditUpdateFailed(e.toString()),
@@ -571,6 +608,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               child: TextFormField(
                                 controller: _usernameController,
                                 onChanged: (_) => _checkForChanges(),
+                                autocorrect: false,
+                                textCapitalization: TextCapitalization.none,
+                                validator: (value) {
+                                  final n = normalizeProfileUsername(value ?? '');
+                                  if (n == null || n.isEmpty) {
+                                    return l10n.profileEditUsernameRequiredError;
+                                  }
+                                  if (!isValidProfileUsernameFormat(n)) {
+                                    return l10n.profileEditUsernameFormatError;
+                                  }
+                                  return null;
+                                },
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,

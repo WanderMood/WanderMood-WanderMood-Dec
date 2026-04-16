@@ -23,8 +23,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     with TickerProviderStateMixin {
   late final AnimationController _breathController;
   late final Animation<double> _breathScale;
-  late final AnimationController _fadeOutController;
-  late final Animation<double> _fadeOpacity;
 
   @override
   void initState() {
@@ -46,28 +44,21 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       CurvedAnimation(parent: _breathController, curve: Curves.easeInOut),
     );
 
-    _fadeOutController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    );
-
-    _fadeOpacity = Tween<double>(begin: 1.0, end: 0.0).animate(
-      CurvedAnimation(parent: _fadeOutController, curve: Curves.easeInOut),
-    );
-
     _initializeApp();
   }
 
-  Future<void> _exitWithFade(VoidCallback navigate) async {
+  /// Go to the next route while the splash is still fully visible.
+  ///
+  /// Previously we faded the splash body to opacity 0 *before* calling
+  /// [go]/[goNamed]. On some iOS builds that left one or more frames where the
+  /// Flutter view was effectively empty, which read as a **blank white screen**
+  /// until the next route finished building.
+  Future<void> _goNext(VoidCallback navigate) async {
     try {
-      await _fadeOutController.forward();
       if (!mounted) return;
       navigate();
     } catch (e, st) {
-      debugPrint('⚠️ Splash fade/navigation failed: $e\n$st');
-      if (mounted) {
-        await _fadeOutController.reverse();
-      }
+      debugPrint('⚠️ Splash navigation failed: $e\n$st');
     }
   }
 
@@ -92,7 +83,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     if (!mounted) return;
 
     final prefs = await SharedPreferences.getInstance();
-    final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+    // Must stay mutable: we may set `has_seen_onboarding` in prefs below and need
+    // the in-memory flag to match — otherwise returning users hit
+    // `useNewOnboarding && !hasSeenOnboarding` and get sent to /intro every cold start.
+    var hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
     final hasCompletedPreferences = prefs.getBool('hasCompletedPreferences') ?? false;
     final currentUser = Supabase.instance.client.auth.currentUser;
     final currentSession = Supabase.instance.client.auth.currentSession;
@@ -106,6 +100,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     if (currentUser != null && currentSession != null && !hasSeenOnboarding) {
       debugPrint('🔧 User has session, marking onboarding as seen');
       await prefs.setBool('has_seen_onboarding', true);
+      hasSeenOnboarding = true;
 
       try {
         final response = await Supabase.instance.client
@@ -168,46 +163,45 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     if (useNewOnboarding && !hasSeenOnboarding) {
       debugPrint('🚀 First time user (NEW FLOW) - navigating to intro');
-      await _exitWithFade(() => context.go('/intro'));
+      await _goNext(() => context.go('/intro'));
       return;
     }
 
     if (!hasSeenOnboarding) {
       if (useNewOnboarding) {
         debugPrint('🚀 First time user (NEW FLOW) - navigating to intro');
-        await _exitWithFade(() => context.go('/intro'));
+        await _goNext(() => context.go('/intro'));
       } else {
         debugPrint('🚀 First time user (OLD FLOW) - navigating to onboarding');
-        await _exitWithFade(() => context.go('/onboarding'));
+        await _goNext(() => context.go('/onboarding'));
       }
     } else if (finalCurrentUser == null) {
       if (finalHasCompletedPreferences) {
         debugPrint('🚀 Returning user without session - navigating to magic link');
-        await _exitWithFade(() => context.go('/auth/magic-link'));
+        await _goNext(() => context.go('/auth/magic-link'));
       } else if (useNewOnboarding) {
         debugPrint('🚀 User not authenticated (NEW FLOW, no preferences yet) - showing new onboarding flow');
-        await _exitWithFade(() => context.go('/intro'));
+        await _goNext(() => context.go('/intro'));
       } else {
         debugPrint('🚀 User not authenticated (OLD FLOW, no preferences yet) - navigating to magic link');
-        await _exitWithFade(() => context.go('/auth/magic-link'));
+        await _goNext(() => context.go('/auth/magic-link'));
       }
     } else if (!finalHasCompletedPreferences) {
       debugPrint('🚀 User needs to complete preferences - navigating to preferences');
-      await _exitWithFade(() => context.go('/preferences/communication'));
+      await _goNext(() => context.go('/preferences/communication'));
     } else {
       final hasCompletedFirstPlan = prefs.getBool('has_completed_first_plan') ?? false;
       final tabIndex = hasCompletedFirstPlan ? 0 : 2;
 
       debugPrint('🚀 User is ready - navigating to main app');
       debugPrint('📍 First-time user: ${!hasCompletedFirstPlan}, routing to tab: $tabIndex');
-      await _exitWithFade(() => context.goNamed('main', extra: {'tab': tabIndex}));
+      await _goNext(() => context.goNamed('main', extra: {'tab': tabIndex}));
     }
   }
 
   @override
   void dispose() {
     _breathController.dispose();
-    _fadeOutController.dispose();
     super.dispose();
   }
 
@@ -221,51 +215,48 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       ),
       child: Scaffold(
         backgroundColor: _wmForest,
-        body: FadeTransition(
-          opacity: _fadeOpacity,
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Spacer(),
-                  Center(
-                    child: ScaleTransition(
-                      alignment: Alignment.center,
-                      scale: _breathScale,
-                      child: const MoodyCharacter(
-                        size: 140,
-                        mood: 'idle',
-                      ),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Spacer(),
+                Center(
+                  child: ScaleTransition(
+                    alignment: Alignment.center,
+                    scale: _breathScale,
+                    child: const MoodyCharacter(
+                      size: 140,
+                      mood: 'idle',
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  Text(
-                    AppLocalizations.of(context)!.appTitle,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    style: GoogleFonts.poppins(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                    ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  AppLocalizations.of(context)!.appTitle,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  style: GoogleFonts.poppins(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    AppLocalizations.of(context)!.splashPlanYourDayByFeeling,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      height: 1.4,
-                      color: Colors.white.withValues(alpha: 0.70),
-                    ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  AppLocalizations.of(context)!.splashPlanYourDayByFeeling,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    height: 1.4,
+                    color: Colors.white.withValues(alpha: 0.70),
                   ),
-                  const Spacer(),
-                ],
-              ),
+                ),
+                const Spacer(),
+              ],
             ),
           ),
         ),

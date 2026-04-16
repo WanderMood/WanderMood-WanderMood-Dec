@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
+import 'package:wandermood/core/providers/explore_session_anchor_provider.dart';
 import 'package:wandermood/features/location/services/location_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
@@ -161,7 +162,8 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
 
       // Use the exact same logic as the Moody screen
       final location = await ref.read(locationNotifierProvider.notifier).getCurrentLocation();
-      
+      ref.read(exploreManualCityPickTickProvider.notifier).state++;
+
       // Show result message
       showWanderMoodToast(
         context,
@@ -268,6 +270,7 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
         } else {
           // Set selected city
           ref.read(locationNotifierProvider.notifier).setLocation(value);
+          ref.read(exploreManualCityPickTickProvider.notifier).state++;
         }
       },
       itemBuilder: (BuildContext context) => [
@@ -547,6 +550,7 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
                                       contentPadding: EdgeInsets.zero,
                                       onTap: () {
                                         ref.read(locationNotifierProvider.notifier).setLocation(city);
+                                        ref.read(exploreManualCityPickTickProvider.notifier).state++;
                                         Navigator.pop(context);
                                         _searchController.clear();
                                       },
@@ -567,6 +571,7 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
                                       contentPadding: EdgeInsets.zero,
                                       onTap: () {
                                         ref.read(locationNotifierProvider.notifier).setLocation(city);
+                                        ref.read(exploreManualCityPickTickProvider.notifier).state++;
                                         Navigator.pop(context);
                                         _searchController.clear();
                                       },

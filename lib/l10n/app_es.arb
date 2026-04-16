@@ -150,14 +150,12 @@
   "introTitleLine2": "Tu aventura",
   "introSkip": "Omitir",
   "introSeeHowItWorks": "Echa un vistazo, ¡te va a gustar!",
-
   "onboardingLoadingTitle": "¡Te estoy conociendo! 🧠",
   "onboardingLoadingSubtitle0": "Guardando tus intereses...",
   "onboardingLoadingSubtitle1": "Ajustando tu estilo...",
   "onboardingLoadingSubtitle2": "Buscando lugares que encajen contigo...",
   "onboardingLoadingSubtitle3": "Preparándome para ti...",
   "onboardingLoadingFooter": "Solo un momento más ✨",
-
   "demoMoodyGreeting": "Hey… Soy Moody 🙂",
   "demoMoodyAskVibe": "Te ayudo a descubrir lugares según cómo te sientes. ¿Cuál es tu estado de ánimo hoy?",
   "demoMoodyGreetingLine2": "Dime qué tipo de día buscas — yo me encargo del resto.",
@@ -633,7 +631,10 @@
   "profileEditProfilePhoto": "Foto de perfil",
   "profileEditProfilePhotoTap": "Toca para cambiar",
   "profileEditNameLabel": "Nombre completo",
-  "profileEditUsernameLabel": "Nombre de usuario",
+  "profileEditUsernameLabel": "Nombre de usuario *",
+  "profileEditUsernameRequiredError": "El nombre de usuario es obligatorio.",
+  "profileEditUsernameFormatError": "Usa de 3 a 30 caracteres: solo letras, números o guiones bajos.",
+  "profileEditUsernameTakenError": "Ese nombre de usuario ya está en uso.",
   "profileEditEmailLabel": "Correo electrónico",
   "profileEditBioLabel": "Bio",
   "profileEditSelectDate": "Seleccionar fecha",
@@ -1321,6 +1322,9 @@
   "moodHubBannerAfternoon": "Buenas tardes — hora de conectar con tu vibe.",
   "moodHubBannerEvening": "Buenas noches — ¿cuál es tu vibe?",
   "moodHubBannerNight": "Noche — busquemos algo que encaje.",
+  "moodyIdleWakeOpenPlan": "Let's open your plan for today.",
+  "moodyIdleWakeChooseMood": "What are we doing today? Pick your mood and we'll build the day.",
+  "moodyHubNewConversation": "New conversation",
   "moodHubCreatePlan": "¡Crea tu plan perfecto! 🎯",
   "moodHubBackToHub": "Volver al Hub",
   "moodHubSelectUpTo": "Puedes elegir hasta {max} estados de ánimo",
@@ -2219,13 +2223,11 @@
   "gamificationCategoryMood": "Estado de ánimo",
   "gamificationCategorySpecial": "Especial",
   "gamificationCategoryOther": "Otros",
-
   "achievementExplorer": "Explorador",
   "achievementEarlyBird": "Madrugador",
   "achievementStreakMaster": "Maestro de rachas",
   "achievementMoodTracker": "Registro del ánimo",
   "achievementAdventurer": "Aventurero",
-
   "prefScreenTitle": "Tus preferencias",
   "prefSave": "Guardar",
   "prefSavedSuccess": "Preferencias guardadas",
@@ -2829,49 +2831,65 @@
   "notifMorningWithPlanEnergeticTitle": "Arriba y a brillar {weatherEmoji}",
   "@notifMorningWithPlanEnergeticTitle": {
     "placeholders": {
-      "weatherEmoji": {"type": "String"}
+      "weatherEmoji": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanEnergeticBody": "Primero: {activityName}. Hoy la liamos.",
   "@notifMorningWithPlanEnergeticBody": {
     "placeholders": {
-      "activityName": {"type": "String"}
+      "activityName": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanFriendlyTitle": "Buenos días {weatherEmoji}",
   "@notifMorningWithPlanFriendlyTitle": {
     "placeholders": {
-      "weatherEmoji": {"type": "String"}
+      "weatherEmoji": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanFriendlyBody": "Hoy empezamos con {activityName} — aquí estoy si me necesitas.",
   "@notifMorningWithPlanFriendlyBody": {
     "placeholders": {
-      "activityName": {"type": "String"}
+      "activityName": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanProfessionalTitle": "Buenos días {weatherEmoji}",
   "@notifMorningWithPlanProfessionalTitle": {
     "placeholders": {
-      "weatherEmoji": {"type": "String"}
+      "weatherEmoji": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanProfessionalBody": "Tu agenda de hoy incluye {activityName}.",
   "@notifMorningWithPlanProfessionalBody": {
     "placeholders": {
-      "activityName": {"type": "String"}
+      "activityName": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanDirectTitle": "Plan de hoy {weatherEmoji}",
   "@notifMorningWithPlanDirectTitle": {
     "placeholders": {
-      "weatherEmoji": {"type": "String"}
+      "weatherEmoji": {
+        "type": "String"
+      }
     }
   },
   "notifMorningWithPlanDirectBody": "{activityName} va primero. Toca para abrir.",
   "@notifMorningWithPlanDirectBody": {
     "placeholders": {
-      "activityName": {"type": "String"}
+      "activityName": {
+        "type": "String"
+      }
     }
   },
   "notifDailyMoodCheckInEnergeticV0Title": "¿Qué vibra damos hoy? ✨",
@@ -3936,7 +3954,6 @@
   "weatherHistoryInvalid": "No hay datos históricos válidos",
   "moodHistoryEmpty": "No hay historial de estado de ánimo",
   "periodActivitiesSwipeComplete": "Completar",
-
   "exploreLoadMoreIdeas": "Cargar más ideas",
   "agendaPaymentBadgeFree": "Gratis",
   "agendaPaymentBadgePaid": "Pagado",
@@ -3949,5 +3966,486 @@
         "type": "String"
       }
     }
-  }
+  },
+  "groupPlanWithFriendMenu": "Planifica con un amigo",
+  "groupPlanTogetherTitle": "Planificar juntos",
+  "groupPlanHubBody": "Combina estados de ánimo con tu compañero de viaje. Cada uno usa su propio móvil: comparte un código corto o ábrelo desde un mensaje.",
+  "groupPlanTileStartTitle": "Iniciar una sesión",
+  "groupPlanTileStartSubtitle": "Recibirás un código para enviar a tu amigo",
+  "groupPlanTileJoinTitle": "Unirse con código",
+  "groupPlanTileJoinSubtitle": "Introduce el código de tu amigo",
+  "groupPlanCreateTitle": "Planifica con un amigo",
+  "groupPlanCreateBody": "Crea una sesión compartida. Recibirás un código corto para enviar a tu compañero; él o ella lo introduce en su móvil.",
+  "groupPlanCreateOptionalTitleLabel": "Título opcional (p. ej. Hoy en Lisboa)",
+  "groupPlanCreateButton": "Crear y compartir código",
+  "groupPlanShareSubject": "Plan de grupo WanderMood",
+  "groupPlanInviteShare": "¡Únete a mi día en WanderMood! Código: {code}\n(Abre WanderMood → Planifica con un amigo → Introduce el código)",
+  "@groupPlanInviteShare": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanJoinTitle": "Unirse a un amigo",
+  "groupPlanJoinBody": "Escanead juntos el código QR de tu amigo, o introduce su código abajo.",
+  "groupPlanJoinCodeLabel": "Código de unión",
+  "groupPlanJoinCodeHint": "p. ej. A1B2C3",
+  "groupPlanJoinButton": "Unirse a la sesión",
+  "groupPlanJoinSnackEnterCode": "Introduce el código que compartió tu amigo.",
+  "groupPlanJoinError": "No se pudo unir: {error}",
+  "@groupPlanJoinError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanShareQrTitle": "Enséñale esto a tu amigo",
+  "groupPlanShareQrOrCode": "o introduce el código {code}",
+  "@groupPlanShareQrOrCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanShareViaMessage": "Compartir por mensaje",
+  "groupPlanShareContinueLobby": "Continuar al lobby",
+  "groupPlanShareScreenTitle": "Invitar a tu amigo",
+  "groupPlanJoinScanQr": "Escanear código QR",
+  "groupPlanJoinEnterInstead": "Introducir código en su lugar",
+  "groupPlanJoinScanInstead": "Escanear QR en su lugar",
+  "groupPlanScanTitle": "Escanear código QR",
+  "groupPlanCreateError": "No se pudo crear la sesión: {error}",
+  "@groupPlanCreateError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanLobbyTitle": "Plan de grupo",
+  "groupPlanLobbyShareCode": "Comparte este código",
+  "groupPlanLobbyMoodsProgress": "{locked} / {total} estados de ánimo confirmados",
+  "@groupPlanLobbyMoodsProgress": {
+    "placeholders": {
+      "locked": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "groupPlanLobbyWaitingFriend": "Esperando a que tu amigo se una…",
+  "groupPlanLobbyWhosIn": "Quién participa",
+  "groupPlanLobbyMoodLine": "Estado de ánimo: {mood}",
+  "@groupPlanLobbyMoodLine": {
+    "placeholders": {
+      "mood": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanLobbyStillChoosing": "Aún eligiendo…",
+  "groupPlanLobbyYourMood": "Tu estado de ánimo hoy",
+  "groupPlanLobbyLockMood": "Confirmar mi estado de ánimo",
+  "groupPlanLobbyBuilding": "Moody está creando vuestro plan compartido…",
+  "groupPlanLobbyPlanFailed": "No se pudo generar el plan. Desliza para actualizar o inténtalo de nuevo en un momento.",
+  "groupPlanLobbyPickMoodSnack": "Elige primero un estado de ánimo.",
+  "groupPlanLobbySubmitError": "Algo salió mal: {error}",
+  "@groupPlanLobbySubmitError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanMoodAdventurous": "Aventurero",
+  "groupPlanMoodRelaxed": "Relajado",
+  "groupPlanMoodSocial": "Social",
+  "groupPlanMoodCultural": "Cultural",
+  "groupPlanMoodRomantic": "Romántico",
+  "groupPlanMoodEnergetic": "Enérgico",
+  "groupPlanMoodFoody": "Foodie",
+  "groupPlanMoodCreative": "Creativo",
+  "groupPlanResultTitle": "Vuestro plan compartido",
+  "groupPlanResultNoPlan": "Aún no hay plan.",
+  "groupPlanResultBackToApp": "Volver a la app",
+  "groupPlanResultMoodsLine": "Estados de ánimo: {moods}",
+  "@groupPlanResultMoodsLine": {
+    "placeholders": {
+      "moods": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanResultIdeasTitle": "Ideas para hoy",
+  "groupPlanResultAddHint": "Los añadidos usan la fecha seleccionada en Mi día (por defecto hoy). Abre Mi día primero si quieres otro día.",
+  "groupPlanResultAddToMyDay": "Añadir a Mi día",
+  "groupPlanResultAdded": "Añadido",
+  "groupPlanResultFooter": "Cada persona añade paradas a su propio Mi día. Mismo plan, dos calendarios.",
+  "groupPlanResultAddedToast": "Se añadió «{name}» a Mi día",
+  "@groupPlanResultAddedToast": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanResultDuplicateToast": "No se pudo añadir (duplicado o mismo horario). Prueba otra idea.",
+  "groupPlanResultAddFailedToast": "Error al añadir: {error}",
+  "@groupPlanResultAddFailedToast": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanResultViewMyDay": "Ver",
+  "groupPlanInviteOpenLink": "Abrir en la app: {url}",
+  "@groupPlanInviteOpenLink": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanHubHeroTitle": "Planea con amigos",
+  "groupPlanHubHeroSubtitle": "Dos estados de ánimo, un día compartido. Moody encuentra lo que funciona para los dos.",
+  "groupPlanHubStartCardTitle": "Empezar un plan de grupo",
+  "groupPlanHubStartCardSub": "Recibe un código para compartir con tu amigo",
+  "groupPlanHubJoinCardTitle": "Unirse a un plan",
+  "groupPlanHubJoinCardSub": "Introduce el código de tu amigo",
+  "groupPlanHowItWorksTitle": "Cómo funciona",
+  "groupPlanHowItWorksBody": "Cada uno elige su estado de ánimo por su cuenta. Yo los mezclo en un plan que os encantará a los dos.",
+  "groupPlanCreateHeaderSubtitle": "Tú + un amigo",
+  "groupPlanCreateHeaderCaption": "Elegid el estado de ánimo por separado, obtened un plan compartido",
+  "groupPlanSessionNameLabel": "Nombre de la sesión (opcional)",
+  "groupPlanSessionNamePlaceholder": "p. ej. Fin de semana en Ámsterdam",
+  "groupPlanCreateCta": "Crear y compartir enlace",
+  "groupPlanCreateShareHint": "Después verás un código QR para enseñar, o puedes compartir un enlace por mensaje.",
+  "groupPlanLobbyTitleWaitingFriend": "Esperando a tu amigo…",
+  "groupPlanLobbyTitleWaitingName": "Esperando a {name}…",
+  "@groupPlanLobbyTitleWaitingName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanLobbyTitleEveryoneReady": "¡Todos listos!",
+  "groupPlanLobbyShareCodeUpper": "Comparte este código",
+  "groupPlanLobbyShareLinkCta": "Compartir enlace",
+  "groupPlanLobbyStatusLocked": "Listo",
+  "groupPlanLobbyStatusWaiting": "Esperando",
+  "groupPlanMoodSectionUppercase": "Tu estado de ánimo hoy",
+  "groupPlanLobbyLockCta": "Confirmar mi estado de ánimo",
+  "groupPlanLobbyWaitingLockIn": "Esperando a que {name} confirme…",
+  "@groupPlanLobbyWaitingLockIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanLobbyGenerateCta": "Generar nuestro plan",
+  "groupPlanLobbyLockingIn": "🔒 Confirmando…",
+  "groupPlanLobbyWaitingFriendJoin": "Esperando a que tu amigo se una…",
+  "groupPlanResultBlendKicker": "Moody mezcló vuestros estados de ánimo ✨",
+  "groupPlanResultIdeasTitleEmoji": "Ideas para hoy 💡",
+  "groupPlanResultLoadingMoody": "Moody está creando vuestro plan… ✨",
+  "groupPlanResultFooterPhones": "Cada uno añade lo que quiere a su propio Mi día — dos móviles, el mismo plan 📱📱",
+  "groupPlanResultMoodChipYou": "{emoji} {mood} (tú)",
+  "@groupPlanResultMoodChipYou": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      },
+      "mood": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanResultMoodChipName": "{emoji} {mood} ({name})",
+  "@groupPlanResultMoodChipName": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      },
+      "mood": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupPlanYouShort": "Tú",
+  "groupPlanMoodCozy": "Acogedor",
+  "groupPlanMoodSurprise": "Sorpresa",
+  "moodMatchTitle": "Mood Match",
+  "moodMatchTagline": "Dos estados de ánimo. Un día perfecto.",
+  "moodMatchTaglineHub": "Dos estados de ánimo. Un día perfecto. Hecho para los dos.",
+  "moodMatchStartBtn": "Empezar un Mood Match",
+  "moodMatchStartBtnSub": "Invita a alguien, elige estados de ánimo y obtened un plan compartido",
+  "moodMatchJoinBtn": "Unirse a un Mood Match",
+  "moodMatchJoinBtnSub": "Introduce un código o escanea un QR",
+  "moodMatchHubMoodyIntroFriendly": "Okaaay, ¿planear con otra persona?\nEs de mis cosas favoritas 😏",
+  "moodMatchHubMoodyIntroProfessional": "Mood Match alinea dos elecciones privadas de estado de ánimo en un plan compartido del día: claro, justo y pensado para los dos.",
+  "moodMatchHubMoodyIntroEnergetic": "¿Un día juntos? ¡Sí! Estoy súper listo para ayudaros.",
+  "moodMatchHubMoodyIntroDirect": "Cada uno elige su estado de ánimo en su móvil. Yo lo convierto en un plan compartido. Empezad o uniros cuando queráis.",
+  "moodMatchHubMoodyIntroWaitingFriendly": "Ya estás en un Mood Match—tu amigo aún tiene que unirse. Toca Abrir plan para volver, o envía un recordatorio amable.",
+  "moodMatchHubMoodyIntroWaitingProfessional": "Hay una sesión de Mood Match activa esperando a la otra persona. Usa Abrir plan para volver al lobby, o comparte un recordatorio.",
+  "moodMatchHubMoodyIntroWaitingEnergetic": "¡Casi lo tenemos! Falta que tu amigo entre. Abre el plan para seguir o mándale un empujoncito.",
+  "moodMatchHubMoodyIntroWaitingDirect": "Sesión activa; amigo pendiente. Abrir plan o recordar.",
+  "moodMatchHubPendingTitle": "Session in progress",
+  "moodMatchHubPendingStory": "Aún esperamos a tu amigo.",
+  "moodMatchHubPendingCodeSmall": "Code {code}",
+  "@moodMatchHubPendingCodeSmall": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubPendingCode": "Code: {code}",
+  "@moodMatchHubPendingCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubPendingWaiting": "Waiting for your friend to join…",
+  "moodMatchHubPendingBuilding": "Estoy montando vuestro plan compartido…",
+  "moodMatchHubCancelSession": "Cancel",
+  "moodMatchHubReadyTitle": "Your Mood Match is ready!",
+  "moodMatchHubReadySubtitle": "He dejado vuestro plan compartido listo",
+  "moodMatchHubSeePlanCta": "See the plan",
+  "moodMatchHubUntitledSession": "Mood Match",
+  "moodMatchCreateAlreadyWaiting": "You already have a session waiting. Open it from the hub.",
+  "moodMatchHubCancelError": "Could not cancel: {error}",
+  "@moodMatchHubCancelError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchNewFeatureBadge": "Novedad",
+  "moodMatchGoodMorning": "Buenos días, {name}",
+  "@moodMatchGoodMorning": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHowItWorksOneLiner": "Cada uno elige su estado de ánimo en privado; yo los combino en un plan que os encantará.",
+  "moodMatchStepYourMood": "Paso 1 de 2 · Tu estado de ánimo",
+  "moodMatchFeelQuestion": "¿Cómo te sientes esta mañana?",
+  "moodMatchPrivateHint": "{name} no verá esto hasta que ambos confirméis",
+  "@moodMatchPrivateHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchMoodyPickQuoteFriendly": "Elige lo que sea real. Yo lo haré funcionar para los dos.",
+  "moodMatchMoodyPickQuoteProfessional": "Elige el estado de ánimo que mejor te represente hoy. Uniré ambas elecciones en un plan compartido claro.",
+  "moodMatchMoodyPickQuoteEnergetic": "¡Elige con el corazón—tranquilo o intenso! Lo convertiré en algo que os encante a los dos.",
+  "moodMatchMoodyPickQuoteDirect": "Elige tu estado de ánimo. Tu amigo no lo verá hasta que ambos confirméis.",
+  "moodMatchSelectMoodButton": "Elige tu estado de ánimo",
+  "moodMatchLockBtn": "Confirmar {mood}",
+  "@moodMatchLockBtn": {
+    "placeholders": {
+      "mood": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyEveryoneReadyTitle": "¡Todos listos! 🎉",
+  "moodMatchLobbyEveryoneReadySubtitle": "Moody está mezclando vuestros estados de ánimo…",
+  "moodMatchLobbyWaitingSubtitle": "Un momento más — vuestro match casi está.",
+  "moodMatchLobbyBuildingSubtitle": "Buscando sitios que encajen con los dos…",
+  "moodMatchLobbyCommentaryWaiting": "Esperando a que {name} encuentre su vibra… 👀",
+  "@moodMatchLobbyCommentaryWaiting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyCommentaryFriendLocked": "¡{name} ya confirmó! Listo cuando tú lo estés 🎯",
+  "@moodMatchLobbyCommentaryFriendLocked": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyCommentaryBothLocked": "Tengo ambos estados de ánimo. Creando vuestro match…",
+  "moodMatchWhileYouWaitHint": "Moody revelará vuestra compatibilidad cuando {name} confirme",
+  "@moodMatchWhileYouWaitHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchRevealScore": "Compatibilidad de hoy",
+  "moodMatchRevealCta": "Ver nuestro plan",
+  "moodMatchRevealCopyHighFriendly": "Hoy casi sois la misma persona 😌 \nEste plan casi se escribe solo.",
+  "moodMatchRevealCopyHighProfessional": "Vuestras elecciones de estado de ánimo encajan mucho hoy. El itinerario compartido se deriva de forma coherente de ambas.",
+  "moodMatchRevealCopyHighEnergetic": "¡Vibra doble hoy! 🔥 El plan casi se monta solo—os va a encantar.",
+  "moodMatchRevealCopyHighDirect": "Estados de ánimo muy parecidos. El plan os refleja a los dos con poco compromiso.",
+  "moodMatchRevealCopyGoodFriendly": "Vibes distintas, pero lo he cuadrado. \nConfiad.",
+  "moodMatchRevealCopyGoodProfessional": "Elegisteis estados de ánimo distintos; equilibré ambos en un itinerario compartido práctico.",
+  "moodMatchRevealCopyGoodEnergetic": "¿Distintos? Reto aceptado—¡la ruta sigue sonando emocionante para los dos!",
+  "moodMatchRevealCopyGoodDirect": "Diferían los estados de ánimo; el itinerario los une. Revisad las paradas juntos.",
+  "moodMatchRevealCopyCreativeFriendly": "Vale, esto era difícil. Pero me flipa \nlo que encontré—vosotros también.",
+  "moodMatchRevealCopyCreativeProfessional": "Los estados de ánimo divergen bastante; prioricé solapamientos que hoy funcionan para ambos.",
+  "moodMatchRevealCopyCreativeEnergetic": "¡Combo picante en el papel—pero hay joyas que aún divierten en pareja!",
+  "moodMatchRevealCopyCreativeDirect": "Poco solapamiento. El plan apuesta a favoritos neutros y consensuados.",
+  "moodMatchScoreLabelPerfect": "Perfect match ✨",
+  "moodMatchScoreLabelGreat": "Great combo",
+  "moodMatchScoreLabelGoodBalance": "Good balance",
+  "moodMatchScoreLabelInteresting": "Interesting mix",
+  "moodMatchScoreLabelCreative": "Moody got creative",
+  "moodMatchRevealMoodyFallback": "Tus lados {moodA} y {moodB} hacen un equipo sorprendentemente bueno — me gusta.",
+  "@moodMatchRevealMoodyFallback": {
+    "placeholders": {
+      "moodA": {
+        "type": "String"
+      },
+      "moodB": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchResultCompatLine": "{percent}% match · {label}",
+  "@moodMatchResultCompatLine": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchResultCompatGreat": "Gran combo ✓",
+  "moodMatchResultFooterStrip": "Cada uno añade lo que quiera a su propio My Day",
+  "moodMatchLobbyChoosingBadge": "Eligiendo",
+  "moodMatchLobbyReadyBadge": "Listo",
+  "moodMatchSeePlanShareA11y": "Compartir",
+  "moodMatchMoodTileSublabel": "Toca para elegir",
+  "moodMatchBlendChip": "{emoji} {label}",
+  "@moodMatchBlendChip": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchWithFriendMenu": "Mood Match",
+  "moodMatchInviteShare": "¡Únete a mi Mood Match en WanderMood! Código: {code}",
+  "@moodMatchInviteShare": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchShareMoodyPrompt": "Genial—tu match casi seguro ya tiene WanderMood 💚 Toca primero Invitar en WanderMood y te ayudo a buscarlos 👀 El enlace y el QR están abajo por si los necesitas 📎✨",
+  "moodMatchShareFriendCodeIntro": "Tu match solo necesita este código si abre WanderMood sin el enlace—es para su móvil, no para el tuyo.",
+  "moodMatchShareLinkQrFoldTitle": "¿Prefieres enlace o QR?",
+  "moodMatchShareLinkQrFoldSubtitle": "Para otros chats, o si aún no tienen WanderMood.",
+  "moodMatchShareBottomHint": "Consejo: las notificaciones pueden avisarte cuando se unan. Puedes ir al lobby cuando quieras.",
+  "moodMatchPartnerJoinedNotifTitle": "{name} se unió",
+  "@moodMatchPartnerJoinedNotifTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchPartnerJoinedNotifBody": "Abre el lobby de Mood Match para seguir.",
+  "moodMatchPartnerJoinedNotifNameFallback": "Alguien",
+  "moodMatchInviteWanderMoodCta": "Invitar en WanderMood",
+  "moodMatchInviteTitle": "Invitar a un amigo de WanderMood",
+  "moodMatchInviteSubtitle": "Primero envía tu enlace de unión: funciona en cualquier chat. Aquí puedes buscar por nombre de usuario para avisar a alguien que ya está en WanderMood (opcional).",
+  "moodMatchInviteJoinLinkCardTitle": "Tu enlace de unión",
+  "moodMatchInviteJoinLinkCardSubtitle": "Copia este enlace https y envíalo. Así sigue siendo fiable si no llega un aviso en la app.",
+  "moodMatchInviteCopyLinkAction": "Copiar enlace",
+  "moodMatchInviteLinkCopied": "Enlace copiado",
+  "moodMatchInviteSearchHint": "Nombre de usuario",
+  "moodMatchInviteSearchEmpty": "Escribe al menos 2 caracteres",
+  "moodMatchInviteNoResults": "No hay perfiles que coincidan",
+  "moodMatchInviteButton": "Invitar",
+  "moodMatchInviteSent": "Invitación en la app enviada",
+  "moodMatchInviteFailed": "No se pudo enviar la invitación en la app (servidor). Copia tu enlace de unión y envíalo en cualquier chat: siempre funciona.",
+  "moodMatchInviteNotDeliveredInApp": "No se entregó un aviso en la app: quizá tenga las notificaciones in-app desactivadas. Envía tu enlace de unión.",
+  "moodMatchInviteNotifTitle": "Invitación a Mood Match",
+  "moodMatchInviteNotifMessage": "{inviter} te invitó a Mood Match.\nCódigo: {code}\n{link}",
+  "@moodMatchInviteNotifMessage": {
+    "placeholders": {
+      "inviter": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      },
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchShareShareLink": "Share link",
+  "moodMatchShareCopyLink": "Copy link",
+  "moodMatchShareWhatsApp": "WhatsApp",
+  "moodMatchShareCopiedToast": "Link copied",
+  "moodMatchFriendThey": "tu amigo",
+  "moodMatchHubOpenPlan": "Open plan",
+  "moodMatchHubNudgeFriend": "Recordar a tu amigo",
+  "moodMatchLobbyWaitTease0": "Esperando a {name}… sin prisa 👀",
+  "@moodMatchLobbyWaitTease0": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyWaitTease1": "Sigue sin aparecer {name}… clásico 😭",
+  "@moodMatchLobbyWaitTease1": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyWaitTease2": "Ya tengo un plan entero listo. Por si acaso. 🌀",
+  "moodMatchLobbyWaitTease3": "{name} se está tomando su tiempo… merecerá la pena, confía",
+  "@moodMatchLobbyWaitTease3": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyFriendJoinedLine": "¡{name} se unió! 🎯 Ahora elige tu estado de ánimo.",
+  "@moodMatchLobbyFriendJoinedLine": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchLobbyBothLockedHold": "Dos estados de ánimo listos. Dame un segundo… 🤔"
 }

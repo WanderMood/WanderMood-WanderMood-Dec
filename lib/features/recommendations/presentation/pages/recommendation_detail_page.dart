@@ -122,7 +122,7 @@ class RecommendationDetailPage extends ConsumerWidget {
                 title: Text(recommendation.currentMood!.label),
                 subtitle: Text(
                   l10n.recDetailMoodRegisteredOn(
-                    _formatDateTime(recommendation.currentMood!.timestamp),
+                    _formatDateTime(recommendation.currentMood!.createdAt),
                   ),
                 ),
               ),

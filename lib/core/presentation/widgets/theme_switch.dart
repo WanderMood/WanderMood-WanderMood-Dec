@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../domain/models/user_preferences.dart';
-import '../../providers/user_preferences_provider.dart';
+import '../../../features/settings/presentation/providers/user_preferences_provider.dart';
 
 class ThemeSwitch extends ConsumerWidget {
   final bool showLabel;

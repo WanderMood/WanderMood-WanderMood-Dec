@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import '../../mood/domain/models/mood.dart';
-import '../../weather/domain/models/weather_data.dart';
+import '../../../mood/domain/models/mood.dart';
+import '../../../weather/domain/models/weather_data.dart';
 
 part 'recommendation.freezed.dart';
 part 'recommendation.g.dart';

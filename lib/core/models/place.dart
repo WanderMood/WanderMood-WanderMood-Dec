@@ -1,5 +1,3 @@
-import 'package:flutter_google_places_sdk/flutter_google_places_sdk.dart';
-
 class Place {
   final String id;
   final String name;
@@ -69,20 +67,6 @@ class Place {
       'phoneNumber': phoneNumber,
       'website': website,
     };
-  }
-
-  factory Place.fromPlaceResult(PlaceResult result) {
-    return Place(
-      id: result.placeId,
-      name: result.name,
-      address: result.formattedAddress,
-      lat: result.latLng?.lat,
-      lng: result.latLng?.lng,
-      types: result.types?.map((e) => e.toString()).toList() ?? [],
-      rating: result.rating,
-      isOpen: result.isOpen ?? true,
-      priceLevel: result.priceLevel?.toString(),
-    );
   }
 
   Place copyWith({

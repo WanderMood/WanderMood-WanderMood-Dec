@@ -5,6 +5,6 @@ import 'package:wandermood/features/mood/data/repositories/supabase_mood_reposit
 import 'package:wandermood/features/mood/domain/repositories/mood_repository.dart';
 
 final moodRepositoryProvider = Provider<MoodRepository>((ref) {
-  final supabase = ref.watch(supabaseProvider);
+  final supabase = ref.watch(supabaseClientProvider);
   return SupabaseMoodRepository(supabase);
 }); 

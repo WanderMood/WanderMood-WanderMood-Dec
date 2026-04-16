@@ -58,29 +58,13 @@ class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
     SupabaseClient supabase,
     String userId,
   ) async {
-    const full =
-        'home_base, age_group, gender, selected_moods, budget_level, social_vibe, '
-        'dietary_restrictions, activity_pace, time_available, interests';
-    const narrow =
-        'home_base, age_group, gender, selected_moods, budget_level, social_vibe, '
-        'dietary_restrictions, activity_pace, time_available';
-    try {
-      return await supabase
-          .from('user_preferences')
-          .select(full)
-          .eq('user_id', userId)
-          .maybeSingle();
-    } on PostgrestException catch (e) {
-      final msg = e.message.toLowerCase();
-      if (msg.contains('column') && msg.contains('does not exist')) {
-        return await supabase
-            .from('user_preferences')
-            .select(narrow)
-            .eq('user_id', userId)
-            .maybeSingle();
-      }
-      rethrow;
-    }
+    return await supabase
+        .from('user_preferences')
+        // Avoid hardcoding columns here: some environments diverge and selecting
+        // missing columns causes noisy 400s on launch.
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
   }
 
   Future<CurrentUserProfile?> _fetch() async {
@@ -165,11 +149,6 @@ class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
       'currently_exploring': isLocal ? 'local' : 'traveling',
       'updated_at': DateTime.now().toIso8601String(),
     }).eq('id', userId);
-    await supabase.from('user_preferences').upsert({
-      'user_id': userId,
-      'home_base': isLocal ? 'Local Explorer' : 'Traveler',
-      'updated_at': DateTime.now().toIso8601String(),
-    }, onConflict: 'user_id');
     await refresh();
   }
 
