@@ -46,18 +46,25 @@ class ActivityRating {
   }
 
   factory ActivityRating.fromJson(Map<String, dynamic> json) {
+    final starsRaw = json['stars'];
+    var stars = starsRaw is int
+        ? starsRaw
+        : (starsRaw is num ? starsRaw.toInt() : 1);
+    if (stars < 1 || stars > 5) stars = 1;
     return ActivityRating(
       id: json['id'] as String,
       userId: json['user_id'] as String,
       activityId: json['activity_id'] as String,
-      activityName: json['activity_name'] as String,
+      activityName: (json['activity_name'] as String?) ?? '',
       placeName: json['place_name'] as String?,
-      stars: json['stars'] as int,
+      stars: stars,
       tags: List<String>.from(json['tags'] ?? []),
-      wouldRecommend: json['would_recommend'] as bool,
+      wouldRecommend: json['would_recommend'] as bool? ?? false,
       notes: json['notes'] as String?,
-      completedAt: DateTime.parse(json['completed_at'] as String),
-      mood: json['mood'] as String,
+      completedAt: json['completed_at'] != null
+          ? DateTime.parse(json['completed_at'] as String)
+          : DateTime.now(),
+      mood: json['mood'] as String? ?? 'unknown',
       googlePlaceId: json['google_place_id'] as String?,
     );
   }

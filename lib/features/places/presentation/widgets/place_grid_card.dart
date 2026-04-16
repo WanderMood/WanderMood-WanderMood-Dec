@@ -6,7 +6,6 @@ import 'package:wandermood/features/places/models/place.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:wandermood/core/services/distance_service.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/features/places/services/places_service.dart';
@@ -42,7 +41,7 @@ class PlaceGridCard extends ConsumerWidget {
     this.photoSelectionSeed = 0,
   }) : super(key: key);
 
-  static const double _kGridImageHeight = 120;
+  static const double _kGridImageHeight = 96;
 
   Widget _buildPlaceImageArea(WidgetRef ref) {
     Widget buildPhotoAt(int index, List<String> photos) {
@@ -109,12 +108,12 @@ class PlaceGridCard extends ConsumerWidget {
     try {
       return Image.asset(
         imagePath,
-        height: 120,
+        height: _kGridImageHeight,
         width: double.infinity,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
           return Container(
-            height: 120,
+            height: _kGridImageHeight,
             width: double.infinity,
             color: Colors.grey[300],
             child: Center(
@@ -126,7 +125,7 @@ class PlaceGridCard extends ConsumerWidget {
       );
     } catch (e) {
       return Container(
-        height: 120,
+        height: _kGridImageHeight,
         width: double.infinity,
         color: Colors.grey[300],
         child: Center(
@@ -243,7 +242,7 @@ class PlaceGridCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
-              height: 3,
+              height: 2,
               width: double.infinity,
               color: _wmForest,
             ),
@@ -257,13 +256,13 @@ class PlaceGridCard extends ConsumerWidget {
                   _buildPlaceImageArea(ref),
 
                   // Open/closed only (top-left) — social pills hidden for calmer grid cards.
-                  if (place.openingHours != null)
+                    if (place.openingHours != null)
                     Positioned(
-                      top: 8,
-                      left: 8,
+                      top: 6,
+                      left: 6,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                            horizontal: 6, vertical: 3),
                         decoration: BoxDecoration(
                           color: place.openingHours!.isOpen
                               ? _wmForest
@@ -283,51 +282,21 @@ class PlaceGridCard extends ConsumerWidget {
                               : l10n.dayPlanCardClosed,
                           style: GoogleFonts.poppins(
                             color: Colors.white,
-                            fontSize: 10,
+                            fontSize: 9,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                     ),
 
-                  // Action buttons (directions, share, favorite) - stacked vertically
+                  // Favorite only on grid — directions/maps live on place detail
+                  // to keep tiles calmer and reduce accidental launches.
                   Positioned(
-                    top: 8,
-                    right: 8,
+                    top: 6,
+                    right: 6,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Get Directions button
-                        GestureDetector(
-                          onTap: () async {
-                            final url = Uri.parse(
-                                'https://www.google.com/maps/search/?api=1&query=${place.location.lat},${place.location.lng}');
-                            if (await canLaunchUrl(url)) {
-                              await launchUrl(url,
-                                  mode: LaunchMode.externalApplication);
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.15),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.directions,
-                              color: _wmForest,
-                              size: 14,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
                         // Favorite indicator
                         GestureDetector(
                           onTap: () async {
@@ -375,70 +344,65 @@ class PlaceGridCard extends ConsumerWidget {
               ),
             ),
 
-            // Title row fixed; Moody + pills scroll inside remaining space (avoids grid cell overflow).
+            // Title + rating on separate lines (full-width name → less ugly truncation).
+            // Body is top-aligned in a scroll view so we do not stretch content to fill
+            // the whole flex region (that created tall bands of empty white).
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                padding: const EdgeInsets.fromLTRB(8, 5, 8, 2),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            place.name,
+                    Text(
+                      place.name,
+                      style: GoogleFonts.poppins(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        height: 1.2,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (place.rating > 0) ...[
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.star,
+                            color: _wmSunset,
+                            size: 11,
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            place.rating.toStringAsFixed(1),
                             style: GoogleFonts.poppins(
-                              fontSize: 12,
+                              fontSize: 10,
                               fontWeight: FontWeight.w600,
                             ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        if (place.rating > 0) ...[
-                          const SizedBox(width: 4),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.star,
-                                color: _wmSunset,
-                                size: 12,
+                          if (place.reviewCount > 0) ...[
+                            Text(
+                              ' · ',
+                              style: GoogleFonts.poppins(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w500,
+                                color: _wmStone,
                               ),
-                              const SizedBox(width: 2),
-                              Text(
-                                place.rating.toStringAsFixed(1),
-                                style: GoogleFonts.poppins(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                            ),
+                            Text(
+                              ExplorePlaceCardCopy.formatReviewCount(
+                                  place.reviewCount),
+                              style: GoogleFonts.poppins(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w500,
+                                color: _wmStone,
                               ),
-                              if (place.reviewCount > 0) ...[
-                                Text(
-                                  ' · ',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w500,
-                                    color: _wmStone,
-                                  ),
-                                ),
-                                Text(
-                                  ExplorePlaceCardCopy.formatReviewCount(
-                                      place.reviewCount),
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w500,
-                                    color: _wmStone,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
+                            ),
+                          ],
                         ],
-                      ],
-                    ),
-                    const SizedBox(height: 4),
+                      ),
+                    ],
+                    const SizedBox(height: 3),
                     Expanded(
                       child: SingleChildScrollView(
                         physics: const ClampingScrollPhysics(),
@@ -448,88 +412,54 @@ class PlaceGridCard extends ConsumerWidget {
                           children: [
                             PlaceCardMoodyDescription(
                               place: place,
-                              maxLines: 4,
+                              maxLines: 3,
                               paddingTop: 0,
-                              useCardStackLayout: true,
-                              structuredTitleFontSize: 11,
-                              structuredBodyFontSize: 11,
+                              useCardStackLayout: false,
                               textStyle: GoogleFonts.poppins(
-                                fontSize: 11,
-                                height: 1.3,
+                                fontSize: 10.5,
+                                height: 1.32,
                                 color: _wmDusk,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 3),
                             Builder(
                               builder: (context) {
                                 final primaryLbl =
-                                    ExplorePlaceCardCopy.primaryTypeLabelForCard(
-                                        place, l10n);
-                                final bestLbl = ExplorePlaceCardCopy
-                                    .bestTimeDisplayLabel(place.bestTime, l10n);
-                                final durationLbl = ExplorePlaceCardCopy
-                                    .exploreCardVisitDurationLabel(place, l10n);
+                                    ExplorePlaceCardCopy
+                                        .primaryTypeLabelForCard(
+                                  place,
+                                  l10n,
+                                );
                                 return Wrap(
-                                  spacing: 4,
-                                  runSpacing: 4,
-                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  spacing: 3,
+                                  runSpacing: 3,
+                                  crossAxisAlignment:
+                                      WrapCrossAlignment.center,
                                   children: [
                                     if (primaryLbl != null)
                                       Container(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 4),
+                                          horizontal: 6,
+                                          vertical: 3,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: _wmForestTint,
-                                          borderRadius: BorderRadius.circular(16),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                           border: Border.all(
-                                              color: _wmParchment, width: 1),
+                                            color: _wmParchment,
+                                            width: 1,
+                                          ),
                                         ),
                                         child: Text(
                                           primaryLbl,
                                           style: GoogleFonts.poppins(
-                                            fontSize: 10,
+                                            fontSize: 9,
                                             color: _wmForest,
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
                                       ),
-                                    if (bestLbl != null)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: _wmForestTint,
-                                          borderRadius: BorderRadius.circular(16),
-                                          border: Border.all(
-                                              color: _wmParchment, width: 1),
-                                        ),
-                                        child: Text(
-                                          bestLbl,
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 10,
-                                            color: _wmForest,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: _wmForestTint,
-                                        borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(
-                                            color: _wmParchment, width: 1),
-                                      ),
-                                      child: Text(
-                                        durationLbl,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 10,
-                                          color: _wmForest,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
                                     if (_calculateDistance() != null)
                                       _buildCategoryPill(
                                         icon: Icons.directions_walk,
@@ -561,18 +491,23 @@ class PlaceGridCard extends ConsumerWidget {
                 child: InkWell(
                   onTap: onAddToMyDayTap,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 6),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.add, color: Colors.white, size: 16),
-                        const SizedBox(width: 6),
-                        Text(
-                          l10n.dayPlanAddToMyDay,
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
+                        const Icon(Icons.add, color: Colors.white, size: 15),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Text(
+                            l10n.dayPlanAddToMyDay,
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
                           ),
                         ),
                       ],

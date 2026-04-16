@@ -40,6 +40,15 @@ class PlaceCardMoodyDescription extends ConsumerWidget {
 
   static const Color _wmForest = Color(0xFF2A6049);
 
+  /// Rich list cards: hook is at most 2 lines (13 / 1.35). Reserve this slot when the edge omits [hook] so list card heights stay aligned.
+  static const double _kRichHookLineFontSize = 13;
+  static const double _kRichHookLineHeight = 1.35;
+  static const int _kRichHookMaxLines = 2;
+  static const double _kRichHookAfterGap = 8;
+  static const double _kRichHookSlotHeight =
+      _kRichHookLineFontSize * _kRichHookLineHeight * _kRichHookMaxLines +
+          _kRichHookAfterGap;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
@@ -85,30 +94,34 @@ class PlaceCardMoodyDescription extends ConsumerWidget {
           final hasHook = hookText != null && hookText.isNotEmpty;
 
           if (useCardStackLayout) {
-            final bodyLines = hasHook
-                ? (lineCap - 2).clamp(2, 10)
-                : lineCap.clamp(2, 10);
+            final bodyLines = (lineCap - _kRichHookMaxLines).clamp(2, 10);
             return Padding(
               padding: EdgeInsets.only(top: paddingTop),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (hasHook) ...[
-                    Text(
-                      hookText,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontStyle: FontStyle.italic,
-                        fontWeight: FontWeight.w500,
-                        color: _wmForest,
-                        height: 1.35,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                  SizedBox(
+                    height: _kRichHookSlotHeight,
+                    width: double.infinity,
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: hasHook
+                          ? Text(
+                              hookText,
+                              style: GoogleFonts.poppins(
+                                fontSize: _kRichHookLineFontSize,
+                                fontStyle: FontStyle.italic,
+                                fontWeight: FontWeight.w500,
+                                color: _wmForest,
+                                height: _kRichHookLineHeight,
+                              ),
+                              maxLines: _kRichHookMaxLines,
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          : const SizedBox.shrink(),
                     ),
-                    const SizedBox(height: 8),
-                  ],
+                  ),
                   GuestDemoAboutSectionsView(
                     source: ui.sectionsSource!,
                     compact: true,

@@ -1604,6 +1604,14 @@
   "moodHubBannerNight": "Late night energy — let's find something that fits.",
   "moodyIdleWakeOpenPlan": "Let's open your plan for today.",
   "moodyIdleWakeChooseMood": "What are we doing today? Pick your mood and we'll build the day.",
+  "moodyIdleTapMoodyHint": "Tap Moody to continue",
+  "moodyIdleWelcomeBack": "Welcome back!",
+  "moodyIdleFallbackSleeping": "Sssh… Moody was sleeping 😴",
+  "moodyIdleFallbackMorning": "Moody was grabbing a coffee ☕",
+  "moodyIdleFallbackLunch": "Moody was on a lunch break 🍽",
+  "moodyIdleFallbackAfternoon": "Moody was busy — but is here for you again ✨",
+  "moodyIdleFallbackEvening": "Moody was winding down 🌙",
+  "moodyIdleFallbackLateNight": "It's getting late… Moody was almost asleep ⭐",
   "moodyHubNewConversation": "New conversation",
   "moodHubCreatePlan": "Let's create your perfect plan! 🎯",
   "moodHubBackToHub": "Back to Hub",
@@ -1987,6 +1995,10 @@
   "myDayTimelineSectionAfternoonSubtitle": "Peak adventure time",
   "myDayTimelineSectionEveningTitle": "🌆 Evening",
   "myDayTimelineSectionEveningSubtitle": "Wind down and enjoy",
+  "myDaySlotPlannedForMorning": "This morning",
+  "myDaySlotPlannedForAfternoon": "This afternoon",
+  "myDayTimelineSectionMorningPastTitle": "🌅 This morning",
+  "myDayTimelineSectionAfternoonPastTitle": "🌞 This afternoon",
   "myDayWeekendEmptyTitle": "Your weekend is still empty!",
   "myDayWeekendEmptySubtitle": "Want to plan Saturday or Sunday in advance?",
   "myDayWeekendSaturdayShort": "Sa {day}",
@@ -2716,6 +2728,15 @@
   "myDayExploreActivitiesButton": "Explore activities",
   "myDayExploreNearbyButton": "Explore Nearby",
   "myDayAskMoodyButton": "Ask Moody",
+  "myDayOpenFullPlaceDetails": "Open full place",
+  "myDayMoodStreakBadge": "{count, plural, one{1 day streak} other{{count} day streak}}",
+  "@myDayMoodStreakBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "myDayGetReadyButton": "Get Ready",
   "myDayRightNow": "RIGHT NOW",
   "myDayStatusError": "⚠️ ERROR",
@@ -2905,6 +2926,39 @@
       }
     }
   },
+  "exploreContextStripDiscovering": "Discovering {city}",
+  "@exploreContextStripDiscovering": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreContextStripSearch": "Showing results for \"{query}\"",
+  "@exploreContextStripSearch": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreContextStripFiltered": "{count, plural, one{1 filter on} other{{count} filters on}}",
+  "@exploreContextStripFiltered": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreContextPlacesCount": "{count, plural, one{1 place} other{{count} places}}",
+  "@exploreContextPlacesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "explorePeekViewFullPlace": "View full place",
   "chatSheetMoodyName": "Moody",
   "chatSheetErrorMessage": "Oops! I'm having trouble connecting right now. Can you try again? 🤔",
   "chatSheetEmptyStateBody": "I know the city like the back of my hand! Tell me your mood, and I'll craft the perfect day just for you. Whether you're feeling adventurous, romantic, or need some chill vibes - I've got you covered! 🎯",
@@ -3690,10 +3744,10 @@
   "placeCardSocialHiddenGem": "💎 Hidden gem",
   "placeCardSocialLovedByLocals": "❤️ Locals love it",
   "placeCardSocialPopular": "⭐ Popular",
-  "placeCardBestMorning": "☀️ Morning",
-  "placeCardBestAfternoon": "🌤 Afternoon",
-  "placeCardBestEvening": "🌙 Evening",
-  "placeCardBestAllDay": "🕐 All day",
+  "placeCardBestMorning": "☀️ Best in the morning",
+  "placeCardBestAfternoon": "🌤 Best in the afternoon",
+  "placeCardBestEvening": "🌙 Best in the evening",
+  "placeCardBestAllDay": "🕐 Great any time",
   "placeCardVenuePlace": "Place",
   "placeCardVenueGallery": "Gallery",
   "placeCardVenueAttraction": "Attraction",

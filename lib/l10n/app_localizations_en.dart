@@ -3660,6 +3660,32 @@ class AppLocalizationsEn extends AppLocalizations {
       'What are we doing today? Pick your mood and we\'ll build the day.';
 
   @override
+  String get moodyIdleTapMoodyHint => 'Tap Moody to continue';
+
+  @override
+  String get moodyIdleWelcomeBack => 'Welcome back!';
+
+  @override
+  String get moodyIdleFallbackSleeping => 'Sssh… Moody was sleeping 😴';
+
+  @override
+  String get moodyIdleFallbackMorning => 'Moody was grabbing a coffee ☕';
+
+  @override
+  String get moodyIdleFallbackLunch => 'Moody was on a lunch break 🍽';
+
+  @override
+  String get moodyIdleFallbackAfternoon =>
+      'Moody was busy — but is here for you again ✨';
+
+  @override
+  String get moodyIdleFallbackEvening => 'Moody was winding down 🌙';
+
+  @override
+  String get moodyIdleFallbackLateNight =>
+      'It\'s getting late… Moody was almost asleep ⭐';
+
+  @override
   String get moodyHubNewConversation => 'New conversation';
 
   @override
@@ -4395,6 +4421,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get myDayTimelineSectionEveningSubtitle => 'Wind down and enjoy';
+
+  @override
+  String get myDaySlotPlannedForMorning => 'This morning';
+
+  @override
+  String get myDaySlotPlannedForAfternoon => 'This afternoon';
+
+  @override
+  String get myDayTimelineSectionMorningPastTitle => '🌅 This morning';
+
+  @override
+  String get myDayTimelineSectionAfternoonPastTitle => '🌞 This afternoon';
 
   @override
   String get myDayWeekendEmptyTitle => 'Your weekend is still empty!';
@@ -5696,6 +5734,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myDayAskMoodyButton => 'Ask Moody';
 
   @override
+  String get myDayOpenFullPlaceDetails => 'Open full place';
+
+  @override
+  String myDayMoodStreakBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count day streak',
+      one: '1 day streak',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get myDayGetReadyButton => 'Get Ready';
 
   @override
@@ -6128,6 +6180,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String explorePlaceDescriptionFallback(String name) {
     return 'Explore $name';
   }
+
+  @override
+  String exploreContextStripDiscovering(String city) {
+    return 'Discovering $city';
+  }
+
+  @override
+  String exploreContextStripSearch(String query) {
+    return 'Showing results for \"$query\"';
+  }
+
+  @override
+  String exploreContextStripFiltered(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count filters on',
+      one: '1 filter on',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exploreContextPlacesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count places',
+      one: '1 place',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get explorePeekViewFullPlace => 'View full place';
 
   @override
   String get chatSheetMoodyName => 'Moody';
@@ -7832,16 +7919,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get placeCardSocialPopular => '⭐ Popular';
 
   @override
-  String get placeCardBestMorning => '☀️ Morning';
+  String get placeCardBestMorning => '☀️ Best in the morning';
 
   @override
-  String get placeCardBestAfternoon => '🌤 Afternoon';
+  String get placeCardBestAfternoon => '🌤 Best in the afternoon';
 
   @override
-  String get placeCardBestEvening => '🌙 Evening';
+  String get placeCardBestEvening => '🌙 Best in the evening';
 
   @override
-  String get placeCardBestAllDay => '🕐 All day';
+  String get placeCardBestAllDay => '🕐 Great any time';
 
   @override
   String get placeCardVenuePlace => 'Place';

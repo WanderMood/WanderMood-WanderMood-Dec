@@ -28,6 +28,7 @@ import 'package:wandermood/core/services/distance_service.dart';
 import 'package:wandermood/core/services/user_preferences_service.dart';
 
 import '../widgets/conversational_explore_header.dart';
+import '../widgets/explore_place_quick_peek_sheet.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/presentation/providers/language_provider.dart';
@@ -406,6 +407,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   /// Reveal next page of already-loaded places, or fetch more (main feed only).
   Future<void> _onExploreLoadMoreTap(int filteredTotal) async {
     if (_isLoadingMoreExplore || _isMapView) return;
+    HapticFeedback.selectionClick();
     final visible = math.min(_exploreVisiblePlaceCount, filteredTotal);
     if (visible < filteredTotal) {
       setState(() {
@@ -1054,10 +1056,91 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   void _showAdvancedFilters() {
-    showDialog(
+    HapticFeedback.lightImpact();
+    showGeneralDialog<void>(
       context: context,
       barrierDismissible: true,
-      builder: (context) => _buildAdvancedFilterModal(),
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      transitionDuration: const Duration(milliseconds: 240),
+      pageBuilder: (dialogContext, animation, secondaryAnimation) {
+        return _buildAdvancedFilterModal();
+      },
+      transitionBuilder: (dialogContext, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.04),
+              end: Offset.zero,
+            ).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+
+  /// Opens place detail with light haptic — same cache + route as before.
+  void _openPlaceFromExplore(Place place) {
+    HapticFeedback.lightImpact();
+    ref.read(placesServiceProvider.notifier).cachePlaceObject(place);
+    context.push('/place/${place.id}');
+  }
+
+  Widget _buildExploreFeedLoadingSurface(AppLocalizations l10n) {
+    Widget skeletonBar({
+      required double height,
+      required double widthFactor,
+      int shimmerDelayMs = 0,
+    }) {
+      return Align(
+        alignment: Alignment.center,
+        child: FractionallySizedBox(
+          widthFactor: widthFactor,
+          child: Container(
+            height: height,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8E2D8),
+              borderRadius: BorderRadius.circular(14),
+            ),
+          )
+              .animate(
+                onPlay: (c) => c.repeat(reverse: true),
+              )
+              .shimmer(
+                delay: Duration(milliseconds: shimmerDelayMs),
+                duration: const Duration(milliseconds: 1800),
+                color: Colors.white.withValues(alpha: 0.55),
+              ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 28),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          skeletonBar(height: 14, widthFactor: 0.42, shimmerDelayMs: 0),
+          const SizedBox(height: 18),
+          skeletonBar(height: 112, widthFactor: 1, shimmerDelayMs: 120),
+          const SizedBox(height: 14),
+          skeletonBar(height: 112, widthFactor: 1, shimmerDelayMs: 240),
+          const SizedBox(height: 22),
+          Text(
+            l10n.exploreSearching,
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF8C8780),
+            ),
+          ).animate().fadeIn(duration: 420.ms, delay: 100.ms),
+        ],
+      ),
     );
   }
 
@@ -1137,6 +1220,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     });
   }
 
+  /// 0 = open now, 1 = no hours data, 2 = closed — for Explore list/grid/map ordering.
+  int _exploreOpeningDisplayPriority(Place p) {
+    final oh = p.openingHours;
+    if (oh == null) {
+      return 1;
+    }
+    return oh.isOpen ? 0 : 2;
+  }
+
   List<Place> _filterPlaces(List<Place> places) {
     final initialCount = places.length;
     final preferencesService = ref.read(userPreferencesServiceProvider);
@@ -1172,7 +1264,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           matchesCategory;
     }).toList();
 
-    // Preserve backend / list order (shuffle); do not re-sort here.
+    // Open first → unknown hours → closed (stable within ties: keeps Moody order).
+    filteredPlaces.sort((a, b) {
+      final c = _exploreOpeningDisplayPriority(a)
+          .compareTo(_exploreOpeningDisplayPriority(b));
+      if (c != 0) {
+        return c;
+      }
+      return 0;
+    });
 
     // Debug logging
     if (_activeFiltersCount > 0 || _searchQuery.isNotEmpty) {
@@ -1465,8 +1565,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   // Uses real opening hours data when available, otherwise estimates based on type
   bool _placeIsCurrentlyOpen(Place place) {
     // Use real opening hours if available
-    if (place.openingHours != null && place.openingHours!.isOpen != null) {
-      return place.openingHours!.isOpen!;
+    final oh = place.openingHours;
+    if (oh != null) {
+      return oh.isOpen;
     }
 
     // Fallback: estimate based on place type and current time
@@ -1589,6 +1690,127 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     }
   }
 
+  /// Browsing vs search vs filters — editorial line above the feed (list + map).
+  /// Omits total place count so the feed feels open-ended.
+  Widget _buildExploreModeContextCard() {
+    final l10n = AppLocalizations.of(context)!;
+    final city = ref.read(locationNotifierProvider).valueOrNull?.trim() ?? '';
+    final IconData icon;
+    final String title;
+    if (_searchQuery.trim().isNotEmpty && _searchResults == null) {
+      icon = Icons.hourglass_top_rounded;
+      title = l10n.exploreSearching;
+    } else if (_searchResults != null && _searchQuery.trim().isNotEmpty) {
+      icon = Icons.search_rounded;
+      title = l10n.exploreContextStripSearch(_searchQuery.trim());
+    } else if (_activeFiltersCount > 0) {
+      icon = Icons.tune_rounded;
+      title = l10n.exploreContextStripFiltered(_activeFiltersCount);
+    } else {
+      icon = Icons.explore_rounded;
+      title = city.isNotEmpty
+          ? l10n.exploreContextStripDiscovering(city)
+          : l10n.exploreContextStripDiscovering(l10n.navExplore);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFE8E2D8)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: const Color(0xFF2A6049), size: 22),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF4A4640),
+                    height: 1.25,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExploreInlineFilterActions() {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 6,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Material(
+            color: const Color(0xFFEBF3EE),
+            borderRadius: BorderRadius.circular(20),
+            child: InkWell(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                _showAdvancedFilters();
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.tune, size: 16, color: Color(0xFF2A6049)),
+                    const SizedBox(width: 6),
+                    Text(
+                      l10n.exploreFiltersActiveCount(_activeFiltersCount),
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF2A6049),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              _clearAllFilters();
+            },
+            child: Text(
+              l10n.exploreClearAll,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF8C8780),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildExploreHeaderColumn(
     int activitiesCount, {
     bool showOfflineCachedHint = false,
@@ -1625,7 +1847,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           ConversationalExploreHeader(
             onSearchChanged: _onConversationalSearchChanged,
             onFilterTap: _showAdvancedFilters,
@@ -1644,14 +1866,44 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             categoryEmoji: (k) => _filterIcons[k] ?? '📍',
             onCategorySelected: _onCategorySelected,
           ),
+          _buildExploreModeContextCard(),
+          if (_activeFiltersCount > 0) _buildExploreInlineFilterActions(),
           if (showOfflineCachedHint)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-              child: Text(
-                l10n.exploreOfflineShowingCached,
-                style: const TextStyle(color: Color(0xFF8C8780), fontSize: 12),
+              padding: const EdgeInsets.fromLTRB(20, 6, 20, 4),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEBF3EE),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFD0E4DA)),
+                ),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.cloud_off_outlined,
+                        size: 18,
+                        color: _afWmForest.withValues(alpha: 0.9),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          l10n.exploreOfflineShowingCached,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF2A6049),
+                            height: 1.35,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ).animate().fadeIn(duration: 280.ms, curve: Curves.easeOut),
         ],
         ),
       ),
@@ -1661,19 +1913,46 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   Widget _buildExploreOfflineEmptyBody() {
     final l10n = AppLocalizations.of(context)!;
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.wifi_off, size: 48, color: Color(0xFF8C8780)),
-          const SizedBox(height: 16),
-          Text(
-            l10n.exploreOfflineEmptyBody,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Color(0xFF4A4640), fontSize: 16),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 36),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFE8E2D8)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.wifi_off_rounded,
+                size: 40,
+                color: Color(0xFF8C8780),
+              ),
+            ),
+            const SizedBox(height: 22),
+            Text(
+              l10n.exploreOfflineEmptyBody,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF4A4640),
+                height: 1.45,
+              ),
+            ),
+          ],
+        ),
       ),
-    );
+    ).animate().fadeIn(duration: 320.ms, curve: Curves.easeOut);
   }
 
   Widget _buildExploreSliverAppBar(
@@ -1685,7 +1964,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       pinned: true,
       snap: false,
       // Title + search + chips + toggles — keep minimal dead space above the list.
-      expandedHeight: 258,
+      expandedHeight: 348,
       backgroundColor: Colors.transparent,
       elevation: 0,
       automaticallyImplyLeading: false,
@@ -1868,32 +2147,35 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 Expanded(
                   child: Center(
                     child: showLoadingEmpty
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const SizedBox(
-                                width: 40,
-                                height: 40,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 3,
-                                  color: Color(0xFF2A6049),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                l10n.exploreSearching,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 15,
-                                  color: const Color(0xFF8C8780),
-                                ),
-                              ),
-                            ],
-                          )
+                        ? _buildExploreFeedLoadingSurface(l10n)
+                            .animate()
+                            .fadeIn(duration: 280.ms, curve: Curves.easeOut)
                         : Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.search_off, size: 64, color: Color(0xFFB0BAC0)),
-                              const SizedBox(height: 16),
+                              Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  border:
+                                      Border.all(color: const Color(0xFFE8E2D8)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black
+                                          .withValues(alpha: 0.05),
+                                      blurRadius: 14,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.search_off_rounded,
+                                  size: 36,
+                                  color: Color(0xFFB0BAC0),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
                               Text(
                                 l10n.exploreNoPlacesFound,
                                 style: GoogleFonts.poppins(
@@ -1903,16 +2185,24 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              Text(
-                                l10n.exploreNoPlacesFoundHint,
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  color: const Color(0xFF8C8780),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 12),
+                                child: Text(
+                                  l10n.exploreNoPlacesFoundHint,
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13,
+                                    color: const Color(0xFF8C8780),
+                                    height: 1.45,
+                                  ),
                                 ),
                               ),
                             ],
-                          ),
+                          ).animate().fadeIn(
+                                duration: 320.ms,
+                                curve: Curves.easeOutCubic,
+                              ),
                   ),
                 ),
               ],
@@ -1961,12 +2251,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
     final placesSliver = _isGridView
         ? SliverGrid(
+            key: const ValueKey<String>('explore_sliver_grid'),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              // Slightly taller cells so Moody copy + pill wraps fit without bottom overflow.
-              childAspectRatio: 0.54,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+              // Wider vs height = shorter cards; tuned with [PlaceGridCard] padding + photo height.
+              childAspectRatio: 0.70,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
             ),
             delegate: SliverChildBuilderDelegate(
               (context, index) {
@@ -1977,12 +2268,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   userLocation: ul,
                   cityName: currentCity,
                   photoSelectionSeed: _explorePlacePhotoRefreshSeed,
-                  onTap: () {
-                    ref
-                        .read(placesServiceProvider.notifier)
-                        .cachePlaceObject(place);
-                    context.push('/place/${place.id}');
-                  },
+                  onTap: () => _openPlaceFromExplore(place),
                   onAddToMyDayTap: () => _showAddToMyDaySheet(place),
                 ).animate().fadeIn(
                     duration: 300.ms,
@@ -1992,6 +2278,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
           )
         : SliverList(
+            key: const ValueKey<String>('explore_sliver_list'),
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 final place = visiblePlaces[index];
@@ -2004,12 +2291,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   cardMargin: const EdgeInsets.only(top: 2, bottom: 16),
                   showAddToMyDayButton: true,
                   onAddToMyDayTap: () => _showAddToMyDaySheet(place),
-                  onTap: () {
-                    ref
-                        .read(placesServiceProvider.notifier)
-                        .cachePlaceObject(place);
-                    context.push('/place/${place.id}');
-                  },
+                  onTap: () => _openPlaceFromExplore(place),
                 ).animate().fadeIn(
                     duration: 300.ms,
                     delay: Duration(milliseconds: index * 50));
@@ -2121,7 +2403,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               headerSliverBuilder: (context, innerBoxIsScrolled) => [
                 _buildExploreSliverAppBar(0),
               ],
-              body: const Center(child: CircularProgressIndicator()),
+              body: Builder(
+                builder: (context) {
+                  final l10n = AppLocalizations.of(context)!;
+                  return _buildExploreFeedLoadingSurface(l10n);
+                },
+              ),
             ),
           );
         },
@@ -2198,29 +2485,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  // Show dialog for talking to Moody
-  void _showMoodyTalkDialog() {
-    // Removed - Moody chat now only available on Moody screen
-  }
-
-  // Send chat message in modal
-  Future<void> _sendChatMessageInModal(
-      String message, StateSetter setModalState) async {
-    // Removed - Moody chat now only available on Moody screen
-  }
-
-  // Build message bubble
-  Widget _buildMessageBubble(ChatMessage message) {
-    // Removed - Moody chat now only available on Moody screen
-    return Container();
-  }
-
-  // Helper method to build quick suggestion buttons
-  Widget _buildQuickSuggestion(String text) {
-    // Removed - Moody chat now only available on Moody screen
-    return Container();
-  }
-
   Widget _buildAdvancedFilterModal() {
     return StatefulBuilder(
       builder: (BuildContext context, StateSetter setModalState) {
@@ -2234,7 +2498,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
         return Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.all(24),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           child: Container(
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.8,
@@ -2255,9 +2519,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
             child: Column(
               children: [
-                // Header
+                // Header — title row gets full width minus icon + close (avoids
+                // mid-word wraps when "Clear all" sat beside long l10n titles).
                 Container(
-                  padding: const EdgeInsets.fromLTRB(24, 20, 20, 20),
+                  padding: const EdgeInsets.fromLTRB(18, 16, 8, 14),
                   decoration: const BoxDecoration(
                     color: _afWmWhite,
                     borderRadius: BorderRadius.only(
@@ -2265,89 +2530,122 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       topRight: Radius.circular(20),
                     ),
                   ),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: _afWmForest,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Icons.tune,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.exploreAdvancedFiltersTitle,
-                              style: GoogleFonts.poppins(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: _afWmCharcoal,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: _afWmForest,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.tune,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 2, right: 4),
+                              child: Text(
+                                l10n.exploreAdvancedFiltersTitle,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: _afWmCharcoal,
+                                  height: 1.25,
+                                ),
+                                maxLines: 2,
+                                softWrap: true,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            if (_activeFiltersCount > 0)
-                              Text(
-                                l10n.exploreFiltersActiveCount(_activeFiltersCount),
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  color: _afWmForest,
-                                  fontWeight: FontWeight.w500,
+                          ),
+                          IconButton(
+                            visualDensity: VisualDensity.compact,
+                            constraints: const BoxConstraints(
+                              minWidth: 40,
+                              minHeight: 40,
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                            icon: const Icon(Icons.close, color: Colors.grey),
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.grey[100],
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (_activeFiltersCount > 0) ...[
+                        const SizedBox(height: 6),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 46, right: 4),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  l10n.exploreFiltersActiveCount(
+                                    _activeFiltersCount,
+                                  ),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    color: _afWmForest,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 2,
+                                  softWrap: true,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                          ],
-                        ),
-                      ),
-                      if (_activeFiltersCount > 0)
-                        TextButton(
-                          onPressed: () {
-                            _clearAllFilters();
-                            setModalState(() {});
-                          },
-                          style: TextButton.styleFrom(
-                            foregroundColor: _afWmStone,
-                            backgroundColor: Colors.transparent,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            shape: const RoundedRectangleBorder(
-                                side: BorderSide.none),
-                          ),
-                          child: Text(
-                            l10n.exploreClearAll,
-                            style: GoogleFonts.poppins(
-                              color: _afWmStone,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close, color: Colors.grey),
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.grey[100],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                              TextButton(
+                                onPressed: () {
+                                  _clearAllFilters();
+                                  setModalState(() {});
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: _afWmStone,
+                                  backgroundColor: Colors.transparent,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  shape: const RoundedRectangleBorder(
+                                    side: BorderSide.none,
+                                  ),
+                                ),
+                                child: Text(
+                                  l10n.exploreClearAll,
+                                  style: GoogleFonts.poppins(
+                                    color: _afWmStone,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
 
+                const Divider(height: 1, thickness: 1, color: _afWmParchment),
+
                 // Filter Content - New Expandable Structure
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -2472,12 +2770,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
                 // Apply Button
                 Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: const BoxDecoration(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 22),
+                  decoration: BoxDecoration(
                     color: _afWmWhite,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(20),
                       bottomRight: Radius.circular(20),
+                    ),
+                    border: Border(
+                      top: BorderSide(color: _afWmParchment.withValues(alpha: 0.85)),
                     ),
                   ),
                   child: Column(
@@ -2493,6 +2794,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               showOfflineSnackBar(context);
                               return;
                             }
+                            HapticFeedback.mediumImpact();
                             Navigator.pop(context);
                             final backendFilters = _buildMoodyBackendFilters();
                             final namedFilters = _buildMoodyNamedFilters();
@@ -3596,8 +3898,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         }
       }
 
-      // Store place ID for navigation
-      final placeId = place.id;
       markers.add(
         Marker(
           markerId: markerId,
@@ -3611,10 +3911,19 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           icon: markerIcon,
           onTap: () async {
             await Future.delayed(const Duration(milliseconds: 100));
-            if (mounted) {
-              ref.read(placesServiceProvider.notifier).cachePlaceObject(place);
-              context.push('/place/$placeId');
+            if (!mounted) {
+              return;
             }
+            HapticFeedback.lightImpact();
+            await showExplorePlaceQuickPeekSheet(
+              context: context,
+              place: place,
+              photoSelectionSeed: _explorePlacePhotoRefreshSeed,
+              onViewFullPlace: () => _openPlaceFromExplore(place),
+              onAddToMyDay: () {
+                unawaited(_showAddToMyDaySheet(place));
+              },
+            );
           },
         ),
       );
@@ -3836,6 +4145,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       return;
     }
 
+    HapticFeedback.lightImpact();
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.white,
@@ -3869,7 +4179,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     required VoidCallback onTap,
   }) {
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -3891,16 +4204,4 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       ),
     );
   }
-}
-
-class ChatMessage {
-  final String message;
-  final bool isUser;
-  final DateTime timestamp;
-
-  ChatMessage({
-    required this.message,
-    required this.isUser,
-    required this.timestamp,
-  });
 }

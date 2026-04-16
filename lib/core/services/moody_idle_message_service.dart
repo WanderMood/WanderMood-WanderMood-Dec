@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:wandermood/core/services/moody_hub_message_service.dart';
 import 'package:wandermood/core/utils/moody_idle_checker.dart';
 
@@ -48,17 +46,20 @@ class MoodyIdleMessageService {
   }
 
   /// Returns `null` on timeout / error / missing `message`.
+  ///
+  /// [languageCode] must match the app locale (e.g. from
+  /// `Localizations.localeOf(context).languageCode`), not the OS locale alone.
   static Future<String?> fetchIdleMessage({
     required MoodyIdleState idleState,
+    required String languageCode,
     Map<String, dynamic>? userPreferences,
     String? topInterest,
   }) {
-    final languageCode = PlatformDispatcher.instance.locale.languageCode;
     return MoodyHubMessageService.fetchHubMessage(
       currentMoods: _moodsFor(idleState, topInterest),
       timeOfDay: _timeOfDayFor(idleState),
       activitiesCount: 0,
-      languageCode: languageCode,
+      languageCode: languageCode.trim().isEmpty ? 'en' : languageCode.trim(),
       userPreferences: userPreferences,
     );
   }

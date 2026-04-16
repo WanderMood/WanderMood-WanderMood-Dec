@@ -109,7 +109,7 @@ class GuestDemoAboutSectionsView extends StatelessWidget {
             height: 1.3,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         Text(
           first.body,
           style: GoogleFonts.poppins(

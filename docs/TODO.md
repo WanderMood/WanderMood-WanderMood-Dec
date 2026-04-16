@@ -45,6 +45,30 @@ Things you **do not** need to finish before TestFlight or normal development. Ch
 
 ---
 
+## My Day (Screen 3) — post-launch polish (items 5–7)
+
+Deferred after the pre-launch My Day pass (short titles, motion, typography, a11y). Tackle when you have a quiet release window.
+
+- [ ] **(5) Split `dynamic_my_day_screen.dart`** — break into smaller widgets / files (timeline builder, sheets, status hero host) so changes stay reviewable and testable.
+- [ ] **(6) Skeleton / loading polish** — stable loading states for My Day (scheduled activities, free-time carousel) instead of abrupt spinners or empty flashes.
+- [ ] **(7) Pull-to-refresh + empty states** — refresh gesture for today’s plan where it fits the scroll model; align empty-state illustrations and copy with the rest of the app’s empty patterns.
+
+---
+
+## Community reviews — public, trustworthy WanderMood ratings
+
+Today **`activity_ratings`** is **private per user** (RLS: only you can read your rows). It powers personalization and My Day “your review,” not a shared trust surface. To make **reviews visible to other travelers** (your stated goal), treat this as a **separate public layer** (or explicit publish flag + new policies), not “open up” the existing table without a product pass.
+
+- [ ] **Product rules:** consent copy (“Public — other WanderMood travelers can see this”), default on/off, editable window, pseudonym vs display name, one review per user per **canonical place** (or per visit — decide).
+- [ ] **Data model:** e.g. `public_place_reviews` (or equivalent) keyed by **stable Google `place_id`** + `user_id`, with `stars`, `body` / notes, `tags` / vibe, `created_at`, optional link to `activity_ratings.id` or scheduled activity id for “verified visit” later.
+- [ ] **Supabase RLS:** authenticated **SELECT** for published rows; **INSERT/UPDATE/DELETE** only for `auth.uid() = user_id` (or staff role for moderation). Keep existing `activity_ratings` private unless you explicitly duplicate into public table on publish.
+- [ ] **Write path:** extend Quick Review (or post-save step) to **publish** to the public table; handle idempotency (upsert on `user_id` + `place_id` if one-per-place).
+- [ ] **Read path & UI:** show **aggregate** (avg + count) + **recent reviews** on **Place detail** / Explore where trust matters; optional “You published a community review” on My Day.
+- [ ] **Abuse & trust (MVP+):** rate limits, reporting flag, optional “only if activity was completed / checked in” for a “verified” badge — full moderation UI can wait.
+- [ ] **Deploy:** you merge SQL + RLS and apply on Supabase; align with `.cursor/rules/supabase-edge-deploy.mdc` for any Edge changes (this is mostly DB + Flutter).
+
+---
+
 ## Reference
 
 - Vercel + domain: `wandermood-landing/VERCEL_SETUP.md`

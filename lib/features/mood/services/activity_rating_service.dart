@@ -27,38 +27,51 @@ class ActivityRatingService {
   /// Save an activity rating
   Future<void> saveRating(ActivityRating rating) async {
     try {
-      await _client.from('activity_ratings').insert(rating.toJson());
+      await _client.from('activity_ratings').upsert(
+        rating.toJson(),
+        onConflict: 'user_id,activity_id',
+      );
       print('✅ Activity rating saved: ${rating.activityName} - ${rating.stars} stars');
       TasteProfileService.recordFromActivityRating(rating);
 
       // Update user patterns after each rating
       await _updateUserPatterns(rating.userId);
+      await _mergeRatingIntoLocalCache(rating);
     } catch (e) {
       print('⚠️ Failed to save activity rating: $e');
       // Fallback to local storage
-      await _saveRatingLocally(rating);
+      await _mergeRatingIntoLocalCache(rating);
       TasteProfileService.recordFromActivityRating(rating);
     }
   }
 
   /// Get ratings for a specific activity
   Future<ActivityRating?> getRatingForActivity(String activityId) async {
-    try {
-      final userId = _client.auth.currentUser?.id;
-      if (userId == null) return null;
+    if (activityId.isEmpty) return null;
+    final userId = _client.auth.currentUser?.id;
 
-      final response = await _client
-          .from('activity_ratings')
-          .select()
-          .eq('user_id', userId)
-          .eq('activity_id', activityId)
-          .maybeSingle();
+    if (userId != null) {
+      try {
+        final response = await _client
+            .from('activity_ratings')
+            .select()
+            .eq('user_id', userId)
+            .eq('activity_id', activityId)
+            .maybeSingle();
 
-      if (response != null) {
-        return ActivityRating.fromJson(response);
+        if (response != null) {
+          return ActivityRating.fromJson(Map<String, dynamic>.from(response));
+        }
+      } catch (e) {
+        print('⚠️ Failed to get activity rating: $e');
       }
-    } catch (e) {
-      print('⚠️ Failed to get activity rating: $e');
+    }
+
+    final local = await _loadRatingsLocally();
+    for (final r in local) {
+      if (r.activityId == activityId && (userId == null || r.userId == userId)) {
+        return r;
+      }
     }
     return null;
   }
@@ -325,18 +338,23 @@ class ActivityRatingService {
     return areas;
   }
 
-  /// Local storage fallback
-  Future<void> _saveRatingLocally(ActivityRating rating) async {
+  /// Keeps one row per (user_id, activity_id) in SharedPreferences for offline reads.
+  Future<void> _mergeRatingIntoLocalCache(ActivityRating rating) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final ratings = await _loadRatingsLocally();
-      ratings.insert(0, rating);
-      
-      final limited = ratings.take(20).toList();
-      final jsonList = limited.map((r) => r.toJson()).toList();
-      await prefs.setString('activity_ratings', jsonEncode(jsonList));
+      final filtered = ratings
+          .where((r) =>
+              !(r.userId == rating.userId && r.activityId == rating.activityId))
+          .toList();
+      filtered.insert(0, rating);
+      final limited = filtered.take(50).toList();
+      await prefs.setString(
+        'activity_ratings',
+        jsonEncode(limited.map((r) => r.toJson()).toList()),
+      );
     } catch (e) {
-      print('❌ Failed to save rating locally: $e');
+      print('❌ Failed to merge rating into local cache: $e');
     }
   }
 

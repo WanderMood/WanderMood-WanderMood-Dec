@@ -132,6 +132,23 @@ final moodyPlaceCardUiDescriptionProvider =
   final appLocale = ref.watch(localeProvider);
   final locale = appLocale ?? ui.PlatformDispatcher.instance.locale;
   final l10n = _l10nFor(locale);
+  final comm =
+      ref.read(communicationStyleProvider.notifier).getCurrentStyleString();
+  final lang = locale.languageCode;
+  final stableKey =
+      MoodyPlaceCardUiCache.stableCacheKey(place.id, lang, comm);
+
+  // Instant path: we already resolved copy for this place this session (facts-based
+  // key alone misses until after a slow [getPlaceDetails] + hash).
+  final stableHit = MoodyPlaceCardUiCache.get(stableKey);
+  if (stableHit != null) {
+    if (kDebugMode) {
+      debugPrint(
+        'moodyPlaceCardUiDescriptionProvider: stable cache hit ${place.name} id=${place.id}',
+      );
+    }
+    return stableHit;
+  }
 
   final ctx = await _loadPlaceBlurbContext(ref, place, locale);
   final factsForModel = clampMoodyPlaceBlurbFactsForEdge(ctx.facts);
@@ -142,13 +159,13 @@ final moodyPlaceCardUiDescriptionProvider =
     factsForModel.hashCode,
   );
   final uiHit = MoodyPlaceCardUiCache.get(uiKey);
-  if (uiHit != null) return uiHit;
+  if (uiHit != null) {
+    MoodyPlaceCardUiCache.putWithStableAlias(uiKey, stableKey, uiHit);
+    return uiHit;
+  }
 
   final uiExisting = MoodyPlaceCardUiCache.inflight(uiKey);
   if (uiExisting != null) return await uiExisting;
-
-  final comm =
-      ref.read(communicationStyleProvider.notifier).getCurrentStyleString();
 
   final uiFuture = () async {
     PlaceCardUiDescription out;
@@ -163,7 +180,7 @@ final moodyPlaceCardUiDescriptionProvider =
         hook: rich.hook,
         sectionsSource: rich.sectionsJoined,
       );
-      MoodyPlaceCardUiCache.put(uiKey, out);
+      MoodyPlaceCardUiCache.putWithStableAlias(uiKey, stableKey, out);
       if (kDebugMode) {
         debugPrint(
           'moodyPlaceCardUiDescriptionProvider: rich place=${place.name} id=${place.id}',
@@ -176,7 +193,7 @@ final moodyPlaceCardUiDescriptionProvider =
         _editorialLineFromPlaceOrGoogle(place, l10n, ctx.editorial);
     if (syncLine != null && syncLine.isNotEmpty) {
       out = PlaceCardUiDescription.plain(syncLine);
-      MoodyPlaceCardUiCache.put(uiKey, out);
+      MoodyPlaceCardUiCache.putWithStableAlias(uiKey, stableKey, out);
       return out;
     }
 
@@ -189,7 +206,7 @@ final moodyPlaceCardUiDescriptionProvider =
         final line = ExplorePlaceCardCopy.editorialLineForExploreCard(g);
         if (line.isNotEmpty) {
           out = PlaceCardUiDescription.plain(line);
-          MoodyPlaceCardUiCache.put(uiKey, out);
+          MoodyPlaceCardUiCache.putWithStableAlias(uiKey, stableKey, out);
           return out;
         }
       }
@@ -227,7 +244,7 @@ final moodyPlaceCardUiDescriptionProvider =
       plain = ExplorePlaceCardCopy.cardDescription(place, l10n);
     }
     out = PlaceCardUiDescription.plain(plain);
-    MoodyPlaceCardUiCache.put(uiKey, out);
+    MoodyPlaceCardUiCache.putWithStableAlias(uiKey, stableKey, out);
     return out;
   }();
 

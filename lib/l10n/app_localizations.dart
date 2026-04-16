@@ -6686,6 +6686,54 @@ abstract class AppLocalizations {
   /// **'What are we doing today? Pick your mood and we\'ll build the day.'**
   String get moodyIdleWakeChooseMood;
 
+  /// No description provided for @moodyIdleTapMoodyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap Moody to continue'**
+  String get moodyIdleTapMoodyHint;
+
+  /// No description provided for @moodyIdleWelcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back!'**
+  String get moodyIdleWelcomeBack;
+
+  /// No description provided for @moodyIdleFallbackSleeping.
+  ///
+  /// In en, this message translates to:
+  /// **'Sssh… Moody was sleeping 😴'**
+  String get moodyIdleFallbackSleeping;
+
+  /// No description provided for @moodyIdleFallbackMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody was grabbing a coffee ☕'**
+  String get moodyIdleFallbackMorning;
+
+  /// No description provided for @moodyIdleFallbackLunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody was on a lunch break 🍽'**
+  String get moodyIdleFallbackLunch;
+
+  /// No description provided for @moodyIdleFallbackAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody was busy — but is here for you again ✨'**
+  String get moodyIdleFallbackAfternoon;
+
+  /// No description provided for @moodyIdleFallbackEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody was winding down 🌙'**
+  String get moodyIdleFallbackEvening;
+
+  /// No description provided for @moodyIdleFallbackLateNight.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s getting late… Moody was almost asleep ⭐'**
+  String get moodyIdleFallbackLateNight;
+
   /// No description provided for @moodyHubNewConversation.
   ///
   /// In en, this message translates to:
@@ -7987,6 +8035,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Wind down and enjoy'**
   String get myDayTimelineSectionEveningSubtitle;
+
+  /// No description provided for @myDaySlotPlannedForMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'This morning'**
+  String get myDaySlotPlannedForMorning;
+
+  /// No description provided for @myDaySlotPlannedForAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'This afternoon'**
+  String get myDaySlotPlannedForAfternoon;
+
+  /// No description provided for @myDayTimelineSectionMorningPastTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'🌅 This morning'**
+  String get myDayTimelineSectionMorningPastTitle;
+
+  /// No description provided for @myDayTimelineSectionAfternoonPastTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'🌞 This afternoon'**
+  String get myDayTimelineSectionAfternoonPastTitle;
 
   /// No description provided for @myDayWeekendEmptyTitle.
   ///
@@ -10256,6 +10328,18 @@ abstract class AppLocalizations {
   /// **'Ask Moody'**
   String get myDayAskMoodyButton;
 
+  /// No description provided for @myDayOpenFullPlaceDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Open full place'**
+  String get myDayOpenFullPlaceDetails;
+
+  /// No description provided for @myDayMoodStreakBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 day streak} other{{count} day streak}}'**
+  String myDayMoodStreakBadge(int count);
+
   /// No description provided for @myDayGetReadyButton.
   ///
   /// In en, this message translates to:
@@ -11053,6 +11137,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Explore {name}'**
   String explorePlaceDescriptionFallback(String name);
+
+  /// No description provided for @exploreContextStripDiscovering.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovering {city}'**
+  String exploreContextStripDiscovering(String city);
+
+  /// No description provided for @exploreContextStripSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing results for \"{query}\"'**
+  String exploreContextStripSearch(String query);
+
+  /// No description provided for @exploreContextStripFiltered.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 filter on} other{{count} filters on}}'**
+  String exploreContextStripFiltered(int count);
+
+  /// No description provided for @exploreContextPlacesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 place} other{{count} places}}'**
+  String exploreContextPlacesCount(int count);
+
+  /// No description provided for @explorePeekViewFullPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'View full place'**
+  String get explorePeekViewFullPlace;
 
   /// No description provided for @chatSheetMoodyName.
   ///
@@ -14171,25 +14285,25 @@ abstract class AppLocalizations {
   /// No description provided for @placeCardBestMorning.
   ///
   /// In en, this message translates to:
-  /// **'☀️ Morning'**
+  /// **'☀️ Best in the morning'**
   String get placeCardBestMorning;
 
   /// No description provided for @placeCardBestAfternoon.
   ///
   /// In en, this message translates to:
-  /// **'🌤 Afternoon'**
+  /// **'🌤 Best in the afternoon'**
   String get placeCardBestAfternoon;
 
   /// No description provided for @placeCardBestEvening.
   ///
   /// In en, this message translates to:
-  /// **'🌙 Evening'**
+  /// **'🌙 Best in the evening'**
   String get placeCardBestEvening;
 
   /// No description provided for @placeCardBestAllDay.
   ///
   /// In en, this message translates to:
-  /// **'🕐 All day'**
+  /// **'🕐 Great any time'**
   String get placeCardBestAllDay;
 
   /// No description provided for @placeCardVenuePlace.

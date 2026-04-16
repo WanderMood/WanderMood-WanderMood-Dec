@@ -36,6 +36,13 @@ const Color _wmDusk = Color(0xFF4A4640);
 const Color _wmStone = Color(0xFF8C8780);
 const Color _wmError = Color(0xFFE05C5C);
 
+/// Outer shell + hero top clip (single radius so accent + photo align).
+const double _kPlaceCardRadius = 16;
+const double _kPlaceCardTopAccentWidth = 3;
+/// Full-width "Add to My Day" — slightly taller than minimum for easier taps.
+const double _kPlaceCardAddToMyDayCtaHeight = 48;
+const double _kPlaceCardAddToMyDayCtaRadius = 24;
+
 class PlaceCard extends ConsumerWidget {
   final Place place;
   final VoidCallback onTap;
@@ -469,7 +476,7 @@ class PlaceCard extends ConsumerWidget {
         .resolveExploreCardPhotos(place, maxPhotos: _kMaxCardPhotos);
   }
 
-  static const double _kCardImageHeight = 160;
+  static const double _kCardImageHeight = 192;
 
   Widget _buildPlaceImage(List<String> photos, {required int photoSeed}) {
     Widget mainImage;
@@ -675,9 +682,11 @@ class PlaceCard extends ConsumerWidget {
       child: Container(
         width: double.infinity,
         margin: cardMargin,
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: _wmWhite,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(_kPlaceCardRadius),
+          // Uniform border only — Flutter forbids borderRadius + multi-color Border.
           border: Border.all(color: _wmParchment, width: 0.5),
           boxShadow: [
             BoxShadow(
@@ -697,31 +706,37 @@ class PlaceCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 3,
-              width: double.infinity,
-              color: _wmForest,
-            ),
-            // Image section
+            // Hero: forest accent + image share one top clip so corners match the card.
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Stack(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(_kPlaceCardRadius),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Main image
-                  FutureBuilder<List<String>>(
-                    future: _resolvePhotos(ref),
-                    initialData: place.photos,
-                    builder: (context, snapshot) {
-                      final photos = snapshot.data ?? place.photos;
-                      return _buildPlaceImage(
-                        photos,
-                        photoSeed: photoSelectionSeed,
-                      );
-                    },
+                  Container(
+                    height: _kPlaceCardTopAccentWidth,
+                    width: double.infinity,
+                    color: _wmForest,
                   ),
-                      
-                  // Opening status only (top-left on image) — social pills hidden for calmer cards.
-                  if (place.openingHours != null)
+                  Stack(
+                    children: [
+                      // Main image
+                      FutureBuilder<List<String>>(
+                        future: _resolvePhotos(ref),
+                        initialData: place.photos,
+                        builder: (context, snapshot) {
+                          final photos = snapshot.data ?? place.photos;
+                          return _buildPlaceImage(
+                            photos,
+                            photoSeed: photoSelectionSeed,
+                          );
+                        },
+                      ),
+
+                      // Opening status only (top-left on image) — social pills hidden for calmer cards.
+                      if (place.openingHours != null)
                     Positioned(
                       top: 12,
                       left: 12,
@@ -785,7 +800,7 @@ class PlaceCard extends ConsumerWidget {
                           icon: Icons.near_me_rounded,
                           onTap: () => _openDirections(context),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 9),
                         _CardIconButton(
                           icon: Icons.ios_share_rounded,
                           onTap: () async {
@@ -800,7 +815,7 @@ class PlaceCard extends ConsumerWidget {
                             }
                           },
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 9),
                         _CardIconButton(
                           icon: isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                           iconColor: isFavorite ? _wmSunset : null,
@@ -836,10 +851,12 @@ class PlaceCard extends ConsumerWidget {
                       ],
                     ),
                   ),
+                    ],
+                  ),
                 ],
               ),
             ),
-            
+
             // Content section
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -914,7 +931,7 @@ class PlaceCard extends ConsumerWidget {
                   // Moody hook + section title/body (matches place-detail style)
                   PlaceCardMoodyDescription(
                     place: place,
-                    maxLines: 6,
+                    maxLines: 8,
                     paddingTop: 8,
                     useCardStackLayout: true,
                     textStyle: GoogleFonts.poppins(
@@ -958,10 +975,10 @@ class PlaceCard extends ConsumerWidget {
                               hasDistancePill ||
                               hasBestTimePill ||
                               hasDurationPill) ...[
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 14),
                             Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
+                              spacing: 10,
+                              runSpacing: 10,
                               crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
                                 if (hasPrimaryPill)
@@ -1099,19 +1116,21 @@ class PlaceCard extends ConsumerWidget {
                           ],
                           // Full-width CTA (no overflow risk)
                           if (showAddToMyDayButton) ...[
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 16),
                             SizedBox(
                               width: double.infinity,
-                              height: 40,
+                              height: _kPlaceCardAddToMyDayCtaHeight,
                               child: Material(
                                 color: Colors.transparent,
                                 child: InkWell(
-                                  borderRadius: BorderRadius.circular(22),
+                                  borderRadius: BorderRadius.circular(
+                                      _kPlaceCardAddToMyDayCtaRadius),
                                   onTap: onAddToMyDayTap ?? () => _addToMyDay(context, ref),
                                   child: Ink(
                                     decoration: BoxDecoration(
                                       color: _wmForest,
-                                      borderRadius: BorderRadius.circular(22),
+                                      borderRadius: BorderRadius.circular(
+                                          _kPlaceCardAddToMyDayCtaRadius),
                                       boxShadow: [
                                         BoxShadow(
                                           color: _wmForest.withValues(alpha: 0.22),
@@ -1518,6 +1537,9 @@ class PlaceCard extends ConsumerWidget {
 
 /// Unified frosted-glass icon button used on place card image overlay.
 class _CardIconButton extends StatelessWidget {
+  static const double _diameter = 40;
+  static const double _iconSize = 18;
+
   final IconData icon;
   final VoidCallback onTap;
   final Color? iconColor;
@@ -1529,8 +1551,9 @@ class _CardIconButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 34,
-        height: 34,
+        width: _diameter,
+        height: _diameter,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.92),
           shape: BoxShape.circle,
@@ -1549,7 +1572,7 @@ class _CardIconButton extends StatelessWidget {
         child: Icon(
           icon,
           color: iconColor ?? const Color(0xFF2A6049),
-          size: 16,
+          size: _iconSize,
         ),
       ),
     );

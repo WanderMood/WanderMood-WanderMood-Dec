@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
+import 'package:wandermood/features/home/presentation/utils/my_day_activity_id.dart';
+import 'package:wandermood/features/home/presentation/utils/my_day_display_title.dart';
+import 'package:wandermood/features/home/presentation/utils/my_day_slot_period.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/features/mood/models/activity_rating.dart';
 import 'package:wandermood/features/mood/services/activity_rating_service.dart';
@@ -81,9 +86,7 @@ class DayExecutionHeroCard extends ConsumerWidget {
       );
     }
 
-    final activityId =
-        (activity.rawData['id'] as String?) ??
-        (activity.rawData['title'] as String? ?? '');
+    final activityId = myDayStableActivityId(activity.rawData);
     final ratingAsync = ref.watch(activityRatingForActivityProvider(activityId));
 
     return ratingAsync.when(
@@ -158,43 +161,54 @@ class _ActiveExecutionHero extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(slot, style: const TextStyle(fontSize: 14)),
-                    const SizedBox(width: 6),
-                    Text(
-                      l10n.myDayExecutionHeroYoureHereBadge,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: _wmCharcoal,
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(slot, style: const TextStyle(fontSize: 14)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          l10n.myDayExecutionHeroYoureHereBadge,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: _wmCharcoal,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  l10n.myDayExecutionHeroInProgressBadge,
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.6,
-                    color: _wmCharcoal,
+              const SizedBox(width: 8),
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    l10n.myDayExecutionHeroInProgressBadge,
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.6,
+                      color: _wmCharcoal,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
                   ),
                 ),
               ),
@@ -204,20 +218,22 @@ class _ActiveExecutionHero extends StatelessWidget {
           Text(
             title,
             style: GoogleFonts.poppins(
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.w800,
               color: _wmCharcoal,
-              height: 1.2,
+              height: 1.16,
             ),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 8),
           Text(
             l10n.myDayExecutionHeroActiveHint,
             style: GoogleFonts.poppins(
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: FontWeight.w400,
               color: _wmStone,
-              height: 1.4,
+              height: 1.32,
             ),
           ),
           const SizedBox(height: 20),
@@ -279,53 +295,64 @@ class _CompletedExecutionHero extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.check_circle_rounded,
-                      size: 16,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      hasReview
-                          ? l10n.myDayExecutionHeroReviewedAt(
-                              _formatTime(context, rating!.completedAt),
-                            )
-                          : l10n.myDayExecutionHeroCompletedToday,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white.withValues(alpha: 0.95),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        size: 16,
+                        color: Colors.white,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          hasReview
+                              ? l10n.myDayExecutionHeroReviewedAt(
+                                  _formatTime(context, rating!.completedAt),
+                                )
+                              : l10n.myDayExecutionHeroCompletedToday,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white.withValues(alpha: 0.95),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  hasReview
-                      ? l10n.myDayExecutionHeroBadgeReviewedCaps
-                      : l10n.myDayExecutionHeroBadgeReadyToReviewCaps,
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.6,
-                    color: Colors.white,
+              const SizedBox(width: 8),
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    hasReview
+                        ? l10n.myDayExecutionHeroBadgeReviewedCaps
+                        : l10n.myDayExecutionHeroBadgeReadyToReviewCaps,
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.6,
+                      color: Colors.white,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
                   ),
                 ),
               ),
@@ -335,11 +362,13 @@ class _CompletedExecutionHero extends StatelessWidget {
           Text(
             title,
             style: GoogleFonts.poppins(
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.w800,
               color: Colors.white,
-              height: 1.2,
+              height: 1.16,
             ),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 8),
           if (hasReview) ...[
@@ -375,10 +404,10 @@ class _CompletedExecutionHero extends StatelessWidget {
             Text(
               l10n.myDayExecutionHeroReviewCaptureHint,
               style: GoogleFonts.poppins(
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.w400,
                 color: Colors.white.withValues(alpha: 0.82),
-                height: 1.45,
+                height: 1.32,
               ),
             ),
           const SizedBox(height: 20),
@@ -432,7 +461,11 @@ class _UpcomingExecutionHero extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final title = _heroActivityTitle(context, activity.rawData);
     final slotEmoji = _slotEmoji(activity.startTime.hour);
-    final slotName = _slotName(context, activity.startTime.hour);
+    final slotName = myDayActivitySlotPeriodLabel(
+      AppLocalizations.of(context)!,
+      activity.startTime,
+      MoodyClock.now(),
+    );
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -449,51 +482,62 @@ class _UpcomingExecutionHero extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.45),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(slotEmoji, style: const TextStyle(fontSize: 14)),
-                    const SizedBox(width: 6),
-                    Text(
-                      slotName,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.45),
+                      width: 1,
                     ),
-                  ],
+                  ),
+                  child: Row(
+                    children: [
+                      Text(slotEmoji, style: const TextStyle(fontSize: 14)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          slotName,
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.45),
-                    width: 1,
+              const SizedBox(width: 8),
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.45),
+                      width: 1,
+                    ),
                   ),
-                ),
-                child: Text(
-                  l10n.myDayExecutionHeroUpNextBadge,
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.6,
-                    color: Colors.white,
+                  child: Text(
+                    l10n.myDayExecutionHeroUpNextBadge,
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.6,
+                      color: Colors.white,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
                   ),
                 ),
               ),
@@ -503,20 +547,22 @@ class _UpcomingExecutionHero extends StatelessWidget {
           Text(
             title,
             style: GoogleFonts.poppins(
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.w800,
               color: Colors.white,
-              height: 1.2,
+              height: 1.16,
             ),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 8),
           Text(
             l10n.myDayExecutionHeroTapImHereWhenArrive,
             style: GoogleFonts.poppins(
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: FontWeight.w400,
               color: Colors.white.withValues(alpha: 0.8),
-              height: 1.4,
+              height: 1.32,
             ),
           ),
           const SizedBox(height: 20),
@@ -580,38 +626,45 @@ class _HeroButton extends StatelessWidget {
     final filledBg = primaryOnForestCard ? Colors.white : _wmForest;
     final filledFg = primaryOnForestCard ? _wmForest : Colors.white;
 
-    return Material(
-      color: filled ? filledBg : secondaryBg,
-      // Use `shape` only — Material forbids both `shape` and `borderRadius`.
-      elevation: 0,
-      shadowColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: filled && primaryOnForestCard
-            ? BorderSide(color: Colors.white.withValues(alpha: 0.5), width: 0.75)
-            : filled
-                ? BorderSide(color: Colors.white.withValues(alpha: 0.5), width: 0.75)
-                : secondaryBorder,
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 18, color: filled ? filledFg : secondaryFg),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: filled ? filledFg : secondaryFg,
+    return Semantics(
+      button: true,
+      label: label,
+      child: Material(
+        color: filled ? filledBg : secondaryBg,
+        // Use `shape` only — Material forbids both `shape` and `borderRadius`.
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: filled && primaryOnForestCard
+              ? BorderSide(color: Colors.white.withValues(alpha: 0.5), width: 0.75)
+              : filled
+                  ? BorderSide(color: Colors.white.withValues(alpha: 0.5), width: 0.75)
+                  : secondaryBorder,
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTapDown: (_) => HapticFeedback.lightImpact(),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ExcludeSemantics(
+                  child: Icon(icon, size: 18, color: filled ? filledFg : secondaryFg),
                 ),
-              ),
-            ],
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: filled ? filledFg : secondaryFg,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -666,15 +719,10 @@ String _slotEmoji(int hour) {
 String _heroActivityTitle(BuildContext context, Map<String, dynamic> rawData) {
   final l10n = AppLocalizations.of(context)!;
   final t = rawData['title'] as String?;
-  if (t != null && t.trim().isNotEmpty) return t;
+  if (t != null && t.trim().isNotEmpty) {
+    return myDayShortActivityTitle(t);
+  }
   return l10n.myDayActivityFallbackLabel;
-}
-
-String _slotName(BuildContext context, int hour) {
-  final l10n = AppLocalizations.of(context)!;
-  if (hour >= 6 && hour < 12) return l10n.timeLabelMorning;
-  if (hour >= 12 && hour < 18) return l10n.timeLabelAfternoon;
-  return l10n.timeLabelEvening;
 }
 
 String _formatTime(BuildContext context, DateTime time) {

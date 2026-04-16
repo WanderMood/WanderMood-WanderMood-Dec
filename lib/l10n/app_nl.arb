@@ -1407,6 +1407,14 @@
   "moodHubBannerNight": "Late avond — laten we iets passends vinden.",
   "moodyIdleWakeOpenPlan": "Laten we je plan van vandaag openen.",
   "moodyIdleWakeChooseMood": "Wat doen we vandaag? Kies je mood en we bouwen de dag.",
+  "moodyIdleTapMoodyHint": "Tik op Moody om verder te gaan",
+  "moodyIdleWelcomeBack": "Welkom terug!",
+  "moodyIdleFallbackSleeping": "Sssst… Moody was aan het slapen 😴",
+  "moodyIdleFallbackMorning": "Moody was een koffietje aan het doen ☕",
+  "moodyIdleFallbackLunch": "Moody was even aan het lunchen 🍽",
+  "moodyIdleFallbackAfternoon": "Moody was even bezig, maar is er weer voor je ✨",
+  "moodyIdleFallbackEvening": "Moody was even aan het ontspannen 🌙",
+  "moodyIdleFallbackLateNight": "Het wordt laat… Moody was bijna aan het slapen ⭐",
   "moodyHubNewConversation": "Nieuw gesprek",
   "moodHubCreatePlan": "Maak je perfecte plan! 🎯",
   "moodHubBackToHub": "Terug naar Hub",
@@ -1676,6 +1684,10 @@
   "myDayTimelineSectionAfternoonSubtitle": "Tijd voor avontuur",
   "myDayTimelineSectionEveningTitle": "🌆 Avond",
   "myDayTimelineSectionEveningSubtitle": "Kom tot rust en geniet",
+  "myDaySlotPlannedForMorning": "Vanochtend gepland",
+  "myDaySlotPlannedForAfternoon": "Vanmiddag gepland",
+  "myDayTimelineSectionMorningPastTitle": "🌅 Vanochtend gepland",
+  "myDayTimelineSectionAfternoonPastTitle": "🌞 Vanmiddag gepland",
   "myDayWeekendEmptyTitle": "Je weekend is nog leeg!",
   "myDayWeekendEmptySubtitle": "Wil je zaterdag of zondag alvast plannen?",
   "myDayWeekendSaturdayShort": "Za {day}",
@@ -1958,6 +1970,15 @@
   "myDayExploreActivitiesButton": "Verken activiteiten",
   "myDayExploreNearbyButton": "Verken in de buurt",
   "myDayAskMoodyButton": "Vraag Moody",
+  "myDayOpenFullPlaceDetails": "Volledige plek openen",
+  "myDayMoodStreakBadge": "{count, plural, one{1 dag op rij} other{{count} dagen op rij}}",
+  "@myDayMoodStreakBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "myDayGetReadyButton": "Klaar voor vertrek",
   "myDayRightNow": "NU",
   "myDayStatusError": "⚠️ FOUT",
@@ -2133,6 +2154,39 @@
       }
     }
   },
+  "exploreContextStripDiscovering": "Ontdekken in {city}",
+  "@exploreContextStripDiscovering": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreContextStripSearch": "Resultaten voor \"{query}\"",
+  "@exploreContextStripSearch": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreContextStripFiltered": "{count, plural, one{1 filter actief} other{{count} filters actief}}",
+  "@exploreContextStripFiltered": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreContextPlacesCount": "{count, plural, one{1 plek} other{{count} plekken}}",
+  "@exploreContextPlacesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "explorePeekViewFullPlace": "Bekijk plek",
   "chatSheetMoodyName": "Moody",
   "chatSheetErrorMessage": "Oeps! Ik heb momenteel verbindingsproblemen. Kun je het opnieuw proberen? 🤔",
   "chatSheetEmptyStateBody": "Ik ken de stad als mijn broekzak! Vertel me je stemming en ik maak de perfecte dag voor je. Of je je avontuurlijk voelt, romantisch, of gewoon wilt chilllen - ik heb je! 🎯",
@@ -2894,10 +2948,10 @@
   "placeCardSocialHiddenGem": "💎 Verborgen parel",
   "placeCardSocialLovedByLocals": "❤️ Favoriet bij locals",
   "placeCardSocialPopular": "⭐ Populair",
-  "placeCardBestMorning": "☀️ Ochtend",
-  "placeCardBestAfternoon": "🌤 Middag",
-  "placeCardBestEvening": "🌙 Avond",
-  "placeCardBestAllDay": "🕐 Hele dag",
+  "placeCardBestMorning": "☀️ Ochtend het beste",
+  "placeCardBestAfternoon": "🌤 Middag het beste",
+  "placeCardBestEvening": "🌙 Avond het beste",
+  "placeCardBestAllDay": "🕐 De hele dag",
   "placeCardVenuePlace": "Plek",
   "placeCardVenueGallery": "Galerie",
   "placeCardVenueAttraction": "Attractie",

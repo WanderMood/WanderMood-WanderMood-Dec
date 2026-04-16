@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/services/moody_idle_message_service.dart';
 import 'package:wandermood/core/utils/moody_idle_checker.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 /// Solid base behind frosted glass — one tone per idle bucket (time-of-day mood).
 const Map<MoodyIdleState, Color> kIdleBackgroundColors = {
@@ -75,8 +76,9 @@ class MoodyIdleScreen extends StatefulWidget {
 
 class _MoodyIdleScreenState extends State<MoodyIdleScreen>
     with TickerProviderStateMixin {
-  late final _IdleCopy _copy;
+  late _IdleCopy _copy;
   late final _IdleVisuals _visuals;
+  bool _idleBootstrapDone = false;
 
   late final AnimationController _breathController;
   late final Animation<double> _breathScale;
@@ -103,9 +105,7 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1100),
     )..repeat(reverse: true);
-    _fetchIdleLine();
 
-    _copy = _IdleCopy.forState(widget.idleState, wakeMessage: widget.wakeMessage);
     _visuals = _IdleVisuals.forState(
       widget.idleState,
       afternoonEmoji: MoodyIdleScreen.afternoonPropForInterest(
@@ -155,9 +155,26 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
     });
   }
 
-  Future<void> _fetchIdleLine() async {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_idleBootstrapDone) return;
+    _idleBootstrapDone = true;
+    final l10n = AppLocalizations.of(context)!;
+    _copy = _IdleCopy.forState(
+      l10n,
+      widget.idleState,
+      wakeMessage: widget.wakeMessage,
+    );
+    _fetchIdleLine(
+      languageCode: Localizations.localeOf(context).languageCode,
+    );
+  }
+
+  Future<void> _fetchIdleLine({required String languageCode}) async {
     final msg = await MoodyIdleMessageService.fetchIdleMessage(
       idleState: widget.idleState,
+      languageCode: languageCode,
       userPreferences: widget.userPreferences,
       topInterest: widget.topInterest,
     );
@@ -350,7 +367,7 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
                     opacity: _hintVisible && !_woken ? 1 : 0,
                     duration: const Duration(milliseconds: 400),
                     child: Text(
-                      'Tik op Moody om verder te gaan',
+                      AppLocalizations.of(context)!.moodyIdleTapMoodyHint,
                       textAlign: TextAlign.center,
                       style: _wmCaptionOnDark,
                     ),
@@ -374,9 +391,10 @@ class MoodySleepScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return MoodyIdleScreen(
       idleState: MoodyIdleState.sleeping,
-      wakeMessage: 'Welcome back!',
+      wakeMessage: l10n.moodyIdleWelcomeBack,
       onComplete: onComplete,
     );
   }
@@ -401,11 +419,15 @@ class _IdleCopy {
   final String awakeMoodLabel;
   final double awakeMouthScale;
 
-  static _IdleCopy forState(MoodyIdleState s, {required String wakeMessage}) {
+  static _IdleCopy forState(
+    AppLocalizations l10n,
+    MoodyIdleState s, {
+    required String wakeMessage,
+  }) {
     switch (s) {
       case MoodyIdleState.sleeping:
         return _IdleCopy(
-          fallbackMessage: 'Sshhh... Moody was aan het slapen 😴',
+          fallbackMessage: l10n.moodyIdleFallbackSleeping,
           wakeMessage: wakeMessage,
           preWakeMoodLabel: 'sleeping',
           preWakeMouthScale: 1.0,
@@ -414,7 +436,7 @@ class _IdleCopy {
         );
       case MoodyIdleState.morning:
         return _IdleCopy(
-          fallbackMessage: 'Moody was een koffietje aan het doen ☕',
+          fallbackMessage: l10n.moodyIdleFallbackMorning,
           wakeMessage: wakeMessage,
           preWakeMoodLabel: 'idle',
           preWakeMouthScale: 1.0,
@@ -423,7 +445,7 @@ class _IdleCopy {
         );
       case MoodyIdleState.lunch:
         return _IdleCopy(
-          fallbackMessage: 'Moody was even aan het lunchen 🍽',
+          fallbackMessage: l10n.moodyIdleFallbackLunch,
           wakeMessage: wakeMessage,
           preWakeMoodLabel: 'idle',
           preWakeMouthScale: 1.0,
@@ -432,7 +454,7 @@ class _IdleCopy {
         );
       case MoodyIdleState.afternoon:
         return _IdleCopy(
-          fallbackMessage: 'Moody was even bezig, maar is er weer voor je ✨',
+          fallbackMessage: l10n.moodyIdleFallbackAfternoon,
           wakeMessage: wakeMessage,
           preWakeMoodLabel: 'idle',
           preWakeMouthScale: 1.15,
@@ -441,7 +463,7 @@ class _IdleCopy {
         );
       case MoodyIdleState.evening:
         return _IdleCopy(
-          fallbackMessage: 'Moody was even aan het ontspannen 🌙',
+          fallbackMessage: l10n.moodyIdleFallbackEvening,
           wakeMessage: wakeMessage,
           preWakeMoodLabel: 'idle',
           preWakeMouthScale: 1.0,
@@ -450,7 +472,7 @@ class _IdleCopy {
         );
       case MoodyIdleState.lateNight:
         return _IdleCopy(
-          fallbackMessage: 'Het wordt laat... Moody was bijna aan het slapen ⭐',
+          fallbackMessage: l10n.moodyIdleFallbackLateNight,
           wakeMessage: wakeMessage,
           preWakeMoodLabel: 'idle',
           preWakeMouthScale: 1.0,

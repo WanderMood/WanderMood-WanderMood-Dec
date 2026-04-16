@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
+import 'package:wandermood/features/home/presentation/utils/my_day_activity_id.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/mood/models/activity_rating.dart';
 import 'package:wandermood/features/mood/services/activity_rating_service.dart';
@@ -402,8 +404,17 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
     }
 
     final raw = widget.activity.rawData;
-    final activityId =
-        (raw['id'] as String?) ?? (raw['title'] as String? ?? '');
+    final activityId = myDayStableActivityId(raw);
+    if (activityId.isEmpty) {
+      if (mounted) {
+        showWanderMoodToast(
+          context,
+          message: AppLocalizations.of(context)!.myDayDeleteMissingId,
+          isError: true,
+        );
+      }
+      return;
+    }
     final activityName = raw['title'] as String? ?? 'Activity';
     final placeName = raw['placeName'] as String?;
     final moodRaw = raw['mood'] as String?;

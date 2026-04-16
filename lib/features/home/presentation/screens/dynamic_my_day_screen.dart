@@ -33,6 +33,9 @@ import 'package:wandermood/features/home/presentation/widgets/planner_activity_d
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import '../widgets/travel_time_connector.dart';
 import 'package:wandermood/features/home/presentation/utils/my_day_status_l10n.dart';
+import 'package:wandermood/features/home/presentation/utils/my_day_display_title.dart';
+import 'package:wandermood/features/home/presentation/utils/my_day_activity_id.dart';
+import 'package:wandermood/features/home/presentation/utils/my_day_slot_period.dart';
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
 import 'package:wandermood/features/places/models/place.dart';
@@ -50,7 +53,6 @@ class DynamicMyDayScreen extends ConsumerStatefulWidget {
 }
 
 class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
-  String _selectedView = 'timeline'; // 'timeline' or 'list'
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final Map<String, bool> _collapsedSections = {}; // Track which sections are collapsed
   late DateTime _selectedDate;
@@ -61,6 +63,47 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   String _safeActivityTitle(Map<String, dynamic> activity) {
     return activity['title']?.toString() ??
         AppLocalizations.of(context)!.dayPlanCardActivity;
+  }
+
+  /// UI labels only; maps/share still use [_safeActivityTitle].
+  String _displayActivityTitle(Map<String, dynamic> activity) {
+    final shortened = myDayShortActivityTitle(activity['title']?.toString());
+    if (shortened.isNotEmpty) return shortened;
+    return _safeActivityTitle(activity);
+  }
+
+  Widget _myDayHeroSwitcher({
+    required String stateKey,
+    required EnhancedActivityData activity,
+    required Widget child,
+  }) {
+    final id = myDayStableActivityId(activity.rawData);
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 320),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      transitionBuilder: (Widget c, Animation<double> animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.024),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              ),
+            ),
+            child: c,
+          ),
+        );
+      },
+      child: KeyedSubtree(
+        key: ValueKey<String>('myday-hero-$stateKey-$id'),
+        child: child,
+      ),
+    );
   }
 
   /// Resolves coordinates from scheduled-activity maps (`lat`/`lng` and/or `location` "lat,lng").
@@ -226,6 +269,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
+            onTapDown: (_) => HapticFeedback.lightImpact(),
             onTap: onTap,
             borderRadius: BorderRadius.circular(16),
             child: Ink(
@@ -267,14 +311,14 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       children: [
         tile(
           onTap: () => _navigateToTab(2),
-          icon: Icons.chat_bubble_outline_rounded,
-          label: l10n.myDayEmptyAskMoodyButton,
+          icon: Icons.auto_awesome_rounded,
+          label: l10n.myDayPlanWithMoodyButton,
         ),
         const SizedBox(width: 12),
         tile(
           onTap: () => _navigateToTab(1),
-          icon: Icons.add_rounded,
-          label: l10n.myDayQuickAddActivity,
+          icon: Icons.explore_rounded,
+          label: l10n.myDayExploreActivitiesButton,
         ),
       ],
     );
@@ -344,7 +388,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                             ),
                           ),
                           child: Text(
-                            '🔥 $_moodStreak day streak',
+                            '🔥 ${l10n.myDayMoodStreakBadge(_moodStreak)}',
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -384,19 +428,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               ),
             ),
 
-            // Timeline or List View
-            if (_selectedView == 'timeline')
-              ...timelineActivities.when(
-                data: (activities) => _buildTimelineView(activities),
-                loading: () => [_buildLoadingSliver()],
-                error: (error, stack) => [_buildErrorSliver()],
-              )
-            else
-              ...timelineActivities.when(
-                data: (activities) => _buildListView(activities),
-                loading: () => [_buildLoadingSliver()],
-                error: (error, stack) => [_buildErrorSliver()],
-              ),
+            // Timeline (time-of-day sections)
+            ...timelineActivities.when(
+              data: (activities) => _buildTimelineView(activities),
+              loading: () => [_buildLoadingSliver()],
+              error: (error, stack) => [_buildErrorSliver()],
+            ),
 
             // Free Time Carousel
             SliverToBoxAdapter(
@@ -933,28 +970,40 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     }
 
     if (status['type'] == 'active' && enhancedActivity != null) {
-      return DayExecutionHeroCard(
+      return _myDayHeroSwitcher(
+        stateKey: 'active',
         activity: enhancedActivity,
-        state: DayExecutionHeroState.active,
-        onDirections: () => _showDirectionsOptions(status['activity']),
-        onMarkDone: () => _markActivityDone(enhancedActivity),
+        child: DayExecutionHeroCard(
+          activity: enhancedActivity,
+          state: DayExecutionHeroState.active,
+          onDirections: () => _showDirectionsOptions(status['activity']),
+          onMarkDone: () => _markActivityDone(enhancedActivity),
+        ),
       );
     }
 
     if (status['type'] == 'upcoming' && enhancedActivity != null) {
-      return DayExecutionHeroCard(
+      return _myDayHeroSwitcher(
+        stateKey: 'upcoming',
         activity: enhancedActivity,
-        state: DayExecutionHeroState.upcoming,
-        onDirections: () => _showDirectionsOptions(status['activity']),
-        onCheckIn: () => _checkInActivity(enhancedActivity),
+        child: DayExecutionHeroCard(
+          activity: enhancedActivity,
+          state: DayExecutionHeroState.upcoming,
+          onDirections: () => _showDirectionsOptions(status['activity']),
+          onCheckIn: () => _checkInActivity(enhancedActivity),
+        ),
       );
     }
 
     if (status['type'] == 'completed' && enhancedActivity != null) {
-      return DayExecutionHeroCard(
+      return _myDayHeroSwitcher(
+        stateKey: 'completed',
         activity: enhancedActivity,
-        state: DayExecutionHeroState.completed,
-        onDirections: () => _showDirectionsOptions(status['activity']),
+        child: DayExecutionHeroCard(
+          activity: enhancedActivity,
+          state: DayExecutionHeroState.completed,
+          onDirections: () => _showDirectionsOptions(status['activity']),
+        ),
       );
     }
 
@@ -1037,9 +1086,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         final l10n = AppLocalizations.of(context)!;
         final suggestion = ref.watch(timeSuggestionProvider);
         
-        return GestureDetector(
-          onTap: () => _navigateToTab(1), // Navigate to explore tab
-          child: Container(
+        return Container(
             height: 200,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
@@ -1139,61 +1186,79 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   ),
                   
                   const Spacer(),
-                  
-                      // Action buttons
-                  Row(
+                  // Primary: plan with Moody (tab 2). Secondary: explore (tab 1).
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                          _buildActionButton(
-                            l10n.myDayExploreNearbyButton,
-                                    Icons.explore,
-                            () => _navigateToTab(1),
-                                  ),
-                          const SizedBox(width: 12),
-                          _buildActionButton(
-                            l10n.myDayAskMoodyButton,
-                            Icons.chat_bubble_outline,
-                            () => _navigateToTab(2),
-                                    ),
-                        ],
-                                  ),
-                                ],
+                      ElevatedButton(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          _navigateToTab(2);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFF2A6049),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.auto_awesome_rounded, size: 18),
+                            const SizedBox(width: 8),
+                            Text(
+                              l10n.myDayPlanWithMoodyButton,
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
-              ],
+                          ],
                         ),
                       ),
-        );
-      },
-    );
-  }
-
-  Widget _buildActionButton(String label, IconData icon, VoidCallback onTap) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-                          child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                            decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(12),
-                                ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-              Icon(icon, size: 16, color: Colors.white),
-                                  const SizedBox(width: 8),
-                                  Text(
-                label,
-                                    style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                                    ),
-                                  ),
-                                ],
+                      const SizedBox(height: 10),
+                      OutlinedButton(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          _navigateToTab(1);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.75),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.explore_rounded, size: 18),
+                            const SizedBox(width: 8),
+                            Text(
+                              l10n.myDayExploreActivitiesButton,
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                          ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        );
+      },
     );
   }
 
@@ -1710,6 +1775,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
   List<Widget> _buildTimelineView(Map<String, List<EnhancedActivityData>> activities) {
     final l10n = AppLocalizations.of(context)!;
+    final viewDay = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+    );
+    final now = MoodyClock.now();
     final hasMorning = activities['morning']?.isNotEmpty == true;
     final hasAfternoon = activities['afternoon']?.isNotEmpty == true;
     final hasEvening = activities['evening']?.isNotEmpty == true;
@@ -1744,7 +1815,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     if (hasMorning) {
       widgets.add(_buildTimelineSection(
         'morning',
-        l10n.myDayTimelineSectionMorningTitle,
+        myDayTimelineSectionTitle(
+          l10n,
+          period: 'morning',
+          viewDay: viewDay,
+          now: now,
+        ),
         l10n.myDayTimelineSectionMorningSubtitle,
         activities['morning']!,
         isFirstSection: firstVisibleSection == 'morning',
@@ -1761,7 +1837,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     if (hasAfternoon) {
       widgets.add(_buildTimelineSection(
         'afternoon',
-        l10n.myDayTimelineSectionAfternoonTitle,
+        myDayTimelineSectionTitle(
+          l10n,
+          period: 'afternoon',
+          viewDay: viewDay,
+          now: now,
+        ),
         l10n.myDayTimelineSectionAfternoonSubtitle,
         activities['afternoon']!,
         isFirstSection: firstVisibleSection == 'afternoon',
@@ -1775,7 +1856,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     if (hasEvening) {
       widgets.add(_buildTimelineSection(
         'evening',
-        l10n.myDayTimelineSectionEveningTitle,
+        myDayTimelineSectionTitle(
+          l10n,
+          period: 'evening',
+          viewDay: viewDay,
+          now: now,
+        ),
         l10n.myDayTimelineSectionEveningSubtitle,
         activities['evening']!,
         isFirstSection: firstVisibleSection == 'evening',
@@ -1787,74 +1873,6 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     }
 
     return widgets;
-  }
-
-  List<Widget> _buildListView(Map<String, List<EnhancedActivityData>> activities) {
-    final l10n = AppLocalizations.of(context)!;
-    final allActivities = [
-      ...activities['active'] ?? [],
-      ...activities['awaiting'] ?? [],
-      ...activities['upcoming'] ?? [],
-      ...activities['completed'] ?? [],
-    ];
-
-    if (allActivities.isEmpty) {
-      return [_buildEmptyTimelineSliver()];
-    }
-
-    final List<Widget> cardWidgets = [];
-    for (int i = 0; i < allActivities.length; i++) {
-      final activity = allActivities[i];
-      cardWidgets.add(
-        Padding(
-          padding: const EdgeInsets.only(bottom: 0),
-          child: MyDayTimelineActivityCard(
-            activity: activity,
-            l10n: l10n,
-            onTap: () => _showActivityDetails(activity.rawData),
-            onDirectionsTap: () => _handleTimelinePrimaryAction(activity),
-            onMoreTap: () => _showActivityOptions(activity),
-            onCheckIn: () => _checkInActivity(activity),
-            onMarkDone: () => _markActivityDone(activity),
-            onGetReady: () => _showRichGetReadySheet(activity),
-            formatTime: _formatTime,
-          ).animate(delay: (i * 100).ms)
-            .slideX(begin: 0.3, duration: 600.ms)
-            .fadeIn(duration: 600.ms)
-            .scale(begin: const Offset(0.9, 0.9), duration: 400.ms),
-        ),
-      );
-
-      if (i < allActivities.length - 1) {
-        final fromLoc = parseTravelLocation(activity.rawData);
-        final toLoc = parseTravelLocation(allActivities[i + 1].rawData);
-        if (fromLoc != null && toLoc != null) {
-          cardWidgets.add(
-            TravelTimeConnector(
-              fromLat: fromLoc.lat,
-              fromLng: fromLoc.lng,
-              toLat: toLoc.lat,
-              toLng: toLoc.lng,
-            ),
-          );
-        } else {
-          cardWidgets.add(const SizedBox(height: 12));
-        }
-      } else {
-        cardWidgets.add(const SizedBox(height: 16));
-      }
-    }
-
-    return [
-      SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            children: cardWidgets,
-          ),
-        ),
-      ),
-    ];
   }
 
   Widget _buildTimelineSection(
@@ -2014,7 +2032,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                           const Icon(Icons.auto_awesome_rounded, size: 20),
                           const SizedBox(width: 10),
                           Text(
-                            l10n.myDayEmptyCreateButton,
+                            l10n.myDayPlanWithMoodyButton,
                             style: GoogleFonts.poppins(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
@@ -2025,58 +2043,30 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => context.goNamed('main', extra: {'tab': 1}),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            side: BorderSide(
-                              color: Colors.grey.shade300,
-                              width: 2,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            foregroundColor: const Color(0xFF334155),
-                          ),
-                          child: Text(
-                            l10n.myDayEmptyBrowseButton,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () => context.goNamed('main', extra: {'tab': 1}),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: BorderSide(
+                          color: Colors.grey.shade300,
+                          width: 2,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        foregroundColor: const Color(0xFF334155),
+                      ),
+                      child: Text(
+                        l10n.myDayExploreActivitiesButton,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => context.goNamed('main', extra: {'tab': 2}),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            side: BorderSide(
-                              color: Colors.grey.shade300,
-                              width: 2,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            foregroundColor: const Color(0xFF334155),
-                          ),
-                          child: Text(
-                            l10n.myDayEmptyAskMoodyButton,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -2317,12 +2307,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         _showActivityDetails(status['activity']);
         break;
       case 'Get Ready':
-        final enhancedActivity = status['enhancedActivity'] as EnhancedActivityData?;
-        if (enhancedActivity != null) {
-          _showRichGetReadySheet(enhancedActivity);
-        } else {
-          _prepareForActivity(status['activity']);
-        }
+        unawaited(_tryShowGetReadyFromStatus(status));
         break;
       case 'Get Directions':
         _showDirectionsOptions(status['activity']);
@@ -2338,10 +2323,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   void _checkInActivity(EnhancedActivityData activity) {
-    final activityId =
-        activity.rawData['id'] as String? ??
-        activity.rawData['title'] as String? ??
-        '';
+    final activityId = myDayStableActivityId(activity.rawData);
     if (activityId.isEmpty) return;
 
     HapticFeedback.mediumImpact();
@@ -2356,10 +2338,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   void _markActivityDone(EnhancedActivityData activity) {
-    final activityId =
-        activity.rawData['id'] as String? ??
-        activity.rawData['title'] as String? ??
-        '';
+    final activityId = myDayStableActivityId(activity.rawData);
     if (activityId.isEmpty) return;
 
     HapticFeedback.mediumImpact();
@@ -2399,223 +2378,59 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       formatTime: _formatTime,
     );
   }
-  
-  void _prepareForActivity(Map<String, dynamic> activity) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header with icon and title
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE3F2FD),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.access_time_rounded,
-                    color: Color(0xFF2196F3),
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        AppLocalizations.of(context)!.getReadyTitle,
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF2196F3),
-                        ),
-                      ),
-                      Text(
-                        activity['title'] ??
-                            AppLocalizations.of(context)!
-                                .myDayGetReadyUpcomingFallback,
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // Get Directions option
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.map_outlined,
-                  color: Colors.blue,
-                  size: 24,
-                ),
-              ),
-              title: Text(
-                AppLocalizations.of(context)!.activityDetailDirections,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              subtitle: Text(
-                AppLocalizations.of(context)!.myDayDirectionsOpensInMaps,
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  color: Colors.grey[600],
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _showDirectionsOptions(activity);
-              },
-            ),
-            
-            const Divider(height: 16),
-            
-            // Call Venue option
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.phone_outlined,
-                  color: Colors.green,
-                  size: 24,
-                ),
-              ),
-              title: Text(
-                AppLocalizations.of(context)!.myDayCallVenue,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              subtitle: Text(
-                AppLocalizations.of(context)!.myDayCallVenueSubtitle,
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  color: Colors.grey[600],
-                ),
-              ),
-              onTap: () {
-                final phone = activity['phone'] ?? '';
-                if (phone.isNotEmpty) {
-                  launchUrl(Uri.parse('tel:$phone'));
-                } else {
-                  showWanderMoodToast(
-                    context,
-                    message: AppLocalizations.of(context)!.myDayNoPhoneAvailable,
-                  );
-                }
-              },
-            ),
-            
-            const Divider(height: 16),
-            
-            // Add to Calendar option
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.calendar_month_outlined,
-                  color: Colors.orange,
-                  size: 24,
-                ),
-              ),
-              title: Text(
-                AppLocalizations.of(context)!.myDayAddToCalendar,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              subtitle: Text(
-                AppLocalizations.of(context)!.myDayAddToCalendarSubtitle,
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  color: Colors.grey[600],
-                ),
-              ),
-              onTap: () {
-                // TODO: Implement calendar integration
-                Navigator.pop(context);
-                showWanderMoodToast(
-                  context,
-                  message: AppLocalizations.of(context)!.myDayAddedToCalendar,
-                );
-              },
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // I'm Ready button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  showWanderMoodToast(
-                    context,
-                    message: AppLocalizations.of(context)!.myDayAllSet,
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2A6049),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  elevation: 2,
-                ),
-                child: Text(
-                  AppLocalizations.of(context)!.myDayReadyCta,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+
+  /// Resolves [EnhancedActivityData] from provider when status maps omit it,
+  /// then opens the modern get-ready sheet (never the legacy ListTile sheet).
+  Future<void> _tryShowGetReadyFromStatus(Map<String, dynamic> status) async {
+    final enhanced = status['enhancedActivity'] as EnhancedActivityData?;
+    if (enhanced != null) {
+      await _showRichGetReadySheet(enhanced);
+      return;
+    }
+    final raw = status['activity'];
+    if (raw is Map<String, dynamic>) {
+      await _tryShowGetReadyFromRaw(raw);
+    }
   }
-  
+
+  Future<void> _tryShowGetReadyFromRaw(Map<String, dynamic> raw) async {
+    try {
+      final list = await ref.read(todayActivitiesProvider.future);
+      EnhancedActivityData? found;
+      final rawId = raw['id'] as String?;
+      if (rawId != null && rawId.isNotEmpty) {
+        for (final e in list) {
+          final id = e.rawData['id'] as String?;
+          if (id == rawId) {
+            found = e;
+            break;
+          }
+        }
+      }
+      if (found == null) {
+        final title = raw['title'] as String?;
+        final st = raw['startTime'] as String?;
+        if (title != null && st != null) {
+          for (final e in list) {
+            if (e.rawData['title'] == title && e.rawData['startTime'] == st) {
+              found = e;
+              break;
+            }
+          }
+        }
+      }
+      if (!mounted) return;
+      if (found != null) {
+        await _showRichGetReadySheet(found);
+      } else {
+        _showActivityDetails(raw);
+      }
+    } catch (_) {
+      if (!mounted) return;
+      _showActivityDetails(raw);
+    }
+  }
+
   void _navigateToTab(int tabIndex) async {
     // Add haptic feedback immediately for instant response
     HapticFeedback.lightImpact();
@@ -2682,116 +2497,34 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
   void _showActivityDetails(Map<String, dynamic> activity) {
     final routePlaceId = resolvePlannerPlaceDetailRouteId(activity);
-    if (routePlaceId != null) {
-      _cachePlaceFromCarouselForDetail(activity);
-      context.pushNamed('place-detail', pathParameters: {'id': routePlaceId});
-      return;
-    }
-
     final scheduledLabel = activity['startTime'] != null
         ? _formatTime(DateTime.parse(activity['startTime'] as String))
         : null;
+    final l10n = AppLocalizations.of(context)!;
 
     showPlannerActivityDetailSheet(
       context,
       activity: activity,
       scheduledTimeLabel: scheduledLabel,
       footerBuilder: (pop) {
-        return Row(
-          children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  pop();
-                  _openDirections(activity);
-                },
-                icon: const Icon(Icons.directions),
-                label: Text(AppLocalizations.of(context)!.activityDetailDirections),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2A6049),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  pop();
-                  unawaited(_saveActivity(activity));
-                },
-                icon: const Icon(Icons.bookmark_outline),
-                label: Text(AppLocalizations.of(context)!.myDaySaveForLater),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF2A6049),
-                  side: const BorderSide(color: Color(0xFF2A6049)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showDirectionsOptions(Map<String, dynamic> activity) {
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (sheetContext) => Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
+        return Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              AppLocalizations.of(context)!.activityDetailDirections,
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              AppLocalizations.of(context)!.myDayDirectionsChooseFor(
-                (activity['title'] ?? '').toString(),
-              ),
-              style: GoogleFonts.poppins(fontSize: 14),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () async {
-                      final coords = _activityLatLng(activity);
-                      final title = _safeActivityTitle(activity);
-                      final googleAppUri =
-                          _googleAppDirectionsUri(coords.lat, coords.lng, title);
-                      final googleWebUri =
-                          _googleWebDirectionsUri(coords.lat, coords.lng, title);
-                      final canOpenGoogleApp =
-                          await canLaunchUrl(googleAppUri);
-                      Navigator.pop(sheetContext);
-                      if (!mounted) return;
-                      final uri =
-                          canOpenGoogleApp ? googleAppUri : googleWebUri;
-                      await launchUrl(uri,
-                          mode: LaunchMode.externalApplication);
+                    onPressed: () {
+                      pop();
+                      _openDirections(activity);
                     },
-                    icon: const Icon(Icons.map),
-                    label: Text(
-                        AppLocalizations.of(context)!.myDayOpenGoogleMaps),
+                    icon: const Icon(Icons.directions),
+                    label: Text(l10n.activityDetailDirections),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2A6049),
                       foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
@@ -2801,22 +2534,16 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () async {
-                      final coords = _activityLatLng(activity);
-                      final title = _safeActivityTitle(activity);
-                      final appleUri =
-                          _appleMapsUri(coords.lat, coords.lng, title);
-                      Navigator.pop(sheetContext);
-                      if (!mounted) return;
-                      await launchUrl(appleUri,
-                          mode: LaunchMode.externalApplication);
+                    onPressed: () {
+                      pop();
+                      unawaited(_saveActivity(activity));
                     },
-                    icon: const Icon(Icons.navigation),
-                    label: Text(
-                        AppLocalizations.of(context)!.myDayOpenAppleMaps),
+                    icon: const Icon(Icons.bookmark_outline),
+                    label: Text(l10n.myDaySaveForLater),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF2A6049),
                       side: const BorderSide(color: Color(0xFF2A6049)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
@@ -2825,8 +2552,151 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 ),
               ],
             ),
-            SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
+            if (routePlaceId != null) ...[
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () {
+                  pop();
+                  _cachePlaceFromCarouselForDetail(activity);
+                  if (!context.mounted) return;
+                  context.pushNamed(
+                    'place-detail',
+                    pathParameters: {'id': routePlaceId},
+                  );
+                },
+                icon: const Icon(Icons.open_in_new_rounded, size: 20),
+                label: Text(l10n.myDayOpenFullPlaceDetails),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF2A6049),
+                  side: const BorderSide(color: Color(0xFF2A6049)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+              ),
+            ],
           ],
+        );
+      },
+    );
+  }
+
+  void _showDirectionsOptions(Map<String, dynamic> activity) {
+    final l10n = AppLocalizations.of(context)!;
+    final displayTitle = _displayActivityTitle(activity);
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.fromLTRB(
+          12,
+          0,
+          12,
+          10 + MediaQuery.paddingOf(sheetContext).bottom,
+        ),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  l10n.activityDetailDirections,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.myDayDirectionsChooseFor(displayTitle),
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    height: 1.35,
+                    color: const Color(0xFF4A4640),
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          final coords = _activityLatLng(activity);
+                          final title = _safeActivityTitle(activity);
+                          final googleAppUri =
+                              _googleAppDirectionsUri(coords.lat, coords.lng, title);
+                          final googleWebUri =
+                              _googleWebDirectionsUri(coords.lat, coords.lng, title);
+                          final canOpenGoogleApp =
+                              await canLaunchUrl(googleAppUri);
+                          Navigator.pop(sheetContext);
+                          if (!mounted) return;
+                          final uri =
+                              canOpenGoogleApp ? googleAppUri : googleWebUri;
+                          await launchUrl(uri,
+                              mode: LaunchMode.externalApplication);
+                        },
+                        icon: const Icon(Icons.map, size: 20),
+                        label: Text(l10n.myDayOpenGoogleMaps),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2A6049),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final coords = _activityLatLng(activity);
+                          final title = _safeActivityTitle(activity);
+                          final appleUri =
+                              _appleMapsUri(coords.lat, coords.lng, title);
+                          Navigator.pop(sheetContext);
+                          if (!mounted) return;
+                          await launchUrl(appleUri,
+                              mode: LaunchMode.externalApplication);
+                        },
+                        icon: const Icon(Icons.navigation, size: 20),
+                        label: Text(l10n.myDayOpenAppleMaps),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF2A6049),
+                          side: const BorderSide(color: Color(0xFF2A6049)),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            )
+                .animate()
+                .fadeIn(duration: 220.ms)
+                .slideY(begin: 0.04, end: 0, curve: Curves.easeOutCubic),
+          ),
         ),
       ),
     );
@@ -2864,6 +2734,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
+          onTapDown: (_) => HapticFeedback.lightImpact(),
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -2960,6 +2831,16 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+              if (activity.status == ActivityStatus.upcoming)
+                _activityOptionSheetTile(
+                  icon: Icons.rocket_launch_outlined,
+                  title: AppLocalizations.of(context)!.myDayGetReadyButton,
+                  subtitle: AppLocalizations.of(context)!.getReadyTitle,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    unawaited(_showRichGetReadySheet(activity));
+                  },
+                ),
               _activityOptionSheetTile(
                 icon: Icons.info_outline_rounded,
                 title: AppLocalizations.of(context)!.myDayViewDetails,
@@ -3023,7 +2904,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 },
               ),
             ],
-          ),
+          )
+              .animate()
+              .fadeIn(duration: 200.ms)
+              .slideY(begin: 0.03, end: 0, curve: Curves.easeOutCubic),
         ),
       ),
     );
@@ -3180,8 +3064,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   Future<void> _deleteActivity(EnhancedActivityData activity) async {
-    final activityId =
-        activity.rawData['id'] as String? ?? activity.rawData['title'] as String? ?? '';
+    final activityId = myDayStableActivityId(activity.rawData);
     final title = activity.rawData['title'] as String? ??
         AppLocalizations.of(context)!.dayPlanCardActivity;
 

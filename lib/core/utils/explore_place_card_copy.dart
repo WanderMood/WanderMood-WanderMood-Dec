@@ -420,18 +420,21 @@ class ExplorePlaceCardCopy {
   /// Label for cuisine/type pill: [Place.primaryType] or first entry in [Place.types].
   /// Generic types (`point_of_interest`, `establishment`, `premise`) resolve via first
   /// non-generic type, else localized "Place". Unknown concrete types → "Place".
-  /// Returns null only when there is no primary type and no types (pill hidden).
+  /// Returns null when there is no useful label or only the vague generic "Place" pill.
   static String? primaryTypeLabelForCard(Place place, AppLocalizations l10n) {
     final typesLower = place.types
         .map((e) => e.trim().toLowerCase())
         .where((e) => e.isNotEmpty)
         .toList();
 
+    final genericPlace = l10n.placeCardVenuePlace;
+
     final primaryRaw = place.primaryType?.trim().toLowerCase();
     if (primaryRaw != null && primaryRaw.isNotEmpty) {
       final label = _resolveVenueTypeForPill(primaryRaw, typesLower, l10n);
       final t = label.trim();
-      return t.isEmpty ? null : t;
+      if (t.isEmpty || t == genericPlace) return null;
+      return t;
     }
 
     if (typesLower.isEmpty) return null;
@@ -439,7 +442,8 @@ class ExplorePlaceCardCopy {
     for (final t in typesLower) {
       final label = _resolveVenueTypeForPill(t, typesLower, l10n);
       final trimmed = label.trim();
-      return trimmed.isEmpty ? null : trimmed;
+      if (trimmed.isEmpty || trimmed == genericPlace) continue;
+      return trimmed;
     }
     return null;
   }

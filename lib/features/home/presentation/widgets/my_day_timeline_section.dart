@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wandermood/features/mood/models/activity_rating.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/home/presentation/widgets/activity_review_sheet.dart';
 import 'package:wandermood/features/mood/services/activity_rating_service.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
 import '../screens/dynamic_my_day_provider.dart';
+import '../utils/my_day_activity_id.dart';
+import '../utils/my_day_display_title.dart';
+import '../utils/my_day_slot_period.dart';
 import 'travel_time_connector.dart';
 
 // Screen 3 — section headers wmForest, metadata wmStone; status chips v2 palette
@@ -73,9 +78,10 @@ class MyDayTimelineSection extends StatelessWidget {
                   Text(
                     title,
                     style: GoogleFonts.poppins(
-                      fontSize: 18,
+                      fontSize: 17,
                       fontWeight: FontWeight.w600,
                       color: _kWmForest,
+                      height: 1.2,
                     ),
                   ),
                   const Spacer(),
@@ -209,9 +215,7 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cardStatus = _buildCardStatus(activity, l10n);
-    final activityId =
-        (activity.rawData['id'] as String?) ??
-        (activity.rawData['title'] as String? ?? '');
+    final activityId = myDayStableActivityId(activity.rawData);
     final ratingAsync = activity.status == ActivityStatus.completed
         ? ref.watch(activityRatingForActivityProvider(activityId))
         : null;
@@ -236,38 +240,54 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
     }
 
     final subtitleText = l10n.myDayTimelineTapForDetails;
+    final displayTitle = myDayShortActivityTitle(
+      activity.rawData['title'] as String?,
+    );
+    final titleForCard = displayTitle.isNotEmpty
+        ? displayTitle
+        : l10n.myDayActivityFallbackLabel;
 
     // Time-of-day badge (replaces "1:15 PM • 120m" which implied a booking)
     final slotEmoji = _slotEmoji(activity.startTime.hour);
-    final slotLabel = _slotName(activity.startTime.hour, l10n);
+    final slotLabel = myDayActivitySlotPeriodLabel(
+      l10n,
+      activity.startTime,
+      MoodyClock.now(),
+    );
 
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onTap();
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        height: 160,
-        decoration: BoxDecoration(
+    return Semantics(
+      label: '$titleForCard. $subtitleText',
+      button: true,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: _kWmParchment, width: 0.5),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 14,
-              offset: const Offset(0, 5),
-            ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Column(
+          onTapDown: (_) => HapticFeedback.lightImpact(),
+          onTap: onTap,
+          child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          height: 160,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: _kWmParchment, width: 0.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 14,
+                offset: const Offset(0, 5),
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Column(
             children: [
               Expanded(
                 flex: 3,
@@ -375,11 +395,12 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                             ),
                             const Spacer(),
                             Text(
-                              activity.rawData['title'],
+                              titleForCard,
                               style: GoogleFonts.poppins(
-                                fontSize: 16,
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
+                                height: 1.2,
                                 shadows: [
                                   Shadow(
                                     color: Colors.black.withOpacity(0.8),
@@ -409,6 +430,12 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          if (activity.status == ActivityStatus.completed)
+                            _myDayTimelineRatingRow(
+                              l10n,
+                              ratingAsync,
+                              activity.rawData,
+                            ),
                           Text(
                             _activityLabel(activity.rawData, l10n),
                             style: GoogleFonts.poppins(
@@ -432,12 +459,16 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                       children: [
                         // For upcoming activities show "Get Ready" outline before "I'm Here"
                         if (activity.status == ActivityStatus.upcoming) ...[
-                          _OutlineActionButton(
+                          Semantics(
                             label: l10n.myDayGetReadyButton,
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              onGetReady();
-                            },
+                            button: true,
+                            child: _OutlineActionButton(
+                              label: l10n.myDayGetReadyButton,
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                onGetReady();
+                              },
+                            ),
                           ),
                           const SizedBox(width: 8),
                         ],
@@ -459,6 +490,7 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(16),
+                              onTapDown: (_) => HapticFeedback.lightImpact(),
                               onTap: primaryAction,
                               child: Center(
                                 child: Text(
@@ -474,23 +506,30 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            onMoreTap();
-                          },
-                          child: Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
+                        Semantics(
+                          label: l10n.myDayActivityOptionsTitle,
+                          button: true,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: _kWmParchment, width: 1),
-                            ),
-                            child: Icon(
-                              Icons.more_vert,
-                              size: 16,
-                              color: _kWmStone,
+                              onTapDown: (_) => HapticFeedback.lightImpact(),
+                              onTap: onMoreTap,
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: _kWmParchment, width: 1),
+                                ),
+                                child: Icon(
+                                  Icons.more_vert,
+                                  size: 16,
+                                  color: _kWmStone,
+                                  semanticLabel: '',
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -502,9 +541,72 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
             ],
           ),
         ),
+        ),
+      ),
       ),
     );
   }
+}
+
+/// WanderMood review first; otherwise a compact Google-style rating from plan data.
+Widget _myDayTimelineRatingRow(
+  AppLocalizations l10n,
+  AsyncValue<ActivityRating?>? ratingAsync,
+  Map<String, dynamic> raw,
+) {
+  final wm = ratingAsync?.maybeWhen(
+    data: (r) => r,
+    orElse: () => null,
+  );
+  if (wm != null) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          ...List.generate(
+            5,
+            (i) => Icon(
+              i < wm.stars ? Icons.star_rounded : Icons.star_outline_rounded,
+              size: 14,
+              color: i < wm.stars ? _kWmSunset : _kWmParchment,
+            ),
+          ),
+          if (wm.tags.isNotEmpty) ...[
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                wm.tags.first,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: _kWmForest,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+  final g = (raw['rating'] as num?)?.toDouble();
+  if (g != null && g > 0) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Text(
+        l10n.myDayFreeTimeInsightRating(g.toStringAsFixed(1)),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.poppins(
+          fontSize: 11,
+          color: _kWmStone,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+  return const SizedBox.shrink();
 }
 
 _ActivityCardStatus _buildCardStatus(EnhancedActivityData activity, AppLocalizations l10n) {
@@ -557,6 +659,7 @@ class _OutlineActionButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
+          onTapDown: (_) => HapticFeedback.lightImpact(),
           onTap: onTap,
           child: Center(
             child: Text(
@@ -633,12 +736,6 @@ String _slotEmoji(int hour) {
   if (hour >= 6 && hour < 12) return '🌅';
   if (hour >= 12 && hour < 18) return '☀️';
   return '🌙';
-}
-
-String _slotName(int hour, AppLocalizations l10n) {
-  if (hour >= 6 && hour < 12) return l10n.myDayPeriodMorning;
-  if (hour >= 12 && hour < 18) return l10n.myDayPeriodAfternoon;
-  return l10n.myDayPeriodEvening;
 }
 
 class _ActivityCardStatus {

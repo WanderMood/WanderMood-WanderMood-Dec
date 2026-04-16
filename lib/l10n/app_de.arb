@@ -1322,8 +1322,16 @@
   "moodHubBannerAfternoon": "Nachmittag — Zeit für deine Stimmung.",
   "moodHubBannerEvening": "Abend — was ist deine Stimmung?",
   "moodHubBannerNight": "Spätabend — lass uns was Passendes finden.",
-  "moodyIdleWakeOpenPlan": "Let's open your plan for today.",
-  "moodyIdleWakeChooseMood": "What are we doing today? Pick your mood and we'll build the day.",
+  "moodyIdleWakeOpenPlan": "Lass uns deinen Plan für heute öffnen.",
+  "moodyIdleWakeChooseMood": "Was machen wir heute? Wähle deine Stimmung und wir gestalten den Tag.",
+  "moodyIdleTapMoodyHint": "Tippe auf Moody, um fortzufahren",
+  "moodyIdleWelcomeBack": "Willkommen zurück!",
+  "moodyIdleFallbackSleeping": "Psst… Moody hat geschlafen 😴",
+  "moodyIdleFallbackMorning": "Moody hat einen Kaffee geholt ☕",
+  "moodyIdleFallbackLunch": "Moody war in der Mittagspause 🍽",
+  "moodyIdleFallbackAfternoon": "Moody war beschäftigt — ist aber wieder für dich da ✨",
+  "moodyIdleFallbackEvening": "Moody hat runtergefahren 🌙",
+  "moodyIdleFallbackLateNight": "Es wird spät… Moody war fast eingeschlafen ⭐",
   "moodyHubNewConversation": "New conversation",
   "moodHubCreatePlan": "Erstelle deinen perfekten Plan! 🎯",
   "moodHubBackToHub": "Zurück zur Hub",
@@ -1620,6 +1628,10 @@
   "myDayTimelineSectionAfternoonSubtitle": "Zeit für Abenteuer",
   "myDayTimelineSectionEveningTitle": "🌆 Abend",
   "myDayTimelineSectionEveningSubtitle": "Runterkommen und genießen",
+  "myDaySlotPlannedForMorning": "Heute Vormittag",
+  "myDaySlotPlannedForAfternoon": "Heute Nachmittag",
+  "myDayTimelineSectionMorningPastTitle": "🌅 Heute Vormittag",
+  "myDayTimelineSectionAfternoonPastTitle": "🌞 Heute Nachmittag",
   "myDayWeekendEmptyTitle": "Dein Wochenende ist noch leer!",
   "myDayWeekendEmptySubtitle": "Möchtest du Samstag oder Sonntag schon planen?",
   "myDayWeekendSaturdayShort": "Sa {day}",
@@ -1902,6 +1914,15 @@
   "myDayExploreActivitiesButton": "Aktivitäten erkunden",
   "myDayExploreNearbyButton": "In der Nähe erkunden",
   "myDayAskMoodyButton": "Moody fragen",
+  "myDayOpenFullPlaceDetails": "Ort vollständig öffnen",
+  "myDayMoodStreakBadge": "{count, plural, one{1 Tag in Folge} other{{count} Tage in Folge}}",
+  "@myDayMoodStreakBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "myDayGetReadyButton": "Bereit machen",
   "myDayRightNow": "JETZT",
   "myDayStatusError": "⚠️ FEHLER",
@@ -2077,6 +2098,39 @@
       }
     }
   },
+  "exploreContextStripDiscovering": "Entdecke {city}",
+  "@exploreContextStripDiscovering": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreContextStripSearch": "Ergebnisse für \"{query}\"",
+  "@exploreContextStripSearch": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreContextStripFiltered": "{count, plural, one{1 Filter aktiv} other{{count} Filter aktiv}}",
+  "@exploreContextStripFiltered": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreContextPlacesCount": "{count, plural, one{1 Ort} other{{count} Orte}}",
+  "@exploreContextPlacesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "explorePeekViewFullPlace": "Ort ansehen",
   "chatSheetMoodyName": "Moody",
   "chatSheetErrorMessage": "Ups! Ich habe gerade Verbindungsprobleme. Kannst du es nochmal versuchen? 🤔",
   "chatSheetEmptyStateBody": "Ich kenne die Stadt wie meine Westentasche! Sag mir deine Stimmung und ich gestalte den perfekten Tag für dich. Ob du dich abenteuerlustig, romantisch oder entspannt fühlst - ich hab dich! 🎯",
@@ -2783,10 +2837,10 @@
   "placeCardSocialHiddenGem": "💎 Geheimtipp",
   "placeCardSocialLovedByLocals": "❤️ Von Einheimischen geliebt",
   "placeCardSocialPopular": "⭐ Beliebt",
-  "placeCardBestMorning": "☀️ Morgens",
-  "placeCardBestAfternoon": "🌤 Nachmittags",
-  "placeCardBestEvening": "🌙 Abends",
-  "placeCardBestAllDay": "🕐 Ganztägig",
+  "placeCardBestMorning": "☀️ Am Morgen am besten",
+  "placeCardBestAfternoon": "🌤 Am Nachmittag am besten",
+  "placeCardBestEvening": "🌙 Am Abend am besten",
+  "placeCardBestAllDay": "🕐 Ganztägig gut",
   "placeCardVenuePlace": "Ort",
   "placeCardVenueGallery": "Galerie",
   "placeCardVenueAttraction": "Attraktion",

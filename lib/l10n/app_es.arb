@@ -1322,8 +1322,16 @@
   "moodHubBannerAfternoon": "Buenas tardes — hora de conectar con tu vibe.",
   "moodHubBannerEvening": "Buenas noches — ¿cuál es tu vibe?",
   "moodHubBannerNight": "Noche — busquemos algo que encaje.",
-  "moodyIdleWakeOpenPlan": "Let's open your plan for today.",
-  "moodyIdleWakeChooseMood": "What are we doing today? Pick your mood and we'll build the day.",
+  "moodyIdleWakeOpenPlan": "Abramos tu plan de hoy.",
+  "moodyIdleWakeChooseMood": "¿Qué hacemos hoy? Elige tu mood y armamos el día.",
+  "moodyIdleTapMoodyHint": "Toca Moody para continuar",
+  "moodyIdleWelcomeBack": "¡Bienvenido de nuevo!",
+  "moodyIdleFallbackSleeping": "Shhh… Moody estaba durmiendo 😴",
+  "moodyIdleFallbackMorning": "Moody estaba tomando un café ☕",
+  "moodyIdleFallbackLunch": "Moody estaba en el almuerzo 🍽",
+  "moodyIdleFallbackAfternoon": "Moody estaba ocupado — pero ya está aquí para ti ✨",
+  "moodyIdleFallbackEvening": "Moody estaba relajándose 🌙",
+  "moodyIdleFallbackLateNight": "Se hace tarde… Moody casi se dormía ⭐",
   "moodyHubNewConversation": "New conversation",
   "moodHubCreatePlan": "¡Crea tu plan perfecto! 🎯",
   "moodHubBackToHub": "Volver al Hub",
@@ -1620,6 +1628,10 @@
   "myDayTimelineSectionAfternoonSubtitle": "Momento de aventura",
   "myDayTimelineSectionEveningTitle": "🌆 Noche",
   "myDayTimelineSectionEveningSubtitle": "Relájate y disfruta",
+  "myDaySlotPlannedForMorning": "Por la mañana",
+  "myDaySlotPlannedForAfternoon": "Por la tarde",
+  "myDayTimelineSectionMorningPastTitle": "🌅 Por la mañana",
+  "myDayTimelineSectionAfternoonPastTitle": "🌞 Por la tarde",
   "myDayWeekendEmptyTitle": "¡Tu fin de semana aún está vacío!",
   "myDayWeekendEmptySubtitle": "¿Quieres planear el sábado o el domingo con antelación?",
   "myDayWeekendSaturdayShort": "Sáb {day}",
@@ -1902,6 +1914,15 @@
   "myDayExploreActivitiesButton": "Explorar actividades",
   "myDayExploreNearbyButton": "Explorar cerca",
   "myDayAskMoodyButton": "Preguntar a Moody",
+  "myDayOpenFullPlaceDetails": "Abrir lugar completo",
+  "myDayMoodStreakBadge": "{count, plural, one{1 día seguido} other{{count} días seguidos}}",
+  "@myDayMoodStreakBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "myDayGetReadyButton": "Prepararse",
   "myDayRightNow": "AHORA",
   "myDayStatusError": "⚠️ ERROR",
@@ -2077,6 +2098,39 @@
       }
     }
   },
+  "exploreContextStripDiscovering": "Descubriendo {city}",
+  "@exploreContextStripDiscovering": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreContextStripSearch": "Resultados para \"{query}\"",
+  "@exploreContextStripSearch": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreContextStripFiltered": "{count, plural, one{1 filtro activo} other{{count} filtros activos}}",
+  "@exploreContextStripFiltered": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreContextPlacesCount": "{count, plural, one{1 lugar} other{{count} lugares}}",
+  "@exploreContextPlacesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "explorePeekViewFullPlace": "Ver lugar",
   "chatSheetMoodyName": "Moody",
   "chatSheetErrorMessage": "¡Vaya! Tengo problemas de conexión ahora mismo. ¿Puedes intentarlo de nuevo? 🤔",
   "chatSheetEmptyStateBody": "¡Conozco la ciudad como la palma de mi mano! Dime tu mood y crearé el día perfecto para ti. Ya sea aventurero, romántico o relajado - ¡te tengo cubierto! 🎯",
@@ -2782,10 +2836,10 @@
   "placeCardSocialHiddenGem": "💎 Joya oculta",
   "placeCardSocialLovedByLocals": "❤️ Querido por locales",
   "placeCardSocialPopular": "⭐ Popular",
-  "placeCardBestMorning": "☀️ Mañana",
-  "placeCardBestAfternoon": "🌤 Tarde",
-  "placeCardBestEvening": "🌙 Noche",
-  "placeCardBestAllDay": "🕐 Todo el día",
+  "placeCardBestMorning": "☀️ Ideal por la mañana",
+  "placeCardBestAfternoon": "🌤 Ideal por la tarde",
+  "placeCardBestEvening": "🌙 Ideal por la noche",
+  "placeCardBestAllDay": "🕐 Buena a cualquier hora",
   "placeCardVenuePlace": "Lugar",
   "placeCardVenueGallery": "Galería",
   "placeCardVenueAttraction": "Atracción",

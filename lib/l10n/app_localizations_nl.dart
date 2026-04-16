@@ -3675,6 +3675,33 @@ class AppLocalizationsNl extends AppLocalizations {
       'Wat doen we vandaag? Kies je mood en we bouwen de dag.';
 
   @override
+  String get moodyIdleTapMoodyHint => 'Tik op Moody om verder te gaan';
+
+  @override
+  String get moodyIdleWelcomeBack => 'Welkom terug!';
+
+  @override
+  String get moodyIdleFallbackSleeping => 'Sssst… Moody was aan het slapen 😴';
+
+  @override
+  String get moodyIdleFallbackMorning =>
+      'Moody was een koffietje aan het doen ☕';
+
+  @override
+  String get moodyIdleFallbackLunch => 'Moody was even aan het lunchen 🍽';
+
+  @override
+  String get moodyIdleFallbackAfternoon =>
+      'Moody was even bezig, maar is er weer voor je ✨';
+
+  @override
+  String get moodyIdleFallbackEvening => 'Moody was even aan het ontspannen 🌙';
+
+  @override
+  String get moodyIdleFallbackLateNight =>
+      'Het wordt laat… Moody was bijna aan het slapen ⭐';
+
+  @override
   String get moodyHubNewConversation => 'Nieuw gesprek';
 
   @override
@@ -4412,6 +4439,18 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get myDayTimelineSectionEveningSubtitle => 'Kom tot rust en geniet';
+
+  @override
+  String get myDaySlotPlannedForMorning => 'Vanochtend gepland';
+
+  @override
+  String get myDaySlotPlannedForAfternoon => 'Vanmiddag gepland';
+
+  @override
+  String get myDayTimelineSectionMorningPastTitle => '🌅 Vanochtend gepland';
+
+  @override
+  String get myDayTimelineSectionAfternoonPastTitle => '🌞 Vanmiddag gepland';
 
   @override
   String get myDayWeekendEmptyTitle => 'Je weekend is nog leeg!';
@@ -5728,6 +5767,20 @@ class AppLocalizationsNl extends AppLocalizations {
   String get myDayAskMoodyButton => 'Vraag Moody';
 
   @override
+  String get myDayOpenFullPlaceDetails => 'Volledige plek openen';
+
+  @override
+  String myDayMoodStreakBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dagen op rij',
+      one: '1 dag op rij',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get myDayGetReadyButton => 'Klaar voor vertrek';
 
   @override
@@ -6163,6 +6216,41 @@ class AppLocalizationsNl extends AppLocalizations {
   String explorePlaceDescriptionFallback(String name) {
     return 'Ontdek $name';
   }
+
+  @override
+  String exploreContextStripDiscovering(String city) {
+    return 'Ontdekken in $city';
+  }
+
+  @override
+  String exploreContextStripSearch(String query) {
+    return 'Resultaten voor \"$query\"';
+  }
+
+  @override
+  String exploreContextStripFiltered(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count filters actief',
+      one: '1 filter actief',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exploreContextPlacesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count plekken',
+      one: '1 plek',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get explorePeekViewFullPlace => 'Bekijk plek';
 
   @override
   String get chatSheetMoodyName => 'Moody';
@@ -7864,16 +7952,16 @@ class AppLocalizationsNl extends AppLocalizations {
   String get placeCardSocialPopular => '⭐ Populair';
 
   @override
-  String get placeCardBestMorning => '☀️ Ochtend';
+  String get placeCardBestMorning => '☀️ Ochtend het beste';
 
   @override
-  String get placeCardBestAfternoon => '🌤 Middag';
+  String get placeCardBestAfternoon => '🌤 Middag het beste';
 
   @override
-  String get placeCardBestEvening => '🌙 Avond';
+  String get placeCardBestEvening => '🌙 Avond het beste';
 
   @override
-  String get placeCardBestAllDay => '🕐 Hele dag';
+  String get placeCardBestAllDay => '🕐 De hele dag';
 
   @override
   String get placeCardVenuePlace => 'Plek';

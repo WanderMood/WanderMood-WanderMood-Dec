@@ -3,6 +3,7 @@ import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/core/presentation/widgets/moody_avatar_compact.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/features/home/presentation/utils/my_day_display_title.dart';
 
 const Color _wmForest = Color(0xFF2A6049);
 const Color _wmCream = Color(0xFFF5F0E8);
@@ -195,6 +196,13 @@ class _DetailsPane extends StatelessWidget {
     );
     final price = (activity['price'] as num?)?.toDouble() ?? 0.0;
     final payment = (activity['paymentStatus'] ?? 'free').toString();
+    final rawTitle = activity['title']?.toString();
+    final headlineShort = myDayShortActivityTitle(rawTitle, maxChars: 52);
+    final headline = headlineShort.isNotEmpty
+        ? headlineShort
+        : (rawTitle != null && rawTitle.trim().isNotEmpty
+            ? rawTitle.trim()
+            : l10n.dayPlanCardActivity);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
@@ -219,11 +227,12 @@ class _DetailsPane extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          activity['title']?.toString() ?? l10n.dayPlanCardActivity,
+          headline,
           style: GoogleFonts.museoModerno(
             fontSize: 24,
             fontWeight: FontWeight.bold,
             color: _wmCharcoal,
+            height: 1.15,
           ),
         ),
         const SizedBox(height: 12),

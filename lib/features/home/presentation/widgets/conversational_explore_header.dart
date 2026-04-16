@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
@@ -73,10 +74,10 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildSearchBar(),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           if (_hasCategoryRow) ...[
             _buildCategoryChipsRow(),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
           ],
           _buildActivitiesHeader(),
         ],
@@ -93,10 +94,10 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-            spreadRadius: 1,
+            color: Colors.black.withValues(alpha: 0.07),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+            spreadRadius: 0,
           ),
         ],
       ),
@@ -131,6 +132,7 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
                         icon: Icon(Icons.clear, color: Colors.grey[400], size: 20),
                         padding: EdgeInsets.zero,
                         onPressed: () {
+                          HapticFeedback.lightImpact();
                           _searchController.clear();
                           widget.onSearchChanged('');
                         },
@@ -228,7 +230,10 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
           return Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: () => widget.onCategorySelected!(key),
+              onTap: () {
+                HapticFeedback.selectionClick();
+                widget.onCategorySelected!(key);
+              },
               borderRadius: BorderRadius.circular(18),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
@@ -280,14 +285,25 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
           height: 40,
           decoration: BoxDecoration(
             color: _wmParchment,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: _wmParchment, width: 0.5),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: const Color(0xFFD8D2C8),
+              width: 0.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               InkWell(
                 onTap: () {
+                  HapticFeedback.selectionClick();
                   widget.onViewToggle(false, false);
                 },
                 borderRadius: const BorderRadius.horizontal(left: Radius.circular(7)),
@@ -306,6 +322,7 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
               ),
               InkWell(
                 onTap: () {
+                  HapticFeedback.selectionClick();
                   widget.onViewToggle(true, false);
                 },
                 borderRadius: BorderRadius.zero,
@@ -323,6 +340,7 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
               ),
               InkWell(
                 onTap: () {
+                  HapticFeedback.selectionClick();
                   widget.onViewToggle(false, true);
                 },
                 borderRadius: const BorderRadius.horizontal(right: Radius.circular(7)),
