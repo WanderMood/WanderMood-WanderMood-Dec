@@ -189,7 +189,7 @@ class _MiniPlaceCard extends ConsumerWidget {
                 height: 90,
                 child: photo.trim().isEmpty
                     ? Container(color: const Color(0xFFEBF3EE))
-                    : WmPlacePhotoHeroNetworkImage(
+                    : WmPlacePhotoNetworkImage(
                         photo,
                         fit: BoxFit.cover,
                         width: 160,

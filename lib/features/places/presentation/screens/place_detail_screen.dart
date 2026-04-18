@@ -520,7 +520,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => _buildImageFallback(),
                   )
-                : WmPlacePhotoHeroNetworkImage(
+                : WmPlacePhotoNetworkImage(
                     photoUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => _buildImageFallback(),
